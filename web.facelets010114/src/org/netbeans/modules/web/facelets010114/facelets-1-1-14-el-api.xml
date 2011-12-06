@@ -34,6 +34,6 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/2/javax/el/el-api/1.0/el-api-1.0.pom</resource>
+        <resource>http://repo1.maven.org/maven2/javax/el/el-api/1.0/el-api-1.0.pom</resource>
     </volume>
 </library>

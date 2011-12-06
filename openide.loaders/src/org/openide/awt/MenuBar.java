@@ -339,7 +339,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
     private final class MenuBarFolder extends FolderInstance {
         /** List of the components this FolderInstance manages. */
-        private ArrayList<Component> managed = new ArrayList<Component>();
+        private ArrayList<Component> managed;
 
         /** Creates a new menubar folder on the specified <code>DataFolder</code>.
          * @param folder a <code>DataFolder</code> to work with
@@ -356,18 +356,18 @@ public class MenuBar extends JMenuBar implements Externalizable {
          * Called when menu is refreshed. */
         private void cleanUp() {
             synchronized (getTreeLock()) {
-                for (Iterator<Component> it = managed.iterator(); it.hasNext(); ) {
+                for (Iterator<Component> it = getManaged().iterator(); it.hasNext(); ) {
                     MenuBar.this.remove(it.next());
                 }
-                managed.clear();
+                getManaged().clear();
             }
         }
 
         /** Adds the component to the MenuBar after the last added one */
         private void addComponent (Component c) {
             synchronized (getTreeLock()) {
-                MenuBar.this.add(c, managed.size());
-                managed.add(c);
+                MenuBar.this.add(c, getManaged().size());
+                getManaged().add(c);
             }
         }
 
@@ -486,6 +486,17 @@ public class MenuBar extends JMenuBar implements Externalizable {
         /** Recreate the instance in AWT thread. */
         protected @Override Task postCreationTask (Runnable run) {
             return new AWTTask (run);
+        }
+
+        /**
+         * @return the managed
+         */
+        private ArrayList<Component> getManaged() {
+            assert Thread.holdsLock(getTreeLock());
+            if (managed == null) {
+                 managed = new ArrayList<Component>();
+            }
+            return managed;
         }
 
     }

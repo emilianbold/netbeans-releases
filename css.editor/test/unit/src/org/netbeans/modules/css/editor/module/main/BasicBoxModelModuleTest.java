@@ -57,4 +57,7 @@ public class BasicBoxModelModuleTest extends CssModuleTestBase {
         assertPropertyValues("padding", "1px");
     }
     
+    public void testHeight() {
+        assertPropertyDeclaration("height: 20px");
+    }
 }

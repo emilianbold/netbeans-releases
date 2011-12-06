@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,54 +34,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.parsing;
+#define COMPANY "Oracle Corporation"
+#define COMPONENT "NetBeans IDE"
+#define VER "7.2.0.0"
+#define FVER 7,2,0,0
+#define BUILD_ID "02122011"
+#define INTERNAL_NAME "netbeans"
+#define COPYRIGHT "\xA9 2007, 2011 Oracle and/or its affiliates. All rights reserved."
+#define FNAME "netbeans.exe"
+#define NAME "NetBeans IDE 7.2"
 
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.comp.Enter;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
-import com.sun.tools.javadoc.JavadocEnter;
-import com.sun.tools.javadoc.Messager;
-
-/**
- * JavadocEnter which doesn't ignore class duplicates unlike the base JavadocEnter
- * Enter - does't ignore duplicates
- * JavadocEnter - ignors duplicates
- * ErrorHandlingJavadocEnter - does't ignore duplicates
- * @author Tomas Zezula
- */
-class ErrorHandlingJavadocEnter extends JavadocEnter {
-        
-    private Messager messager;
-
-    public static void preRegister(final Context context) {
-        context.put(enterKey, new Context.Factory<Enter>() {
-            public Enter make(Context c) {
-                return new ErrorHandlingJavadocEnter(c);
-            }
-        });
-    }
-
-    protected ErrorHandlingJavadocEnter(Context context) {
-        super(context);
-        messager = Messager.instance0(context);
-    }
-
-    public @Override void main(com.sun.tools.javac.util.List<JCCompilationUnit> trees) {
-        //Todo: Check everytime after the java update that JavaDocEnter.main or Enter.main
-        //are not changed.
-        this.complete(trees, null);
-    }
-
-    @Override
-    protected void duplicateClass(DiagnosticPosition pos, ClassSymbol c) {
-        messager.error(pos, "duplicate.class", c.fullname);
-    }
-}

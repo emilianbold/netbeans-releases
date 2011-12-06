@@ -580,7 +580,7 @@ function print_class ($classRef, $tabs = 0) {
             if ($methodRef->getName() == 'clone') {
                 continue;
             }
-			print_function ($methodRef, $tabs + 1);
+			print_method($classRef, $methodRef, $tabs + 1);
 		}
 		print "\n";
 	}
@@ -596,11 +596,15 @@ function print_class ($classRef, $tabs = 0) {
 function print_property ($propertyRef, $tabs = 0) {
 	print_doccomment ($propertyRef, $tabs);
 	print_tabs ($tabs);
-	print_modifiers ($propertyRef);
+	print_modifiers ($propertyRef, true);
 	print "\${$propertyRef->getName()};\n";
 }
 
 function print_function ($functionRef, $tabs = 0) {
+    print_method(null, $functionRef, $tabs);
+}
+
+function print_method ($classRef, $functionRef, $tabs = 0) {
 	global $functionsDoc;
 	global $processedFunctions;
 
@@ -608,10 +612,12 @@ function print_function ($functionRef, $tabs = 0) {
 	$processedFunctions[$funckey] = true;
 
 	print "\n";
+        $modifiers = null;
 	print_doccomment ($functionRef, $tabs);
 	print_tabs ($tabs);
 	if (!($functionRef instanceof ReflectionFunction)) {
 		print_modifiers ($functionRef);
+                $modifiers = Reflection::getModifierNames($functionRef->getModifiers());
 	}
 
 	print "function ";
@@ -625,7 +631,24 @@ function print_function ($functionRef, $tabs = 0) {
 	} else {
 		print_parameters_ref ($functionRef->getParameters());
 	}
-	print ") {}\n";
+	print ")";
+        $body = true;
+        if ($classRef != null && $classRef->isInterface()) {
+            $body = false;
+        } elseif (is_array($modifiers)) {
+            foreach ($modifiers as $modifier) {
+                if ($modifier == "abstract") {
+                    $body = false;
+                    break;
+                }
+            }
+        }
+        if ($body) {
+            print " {}";
+        } else {
+            print ";";
+        }
+	print "\n";
 }
 
 
@@ -807,10 +830,15 @@ function print_class_constants ($classRef, $constants, $tabs = 0) {
  * Prints modifiers of reflection object in format of PHP code
  * @param ref Reflection some reflection object
  */
-function print_modifiers ($ref) {
+function print_modifiers ($ref, $forFields = false) {
 	$modifiers = Reflection::getModifierNames ($ref->getModifiers());
 	if (count ($modifiers) > 0) {
-		print implode(' ', $modifiers);
+                $print = implode(' ', $modifiers);
+                if ($forFields) {
+                    $print = str_replace("final", "", $print);
+                    $print = str_replace("abstract", "", $print);
+                }
+		print trim($print);
 		print " ";
 	}
 }

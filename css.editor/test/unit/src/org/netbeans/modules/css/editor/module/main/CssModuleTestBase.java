@@ -245,7 +245,7 @@ public class CssModuleTestBase extends CslTestBase {
         StringBuilder content = new StringBuilder(documentText);
 
         final int pipeOffset = content.indexOf(Character.toString(caretChar));
-        assert pipeOffset >= 0;
+        assertTrue(String.format("Missing pipe char - you forgot to define the caret position in the test code: '%s'", documentText), pipeOffset >= 0);
 
         //remove the pipe
         content.deleteCharAt(pipeOffset);

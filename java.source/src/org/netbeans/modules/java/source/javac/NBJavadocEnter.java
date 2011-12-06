@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.java.api;
 
-import javax.lang.model.element.Element;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.openide.util.lookup.Lookups;
+package org.netbeans.modules.java.source.javac;
+
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
+import com.sun.tools.javadoc.JavadocEnter;
+import com.sun.tools.javadoc.Messager;
 
 /**
- * Push Down Refactoring implementation class.
- *
- * @author Jan Becicka
- * @author Pavel Flaska
+ * JavadocEnter which doesn't ignore class duplicates unlike the base JavadocEnter
+ * Enter - does't ignore duplicates
+ * JavadocEnter - ignors duplicates
+ * NBJavadocEnter - does't ignore duplicates
+ * @author Tomas Zezula
  */
-public class PushDownRefactoring extends AbstractRefactoring {
-    
-    private static final MemberInfo<ElementHandle<? extends Element>>[] EMPTY_MEMBERS = new MemberInfo[0];
-    private MemberInfo<ElementHandle<? extends Element>>[] members;
-    
-    /** Creates a new instance of PushDownRefactoring 
-     * @param sourceType 
-     */
-    public PushDownRefactoring(TreePathHandle sourceType) {
-        super(Lookups.singleton(sourceType));
-    }
-    
-    
-    /** Returns descriptors of the members to pull up.
-     * @return Member descriptors.
-     */
-    public MemberInfo<ElementHandle<? extends Element>>[] getMembers() {
-        // never return null
-        return members == null ? EMPTY_MEMBERS : members;
+public class NBJavadocEnter extends JavadocEnter {
+        
+    public static void preRegister(final Context context) {
+        context.put(enterKey, new Context.Factory<Enter>() {
+            public Enter make(Context c) {
+                return new NBJavadocEnter(c);
+            }
+        });
     }
 
-    /** Sets members (using their descriptors) to pull up.
-     * @param members Descriptors of members to be pulled up.
-     */
-    public void setMembers(MemberInfo<ElementHandle<? extends Element>>[] members) {
-        this.members = members;
+    private final Messager messager;
+    private final CancelService cancelService;
+
+    protected NBJavadocEnter(Context context) {
+        super(context);
+        messager = Messager.instance0(context);
+        cancelService = CancelService.instance(context);
+    }
+
+    public @Override void main(com.sun.tools.javac.util.List<JCCompilationUnit> trees) {
+        //Todo: Check everytime after the java update that JavaDocEnter.main or Enter.main
+        //are not changed.
+        this.complete(trees, null);
+    }
+
+    @Override
+    protected void duplicateClass(DiagnosticPosition pos, ClassSymbol c) {
+        messager.error(pos, "duplicate.class", c.fullname);
     }
     
-    public TreePathHandle getSourceType() {
-        return getRefactoringSource().lookup(TreePathHandle.class);
+    @Override
+    public void visitClassDef(JCClassDecl tree) {
+        cancelService.abortIfCanceled();
+        super.visitClassDef(tree);
     }
 }
