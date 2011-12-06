@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
 
-import java.util.Collections;
-import junit.framework.TestSuite;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import static org.junit.Assert.*;
+#define COMPANY "Oracle Corporation"
+#define COMPONENT "NetBeans IDE"
+#define VER "7.2.0.0"
+#define FVER 7,2,0,0
+#define BUILD_ID "02122011"
+#define INTERNAL_NAME "netbeans"
+#define COPYRIGHT "\xA9 2007, 2011 Oracle and/or its affiliates. All rights reserved."
+#define FNAME "netbeans.exe"
+#define NAME "NetBeans IDE 7.2"
 
-/**
- *
- * @author marekfukala
- */
-public class GrammarParserTest extends CssModuleTestBase {
-
-    public GrammarParserTest(String name) {
-        super(name);
-    }
-    
-    public void testCanParserGrammarOfAllProperties() {
-        for (Property property : CssModuleSupport.getProperties()) {
-            PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
-            assertNotNull(GrammarParser.parse(model.getGrammar()));
-        }
-    }
-    
-    public void testParseAllGroup() {
-        String grammar = " a && b";
-        
-        GroupGrammarElement e = GrammarParser.parse(grammar);
-        assertEquals(GroupGrammarElement.Type.ALL, e.getType());
-    }
-    
-}

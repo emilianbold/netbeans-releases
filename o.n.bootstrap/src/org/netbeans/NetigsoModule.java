@@ -147,8 +147,13 @@ final class NetigsoModule extends Module {
 
     final void start() throws IOException {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
-        Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
-        pcl.addCoveredPackages(pkgs);
+        try {
+            Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
+            pcl.addCoveredPackages(pkgs);
+        } catch (IOException ex) {
+            classloader = null;
+            throw ex;
+        }
     }
 
     @Override

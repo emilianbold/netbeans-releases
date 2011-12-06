@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
 
-import java.util.Collections;
-import junit.framework.TestSuite;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import static org.junit.Assert.*;
+#include <winuser.h>
+#include <winver.h>
+#include "version.h"
 
-/**
- *
- * @author marekfukala
- */
-public class GrammarParserTest extends CssModuleTestBase {
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
 
-    public GrammarParserTest(String name) {
-        super(name);
-    }
-    
-    public void testCanParserGrammarOfAllProperties() {
-        for (Property property : CssModuleSupport.getProperties()) {
-            PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
-            assertNotNull(GrammarParser.parse(model.getGrammar()));
-        }
-    }
-    
-    public void testParseAllGroup() {
-        String grammar = " a && b";
-        
-        GroupGrammarElement e = GrammarParser.parse(grammar);
-        assertEquals(GroupGrammarElement.Type.ALL, e.getType());
-    }
-    
-}
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    FVER
+ PRODUCTVERSION FVER
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ // FILEOS 0x4 is Win32, 0x40004 is Win32 NT only
+ FILEOS 0x4L
+ // FILETYPE should be 0x1 for .exe and 0x2 for .dll
+ FILETYPE 0x1
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName",      COMPANY       "\0"
+            VALUE "FileDescription",  COMPONENT     "\0"
+            VALUE "FileVersion",      VER           "\0"
+            VALUE "Full Version",     BUILD_ID      "\0"
+            VALUE "InternalName",     INTERNAL_NAME "\0"
+            VALUE "LegalCopyright",   COPYRIGHT     "\0"
+            VALUE "OriginalFilename", FNAME         "\0"
+            VALUE "ProductName",      NAME          "\0"
+            VALUE "ProductVersion",   VER           "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END

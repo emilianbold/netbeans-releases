@@ -84,8 +84,13 @@ final class OpenComponentAction implements ActionListener {
         return c;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         TopComponent win = getTopComponent();
+        if( null == win ) {
+            throw new IllegalStateException( "Cannot find TopComponent with preferredID " 
+                    + map.get("preferredID") + ", see IDE log for more details." ); //NOI18N
+        }
         win.open();
         win.requestActive();
     }
