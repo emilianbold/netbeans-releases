@@ -181,14 +181,22 @@ class Ordering {
                     mis.remove();
                 }
             }
-            if (!missingPositions.isEmpty()) {
+            IGNORE_ERGO: if (!missingPositions.isEmpty()) {
                 List<String> missingNames = new ArrayList<String>(missingPositions.size());
                 for (FileObject f : missingPositions) {
-                    missingNames.add(f.getNameExt());
+                    final String n = f.getNameExt();
+                    if (n.contains("ergonomics")) { // NOI18N
+                        break IGNORE_ERGO;
+                    }
+                    missingNames.add(n);
                 }
                 List<String> presentNames = new ArrayList<String>(childrenByPosition.size());
                 for (ChildAndPosition cap : childrenByPosition) {
-                    presentNames.add(cap.child.getNameExt());
+                    final String n = cap.child.getNameExt();
+                    if (n.contains("ergonomics")) { // NOI18N
+                        break IGNORE_ERGO;
+                    }
+                    presentNames.add(n);
                 }
                 LOG.log(
                     Level.WARNING, "Not all children in {0}/ marked with the position attribute: {1}, but some are: {2}",
