@@ -44,26 +44,14 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetPreferences;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -73,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -454,9 +443,35 @@ public abstract class CCCCompiler extends AbstractCompiler {
 //        }
 //    }
 
-    protected static <T> void addUnique(List<? super T> list, T element) {
-        if (!list.contains(element)) {
-            list.add(element);
+    protected static void addUnique(List<String> list, String element) {
+        String pattern = element;
+        if (element.indexOf('=') > 0) {
+            pattern = pattern.substring(0, element.indexOf('='));
+        }
+        for(String s : list) {
+            if (s.indexOf('=') > 0) {
+                if (pattern.equals(s.substring(0, s.indexOf('=')))) {
+                    return;
+                }
+            } else {
+                if (pattern.equals(s)) {
+                    return;
+                }
+            }
+        }
+        list.add(element);
+    }
+    
+    protected static void removeUnique(List<String> list, String element) {
+        for(int i = 0; i < list.size(); i++) {
+            String s = list.get(i);
+            if (s.startsWith(element)) {
+                if (s.length() > element.length() && s.charAt(element.length())=='=' ||
+                    s.contains(element)) {
+                    list.remove(i);
+                    break;
+                }
+            }
         }
     }
 
@@ -466,6 +481,20 @@ public abstract class CCCCompiler extends AbstractCompiler {
         public Pair(){
             systemIncludeDirectoriesList = new CompilerDefinition(0);
             systemPreprocessorSymbolsList = new CompilerDefinition(0);
+        }
+    }
+    
+    protected void completePredefinedMacros(Pair pair) {
+        for(ToolchainManager.PredefinedMacro macro : getDescriptor().getPredefinedMacros()) {
+            if (macro.getFlags() == null) {
+                if (macro.isHidden()) {
+                    // remove macro
+                    removeUnique(pair.systemPreprocessorSymbolsList, macro.getMacro());
+                } else {
+                    // add macro
+                    addUnique(pair.systemPreprocessorSymbolsList, macro.getMacro());
+                }
+            }
         }
     }
     
