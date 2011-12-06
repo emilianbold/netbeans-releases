@@ -174,10 +174,10 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
         MavenProject mp = project.getOriginalMavenProject();
         for (ArtifactRepository repo : mp.getRemoteArtifactRepositories()) {
-            register(repo, mp.getModel().getRepositories());
+            register(repo, mp.getRepositories());
         }
         for (ArtifactRepository repo : mp.getPluginArtifactRepositories()) {
-            register(repo, mp./* MNG-5163 */getModel().getPluginRepositories());
+            register(repo, mp.getPluginRepositories());
         }
 
         CopyResourcesOnSave.opened();
