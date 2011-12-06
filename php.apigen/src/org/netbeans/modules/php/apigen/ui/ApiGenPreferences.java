@@ -39,39 +39,58 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen;
+package org.netbeans.modules.php.apigen.ui;
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.util.NbBundle;
 
 /**
- * {@link PhpDocProvider} for <a href="http://apigen.org/">ApiGen</a>.
+ * ApiGen preferences for {@link PhpModule}.
  */
-public final class ApiGenProvider extends PhpDocProvider {
+public final class ApiGenPreferences {
 
-    private static final String LAST_FOLDER_SUFFIX = ".apiGen.dir"; // NOI18N
+    private static final String TARGET = "target"; // NOI18N
+    private static final String TITLE = "title"; // NOI18N
 
-    private static final ApiGenProvider INSTANCE = new ApiGenProvider();
 
-
-    @NbBundle.Messages("ApiGenProvider.name=ApiGen")
-    private ApiGenProvider() {
-        super("apiGen", Bundle.ApiGenProvider_name()); // NOI18N
+    private ApiGenPreferences() {
     }
 
-    @PhpDocProvider.Registration(position=90)
-    public static ApiGenProvider getInstance() {
-        return INSTANCE;
+    private static String getDefaultTitle(PhpModule phpModule) {
+        return phpModule.getDisplayName();
     }
 
-    public static String lastDirFor(PhpModule phpModule) {
-        return ApiGenProvider.class.getName() + LAST_FOLDER_SUFFIX + phpModule.getName();
+    public static String getTarget(PhpModule phpModule, boolean showPanel) {
+        Preferences preferences = getPreferences(phpModule);
+        String phpDocTarget = preferences.get(TARGET, null);
+        if ((phpDocTarget == null || phpDocTarget.isEmpty()) && showPanel) {
+            phpDocTarget = BrowseFolderPanel.open(phpModule);
+            if (phpDocTarget == null) {
+                // cancelled
+                return null;
+            }
+            setTarget(phpModule, phpDocTarget);
+        }
+        return phpDocTarget;
     }
 
-    @Override
-    public void generateDocumentation(PhpModule phpModule) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public static void setTarget(PhpModule phpModule, String phpDocTarget) {
+        getPreferences(phpModule).put(TARGET, phpDocTarget);
+    }
+
+    public static String getTitle(PhpModule phpModule) {
+        return getPreferences(phpModule).get(TITLE, getDefaultTitle(phpModule));
+    }
+
+    public static void setTitle(PhpModule phpModule, String title) {
+        if (title.equals(getDefaultTitle(phpModule))) {
+            return;
+        }
+        getPreferences(phpModule).put(TITLE, title);
+    }
+
+    private static Preferences getPreferences(PhpModule phpModule) {
+        return phpModule.getPreferences(ApiGenPreferences.class, false);
     }
 
 }
