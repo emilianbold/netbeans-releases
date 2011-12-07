@@ -1531,10 +1531,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             FontMetrics lnFM = FontMetricsCache.getFontMetrics(lnFont, component);
             if (lnFM == null) return lineNumberDigitWidth;
             int maxWidth = 1;
-            char[] digit = new char[1]; // will be used for '0' - '9'
             for (int i = 0; i <= 9; i++) {
-                digit[0] = (char)('0' + i);
-                maxWidth = Math.max(maxWidth, lnFM.charsWidth(digit, 0, 1));
+                maxWidth = Math.max(maxWidth, lnFM.charWidth((char)('0' + i)));
             }
             return maxWidth;
         }

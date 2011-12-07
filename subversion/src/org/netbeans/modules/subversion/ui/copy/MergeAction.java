@@ -126,7 +126,7 @@ public class MergeAction extends ContextAction {
 
         final Merge merge = new Merge(repositoryRoot, interestingFile);
         if(merge.showDialog()) {
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
                 @Override
                 public void perform() {
                     for (File root : roots) {

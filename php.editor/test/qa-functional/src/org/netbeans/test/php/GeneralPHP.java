@@ -68,6 +68,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
 import org.netbeans.jellytools.*;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.openide.util.Utilities;
@@ -291,7 +292,7 @@ public class GeneralPHP extends JellyTestCase {
         t.setTimeout("JTextComponentOperator.TypeTextTimeout", 30000);
         jcPath.setTimeouts(t);
 
-        jcPath.enterText(sProjectPath);
+        jcPath.getTextField().setText(sProjectPath);
 
         t.setTimeout("JTextComponentOperator.TypeTextTimeout", lBack);
         jcPath.setTimeouts(t);
@@ -313,13 +314,7 @@ public class GeneralPHP extends JellyTestCase {
         }
 
         opNewProjectWizard.finish();
-
-        // Wait for warnings (is it really needed?)
-        Sleep(5000);
-        if (JDialogOperator.findJDialog("Warning", false, false) != null) {
-            NbDialogOperator dWarning = new NbDialogOperator("Warning");
-            dWarning.close();
-        }
+        new ProjectsTabOperator().getProjectRootNode(sProjectName);
         waitScanFinished();
     }
 
@@ -524,7 +519,7 @@ public class GeneralPHP extends JellyTestCase {
                             !o.toString().contains("Scanning in progress...")) {
                         return result;
                     }
-                    Sleep(5000);
+                    new EventTool().waitNoEvent(300);
                 } catch (java.lang.Exception ex) {
                     return null;
                 }
@@ -534,7 +529,6 @@ public class GeneralPHP extends JellyTestCase {
                     return null;
                 }
             }
-            Sleep(1000);
         }
     }
 

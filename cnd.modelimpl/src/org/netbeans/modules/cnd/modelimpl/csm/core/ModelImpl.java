@@ -483,7 +483,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         cleanCaches();
 
         setState(CsmModelState.OFF);
-
+        ReferencesIndex.shutdown();
         RepositoryUtils.shutdown();
 
         ModelSupport.instance().setModel(null);
