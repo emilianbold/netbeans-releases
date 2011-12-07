@@ -212,7 +212,9 @@ public final class Watcher extends AnnotationProvider {
             return -1;
         }
         private boolean isWatched(FileObject fo) {
-            assert fo.isFolder() : "Should be a folder: " + fo;
+            if (!fo.isFolder()) {
+                assert fo.isValid() : "Should be a folder: " + fo + " type: " + fo.getClass();
+            }
             try {
                 clearQueue();
             } catch (IOException ex) {
