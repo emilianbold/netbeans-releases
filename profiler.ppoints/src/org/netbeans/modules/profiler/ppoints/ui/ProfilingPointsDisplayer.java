@@ -143,7 +143,7 @@ public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider
 
         JScrollPane listScroll = new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                  JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        listScroll.setPreferredSize(new Dimension(350, listScroll.getPreferredSize().height));
+        listScroll.setPreferredSize(new Dimension(390, listScroll.getPreferredSize().height));
 
         add(listScroll, BorderLayout.CENTER);
     }
