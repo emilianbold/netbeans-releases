@@ -345,7 +345,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 result = new Configuration(spt.project, spt.createFinalSettings(), spt.getAttachSettings());
             }
 
-            spt.cleanup();
+            spt.cleanup(result != null);
 
             return result;
 
@@ -388,7 +388,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 result = new Configuration(project, spt.createFinalSettings(), null);
             }
 
-            spt.cleanup();
+            spt.cleanup(result != null);
 
             return result;
 
@@ -442,7 +442,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 result = new Configuration(project, settings, null);
             }
 
-            spt.cleanup();
+            spt.cleanup(result != null);
 
             return result;
         } catch (InterruptedException e) {
@@ -567,10 +567,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         return welcomePanel;
     }
 
-    private void cleanup() {
+    private void cleanup(boolean settingsAccepted) {
         // store settings if project is selected
-        if (!projectsChooserPanel.isVisible() || (projectsChooserCombo.getSelectedItem() != SELECT_PROJECT_TO_ATTACH_STRING)) {
-            storeCurrentSettings();
+        if (settingsAccepted) {
+            if (!projectsChooserPanel.isVisible() || (projectsChooserCombo.
+                    getSelectedItem() != SELECT_PROJECT_TO_ATTACH_STRING)) {
+                storeCurrentSettings();
+            }
         }
 
         projectCleanup();
