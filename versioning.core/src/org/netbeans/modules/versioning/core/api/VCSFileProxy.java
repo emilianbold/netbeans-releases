@@ -256,7 +256,7 @@ public final class VCSFileProxy {
             }
             return null;
         } else {
-            return proxy.list();
+            return proxy.list(this);
         }
         
     }
@@ -342,7 +342,7 @@ public final class VCSFileProxy {
         if (proxy == null) {
             return isFlat;
         } else {
-            return proxy.isFlat();
+            return proxy.isFlat(this);
         }
     }
     
