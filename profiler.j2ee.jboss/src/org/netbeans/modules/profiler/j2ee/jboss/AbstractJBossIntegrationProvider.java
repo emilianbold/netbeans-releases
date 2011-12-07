@@ -66,32 +66,31 @@ import org.openide.util.NbBundle;
  * @author Tomas Hurka
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "JBossIntegrationProvider_ProfiledJbossConsoleString=Profiled JBoss Console",
+    "JBossIntegrationProvider_ManualRemoteStep3Msg=Create a copy of <code>{0}{1}bin{1}run{2}</code> and rename it to <code>run_nbprofiler{2}</code><br><code>{0}</code> stands for the JBoss installation directory on remote host.",
+    "JBossIntegrationProvider_PathToJvmDirText=&lt;path to {0} directory&gt;",
+    "JBossIntegrationProvider_ManualRemoteStep4Msg=Add the following lines at the beginning of <code>run_nbprofiler{0}</code>\\:<br><code>{1}<br>{2}</code><br>For setting <code>JAVA_OPTS</code> the {3}.",
+    "JBossIntegrationProvider_ManualRemoteStep5Msg=Start the server using <code>run_nbprofiler{0}</code>",
+    "JBossIntegrationProvider_ManualRemoteStep6Msg=The JVM will start, but will not proceed with server execution until you connect the profiler.",
+    "JBossIntegrationProvider_ManualDirectDynamicStep1Msg=Create a copy of <code>{0}{1}bin{1}run{2}</code> and rename it to <code>run_nbprofiler{2}</code><br><code>{0}</code> stands for the JBoss installation directory.",
+    "JBossIntegrationProvider_ManualDirectStep2Msg=Add the following lines at the beginning of <code>run_nbprofiler{0}</code>\\:<br><code>{1}<br>{2}</code>",
+    "JBossIntegrationProvider_ManualDirectDynamicStep3Msg=Start the server using <code>run_nbprofiler{0}</code>",
+    "JBossIntegrationProvider_ManualDirectStep4Msg=The JVM will start, but will not proceed with server execution until you connect the profiler.",
+    "JBossIntegrationProvider_ManualDynamicStep2Msg=Add the following line at the beginning of <code>run_nbprofiler{0}</code>\\:<br><code>{1}</code>",
+    "JBossIntegrationProvider_ManualDynamicStep4Msg=When the server is running click Attach to select the server process to attach to.",
+    "JBossIntegrationProvider_IntegrReviewStep1Msg=Original file <code>{0}</code> will be copied to <code>{1}</code>",
+    "JBossIntegrationProvider_IntegrReviewStep2Msg=The following line(s) will be added to the new file\\:<br><code>{0}</code>",
+    "JBossIntegrationProvider_AdditionalStepsStep1DirectMsg=Use \"<code>{0}\"</code> command to start JBoss. JBoss JVM will start, but will not proceed with server execution until the profiler is connected.",
+    "JBossIntegrationProvider_AdditionalStepsStep1DynamicMsg=Use \"<code>{0}\"</code> command to start JBoss.",
+    "JBossIntegrationProvider_AdditionalStepsStep2Msg=After the wizard finishes, choose a profiling task and click Attach. For profiling CPU, you should set a meaningful instrumentation filter and/or profile only Part of Application to decrease profiling overhead.",
+    "JBossIntegrationProvider_AdditionalStepsStep3DirectMsg=The profiler connects to the JBoss JVM and the server will start in profiling mode.",
+    "JBossIntegrationProvider_AdditionalStepsStep3DynamicPidMsg=When the server is running, click Attach to select the server process to attach to.",
+    "JBossIntegrationProvider_AdditionalStepsAutoStartMsg=If you check the \"Automatically start the server\" checkbox below, JBoss will be started automatically after this wizard finishes.",
+    "JBossIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}."
+})
 public abstract class AbstractJBossIntegrationProvider extends AbstractScriptIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // <editor-fold defaultstate="collapsed" desc="Resource strings">
-    private static final String PROFILED_JBOSS_CONSOLE_STRING = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ProfiledJbossConsoleString"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
-    private static final String PATH_TO_JVM_DIR_TEXT = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_PathToJvmDirText"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP6_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectStep2Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP3_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectDynamicStep3Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP4_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDirectStep4Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP4_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_ManualDynamicStep4Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP1_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP2_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(AbstractJBossIntegrationProvider.class, "JBossIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-                                                                                                                                // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Constants">
     private static final String JBOSS_RUN_SCRIPT = "run"; // NOI18N
@@ -143,35 +142,24 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
 
         // Step 1
         if (attachSettings.isDirect()) {
-            instructions.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DIRECT_MSG,
-                                                      new Object[] { getModifiedScriptPath(targetOS, false) }));
+            instructions.addStep(Bundle.JBossIntegrationProvider_AdditionalStepsStep1DirectMsg(getModifiedScriptPath(targetOS, false)));
         } else {
-            instructions.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG,
-                                                      new Object[] { getModifiedScriptPath(targetOS, false), "" }));
+            instructions.addStep(Bundle.JBossIntegrationProvider_AdditionalStepsStep1DynamicMsg(getModifiedScriptPath(targetOS, false)));
         }
 
         // Step 2
-        instructions.addStep(ADDITIONAL_STEPS_STEP2_MSG);
+        instructions.addStep(Bundle.JBossIntegrationProvider_AdditionalStepsStep2Msg());
 
         // Step 3
         if (attachSettings.isDirect()) {
-            instructions.addStep(ADDITIONAL_STEPS_STEP3_DIRECT_MSG);
+            instructions.addStep(Bundle.JBossIntegrationProvider_AdditionalStepsStep3DirectMsg());
         } else {
-            instructions.addStep(ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG);
-            instructions.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                         new Object[] {
-                                                             IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                             IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                              getTargetJava(),
-                                                                                                              attachSettings
-                                                                                                                                                                     .isRemote(),
-                                                                                                              attachSettings
-                                                                                                                                                                       .getPort())
-                                                         }));
+            instructions.addStep(Bundle.JBossIntegrationProvider_AdditionalStepsStep3DynamicPidMsg());
+            instructions.addWarning(Bundle.JBossIntegrationProvider_DynamicWarningMessage(IntegrationUtils.getJavaPlatformName(getTargetJava())));
         }
 
         // automatic server startup note
-        instructions.addHint(ADDITIONAL_STEPS_AUTO_START_MSG);
+        instructions.addHint(Bundle.JBossIntegrationProvider_AdditionalStepsAutoStartMsg());
 
         return instructions;
     }
@@ -181,30 +169,27 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
         String targetOS = attachSettings.getHostOS();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP1_MSG,
-                                                  new Object[] {
-                                                      new File(getScriptPath(targetOS, true)),
-                                                      getModifiedScriptPath(targetOS, true)
-                                                  }));
+        instructions.addStep(Bundle.JBossIntegrationProvider_IntegrReviewStep1Msg(
+                                new File(getScriptPath(targetOS, true)),
+                                getModifiedScriptPath(targetOS, true)));
 
         // Step 2
-        instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP2_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                       getTargetJavaHome())
-                                                      + "<br>"
-                                                      + (attachSettings.isDirect()
-                                                         ? (""
-                                                         + IntegrationUtils.getAssignEnvVariableValueString(targetOS,
-                                                                                                            "JAVA_OPTS",
-                                                                                                            IntegrationUtils
-                                                                                                                                                                                                       .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                                                                                                        getTargetJava(),
-                                                                                                                                                                                                                                        false,
-                                                                                                                                                                                                                                        attachSettings
-                                                                                                                                                                                                                                        .getPort()))
-                                                         + "<br>") : "")
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.JBossIntegrationProvider_IntegrReviewStep2Msg(
+                                IntegrationUtils.getAssignEnvVariableValueString(
+                                    targetOS, "JAVA_HOME",
+                                    getTargetJavaHome())
+                                + "<br>"
+                                + (attachSettings.isDirect()
+                                    ? (""
+                                    + IntegrationUtils.getAssignEnvVariableValueString(
+                                        targetOS,
+                                        "JAVA_OPTS",
+                                        IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
+                                            getTargetJava(),
+                                            false,
+                                            attachSettings
+                                            .getPort()))
+                                    + "<br>") : "")));
 
         return instructions;
     }
@@ -275,39 +260,35 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("JBOSS_HOME", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS),
-                                                      IntegrationUtils.getBatchExtensionString(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectDynamicStep1Msg(
+                                IntegrationUtils.getEnvVariableReference("JBOSS_HOME", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS),
+                                IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 2
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MSG,
-                                                  new Object[] {
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectStep2Msg(
                                                       IntegrationUtils.getBatchExtensionString(targetOS),
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                       MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                                            new Object[] {
-                                                                                                                                IntegrationUtils
-                                                                                                                                .getJavaPlatformName(getTargetJava())
-                                                                                                                            })),
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_OPTS",
-                                                                                                       IntegrationUtils
-                                                                                                                                                                                                                                                                                                       .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                                                                                                                                                                                                        getTargetJava(),
-                                                                                                                                                                                                                                                                                                                                        attachSettings
-                                                                                                                                                                                                                                                                                                                                        .isRemote(),
-                                                                                                                                                                                                                                                                                                                                        attachSettings
-                                                                                                                                                                                                                                                                                                                                        .getPort()))
-                                                  })); // NOI18N
+                                                      IntegrationUtils.getAssignEnvVariableValueString(
+                                                            targetOS, 
+                                                            "JAVA_HOME", // NOI18N
+                                                            Bundle.JBossIntegrationProvider_PathToJvmDirText(
+                                                                IntegrationUtils.getJavaPlatformName(getTargetJava()))),
+                                                      IntegrationUtils.getAssignEnvVariableValueString(
+                                                            targetOS, 
+                                                            "JAVA_OPTS", // NOI18N
+                                                            IntegrationUtils.getProfilerAgentCommandLineArgs(
+                                                                targetOS,
+                                                                getTargetJava(),
+                                                                attachSettings
+                                                                .isRemote(),
+                                                                attachSettings.getPort()))));
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_MSG,
-                                                  new Object[] { IntegrationUtils.getBatchExtensionString(targetOS) }));
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectDynamicStep3Msg(
+                                IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 4
-        instructions.addStep(MANUAL_DIRECT_STEP4_MSG);
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectStep4Msg());
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
@@ -325,31 +306,26 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("JBOSS_HOME", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS),
-                                                      IntegrationUtils.getBatchExtensionString(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectDynamicStep1Msg(
+                                IntegrationUtils.getEnvVariableReference("JBOSS_HOME", targetOS), // NOi18N
+                                IntegrationUtils.getDirectorySeparator(targetOS),
+                                IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 2
-        instructions.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP2_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getBatchExtensionString(targetOS),
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                       MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                                            new Object[] {
-                                                                                                                                IntegrationUtils
-                                                                                                                                .getJavaPlatformName(getTargetJava())
-                                                                                                                            }))
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDynamicStep2Msg(
+                                IntegrationUtils.getBatchExtensionString(targetOS),
+                                IntegrationUtils.getAssignEnvVariableValueString(
+                                    targetOS, 
+                                    "JAVA_HOME", // NOI18N
+                                    Bundle.JBossIntegrationProvider_PathToJvmDirText(
+                                        IntegrationUtils.getJavaPlatformName(getTargetJava())))));
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_MSG,
-                                                  new Object[] { IntegrationUtils.getBatchExtensionString(targetOS) }));
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDirectDynamicStep3Msg(
+                                IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 4
-        instructions.addStep(MANUAL_DYNAMIC_STEP4_MSG);
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualDynamicStep4Msg());
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
@@ -359,14 +335,8 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
             instructions.addHint(EXPORT_SETENV_MSG);
         }
 
-        instructions.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                     new Object[] {
-                                                         IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                         IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                          getTargetJava(),
-                                                                                                          attachSettings.isRemote(),
-                                                                                                          attachSettings.getPort())
-                                                     }));
+        instructions.addWarning(Bundle.JBossIntegrationProvider_DynamicWarningMessage(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return instructions;
     }
@@ -382,40 +352,34 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
         instructions.addStep(getManualRemoteStep2(targetOS));
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP3_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("REMOTE_JBOSS_HOME", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS),
-                                                      IntegrationUtils.getBatchExtensionString(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualRemoteStep3Msg(
+                                IntegrationUtils.getEnvVariableReference("REMOTE_JBOSS_HOME", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS),
+                                IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 4
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getBatchExtensionString(targetOS),
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                       MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                                            new Object[] {
-                                                                                                                                IntegrationUtils
-                                                                                                                                .getJavaPlatformName(getTargetJava())
-                                                                                                                            })),
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_OPTS",
-                                                                                                       IntegrationUtils
-                                                                                                                                                                                                                                                                                                                                                                                                                  .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   getTargetJava(),
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   attachSettings
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   .isRemote(),
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   attachSettings
-                                                                                                                                                                                                                                                                                                                                                                                                                                                   .getPort())),
-                                                      IntegrationUtils.getRemoteAbsolutePathHint()
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualRemoteStep4Msg(
+                                IntegrationUtils.getBatchExtensionString(targetOS),
+                                IntegrationUtils.getAssignEnvVariableValueString(
+                                    targetOS, 
+                                    "JAVA_HOME", // NOI18N
+                                    Bundle.JBossIntegrationProvider_PathToJvmDirText(
+                                        IntegrationUtils.getJavaPlatformName(getTargetJava()))),
+                                IntegrationUtils.getAssignEnvVariableValueString(
+                                    targetOS, 
+                                    "JAVA_OPTS", // NOI18N
+                                    IntegrationUtils.getProfilerAgentCommandLineArgs(
+                                        targetOS,
+                                        getTargetJava(),
+                                        attachSettings.isRemote(),
+                                        attachSettings.getPort())),
+                                        IntegrationUtils.getRemoteAbsolutePathHint()));
 
         // Step 5
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP5_MSG,
-                                                  new Object[] { IntegrationUtils.getBatchExtensionString(targetOS) }));
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualRemoteStep5Msg(IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 6
-        instructions.addStep(MANUAL_REMOTE_STEP6_MSG);
+        instructions.addStep(Bundle.JBossIntegrationProvider_ManualRemoteStep6Msg());
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
@@ -437,7 +401,7 @@ public abstract class AbstractJBossIntegrationProvider extends AbstractScriptInt
     }
 
     protected String getWinConsoleString() {
-        return PROFILED_JBOSS_CONSOLE_STRING;
+        return Bundle.JBossIntegrationProvider_ProfiledJbossConsoleString();
     }
 
     protected void generateCommands(String targetOS, Collection commandsArray) {

@@ -69,8 +69,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -81,7 +79,6 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
@@ -97,6 +94,14 @@ import org.openide.DialogDisplayer;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "J2EEProfilerSPI_FailedDeterminePlatformMsg=Failed to determine version of Java platform\\: {0}",
+    "J2EEProfilerSPI_DirectAttachMsg=\nThe server will be started for Direct Attach with these settings\\:   \n\n    Java Platform: {0}\n    Agent port: {1}\n\nClick \"OK\" to start the server.",
+    "J2EEProfilerSPI_FailedLoadSettingsMsg=Failed to load attach settings for main project\\: {0}",
+    "J2EEProfilerSPI_StoppingServerMsg=Stopping profiled server",
+    "J2EEProfilerSPI_StoppedServerMsg=Profiled server stopped",
+    "J2EEProfilerSPI_StoppingServerFailedMsg=Stopping profiled server failed"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler.class)
 public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler, ProgressObject,
                                         ProfilingStateListener {
@@ -152,22 +157,6 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             return state;
         }
     }
-
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String FAILED_DETERMINE_PLATFORM_MSG = NbBundle.getMessage(J2EEProfilerSPI.class,
-                                                                                    "J2EEProfilerSPI_FailedDeterminePlatformMsg"); // NOI18N
-    private static final String FAILED_LOAD_SETTINGS_MSG = NbBundle.getMessage(J2EEProfilerSPI.class,
-                                                                               "J2EEProfilerSPI_FailedLoadSettingsMsg"); // NOI18N
-    private static final String DIRECT_ATTACH_MSG = NbBundle.getMessage(J2EEProfilerSPI.class, "J2EEProfilerSPI_DirectAttachMsg"); // NOI18N
-    private static final String STOPPING_SERVER_MSG = NbBundle.getMessage(J2EEProfilerSPI.class,
-                                                                          "J2EEProfilerSPI_StoppingServerMsg"); // NOI18N
-    private static final String STOPPED_SERVER_MSG = NbBundle.getMessage(J2EEProfilerSPI.class, "J2EEProfilerSPI_StoppedServerMsg"); // NOI18N
-    private static final String STOPPING_SERVER_FAILED_MSG = NbBundle.getMessage(J2EEProfilerSPI.class,
-                                                                                 "J2EEProfilerSPI_StoppingServerFailedMsg"); // NOI18N
-                                                                                                                             // -----
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -282,8 +271,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         String javaVersion = agentJavaPlatform.getPlatformJDKVersion();
 
         if (javaVersion == null) {
-            ProfilerDialogs.displayError(MessageFormat.format(FAILED_DETERMINE_PLATFORM_MSG,
-                                                       new Object[] { agentJavaPlatform.getDisplayName() }));
+            ProfilerDialogs.displayError(Bundle.J2EEProfilerSPI_FailedDeterminePlatformMsg(agentJavaPlatform.getDisplayName()));
             lastServerInstanceProperties = null;
 
             return null;
@@ -314,11 +302,10 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         
         ProfilerServerSettings profilerServerSettings = new ProfilerServerSettings(convert(agentJavaPlatform), jvmArgs, env);
 
-        if (verbose && DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
-                                                                                              new Object[] {
+        if (verbose && DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(Bundle.J2EEProfilerSPI_DirectAttachMsg(
                                                                                                   agentJavaPlatform.getDisplayName(),
-                                                                                                  "" + agentPort
-                                                                                              }), // NOI18N
+                                                                                                  "" + agentPort // NOI18N
+                                                                                              ), 
                                                                          NotifyDescriptor.OK_CANCEL_OPTION,
                                                                          NotifyDescriptor.INFORMATION_MESSAGE)) != NotifyDescriptor.OK_OPTION) {
             lastServerInstanceProperties = null;
@@ -334,7 +321,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             try {
                 attachSettings = ProjectStorage.loadAttachSettings(mainProject);
             } catch (IOException e) {
-                ProfilerDialogs.displayWarning(MessageFormat.format(FAILED_LOAD_SETTINGS_MSG, new Object[] { e.getMessage() }));
+                ProfilerDialogs.displayWarning(Bundle.J2EEProfilerSPI_FailedLoadSettingsMsg(e.getMessage()));
                 ProfilerLogger.log(e);
             }
 
@@ -410,15 +397,15 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
     }
 
     public void fireShutdownCompletedEvent() {
-        fireHandleProgressEvent(new StopAgentStatus(STOPPED_SERVER_MSG, StateType.COMPLETED));
+        fireHandleProgressEvent(new StopAgentStatus(Bundle.J2EEProfilerSPI_StoppedServerMsg(), StateType.COMPLETED));
     }
 
     public void fireShutdownFailedEvent() {
-        fireHandleProgressEvent(new StopAgentStatus(STOPPING_SERVER_FAILED_MSG, StateType.FAILED));
+        fireHandleProgressEvent(new StopAgentStatus(Bundle.J2EEProfilerSPI_StoppingServerFailedMsg(), StateType.FAILED));
     }
 
     public void fireShutdownStartedEvent() {
-        fireHandleProgressEvent(new StopAgentStatus(STOPPING_SERVER_MSG, StateType.RUNNING));
+        fireHandleProgressEvent(new StopAgentStatus(Bundle.J2EEProfilerSPI_StoppingServerMsg(), StateType.RUNNING));
     }
 
     public void instrumentationChanged(int oldInstrType, int currentInstrType) {

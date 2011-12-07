@@ -58,35 +58,31 @@ import org.openide.util.NbBundle;
  * @author Tomas Hurka
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "JavaAppletIntegrationProvider_Title=Java Applet",
+    "JavaAppletIntegrationProvider_AppletWorkDirWindowsMessage=Applet working directory depends on your web browser type. For Internet Explorer use <%USERPROFILE%>\\Desktop, for Mozilla and Firefox use the browser installation directory, for Opera use the path where the html page launching the applet is located.",
+    "JavaAppletIntegrationProvider_AppletWorkDirUnixesMessage=Applet working directory is typically the location from where the web browser running the applet was started.",
+    "JavaAppletIntegrationProvider_OperaRemoteAttachWarningMessage=Because the Opera web browser uses bundled or standard JRE for running applets rather than the Java Plug-in and no arguments can be passed to it, it cannot be used for profiling applets remotely.",
+    "JavaAppletIntegrationProvider_ManualRemoteStep3Message=Close all windows and tabs of the remote web browser.",
+    "JavaAppletIntegrationProvider_ManualRemoteStep4WindowsMessage=Open the Java Control Panel from the Windows Control Panel. Open the Java tab and click View in Java Applet Runtime Settings area. The Java Runtime Settings dialog opens. Double-click the Java Runtime Parameters cell and insert following string\\:<br><code>{0}</code><br>If <code>&lt;remote&gt;</code> contains spaces the entire string must be double-quoted. Close the dialog using the OK button and then click OK or Apply in the Java Control Panel.",
+    "JavaAppletIntegrationProvider_ManualRemoteStep4UnixesMessage=Open the Java Control Panel of the JRE that will run profiled applet using <code>&lt;$JAVA_HOME&gt;/jre/bin/ControlPanel</code> command. Open the Java tab and click View in the Java Applet Runtime Settings area. The Java Runtime Settings dialog opens. Double-click the Java Runtime Parameters cell and insert the following string\\:<br><code>{0}</code><br>Close the dialog using the OK button and then click OK or Apply in the Java Control Panel.",
+    "JavaAppletIntegrationProvider_ManualRemoteStep5Message=Start the applet in the remote web browser. The browser window opens but the applet will not start until you connect the profiler.",
+    "JavaAppletIntegrationProvider_ManualRemoteStopAppletMessage=The applet JVM will keep running until you stop it using the Detach Profiler action or until all windows and tabs of the remote web browser are closed.",
+    "JavaAppletIntegrationProvider_ManualRemoteRestoreSettingsMessage=You will need to restore the original Java Runtime Parameters cell value to be able to run applets without profiling on the remote system.",
+    "JavaAppletIntegrationProvider_OperaDirectAttachWarningMessage=Because the Opera web browser uses bundled or standard JRE for running applets rather than the Java Plug-in and no arguments can be passed to it, it cannot be used for profiling applets using direct attachment.",
+    "JavaAppletIntegrationProvider_ManualLocalStep1Message=Close all windows and tabs of your web browser.",
+    "JavaAppletIntegrationProvider_ManualDirectStep2WindowsMessage=Open the Java Control Panel from the Windows Control Panel. Open the Java tab and click View in the Java Applet Runtime Settings area. The Java Runtime Settings dialog opens. Double-click the Java Runtime Parameters cell and insert following string\\:<br><code>{0}</code><br>Close the dialog using the OK button and then click OK or Apply in the Java Control Panel.",
+    "JavaAppletIntegrationProvider_ManualDirectStep2UnixesMessage=Open the Java Control Panel of the JRE that will run the profiled applet using <code>&lt;$JAVA_HOME&gt;/jre/bin/ControlPanel</code> command. Open the Java tab and click View in the Java Applet Runtime Settings area. The Java Runtime Settings dialog opens. Double-click the Java Runtime Parameters cell and insert following string\\:<br><code>{0}</code><br>Close the dialog using the OK button and then click OK or Apply in the Java Control Panel.",
+    "JavaAppletIntegrationProvider_ManualDirectStep2MacMessage=Open the Java Preferences.app located in <code>/Applications/Utilities/Java</code> directory. Open the General tab and click in the Java Applet Runtime Parameters area and insert following string\\:<br><code>{0}</code><br>Click the Save button and quit the Java Preferences application.",
+    "JavaAppletIntegrationProvider_ManualDirectStep3Message=Start the applet in the web browser. The browser window opens but the applet will not start until you connect the profiler.",
+    "JavaAppletIntegrationProvider_ManualDirectStopAppletMessage=The applet JVM will keep running until you stop it using the Detach Profiler action or until all windows and tabs of the web browser are closed.",
+    "JavaAppletIntegrationProvider_ManualDirectRestoreSettingsMessage=You will need to restore the original Java Runtime Parameters cell value to be able to run applets without profiling.",
+    "JavaAppletIntegrationProvider_ManualDynamicStep2WindowsMessage=Open the Java Control Panel from the Windows Control Panel and make sure that {0} will be used to run the profiled applet.<br><br>Note\\: The Opera web browser does not use Java Plug-in to run applets. Please see Opera online documentation for instructions about how to change the JRE used for running applets.",
+    "JavaAppletIntegrationProvider_ManualDynamicStep2UnixesMessage=Make sure that your browser has {0} set to run the profiled applet.",
+    "JavaAppletIntegrationProvider_ManualDynamicStep3Message=Start the applet in the web browser. When the applet is running, click Attach to select the applet process to attach to."
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String APPLET_WORKDIR_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_AppletWorkDirWindowsMessage"); // NOI18N
-    private static final String APPLET_WORKDIR_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_AppletWorkDirUnixesMessage"); // NOI18N
-    private static final String OPERA_REMOTE_ATTACH_WARNING_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_OperaRemoteAttachWarningMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep4WindowsMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep4UnixesMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStep5Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STOP_APPLET_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteStopAppletMessage"); // NOI18N
-    private static final String MANUAL_REMOTE_RESTORE_SETTINGS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualRemoteRestoreSettingsMessage"); // NOI18N
-    private static final String OPERA_DIRECT_ATTACH_WARNING_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_OperaDirectAttachWarningMessage"); // NOI18N
-    private static final String MANUAL_LOCAL_STEP1_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualLocalStep1Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep2WindowsMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep2UnixesMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MAC_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep2MacMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP3_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStep3Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STOP_APPLET_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectStopAppletMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_RESTORE_SETTINGS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDirectRestoreSettingsMessage"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_WINDOWS_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDynamicStep2WindowsMessage"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_UNIXES_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDynamicStep2UnixesMessage"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP3_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_ManualDynamicStep3Message"); // NOI18N
-    private static final String APPLET_TITLE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaAppletIntegrationProvider_Title");
-    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(JavaAppletIntegrationProvider.class, "JavaApplicationIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /**
@@ -123,7 +119,7 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
     }
 
     public String getTitle() {
-        return APPLET_TITLE;
+        return Bundle.JavaAppletIntegrationProvider_Title();
     }
 
     public void categorize(IntegrationCategorizer categorizer) {
@@ -151,51 +147,45 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
 
         // Windows & Opera & remote attach warning
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
-            hints.addWarning(OPERA_DIRECT_ATTACH_WARNING_MESSAGE);
+            hints.addWarning(Bundle.JavaAppletIntegrationProvider_OperaDirectAttachWarningMessage());
         }
 
         // Step 1
-        hints.addStep(MANUAL_LOCAL_STEP1_MESSAGE);
+        hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualLocalStep1Message());
 
         // Step 2
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
             String args = IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
                     targetOS, getTargetJava(), attachSettings.isRemote(), attachSettings.getPort());
             if (args.indexOf(' ') != -1) args = "\"" + args + "\""; // NOI18N  Bugfix #173041
-            hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_WINDOWS_MESSAGE, new Object[] { args }));
+            hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDirectStep2WindowsMessage(args));
         } else if (IntegrationUtils.PLATFORM_MAC_OS.equals(targetOS)) {
-            hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MAC_MESSAGE,
-                                               new Object[] {
-                                                   IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS,
-                                                                                                                 getTargetJava(),
-                                                                                                                 attachSettings
-                                                                                                                                                                               .isRemote(),
-                                                                                                                 attachSettings
-                                                                                                                                                                                 .getPort())
-                                               }));
+            hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDirectStep2MacMessage(
+                            IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
+                                targetOS,
+                                getTargetJava(),
+                                attachSettings.isRemote(),
+                                attachSettings.getPort())));
         } else {
-            hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_UNIXES_MESSAGE,
-                                               new Object[] {
-                                                   IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS,
-                                                                                                                 getTargetJava(),
-                                                                                                                 attachSettings
-                                                                                                                                                                               .isRemote(),
-                                                                                                                 attachSettings
-                                                                                                                                                                                 .getPort())
-                                               }));
+            hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDirectStep2UnixesMessage(
+                            IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
+                                targetOS,
+                                getTargetJava(),
+                                attachSettings.isRemote(),
+                                attachSettings.getPort())));
         }
 
         // Step 3
-        hints.addStep(MANUAL_DIRECT_STEP3_MESSAGE);
+        hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDirectStep3Message());
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
 
         // Note about stopping Applet JVM
-        hints.addHint(MANUAL_DIRECT_STOP_APPLET_MESSAGE);
+        hints.addHint(Bundle.JavaAppletIntegrationProvider_ManualDirectStopAppletMessage());
 
         // Note about stopping Applet JVM
-        hints.addHint(MANUAL_DIRECT_RESTORE_SETTINGS_MESSAGE);
+        hints.addHint(Bundle.JavaAppletIntegrationProvider_ManualDirectRestoreSettingsMessage());
 
         return hints;
     }
@@ -205,31 +195,26 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        hints.addStep(MANUAL_LOCAL_STEP1_MESSAGE);
+        hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualLocalStep1Message());
 
         // Step 2
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
-            hints.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP2_WINDOWS_MESSAGE,
-                                               new Object[] { IntegrationUtils.getJavaPlatformName(getTargetJava()) }));
+            hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDynamicStep2WindowsMessage(
+                            IntegrationUtils.getJavaPlatformName(getTargetJava())));
         } else {
-            hints.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP2_UNIXES_MESSAGE,
-                                               new Object[] { IntegrationUtils.getJavaPlatformName(getTargetJava()) }));
+            hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDynamicStep2UnixesMessage(
+                            IntegrationUtils.getJavaPlatformName(getTargetJava())));
         }
 
         // Step 3
-        hints.addStep(MANUAL_DYNAMIC_STEP3_MESSAGE);
+        hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualDynamicStep3Message());
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
 
         // Put here a warning that the IDE must be run under JDK6/7
-        hints.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                              new Object[] {
-                                                  IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                  IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                   attachSettings.isRemote(),
-                                                                                                   attachSettings.getPort())
-                                              }));
+        hints.addWarning(Bundle.JavaApplicationIntegrationProvider_DynamicWarningMessage(
+                            IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return hints;
     }
@@ -241,7 +226,7 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
 
         // Windows & Opera & remote attach warning
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
-            hints.addWarning(OPERA_REMOTE_ATTACH_WARNING_MESSAGE);
+            hints.addWarning(Bundle.JavaAppletIntegrationProvider_OperaRemoteAttachWarningMessage());
         }
 
         // Step 1
@@ -251,42 +236,36 @@ public class JavaAppletIntegrationProvider extends AbstractIntegrationProvider {
         hints.addStep(getManualRemoteStep2(targetOS));
 
         // Step 3
-        hints.addStep(MANUAL_REMOTE_STEP3_MESSAGE);
+        hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualRemoteStep3Message());
 
         // Step 4
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
-            hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_WINDOWS_MESSAGE,
-                                               new Object[] {
-                                                   IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS,
-                                                                                                                 getTargetJava(),
-                                                                                                                 attachSettings
-                                                                                                                                                                                                                                                                .isRemote(),
-                                                                                                                 attachSettings
-                                                                                                                                                                                                                                                                  .getPort())
-                                               }));
+            hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualRemoteStep4WindowsMessage(
+                            IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
+                                targetOS,
+                                getTargetJava(),
+                                attachSettings.isRemote(),
+                                attachSettings.getPort())));
         } else {
-            hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_UNIXES_MESSAGE,
-                                               new Object[] {
-                                                   IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS,
-                                                                                                                 getTargetJava(),
-                                                                                                                 attachSettings
-                                                                                                                                                                                                                                                                          .isRemote(),
-                                                                                                                 attachSettings
-                                                                                                                                                                                                                                                                            .getPort())
-                                               }));
+            hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualRemoteStep4UnixesMessage(
+                            IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(
+                                targetOS,
+                                getTargetJava(),
+                                attachSettings.isRemote(),
+                                attachSettings.getPort())));
         }
 
         // Step 5
-        hints.addStep(MANUAL_REMOTE_STEP5_MESSAGE);
+        hints.addStep(Bundle.JavaAppletIntegrationProvider_ManualRemoteStep5Message());
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
 
         // Note about stopping Applet JVM
-        hints.addHint(MANUAL_REMOTE_STOP_APPLET_MESSAGE);
+        hints.addHint(Bundle.JavaAppletIntegrationProvider_ManualRemoteStopAppletMessage());
 
         // Note about stopping Applet JVM
-        hints.addHint(MANUAL_REMOTE_RESTORE_SETTINGS_MESSAGE);
+        hints.addHint(Bundle.JavaAppletIntegrationProvider_ManualRemoteRestoreSettingsMessage());
 
         return hints;
     }

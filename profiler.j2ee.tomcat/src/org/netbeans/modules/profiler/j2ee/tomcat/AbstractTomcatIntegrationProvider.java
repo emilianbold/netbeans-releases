@@ -65,33 +65,42 @@ import org.openide.util.NbBundle;
  * @author Tomas Hurka
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "AttachWizard_LocateRequiredFilesString=Locate Required Files",
+    "TomcatIntegrationProvider_RemoteAutomaticIntegrUnsupportedMsg=Automatic integration not supported for remote server",
+    "TomcatIntegrationProvider_StartTargetUnsupportedMsg=TomcatIntegrationProvider\\: start target not supported for these settings\\:\n{0}",
+    "TomcatIntegrationProvider_ProfiledTomcatConsoleString=Profiled Tomcat Console",
+    "TomcatIntegrationProvider_ErrorStartingTomcatMsg=TomcatIntegrationProvider\\: Error starting integrated Tomcat\\:\\n{0}",
+    "TomcatIntegrationProvider_PathNotExistsMsg=The selected path doesn not exist",
+    "TomcatIntegrationProvider_InvalidCatalinaHomeMsg=The installation path does not exist",
+    "TomcatIntegrationProvider_InvalidCatalinaBaseMsg=Invalid Catalina Base directory",
+    "TomcatIntegrationProvider_Catalina_Base_Hint=&lt;Path to your CATALINA_BASE&gt;",
+    "TomcatIntegrationProvider_PathToJvmDirText=&lt;path to {0} directory&gt;",
+    "TomcatIntegrationProvider_ManualWinExeHint=If you are using Tomcat on Windows OS you might not be able to find <code>{0}</code> file. In this case create a new file <code>{1}</code>, copy the following lines, and use the newly created file to start the server:<br><code>{2}</code>",
+    "TomcatIntegrationProvider_ManualRemoteStep3Msg=Create a copy of <code>{0}{1}bin{1}{2}{3}</code> and rename it to <code>{2}_nbprofiler{3}</code><br><code>{0}</code> stands for the Tomcat installation directory on remote host.",
+    "TomcatIntegrationProvider_ManualRemoteStep4Msg=Add the following lines at the beginning of <code>{0}_nbprofiler{1}</code>, just after the help text\\:<br><code>{2}</code><br>For setting <code>CATALINA_OPTS</code> the {3}.",
+    "TomcatIntegrationProvider_ManualRemoteStep5Msg=Start the server using <code>{0}_nbprofiler{1} run</code><br>If you use <code>startup{1}</code> to start Tomcat, modify it to launch <code>{0}_nbprofiler{1}</code>",
+    "TomcatIntegrationProvider_ManualRemoteStep6Msg=The JVM will start, but will not proceed with server execution until you connect the profiler.",
+    "TomcatIntegrationProvider_ManualDirectDynamicStep1Msg=Create a copy of <code>{0}{1}bin{1}{2}{3}</code> and rename it to <code>{2}_nbprofiler{3}</code><br><code>{0}</code> stands for the Tomcat installation directory.",
+    "TomcatIntegrationProvider_ManualDirectStep2Msg=Add the following lines at the beginning of <code>{0}_nbprofiler{1}</code>, just after the help text\\:<br><code>{2}</code>",
+    "TomcatIntegrationProvider_ManualDirectDynamicStep3Msg=Start the server using <code>{0}_nbprofiler{1} run</code><br>If you use <code>startup{1}</code> to start Tomcat, modify it to launch <code>{0}_nbprofiler{1}</code>",
+    "TomcatIntegrationProvider_ManualDirectStep4Msg=The JVM will start, but will not proceed with server execution until you connect the profiler.",
+    "TomcatIntegrationProvider_ManualDynamicStep2Msg=Add the following line at the beginning of <code>{0}_nbprofiler{1}</code>, just after the help text\\:<br><code>{2}</code>",
+    "TomcatIntegrationProvider_ManualDynamicStep4Msg=When the server is running click Attach to select the server process to attach to.",
+    "TomcatIntegrationProvider_IntegrReviewStep1Msg=Original file <code>{0}</code> will be copied to <code>{1}</code>",
+    "TomcatIntegrationProvider_IntegrReviewStep2Msg=The following lines will be added to the new file\\:<br><code>{0}</code>",
+    "TomcatIntegrationProvider_IntegrReviewStep1WinExeMsg=A new file <code>{0}</code> will be created",
+    "TomcatIntegrationProvider_AdditionalStepsStep1DirectMsg=Use \"<code>{0} run\"</code> command to start Tomcat. Tomcat JVM will start, but will not proceed with server execution until the profiler is connected.",
+    "TomcatIntegrationProvider_AdditionalStepsStep1DynamicMsg=Use \"<code>{0} run\"</code> command to start Tomcat.",
+    "TomcatIntegrationProvider_AdditionalStepsStep2Msg=After this wizard finishes, choose a profiling task and click Attach. For profiling CPU, you should set a meaningful instrumentation filter and/or profile only Part of Application to decrease profiling overhead.",
+    "TomcatIntegrationProvider_AdditionalStepsStep3DirectMsg=The profiler connects to Tomcat JVM and the server will start in profiling mode.",
+    "TomcatIntegrationProvider_AdditionalStepsStep3DynamicPidMsg=When want to connect the profiler to Tomcat, select the correct server process in the \"Select Process\" dialog and click OK.",
+    "TomcatIntegrationProvider_AdditionalStepsAutoStartMsg=If you check the \"Automatically start the server\" checkbox, Tomcat will be started automatically after this wizard finishes.",
+    "TomcatIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}.",
+})
 public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    private static final String PROFILED_TOMCAT_CONSOLE_STRING = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ProfiledTomcatConsoleString"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP6_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
-    private static final String PATH_TO_JVM_DIR_TEXT = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_PathToJvmDirText"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectStep2Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP3_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectDynamicStep3Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP4_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectStep4Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP4_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDynamicStep4Msg"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP1_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
-    protected static final String INTEGR_REVIEW_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
-    private static final String VALIDATION_DIRNOEXIST_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_PathNotExistsMsg"); // NOI18N
-    private static final String VALIDATION_HOME_INVALID_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_InvalidCatalinaHomeMsg"); // NOI18N
-    private static final String VALIDATION_BASE_INVALID_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_InvalidCatalinaBaseMsg"); // NOI18N
     private static final String INSERTION_POINT_NOWIN_0_STRING = "#!/bin/sh"; // NOI18N
     private static final String INSERTION_POINT_WIN_1_STRING = "rem Guess CATALINA_HOME"; // NOI18N
     private static final String INSERTION_POINT_NOWIN_1_STRING = "# OS specific support."; // NOI18N
@@ -109,8 +118,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
      */
     public AbstractTomcatIntegrationProvider() {
         super();
-        this.attachedWizard = new SimpleWizardStep(NbBundle.getMessage(AbstractTomcatIntegrationProvider.class,
-                "AttachWizard_LocateRequiredFilesString"),
+        this.attachedWizard = new SimpleWizardStep(Bundle.AttachWizard_LocateRequiredFilesString(),
                 new TomcatIntegrationPanel()); // NOI18N
         this.persistor = new IDESettingsPersistor() {
 
@@ -158,32 +166,25 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
 
         // Step 1
         if (attachSettings.isDirect()) {
-            hints.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DIRECT_MSG,
-                    new Object[]{getModifiedScriptPath(targetOS, true)}));
+            hints.addStep(Bundle.TomcatIntegrationProvider_AdditionalStepsStep1DirectMsg(getModifiedScriptPath(targetOS, true)));
         } else {
-            hints.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG,
-                    new Object[]{getModifiedScriptPath(targetOS, true), ""})); // NOI18N
+            hints.addStep(Bundle.TomcatIntegrationProvider_AdditionalStepsStep1DynamicMsg(getModifiedScriptPath(targetOS, true))); // NOI18N
         }
 
         // Step 2
-        hints.addStep(ADDITIONAL_STEPS_STEP2_MSG);
+        hints.addStep(Bundle.TomcatIntegrationProvider_AdditionalStepsStep2Msg());
 
         // Step 3
         if (attachSettings.isDirect()) {
-            hints.addStep(ADDITIONAL_STEPS_STEP3_DIRECT_MSG);
+            hints.addStep(Bundle.TomcatIntegrationProvider_AdditionalStepsStep3DirectMsg());
         } else {
-            hints.addStep(ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG);
-            hints.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                    new Object[]{
-                        IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                        IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                        attachSettings.isRemote(),
-                        attachSettings.getPort())
-                    }));
+            hints.addStep(Bundle.TomcatIntegrationProvider_AdditionalStepsStep3DynamicPidMsg());
+            hints.addWarning(Bundle.TomcatIntegrationProvider_DynamicWarningMessage(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava())));
         }
 
         // automatic server startup note
-        hints.addHint(ADDITIONAL_STEPS_AUTO_START_MSG);
+        hints.addHint(Bundle.TomcatIntegrationProvider_AdditionalStepsAutoStartMsg());
 
         return hints;
     }
@@ -203,32 +204,29 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         String targetOS = attachSettings.getHostOS();
 
         // Step 1
-        hints.addStep(MessageFormat.format(INTEGR_REVIEW_STEP1_MSG,
-                new Object[]{
-                    getScriptPath(targetOS, true), getModifiedScriptPath(targetOS, true), targetOS
-                }));
+        hints.addStep(Bundle.TomcatIntegrationProvider_IntegrReviewStep1Msg(
+                        getScriptPath(targetOS, true), 
+                        getModifiedScriptPath(targetOS, true)));
 
         // Step 2
-        hints.addStep(MessageFormat.format(INTEGR_REVIEW_STEP2_MSG,
-                new Object[]{
-                    IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                    this.getTargetJavaHome()) // NOI18N
-                    + "<br>"
-                    + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_HOME",
-                    this.getInstallationPath()) // NOI18N
-                    + "<br>"
-                    + (((this.catalinaBase != null) && (this.catalinaBase.length() > 0))
-                    ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_BASE",
-                    this.catalinaBase) // NOI18N
-                    + "<br>") : "")
-                    + (attachSettings.isDirect()
-                    ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
-                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                    getTargetJava(),
-                    false,
-                    attachSettings.getPort())) // NOI18N
-                    + "<br>") : "")
-                })); // NOI18N
+        hints.addStep(Bundle.TomcatIntegrationProvider_IntegrReviewStep2Msg(
+                    IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME", // NOI18N
+                        this.getTargetJavaHome()) // NOI18N
+                        + "<br>" // NOI18N
+                        + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_HOME", // NOI18N
+                        this.getInstallationPath()) // NOI18N
+                        + "<br>" // NOI18N
+                        + (((this.catalinaBase != null) && (this.catalinaBase.length() > 0))
+                        ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_BASE", // NOI18N
+                        this.catalinaBase) // NOI18N
+                        + "<br>") : "") // NOI18N
+                        + (attachSettings.isDirect()
+                        ? (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS", // NOI18N
+                        IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
+                        getTargetJava(),
+                        false,
+                        attachSettings.getPort()))
+                        + "<br>") : ""))); // NOI18N
 
         return hints;
     }
@@ -258,9 +256,9 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         }
 
         if (!new File(path).exists()) {
-            return new ValidationResult(false, VALIDATION_DIRNOEXIST_MSG);
+            return new ValidationResult(false, Bundle.TomcatIntegrationProvider_PathNotExistsMsg());
         } else if (!validateCatalinaBasePath(path)) {
-            return new ValidationResult(false, VALIDATION_BASE_INVALID_MSG);
+            return new ValidationResult(false, Bundle.TomcatIntegrationProvider_InvalidCatalinaBaseMsg());
         }
 
         return new ValidationResult(true);
@@ -273,12 +271,12 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         String ext = IntegrationUtils.getBatchExtensionString(targetOS);
 
         if (!new File(path).exists()) {
-            return new ValidationResult(false, VALIDATION_DIRNOEXIST_MSG);
+            return new ValidationResult(false, Bundle.TomcatIntegrationProvider_PathNotExistsMsg());
         }
 
         if (!new File(path + separator + "bin" + separator + getCatalinaScriptName() + ext).exists()) { // NOI18N
 
-            return new ValidationResult(false, VALIDATION_HOME_INVALID_MSG);
+            return new ValidationResult(false, Bundle.TomcatIntegrationProvider_InvalidCatalinaHomeMsg());
         }
 
         return new ValidationResult(true);
@@ -301,38 +299,36 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
             AttachSettings attachSettings) {
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
         // Step 1
-        hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                new Object[]{
-                    IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS),
-                    IntegrationUtils.getDirectorySeparator(targetOS), "catalina",
-                    IntegrationUtils.getBatchExtensionString(targetOS)
-                })); // NOI18N
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDirectDynamicStep1Msg(
+                        IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS), // NOI18N
+                        IntegrationUtils.getDirectorySeparator(targetOS), 
+                        "catalina", // NOI18N
+                        IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 2
-        hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MSG,
-                new Object[]{
-                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
-                    (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                    MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                    new Object[]{
-                        IntegrationUtils.getJavaPlatformName(getTargetJava())
-                    })))
-                    + "<br>"
-                    + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
-                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                    getTargetJava(),
-                    attachSettings.isRemote(),
-                    attachSettings.getPort()))
-                })); // NOI18N
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDirectStep2Msg(
+                        getCatalinaScriptName(), 
+                        IntegrationUtils.getBatchExtensionString(targetOS),
+                        (IntegrationUtils.getAssignEnvVariableValueString(
+                            targetOS, 
+                            "JAVA_HOME",  // NOI18N
+                            Bundle.TomcatIntegrationProvider_PathToJvmDirText(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava()))))
+                            + "<br>"  // NOI18N
+                            + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",  // NOI18N
+                        IntegrationUtils.getProfilerAgentCommandLineArgs(
+                            targetOS,
+                            getTargetJava(),
+                            attachSettings.isRemote(),
+                            attachSettings.getPort()))));
 
         // Step 3
-        hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_MSG,
-                new Object[]{
-                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
-                }));
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDirectDynamicStep3Msg(
+                        getCatalinaScriptName(), 
+                        IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 4
-        hints.addStep(MANUAL_DIRECT_STEP4_MSG);
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDirectStep4Msg());
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
@@ -344,43 +340,34 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
             AttachSettings attachSettings) {
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
         // Step 1
-        hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                new Object[]{
-                    IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS),
-                    IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
-                    IntegrationUtils.getBatchExtensionString(targetOS)
-                })); // NOI18N
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDirectDynamicStep1Msg(
+                        IntegrationUtils.getEnvVariableReference("CATALINA_HOME", targetOS), // NOI18N
+                        IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
+                        IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 2
-        hints.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP2_MSG,
-                new Object[]{
-                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
-                    IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                    MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                    new Object[]{
-                        IntegrationUtils.getJavaPlatformName(getTargetJava())
-                    }))
-                })); // NOI18N
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDynamicStep2Msg(
+                        getCatalinaScriptName(), 
+                        IntegrationUtils.getBatchExtensionString(targetOS),
+                        IntegrationUtils.getAssignEnvVariableValueString(
+                            targetOS, 
+                            "JAVA_HOME",  // NOI18N
+                            Bundle.TomcatIntegrationProvider_PathToJvmDirText(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava())))));
 
         // Step 3
-        hints.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_MSG,
-                new Object[]{
-                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
-                }));
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDirectDynamicStep3Msg(
+                        getCatalinaScriptName(), 
+                        IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 4
-        hints.addStep(MANUAL_DYNAMIC_STEP4_MSG);
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualDynamicStep4Msg());
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
 
-        hints.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                new Object[]{
-                    IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                    attachSettings.isRemote(),
-                    attachSettings.getPort())
-                }));
+        hints.addWarning(Bundle.TomcatIntegrationProvider_DynamicWarningMessage(
+                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return hints;
     }
@@ -398,39 +385,39 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         hints.addStep(getManualRemoteStep2(targetOS));
 
         // Step 3
-        hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP3_MSG,
-                new Object[]{
-                    IntegrationUtils.getEnvVariableReference("REMOTE_CATALINA_HOME", targetOS),
-                    IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
-                    IntegrationUtils.getBatchExtensionString(targetOS)
-                })); // NOI18N
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualRemoteStep3Msg(
+                        IntegrationUtils.getEnvVariableReference("REMOTE_CATALINA_HOME", targetOS), // NOI18N
+                        IntegrationUtils.getDirectorySeparator(targetOS), getCatalinaScriptName(),
+                        IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 4
-        hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_MSG,
-                new Object[]{
-                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS),
-                    (IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                    MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                    new Object[]{
-                        IntegrationUtils.getJavaPlatformName(getTargetJava())
-                    })))
-                    + "<br>"
-                    + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "CATALINA_OPTS",
-                    IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                    getTargetJava(),
-                    attachSettings.isRemote(),
-                    attachSettings.getPort())),
-                    REMOTE_ABSOLUTE_PATH_HINT
-                })); // NOI18N
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualRemoteStep4Msg(
+                        getCatalinaScriptName(), 
+                        IntegrationUtils.getBatchExtensionString(targetOS),
+                        (IntegrationUtils.getAssignEnvVariableValueString(
+                            targetOS, 
+                            "JAVA_HOME", // NOI18N
+                            Bundle.TomcatIntegrationProvider_PathToJvmDirText(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava())
+                            )))
+                            + "<br>" // NOI18N
+                            + IntegrationUtils.getAssignEnvVariableValueString(
+                                targetOS, 
+                                "CATALINA_OPTS", // NOI18N
+                                IntegrationUtils.getProfilerAgentCommandLineArgs(
+                                    targetOS,
+                                    getTargetJava(),
+                                    attachSettings.isRemote(),
+                                    attachSettings.getPort())),
+                                    REMOTE_ABSOLUTE_PATH_HINT)); // NOI18N
 
         // Step 5
-        hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP5_MSG,
-                new Object[]{
-                    getCatalinaScriptName(), IntegrationUtils.getBatchExtensionString(targetOS)
-                }));
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualRemoteStep5Msg(
+                        getCatalinaScriptName(), 
+                        IntegrationUtils.getBatchExtensionString(targetOS)));
 
         // Step 6
-        hints.addStep(MANUAL_REMOTE_STEP6_MSG);
+        hints.addStep(Bundle.TomcatIntegrationProvider_ManualRemoteStep6Msg());
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
@@ -448,7 +435,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
 
     // </editor-fold>
     protected String getWinConsoleString() {
-        return PROFILED_TOMCAT_CONSOLE_STRING;
+        return Bundle.TomcatIntegrationProvider_ProfiledTomcatConsoleString();
     }
 
     protected void generateCommands(String targetOS, Collection commandsArray) {

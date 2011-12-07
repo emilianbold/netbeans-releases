@@ -105,6 +105,24 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "SelectProfilingTask_SelectProjectToAttachString=<Select project to attach to>",
+    "SelectProfilingTask_ExternalApplicationString=<External Application>",
+    "SelectProfilingTask_ProfileDialogCaption=Profile {0}",
+    "SelectProfilingTask_AttachDialogCaption=Attach Profiler",
+    "SelectProfilingTask_ModifyDialogCaption=Modify Profiling of {0}",
+    "SelectProfilingTask_MonitorString=Monitor",
+    "SelectProfilingTask_CpuString=CPU",
+    "SelectProfilingTask_MemoryString=Memory",
+    "SelectProfilingTask_AttachLabelText=Attach to\\:",
+    "SelectProfilingTask_RunButtonText=Run",
+    "SelectProfilingTask_AttachButtonText=Attach",
+    "SelectProfilingTask_OkButtonText=OK",
+    "SelectProfilingTask_CancelButtonText=Cancel",
+    "SelectProfilingTask_InitSessionString=Initializing profiling session...",
+    "SelectProfilingTask_ChooserComboAccessDescr=Select the project to be profiled or External Application if you do not have sources/project.",
+    "SelectProfilingTask_WorkDirInvalidMsg=Overridden application working directory is invalid and will not be used."
+})
 public class SelectProfilingTask extends JPanel implements TaskChooser.Listener, HelpCtx.Provider {
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
     
@@ -164,39 +182,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
     
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String SELECT_PROJECT_TO_ATTACH_STRING = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                                      "SelectProfilingTask_SelectProjectToAttachString"); // NOI18N
-    public static final String EXTERNAL_APPLICATION_STRING = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                                 "SelectProfilingTask_ExternalApplicationString"); // NOI18N
-    private static final String PROFILE_DIALOG_CAPTION = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                             "SelectProfilingTask_ProfileDialogCaption"); // NOI18N
-    private static final String ATTACH_DIALOG_CAPTION = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                            "SelectProfilingTask_AttachDialogCaption"); // NOI18N
-    private static final String MODIFY_DIALOG_CAPTION = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                            "SelectProfilingTask_ModifyDialogCaption"); // NOI18N
-    private static final String MONITOR_STRING = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                     "SelectProfilingTask_MonitorString"); // NOI18N
-    private static final String CPU_STRING = NbBundle.getMessage(SelectProfilingTask.class, "SelectProfilingTask_CpuString"); // NOI18N
-    private static final String MEMORY_STRING = NbBundle.getMessage(SelectProfilingTask.class, "SelectProfilingTask_MemoryString"); // NOI18N
-    private static final String ATTACH_LABEL_TEXT = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                        "SelectProfilingTask_AttachLabelText"); // NOI18N
-    private static final String RUN_BUTTON_TEXT = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                      "SelectProfilingTask_RunButtonText"); // NOI18N
-    private static final String ATTACH_BUTTON_TEXT = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                         "SelectProfilingTask_AttachButtonText"); // NOI18N
-    private static final String OK_BUTTON_TEXT = NbBundle.getMessage(SelectProfilingTask.class, "SelectProfilingTask_OkButtonText"); // NOI18N
-    private static final String CANCEL_BUTTON_TEXT = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                         "SelectProfilingTask_CancelButtonText"); // NOI18N
-    private static final String INIT_SESSION_STRING = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                          "SelectProfilingTask_InitSessionString"); // NOI18N
-    private static final String CHOOSER_COMBO_ACCESS_DESCR = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                                 "SelectProfilingTask_ChooserComboAccessDescr"); // NOI18N
-    private static final String WORKDIR_INVALID_MSG = NbBundle.getMessage(SelectProfilingTask.class,
-                                                                                 "SelectProfilingTask_WorkDirInvalidMsg"); // NOI18N
-                                                                                                                                 // -----
 
     // --- Constants declaration -------------------------------------------------
     public static Color BACKGROUND_COLOR;
@@ -321,7 +306,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         spt.setSubmitButton(spt.attachButton);
         spt.setupAttachProfiler(project);
 
-        spt.dd = new DialogDescriptor(spt, ATTACH_DIALOG_CAPTION, true, new Object[] { spt.attachButton, spt.cancelButton },
+        spt.dd = new DialogDescriptor(spt, Bundle.SelectProfilingTask_AttachDialogCaption(), true, new Object[] { spt.attachButton, spt.cancelButton },
                                       spt.attachButton, 0, null, null);
 
         final CountDownLatch latch = new CountDownLatch(1);
@@ -364,7 +349,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         spt.setupModifyProfiling(project, profiledFile, isAttach);
 
         spt.dd = new DialogDescriptor(spt,
-                                      MessageFormat.format(MODIFY_DIALOG_CAPTION, new Object[] { Utils.getProjectName(project) }),
+                                      Bundle.SelectProfilingTask_ModifyDialogCaption(Utils.getProjectName(project)),
                                       true, new Object[] { spt.modifyButton, spt.cancelButton }, spt.modifyButton, 0, null, null);
 
         final CountDownLatch latch = new CountDownLatch(1);
@@ -408,7 +393,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         spt.setupProfileProject(project, profiledFile, enableOverride);
 
         String targetName = Utils.getProjectName(project) + ((profiledFile == null) ? "" : (": " + profiledFile.getNameExt())); // NOI18N
-        spt.dd = new DialogDescriptor(spt, MessageFormat.format(PROFILE_DIALOG_CAPTION, new Object[] { targetName }), true,
+        spt.dd = new DialogDescriptor(spt, Bundle.SelectProfilingTask_ProfileDialogCaption(targetName), true,
                                       new Object[] { spt.runButton, spt.cancelButton }, spt.runButton, 0, null, null);
 
         final CountDownLatch latch = new CountDownLatch(1);
@@ -436,7 +421,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     if (workDir.length() != 0 && !new java.io.File(workDir).exists()) {
                         settings.setWorkingDir(""); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    WORKDIR_INVALID_MSG, NotifyDescriptor.WARNING_MESSAGE));
+                                    Bundle.SelectProfilingTask_WorkDirInvalidMsg(), NotifyDescriptor.WARNING_MESSAGE));
                     }
                 }
                 result = new Configuration(project, settings, null);
@@ -571,7 +556,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         // store settings if project is selected
         if (settingsAccepted) {
             if (!projectsChooserPanel.isVisible() || (projectsChooserCombo.
-                    getSelectedItem() != SELECT_PROJECT_TO_ATTACH_STRING)) {
+                    getSelectedItem() != Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
                 storeCurrentSettings();
             }
         }
@@ -606,7 +591,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         if (configurator != null) {
             synchronizeCurrentSettings();
 
-            final ProgressHandle pHandle = ProgressHandleFactory.createHandle(INIT_SESSION_STRING);
+            final ProgressHandle pHandle = ProgressHandleFactory.createHandle(Bundle.SelectProfilingTask_InitSessionString());
             pHandle.setInitialDelay(0);
             pHandle.start();
             
@@ -643,7 +628,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     // --- UI definition ---------------------------------------------------------
     private void initComponents() {
         // projectsChooserLabel
-        projectsChooserLabel = new JLabel(ATTACH_LABEL_TEXT);
+        projectsChooserLabel = new JLabel(Bundle.SelectProfilingTask_AttachLabelText());
         projectsChooserLabel.setBorder(BorderFactory.createEmptyBorder(6, 15, 6, 0));
         projectsChooserLabel.setOpaque(false);
 
@@ -651,7 +636,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         projectsChooserCombo = new JComboBox();
         projectsChooserCombo.setRenderer(org.netbeans.modules.profiler.ppoints.Utils.getProjectListRenderer());
         projectsChooserLabel.setLabelFor(projectsChooserCombo);
-        projectsChooserCombo.getAccessibleContext().setAccessibleDescription(CHOOSER_COMBO_ACCESS_DESCR);
+        projectsChooserCombo.getAccessibleContext().setAccessibleDescription(Bundle.SelectProfilingTask_ChooserComboAccessDescr());
 
         // projectsChooserComboContainer
         projectsChooserComboContainer = new JPanel(new BorderLayout());
@@ -711,29 +696,29 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         extraSettingsPanel.add(attachSettingsPanelContainer, BorderLayout.SOUTH);
 
         // runButton
-        runButton = UIUtils.isNimbus() ? new JButton(RUN_BUTTON_TEXT) :
-                                         new JButton(RUN_BUTTON_TEXT, RUN_ICON);
+        runButton = UIUtils.isNimbus() ? new JButton(Bundle.SelectProfilingTask_RunButtonText()) :
+                                         new JButton(Bundle.SelectProfilingTask_RunButtonText(), RUN_ICON);
 
         // attachButton
-        attachButton = UIUtils.isNimbus() ? new JButton(ATTACH_BUTTON_TEXT) {
+        attachButton = UIUtils.isNimbus() ? new JButton(Bundle.SelectProfilingTask_AttachButtonText()) {
                 public Dimension getPreferredSize() {
                     return new Dimension(super.getPreferredSize().width, runButton.getPreferredSize().height);
                 }
-            } : new JButton(ATTACH_BUTTON_TEXT, ATTACH_ICON) {
+            } : new JButton(Bundle.SelectProfilingTask_AttachButtonText(), ATTACH_ICON) {
                 public Dimension getPreferredSize() {
                     return new Dimension(super.getPreferredSize().width, runButton.getPreferredSize().height);
                 }
             };
 
         // modifyButton
-        modifyButton = new JButton(OK_BUTTON_TEXT) {
+        modifyButton = new JButton(Bundle.SelectProfilingTask_OkButtonText()) {
                 public Dimension getPreferredSize() {
                     return new Dimension(super.getPreferredSize().width, runButton.getPreferredSize().height);
                 }
             };
 
         // cancelButton
-        cancelButton = new JButton(CANCEL_BUTTON_TEXT) {
+        cancelButton = new JButton(Bundle.SelectProfilingTask_CancelButtonText()) {
                 public Dimension getPreferredSize() {
                     return new Dimension(super.getPreferredSize().width, runButton.getPreferredSize().height);
                 }
@@ -761,21 +746,21 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
                     // Store settings of last project
                     if (lastAttachProject != null) {
-                        storeSettings((lastAttachProject == EXTERNAL_APPLICATION_STRING) ? null : (Lookup.Provider) lastAttachProject);
+                        storeSettings((lastAttachProject == Bundle.SelectProfilingTask_ExternalApplicationString()) ? null : (Lookup.Provider) lastAttachProject);
                     }
 
-                    if ((comboSelection == null) || (comboSelection == SELECT_PROJECT_TO_ATTACH_STRING)) {
+                    if ((comboSelection == null) || (comboSelection == Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
                         return;
                     }
 
-                    if ((comboSelection != SELECT_PROJECT_TO_ATTACH_STRING)
-                            && (projectsChooserCombo.getItemAt(0) == SELECT_PROJECT_TO_ATTACH_STRING)) {
+                    if ((comboSelection != Bundle.SelectProfilingTask_SelectProjectToAttachString())
+                            && (projectsChooserCombo.getItemAt(0) == Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
                         projectsChooserCombo.removeItemAt(0);
                     }
 
-                    if (comboSelection == EXTERNAL_APPLICATION_STRING) {
+                    if (comboSelection == Bundle.SelectProfilingTask_ExternalApplicationString()) {
                         updateProject(null);
-                        lastAttachProject = EXTERNAL_APPLICATION_STRING;
+                        lastAttachProject = Bundle.SelectProfilingTask_ExternalApplicationString();
                     } else if (comboSelection instanceof Lookup.Provider) {
                         updateProject((Lookup.Provider) comboSelection);
                         lastAttachProject = comboSelection;
@@ -845,9 +830,9 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             }
         };
 
-        taskMonitor = new TaskPresenter(MONITOR_STRING, MONITOR_ICON, context);
-        taskCPU = new TaskPresenter(CPU_STRING, CPU_ICON, context);
-        taskMemory = new TaskPresenter(MEMORY_STRING, MEMORY_ICON, context);
+        taskMonitor = new TaskPresenter(Bundle.SelectProfilingTask_MonitorString(), MONITOR_ICON, context);
+        taskCPU = new TaskPresenter(Bundle.SelectProfilingTask_CpuString(), CPU_ICON, context);
+        taskMemory = new TaskPresenter(Bundle.SelectProfilingTask_MemoryString(), MEMORY_ICON, context);
 
         taskChooser.add(taskMonitor);
         taskChooser.add(taskCPU);
@@ -937,7 +922,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         attachSettingsPanelContainer.setVisible(true);
 
         if (lastAttachProject == null) {
-            lastAttachProject = EXTERNAL_APPLICATION_STRING; // Preselect external application by default
+            lastAttachProject = Bundle.SelectProfilingTask_ExternalApplicationString(); // Preselect external application by default
         }
 
         updateProjectsCombo((project != null) ? project : lastAttachProject);
@@ -957,7 +942,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         attachSettingsPanelContainer.setVisible(isAttach);
 
         if (isAttach) {
-            updateProjectsCombo((project != null) ? project : EXTERNAL_APPLICATION_STRING);
+            updateProjectsCombo((project != null) ? project : Bundle.SelectProfilingTask_ExternalApplicationString());
         }
 
         updateProject(project);
@@ -1036,7 +1021,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     predefinedInstrFilterKeys = null;
                 }
 
-                if (projectsChooserPanel.isVisible() && (projectsChooserCombo.getSelectedItem() == SELECT_PROJECT_TO_ATTACH_STRING)) {
+                if (projectsChooserPanel.isVisible() && (projectsChooserCombo.getSelectedItem() == Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
                     // Attach, no project selected
                     taskChooser.setEnabled(false);
 
@@ -1119,7 +1104,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 }
 
                 if (attachSettingsPanelContainer.isVisible()) {
-                    attachSettingsPanel.setSettings(project, projectsChooserCombo.getSelectedItem() != SELECT_PROJECT_TO_ATTACH_STRING);
+                    attachSettingsPanel.setSettings(project, projectsChooserCombo.getSelectedItem() != Bundle.SelectProfilingTask_SelectProjectToAttachString());
                 }
             }
         };
@@ -1132,10 +1117,10 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         Lookup.Provider[] projects = ProjectUtilities.getSortedProjects(getOpenedProjectsForAttach());
 
         if (projectToSelect == null) {
-            projectsChooserCombo.addItem(SELECT_PROJECT_TO_ATTACH_STRING);
+            projectsChooserCombo.addItem(Bundle.SelectProfilingTask_SelectProjectToAttachString());
         }
 
-        projectsChooserCombo.addItem(EXTERNAL_APPLICATION_STRING);
+        projectsChooserCombo.addItem(Bundle.SelectProfilingTask_ExternalApplicationString());
 
         for (Lookup.Provider project : projects) {
             projectsChooserCombo.addItem(project);

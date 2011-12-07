@@ -47,7 +47,6 @@ import org.netbeans.modules.profiler.ppoints.TimedGlobalProfilingPoint;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -56,21 +55,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.lib.profiler.ui.UIUtils;
@@ -80,19 +71,15 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TimedTakeSnapshotCustomizer_NameLabelText=&Name\\:",
+    "TimedTakeSnapshotCustomizer_SettingsLabelText=Settings",
+    "TimedTakeSnapshotCustomizer_TimeLabelText=Time"
+})
 public class TimedTakeSnapshotCustomizer extends ValidityAwarePanel implements DocumentListener, ValidityListener,
                                                                                HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String NAME_LABEL_TEXT = NbBundle.getMessage(TimedTakeSnapshotCustomizer.class,
-                                                                      "TimedTakeSnapshotCustomizer_NameLabelText"); // NOI18N
-    private static final String SETTINGS_LABEL_TEXT = NbBundle.getMessage(TimedTakeSnapshotCustomizer.class,
-                                                                          "TimedTakeSnapshotCustomizer_SettingsLabelText"); // NOI18N
-    private static final String TIME_LABEL_TEXT = NbBundle.getMessage(TimedTakeSnapshotCustomizer.class,
-                                                                      "TimedTakeSnapshotCustomizer_TimeLabelText"); // NOI18N
-                                                                                                                    // -----
     private static final String HELP_CTX_KEY = "TimedTakeSnapshotCustomizer.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static int defaultTextComponentHeight = -1;
@@ -217,7 +204,7 @@ public class TimedTakeSnapshotCustomizer extends ValidityAwarePanel implements D
 
         // nameLabel
         nameLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NAME_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, Bundle.TimedTakeSnapshotCustomizer_NameLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -255,7 +242,7 @@ public class TimedTakeSnapshotCustomizer extends ValidityAwarePanel implements D
         JPanel settingsHeaderContainer = new JPanel(new GridBagLayout());
 
         // settingsHeaderLabel
-        settingsHeaderLabel = new JLabel(SETTINGS_LABEL_TEXT);
+        settingsHeaderLabel = new JLabel(Bundle.TimedTakeSnapshotCustomizer_SettingsLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -307,7 +294,7 @@ public class TimedTakeSnapshotCustomizer extends ValidityAwarePanel implements D
         JPanel triggerHeaderContainer = new JPanel(new GridBagLayout());
 
         // timeHeaderLabel
-        timeHeaderLabel = new JLabel(TIME_LABEL_TEXT);
+        timeHeaderLabel = new JLabel(Bundle.TimedTakeSnapshotCustomizer_TimeLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;

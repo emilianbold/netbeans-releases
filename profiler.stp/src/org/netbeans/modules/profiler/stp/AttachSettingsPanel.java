@@ -63,26 +63,19 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "AttachSettingsPanel_ProjectPendingString=Project selection pending...",
+    "AttachSettingsPanel_DefineSettingsString=No attach settings defined, <a href=\"#\" {0}>define...</a>",
+    "AttachSettingsPanel_DirectAttachString=direct attach",
+    "AttachSettingsPanel_DynamicAttachString=dynamic attach",
+//# Remote direct attach to Tomcat on server.domain, change...
+    "AttachSettingsPanel_RemoteAttachHintText=Remote {0} to {1} on {2}, <a href=\"#\" {3}>change...</a>",
+//# Local direct attach to Tomcat, change...
+    "AttachSettingsPanel_LocalAttachHintText=Local {0} to {1}, <a href=\"#\" {2}>change...</a>",
+    "AttachSettingsPanel_AttachModeLabelText=Attach Mo&de\\:"
+})
 public class AttachSettingsPanel extends JPanel {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String PROJECT_PENDING_STRING = NbBundle.getMessage(AttachSettingsPanel.class,
-                                                                             "AttachSettingsPanel_ProjectPendingString"); // NOI18N
-    private static final String DEFINE_SETTINGS_STRING = NbBundle.getMessage(AttachSettingsPanel.class,
-                                                                             "AttachSettingsPanel_DefineSettingsString"); // NOI18N
-    private static final String DIRECT_ATTACH_STRING = NbBundle.getMessage(AttachSettingsPanel.class,
-                                                                           "AttachSettingsPanel_DirectAttachString"); // NOI18N
-    private static final String DYNAMIC_ATTACH_STRING = NbBundle.getMessage(AttachSettingsPanel.class,
-                                                                            "AttachSettingsPanel_DynamicAttachString"); // NOI18N
-    private static final String REMOTE_ATTACH_HINT_TEXT = NbBundle.getMessage(AttachSettingsPanel.class,
-                                                                              "AttachSettingsPanel_RemoteAttachHintText"); // NOI18N
-    private static final String LOCAL_ATTACH_HINT_TEXT = NbBundle.getMessage(AttachSettingsPanel.class,
-                                                                             "AttachSettingsPanel_LocalAttachHintText"); // NOI18N
-    private static final String ATTACH_MODE_LABEL_TEXT = NbBundle.getMessage(AttachSettingsPanel.class,
-                                                                             "AttachSettingsPanel_AttachModeLabelText"); // NOI18N
-                                                                                                                         // -----
 
     // --- Constants declaration -------------------------------------------------
     private static final int PREFERRED_HINT_HEIGHT = new HyperlinkLabel("ABC<a href='#'>ABC</a>", "ABC<a href='#'>ABC</a>", null)
@@ -138,7 +131,7 @@ public class AttachSettingsPanel extends JPanel {
 
         // attachModeLabel
         attachModeLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(attachModeLabel, ATTACH_MODE_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(attachModeLabel, Bundle.AttachSettingsPanel_AttachModeLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -191,18 +184,20 @@ public class AttachSettingsPanel extends JPanel {
 
         if (!settingsValid) {
             attachModeHintLabel.setFocusable(false);
-            labelText = "<nobr>" + PROJECT_PENDING_STRING + "</nobr>"; //NOI18N
+            labelText = "<nobr>" + Bundle.AttachSettingsPanel_ProjectPendingString() + "</nobr>"; //NOI18N
             labelFocusedText = labelText;
         } else if (settings == null) {
             attachModeHintLabel.setFocusable(true);
-            labelText = "<nobr>" + MessageFormat.format(DEFINE_SETTINGS_STRING, new Object[] { "" }) + "</nobr>"; //NOI18N
+            labelText = "<nobr>" + Bundle.AttachSettingsPanel_DefineSettingsString("") + "</nobr>"; //NOI18N
             labelFocusedText = "<nobr>"
-                               + MessageFormat.format(DEFINE_SETTINGS_STRING, new Object[] { "color=\"" + colorText + "\"" })
+                               + Bundle.AttachSettingsPanel_DefineSettingsString("color=\"" + colorText + "\"")
                                + "</nobr>"; //NOI18N
         } else {
             attachModeHintLabel.setFocusable(true);
 
-            String attachMethodString = settings.isDirect() ? DIRECT_ATTACH_STRING : DYNAMIC_ATTACH_STRING;
+            String attachMethodString = settings.isDirect() ? 
+                    Bundle.AttachSettingsPanel_DirectAttachString() : 
+                    Bundle.AttachSettingsPanel_DynamicAttachString();
             String targetType = settings.getTargetType();
             String serverType = settings.getServerType();
             String targetString = "".equals(serverType) ? targetType : serverType; //NOI18N
@@ -210,28 +205,22 @@ public class AttachSettingsPanel extends JPanel {
 
             if (settings.isRemote()) {
                 labelText = "<nobr>"
-                            + MessageFormat.format(REMOTE_ATTACH_HINT_TEXT,
-                                                   new Object[] { attachMethodString, targetString, remoteString, "" })
+                            + Bundle.AttachSettingsPanel_RemoteAttachHintText(attachMethodString, targetString, remoteString, "")
                             + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>"
-                                   + MessageFormat.format(REMOTE_ATTACH_HINT_TEXT,
-                                                          new Object[] {
-                                                              attachMethodString, targetString, remoteString,
-                                                              "color=\"" + colorText + "\""
-                                                          }) + "</nobr>"; //NOI18N
+                                   + Bundle.AttachSettingsPanel_RemoteAttachHintText(
+                                        attachMethodString, targetString, remoteString,
+                                        "color=\"" + colorText + "\"") + "</nobr>"; //NOI18N
                 attachModeHintLabel.setText("<nobr>"
-                                            + MessageFormat.format(REMOTE_ATTACH_HINT_TEXT,
-                                                                   new Object[] { attachMethodString, targetString, remoteString })
+                                            + Bundle.AttachSettingsPanel_RemoteAttachHintText(attachMethodString, targetString, remoteString, "")
                                             + "</nobr>"); //NOI18N
             } else {
                 labelText = "<nobr>"
-                            + MessageFormat.format(LOCAL_ATTACH_HINT_TEXT, new Object[] { attachMethodString, targetString, "" })
+                            + Bundle.AttachSettingsPanel_LocalAttachHintText(attachMethodString, targetString, "")
                             + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>"
-                                   + MessageFormat.format(LOCAL_ATTACH_HINT_TEXT,
-                                                          new Object[] {
-                                                              attachMethodString, targetString, "color=\"" + colorText + "\""
-                                                          }) + "</nobr>"; //NOI18N
+                                   + Bundle.AttachSettingsPanel_LocalAttachHintText(
+                                        attachMethodString, targetString, "color=\"" + colorText + "\"") + "</nobr>"; //NOI18N
             }
         }
 

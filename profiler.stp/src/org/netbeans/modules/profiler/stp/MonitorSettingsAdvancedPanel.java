@@ -76,34 +76,19 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "MonitorSettingsAdvancedPanel_DoNotOverrideString=<Do not override>",
+    "MonitorSettingsAdvancedPanel_ChooseWorkDirDialogCaption=Choose Working Directory",
+    "MonitorSettingsAdvancedPanel_GlobalSettingsCaption=Global Settings",
+    "MonitorSettingsAdvancedPanel_OverrideSettingsCheckboxText=&Override global settings",
+    "MonitorSettingsAdvancedPanel_WorkDirLabelText=&Working directory\\:",
+    "MonitorSettingsAdvancedPanel_ChooseWorkDirLinkText=Choose...",
+    "MonitorSettingsAdvancedPanel_JavaPlatformLabelText=&Java platform\\:",
+    "MonitorSettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments\\:"
+})
 public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String DO_NOT_OVERRIDE_STRING = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                             "MonitorSettingsAdvancedPanel_DoNotOverrideString"); // NOI18N
-    private static final String CHOOSE_WORKDIR_DIALOG_CAPTION = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                                    "MonitorSettingsAdvancedPanel_ChooseWorkDirDialogCaption"); // NOI18N
-    private static final String GLOBAL_SETTINGS_CAPTION = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                              "MonitorSettingsAdvancedPanel_GlobalSettingsCaption"); // NOI18N
-    private static final String OVERRIDE_SETTINGS_CHECKBOX_TEXT = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                                      "MonitorSettingsAdvancedPanel_OverrideSettingsCheckboxText"); // NOI18N
-    private static final String WORKDIR_LABEL_TEXT = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                         "MonitorSettingsAdvancedPanel_WorkDirLabelText"); // NOI18N
-    private static final String CHOOSE_WORKDIR_LINK_TEXT = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                               "MonitorSettingsAdvancedPanel_ChooseWorkDirLinkText"); // NOI18N
-    private static final String JAVA_PLATFORM_LABEL_TEXT = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                               "MonitorSettingsAdvancedPanel_JavaPlatformLabelText"); // NOI18N
-    private static final String JVM_ARGUMENTS_LABEL_TEXT = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                               "MonitorSettingsAdvancedPanel_JvmArgumentsLabelText"); // NOI18N
-    private static final String STP_OVERRIDE_TOOLTIP = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                           "StpOverrideTooltip"); // NOI18N
-    private static final String STP_WORKDIR_TOOLTIP = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class, "StpWorkDirTooltip"); // NOI18N
-    private static final String STP_JPLATFORM_TOOLTIP = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class,
-                                                                            "StpJPlatformTooltip"); // NOI18N
-    private static final String STP_VMARGS_TOOLTIP = NbBundle.getMessage(MonitorSettingsAdvancedPanel.class, "StpVmArgsTooltip"); // NOI18N
-                                                                                                                                  // -----
     private static final String HELP_CTX_KEY = "MonitorSettings.Advanced.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
 
@@ -244,7 +229,7 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
             chooser.setMultiSelectionEnabled(false);
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(CHOOSE_WORKDIR_DIALOG_CAPTION);
+            chooser.setDialogTitle(Bundle.MonitorSettingsAdvancedPanel_ChooseWorkDirDialogCaption());
             workingDirectoryChooserReference = new WeakReference(chooser);
         } else {
             chooser = workingDirectoryChooserReference.get();
@@ -262,7 +247,7 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
         // globalSettingsPanel
         globalSettingsPanel = new JPanel(new GridBagLayout());
         globalSettingsPanel.setOpaque(false);
-        globalSettingsPanel.setBorder(BorderFactory.createTitledBorder(GLOBAL_SETTINGS_CAPTION));
+        globalSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.MonitorSettingsAdvancedPanel_GlobalSettingsCaption()));
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -274,8 +259,8 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
 
         // overrideSettingsCheckbox
         overrideSettingsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(overrideSettingsCheckbox, OVERRIDE_SETTINGS_CHECKBOX_TEXT);
-        overrideSettingsCheckbox.setToolTipText(STP_OVERRIDE_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(overrideSettingsCheckbox, Bundle.MonitorSettingsAdvancedPanel_OverrideSettingsCheckboxText());
+        overrideSettingsCheckbox.setToolTipText(Bundle.StpOverrideTooltip());
         overrideSettingsCheckbox.setOpaque(false);
         overrideSettingsCheckbox.setSelected(true);
         overrideSettingsCheckbox.addChangeListener(new ChangeListener() {
@@ -294,8 +279,8 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
 
         // workingDirectoryLabel
         workingDirectoryLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirectoryLabel, WORKDIR_LABEL_TEXT);
-        workingDirectoryLabel.setToolTipText(STP_WORKDIR_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(workingDirectoryLabel, Bundle.MonitorSettingsAdvancedPanel_WorkDirLabelText());
+        workingDirectoryLabel.setToolTipText(Bundle.StpWorkDirTooltip());
         workingDirectoryLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -313,7 +298,7 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
                 }
             };
         workingDirectoryLabel.setLabelFor(workingDirectoryTextField);
-        workingDirectoryTextField.setToolTipText(STP_WORKDIR_TOOLTIP);
+        workingDirectoryTextField.setToolTipText(Bundle.StpWorkDirTooltip());
         workingDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
             public void removeUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
@@ -332,8 +317,8 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
         // workingDirectorySelectLink
         Color linkColor = Color.RED;
         String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
-        workingDirectorySelectLink = new HyperlinkLabel("<a href='#'>" + CHOOSE_WORKDIR_LINK_TEXT + "</a>", //NOI18N
-                                                        "<a href='#' color=\"" + colorText + "\">" + CHOOSE_WORKDIR_LINK_TEXT
+        workingDirectorySelectLink = new HyperlinkLabel("<a href='#'>" + Bundle.MonitorSettingsAdvancedPanel_ChooseWorkDirLinkText() + "</a>", //NOI18N
+                                                        "<a href='#' color=\"" + colorText + "\">" + Bundle.MonitorSettingsAdvancedPanel_ChooseWorkDirLinkText()
                                                         + "</a>", //NOI18N
                                                         new Runnable() {
                 public void run() {
@@ -357,8 +342,8 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
 
         // javaPlatformLabel
         javaPlatformLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, JAVA_PLATFORM_LABEL_TEXT);
-        javaPlatformLabel.setToolTipText(STP_JPLATFORM_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, Bundle.MonitorSettingsAdvancedPanel_JavaPlatformLabelText());
+        javaPlatformLabel.setToolTipText(Bundle.StpJPlatformTooltip());
         javaPlatformLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -370,13 +355,13 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
         globalSettingsPanel.add(javaPlatformLabel, constraints);
 
         // javaPlatformCombo
-        javaPlatformCombo = new JComboBox(new Object[] { DO_NOT_OVERRIDE_STRING }) {
+        javaPlatformCombo = new JComboBox(new Object[] { Bundle.MonitorSettingsAdvancedPanel_DoNotOverrideString() }) {
                 public Dimension getMinimumSize() {
                     return getPreferredSize();
                 }
             };
         javaPlatformLabel.setLabelFor(javaPlatformCombo);
-        javaPlatformCombo.setToolTipText(STP_JPLATFORM_TOOLTIP);
+        javaPlatformCombo.setToolTipText(Bundle.StpJPlatformTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 2;
@@ -388,8 +373,8 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
 
         // vmArgumentsLabel
         vmArgumentsLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(vmArgumentsLabel, JVM_ARGUMENTS_LABEL_TEXT);
-        vmArgumentsLabel.setToolTipText(STP_VMARGS_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(vmArgumentsLabel, Bundle.MonitorSettingsAdvancedPanel_JvmArgumentsLabelText());
+        vmArgumentsLabel.setToolTipText(Bundle.StpVmArgsTooltip());
         vmArgumentsLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -407,7 +392,7 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
                 }
             };
         vmArgumentsLabel.setLabelFor(vmArgumentsTextField);
-        vmArgumentsTextField.setToolTipText(STP_VMARGS_TOOLTIP);
+        vmArgumentsTextField.setToolTipText(Bundle.StpVmArgsTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 3;
@@ -455,7 +440,7 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
     private void updateJavaPlatformCombo(String platformNameToSelect) {        
         List<JavaPlatform> supportedPlatforms = JavaPlatform.getPlatforms();
         String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
-        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
+        supportedPlatformNames[0] = Bundle.MonitorSettingsAdvancedPanel_DoNotOverrideString();
 
         for (int i = 1; i < supportedPlatformNames.length; i++) {
             supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();

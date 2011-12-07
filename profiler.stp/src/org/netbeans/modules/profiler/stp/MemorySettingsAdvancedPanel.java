@@ -81,57 +81,29 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "MemorySettingsAdvancedPanel_DoNotOverrideString=<Do not override>",
+    "MemorySettingsAdvancedPanel_ChooseWorkDirDialogCaption=Choose Working Directory",
+    "MemorySettingsAdvancedPanel_SettingsCaption=Settings",
+    "MemorySettingsAdvancedPanel_RecordTracesLabelText=Record stack trace for allocations\\:",
+    "MemorySettingsAdvancedPanel_FullStackRadioText=&Full stack depth",
+    "MemorySettingsAdvancedPanel_LimitStackRadioText=&Limit stack to",
+//# Used as Limit stack to [JSpinner] frames
+    "MemorySettingsAdvancedPanel_FramesLabelText=fra&mes",
+    "MemorySettingsAdvancedPanel_RunGcCheckboxText=&Run garbage collection when getting memory results",
+    "MemorySettingsAdvancedPanel_ThreadsCaption=Threads",
+    "MemorySettingsAdvancedPanel_EnableThreadsCheckboxText=E&nable threads monitoring",
+    "MemorySettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states",
+    "MemorySettingsAdvancedPanel_GlobalSettingsCaption=Global Settings",
+    "MemorySettingsAdvancedPanel_OverrideSettingsCheckboxText=&Override global settings",
+    "MemorySettingsAdvancedPanel_WorkDirLabelText=&Working directory\\:",
+    "MemorySettingsAdvancedPanel_ChooseWorkDirLinkText=Choose...",
+    "MemorySettingsAdvancedPanel_JavaPlatformLabelText=&Java platform\\:",
+    "MemorySettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments\\:"
+})
 public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String DO_NOT_OVERRIDE_STRING = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                             "MemorySettingsAdvancedPanel_DoNotOverrideString"); // NOI18N
-    private static final String CHOOSE_WORKDIR_DIALOG_CAPTION = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                                    "MemorySettingsAdvancedPanel_ChooseWorkDirDialogCaption"); // NOI18N
-    private static final String SETTINGS_CAPTION = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                       "MemorySettingsAdvancedPanel_SettingsCaption"); // NOI18N
-    private static final String RECORD_TRACES_LABEL_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                               "MemorySettingsAdvancedPanel_RecordTracesLabelText"); // NOI18N
-    private static final String FULL_STACK_RADIO_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                            "MemorySettingsAdvancedPanel_FullStackRadioText"); // NOI18N
-    private static final String LIMIT_STACK_RADIO_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                             "MemorySettingsAdvancedPanel_LimitStackRadioText"); // NOI18N
-    private static final String FRAMES_LABEL_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                        "MemorySettingsAdvancedPanel_FramesLabelText"); // NOI18N
-    private static final String RUN_GC_CHECKBOX_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                           "MemorySettingsAdvancedPanel_RunGcCheckboxText"); // NOI18N
-    private static final String THREADS_CAPTION = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                      "MemorySettingsAdvancedPanel_ThreadsCaption"); // NOI18N
-    private static final String ENABLE_THREADS_CHECKBOX_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                                   "MemorySettingsAdvancedPanel_EnableThreadsCheckboxText"); // NOI18N
-    private static final String ENABLE_SAMPLING_CHECKBOX_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                                   "MemorySettingsAdvancedPanel_EnableSamplingCheckboxText"); // NOI18N
-    private static final String GLOBAL_SETTINGS_CAPTION = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                              "MemorySettingsAdvancedPanel_GlobalSettingsCaption"); // NOI18N
-    private static final String OVERRIDE_SETTINGS_CHECKBOX_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                                      "MemorySettingsAdvancedPanel_OverrideSettingsCheckboxText"); // NOI18N
-    private static final String WORKDIR_LABEL_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                         "MemorySettingsAdvancedPanel_WorkDirLabelText"); // NOI18N
-    private static final String CHOOSE_WORKDIR_LINK_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                               "MemorySettingsAdvancedPanel_ChooseWorkDirLinkText"); // NOI18N
-    private static final String JAVA_PLATFORM_LABEL_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                               "MemorySettingsAdvancedPanel_JavaPlatformLabelText"); // NOI18N
-    private static final String JVM_ARGUMENTS_LABEL_TEXT = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                               "MemorySettingsAdvancedPanel_JvmArgumentsLabelText"); // NOI18N
-    private static final String STP_MONITOR_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class, "StpMonitorTooltip"); // NOI18N
-    private static final String STP_OVERRIDE_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class, "StpOverrideTooltip"); // NOI18N
-    private static final String STP_WORKDIR_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class, "StpWorkDirTooltip"); // NOI18N
-    private static final String STP_JPLATFORM_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                            "StpJPlatformTooltip"); // NOI18N
-    private static final String STP_VMARGS_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class, "StpVmArgsTooltip"); // NOI18N
-    private static final String STP_FULLDEPTH_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                            "StpFullDepthTooltip"); // NOI18N
-    private static final String STP_LIMITDEPTH_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class,
-                                                                             "StpLimitDepthTooltip"); // NOI18N
-    private static final String STP_RUNGC_TOOLTIP = NbBundle.getMessage(MemorySettingsAdvancedPanel.class, "StpRunGcTooltip"); // NOI18N
-                                                                                                                               // -----
     private static final String HELP_CTX_KEY = "MemorySettings.Advanced.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
 
@@ -373,7 +345,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
             chooser.setMultiSelectionEnabled(false);
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(CHOOSE_WORKDIR_DIALOG_CAPTION);
+            chooser.setDialogTitle(Bundle.MemorySettingsAdvancedPanel_ChooseWorkDirDialogCaption());
             workingDirectoryChooserReference = new WeakReference(chooser);
         } else {
             chooser = workingDirectoryChooserReference.get();
@@ -393,7 +365,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         // settingsPanel
         settingsPanel = new JPanel(new GridBagLayout());
         settingsPanel.setOpaque(false);
-        settingsPanel.setBorder(BorderFactory.createTitledBorder(SETTINGS_CAPTION));
+        settingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.MemorySettingsAdvancedPanel_SettingsCaption()));
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -404,7 +376,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         add(settingsPanel, constraints);
 
         // recordStackTracesLabel
-        recordStackTracesLabel = new JLabel(RECORD_TRACES_LABEL_TEXT);
+        recordStackTracesLabel = new JLabel(Bundle.MemorySettingsAdvancedPanel_RecordTracesLabelText());
         recordStackTracesLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -418,8 +390,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // fullDepthRadio
         fullDepthRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(fullDepthRadio, FULL_STACK_RADIO_TEXT);
-        fullDepthRadio.setToolTipText(STP_FULLDEPTH_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(fullDepthRadio, Bundle.MemorySettingsAdvancedPanel_FullStackRadioText());
+        fullDepthRadio.setToolTipText(Bundle.StpFullDepthTooltip());
         methodsTrackingRadiosGroup.add(fullDepthRadio);
         fullDepthRadio.addActionListener(getSettingsChangeListener());
         fullDepthRadio.setOpaque(false);
@@ -437,8 +409,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // definedDepthRadio
         definedDepthRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(definedDepthRadio, LIMIT_STACK_RADIO_TEXT);
-        definedDepthRadio.setToolTipText(STP_LIMITDEPTH_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(definedDepthRadio, Bundle.MemorySettingsAdvancedPanel_LimitStackRadioText());
+        definedDepthRadio.setToolTipText(Bundle.StpLimitDepthTooltip());
         methodsTrackingRadiosGroup.add(definedDepthRadio);
         definedDepthRadio.setOpaque(false);
         definedDepthRadio.setSelected(true);
@@ -479,10 +451,10 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // defineDepthLabel
         defineDepthLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(defineDepthLabel, FRAMES_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(defineDepthLabel, Bundle.MemorySettingsAdvancedPanel_FramesLabelText());
         defineDepthLabel.setLabelFor(defineDepthSpinner);
-        defineDepthSpinner.setToolTipText(STP_LIMITDEPTH_TOOLTIP);
-        defineDepthLabel.setToolTipText(STP_LIMITDEPTH_TOOLTIP);
+        defineDepthSpinner.setToolTipText(Bundle.StpLimitDepthTooltip());
+        defineDepthLabel.setToolTipText(Bundle.StpLimitDepthTooltip());
         defineDepthLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -507,8 +479,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // runGCCheckbox
         runGCCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(runGCCheckbox, RUN_GC_CHECKBOX_TEXT);
-        runGCCheckbox.setToolTipText(STP_RUNGC_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(runGCCheckbox, Bundle.MemorySettingsAdvancedPanel_RunGcCheckboxText());
+        runGCCheckbox.setToolTipText(Bundle.StpRunGcTooltip());
         runGCCheckbox.setOpaque(false);
         runGCCheckbox.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
@@ -523,7 +495,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         // threadsSettingsPanel
         threadsSettingsPanel = new JPanel(new GridBagLayout());
         threadsSettingsPanel.setOpaque(false);
-        threadsSettingsPanel.setBorder(BorderFactory.createTitledBorder(THREADS_CAPTION));
+        threadsSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.MemorySettingsAdvancedPanel_ThreadsCaption()));
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -535,8 +507,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // threadsMonitoringCheckbox
         threadsMonitoringCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(threadsMonitoringCheckbox, ENABLE_THREADS_CHECKBOX_TEXT);
-        threadsMonitoringCheckbox.setToolTipText(STP_MONITOR_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(threadsMonitoringCheckbox, Bundle.MemorySettingsAdvancedPanel_EnableThreadsCheckboxText());
+        threadsMonitoringCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
         threadsMonitoringCheckbox.setOpaque(false);
         threadsMonitoringCheckbox.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
@@ -551,8 +523,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // threadsSamplingCheckbox
         threadsSamplingCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, ENABLE_SAMPLING_CHECKBOX_TEXT);
-        threadsSamplingCheckbox.setToolTipText(STP_MONITOR_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, Bundle.MemorySettingsAdvancedPanel_EnableSamplingCheckboxText());
+        threadsSamplingCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
         threadsSamplingCheckbox.setOpaque(false);
         threadsSamplingCheckbox.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
@@ -568,7 +540,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         // globalSettingsPanel
         globalSettingsPanel = new JPanel(new GridBagLayout());
         globalSettingsPanel.setOpaque(false);
-        globalSettingsPanel.setBorder(BorderFactory.createTitledBorder(GLOBAL_SETTINGS_CAPTION));
+        globalSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.MemorySettingsAdvancedPanel_GlobalSettingsCaption()));
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -580,8 +552,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // overrideSettingsCheckbox
         overrideSettingsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(overrideSettingsCheckbox, OVERRIDE_SETTINGS_CHECKBOX_TEXT);
-        overrideSettingsCheckbox.setToolTipText(STP_OVERRIDE_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(overrideSettingsCheckbox, Bundle.MemorySettingsAdvancedPanel_OverrideSettingsCheckboxText());
+        overrideSettingsCheckbox.setToolTipText(Bundle.StpOverrideTooltip());
         overrideSettingsCheckbox.setOpaque(false);
         overrideSettingsCheckbox.setSelected(true);
         overrideSettingsCheckbox.addChangeListener(new ChangeListener() {
@@ -600,8 +572,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // workingDirectoryLabel
         workingDirectoryLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirectoryLabel, WORKDIR_LABEL_TEXT);
-        workingDirectoryLabel.setToolTipText(STP_WORKDIR_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(workingDirectoryLabel, Bundle.MemorySettingsAdvancedPanel_WorkDirLabelText());
+        workingDirectoryLabel.setToolTipText(Bundle.StpWorkDirTooltip());
         workingDirectoryLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -619,7 +591,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
                 }
             };
         workingDirectoryLabel.setLabelFor(workingDirectoryTextField);
-        workingDirectoryTextField.setToolTipText(STP_WORKDIR_TOOLTIP);
+        workingDirectoryTextField.setToolTipText(Bundle.StpWorkDirTooltip());
         workingDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
             public void removeUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
@@ -638,8 +610,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         // workingDirectorySelectLink
         Color linkColor = Color.RED;
         String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
-        workingDirectorySelectLink = new HyperlinkLabel("<a href='#'>" + CHOOSE_WORKDIR_LINK_TEXT + "</a>", //NOI18N
-                                                        "<a href='#' color=\"" + colorText + "\">" + CHOOSE_WORKDIR_LINK_TEXT
+        workingDirectorySelectLink = new HyperlinkLabel("<a href='#'>" + Bundle.MemorySettingsAdvancedPanel_ChooseWorkDirLinkText() + "</a>", //NOI18N
+                                                        "<a href='#' color=\"" + colorText + "\">" + Bundle.MemorySettingsAdvancedPanel_ChooseWorkDirLinkText()
                                                         + "</a>", //NOI18N
                                                         new Runnable() {
                 public void run() {
@@ -663,8 +635,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // javaPlatformLabel
         javaPlatformLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, JAVA_PLATFORM_LABEL_TEXT);
-        javaPlatformLabel.setToolTipText(STP_JPLATFORM_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, Bundle.MemorySettingsAdvancedPanel_JavaPlatformLabelText());
+        javaPlatformLabel.setToolTipText(Bundle.StpJPlatformTooltip());
         javaPlatformLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -676,13 +648,13 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         globalSettingsPanel.add(javaPlatformLabel, constraints);
 
         // javaPlatformCombo
-        javaPlatformCombo = new JComboBox(new Object[] { DO_NOT_OVERRIDE_STRING }) {
+        javaPlatformCombo = new JComboBox(new Object[] { Bundle.MemorySettingsAdvancedPanel_DoNotOverrideString() }) {
                 public Dimension getMinimumSize() {
                     return getPreferredSize();
                 }
             };
         javaPlatformLabel.setLabelFor(javaPlatformCombo);
-        javaPlatformCombo.setToolTipText(STP_JPLATFORM_TOOLTIP);
+        javaPlatformCombo.setToolTipText(Bundle.StpJPlatformTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 2;
@@ -694,8 +666,8 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
 
         // vmArgumentsLabel
         vmArgumentsLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(vmArgumentsLabel, JVM_ARGUMENTS_LABEL_TEXT);
-        vmArgumentsLabel.setToolTipText(STP_VMARGS_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(vmArgumentsLabel, Bundle.MemorySettingsAdvancedPanel_JvmArgumentsLabelText());
+        vmArgumentsLabel.setToolTipText(Bundle.StpVmArgsTooltip());
         vmArgumentsLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -713,7 +685,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
                 }
             };
         vmArgumentsLabel.setLabelFor(vmArgumentsTextField);
-        vmArgumentsTextField.setToolTipText(STP_VMARGS_TOOLTIP);
+        vmArgumentsTextField.setToolTipText(Bundle.StpVmArgsTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 3;
@@ -764,7 +736,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
     private void updateJavaPlatformCombo(String platformNameToSelect) {
         List<JavaPlatform> supportedPlatforms = JavaPlatform.getPlatforms();
         String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
-        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
+        supportedPlatformNames[0] = Bundle.MemorySettingsAdvancedPanel_DoNotOverrideString();
 
         for (int i = 1; i < supportedPlatformNames.length; i++) {
             supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();

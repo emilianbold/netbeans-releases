@@ -60,7 +60,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -73,6 +72,10 @@ import javax.swing.UIManager;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TaskChooser_MorpherAccessName=Predefined profiling task",
+    "TaskChooser_MorpherAccessDescr=Click to expand the task and select a profiling configuration"
+})
 public class TaskChooser extends JPanel {
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
 
@@ -98,14 +101,6 @@ public class TaskChooser extends JPanel {
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String MORPHER_ACCESS_NAME = NbBundle.getMessage(MonitorSettingsBasicPanel.class,
-                                                                          "TaskChooser_MorpherAccessName"); // NOI18N
-    private static final String MORPHER_ACCESS_DESCR = NbBundle.getMessage(MonitorSettingsBasicPanel.class,
-                                                                           "TaskChooser_MorpherAccessDescr"); // NOI18N
-                                                                                                              // -----
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -208,8 +203,8 @@ public class TaskChooser extends JPanel {
         JComponent itemLargeComponent = setupItemLargeComponent(item);
 
         final ComponentMorpher morpher = new ComponentMorpher(itemSmallComponent, itemLargeComponent, 6, 10);
-        morpher.getAccessibleContext().setAccessibleName(MORPHER_ACCESS_NAME); // NOI18N
-        morpher.getAccessibleContext().setAccessibleDescription(MORPHER_ACCESS_DESCR); // NOI18N
+        morpher.getAccessibleContext().setAccessibleName(Bundle.TaskChooser_MorpherAccessName()); // NOI18N
+        morpher.getAccessibleContext().setAccessibleDescription(Bundle.TaskChooser_MorpherAccessDescr()); // NOI18N
 
         final XPStyleBorder morpherBorder = XPStyleBorder.getDefaultInstance(SelectProfilingTask.BACKGROUND_COLOR_INACTIVE,
                                                                              parentColor);

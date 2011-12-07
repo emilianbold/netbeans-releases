@@ -90,6 +90,30 @@ import org.openide.util.Lookup;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TakeSnapshotProfilingPoint_NoDataAvailableMsg=no data available",
+    "TakeSnapshotProfilingPoint_RemoteUnsupportedMsg=no data available\\: not supported for remote profiling",
+    "TakeSnapshotProfilingPoint_NoDataJdkMsg=no data available\\: JDK 1.6, 1.7 or 1.5.0_12 is required",
+    "TakeSnapshotProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
+    "TakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
+    "TakeSnapshotProfilingPoint_NoResultsString=No results available",
+    "TakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
+    "TakeSnapshotProfilingPoint_NoHitsString=no hits",
+    "TakeSnapshotProfilingPoint_HeaderTypeString=<b>Type\\:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled\\:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderProjectString=<b>Project\\:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderLocationString=<b>Location\\:</b> <a href='#'>{0}, line {1}</a>",
+    "TakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type\\:</b> profiling data",
+    "TakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type\\:</b> heap dump",
+    "TakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to\\:</b> project",
+    "TakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to\\:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results\\:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits\\:</b> {0}",
+    "TakeSnapshotProfilingPoint_OpenSnapshotString=open snapshot",
+    "TakeSnapshotProfilingPoint_HitString=<b>{0}.</b> hit at <b>{1}</b>, {2}",
+    "TakeSnapshotProfilingPoint_SnapshotNotAvailableMsg=Saved snapshot is no longer available.",
+    "TakeSnapshotProfilingPoint_DataString=Data\\:"
+})
 public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -171,7 +195,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
 
             synchronized(resultsSync) {
                 if (!hasResults()) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.TakeSnapshotProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
@@ -187,7 +211,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         void refreshProperties() {
             setName(TakeSnapshotProfilingPoint.this.getName());
             setIcon(((ImageIcon) TakeSnapshotProfilingPoint.this.getFactory().getIcon()).getImage());
-            getAccessibleContext().setAccessibleDescription(MessageFormat.format(REPORT_ACCESS_DESCR, new Object[] { getName() }));
+            getAccessibleContext().setAccessibleDescription(Bundle.TakeSnapshotProfilingPoint_ReportAccessDescr(getName()));
         }
 
         private String getDataResultItem(int index) {
@@ -200,24 +224,22 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
                 //String threadInformation = (threadName == null ? "&lt;unknown thread&gt;" : (threadClassName == null ? threadName : threadName + " (" + threadClassName + ")"));
                 String resultString = result.getResultString();
                 String snapshotInformation = resultString.startsWith(SNAPSHOT_LOCATION_URLMASK)
-                                             ? ("<a href='" + resultString + "'>" + OPEN_SNAPSHOT_STRING + "</a>") : resultString; // NOI18N
+                                             ? ("<a href='" + resultString + "'>" + Bundle.TakeSnapshotProfilingPoint_OpenSnapshotString() + "</a>") : resultString; // NOI18N
                 //return "<b>" + (index + 1) + ".</b> hit at <b>" + Utils.formatProfilingPointTimeHiRes(result.getTimestamp()) + "</b> by " + threadInformation + ", " + snapshotInformation;
 
-                return MessageFormat.format(HIT_STRING,
-                                            new Object[] {
-                                                (index + 1), Utils.formatProfilingPointTimeHiRes(result.getTimestamp()),
-                                                snapshotInformation
-                                            });
+                return Bundle.TakeSnapshotProfilingPoint_HitString(
+                            (index + 1), Utils.formatProfilingPointTimeHiRes(result.getTimestamp()),
+                            snapshotInformation);
             }
         }
 
         private String getHeaderEnabled() {
-            return MessageFormat.format(HEADER_ENABLED_STRING, new Object[] { TakeSnapshotProfilingPoint.this.isEnabled() });
+            return Bundle.TakeSnapshotProfilingPoint_HeaderEnabledString(TakeSnapshotProfilingPoint.this.isEnabled());
         }
 
         private String getHeaderHitsCount() {
             synchronized(resultsSync) {
-                return MessageFormat.format(HEADER_HITS_STRING, new Object[] { results.size() });
+                return Bundle.TakeSnapshotProfilingPoint_HeaderHitsString(results.size());
             }
         }
 
@@ -226,12 +248,13 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
             String shortFileName = new File(location.getFile()).getName();
             int lineNumber = location.getLine();
 
-            return MessageFormat.format(HEADER_LOCATION_STRING, new Object[] { shortFileName, lineNumber });
+            return Bundle.TakeSnapshotProfilingPoint_HeaderLocationString(shortFileName, lineNumber);
         }
 
         private String getHeaderMode() {
-            return TakeSnapshotProfilingPoint.this.getSnapshotType().equals(TYPE_PROFDATA_KEY) ? HEADER_MODE_DATA_STRING
-                                                                                               : HEADER_MODE_DUMP_STRING;
+            return TakeSnapshotProfilingPoint.this.getSnapshotType().equals(TYPE_PROFDATA_KEY) ? 
+                        Bundle.TakeSnapshotProfilingPoint_HeaderModeDataString()
+                        : Bundle.TakeSnapshotProfilingPoint_HeaderModeDumpString();
         }
 
         private String getHeaderName() {
@@ -239,29 +262,23 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         }
 
         private String getHeaderProject() {
-            return MessageFormat.format(HEADER_PROJECT_STRING,
-                                        new Object[] {
-                                            ProjectUtilities.getDisplayName(TakeSnapshotProfilingPoint.this.getProject())
-                                        });
+            return Bundle.TakeSnapshotProfilingPoint_HeaderProjectString(
+                        ProjectUtilities.getDisplayName(TakeSnapshotProfilingPoint.this.getProject()));
         }
 
         private String getHeaderResetResults() {
-            return MessageFormat.format(HEADER_RESET_RESULTS_STRING,
-                                        new Object[] { TakeSnapshotProfilingPoint.this.getResetResults() });
+            return Bundle.TakeSnapshotProfilingPoint_HeaderResetResultsString(
+                        TakeSnapshotProfilingPoint.this.getResetResults());
         }
 
         private String getHeaderTarget() {
-            return TakeSnapshotProfilingPoint.this.getSnapshotTarget().equals(TARGET_PROJECT_KEY) ? HEADER_TARGET_PROJECT_STRING
-                                                                                                  : MessageFormat.format(HEADER_TARGET_PROJECT_STRING,
-                                                                                                                         new Object[] {
-                                                                                                                             TakeSnapshotProfilingPoint.this
-                                                                                                                             .getSnapshotFile()
-                                                                                                                         });
+            return TakeSnapshotProfilingPoint.this.getSnapshotTarget().equals(TARGET_PROJECT_KEY) ? 
+                        Bundle.TakeSnapshotProfilingPoint_HeaderTargetProjectString()
+                        : Bundle.TakeSnapshotProfilingPoint_HeaderTargetCustomString(TakeSnapshotProfilingPoint.this.getSnapshotFile());
         }
 
         private String getHeaderType() {
-            return MessageFormat.format(HEADER_TYPE_STRING,
-                                        new Object[] { TakeSnapshotProfilingPoint.this.getFactory().getType() });
+            return Bundle.TakeSnapshotProfilingPoint_HeaderTypeString(TakeSnapshotProfilingPoint.this.getFactory().getType());
         }
 
         private void initComponents() {
@@ -303,14 +320,14 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
                             }
                         } else {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    SNAPSHOT_NOT_AVAILABLE_MSG, NotifyDescriptor.WARNING_MESSAGE));
+                                    Bundle.TakeSnapshotProfilingPoint_SnapshotNotAvailableMsg(), NotifyDescriptor.WARNING_MESSAGE));
                         }
                     }
                 };
 
             JScrollPane dataAreaScrollPane = new JScrollPane(dataArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            TitledBorder tb = new TitledBorder(DATA_STRING);
+            TitledBorder tb = new TitledBorder(Bundle.TakeSnapshotProfilingPoint_DataString());
             tb.setTitleFont(Utils.getTitledBorderFont(tb).deriveFont(Font.BOLD));
             tb.setTitleColor(javax.swing.UIManager.getColor("Label.foreground")); // NOI18N
             dataAreaScrollPane.setBorder(tb);
@@ -359,53 +376,6 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String NO_DATA_AVAILABLE_MSG = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                            "TakeSnapshotProfilingPoint_NoDataAvailableMsg"); // NOI18N
-    private static final String NO_DATA_REMOTE_MSG = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                         "TakeSnapshotProfilingPoint_RemoteUnsupportedMsg"); // NOI18N
-    private static final String NO_DATA_JDK_MSG = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                      "TakeSnapshotProfilingPoint_NoDataJdkMsg"); // NOI18N
-    private static final String ONE_HIT_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                     "TakeSnapshotProfilingPoint_OneHitString"); // NOI18N
-    private static final String N_HITS_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                    "TakeSnapshotProfilingPoint_NHitsString"); // NOI18N
-    private static final String NO_RESULTS_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                        "TakeSnapshotProfilingPoint_NoResultsString"); // NOI18N
-    private static final String REPORT_ACCESS_DESCR = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                          "TakeSnapshotProfilingPoint_ReportAccessDescr"); // NOI18N
-    private static final String NO_HITS_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                     "TakeSnapshotProfilingPoint_NoHitsString"); // NOI18N
-    private static final String HEADER_TYPE_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                         "TakeSnapshotProfilingPoint_HeaderTypeString"); // NOI18N
-    private static final String HEADER_ENABLED_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                            "TakeSnapshotProfilingPoint_HeaderEnabledString"); // NOI18N
-    private static final String HEADER_PROJECT_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                            "TakeSnapshotProfilingPoint_HeaderProjectString"); // NOI18N
-    private static final String HEADER_LOCATION_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                             "TakeSnapshotProfilingPoint_HeaderLocationString"); // NOI18N
-    private static final String HEADER_MODE_DATA_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                              "TakeSnapshotProfilingPoint_HeaderModeDataString"); // NOI18N
-    private static final String HEADER_MODE_DUMP_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                              "TakeSnapshotProfilingPoint_HeaderModeDumpString"); // NOI18N
-    private static final String HEADER_TARGET_PROJECT_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                                   "TakeSnapshotProfilingPoint_HeaderTargetProjectString"); // NOI18N
-    private static final String HEADER_TARGET_CUSTOM_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                                  "TakeSnapshotProfilingPoint_HeaderTargetCustomString"); // NOI18N
-    private static final String HEADER_RESET_RESULTS_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                                  "TakeSnapshotProfilingPoint_HeaderResetResultsString"); // NOI18N
-    private static final String HEADER_HITS_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                         "TakeSnapshotProfilingPoint_HeaderHitsString"); // NOI18N
-    private static final String OPEN_SNAPSHOT_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                           "TakeSnapshotProfilingPoint_OpenSnapshotString"); // NOI18N
-    private static final String HIT_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                 "TakeSnapshotProfilingPoint_HitString"); // NOI18N
-    private static final String SNAPSHOT_NOT_AVAILABLE_MSG = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                                 "TakeSnapshotProfilingPoint_SnapshotNotAvailableMsg"); // NOI18N
-    private static final String DATA_STRING = NbBundle.getMessage(TakeSnapshotProfilingPoint.class,
-                                                                  "TakeSnapshotProfilingPoint_DataString"); // NOI18N
-                                                                                                            // -----
     static final String PROPERTY_TYPE = "p_snapshot"; // NOI18N
     public static final String TYPE_PROFDATA_KEY = "profdata"; // NOI18N
     public static final String TYPE_HEAPDUMP_KEY = "heapdump"; // NOI18N
@@ -552,17 +522,13 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
                 int size = results.size();
 
                 return (results.size() == 1)
-                       ? MessageFormat.format(ONE_HIT_STRING,
-                                              new Object[] {
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              })
-                       : MessageFormat.format(N_HITS_STRING,
-                                              new Object[] {
-                                                  results.size(),
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              });
+                       ? Bundle.TakeSnapshotProfilingPoint_OneHitString(
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
+                       : Bundle.TakeSnapshotProfilingPoint_NHitsString(
+                            results.size(),
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
             } else {
-                return NO_RESULTS_STRING;
+                return Bundle.TakeSnapshotProfilingPoint_NoResultsString();
             }
         }
     }
@@ -631,9 +597,9 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
             TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
 
             if (runner.getProfilingSessionStatus().remoteProfiling) {
-                snapshotFilename = NO_DATA_REMOTE_MSG;
+                snapshotFilename = Bundle.TakeSnapshotProfilingPoint_RemoteUnsupportedMsg();
             } else if (!runner.hasSupportedJDKForHeapDump()) {
-                snapshotFilename = NO_DATA_JDK_MSG;
+                snapshotFilename = Bundle.TakeSnapshotProfilingPoint_NoDataJdkMsg();
             } else {
                 snapshotFilename = takeHeapdumpHit(hitEvent.getTimestamp());
             }
@@ -695,10 +661,10 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
 
-            return NO_DATA_AVAILABLE_MSG;
+            return Bundle.TakeSnapshotProfilingPoint_NoDataAvailableMsg();
         }
 
-        return NO_DATA_AVAILABLE_MSG;
+        return Bundle.TakeSnapshotProfilingPoint_NoDataAvailableMsg();
     }
 
     private static LoadedSnapshot takeSnapshot() throws CPUResultsSnapshot.NoDataAvailableException {
@@ -729,6 +695,6 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
             }
         }
 
-        return (snapshotFilename == null) ? NO_DATA_AVAILABLE_MSG : snapshotFilename;
+        return (snapshotFilename == null) ? Bundle.TakeSnapshotProfilingPoint_NoDataAvailableMsg() : snapshotFilename;
     }
 }

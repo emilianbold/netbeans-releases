@@ -109,7 +109,7 @@ public class ClassNode extends ContainerNode {
 
     /** Creates a new instance of ClassNode */
     public ClassNode(SourceClassInfo cInfo, String displayName, Icon icon, final ContainerNode parent) {
-        super((cInfo != null ? cInfo.getQualifiedName() : NbBundle.getMessage(ClassNode.class, "LBL_Unknown")), displayName, icon, parent); // NOI8N
+        super((cInfo != null ? cInfo.getQualifiedName() : Bundle.LBL_Unknown()), displayName, icon, parent); // NOI8N
         this.cInfo = cInfo;
         
         if (isAnonymous()) {

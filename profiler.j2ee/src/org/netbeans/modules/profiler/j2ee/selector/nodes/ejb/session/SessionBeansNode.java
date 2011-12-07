@@ -110,19 +110,12 @@ public class SessionBeansNode extends ContainerNode {
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String SESSION_BEANS_STRING = NbBundle.getMessage(SessionBeansNode.class,
-                                                                           "SessionBeansNode_SessionBeansString"); // NOI18N
-                                                                                                                   // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of SessionBeansNode */
+    @NbBundle.Messages("SessionBeansNode_SessionBeansString=Session Beans")
     public SessionBeansNode(final ContainerNode parent) {
-        super(SESSION_BEANS_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
+        super(Bundle.SessionBeansNode_SessionBeansString(), Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
