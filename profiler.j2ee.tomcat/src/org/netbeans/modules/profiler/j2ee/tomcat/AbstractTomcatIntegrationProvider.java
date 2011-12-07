@@ -96,7 +96,7 @@ import org.openide.util.NbBundle;
     "TomcatIntegrationProvider_AdditionalStepsStep3DirectMsg=The profiler connects to Tomcat JVM and the server will start in profiling mode.",
     "TomcatIntegrationProvider_AdditionalStepsStep3DynamicPidMsg=When want to connect the profiler to Tomcat, select the correct server process in the \"Select Process\" dialog and click OK.",
     "TomcatIntegrationProvider_AdditionalStepsAutoStartMsg=If you check the \"Automatically start the server\" checkbox, Tomcat will be started automatically after this wizard finishes.",
-    "TomcatIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}.",
+    "TomcatIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}."
 })
 public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------

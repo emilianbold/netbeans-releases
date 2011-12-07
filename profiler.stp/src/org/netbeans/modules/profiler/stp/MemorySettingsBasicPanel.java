@@ -80,7 +80,7 @@ import org.openide.util.Lookup;
     "MemorySettingsBasicPanel_AllocLabelText=object allocations",
     "MemorySettingsBasicPanel_RecordTracesCheckboxText=R&ecord stack trace for allocations",
     "MemorySettingsBasicPanel_UsePpsCheckboxText=&Use defined Profiling Points",
-    "MemorySettingsBasicPanel_ShowPpsString=Show active Profiling Points",
+    "MemorySettingsBasicPanel_ShowPpsString=Show active Profiling Points"
 })
 public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
