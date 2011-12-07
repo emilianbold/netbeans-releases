@@ -82,7 +82,7 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
     DelegatingLookupImpl(Lookup base, Lookup providerLookup, String path) {
         assert base != null;
         baseLookup = base;
-        providerResult = providerLookup.lookup(new Lookup.Template<LookupProvider>(LookupProvider.class));
+        providerResult = providerLookup.lookupResult(LookupProvider.class);
         metaMergers = providerLookup.lookupResult(MetaLookupMerger.class);
         metaMergerListener = WeakListeners.change(this, null);
         assert isAllJustLookupProviders(providerLookup) : "Layer content at " + path + " contains other than LookupProvider instances! See messages.log file for more details.";
