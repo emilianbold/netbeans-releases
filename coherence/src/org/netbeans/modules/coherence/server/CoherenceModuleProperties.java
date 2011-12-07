@@ -39,54 +39,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server.actions;
-
-import org.netbeans.modules.coherence.server.CoherenceServer;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+package org.netbeans.modules.coherence.server;
 
 /**
- * Performs stop action for Coherence server.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class StopServerAction extends NodeAction {
+public class CoherenceModuleProperties {
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(StartServerAction.class, "ACTION_ServerStop"); // NOI18N
-    }
+    /** Key for Coherence instance ID in {@link InstanceProperties}. */
+    public static final String PROP_ID = "base.coherence.id"; //NOI18N
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    /** Key for Coherence location path in {@link InstanceProperties}. */
+    public static final String PROP_LOCATION = "base.coherence.location"; //NOI18N
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        if(activatedNodes != null && activatedNodes.length > 0) {
-            for(Node node : activatedNodes) {
-                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
-                if(coherenceServer != null) {
-                    coherenceServer.stop();
-                }
-            }
-        }
-    }
+    /** Key for Coherence instance display name in {@link InstanceProperties}. */
+    public static final String PROP_DISPLAY_NAME = "base.displayName"; // NOI18N
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if(activatedNodes != null && activatedNodes.length > 0) {
-            for(Node node : activatedNodes) {
-                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
-                if(coherenceServer != null) {
-                    return coherenceServer.isEngaged();
-                }
-            }
-        }
-        return false;
-    }
+    /** Key for Coherence instance classpath in {@link InstanceProperties}. It includes
+     * Coherence base JAR as well as additional Coherence or another JARs. */
+    public static final String PROP_CLASSPATH = "base.coherence.classpath"; //NOI18N
+
+    /** Key for Coherence instance java flags in {@link InstanceProperties}. */
+    public static final String PROP_JAVA_FLAGS = "base.java.flags"; //NOI18N
+
+    /** Key for Coherence instance custom properties in {@link InstanceProperties}. */
+    public static final String PROP_CUSTOM_PROPERTIES = "base.custom.properties"; //NOI18N
+
+    /** Delimiter for serializing additional libraries from array to string and opposite. */
+    public static final String CLASSPATH_SEPARATOR = "#@#"; //NOI18N
+
+    /** Default display name of Coherence server. */
+    public static final String DISPLAY_NAME_DEFAULT = "Oracle Coherence"; // NOI18N
 
 }

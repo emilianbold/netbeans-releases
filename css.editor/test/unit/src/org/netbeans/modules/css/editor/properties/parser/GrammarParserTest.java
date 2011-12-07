@@ -42,11 +42,9 @@
 package org.netbeans.modules.css.editor.properties.parser;
 
 import java.util.Collections;
-import junit.framework.TestSuite;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.css.editor.module.spi.Property;
-import static org.junit.Assert.*;
 
 /**
  *

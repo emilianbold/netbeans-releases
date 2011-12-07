@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -61,6 +62,7 @@ import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.properties.parser.*;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -77,11 +79,43 @@ public class CssModuleTestBase extends CslTestBase {
 
     protected static boolean PRINT_GRAMMAR_RESOLVE_TIMES = false;
     protected static boolean PRINT_INFO_IN_ASSERT_RESOLVE = false;
-    
+
+    protected void assertCssCode(String code) throws ParseException {
+        Source source = Source.create(getDocument(code));
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                Result result = resultIterator.getParserResult();
+                assertNotNull(result);
+                assertTrue(result instanceof CssCslParserResult);
+                CssCslParserResult cssresult = (CssCslParserResult) result;
+                Collection<? extends Error> errors = cssresult.getDiagnostics();
+                if(errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder();
+                    for(Iterator<? extends Error> itr = errors.iterator(); itr.hasNext(); ) {
+                        Error e = itr.next();
+                        sb.append(e.getSeverity());
+                        sb.append(" at ");
+                        sb.append(e.getStartPosition());
+                        sb.append(':');
+                        sb.append(e.getDescription());
+                        if(itr.hasNext()) {
+                            sb.append(", ");
+                        }
+                    }
+                    assertEquals(String.format("Unexpected errors found: %s.", sb), 0, errors.size());
+                }
+                
+                
+            }
+        });
+    }
+
     protected PropertyValue assertResolve(String grammar, String inputText) {
         return assertResolve(grammar, inputText, true);
     }
-    
+
     protected PropertyValue assertNotResolve(String grammar, String inputText) {
         return assertResolve(grammar, inputText, false);
     }
@@ -92,28 +126,28 @@ public class CssModuleTestBase extends CslTestBase {
         long b = System.currentTimeMillis();
         return assertResolve(tree, inputText, expectedSuccess);
     }
-    
-    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText) {        
-        return assertResolve(tree, inputText, true);        
+
+    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText) {
+        return assertResolve(tree, inputText, true);
     }
-    
-    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {        
+
+    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {
         if (PRINT_INFO_IN_ASSERT_RESOLVE) {
             System.out.println("Grammar:");
             System.out.println(tree.toString2(0));
         }
-        
+
         long a = System.currentTimeMillis();
         PropertyValue pv = new PropertyValue(tree, inputText);
         long c = System.currentTimeMillis();
-        
-        if(PRINT_GRAMMAR_RESOLVE_TIMES) {
+
+        if (PRINT_GRAMMAR_RESOLVE_TIMES) {
             System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
         }
         if (pv.isResolved() != expectedSuccess) {
             assertTrue("Unexpected parsing result", false);
         }
-        
+
         return pv;
     }
 
@@ -121,7 +155,6 @@ public class CssModuleTestBase extends CslTestBase {
         assertResolve(grammar, inputText, false);
     }
 
-    
     protected void assertAlternatives(PropertyValue propertyValue, String... expected) {
         Set<ValueGrammarElement> alternatives = propertyValue.getAlternatives();
         Collection<String> alts = convert(alternatives);
@@ -135,12 +168,12 @@ public class CssModuleTestBase extends CslTestBase {
         } else {
             Collection<String> alts2 = new ArrayList<String>(alts);
             Collection<String> expc2 = new ArrayList<String>(expc);
-            
+
             alts2.removeAll(expc);
             expc2.removeAll(alts);
-            
+
             assertTrue(String.format("Missing expected: %s; Unexpected: %s", toString(expc2), toString(alts2)), alts2.isEmpty() && expc2.isEmpty());
-            
+
         }
     }
 
@@ -188,18 +221,18 @@ public class CssModuleTestBase extends CslTestBase {
     protected String getPreferredMimeType() {
         return CssLanguage.CSS_MIME_TYPE;
     }
-    
+
     protected CssEditorModule getCssModuleByClass(Class clazz) {
-        for(CssEditorModule module : CssModuleSupport.getModules()) {
-            if(module.getClass().equals(clazz)) {
+        for (CssEditorModule module : CssModuleSupport.getModules()) {
+            if (module.getClass().equals(clazz)) {
                 return module;
             }
         }
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @param declaration - in the form: "property: value" as in css rule
      */
     protected void assertPropertyDeclaration(String declaration) {
@@ -224,11 +257,7 @@ public class CssModuleTestBase extends CslTestBase {
         assertNotNull(String.format("Cannot find property %s", propertyName), model);
 
         for (String val : values) {
-            PropertyValue value = new PropertyValue(model, val);
-            if (!value.isResolved()) {
-                throw new AssertionFailedError(String.format("Error parsing property value '%s' of the property '%s'", val, propertyName));
-            }
-
+            assertNotNull(assertResolve(model.getGrammarElement(), val));
         }
 
     }

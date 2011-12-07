@@ -46,7 +46,7 @@ import org.netbeans.api.server.properties.InstancePropertiesManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.coherence.server.CoherenceInstance;
 import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
-import org.netbeans.modules.coherence.server.CoherenceProperties;
+import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 
 /**
  *
@@ -67,15 +67,15 @@ public class CloneServerPanelTest extends NbTestCase {
         assertEquals("Coherence 3.7 Clone(1)", CloneServerPanel.getUniqueName("Coherence 3.7"));
 
         InstanceProperties instanceProperties = InstancePropertiesManager.getInstance().createProperties("Coherence");
-        instanceProperties.putInt(CoherenceProperties.PROP_ID, 123456);
-        instanceProperties.putString(CoherenceProperties.PROP_DISPLAY_NAME, "Coherence 3.7 Clone(1)");
+        instanceProperties.putInt(CoherenceModuleProperties.PROP_ID, 123456);
+        instanceProperties.putString(CoherenceModuleProperties.PROP_DISPLAY_NAME, "Coherence 3.7 Clone(1)");
         CoherenceInstance instance = CoherenceInstance.create(instanceProperties);
         CoherenceInstanceProvider.getCoherenceProvider().addServerInstance(instance);
         assertEquals("Coherence 3.7 Clone(2)", CloneServerPanel.getUniqueName("Coherence 3.7 Clone(1)"));
 
         InstanceProperties instanceProperties2 = InstancePropertiesManager.getInstance().createProperties("Coherence");
-        instanceProperties2.putInt(CoherenceProperties.PROP_ID, 987654);
-        instanceProperties2.putString(CoherenceProperties.PROP_DISPLAY_NAME, "Coherence 3.7 Clone(2)");
+        instanceProperties2.putInt(CoherenceModuleProperties.PROP_ID, 987654);
+        instanceProperties2.putString(CoherenceModuleProperties.PROP_DISPLAY_NAME, "Coherence 3.7 Clone(2)");
         CoherenceInstance instance2 = CoherenceInstance.create(instanceProperties2);
         CoherenceInstanceProvider.getCoherenceProvider().addServerInstance(instance2);
         assertEquals("Coherence 3.7 Clone(3)", CloneServerPanel.getUniqueName("Coherence 3.7 Clone"));

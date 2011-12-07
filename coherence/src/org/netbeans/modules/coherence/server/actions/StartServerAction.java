@@ -82,7 +82,7 @@ public class StartServerAction extends NodeAction {
             for (Node node : activatedNodes) {
                 CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
                 if (coherenceServer != null) {
-                    return !coherenceServer.isRunning();
+                    return !coherenceServer.isEngaged();
                 }
             }
         }

@@ -427,8 +427,8 @@ public class W3CSelectorsTest extends CssTestBase {
 //    }
 //
 //    private static String escape(String s) {
-//        s = s.replace("\"", "\\\"");
 //        s = s.replace("\\", "\\\\");
+//        s = s.replace("\"", "\\\"");
 //        return s;
 //    }
 

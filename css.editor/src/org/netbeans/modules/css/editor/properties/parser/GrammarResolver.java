@@ -447,7 +447,11 @@ public class GrammarResolver {
                         //put the state of the best match back
                         backupInputState(successState);
                         if (LOG) {
-                            log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
+                            if(bestBranches.size() > 1) {
+                                log(String.format(" !cannot decide what branch to choose from %s - decided to use first best match %s, %s", bestBranches.size(), bestMatchElement.path(), successState));                                
+                            } else {
+                                log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
+                            }
                         }
 
                         //if we are in a COLLECTION or ALL, we need to remove 
