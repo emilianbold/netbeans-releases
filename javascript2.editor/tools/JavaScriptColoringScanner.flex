@@ -1,0 +1,399 @@
+package org.netbeans.modules.javascript2.editor.lexer;
+
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+
+%%
+
+%public
+%final
+%class JavaScriptColoringLexer
+%type JsTokenId
+%unicode
+%caseless
+%char
+
+%{
+    private StateStack stack = new StateStack();
+
+    private LexerInput input;
+
+    private JsTokenId lastToken;
+
+    public JavaScriptColoringLexer(LexerRestartInfo info) {
+        this.input = info.input();
+
+        if(info.state() != null) {
+            //reset state
+            setState((LexerState)info.state());
+        } else {
+            //initial state
+            zzState = zzLexicalState = YYINITIAL;
+            stack.clear();
+        }
+    }
+
+    public static final class LexerState  {
+        final StateStack stack;
+        /** the current state of the DFA */
+        final int zzState;
+        /** the current lexical state */
+        final int zzLexicalState;
+
+
+        LexerState (StateStack stack, int zzState, int zzLexicalState) {
+            this.stack = stack;
+            this.zzState = zzState;
+            this.zzLexicalState = zzLexicalState;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                    return true;
+            }
+
+            if (obj == null || obj.getClass() != this.getClass()) {
+                    return false;
+            }
+
+            LexerState state = (LexerState) obj;
+            return (this.stack.equals(state.stack)
+                && (this.zzState == state.zzState)
+                && (this.zzLexicalState == state.zzLexicalState));
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 11;
+            hash = 31 * hash + this.zzState;
+            hash = 31 * hash + this.zzLexicalState;
+            if (stack != null) {
+                hash = 31 * hash + this.stack.hashCode();
+            }
+            return hash;
+        }
+    }
+
+    public LexerState getState() {
+        return new LexerState(stack.createClone(), zzState, zzLexicalState);
+    }
+
+    public void setState(LexerState state) {
+        this.stack.copyFrom(state.stack);
+        this.zzState = state.zzState;
+        this.zzLexicalState = state.zzLexicalState;
+    }
+
+    public JsTokenId nextToken() throws java.io.IOException {
+        JsTokenId token = yylex();
+        if (token != null && !JsTokenId.UNKNOWN.equals(token)
+            && !JsTokenId.WHITESPACE.equals(token)) {
+            lastToken = token;
+        }
+        return token;
+    }
+
+    private boolean canFollowLiteral() {
+        if (lastToken == null || "operator".equals(lastToken.primaryCategory())) {
+            return true;
+        }
+
+        switch (lastToken) {
+            case BRACKET_LEFT_PAREN:
+            case BRACKET_LEFT_BRACKET:
+            case KEYWORD_RETURN:
+            case KEYWORD_THROW:
+            case RESERVED_YIELD:
+            //case EOL:
+                return true;
+        }
+        return false;
+    }
+ // End user code
+
+%}
+
+/* main character classes */
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
+
+WhiteSpace = {LineTerminator} | [ \t\f]+
+
+/* comments */
+Comment = {TraditionalComment} | {EndOfLineComment}
+
+TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+EndOfLineComment = "//" {InputCharacter}* {LineTerminator}?
+
+/* identifiers */
+IdentifierPart = [:jletterdigit:]
+Identifier = [:jletter:]{IdentifierPart}*
+
+/* integer literals */
+DecIntegerLiteral = 0 | [1-9][0-9]*
+DecLongLiteral    = {DecIntegerLiteral} [lL]
+
+HexIntegerLiteral = 0 [xX] 0* {HexDigit} {1,8}
+HexLongLiteral    = 0 [xX] 0* {HexDigit} {1,16} [lL]
+HexDigit          = [0-9a-fA-F]
+
+OctIntegerLiteral = 0+ [1-3]? {OctDigit} {1,15}
+OctLongLiteral    = 0+ 1? {OctDigit} {1,21} [lL]
+OctDigit          = [0-7]
+
+/* floating point literals */
+FloatLiteral  = ({FLit1}|{FLit2}|{FLit3}) {Exponent}? [fF]
+DoubleLiteral = ({FLit1}|{FLit2}|{FLit3}) {Exponent}?
+
+FLit1    = [0-9]+ \. [0-9]*
+FLit2    = \. [0-9]+
+FLit3    = [0-9]+
+Exponent = [eE] [+-]? [0-9]+
+
+/* string and character literals */
+StringCharacter  = [^\r\n\"\\]
+SStringCharacter = [^\r\n\'\\]
+RegexpCharacter  = [^\r\n/\\]
+RegexpFirstCharacter  = [^\r\n/\\\*]
+
+%state STRING STRINGEND SSTRING SSTRINGEND REGEXP REGEXPEND
+
+%%
+
+<YYINITIAL> {
+
+  /* keywords 7.6.1.1 */
+  "break"                        { return JsTokenId.KEYWORD_BREAK; }
+  "case"                         { return JsTokenId.KEYWORD_CASE; }
+  "catch"                        { return JsTokenId.KEYWORD_CATCH; }
+  "continue"                     { return JsTokenId.KEYWORD_CONTINUE; }
+  "debugger"                     { return JsTokenId.KEYWORD_DEBUGGER; }
+  "default"                      { return JsTokenId.KEYWORD_DEFAULT; }
+  "delete"                       { return JsTokenId.KEYWORD_DELETE; }
+  "do"                           { return JsTokenId.KEYWORD_DO; }
+  "else"                         { return JsTokenId.KEYWORD_ELSE; }
+  "finally"                      { return JsTokenId.KEYWORD_FINALLY; }
+  "for"                          { return JsTokenId.KEYWORD_FOR; }
+  "function"                     { return JsTokenId.KEYWORD_FUNCTION; }
+  "if"                           { return JsTokenId.KEYWORD_IF; }
+  "in"                           { return JsTokenId.KEYWORD_IN; }
+  "instanceof"                   { return JsTokenId.KEYWORD_INSTANCEOF; }
+  "new"                          { return JsTokenId.KEYWORD_NEW; }
+  "return"                       { return JsTokenId.KEYWORD_RETURN; }
+  "switch"                       { return JsTokenId.KEYWORD_SWITCH; }
+  "this"                         { return JsTokenId.KEYWORD_THIS; }
+  "throw"                        { return JsTokenId.KEYWORD_THROW; }
+  "try"                          { return JsTokenId.KEYWORD_TRY; }
+  "typeof"                       { return JsTokenId.KEYWORD_TYPEOF; }
+  "var"                          { return JsTokenId.KEYWORD_VAR; }
+  "void"                         { return JsTokenId.KEYWORD_VOID; }
+  "while"                        { return JsTokenId.KEYWORD_WHILE; }
+  "with"                         { return JsTokenId.KEYWORD_WITH; }
+
+  /* reserved keywords 7.6.1.2 */
+  "class"                        { return JsTokenId.RESERVED_CLASS; }
+  "const"                        { return JsTokenId.RESERVED_CONST; }
+  "enum"                         { return JsTokenId.RESERVED_ENUM; }
+  "export"                       { return JsTokenId.RESERVED_EXPORT; }
+  "extends"                      { return JsTokenId.RESERVED_EXTENDS; }
+  "import"                       { return JsTokenId.RESERVED_IMPORT; }
+  "super"                        { return JsTokenId.RESERVED_SUPER; }
+
+  "implements"                   { return JsTokenId.RESERVED_IMPLEMENTS; }
+  "interface"                    { return JsTokenId.RESERVED_INTERFACE; }
+  "let"                          { return JsTokenId.RESERVED_LET; }
+  "package"                      { return JsTokenId.RESERVED_PACKAGE; }
+  "private"                      { return JsTokenId.RESERVED_PRIVATE; }
+  "protected"                    { return JsTokenId.RESERVED_PROTECTED; }
+  "public"                       { return JsTokenId.RESERVED_PUBLIC; }
+  "static"                       { return JsTokenId.RESERVED_STATIC; }
+  "yield"                        { return JsTokenId.RESERVED_YIELD; }
+
+
+  /* boolean literals */
+  "true"                         { return JsTokenId.KEYWORD_TRUE; }
+  "false"                        { return JsTokenId.KEYWORD_FALSE; }
+
+  /* null literal */
+  "null"                         { return JsTokenId.KEYWORD_NULL; }
+
+  "/"{RegexpFirstCharacter}{RegexpCharacter}+"/"{IdentifierPart}*
+                                 {
+                                     yypushback(tokenLength - 1);
+                                     if (canFollowLiteral()) {
+                                       yybegin(REGEXP);
+                                       return JsTokenId.REGEXP_BEGIN;
+                                     } else {
+                                       yybegin(YYINITIAL);
+                                       return JsTokenId.OPERATOR_DIVISION;
+                                     }
+                                 }
+  /* operators */
+
+  "("                            { return JsTokenId.BRACKET_LEFT_PAREN; }
+  ")"                            { return JsTokenId.BRACKET_RIGHT_PAREN; }
+  "{"                            { return JsTokenId.BRACKET_LEFT_CURLY; }
+  "}"                            { return JsTokenId.BRACKET_RIGHT_CURLY; }
+  "["                            { return JsTokenId.BRACKET_LEFT_BRACKET; }
+  "]"                            { return JsTokenId.BRACKET_RIGHT_BRACKET; }
+  ";"                            { return JsTokenId.OPERATOR_SEMICOLON; }
+  ","                            { return JsTokenId.OPERATOR_COMMA; }
+  "."                            { return JsTokenId.OPERATOR_DOT; }
+  "="                            { return JsTokenId.OPERATOR_ASSIGNMENT; }
+  ">"                            { return JsTokenId.OPERATOR_GREATER; }
+  "<"                            { return JsTokenId.OPERATOR_LOWER; }
+  "!"                            { return JsTokenId.OPERATOR_NOT; }
+  "~"                            { return JsTokenId.OPERATOR_BITWISE_NOT; }
+  "?"                            { return JsTokenId.OPERATOR_TERNARY; }
+  ":"                            { return JsTokenId.OPERATOR_COLON; }
+  "=="                           { return JsTokenId.OPERATOR_EQUALS; }
+  "<="                           { return JsTokenId.OPERATOR_LOWER_EQUALS; }
+  ">="                           { return JsTokenId.OPERATOR_GREATER_EQUALS; }
+  "!="                           { return JsTokenId.OPERATOR_NOT_EQUALS; }
+  "&&"                           { return JsTokenId.OPERATOR_AND; }
+  "||"                           { return JsTokenId.OPERATOR_OR; }
+  "++"                           { return JsTokenId.OPERATOR_INCREMENT; }
+  "--"                           { return JsTokenId.OPERATOR_DECREMENT; }
+  "+"                            { return JsTokenId.OPERATOR_PLUS; }
+  "-"                            { return JsTokenId.OPERATOR_MINUS; }
+  "*"                            { return JsTokenId.OPERATOR_MULTIPLICATION; }
+  "/"                            { return JsTokenId.OPERATOR_DIVISION; }
+  "&"                            { return JsTokenId.OPERATOR_BITWISE_AND; }
+  "|"                            { return JsTokenId.OPERATOR_BITWISE_OR; }
+  "^"                            { return JsTokenId.OPERATOR_BITWISE_XOR; }
+  "%"                            { return JsTokenId.OPERATOR_MODULUS; }
+  "<<"                           { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC; }
+  ">>"                           { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC; }
+  ">>>"                          { return JsTokenId.OPERATOR_RIGHT_SHIFT; }
+  "+="                           { return JsTokenId.OPERATOR_PLUS_ASSIGNMENT; }
+  "-="                           { return JsTokenId.OPERATOR_MINUS_ASSIGNMENT; }
+  "*="                           { return JsTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT; }
+  "/="                           { return JsTokenId.OPERATOR_DIVISION_ASSIGNMENT; }
+  "&="                           { return JsTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT; }
+  "|="                           { return JsTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT; }
+  "^="                           { return JsTokenId.OPERATOR_BITWISE_XOR_ASSIGNMENT; }
+  "%="                           { return JsTokenId.OPERATOR_MODULUS_ASSIGNMENT; }
+  "<<="                          { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT; }
+  ">>="                          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT; }
+  ">>>="                         { return JsTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT; }
+
+  /* string literal */
+  \"                             {
+                                    yybegin(STRING);
+                                    return JsTokenId.STRING_BEGIN;
+                                 }
+
+  \'                             {
+                                    yybegin(SSTRING);
+                                    return JsTokenId.STRING_BEGIN;
+                                 }
+
+  /* numeric literals */
+
+  {DecIntegerLiteral}            |
+  {DecLongLiteral}               |
+
+  {HexIntegerLiteral}            |
+  {HexLongLiteral}               |
+
+  {OctIntegerLiteral}            |
+  {OctLongLiteral}               |
+
+  {FloatLiteral}                 |
+  {DoubleLiteral}                |
+  {DoubleLiteral}[dD]            { return JsTokenId.NUMBER; }
+
+  /* comments */
+  {Comment}                      { return JsTokenId.COMMENT; }
+
+  /* whitespace */
+  {WhiteSpace}                   { return JsTokenId.WHITESPACE; }
+
+  /* identifiers */
+  {Identifier}                   { return JsTokenId.IDENTIFIER; }
+}
+
+<STRING> {
+  \"                             {  
+                                     yypushback(1);
+                                     yybegin(STRINGEND);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.STRING;
+                                     }
+                                 }
+
+  {StringCharacter}+             { }
+
+  \\[0-3]?{OctDigit}?{OctDigit}  { }
+
+  /* escape sequences */
+
+  \\.                            { }
+  {LineTerminator}               { yybegin(YYINITIAL);  }
+}
+
+<STRINGEND> {
+  \"                             {
+                                     yybegin(YYINITIAL);
+                                     return JsTokenId.STRING_END;
+                                 }
+}
+
+<SSTRING> {
+  \'                             {
+                                     yypushback(1);
+                                     yybegin(SSTRINGEND);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.STRING;
+                                     }
+                                 }
+
+  {SStringCharacter}+            { }
+
+  \\[0-3]?{OctDigit}?{OctDigit}  { }
+
+  /* escape sequences */
+
+  \\.                            { }
+  {LineTerminator}               { yybegin(YYINITIAL);  }
+}
+
+<SSTRINGEND> {
+  \'                             {
+                                     yybegin(YYINITIAL);
+                                     return JsTokenId.STRING_END;
+                                 }
+}
+
+<REGEXP> {
+  "/"                            {
+                                     yypushback(1);
+                                     yybegin(REGEXPEND);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.REGEXP;
+                                     }
+                                 }
+
+  {RegexpCharacter}+             { }
+}
+
+<REGEXPEND> {
+  "/"{IdentifierPart}*           {
+                                     yybegin(YYINITIAL);
+                                     return JsTokenId.REGEXP_END;
+                                 }
+}
+
+/* error fallback */
+.|\n                             { }
+<<EOF>>                          {
+    if (input.readLength() > 0) {
+        // backup eof
+        input.backup(1);
+        //and return the text as error token
+        return JsTokenId.UNKNOWN;
+    } else {
+        return null;
+    }
+}
