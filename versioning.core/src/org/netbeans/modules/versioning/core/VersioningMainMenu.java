@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.versioning.core;
 
-import com.sun.tools.javac.comp.Annotate.Annotator;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.windows.TopComponent;
