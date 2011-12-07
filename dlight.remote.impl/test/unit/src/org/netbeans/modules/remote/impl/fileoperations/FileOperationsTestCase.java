@@ -44,8 +44,6 @@ package org.netbeans.modules.remote.impl.fileoperations;
 
 import java.io.File;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Date;
 import org.netbeans.modules.remote.impl.fs.*;
 import java.util.List;
 import junit.framework.Test;
@@ -54,7 +52,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
@@ -102,6 +99,10 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             ProcessUtils.execute(execEnv, "umask", "0002");
             script = getScript(remoteDir);
             localDir = mkTemp(ExecutionEnvironmentFactory.getLocal(), true);
+            if (localDir.endsWith("/")) {
+                // Mac specific
+                localDir = localDir.substring(0, localDir.length()-1);
+            }
             localScript = getScript(localDir);
         } else {
             user = "user_1563";
