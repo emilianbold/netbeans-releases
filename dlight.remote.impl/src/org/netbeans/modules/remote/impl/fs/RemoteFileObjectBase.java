@@ -203,8 +203,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     @Override
     public void delete(FileLock lock) throws IOException {
+        FilesystemInterceptor interceptor = null;
         if (USE_VCS) {
-            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+            interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+        }
+        if (interceptor != null) {
             FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
             DeleteHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
             boolean result;
@@ -340,30 +343,31 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     public boolean canWrite() {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
-            return interceptor.canWrite(FilesystemInterceptorProvider.toFileProxy(this));
-        } else {
-            setFlag(CHECK_CAN_WRITE, true);
-            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-                getFileSystem().addReadOnlyConnectNotification(this);
-                return false;
+            if (interceptor != null) {
+                return interceptor.canWrite(FilesystemInterceptorProvider.toFileProxy(this));
             }
-            try {
-                RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
-                if (canonicalParent == null) {
-                    return false;
-                } else {
-                    boolean result = canonicalParent.canWrite(getNameExt());
-                    if (!result) {
-                        setFlag(CHECK_CAN_WRITE, false); // even if we get disconnected, r/o status won't change
-                    }
-                    return result;
+        }
+        setFlag(CHECK_CAN_WRITE, true);
+        if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+            getFileSystem().addReadOnlyConnectNotification(this);
+            return false;
+        }
+        try {
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent == null) {
+                return false;
+            } else {
+                boolean result = canonicalParent.canWrite(getNameExt());
+                if (!result) {
+                    setFlag(CHECK_CAN_WRITE, false); // even if we get disconnected, r/o status won't change
                 }
-            } catch (ConnectException ex) {
-                return false;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                return false;
+                return result;
             }
+        } catch (ConnectException ex) {
+            return false;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
         }
     }
 
@@ -480,36 +484,37 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     public FileObject copy(FileObject target, String name, String ext) throws IOException {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
-            FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-            interceptor.beforeCopy(target, to);
-            FileObject result = null;
-            try {
-                final IOHandler copyHandler = interceptor.getCopyHandler(this, to);
-                if (copyHandler != null) {
-                    if (target instanceof RemoteDirectory) {
-                        result = handleMoveCopy((RemoteDirectory)target, name, ext, copyHandler);
+            if (interceptor != null) {
+                FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
+                interceptor.beforeCopy(target, to);
+                FileObject result = null;
+                try {
+                    final IOHandler copyHandler = interceptor.getCopyHandler(this, to);
+                    if (copyHandler != null) {
+                        if (target instanceof RemoteDirectory) {
+                            result = handleMoveCopy((RemoteDirectory)target, name, ext, copyHandler);
+                        } else {
+                            copyHandler.handle();
+                            refresh(true);
+                            //perfromance bottleneck to call refresh on folder
+                            //(especially for many files to be copied)
+                            target.refresh(true); // XXX ?
+                            result = target.getFileObject(name, ext); // XXX ?
+                            assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                        }
+                        FileUtil.copyAttributes(this, result);
                     } else {
-                        copyHandler.handle();
-                        refresh(true);
-                        //perfromance bottleneck to call refresh on folder
-                        //(especially for many files to be copied)
-                        target.refresh(true); // XXX ?
-                        result = target.getFileObject(name, ext); // XXX ?
-                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                        result = super.copy(target, name, ext);
                     }
-                    FileUtil.copyAttributes(this, result);
-                } else {
-                    result = super.copy(target, name, ext);
+                } catch (IOException ioe) {
+                    interceptor.copyFailure(this, to);
+                    throw ioe;
                 }
-            } catch (IOException ioe) {
-                interceptor.copyFailure(this, to);
-                throw ioe;
+                interceptor.copySuccess(this, to);
+                return result;
             }
-            interceptor.copySuccess(this, to);
-            return result;
-        } else {
-            return super.copy(target, name, ext);
         }
+        return super.copy(target, name, ext);
     }
     
     private RemoteFileObjectBase handleMoveCopy(RemoteDirectory target, String name, String ext, IOHandler handler) throws IOException {

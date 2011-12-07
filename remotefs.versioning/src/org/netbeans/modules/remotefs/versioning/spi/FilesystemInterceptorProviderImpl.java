@@ -62,18 +62,24 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
     @Override
     public FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {
-        return new FilesystemInterceptorImpl(fs);
+        VCSFilesystemInterceptor delegate = Lookup.getDefault().lookup(VCSFilesystemInterceptor.class);
+        if (delegate == null) {
+            return null;
+        }
+        return new FilesystemInterceptorImpl(fs, delegate);
     }
 
     private static final class FilesystemInterceptorImpl implements FilesystemInterceptor {
         private final FileSystem fs;
+        private final VCSFilesystemInterceptor delegate;
         
-        public FilesystemInterceptorImpl(FileSystem fs) {
+        public FilesystemInterceptorImpl(FileSystem fs, VCSFilesystemInterceptor delegate) {
             this.fs = fs;
+            this.delegate = delegate;
         }
 
         private VCSFilesystemInterceptor getDelegate() {
-            return Lookup.getDefault().lookup(VCSFilesystemInterceptor.class);
+            return delegate;
         }
 
         @Override

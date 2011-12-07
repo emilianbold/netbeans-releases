@@ -266,8 +266,10 @@ public class WritingQueue {
                 progress.entryDone(entries.size());
             }
             if (RemoteFileObjectBase.USE_VCS && done) {
-                FilesystemInterceptor filesystemInterceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fo.getFileSystem());
-                filesystemInterceptor.fileChanged(FilesystemInterceptorProvider.toFileProxy(fo));
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fo.getFileSystem());
+                if (interceptor != null) {
+                    interceptor.fileChanged(FilesystemInterceptorProvider.toFileProxy(fo));
+                }
             }
         }
     }
