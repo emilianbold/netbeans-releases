@@ -105,7 +105,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             case KEYWORD_RETURN:
             case KEYWORD_THROW:
             case RESERVED_YIELD:
-            //case EOL:
+            case EOL:
                 return true;
         }
         return false;
@@ -118,7 +118,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 
-WhiteSpace = {LineTerminator} | [ \t\f]+
+WhiteSpace = [ \t\f]+
 
 /* comments */
 Comment = {TraditionalComment} | {EndOfLineComment}
@@ -309,6 +309,9 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
 
   /* whitespace */
   {WhiteSpace}                   { return JsTokenId.WHITESPACE; }
+
+  /* whitespace */
+  {LineTerminator}               { return JsTokenId.EOL; }
 
   /* identifiers */
   {Identifier}                   { return JsTokenId.IDENTIFIER; }
