@@ -213,6 +213,9 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         setLayout(new GridBagLayout());
         setOpaque(true);
         setBackground(SelectProfilingTask.BACKGROUND_COLOR);
+        
+        final int[] commonHeight = new int[1];
+        commonHeight[0] = -1;
 
         GridBagConstraints constraints;
 
@@ -263,7 +266,13 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         constraints.insets = new Insets(0, 20, 0, 20);
         add(separator2, constraints);
 
-        JLabel overheadLabel = new JLabel(OVERHEAD_LABEL_TEXT);
+        JLabel overheadLabel = new JLabel(OVERHEAD_LABEL_TEXT) {
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                if (commonHeight[0] != -1) dim.height = commonHeight[0];
+                return dim;
+            }
+        };
         overheadLabel.setFont(overheadLabel.getFont().deriveFont(overheadLabel.getFont().getSize2D() - 1));
         overheadLabel.setForeground(SelectProfilingTask.DARKLINK_COLOR_INACTIVE);
         constraints = new GridBagConstraints();
@@ -298,22 +307,28 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
 
         // basicAdvancedSettingsSwitchArea
         basicAdvancedSettingsSwitchArea = new HyperlinkTextArea(ADVANCED_SETTINGS_STRING) {
-                protected Color getHighlightColor() {
-                    return SelectProfilingTask.DARKLINK_COLOR;
-                }
+            protected Color getHighlightColor() {
+                return SelectProfilingTask.DARKLINK_COLOR;
+            }
 
-                protected String getHighlightText(String originalText) {
-                    return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
-                }
+            protected String getHighlightText(String originalText) {
+                return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
+            }
 
-                protected Color getNormalColor() {
-                    return SelectProfilingTask.DARKLINK_COLOR_INACTIVE;
-                }
+            protected Color getNormalColor() {
+                return SelectProfilingTask.DARKLINK_COLOR_INACTIVE;
+            }
 
-                protected String getNormalText(String originalText) {
-                    return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
-                }
-            };
+            protected String getNormalText(String originalText) {
+                return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
+            }
+
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                if (commonHeight[0] != -1) dim.height = commonHeight[0];
+                return dim;
+            }
+        };
 
         Font font = UIManager.getFont("Label.font"); // NOI18N
         basicAdvancedSettingsSwitchArea.setFont(font.deriveFont(font.getSize2D() - 1));
@@ -328,20 +343,23 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         add(basicAdvancedSettingsSwitchArea, constraints);
 
         basicAdvancedSettingsSwitchArea.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
-                        toggleBasicAdvancedSettingsView();
-                    }
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    toggleBasicAdvancedSettingsView();
                 }
-            });
+            }
+        });
 
         basicAdvancedSettingsSwitchArea.addKeyListener(new KeyAdapter() {
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                        toggleBasicAdvancedSettingsView();
-                    }
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    toggleBasicAdvancedSettingsView();
                 }
-            });
+            }
+        });
+        
+        commonHeight[0] = Math.max(overheadLabel.getPreferredSize().height,
+                basicAdvancedSettingsSwitchArea.getPreferredSize().height);
     }
 
     private void toggleBasicAdvancedSettingsView() {
@@ -367,6 +385,9 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         // TODO: update cursor according to current mouse position
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    basicAdvancedSettingsSwitchArea.setVisible(
+                        contents.getAdvancedSettingsPanel().isVisible());
+                    
                     JScrollBar contentsScrollBar = contentsScroll.getVerticalScrollBar();
 
                     if ((contentsScrollBar == null) || !contentsScrollBar.isVisible()) {
@@ -378,7 +399,7 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
             });
 
         SelectProfilingTask.getDefault().updateHelpCtx();
-
+        
         if (showingPreset && showingAdvancedSettings)
             ProfilerDialogs.displayInfoDNSA(READONLY_SETTINGS_MSG, null, null,
                     "SettingsContainerPanel.switchToAdvancedSettings.presetNotification", false); //NOI18N

@@ -229,6 +229,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         javaPlatformCombo.setEnabled(enableOverride);
         vmArgumentsLabel.setEnabled(enableOverride);
         vmArgumentsTextField.setEnabled(enableOverride);
+        globalSettingsPanel.setVisible(enableOverride);
     }
 
     public void setOverrideSettings(boolean override) {

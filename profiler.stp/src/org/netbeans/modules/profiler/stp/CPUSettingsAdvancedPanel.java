@@ -376,6 +376,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         javaPlatformCombo.setEnabled(enableOverride);
         vmArgumentsLabel.setEnabled(enableOverride);
         vmArgumentsTextField.setEnabled(enableOverride);
+        globalSettingsPanel.setVisible(enableOverride);
     }
 
     public void setOverrideSettings(boolean override) {

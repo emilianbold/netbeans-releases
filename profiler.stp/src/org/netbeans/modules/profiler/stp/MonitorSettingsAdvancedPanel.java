@@ -159,6 +159,8 @@ public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implement
         javaPlatformCombo.setEnabled(enableOverride);
         vmArgumentsLabel.setEnabled(enableOverride);
         vmArgumentsTextField.setEnabled(enableOverride);
+        globalSettingsPanel.setVisible(enableOverride);
+        setVisible(enableOverride);
     }
 
     public void setOverrideSettings(boolean override) {
