@@ -214,7 +214,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                 result = deleteImpl(lock);
             }
             if (!result) {
-                throw new IOException("Cannot delete "+getPath());
+                throw new IOException("Cannot delete "+getPath()); // NOI18N
             }
             // TODO remove attributes
             // TODO clear cache?

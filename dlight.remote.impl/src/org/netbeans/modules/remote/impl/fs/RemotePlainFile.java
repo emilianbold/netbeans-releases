@@ -182,7 +182,7 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             FilesystemInterceptorProvider.FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
             if (!interceptor.canWrite(fileProxy)) {
-                throw new IOException("Cannot lock "+this);
+                throw new IOException("Cannot lock "+this); // NOI18N
             }
             interceptor.fileLocked(fileProxy);
         }

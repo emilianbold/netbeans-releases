@@ -66,7 +66,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 abstract public class FileOperationsProvider {
-    public static final String ATTRIBUTE = "FileProxyOperations";
+    public static final String ATTRIBUTE = "FileProxyOperations"; // NOI18N
         
     private static FileOperationsProvider defaultProvider;
 
@@ -116,10 +116,10 @@ abstract public class FileOperationsProvider {
                         case SymbolicLink:
                             // TODO support links
                             String linkTarget = statInfo.getLinkTarget();
-                            if (linkTarget.startsWith("/")) {
+                            if (linkTarget.startsWith("/")) { // NOI18N
                                 return isDirectory(toFileProxy(linkTarget), deep);
                             } else {
-                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget;
+                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
                                 path = PathUtilities.normalizeUnixPath(path);
                                 return isDirectory(toFileProxy(path), deep);
                             }
@@ -153,10 +153,10 @@ abstract public class FileOperationsProvider {
                         case SymbolicLink:
                             // TODO support links
                             String linkTarget = statInfo.getLinkTarget();
-                            if (linkTarget.startsWith("/")) {
+                            if (linkTarget.startsWith("/")) { // NOI18N
                                 return isFile(toFileProxy(linkTarget), deep);
                             } else {
-                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget;
+                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
                                 path = PathUtilities.normalizeUnixPath(path);
                                 return isFile(toFileProxy(path), deep);
                             }
