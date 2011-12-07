@@ -212,69 +212,69 @@ public class JsLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
     }
 
-//    @SuppressWarnings("unchecked")
-//    public void testNotRegexp() {
-//        String text = "//foo";
-//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, "//foo");
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    public void testNotRegexp2() {
-//        String text = "x/y";
-//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "/");
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    public void testNotRegexp3() {
-//        String text = "10 / y";
-//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-//        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.FLOAT_LITERAL, "10");
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NONUNARY_OP, "/");
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    public void testComments() {
-//        String text = "// This is my comment";
-//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-//        TokenSequence ts = hi.tokenSequence();
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, text);
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    public void testComments2() {
-//        String text = "/* This is my comment */";
-//        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
-//        TokenSequence ts = hi.tokenSequence();
-//        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, text);
-//    }
-//
-//    public void testStrings() {
-//        String[] strings =
-//            new String[] {
-//            "\"Hello\"",
-//            "'Hello'"};
-//        for (int i = 0; i < strings.length; i++) {
-//            TokenHierarchy hi = TokenHierarchy.create(strings[i], JsTokenId.language());
-//            TokenSequence ts = hi.tokenSequence();
-//            assertTrue(ts.moveNext());
-//            assertEquals(JsTokenId.STRING_BEGIN, ts.token().id());
-//            assertTrue(ts.moveNext());
-//            assertEquals(JsTokenId.STRING, ts.token().id());
-//            assertTrue(ts.moveNext());
-//            assertEquals(JsTokenId.STRING_END, ts.token().id());
-//        }
-//    }
-//
+    @SuppressWarnings("unchecked")
+    public void testNotRegexp() {
+        String text = "//foo";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, "//foo");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testNotRegexp2() {
+        String text = "x/y";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_DIVISION, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testNotRegexp3() {
+        String text = "10 / y";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NUMBER, "10");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_DIVISION, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "y");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testComments() {
+        String text = "// This is my comment";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, text);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testComments2() {
+        String text = "/* This is my comment */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, text);
+    }
+
+    public void testStrings() {
+        String[] strings =
+            new String[] {
+            "\"Hello\"",
+            "'Hello'"};
+        for (int i = 0; i < strings.length; i++) {
+            TokenHierarchy hi = TokenHierarchy.create(strings[i], JsTokenId.language());
+            TokenSequence ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            assertEquals(JsTokenId.STRING_BEGIN, ts.token().id());
+            assertTrue(ts.moveNext());
+            assertEquals(JsTokenId.STRING, ts.token().id());
+            assertTrue(ts.moveNext());
+            assertEquals(JsTokenId.STRING_END, ts.token().id());
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public void testUnterminatedString() {
         String text = "\"Line1\nLine2\nLine3";

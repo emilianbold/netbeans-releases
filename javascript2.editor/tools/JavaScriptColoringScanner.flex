@@ -136,8 +136,6 @@ InputCharacter = [^\r\n]
 WhiteSpace = [ \t\f]+
 
 /* comments */
-Comment = {TraditionalComment} | {EndOfLineComment}
-
 TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment = "//" {InputCharacter}* {LineTerminator}?
 
@@ -172,7 +170,12 @@ SStringCharacter = [^\r\n\'\\]
 RegexpCharacter  = [^\r\n/\\]
 RegexpFirstCharacter  = [^\r\n/\\\*]
 
-%state STRING STRINGEND SSTRING SSTRINGEND REGEXP REGEXPEND
+%state STRING
+%state STRINGEND
+%state SSTRING
+%state SSTRINGEND
+%state REGEXP
+%state REGEXPEND
 
 %%
 
@@ -317,7 +320,10 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   {DoubleLiteral}[dD]            { return JsTokenId.NUMBER; }
 
   /* comments */
-  {Comment}                      { return JsTokenId.COMMENT; }
+  {TraditionalComment}           { return JsTokenId.BLOCK_COMMENT; }
+
+  /* comments */
+  {EndOfLineComment}             { return JsTokenId.LINE_COMMENT; }
 
   /* whitespace */
   {WhiteSpace}                   { return JsTokenId.WHITESPACE; }

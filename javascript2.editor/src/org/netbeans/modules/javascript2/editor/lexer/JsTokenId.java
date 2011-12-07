@@ -60,12 +60,15 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum JsTokenId implements TokenId {
     UNKNOWN(null, "error"), // NOI18N
 
+    NUMBER(null, "constant"), // NOI18N
+
+    IDENTIFIER(null, "identifier"), // NOI18N
+
     WHITESPACE(null, "whitespace"), // NOI18N
     EOL(null, "whitespace"), // NOI18N
 
-    NUMBER(null, "constant"), // NOI18N
-    COMMENT(null, "comment"), // NOI18N
-    IDENTIFIER(null, "identifier"), // NOI18N
+    LINE_COMMENT(null, "comment"), // NOI18N
+    BLOCK_COMMENT(null, "comment"), // NOI18N
 
     STRING_BEGIN(null, "string"), // NOI18N
     STRING(null, "string"), // NOI18N
