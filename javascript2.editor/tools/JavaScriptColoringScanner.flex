@@ -34,6 +34,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public LexerState getState() {
+        if (stack.isEmpty() && zzState == YYINITIAL && zzLexicalState == YYINITIAL
+                && canFollowLiteral) {
+            return null;
+        }
         return new LexerState(stack.createClone(), zzState, zzLexicalState, canFollowLiteral);
     }
 
@@ -229,14 +233,12 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"{RegexpFirstCharacter}{RegexpCharacter}*"/"{IdentifierPart}*
+  "/"
                                  {
-                                     yypushback(tokenLength - 1);
                                      if (canFollowLiteral) {
                                        yybegin(REGEXP);
                                        return JsTokenId.REGEXP_BEGIN;
                                      } else {
-                                       yybegin(YYINITIAL);
                                        return JsTokenId.OPERATOR_DIVISION;
                                      }
                                  }
@@ -269,7 +271,6 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   "+"                            { return JsTokenId.OPERATOR_PLUS; }
   "-"                            { return JsTokenId.OPERATOR_MINUS; }
   "*"                            { return JsTokenId.OPERATOR_MULTIPLICATION; }
-  "/"                            { return JsTokenId.OPERATOR_DIVISION; }
   "&"                            { return JsTokenId.OPERATOR_BITWISE_AND; }
   "|"                            { return JsTokenId.OPERATOR_BITWISE_OR; }
   "^"                            { return JsTokenId.OPERATOR_BITWISE_XOR; }
@@ -344,7 +345,13 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   /* escape sequences */
 
   \\.                            { }
-  {LineTerminator}               { yybegin(YYINITIAL);  }
+  {LineTerminator}               {
+                                     yypushback(1);
+                                     yybegin(YYINITIAL);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.UNKNOWN;
+                                     }
+                                 }
 }
 
 <STRINGEND> {
@@ -370,7 +377,13 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   /* escape sequences */
 
   \\.                            { }
-  {LineTerminator}               { yybegin(YYINITIAL);  }
+  {LineTerminator}               {
+                                     yypushback(1);
+                                     yybegin(YYINITIAL);
+                                     if (tokenLength -1 > 0) {
+                                         return JsTokenId.UNKNOWN;
+                                     }
+                                 }
 }
 
 <SSTRINGEND> {
@@ -389,7 +402,15 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
                                      }
                                  }
 
+  {RegexpFirstCharacter}         { }
   {RegexpCharacter}+             { }
+  {LineTerminator}               {
+                                     yypushback(1);
+                                     yybegin(YYINITIAL);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.UNKNOWN;
+                                     }
+                                 }
 }
 
 <REGEXPEND> {
