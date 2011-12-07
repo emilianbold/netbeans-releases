@@ -51,12 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmStandaloneFileProviderImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileSnapshot;
-import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -165,6 +160,21 @@ public final class CodeModelDiagnostic {
             ModelImpl.instance().dumpInfo(printOut, true);
             printOut.printf("====Libraries:\n"); //NOI18N
             LibraryManager.getInstance().dumpInfo(printOut, true);
+        }
+    }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1325)
+    public final static class ModelProjectsIndex implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "Model Projects Index";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====Model Projects Index:\n");// NOI18N
+            ReferencesIndex.dumpInfo(printOut);
         }
     }
     

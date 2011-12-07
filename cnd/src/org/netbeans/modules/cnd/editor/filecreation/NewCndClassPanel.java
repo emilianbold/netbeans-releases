@@ -64,10 +64,13 @@ public class NewCndClassPanel extends CndPanel {
         super(project, folders, bottomPanel);
     }
 
+    @Override
     public Component getComponent() {
-        if (gui == null) {
-            gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent());
-            gui.addChangeListener(this);
+        synchronized (guiLock) {
+            if (gui == null) {
+                gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent());
+                gui.addChangeListener(this);
+            }
         }
         return gui;
     }
