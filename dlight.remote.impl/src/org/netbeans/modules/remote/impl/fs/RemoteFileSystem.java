@@ -76,6 +76,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -139,6 +140,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
+            @Override
             public void windowGainedFocus(WindowEvent e) {
                 if (e.getOppositeWindow() == null) {
                     if (ConnectionManager.getInstance().isConnectedTo(RemoteFileSystem.this.execEnv)) {
@@ -147,11 +149,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
 
+            @Override
             public void windowLostFocus(WindowEvent e) {
             }
         };
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
                 WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
@@ -160,6 +164,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         ConnectionManager.getInstance().addConnectionListener(this);
     }
     
+    @Override
     public void connected(ExecutionEnvironment env) {
         readOnlyConnectNotification.compareAndSet(true, false);
         if (execEnv.equals(env)) {
@@ -171,6 +176,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
         
+    @Override
     public void disconnected(ExecutionEnvironment env) {
         readOnlyConnectNotification.compareAndSet(true, false);
         if (execEnv.equals(env)) {
@@ -522,7 +528,16 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         public RemoteDirectory getParent() {
             return null;
         }
-                
+
+        @Override
+        public Object getAttribute(String attrName) {
+            if (FileOperationsProvider.ATTRIBUTE.equals(attrName)) {
+                if (USE_VCS) {
+                    return FileOperationsProvider.getDefault().getFileOperations(getFileSystem());
+                }
+            }
+            return super.getAttribute(attrName);
+        }
     }
     
     private class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {
