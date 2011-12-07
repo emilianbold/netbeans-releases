@@ -18,7 +18,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private LexerInput input;
 
-    private JsTokenId lastToken;
+    private boolean canFollowLiteral = true;
 
     public JavaScriptColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
@@ -33,73 +33,32 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         }
     }
 
-    public static final class LexerState  {
-        final StateStack stack;
-        /** the current state of the DFA */
-        final int zzState;
-        /** the current lexical state */
-        final int zzLexicalState;
-
-
-        LexerState (StateStack stack, int zzState, int zzLexicalState) {
-            this.stack = stack;
-            this.zzState = zzState;
-            this.zzLexicalState = zzLexicalState;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                    return true;
-            }
-
-            if (obj == null || obj.getClass() != this.getClass()) {
-                    return false;
-            }
-
-            LexerState state = (LexerState) obj;
-            return (this.stack.equals(state.stack)
-                && (this.zzState == state.zzState)
-                && (this.zzLexicalState == state.zzLexicalState));
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 11;
-            hash = 31 * hash + this.zzState;
-            hash = 31 * hash + this.zzLexicalState;
-            if (stack != null) {
-                hash = 31 * hash + this.stack.hashCode();
-            }
-            return hash;
-        }
-    }
-
     public LexerState getState() {
-        return new LexerState(stack.createClone(), zzState, zzLexicalState);
+        return new LexerState(stack.createClone(), zzState, zzLexicalState, canFollowLiteral);
     }
 
     public void setState(LexerState state) {
         this.stack.copyFrom(state.stack);
         this.zzState = state.zzState;
         this.zzLexicalState = state.zzLexicalState;
+        this.canFollowLiteral = state.canFollowLiteral;
     }
 
     public JsTokenId nextToken() throws java.io.IOException {
         JsTokenId token = yylex();
         if (token != null && !JsTokenId.UNKNOWN.equals(token)
             && !JsTokenId.WHITESPACE.equals(token)) {
-            lastToken = token;
+            canFollowLiteral = canFollowLiteral(token);
         }
         return token;
     }
 
-    private boolean canFollowLiteral() {
-        if (lastToken == null || "operator".equals(lastToken.primaryCategory())) {
+    private static boolean canFollowLiteral(JsTokenId token) {
+        if ("operator".equals(token.primaryCategory())) {
             return true;
         }
 
-        switch (lastToken) {
+        switch (token) {
             case BRACKET_LEFT_PAREN:
             case BRACKET_LEFT_BRACKET:
             case KEYWORD_RETURN:
@@ -110,6 +69,58 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         }
         return false;
     }
+
+    public static final class LexerState  {
+        final StateStack stack;
+        /** the current state of the DFA */
+        final int zzState;
+        /** the current lexical state */
+        final int zzLexicalState;
+        /** can be the literal used here */
+        final boolean canFollowLiteral;
+
+        LexerState (StateStack stack, int zzState, int zzLexicalState, boolean canFollowLiteral) {
+            this.stack = stack;
+            this.zzState = zzState;
+            this.zzLexicalState = zzLexicalState;
+            this.canFollowLiteral = canFollowLiteral;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LexerState other = (LexerState) obj;
+            if (this.stack != other.stack && (this.stack == null || !this.stack.equals(other.stack))) {
+                return false;
+            }
+            if (this.zzState != other.zzState) {
+                return false;
+            }
+            if (this.zzLexicalState != other.zzLexicalState) {
+                return false;
+            }
+            if (this.canFollowLiteral != other.canFollowLiteral) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 71 * hash + (this.stack != null ? this.stack.hashCode() : 0);
+            hash = 71 * hash + this.zzState;
+            hash = 71 * hash + this.zzLexicalState;
+            hash = 71 * hash + (this.canFollowLiteral ? 1 : 0);
+            return hash;
+        }
+    }
+
  // End user code
 
 %}
@@ -218,10 +229,10 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"{RegexpFirstCharacter}{RegexpCharacter}+"/"{IdentifierPart}*
+  "/"{RegexpFirstCharacter}{RegexpCharacter}*"/"{IdentifierPart}*
                                  {
                                      yypushback(tokenLength - 1);
-                                     if (canFollowLiteral()) {
+                                     if (canFollowLiteral) {
                                        yybegin(REGEXP);
                                        return JsTokenId.REGEXP_BEGIN;
                                      } else {

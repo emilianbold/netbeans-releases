@@ -191,12 +191,14 @@ public enum JsTokenId implements TokenId {
         return primaryCategory;
     }
 
-     private static final Language<JsTokenId> language =
+    private static final Language<JsTokenId> LANGUAGE =
         new LanguageHierarchy<JsTokenId>() {
+                @Override
                 protected String mimeType() {
                     return JsTokenId.JAVASCRIPT_MIME_TYPE;
                 }
 
+                @Override
                 protected Collection<JsTokenId> createTokenIds() {
                     return EnumSet.allOf(JsTokenId.class);
                 }
@@ -208,8 +210,9 @@ public enum JsTokenId implements TokenId {
                     return cats;
                 }
 
+                @Override
                 protected Lexer<JsTokenId> createLexer(LexerRestartInfo<JsTokenId> info) {
-                    return JsLexer.create(info, true);
+                    return JsLexer.create(info);
                 }
 
                 @Override
@@ -228,6 +231,6 @@ public enum JsTokenId implements TokenId {
             }.language();
 
      public static Language<JsTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 }

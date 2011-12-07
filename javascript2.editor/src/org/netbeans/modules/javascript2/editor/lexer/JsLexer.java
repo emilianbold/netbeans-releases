@@ -69,7 +69,7 @@ public class JsLexer implements Lexer<JsTokenId> {
         tokenFactory = info.tokenFactory();
     }
 
-    public static JsLexer create(LexerRestartInfo<JsTokenId> info, boolean inPHP) {
+    public static JsLexer create(LexerRestartInfo<JsTokenId> info) {
         synchronized(JsLexer.class) {
             return new JsLexer(info);
         }
