@@ -116,6 +116,7 @@ public class ActionUtilsTest extends NbTestCase {
         assertEquals("one sub/*.data", Collections.singletonList(f3), filesFrom(new Node[] {n3}, subdir, ".data", true));
         assertEquals("duplicates removed (cf. #50644)", Collections.singletonList(f1), filesFrom(new Node[] {n1, n1}, null, null, true));
         assertEquals("duplicates removed #2 (cf. #50644)", Arrays.asList(new FileObject[] {f1, f2}), filesFrom(new Node[] {n1, n2, n1}, null, null, true));
+        assertEquals("two selected files", Arrays.asList(new FileObject[] {f1, f2}), files2List(ActionUtils.findSelectedFiles(Lookups.fixed(f1, f2), null, null, true)));
     }
     
     private static Lookup context(Node[] sel) {
