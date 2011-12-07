@@ -42,16 +42,14 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -60,11 +58,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.openide.filesystems.FileObject;
@@ -245,4 +239,167 @@ public final class JavaPluginUtils {
         return tm;
     }
     
+    //<editor-fold defaultstate="collapsed" desc="TODO: Copy from org.netbeans.modules.java.hints.errors.Utilities">
+    public static final String DEFAULT_NAME = "par"; // NOI18N
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name, MethodTree method) {
+        int counter = 0;
+        boolean cont = true;
+        String proposedName = name;
+        
+        while (cont) {
+            proposedName = name + (counter != 0 ? String.valueOf(counter) : "");
+            
+            cont = false;
+            
+            if (s != null) {
+                for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new VariablesFilter())) {
+                    if (proposedName.equals(e.getSimpleName().toString())) {
+                        counter++;
+                        cont = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return proposedName;
+    }
+    
+    public static String getName(Tree et) {
+        return adjustName(getNameRaw(et));
+    }
+    
+    public static String getName(TypeMirror tm) {
+        if (tm.getKind().isPrimitive()) {
+            return "" + Character.toLowerCase(tm.getKind().name().charAt(0));
+        }
+
+        switch (tm.getKind()) {
+            case DECLARED:
+                DeclaredType dt = (DeclaredType) tm;
+                return firstToLower(dt.asElement().getSimpleName().toString());
+            case ARRAY:
+                return getName(((ArrayType) tm).getComponentType());
+            default:
+                return DEFAULT_NAME;
+        }
+    }
+    
+    private static String getNameRaw(Tree et) {
+        if (et == null)
+            return null;
+        
+        switch (et.getKind()) {
+            case IDENTIFIER:
+                return ((IdentifierTree) et).getName().toString();
+            case METHOD_INVOCATION:
+                return getName(((MethodInvocationTree) et).getMethodSelect());
+            case MEMBER_SELECT:
+                return ((MemberSelectTree) et).getIdentifier().toString();
+            case NEW_CLASS:
+                return firstToLower(getName(((NewClassTree) et).getIdentifier()));
+            case PARAMETERIZED_TYPE:
+                return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
+            case STRING_LITERAL:
+                String name = guessLiteralName((String) ((LiteralTree) et).getValue());
+                if(name == null) {
+                    return firstToLower(String.class.getSimpleName());
+                } else {
+                    return firstToLower(name);
+                }
+            case VARIABLE:
+                return ((VariableTree) et).getName().toString();
+            default:
+                return null;
+        }
+    }
+    
+    static String adjustName(String name) {
+        if (name == null)
+            return null;
+        
+        String shortName = null;
+        
+        if (name.startsWith("get") && name.length() > 3) {
+            shortName = name.substring(3);
+        }
+        
+        if (name.startsWith("is") && name.length() > 2) {
+            shortName = name.substring(2);
+        }
+        
+        if (shortName != null) {
+            return firstToLower(shortName);
+        }
+        
+        if (SourceVersion.isKeyword(name)) {
+            return "a" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        } else {
+            return name;
+        }
+    }
+    
+    private static String firstToLower(String name) {
+        if (name.length() == 0)
+            return null;
+        
+        StringBuilder result = new StringBuilder();
+        boolean toLower = true;
+        char last = Character.toLowerCase(name.charAt(0));
+        
+        for (int i = 1; i < name.length(); i++) {
+            if (toLower && Character.isUpperCase(name.charAt(i))) {
+                result.append(Character.toLowerCase(last));
+            } else {
+                result.append(last);
+                toLower = false;
+            }
+            last = name.charAt(i);
+            
+        }
+        
+        result.append(last);
+        
+        if (SourceVersion.isKeyword(result)) {
+            return "a" + name;
+        } else {
+            return result.toString();
+        }
+    }
+    
+    private static String guessLiteralName(String str) {
+        StringBuilder sb = new StringBuilder();
+        if(str.length() == 0)
+            return null;
+        char first = str.charAt(0);
+        if(Character.isJavaIdentifierStart(str.charAt(0)))
+            sb.append(first);
+        
+        for (int i = 1; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if(ch == ' ') {
+                sb.append('_');
+                continue;
+            }
+            if (Character.isJavaIdentifierPart(ch))
+                sb.append(ch);
+            if (i > 40)
+                break;
+        }
+        if (sb.length() == 0)
+            return null;
+        else
+            return sb.toString();
+    }
+    
+    public static final class VariablesFilter implements ElementUtilities.ElementAcceptor {
+        
+        private static final Set<ElementKind> ACCEPTABLE_KINDS = EnumSet.of(ElementKind.ENUM_CONSTANT, ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
+        
+        public boolean accept(Element e, TypeMirror type) {
+            return ACCEPTABLE_KINDS.contains(e.getKind());
+        }
+        
+    }
+    //</editor-fold>
 }
