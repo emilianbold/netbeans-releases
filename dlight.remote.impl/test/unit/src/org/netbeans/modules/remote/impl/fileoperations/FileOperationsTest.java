@@ -39,61 +39,46 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.remote.impl.fileoperations;
 
-package org.netbeans.modules.remote.impl.fs;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
- * Note: public access is needed for tests
- * 
- * @author Vladimir Kvashin
+ *
+ * @author Alexander Simon
  */
-public class DirectoryReaderSftp implements DirectoryReader {
+public class FileOperationsTest extends NativeExecutionBaseTestSuite {
+    @SuppressWarnings("unchecked")
+    public FileOperationsTest() {
+        this("FileOperations API", getTestClasses());
+    }
 
-    private final ExecutionEnvironment execEnv;
-    private final String remotePath;
-    private List<DirEntry> entries = new ArrayList<DirEntry>();
-    private final Object lock = new Object();
+    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
+        return new Class[] {
+            FileOperationsTestCase.class
+        };
+    }
     
-    public DirectoryReaderSftp(ExecutionEnvironment execEnv, String remotePath) {    
-        this.execEnv = execEnv;        
-        if (remotePath.length() == 0) {
-            this.remotePath = "/"; //NOI18N
-        } else  {
-            if (!remotePath.startsWith("/")) { //NOI18N
-                throw new IllegalArgumentException("path should be absolute: " + remotePath); // NOI18N
-            }
-            this.remotePath = remotePath;
-        }
+    @SuppressWarnings("unchecked")
+    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
+        return new FileOperationsTest(testClass.getName(), testClass);
     }
 
-    @Override
-    public List<DirEntry> getEntries() {
-        synchronized (lock) {
-            return Collections.<DirEntry>unmodifiableList(entries);
+    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
+        Class[] classes = new Class[timesToRepeat];
+        for (int i = 0; i < classes.length; i++) {
+            classes[i] = testClass;            
         }
+        return new FileOperationsTest(testClass.getName(), classes);
+    }
+    
+    public FileOperationsTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+        super(name, "remote.platforms", testClasses);
     }
 
-    @Override
-    public void readDirectory() throws InterruptedException, CancellationException, ExecutionException {
-        Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
-        StatInfo[] infos = res.get();
-        List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
-        for (StatInfo statInfo : infos) {
-            // filtering of "." and ".." is up to provider now
-            newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
-        }
-        synchronized (lock) {
-            entries = newEntries;
-        }
+    public static Test suite() {
+        return new FileOperationsTest();
     }
 }

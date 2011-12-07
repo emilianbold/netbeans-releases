@@ -291,7 +291,7 @@ public class RemoteFileSystemUtils {
         }
     }
     
-    public static void delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
+    public static boolean delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
         StringWriter writer = new StringWriter();
         Future<Integer> task;
         if (directory) {
@@ -300,9 +300,7 @@ public class RemoteFileSystemUtils {
             task = CommonTasksSupport.rmFile(execEnv, path, writer);
         }
         try {
-            if (task.get().intValue() != 0) {
-                
-            }
+            return task.get().intValue() == 0;
         } catch (InterruptedException ex) {
             throw new InterruptedIOException();
         } catch (ExecutionException ex) {

@@ -39,61 +39,40 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.versioning.core.filesystems;
 
-package org.netbeans.modules.remote.impl.fs;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import org.netbeans.api.extexecution.ProcessBuilder;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 
 /**
- * Note: public access is needed for tests
- * 
- * @author Vladimir Kvashin
+ *
+ * @author Vladimir Voskresensky
  */
-public class DirectoryReaderSftp implements DirectoryReader {
-
-    private final ExecutionEnvironment execEnv;
-    private final String remotePath;
-    private List<DirEntry> entries = new ArrayList<DirEntry>();
-    private final Object lock = new Object();
+public interface VCSFileProxyOperations {
+    public static final String ATTRIBUTE = "FileProxyOperations";
     
-    public DirectoryReaderSftp(ExecutionEnvironment execEnv, String remotePath) {    
-        this.execEnv = execEnv;        
-        if (remotePath.length() == 0) {
-            this.remotePath = "/"; //NOI18N
-        } else  {
-            if (!remotePath.startsWith("/")) { //NOI18N
-                throw new IllegalArgumentException("path should be absolute: " + remotePath); // NOI18N
-            }
-            this.remotePath = remotePath;
-        }
-    }
+    String getName(VCSFileProxy file);
+    
+    boolean isDirectory(VCSFileProxy file);
+    
+    boolean isFile(VCSFileProxy file);
+    
+    boolean canWrite(VCSFileProxy file);
+    
+    VCSFileProxy getParentFile(VCSFileProxy file);
 
-    @Override
-    public List<DirEntry> getEntries() {
-        synchronized (lock) {
-            return Collections.<DirEntry>unmodifiableList(entries);
-        }
-    }
+    String getAbsolutePath(VCSFileProxy file);
+    
+    boolean exists(VCSFileProxy file);
 
-    @Override
-    public void readDirectory() throws InterruptedException, CancellationException, ExecutionException {
-        Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
-        StatInfo[] infos = res.get();
-        List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
-        for (StatInfo statInfo : infos) {
-            // filtering of "." and ".." is up to provider now
-            newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
-        }
-        synchronized (lock) {
-            entries = newEntries;
-        }
-    }
+    VCSFileProxy normalize(VCSFileProxy file);
+
+    FileObject toFileObject(VCSFileProxy file);
+    
+    VCSFileProxy[] list(VCSFileProxy file);
+    
+    boolean isFlat(VCSFileProxy file);
+
+    ProcessBuilder createProcessBuilder(VCSFileProxy file);
 }

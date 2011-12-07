@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -174,6 +175,19 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     public FileObject createFolder(String name) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
+    
+    @Override
+    public FileLock lock() throws IOException {
+        if (USE_VCS) {
+            FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+            FilesystemInterceptorProvider.FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
+            if (!interceptor.canWrite(fileProxy)) {
+                throw new IOException("Cannot lock "+this);
+            }
+            interceptor.fileLocked(fileProxy);
+        }
+        return super.lock();
+    }
 
     @Override
     protected void postDeleteChild(FileObject child) {
@@ -181,8 +195,8 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     }
     
     @Override
-    protected void deleteImpl() throws IOException {
-        RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    protected boolean deleteImpl(FileLock lock) throws IOException {
+        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override
@@ -197,7 +211,11 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
         }
-        return new DelegateOutputStream();
+        FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
+        if (USE_VCS) {
+           interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+        }
+        return new DelegateOutputStream(interceptor);
     }
    
 
@@ -208,9 +226,14 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
 
     private class DelegateOutputStream extends OutputStream {
 
-        FileOutputStream delegate;
+        private final FileOutputStream delegate;
+        private final FilesystemInterceptorProvider.FilesystemInterceptor interceptor;
 
-        public DelegateOutputStream() throws IOException {
+        public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor) throws IOException {
+            this.interceptor = interceptor;
+            if (interceptor != null) {
+                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(RemotePlainFile.this));
+            }
             delegate = new FileOutputStream(getCache());
         }
 
