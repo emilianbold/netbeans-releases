@@ -72,7 +72,7 @@ public class FsTestActions {
 
     private FsTestActions() {}
     
-    @ActionID(id = "org.netbeans.modules.favorites.Add", category = "Window")
+    @ActionID(id = "org.netbeans.modules.remote.ui.TestPerformanceAction", category = "Window")
     @ActionRegistration(displayName = "#ActionTestPerf")
     @ActionReference(position = 900, path = "UI/ToolActions/Files")
     public static ContextAwareAction add() { 
