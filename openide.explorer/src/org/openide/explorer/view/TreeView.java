@@ -227,12 +227,6 @@ public abstract class TreeView extends JScrollPane {
     transient private boolean allowedQuickSearch = true;
     transient private KeyAdapter quickSearchKeyAdapter;
     
-    /**
-     * Whether the quick search uses prefix or substring. 
-     * Defaults to false meaning prefix is used.
-     */
-    transient private boolean quickSearchUsingSubstring = false;
-
     /** wait cursor is shown automatically during expanding */
     transient private boolean autoWaitCursor = true;
 
@@ -488,13 +482,12 @@ public abstract class TreeView extends JScrollPane {
      * matching for the typed characters. Defaults to prefix (false).
      * @since 6.11
      * @param useSubstring <code>true</code> if substring search is used in quick search
-     * @deprecated Deprecated as the quick search feature uses both substring and prefix
+     * @deprecated Since 6.42 does nothing, as the quick search feature uses both substring and prefix
      * matching. All prefix matches for the typed characters will appear before substring
      * matches.
      */
     @Deprecated
     public void setUseSubstringInQuickSearch(boolean useSubstring) {
-        quickSearchUsingSubstring = useSubstring;
     }
     
     /********** Support for the Drag & Drop operations *********/

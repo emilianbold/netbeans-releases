@@ -82,10 +82,6 @@ public class TreeViewQuickSearchTest extends NbTestCase {
     }
     
     public void testQuickSearch() throws Throwable {
-        doQuickSearchTest();
-    }
-    
-    private void doQuickSearchTest() throws Throwable {
         final AbstractNode root = new AbstractNode(new Children.Array());
         root.setName("test root");
         
