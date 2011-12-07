@@ -67,6 +67,8 @@ import java.io.File;
 import java.util.MissingResourceException;
 import java.util.Date;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.util.Utils;
@@ -80,6 +82,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public abstract class ContextAction extends NodeAction {
 
+    private static final Logger LOG = Logger.getLogger(ContextAction.class.getName());
+    
     // it's singleton
     // do not declare any instance data
 
@@ -124,7 +128,7 @@ public abstract class ContextAction extends NodeAction {
 
     public static SVNUrl getSvnUrl(Context ctx) throws SVNClientException {
         File[] roots = ctx.getRootFiles();
-        return SvnUtils.getRepositoryRootUrl(roots[0]);        
+        return roots.length == 0 ? null : SvnUtils.getRepositoryRootUrl(roots[0]);        
     }
 
     protected abstract void performContextAction(Node[] nodes);
@@ -355,16 +359,28 @@ public abstract class ContextAction extends NodeAction {
         private final Node[] nodes;
         private long progressStamp;
         private String runningName;
+        private final Context ctx;
         public ProgressSupport(ContextAction action, Node[] nodes) {
+            this(action, nodes, null);
+        }
+        public ProgressSupport(ContextAction action, Node[] nodes, Context ctx) {
             this.action = action;
             this.nodes = nodes;
+            this.ctx = ctx;
         }
 
         public RequestProcessor.Task start(RequestProcessor  rp) {
             runningName = ActionUtils.cutAmpersand(action.getRunningName(nodes));
             SVNUrl url = null;
             try {
-                url = getSvnUrl(action.getContext(nodes));
+                Context actionContext = ctx == null ? action.getContext(nodes) : ctx; // reuse already created context if possible
+                if (actionContext.getRootFiles().length == 0) {
+                    LOG.log(Level.INFO, "Running a task with an empty context."); //NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "Running a task with an empty context.", new Exception()); //NOI18N
+                    }
+                }
+                url = getSvnUrl(actionContext);
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }                    

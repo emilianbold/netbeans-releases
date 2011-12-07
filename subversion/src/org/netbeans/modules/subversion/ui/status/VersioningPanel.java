@@ -112,7 +112,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         explorerManager = new ExplorerManager ();
         displayStatuses = getDefaultDisplayStatus();
         noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
-        modeKeeper = new ModeKeeper();
+        modeKeeper = new ModeKeeper(SvnModuleConfig.getDefault().getLastUsedModificationContext());
         syncTable = new SyncTable(modeKeeper);
 
         initComponents();
@@ -783,7 +783,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     static class ModeKeeper {
         private int mode;
 
-        private ModeKeeper () {
+        private ModeKeeper (int defaultMode) {
+            mode = defaultMode;
         }
 
         void storeMode () {

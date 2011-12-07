@@ -133,7 +133,7 @@ public class UpdateAction extends ContextAction {
         if (revision == null) {
             return;
         }
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
             public void perform() {
                 update(ctx, this, getContextDisplayName(nodes), revision);
             }

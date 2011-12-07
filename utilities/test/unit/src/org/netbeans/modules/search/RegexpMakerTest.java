@@ -444,4 +444,16 @@ public class RegexpMakerTest extends NbTestCase {
         assertEquals("a|.*b\\?", RegexpMaker.makeMultiRegexp("a,*b\\?"));
     }
     
+    public void testCanBeMultilinePattern() {
+        assertFalse(RegexpMaker.canBeMultilinePattern("a\\d\\d\\da"));
+        assertFalse(RegexpMaker.canBeMultilinePattern(".*"));
+        assertFalse(RegexpMaker.canBeMultilinePattern("(?m)^x.*y$"));
+        assertTrue(RegexpMaker.canBeMultilinePattern("(?ms-x)test.*test"));
+        assertTrue(RegexpMaker.canBeMultilinePattern("test\\ntest"));
+        assertTrue(RegexpMaker.canBeMultilinePattern("test\\rtest"));
+        assertTrue(RegexpMaker.canBeMultilinePattern("test\\r\\ntest"));
+        assertTrue(RegexpMaker.canBeMultilinePattern("test\\ftest"));
+        assertTrue(RegexpMaker.canBeMultilinePattern("test\\u000Btest"));
+        assertTrue(RegexpMaker.canBeMultilinePattern("test\\x85test"));
+    }
 }
