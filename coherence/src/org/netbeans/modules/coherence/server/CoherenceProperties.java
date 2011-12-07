@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.server.util.Version;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -66,55 +65,16 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class CoherenceProperties {
 
-    /**
-     * Key for Coherence instance ID in {@link InstanceProperties}.
-     */
-    public static final String PROP_ID = "base.coherence.id"; //NOI18N
+    /** Directory inside Coherence platform where are libraries placed. */
+    public static final String PLATFORM_LIB_DIR = "lib"; //NOI18N
 
-    /**
-     * Key for Coherence location path in {@link InstanceProperties}.
-     */
-    public static final String PROP_LOCATION = "base.coherence.location"; //NOI18N
+    /** Directory inside Coherence platform where are binaries placed. */
+    public static final String PLATFORM_BIN_DIR = "bin"; //NOI18N
 
-    /**
-     * Key for Coherence instance display name in {@link InstanceProperties}.
-     */
-    public static final String PROP_DISPLAY_NAME = "base.displayName"; // NOI18N
-
-    /**
-     * Key for Coherence instance classpath in {@link InstanceProperties}. It includes
-     * Coherence base JAR as well as additional Coherence or another JARs.
-     */
-    public static final String PROP_CLASSPATH = "base.coherence.classpath"; //NOI18N
-
-    /**
-     * Key for Coherence instance java flags in {@link InstanceProperties}.
-     */
-    public static final String PROP_JAVA_FLAGS = "base.java.flags"; //NOI18N
-
-    /**
-     * Key for Coherence instance custom properties in {@link InstanceProperties}.
-     */
-    public static final String PROP_CUSTOM_PROPERTIES = "base.custom.properties"; //NOI18N
-
-    /**
-     * Display name of Coherence server.
-     */
-    public static final String DISPLAY_NAME_DEFAULT = "Oracle Coherence"; // NOI18N
-
-    /**
-     * Delimiter for serializing additional libraries from array to string and opposite.
-     */
-    public static final String CLASSPATH_SEPARATOR = "#@#"; //NOI18N
-
-    /**
-     * File name of base Coherence JAR file.
-     */
+    /** File name of base Coherence JAR file. */
     public static final String COHERENCE_JAR_NAME = "coherence.jar"; //NOI18N
 
-    /**
-     * Contains all Coherence server command line properties.
-     */
+    /** Contains all Coherence server command line properties. */
     public static final List<CoherenceServerProperty> SERVER_PROPERTIES = new ArrayList<CoherenceServerProperty>();
 
     private static final Logger LOGGER = Logger.getLogger(CoherenceProperties.class.getName());
@@ -199,7 +159,7 @@ public class CoherenceProperties {
      */
     public static File getCoherenceJar(File serverRoot) {
         return new File(serverRoot.getAbsolutePath() + File.separator
-                + CoherenceServer.PLATFORM_LIB_DIR + File.separator + COHERENCE_JAR_NAME);
+                + PLATFORM_LIB_DIR + File.separator + COHERENCE_JAR_NAME);
     }
 
     private static String obtainVersionFromProductFile(File productFile) {

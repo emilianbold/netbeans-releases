@@ -39,46 +39,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server.actions.ui;
-
-import org.netbeans.api.server.properties.InstanceProperties;
-import org.netbeans.api.server.properties.InstancePropertiesManager;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.coherence.server.CoherenceInstance;
-import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
-import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
+package org.netbeans.modules.coherence.server;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CloneServerPanelTest extends NbTestCase {
+public class CoherenceModuleProperties {
 
-    public CloneServerPanelTest(String name) {
-        super(name);
-    }
+    /** Key for Coherence instance ID in {@link InstanceProperties}. */
+    public static final String PROP_ID = "base.coherence.id"; //NOI18N
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    /** Key for Coherence location path in {@link InstanceProperties}. */
+    public static final String PROP_LOCATION = "base.coherence.location"; //NOI18N
 
-    public void testGetUniqueName() throws Exception {
-        assertEquals("Coherence 3.7 Clone(1)", CloneServerPanel.getUniqueName("Coherence 3.7"));
+    /** Key for Coherence instance display name in {@link InstanceProperties}. */
+    public static final String PROP_DISPLAY_NAME = "base.displayName"; // NOI18N
 
-        InstanceProperties instanceProperties = InstancePropertiesManager.getInstance().createProperties("Coherence");
-        instanceProperties.putInt(CoherenceModuleProperties.PROP_ID, 123456);
-        instanceProperties.putString(CoherenceModuleProperties.PROP_DISPLAY_NAME, "Coherence 3.7 Clone(1)");
-        CoherenceInstance instance = CoherenceInstance.create(instanceProperties);
-        CoherenceInstanceProvider.getCoherenceProvider().addServerInstance(instance);
-        assertEquals("Coherence 3.7 Clone(2)", CloneServerPanel.getUniqueName("Coherence 3.7 Clone(1)"));
+    /** Key for Coherence instance classpath in {@link InstanceProperties}. It includes
+     * Coherence base JAR as well as additional Coherence or another JARs. */
+    public static final String PROP_CLASSPATH = "base.coherence.classpath"; //NOI18N
 
-        InstanceProperties instanceProperties2 = InstancePropertiesManager.getInstance().createProperties("Coherence");
-        instanceProperties2.putInt(CoherenceModuleProperties.PROP_ID, 987654);
-        instanceProperties2.putString(CoherenceModuleProperties.PROP_DISPLAY_NAME, "Coherence 3.7 Clone(2)");
-        CoherenceInstance instance2 = CoherenceInstance.create(instanceProperties2);
-        CoherenceInstanceProvider.getCoherenceProvider().addServerInstance(instance2);
-        assertEquals("Coherence 3.7 Clone(3)", CloneServerPanel.getUniqueName("Coherence 3.7 Clone"));
-    }
+    /** Key for Coherence instance java flags in {@link InstanceProperties}. */
+    public static final String PROP_JAVA_FLAGS = "base.java.flags"; //NOI18N
+
+    /** Key for Coherence instance custom properties in {@link InstanceProperties}. */
+    public static final String PROP_CUSTOM_PROPERTIES = "base.custom.properties"; //NOI18N
+
+    /** Delimiter for serializing additional libraries from array to string and opposite. */
+    public static final String CLASSPATH_SEPARATOR = "#@#"; //NOI18N
+
+    /** Default display name of Coherence server. */
+    public static final String DISPLAY_NAME_DEFAULT = "Oracle Coherence"; // NOI18N
 
 }

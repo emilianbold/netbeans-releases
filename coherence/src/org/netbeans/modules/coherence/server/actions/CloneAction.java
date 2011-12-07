@@ -49,6 +49,7 @@ import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
 import org.netbeans.modules.coherence.server.CoherenceInstance;
 import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
+import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.CoherenceServer;
 import org.netbeans.modules.coherence.server.CoherenceServerProperty;
@@ -109,12 +110,12 @@ public class CloneAction extends NodeAction {
             InstanceProperties newProperties = InstancePropertiesManager.getInstance().
                     createProperties(CoherenceInstanceProvider.COHERENCE_INSTANCES_NS);
 
-            newProperties.putString(CoherenceProperties.PROP_DISPLAY_NAME, panel.getNewServerName()); //NOI18N
+            newProperties.putString(CoherenceModuleProperties.PROP_DISPLAY_NAME, panel.getNewServerName()); //NOI18N
 
             // clone all base properties except instance ID
-            copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_CLASSPATH);
-            copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_JAVA_FLAGS);
-            copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_CUSTOM_PROPERTIES);
+            copyStringProperty(newProperties, oldProperties, CoherenceModuleProperties.PROP_CLASSPATH);
+            copyStringProperty(newProperties, oldProperties, CoherenceModuleProperties.PROP_JAVA_FLAGS);
+            copyStringProperty(newProperties, oldProperties, CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES);
             // clone all Coherence server properties
             for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
                 copyProperty(newProperties, oldProperties, property);

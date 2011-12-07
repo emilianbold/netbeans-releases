@@ -75,19 +75,6 @@ import org.openide.util.Utilities;
  */
 public class CoherenceServer {
 
-    /**
-     * Directory inside Coherence platform where are libraries placed.
-     */
-    public static final String PLATFORM_LIB_DIR = "lib"; //NOI18N
-    /**
-     * Directory inside Coherence platform where is documentation placed.
-     */
-    public static final String PLATFORM_DOC_DIR = "doc"; //NOI18N
-    /**
-     * Directory inside Coherence platform where are binaries placed.
-     */
-    public static final String PLATFORM_BIN_DIR = "bin"; //NOI18N
-
     private static final Logger LOGGER = Logger.getLogger(CoherenceServer.class.getCanonicalName());
 
     private final InstanceProperties instanceProperties;
@@ -196,7 +183,7 @@ public class CoherenceServer {
     }
 
     private String getServerDisplayName() {
-        return instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME, ""); //NOI18N
+        return instanceProperties.getString(CoherenceModuleProperties.PROP_DISPLAY_NAME, ""); //NOI18N
     }
 
     private synchronized void switchFromStartingToRunningState() {
@@ -215,11 +202,11 @@ public class CoherenceServer {
         // appending classpath elements
         processBuilder = appendClassPathItems(processBuilder);
         // appending java flags
-        processBuilder = appendCustomProperties(CoherenceProperties.PROP_JAVA_FLAGS, processBuilder);
+        processBuilder = appendCustomProperties(CoherenceModuleProperties.PROP_JAVA_FLAGS, processBuilder);
         // appending server properties
         processBuilder = appendServerProperties(processBuilder);
         // appending java flags
-        processBuilder = appendCustomProperties(CoherenceProperties.PROP_CUSTOM_PROPERTIES, processBuilder);
+        processBuilder = appendCustomProperties(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, processBuilder);
 
         processBuilder = processBuilder.addArgument("com.tangosol.net.DefaultCacheServer"); //NOI18N
 
@@ -244,10 +231,10 @@ public class CoherenceServer {
     }
 
     private ExternalProcessBuilder appendClassPathItems(ExternalProcessBuilder builder) {
-        String coherenceCP = instanceProperties.getString(CoherenceProperties.PROP_CLASSPATH, ""); //NOI18N
+        String coherenceCP = instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
         StringBuilder sbClasspath = new StringBuilder();
         if (coherenceCP != null) {
-            for (String cp : coherenceCP.split(CoherenceProperties.CLASSPATH_SEPARATOR)) {
+            for (String cp : coherenceCP.split(CoherenceModuleProperties.CLASSPATH_SEPARATOR)) {
                 sbClasspath.append(cp).append(File.pathSeparator);
             }
         }

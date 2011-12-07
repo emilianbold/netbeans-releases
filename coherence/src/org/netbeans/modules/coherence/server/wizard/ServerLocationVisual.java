@@ -50,8 +50,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
-import org.netbeans.modules.coherence.server.CoherenceServer;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class ServerLocationVisual extends javax.swing.JPanel {
 
-    private static final String COHERENCE_LIB_PATH = File.separator + CoherenceServer.PLATFORM_LIB_DIR + File.separator;
+    private static final String COHERENCE_LIB_PATH = File.separator + CoherenceProperties.PLATFORM_LIB_DIR + File.separator;
     private static final String COHERENCE_JAR_PATH = COHERENCE_LIB_PATH + "coherence.jar"; //NOI18N
     private static final String COHERENCE_JPA_JAR_PATH = COHERENCE_LIB_PATH + "coherence-jpa.jar"; //NOI18N
     private static final String COHERENCE_HIBERNATE_JAR_PATH = COHERENCE_LIB_PATH + "coherence-hibernate.jar"; //NOI18N
@@ -92,9 +92,9 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     private String validCoherenceServerDirectory(File directory) {
         boolean libDir = false, binDir = false;
         for (File file : directory.listFiles()) {
-            if (file.getName().equals(CoherenceServer.PLATFORM_BIN_DIR)) {
+            if (file.getName().equals(CoherenceProperties.PLATFORM_BIN_DIR)) {
                 binDir = true;
-            } else if (file.getName().equals(CoherenceServer.PLATFORM_LIB_DIR)) {
+            } else if (file.getName().equals(CoherenceProperties.PLATFORM_LIB_DIR)) {
                 libDir = true;
             }
         }
@@ -256,24 +256,24 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         if (isCoherenceValid) {
             String location = serverLocationTextField.getText();
             if (location != null && location.trim().length() > 0) {
-                StringBuilder classpathSB = new StringBuilder(location.concat(COHERENCE_JAR_PATH).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                StringBuilder classpathSB = new StringBuilder(location.concat(COHERENCE_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 if (hibernateJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_HIBERNATE_JAR_PATH).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_HIBERNATE_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (jpaJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_JPA_JAR_PATH).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_JPA_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (loadbalancerJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_LOADBALANCER_JAR_PATH).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_LOADBALANCER_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (transactionJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TRANSACTION_JAR_PATH).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_TRANSACTION_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (txJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TX_JAR_PATH).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_TX_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 classpath = classpathSB.toString();
-                classpath = classpath.substring(0, classpath.length() - CoherenceProperties.CLASSPATH_SEPARATOR.length());
+                classpath = classpath.substring(0, classpath.length() - CoherenceModuleProperties.CLASSPATH_SEPARATOR.length());
             }
         } else {
             classpath = "";
