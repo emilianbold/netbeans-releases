@@ -77,6 +77,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LoaderWizardTitle"));
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 if (checkValidity()) {
                     updateData();
@@ -100,6 +101,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         }
     }
     
+    @Override
     protected void storeToDataModel() {
         updateData();
     }
@@ -122,6 +124,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         }
     }
     
+    @Override
     protected void readFromDataModel() {
         if (data.getPackageName() != null) {
             comPackageName.setSelectedItem(data.getPackageName());
@@ -132,6 +135,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         checkValidity();
     }
     
+    @Override
     protected String getPanelName() {
         return getMessage("LBL_NameLocation_Title");
     }
@@ -162,15 +166,16 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         
         File icon = (path.length() == 0) ? null : new File(path);
         if (icon == null || !icon.exists()) {
-            setWarning(WizardUtils.getNoIconSelectedWarning(16,16));
+            setWarning(WizardUtils.getNoIconSelectedWarning(16,16), !useMultiView.isSelected());
         } else if (!WizardUtils.isValidIcon(icon,16,16)) {
-            setWarning(WizardUtils.getIconDimensionWarning(icon,16,16));
-        } else {        
+            setWarning(WizardUtils.getIconDimensionWarning(icon,16,16), !useMultiView.isSelected());
+        } else {
             markValid();
         }
         return true;
     }
     
+    @Override
     protected HelpCtx getHelp() {
         return new HelpCtx(NameAndLocationPanel.class);
     }
@@ -345,6 +350,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         add(lblIcon2, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(useMultiView, "&Use MultiView");
+        useMultiView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useMultiViewActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -361,6 +371,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             txtIcon.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_btnIconActionPerformed
+
+    private void useMultiViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useMultiViewActionPerformed
+        checkValidity();
+    }//GEN-LAST:event_useMultiViewActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnIcon;
