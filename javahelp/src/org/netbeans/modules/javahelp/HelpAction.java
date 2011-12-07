@@ -55,6 +55,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
@@ -63,6 +64,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -75,12 +77,19 @@ import org.openide.windows.TopComponent;
 @ActionID(category="Help", id="org.netbeans.modules.javahelp.HelpAction")
 @ActionRegistration(displayName="#LBL_HelpAction", iconBase="org/netbeans/modules/javahelp/resources/show-help.gif")
 @ActionReference(path="Shortcuts", name="F1")
-public class HelpAction extends AbstractAction {
+public class HelpAction extends AbstractAction implements ContextAwareAction {
 
     public HelpAction() {
         Installer.log.fine("HelpAction.initialize");
         // Cf. org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor
         putValue("OpenIDE-Transmodal-Action", true); // NOI18N
+    }
+
+    /**
+     * #206093 workaround. OpenIDE-Transmodal-Action must be present from the start (#206089).
+     */
+    @Override public Action createContextAwareInstance(Lookup actionContext) {
+        return this;
     }
 
     static class WindowActivatedDetector implements AWTEventListener {
