@@ -87,37 +87,37 @@ import org.netbeans.modules.profiler.attach.wizard.steps.SimpleWizardStep;
  * @author Tomas Hurka
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "SunAS8IntegrationProvider_PathToJvmDirText=&lt;path to {0} directory&gt;",
+    "SunAS8IntegrationProvider_ManualRemoteStep3Msg=Locate the <code>{0}</code> configuration file for the server\\:<br><code>{1}{2}config{2}{0}</code><br>where <code>{1}</code> is the {3} installation directory on remote host.",
+    "SunAS8IntegrationProvider_ManualRemoteStep450Msg=If the {3} is configured to run on a different JVM, set the server to run on {0}. To do this, modify the line of <code>{1}</code> containing the \"<code>AS_JAVA</code>\" entry as follows\\:<br><code>{2}</code>",
+    "SunAS8IntegrationProvider_ManualRemoteStep5Msg=Locate the <code>domain.xml</code> configuration file for your domain\\:<br><code>{0}{1}domains{1}\"&lt;YOUR_DOMAIN&gt;\"{1}config{1}domain.xml</code><br>where <code>&lt;YOUR_DOMAIN&gt;</code> stands for the actual domain (typically \"<code>domain1</code>\").",
+    "SunAS8IntegrationProvider_ManualRemoteStep6Msg=Place the following <code>&lt;profiler&gt;</code> xml element right after the <code>&lt;java-config&gt;</code> before the first <code>&lt;jvm-options&gt;</code> element in <code>domain.xml</code>\\:<br><code>&lt;profiler enabled=\"true\" name=\"NetBeansProfiler{0}\"&gt;<br>{1}&lt;/profiler&gt;</code><br>In <code>&lt;jvm-options&gt;</code> element the {2}.",
+    "SunAS8IntegrationProvider_ManualRemoteStep7Msg=Start the server from the <code>{0}{1}bin</code> directory using <code>asadmin start-domain --verbose &lt;YOUR_DOMAIN&gt;</code><br>The JVM will start, but will not proceed with server execution until you connect the profiler.",
+    "SunAS8IntegrationProvider_ManualDirectDynamicStep1Msg=Locate the <code>{0}</code> configuration file for the server:<br><code>{1}{2}config{2}{0}</code><br>where <code>{1}</code> is the {3} installation directory.",
+    "SunAS8IntegrationProvider_ManualDirectDynamicStep250Msg=If the {3} is configured to run on a different JVM, set the server to run on {0}. To do this, modify the line of <code>{1}</code> containing the \"<code>AS_JAVA</code>\" entry as follows\\:<br><code>{2}</code>",
+    "SunAS8IntegrationProvider_ManualDirectStep3Msg=Locate the <code>domain.xml</code> configuration file for your domain\\:<br><code>{0}{1}domains{1}&lt;YOUR_DOMAIN&gt;{1}config{1}domain.xml</code><br>where <code>&lt;YOUR_DOMAIN&gt;</code> stands for the actual domain (typically \"<code>domain1</code>\").",
+    "SunAS8IntegrationProvider_ManualDirectStep4Msg=Place the following <code>&lt;profiler&gt;</code> xml element right after the <code>&lt;java-config&gt;</code> before the first <code>&lt;jvm-options&gt;</code> element in <code>domain.xml</code>\\:<br><code>&lt;profiler enabled=\"true\" name=\"NetBeansProfiler{0}\"&gt;<br>{1}&lt;/profiler&gt;</code>",
+    "SunAS8IntegrationProvider_ManualDirectStep5Msg=Start the server from the <code>{0}{1}bin</code> directory using <code>asadmin start-domain --verbose &lt;YOUR_DOMAIN&gt;</code><br>The JVM will start, but will not proceed with server execution until you connect the profiler",
+    "SunAS8IntegrationProvider_ManualDynamicStep3Msg=Start the server from the <code>{0}{1}bin</code> directory using <code>asadmin start-domain --verbose &lt;YOUR_DOMAIN&gt;</code><br>When the server running, click Attach to select the server process to attach to.",
+    "SunAS8IntegrationProvider_IntegrReviewStep1Msg=Original files <code>{0}</code> and <code>{1}</code> will be backed up to <code>{2}.backup</code> and <code>{3}.backup</code>",
+    "SunAS8IntegrationProvider_IntegrReviewStep2Msg=The following line will be modified in <code>{0}</code>\\:<br><code>{1}</code>",
+    "SunAS8IntegrationProvider_IntegrReviewStep3DirectMsg=The following <code>&lt;profiler&gt;</code> section will be added to <code>{0}</code> config file\\:<br><code>&lt;profiler enabled=\"true\" name=\"NetBeansProfiler{1}\"&gt;<br>{2}&lt;/profiler&gt;</code>",
+    "SunAS8IntegrationProvider_IntegrReviewStep3DynamicMsg=If the <code>{0}</code> config file contains <code>&lt;profiler&gt;</code> section, this section will be removed.",
+    "SunAS8IntegrationProvider_RestoreSettingsWarningMsg=You will have to restore the original <code>{0}</code> and <code>{1}</code> files manually to start the server without profiling",
+    "SunAS8IntegrationProvider_AdditionalStepsStep1DirectMsg=Use <code>\"{0}\"</code> command to start the server. The server JVM will start, but will not proceed with server execution until the profiler is connected.",
+    "SunAS8IntegrationProvider_AdditionalStepsStep1DynamicMsg=Use <code>\"{0}\"</code> command to start the the server. For dynamic attach, the server must be started from the <code>{1}</code> directory.",
+    "SunAS8IntegrationProvider_AdditionalStepsStep2Msg=After this wizard finishes, choose a profiling task and click Attach. For profiling CPU, you should set a meaningful instrumentation filter and/or profile only Part of Application to decrease profiling overhead.",
+    "SunAS8IntegrationProvider_AdditionalStepsStep3DirectMsg=The profiler connects to the server JVM and the server will start in profiling mode.",
+    "SunAS8IntegrationProvider_AdditionalStepsStep3DynamicPidMsg=When you want to connect the profiler to the server, select the correct server process in the \"Select Process\" dialog and click OK.",
+    "SunAS8IntegrationProvider_AdditionalStepsAutoStartMsg=If you check the \"Automatically start the server\" checkbox, the server will be started automatically after this wizard finishes.",
+    "SunAS8IntegrationProvider_EnterInstallDirMsg=Enter {0} installation directory.",
+    "SunAS8IntegrationProvider_InvalidInstallDirMsg=Not a valid {0} installation directory, cannot find {1}.",
+    "SunASIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}.",
+    "AttachWizard_LocateRequiredFilesString=Locate Required Files"
+})
 public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegrationProvider {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // <editor-fold defaultstate="collapsed" desc="Resources">
-    private static final String PATH_TO_JVM_DIR_TEXT = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_PathToJvmDirText"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_50_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep450Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP6_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP7_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep7Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP2_50_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectDynamicStep250Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP3_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectStep3Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP4_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectStep4Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP5_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectStep5Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP3_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDynamicStep3Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP1_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP2_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP3_DIRECT_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep3DirectMsg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP3_DYNAMIC_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep3DynamicMsg"); // NOI18N
-    private static final String RESTORE_SETTINGS_WARNING_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_RestoreSettingsWarningMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP2_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
-    private static final String ENTER_INSTALL_DIR_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_EnterInstallDirMsg"); // NOI18N
-    private static final String INVALID_INSTALL_DIR_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_InvalidInstallDirMsg"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunASIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-                                                                                                                                // </editor-fold>
+    //~ Static fields/initializers -----------------------------------------------------------------------------------------------                                                                                                                                // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Constants">
     private static final String SUNAS_INSTALL_VAR_STRING = "AS_INSTALL"; // NOI18N
@@ -144,9 +144,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
 
     public SunASAutoIntegrationProvider() {
         super();
-        this.attachedWizard = new SimpleWizardStep(NbBundle.getMessage(SunASAutoIntegrationProvider.class,
-                                                                       "AttachWizard_LocateRequiredFilesString"),
-                                                   new SunASIntegrationPanel()); // NOI18N
+        this.attachedWizard = new SimpleWizardStep(Bundle.AttachWizard_LocateRequiredFilesString(),new SunASIntegrationPanel());
         this.persistor = new IDESettingsPersistor() {
                 protected String getSettingsFileName() {
                     return "SunAS8IntegrationProvider.properties"; // NOI18N
@@ -182,47 +180,37 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
 
         // Step 1
         if (attachSettings.isDirect()) {
-            instructions.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DIRECT_MSG,
-                                                      new Object[] {
-                                                          getAsAdminScriptFilePath(targetOS) + " start-domain --domaindir "
-                                                          + getInstallationPath()
-                                                          + IntegrationUtils.getDirectorySeparator(targetOS)
-                                                          + SUNAS_8PE_DOMAINSDIR_NAME + " " + getDomain()
-                                                      })); // NOI18N
+            instructions.addStep(Bundle.SunAS8IntegrationProvider_AdditionalStepsStep1DirectMsg(
+                                    getAsAdminScriptFilePath(targetOS) + " start-domain --domaindir " // NOI18N
+                                       + getInstallationPath()
+                                       + IntegrationUtils.getDirectorySeparator(targetOS)
+                                       + SUNAS_8PE_DOMAINSDIR_NAME + " " + getDomain()));
         } else {
-            instructions.addStep(MessageFormat.format(ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG,
-                                                      new Object[] {
-                                                          getAsAdminScriptFilePath(targetOS) + " start-domain --domaindir "
-                                                          + getInstallationPath()
-                                                          + IntegrationUtils.getDirectorySeparator(targetOS)
-                                                          + SUNAS_8PE_DOMAINSDIR_NAME + " " + getDomain(), ""
-                                                      })); // NOI18N
+            instructions.addStep(Bundle.SunAS8IntegrationProvider_AdditionalStepsStep1DynamicMsg(
+                                    getAsAdminScriptFilePath(targetOS) + " start-domain --domaindir " // NOI18N
+                                        + getInstallationPath()
+                                        + IntegrationUtils.getDirectorySeparator(targetOS)
+                                        + SUNAS_8PE_DOMAINSDIR_NAME + " " + getDomain(),  // NOI18N
+                                    "")); // NOI18N
         }
 
         // Step 2
-        instructions.addStep(ADDITIONAL_STEPS_STEP2_MSG);
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_AdditionalStepsStep2Msg());
 
         if (attachSettings.isDirect()) {
-            instructions.addStep(ADDITIONAL_STEPS_STEP3_DIRECT_MSG);
+            instructions.addStep(Bundle.SunAS8IntegrationProvider_AdditionalStepsStep3DirectMsg());
         } else {
-            instructions.addStep(ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG);
-            instructions.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                         new Object[] {
-                                                             IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                             IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                              getTargetJava(),
-                                                                                                              attachSettings
-                                                                                                                                                                                                                      .isRemote(),
-                                                                                                              attachSettings
-                                                                                                                                                                                                                        .getPort())
-                                                         }));
+            instructions.addStep(Bundle.SunAS8IntegrationProvider_AdditionalStepsStep3DynamicPidMsg());
+            instructions.addWarning(Bundle.SunASIntegrationProvider_DynamicWarningMessage(
+                                        IntegrationUtils.getJavaPlatformName(getTargetJava())));
         }
 
         // modified files warning
-        instructions.addWarning(MessageFormat.format(RESTORE_SETTINGS_WARNING_MSG,
-                                                     new Object[] { getAsEnvScriptFileName(targetOS), SUNAS_8PE_DOMAINSCRIPT_NAME }));
+        instructions.addWarning(Bundle.SunAS8IntegrationProvider_RestoreSettingsWarningMsg(
+                                    getAsEnvScriptFileName(targetOS), 
+                                    SUNAS_8PE_DOMAINSCRIPT_NAME));
 
-        instructions.addHint(ADDITIONAL_STEPS_AUTO_START_MSG);
+        instructions.addHint(Bundle.SunAS8IntegrationProvider_AdditionalStepsAutoStartMsg());
 
         return instructions;
     }
@@ -285,40 +273,38 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         String targetOS = attachSettings.getHostOS();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP1_MSG,
-                                                  new Object[] {
-                                                      getAsEnvScriptFilePath(targetOS), getDomainScriptFilePath(IntegrationUtils.getDirectorySeparator(targetOS)),
-                                                      getAsEnvScriptFileName(targetOS), SUNAS_8PE_DOMAINSCRIPT_NAME
-                                                  }));
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_IntegrReviewStep1Msg(
+                                getAsEnvScriptFilePath(targetOS), 
+                                getDomainScriptFilePath(IntegrationUtils.getDirectorySeparator(targetOS)),
+                                getAsEnvScriptFileName(targetOS), 
+                                SUNAS_8PE_DOMAINSCRIPT_NAME));
 
         // Step 2
-        instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP2_MSG,
-                                                  new Object[] {
-                                                      getAsEnvScriptFileName(targetOS),
-                                                      (IntegrationUtils.isWindowsPlatform(targetOS)
-                                                       ? ASENV_INSERTION_POINT_WIN_0_STRING : ASENV_INSERTION_POINT_NOWIN_0_STRING)
-                                                      + "=\"" + getTargetJavaHome() + "\""
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_IntegrReviewStep2Msg(
+                                getAsEnvScriptFileName(targetOS),
+                                (IntegrationUtils.isWindowsPlatform(targetOS)
+                                    ? ASENV_INSERTION_POINT_WIN_0_STRING : ASENV_INSERTION_POINT_NOWIN_0_STRING)
+                                    + "=\"" + getTargetJavaHome() + "\"" // NOI18N
+                                ));
 
         // Step 3
         if (attachSettings.isDirect()) {
-            instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP3_DIRECT_MSG,
-                                                      new Object[] {
-                                                          SUNAS_8PE_DOMAINSCRIPT_NAME, "",
-                                                          getJvmOptionsElementText(
-                                                              getProfilerAgentCommandLineArgsForDomainScript(targetOS,
-                                                              attachSettings.isRemote(),
-                                                              attachSettings.getPort())
-                                                          )
-                                                      })); // NOI18N
+            instructions.addStep(Bundle.SunAS8IntegrationProvider_IntegrReviewStep3DirectMsg(
+                                    SUNAS_8PE_DOMAINSCRIPT_NAME, 
+                                    "", // NOI18N
+                                    getJvmOptionsElementText(
+                                        getProfilerAgentCommandLineArgsForDomainScript(targetOS,
+                                        attachSettings.isRemote(),
+                                        attachSettings.getPort())
+                                    )));
         } else {
-            instructions.addStep(MessageFormat.format(INTEGR_REVIEW_STEP3_DYNAMIC_MSG,
-                                                      new Object[] { SUNAS_8PE_DOMAINSCRIPT_NAME }));
+            instructions.addStep(Bundle.SunAS8IntegrationProvider_IntegrReviewStep3DynamicMsg(SUNAS_8PE_DOMAINSCRIPT_NAME));
         }
 
         // modified files warning
-        instructions.addWarning(MessageFormat.format(RESTORE_SETTINGS_WARNING_MSG,
-                                                     new Object[] { getAsEnvScriptFileName(targetOS), SUNAS_8PE_DOMAINSCRIPT_NAME }));
+        instructions.addWarning(Bundle.SunAS8IntegrationProvider_RestoreSettingsWarningMsg(
+                                    getAsEnvScriptFileName(targetOS), 
+                                    SUNAS_8PE_DOMAINSCRIPT_NAME));
 
         return instructions;
     }
@@ -359,15 +345,16 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
 
     public ValidationResult validateInstallation(final String targetOS, final String path) {
         if ((path == null) || (path.length() == 0) || !(new File(path).exists())) {
-            return new ValidationResult(false, MessageFormat.format(ENTER_INSTALL_DIR_MSG, new Object[] { this.getTitle() }));
+            return new ValidationResult(false, Bundle.SunAS8IntegrationProvider_EnterInstallDirMsg(this.getTitle()));
         }
 
         String asenv = getAsScriptFilePath(path, getConfigDir(targetOS), getAsEnvScriptFileName(targetOS), targetOS);
 
         if (!(new File(asenv).exists())) {
             return new ValidationResult(false,
-                                        MessageFormat.format(INVALID_INSTALL_DIR_MSG,
-                                                             new Object[] { getTitle(), getAsEnvScriptFileName(targetOS) }));
+                                        Bundle.SunAS8IntegrationProvider_InvalidInstallDirMsg(
+                                            getTitle(), 
+                                            getAsEnvScriptFileName(targetOS)));
         }
 
         return new ValidationResult(true);
@@ -415,65 +402,47 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                                  new Object[] {
-                                                      getAsEnvScriptFileName(targetOS),
-                                                      IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS), this.getTitle()
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectDynamicStep1Msg(
+                                getAsEnvScriptFileName(targetOS),
+                                IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS), this.getTitle()));
 
         // Step 2
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP2_50_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                      getAsEnvScriptFileName(targetOS),
-                                                      IntegrationUtils.isWindowsPlatform(targetOS)
-                                                      ? (IntegrationUtils.getExportCommandString(targetOS) + " AS_JAVA="
-                                                      + MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                             new Object[] {
-                                                                                 IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                             }))
-                                                      : ("AS_JAVA=\""
-                                                      + MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                             new Object[] {
-                                                                                 IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                             }) + "\""), this.getTitle()
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectDynamicStep250Msg(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                                getAsEnvScriptFileName(targetOS),
+                                IntegrationUtils.isWindowsPlatform(targetOS)
+                                    ? (IntegrationUtils.getExportCommandString(targetOS) + " AS_JAVA=" // NOI18N
+                                        + Bundle.SunAS8IntegrationProvider_PathToJvmDirText(
+                                            IntegrationUtils.getJavaPlatformName(getTargetJava())))
+                                    : ("AS_JAVA=\"" // NOI18N
+                                        + Bundle.SunAS8IntegrationProvider_PathToJvmDirText(
+                                            IntegrationUtils.getJavaPlatformName(getTargetJava()))
+                                        + "\""), // NOI18N
+                                this.getTitle())); 
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP3_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectStep3Msg(
+                                IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS))); 
 
         // Step 4
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP4_MSG,
-                                                  new Object[] {
-                                                      "",
-                                                      getJvmOptionsElementText(
-                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
-                                                      )
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectStep4Msg(
+                                "", // NOI18N
+                                getJvmOptionsElementText(
+                                    getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
+                                )));
 
         // Step 5
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP5_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectStep5Msg(
+                                IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS)));
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
 
-        instructions.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                     new Object[] {
-                                                         IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                         IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                          getTargetJava(),
-                                                                                                          attachSettings.isRemote(),
-                                                                                                          attachSettings.getPort())
-                                                     }));
+        instructions.addWarning(Bundle.SunASIntegrationProvider_DynamicWarningMessage(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return instructions;
     }
@@ -483,49 +452,35 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                                  new Object[] {
-                                                      getAsEnvScriptFileName(targetOS),
-                                                      IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS), this.getTitle()
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectDynamicStep1Msg(
+                                getAsEnvScriptFileName(targetOS),
+                                IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS), this.getTitle()));
 
         // Step 2
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP2_50_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                      getAsEnvScriptFileName(targetOS),
-                                                      IntegrationUtils.isWindowsPlatform(targetOS)
-                                                      ? (IntegrationUtils.getExportCommandString(targetOS) + " AS_JAVA="
-                                                      + MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                             new Object[] {
-                                                                                 IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                             }))
-                                                      : ("AS_JAVA=\""
-                                                      + MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                             new Object[] {
-                                                                                 IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                             }) + "\""), this.getTitle()
-                                                  })); // NOI18N
-                                                       // Step 3
-
-        instructions.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP3_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectDynamicStep250Msg(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                                getAsEnvScriptFileName(targetOS),
+                                IntegrationUtils.isWindowsPlatform(targetOS)
+                                    ? (IntegrationUtils.getExportCommandString(targetOS) + " AS_JAVA=" // NOI18N
+                                        + Bundle.SunAS8IntegrationProvider_PathToJvmDirText(
+                                            IntegrationUtils.getJavaPlatformName(getTargetJava())))
+                                    : ("AS_JAVA=\"" // NOI18N
+                                        + Bundle.SunAS8IntegrationProvider_PathToJvmDirText(
+                                            IntegrationUtils.getJavaPlatformName(getTargetJava())) 
+                                        + "\""), // NOI18N
+                                this.getTitle()));
+        
+        // Step 3
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualDirectStep3Msg(
+                                IntegrationUtils.getEnvVariableReference("AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS)));
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
 
-        instructions.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                     new Object[] {
-                                                         IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                         IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                          getTargetJava(),
-                                                                                                          attachSettings.isRemote(),
-                                                                                                          attachSettings.getPort())
-                                                     }));
+        instructions.addWarning(Bundle.SunASIntegrationProvider_DynamicWarningMessage(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return instructions;
     }
@@ -542,54 +497,42 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
         instructions.addStep(getManualRemoteStep2(targetOS));
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP3_MSG,
-                                                  new Object[] {
-                                                      getAsEnvScriptFileName(targetOS),
-                                                      IntegrationUtils.getEnvVariableReference("REMOTE_AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS), this.getTitle()
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualRemoteStep3Msg(
+                                getAsEnvScriptFileName(targetOS),
+                                IntegrationUtils.getEnvVariableReference("REMOTE_AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS), this.getTitle()));
 
         // Step 4
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_50_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                      getAsEnvScriptFileName(targetOS),
-                                                      IntegrationUtils.isWindowsPlatform(targetOS)
-                                                      ? (IntegrationUtils.getExportCommandString(targetOS) + " AS_JAVA="
-                                                      + MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                             new Object[] {
-                                                                                 IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                             }))
-                                                      : ("AS_JAVA=\""
-                                                      + MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                             new Object[] {
-                                                                                 IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                             }) + "\""), this.getTitle()
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualRemoteStep450Msg(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                                getAsEnvScriptFileName(targetOS),
+                                IntegrationUtils.isWindowsPlatform(targetOS)
+                                    ? (IntegrationUtils.getExportCommandString(targetOS) + " AS_JAVA=" // NOI18N
+                                        + Bundle.SunAS8IntegrationProvider_PathToJvmDirText(
+                                            IntegrationUtils.getJavaPlatformName(getTargetJava())))
+                                    : ("AS_JAVA=\"" // NOI18N
+                                        + Bundle.SunAS8IntegrationProvider_PathToJvmDirText(
+                                            IntegrationUtils.getJavaPlatformName(getTargetJava())) 
+                                        + "\""), // NOI18N
+                                this.getTitle()));
 
         // Step 5
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP5_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("REMOTE_AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualRemoteStep5Msg(
+                                IntegrationUtils.getEnvVariableReference("REMOTE_AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS)));
 
         // Step 6
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP6_MSG,
-                                                  new Object[] {
-                                                      "",
-                                                      getJvmOptionsElementText(
-                                                          getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
-                                                      ),
-                                                      IntegrationUtils.getRemoteAbsolutePathHint()
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualRemoteStep6Msg(
+                                "", // NOI18N
+                                getJvmOptionsElementText(
+                                    getProfilerAgentCommandLineArgsForDomainScript(targetOS, attachSettings.isRemote(), attachSettings.getPort())
+                                ),
+                                IntegrationUtils.getRemoteAbsolutePathHint()));
 
         // Step 7
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP7_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("REMOTE_AS_INSTALL", targetOS),
-                                                      IntegrationUtils.getDirectorySeparator(targetOS)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.SunAS8IntegrationProvider_ManualRemoteStep7Msg(
+                                IntegrationUtils.getEnvVariableReference("REMOTE_AS_INSTALL", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS)));
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);

@@ -54,12 +54,16 @@ import javax.swing.*;
  *
  * @author Ian Formanek
  */
+@NbBundle.Messages({
+    "LBL_AttachMainProjectAction=&Attach Profiler...",
+    "HINT_AttachMainProjectAction=Attach Profiler...",
+})
 public final class AttachAction extends AbstractAction {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     private AttachAction() {
-        putValue(Action.NAME, NbBundle.getMessage(AttachAction.class, "LBL_AttachMainProjectAction")); // NOI18N
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AttachAction.class, "HINT_AttachMainProjectAction")); // NOI18N
+        putValue(Action.NAME, Bundle.LBL_AttachMainProjectAction());
+        putValue(Action.SHORT_DESCRIPTION, Bundle.HINT_AddRootMethodAction());
     }
 
     private static final AttachAction DEF = new AttachAction();

@@ -84,96 +84,38 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy=Lazy",
+    "CPUSettingsAdvancedPanel_SchemeComboBoxItemEager=Eager",
+    "CPUSettingsAdvancedPanel_SchemeComboBoxItemTotal=Total",
+    "CPUSettingsAdvancedPanel_DoNotOverrideString=<Do not override>",
+    "CPUSettingsAdvancedPanel_ChooseWorkDirDialogCaption=Choose Working Directory",
+    "CPUSettingsAdvancedPanel_SettingsCaption=Settings",
+    "CPUSettingsAdvancedPanel_MethodsTrackingLabelText=Methods tracking\\:",
+    "CPUSettingsAdvancedPanel_InstrRadioText=&Exact call tree and timing",
+    "CPUSettingsAdvancedPanel_SamplingRadioText=Exact call tree, &sampled timing",
+    "CPUSettingsAdvancedPanel_ExcludeTimeCheckboxText=E&xclude time spent in Thread.sleep() and Object.wait()",
+    "CPUSettingsAdvancedPanel_ProfileFrameworkCheckboxText=&Profile underlying framework startup",
+    "CPUSettingsAdvancedPanel_ProfileThreadsCheckboxText=Profile new &Threads/Runnables",
+    "CPUSettingsAdvancedPanel_LimitThreadsCheckboxText=&Limit number of profiled threads\\:",
+    "CPUSettingsAdvancedPanel_ThreadTimerCheckboxText=&Use thread CPU timer",
+    "CPUSettingsAdvancedPanel_InstrSchemeLabelText=&Instrumentation scheme\\:",
+    "CPUSettingsAdvancedPanel_InstrumentLabelText=Instrument\\:",
+    "CPUSettingsAdvancedPanel_MethodInvokeCheckboxText=Method.in&voke()",
+    "CPUSettingsAdvancedPanel_GetterSetterCheckboxText=&Getter/setter methods",
+    "CPUSettingsAdvancedPanel_EmptyMethodsCheckboxText=Empt&y methods",
+    "CPUSettingsAdvancedPanel_ThreadsCaption=Threads",
+    "CPUSettingsAdvancedPanel_EnableThreadsCheckboxText=E&nable threads monitoring",
+    "CPUSettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states",
+    "CPUSettingsAdvancedPanel_GlobalSettingsCaption=Global Settings",
+    "CPUSettingsAdvancedPanel_OverrideSettingsCheckboxText=&Override global settings",
+    "CPUSettingsAdvancedPanel_WorkDirLabelText=&Working directory\\:",
+    "CPUSettingsAdvancedPanel_ChooseWorkDirLinkText=Choose...",
+    "CPUSettingsAdvancedPanel_JavaPlatformLabelText=&Java platform\\:",
+    "CPUSettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments\\:"
+})
 public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String SCHEME_COMBOBOX_ITEM_LAZY = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                "CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy"); // NOI18N
-    private static final String SCHEME_COMBOBOX_ITEM_EAGER = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                 "CPUSettingsAdvancedPanel_SchemeComboBoxItemEager"); // NOI18N
-    private static final String SCHEME_COMBOBOX_ITEM_TOTAL = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                 "CPUSettingsAdvancedPanel_SchemeComboBoxItemTotal"); // NOI18N
-    private static final String DO_NOT_OVERRIDE_STRING = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                             "CPUSettingsAdvancedPanel_DoNotOverrideString"); // NOI18N
-    private static final String CHOOSE_WORKDIR_DIALOG_CAPTION = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                    "CPUSettingsAdvancedPanel_ChooseWorkDirDialogCaption"); // NOI18N
-    private static final String SETTINGS_CAPTION = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                       "CPUSettingsAdvancedPanel_SettingsCaption"); // NOI18N
-    private static final String METHODS_TRACKING_LABEL_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                  "CPUSettingsAdvancedPanel_MethodsTrackingLabelText"); // NOI18N
-    private static final String INSTR_RADIO_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                       "CPUSettingsAdvancedPanel_InstrRadioText"); // NOI18N
-    private static final String SAMPLING_RADIO_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                          "CPUSettingsAdvancedPanel_SamplingRadioText"); // NOI18N
-    private static final String EXCLUDE_TIME_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                 "CPUSettingsAdvancedPanel_ExcludeTimeCheckboxText"); // NOI18N
-    private static final String PROFILE_FRAMEWORK_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                      "CPUSettingsAdvancedPanel_ProfileFrameworkCheckboxText"); // NOI18N
-    private static final String PROFILE_THREADS_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                    "CPUSettingsAdvancedPanel_ProfileThreadsCheckboxText"); // NOI18N
-    private static final String LIMIT_THREADS_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                  "CPUSettingsAdvancedPanel_LimitThreadsCheckboxText"); // NOI18N
-    private static final String THREAD_TIMER_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                 "CPUSettingsAdvancedPanel_ThreadTimerCheckboxText"); // NOI18N
-    private static final String INSTR_SCHEME_LABEL_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                              "CPUSettingsAdvancedPanel_InstrSchemeLabelText"); // NOI18N
-    private static final String INSTRUMENT_LABEL_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                            "CPUSettingsAdvancedPanel_InstrumentLabelText"); // NOI18N
-    private static final String METHOD_INVOKE_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                  "CPUSettingsAdvancedPanel_MethodInvokeCheckboxText"); // NOI18N
-    private static final String GETTER_SETTER_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                  "CPUSettingsAdvancedPanel_GetterSetterCheckboxText"); // NOI18N
-    private static final String EMPTY_METHODS_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                  "CPUSettingsAdvancedPanel_EmptyMethodsCheckboxText"); // NOI18N
-    private static final String THREADS_CAPTION = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                      "CPUSettingsAdvancedPanel_ThreadsCaption"); // NOI18N
-    private static final String ENABLE_THREADS_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                   "CPUSettingsAdvancedPanel_EnableThreadsCheckboxText"); // NOI18N
-    private static final String ENABLE_SAMPLING_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                   "CPUSettingsAdvancedPanel_EnableSamplingCheckboxText"); // NOI18N
-    private static final String GLOBAL_SETTINGS_CAPTION = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                              "CPUSettingsAdvancedPanel_GlobalSettingsCaption"); // NOI18N
-    private static final String OVERRIDE_SETTINGS_CHECKBOX_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                      "CPUSettingsAdvancedPanel_OverrideSettingsCheckboxText"); // NOI18N
-    private static final String WORKDIR_LABEL_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                         "CPUSettingsAdvancedPanel_WorkDirLabelText"); // NOI18N
-    private static final String CHOOSE_WORKDIR_LINK_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                               "CPUSettingsAdvancedPanel_ChooseWorkDirLinkText"); // NOI18N
-    private static final String JAVA_PLATFORM_LABEL_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                               "CPUSettingsAdvancedPanel_JavaPlatformLabelText"); // NOI18N
-    private static final String JVM_ARGUMENTS_LABEL_TEXT = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                               "CPUSettingsAdvancedPanel_JvmArgumentsLabelText"); // NOI18N
-    private static final String STP_MONITOR_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpMonitorTooltip"); // NOI18N
-    private static final String STP_SAMPLING_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpSamplingTooltip"); // NOI18N
-    private static final String STP_OVERRIDE_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpOverrideTooltip"); // NOI18N
-    private static final String STP_WORKDIR_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpWorkDirTooltip"); // NOI18N
-    private static final String STP_JPLATFORM_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpJPlatformTooltip"); // NOI18N
-    private static final String STP_VMARGS_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpVmArgsTooltip"); // NOI18N
-    private static final String STP_EXACTTIMING_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                              "StpExactTimingTooltip"); // NOI18N
-    private static final String STP_SAMPLEDTIMING_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                "StpSampledTimingTooltip"); // NOI18N
-    private static final String STP_SAMPLING_FREQUENCY_LABEL = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                "StpSamplingFrequencyLabel"); // NOI18N
-    private static final String STP_SAMPLING_FREQUENCY_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                                "StpSamplingFrequencyTooltip"); // NOI18N
-    private static final String STP_SLEEPWAIT_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpSleepWaitTooltip"); // NOI18N
-    private static final String STP_FRAMEWORK_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpFrameworkTooltip"); // NOI18N
-    private static final String STP_SPAWNED_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpSpawnedTooltip"); // NOI18N
-    private static final String STP_LIMITTHREADS_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                               "StpLimitThreadsTooltip"); // NOI18N
-    private static final String STP_CPUTIMER_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class, "StpCpuTimerTooltip"); // NOI18N
-    private static final String STP_INSTRSCHEME_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                              "StpInstrSchemeTooltip"); // NOI18N
-    private static final String STP_METHODINVOKE_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                               "StpMethodInvokeTooltip"); // NOI18N
-    private static final String STP_GETTERSETTER_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                               "StpGetterSetterTooltip"); // NOI18N
-    private static final String STP_EMPTYMETHODS_TOOLTIP = NbBundle.getMessage(CPUSettingsAdvancedPanel.class,
-                                                                               "StpEmptyMethodsTooltip"); // NOI18N
-                                                                                                          // -----
     private static final String HELP_CTX_KEY = "CPUSettings.Advanced.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
 
@@ -275,7 +217,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         }
 
         if (isPreset) {
-            instrumentationSchemeCombo.setSelectedItem(SCHEME_COMBOBOX_ITEM_TOTAL);
+            instrumentationSchemeCombo.setSelectedItem(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemTotal());
         }
 
         if (isPreset) {
@@ -333,20 +275,20 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
     public void setInstrumentationScheme(int scheme) {
         if (scheme == CommonConstants.INSTRSCHEME_LAZY) {
-            instrumentationSchemeCombo.setSelectedItem(SCHEME_COMBOBOX_ITEM_LAZY);
+            instrumentationSchemeCombo.setSelectedItem(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy());
         } else if (scheme == CommonConstants.INSTRSCHEME_EAGER) {
-            instrumentationSchemeCombo.setSelectedItem(SCHEME_COMBOBOX_ITEM_EAGER);
+            instrumentationSchemeCombo.setSelectedItem(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemEager());
         } else {
-            instrumentationSchemeCombo.setSelectedItem(SCHEME_COMBOBOX_ITEM_TOTAL);
+            instrumentationSchemeCombo.setSelectedItem(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemTotal());
         }
     }
 
     public int getInstrumentationScheme() {
         Object selectedScheme = instrumentationSchemeCombo.getSelectedItem();
 
-        if (selectedScheme == SCHEME_COMBOBOX_ITEM_LAZY) {
+        if (selectedScheme == Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy()) {
             return CommonConstants.INSTRSCHEME_LAZY;
-        } else if (selectedScheme == SCHEME_COMBOBOX_ITEM_EAGER) {
+        } else if (selectedScheme == Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemEager()) {
             return CommonConstants.INSTRSCHEME_EAGER;
         } else {
             return CommonConstants.INSTRSCHEME_TOTAL;
@@ -393,7 +335,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         }
 
         if (isPreset) {
-            instrumentationSchemeCombo.setSelectedItem(SCHEME_COMBOBOX_ITEM_LAZY);
+            instrumentationSchemeCombo.setSelectedItem(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy());
         }
         
         if (isPreset) {
@@ -592,7 +534,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
             chooser.setMultiSelectionEnabled(false);
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(CHOOSE_WORKDIR_DIALOG_CAPTION);
+            chooser.setDialogTitle(Bundle.CPUSettingsAdvancedPanel_ChooseWorkDirDialogCaption());
             workingDirectoryChooserReference = new WeakReference(chooser);
         } else {
             chooser = workingDirectoryChooserReference.get();
@@ -624,7 +566,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         // samplSettingsPanel
         samplSettingsPanel = new JPanel(new GridBagLayout());
         samplSettingsPanel.setOpaque(false);
-        samplSettingsPanel.setBorder(BorderFactory.createTitledBorder(SETTINGS_CAPTION));
+        samplSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CPUSettingsAdvancedPanel_SettingsCaption()));
 //        settingsPanel.add(samplSettingsPanel, "SAMPL");
         
         // samplingFrequencyContainer - definition
@@ -632,8 +574,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // samplingFrequencyLabel
         samplingFrequencyLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(samplingFrequencyLabel, STP_SAMPLING_FREQUENCY_LABEL);
-        samplingFrequencyLabel.setToolTipText(STP_SAMPLING_FREQUENCY_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(samplingFrequencyLabel, Bundle.StpSamplingFrequencyLabel());
+        samplingFrequencyLabel.setToolTipText(Bundle.StpSamplingFrequencyTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -653,7 +595,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                     return getPreferredSize();
                 }
             };
-        samplingFrequencySpinner.setToolTipText(STP_SAMPLING_FREQUENCY_TOOLTIP);
+        samplingFrequencySpinner.setToolTipText(Bundle.StpSamplingFrequencyTooltip());
         samplingFrequencySpinner.addChangeListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -668,7 +610,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         samplingFrequencyUnitsLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(samplingFrequencyUnitsLabel, "&ms"); // NOI18N
         samplingFrequencyUnitsLabel.setLabelFor(samplingFrequencySpinner);
-        samplingFrequencyUnitsLabel.setToolTipText(STP_SAMPLING_FREQUENCY_TOOLTIP);
+        samplingFrequencyUnitsLabel.setToolTipText(Bundle.StpSamplingFrequencyTooltip());
         samplingFrequencyUnitsLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -706,10 +648,10 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         // instrSettingsPanel
         instrSettingsPanel = new JPanel(new GridBagLayout());
         instrSettingsPanel.setOpaque(false);
-        instrSettingsPanel.setBorder(BorderFactory.createTitledBorder(SETTINGS_CAPTION));
+        instrSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CPUSettingsAdvancedPanel_SettingsCaption()));
 
         // methodsTrackingLabel
-        methodsTrackingLabel = new JLabel(METHODS_TRACKING_LABEL_TEXT);
+        methodsTrackingLabel = new JLabel(Bundle.CPUSettingsAdvancedPanel_MethodsTrackingLabelText());
         methodsTrackingLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -723,8 +665,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // exactTimingRadio
         exactTimingRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(exactTimingRadio, INSTR_RADIO_TEXT);
-        exactTimingRadio.setToolTipText(STP_EXACTTIMING_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(exactTimingRadio, Bundle.CPUSettingsAdvancedPanel_InstrRadioText());
+        exactTimingRadio.setToolTipText(Bundle.StpExactTimingTooltip());
         methodsTrackingRadiosGroup.add(exactTimingRadio);
         exactTimingRadio.addActionListener(getSettingsChangeListener());
         exactTimingRadio.setOpaque(false);
@@ -742,8 +684,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // sampledTimingRadio
         sampledTimingRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(sampledTimingRadio, SAMPLING_RADIO_TEXT);
-        sampledTimingRadio.setToolTipText(STP_SAMPLEDTIMING_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(sampledTimingRadio, Bundle.CPUSettingsAdvancedPanel_SamplingRadioText());
+        sampledTimingRadio.setToolTipText(Bundle.StpSampledTimingTooltip());
         methodsTrackingRadiosGroup.add(sampledTimingRadio);
         sampledTimingRadio.setOpaque(false);
         sampledTimingRadio.setSelected(true);
@@ -773,7 +715,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                     return getPreferredSize();
                 }
             };
-        sampledTimingSpinner.setToolTipText(STP_SAMPLEDTIMING_TOOLTIP);
+        sampledTimingSpinner.setToolTipText(Bundle.StpSampledTimingTooltip());
         sampledTimingSpinner.addChangeListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -788,7 +730,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         sampledTimingLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(sampledTimingLabel, "&ms"); // NOI18N
         sampledTimingLabel.setLabelFor(sampledTimingSpinner);
-        sampledTimingLabel.setToolTipText(STP_SAMPLEDTIMING_TOOLTIP);
+        sampledTimingLabel.setToolTipText(Bundle.StpSampledTimingTooltip());
         sampledTimingLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -813,8 +755,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // excludeTimeCheckbox
         excludeTimeCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(excludeTimeCheckbox, EXCLUDE_TIME_CHECKBOX_TEXT);
-        excludeTimeCheckbox.setToolTipText(STP_SLEEPWAIT_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(excludeTimeCheckbox, Bundle.CPUSettingsAdvancedPanel_ExcludeTimeCheckboxText());
+        excludeTimeCheckbox.setToolTipText(Bundle.StpSleepWaitTooltip());
         excludeTimeCheckbox.addActionListener(getSettingsChangeListener());
         excludeTimeCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -828,8 +770,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // profileFrameworkCheckbox
         profileFrameworkCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(profileFrameworkCheckbox, PROFILE_FRAMEWORK_CHECKBOX_TEXT);
-        profileFrameworkCheckbox.setToolTipText(STP_FRAMEWORK_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(profileFrameworkCheckbox, Bundle.CPUSettingsAdvancedPanel_ProfileFrameworkCheckboxText());
+        profileFrameworkCheckbox.setToolTipText(Bundle.StpFrameworkTooltip());
         profileFrameworkCheckbox.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     updateEnabling();
@@ -848,8 +790,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // profileSpawnedThreadsCheckbox
         profileSpawnedThreadsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(profileSpawnedThreadsCheckbox, PROFILE_THREADS_CHECKBOX_TEXT);
-        profileSpawnedThreadsCheckbox.setToolTipText(STP_SPAWNED_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(profileSpawnedThreadsCheckbox, Bundle.CPUSettingsAdvancedPanel_ProfileThreadsCheckboxText());
+        profileSpawnedThreadsCheckbox.setToolTipText(Bundle.StpSpawnedTooltip());
         profileSpawnedThreadsCheckbox.addActionListener(getSettingsChangeListener());
         profileSpawnedThreadsCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -866,8 +808,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // limitThreadsCheckbox
         limitThreadsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(limitThreadsCheckbox, LIMIT_THREADS_CHECKBOX_TEXT);
-        limitThreadsCheckbox.setToolTipText(STP_LIMITTHREADS_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(limitThreadsCheckbox, Bundle.CPUSettingsAdvancedPanel_LimitThreadsCheckboxText());
+        limitThreadsCheckbox.setToolTipText(Bundle.StpLimitThreadsTooltip());
         limitThreadsCheckbox.addActionListener(getSettingsChangeListener());
         limitThreadsCheckbox.setOpaque(false);
         limitThreadsCheckbox.setSelected(true);
@@ -895,7 +837,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                     return getPreferredSize();
                 }
             };
-        limitThreadsSpinner.setToolTipText(STP_LIMITTHREADS_TOOLTIP);
+        limitThreadsSpinner.setToolTipText(Bundle.StpLimitThreadsTooltip());
         limitThreadsSpinner.addChangeListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -919,8 +861,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // useCPUTimerCheckbox
         useCPUTimerCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(useCPUTimerCheckbox, THREAD_TIMER_CHECKBOX_TEXT);
-        useCPUTimerCheckbox.setToolTipText(STP_CPUTIMER_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(useCPUTimerCheckbox, Bundle.CPUSettingsAdvancedPanel_ThreadTimerCheckboxText());
+        useCPUTimerCheckbox.setToolTipText(Bundle.StpCpuTimerTooltip());
         useCPUTimerCheckbox.addActionListener(getSettingsChangeListener());
         useCPUTimerCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -937,8 +879,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // instrumentationSchemeLabel
         instrumentationSchemeLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(instrumentationSchemeLabel, INSTR_SCHEME_LABEL_TEXT);
-        instrumentationSchemeLabel.setToolTipText(STP_INSTRSCHEME_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(instrumentationSchemeLabel, Bundle.CPUSettingsAdvancedPanel_InstrSchemeLabelText());
+        instrumentationSchemeLabel.setToolTipText(Bundle.StpInstrSchemeTooltip());
         instrumentationSchemeLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -951,15 +893,16 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // instrumentationSchemeCombo
         instrumentationSchemeCombo = new JComboBox(new String[] {
-                                                       SCHEME_COMBOBOX_ITEM_LAZY, SCHEME_COMBOBOX_ITEM_EAGER,
-                                                       SCHEME_COMBOBOX_ITEM_TOTAL
+                                                       Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemLazy(), 
+                                                       Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemEager(),
+                                                       Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemTotal()
                                                    }) {
                 public Dimension getMinimumSize() {
                     return getPreferredSize();
                 }
             };
         instrumentationSchemeLabel.setLabelFor(instrumentationSchemeCombo);
-        instrumentationSchemeCombo.setToolTipText(STP_INSTRSCHEME_TOOLTIP);
+        instrumentationSchemeCombo.setToolTipText(Bundle.StpInstrSchemeTooltip());
         instrumentationSchemeCombo.addActionListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -982,7 +925,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         instrSettingsPanel.add(instrumentationSchemeContainer, constraints);
 
         // instrumentLabel
-        instrumentLabel = new JLabel(INSTRUMENT_LABEL_TEXT);
+        instrumentLabel = new JLabel(Bundle.CPUSettingsAdvancedPanel_InstrumentLabelText());
         instrumentLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -995,8 +938,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // instrumentMethodInvokeCheckbox
         instrumentMethodInvokeCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(instrumentMethodInvokeCheckbox, METHOD_INVOKE_CHECKBOX_TEXT);
-        instrumentMethodInvokeCheckbox.setToolTipText(STP_METHODINVOKE_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(instrumentMethodInvokeCheckbox, Bundle.CPUSettingsAdvancedPanel_MethodInvokeCheckboxText());
+        instrumentMethodInvokeCheckbox.setToolTipText(Bundle.StpMethodInvokeTooltip());
         instrumentMethodInvokeCheckbox.addActionListener(getSettingsChangeListener());
         instrumentMethodInvokeCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -1010,8 +953,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // instrumentGettersSettersCheckbox
         instrumentGettersSettersCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(instrumentGettersSettersCheckbox, GETTER_SETTER_CHECKBOX_TEXT);
-        instrumentGettersSettersCheckbox.setToolTipText(STP_GETTERSETTER_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(instrumentGettersSettersCheckbox, Bundle.CPUSettingsAdvancedPanel_GetterSetterCheckboxText());
+        instrumentGettersSettersCheckbox.setToolTipText(Bundle.StpGetterSetterTooltip());
         instrumentGettersSettersCheckbox.addActionListener(getSettingsChangeListener());
         instrumentGettersSettersCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -1025,8 +968,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // instrumentEmptyMethodsCheckbox
         instrumentEmptyMethodsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(instrumentEmptyMethodsCheckbox, EMPTY_METHODS_CHECKBOX_TEXT);
-        instrumentEmptyMethodsCheckbox.setToolTipText(STP_EMPTYMETHODS_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(instrumentEmptyMethodsCheckbox, Bundle.CPUSettingsAdvancedPanel_EmptyMethodsCheckboxText());
+        instrumentEmptyMethodsCheckbox.setToolTipText(Bundle.StpEmptyMethodsTooltip());
         instrumentEmptyMethodsCheckbox.addActionListener(getSettingsChangeListener());
         instrumentEmptyMethodsCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -1041,7 +984,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         // threadsSettingsPanel
         threadsSettingsPanel = new JPanel(new GridBagLayout());
         threadsSettingsPanel.setOpaque(false);
-        threadsSettingsPanel.setBorder(BorderFactory.createTitledBorder(THREADS_CAPTION));
+        threadsSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CPUSettingsAdvancedPanel_ThreadsCaption()));
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -1053,8 +996,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // threadsMonitoringCheckbox
         threadsMonitoringCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(threadsMonitoringCheckbox, ENABLE_THREADS_CHECKBOX_TEXT);
-        threadsMonitoringCheckbox.setToolTipText(STP_MONITOR_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(threadsMonitoringCheckbox, Bundle.CPUSettingsAdvancedPanel_EnableThreadsCheckboxText());
+        threadsMonitoringCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
         threadsMonitoringCheckbox.addActionListener(getSettingsChangeListener());
         threadsMonitoringCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -1069,8 +1012,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // threadsSamplingCheckbox
         threadsSamplingCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, ENABLE_SAMPLING_CHECKBOX_TEXT);
-        threadsSamplingCheckbox.setToolTipText(STP_SAMPLING_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, Bundle.CPUSettingsAdvancedPanel_EnableSamplingCheckboxText());
+        threadsSamplingCheckbox.setToolTipText(Bundle.StpSamplingTooltip());
         threadsSamplingCheckbox.addActionListener(getSettingsChangeListener());
         threadsSamplingCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -1086,7 +1029,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         // globalSettingsPanel
         globalSettingsPanel = new JPanel(new GridBagLayout());
         globalSettingsPanel.setOpaque(false);
-        globalSettingsPanel.setBorder(BorderFactory.createTitledBorder(GLOBAL_SETTINGS_CAPTION));
+        globalSettingsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CPUSettingsAdvancedPanel_GlobalSettingsCaption()));
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -1098,8 +1041,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // overrideSettingsCheckbox
         overrideSettingsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(overrideSettingsCheckbox, OVERRIDE_SETTINGS_CHECKBOX_TEXT);
-        overrideSettingsCheckbox.setToolTipText(STP_OVERRIDE_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(overrideSettingsCheckbox, Bundle.CPUSettingsAdvancedPanel_OverrideSettingsCheckboxText());
+        overrideSettingsCheckbox.setToolTipText(Bundle.StpOverrideTooltip());
         overrideSettingsCheckbox.setOpaque(false);
         overrideSettingsCheckbox.setSelected(true);
         overrideSettingsCheckbox.addChangeListener(new ChangeListener() {
@@ -1118,8 +1061,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // workingDirectoryLabel
         workingDirectoryLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirectoryLabel, WORKDIR_LABEL_TEXT);
-        workingDirectoryLabel.setToolTipText(STP_WORKDIR_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(workingDirectoryLabel, Bundle.CPUSettingsAdvancedPanel_WorkDirLabelText());
+        workingDirectoryLabel.setToolTipText(Bundle.StpWorkDirTooltip());
         workingDirectoryLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -1137,7 +1080,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                 }
             };
         workingDirectoryLabel.setLabelFor(workingDirectoryTextField);
-        workingDirectoryTextField.setToolTipText(STP_WORKDIR_TOOLTIP);
+        workingDirectoryTextField.setToolTipText(Bundle.StpWorkDirTooltip());
         workingDirectoryTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
             public void removeUpdate(DocumentEvent e)  { checkWorkingDirectory(); }
@@ -1156,8 +1099,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         // workingDirectorySelectLink
         Color linkColor = Color.RED;
         String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
-        workingDirectorySelectLink = new HyperlinkLabel("<a href='#'>" + CHOOSE_WORKDIR_LINK_TEXT + "</a>", // NOI18N
-                                                        "<a href='#' color=\"" + colorText + "\">" + CHOOSE_WORKDIR_LINK_TEXT
+        workingDirectorySelectLink = new HyperlinkLabel("<a href='#'>" + Bundle.CPUSettingsAdvancedPanel_ChooseWorkDirLinkText() + "</a>", // NOI18N
+                                                        "<a href='#' color=\"" + colorText + "\">" + Bundle.CPUSettingsAdvancedPanel_ChooseWorkDirLinkText()
                                                         + "</a>", // NOI18N
                                                         new Runnable() {
                 public void run() {
@@ -1181,8 +1124,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // javaPlatformLabel
         javaPlatformLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, JAVA_PLATFORM_LABEL_TEXT);
-        javaPlatformLabel.setToolTipText(STP_JPLATFORM_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, Bundle.CPUSettingsAdvancedPanel_JavaPlatformLabelText());
+        javaPlatformLabel.setToolTipText(Bundle.StpJPlatformTooltip());
         javaPlatformLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -1194,13 +1137,13 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         globalSettingsPanel.add(javaPlatformLabel, constraints);
 
         // javaPlatformCombo
-        javaPlatformCombo = new JComboBox(new Object[] { DO_NOT_OVERRIDE_STRING }) {
+        javaPlatformCombo = new JComboBox(new Object[] { Bundle.CPUSettingsAdvancedPanel_DoNotOverrideString() }) {
                 public Dimension getMinimumSize() {
                     return getPreferredSize();
                 }
             };
         javaPlatformLabel.setLabelFor(javaPlatformCombo);
-        javaPlatformCombo.setToolTipText(STP_JPLATFORM_TOOLTIP);
+        javaPlatformCombo.setToolTipText(Bundle.StpJPlatformTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 2;
@@ -1212,8 +1155,8 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // vmArgumentsLabel
         vmArgumentsLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(vmArgumentsLabel, JVM_ARGUMENTS_LABEL_TEXT);
-        vmArgumentsLabel.setToolTipText(STP_VMARGS_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(vmArgumentsLabel, Bundle.CPUSettingsAdvancedPanel_JvmArgumentsLabelText());
+        vmArgumentsLabel.setToolTipText(Bundle.StpVmArgsTooltip());
         vmArgumentsLabel.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -1231,7 +1174,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
                 }
             };
         vmArgumentsLabel.setLabelFor(vmArgumentsTextField);
-        vmArgumentsTextField.setToolTipText(STP_VMARGS_TOOLTIP);
+        vmArgumentsTextField.setToolTipText(Bundle.StpVmArgsTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 3;
@@ -1268,7 +1211,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         if (profileFrameworkCheckbox.isSelected()) {
             profileSpawnedThreadsCheckbox.setSelected(true);
             profileSpawnedThreadsCheckbox.setEnabled(false);
-            instrumentationSchemeCombo.setSelectedItem(SCHEME_COMBOBOX_ITEM_TOTAL);
+            instrumentationSchemeCombo.setSelectedItem(Bundle.CPUSettingsAdvancedPanel_SchemeComboBoxItemTotal());
             instrumentationSchemeCombo.setEnabled(false);
         } else {
             profileSpawnedThreadsCheckbox.setEnabled(methodsTrackingLabel.isEnabled()); // Just a hack to detect settings for preset (always disabled)
@@ -1289,7 +1232,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
     private void updateJavaPlatformCombo(String platformNameToSelect) {
         List<JavaPlatform> supportedPlatforms = JavaPlatform.getPlatforms();
         String[] supportedPlatformNames = new String[supportedPlatforms.size() + 1];
-        supportedPlatformNames[0] = DO_NOT_OVERRIDE_STRING;
+        supportedPlatformNames[0] = Bundle.CPUSettingsAdvancedPanel_DoNotOverrideString();
 
         for (int i = 1; i < supportedPlatformNames.length; i++) {
             supportedPlatformNames[i] = supportedPlatforms.get(i - 1).getDisplayName();

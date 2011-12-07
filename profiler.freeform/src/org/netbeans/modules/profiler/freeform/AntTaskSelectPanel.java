@@ -60,23 +60,15 @@ import org.openide.util.NbBundle;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "FreeFormProjectTypeProfiler_SelectTargetItemString=<select target>",
+    "FreeFormProjectTypeProfiler_SelectProjectTaskLabelString=Select task for Profile Project action\\:",
+    "FreeFormProjectTypeProfiler_SelectFileTaskLabelString=Select task for Profile File action\\:",
+    "FreeFormProjectTypeProfiler_CreateNewTargetMsg=Please note that you have to create a <b>new</b> target for profiling, similar to the \"run\" target.<br>Click Help to get information about how to write the profiling targets.",
+    "FreeFormProjectTypeProfiler_TargetBoxAccessName=List of targets defined in project build script.",
+    "FreeFormProjectTypeProfiler_TargetBoxAccessDescr=Select target that will be used for profiling."
+})
 final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
-    
-    private static final String SELECT_TARGET_ITEM_STRING = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_SelectTargetItemString"); // NOI18N
-    private static final String SELECT_PROJECT_TASK_LABEL_STRING = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_SelectProjectTaskLabelString"); // NOI18N
-    private static final String SELECT_FILE_TASK_LABEL_STRING = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_SelectFileTaskLabelString"); // NOI18N
-    private static final String SELECT_TEST_TASK_LABEL_STRING = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_SelectTestTaskLabelString"); // NOI18N
-    private static final String CREATE_NEW_TARGET_MSG = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_CreateNewTargetMsg"); // NOI18N
-    private static final String TARGET_BOX_ACCESS_NAME = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_TargetBoxAccessName"); // NOI18N
-    private static final String TARGET_BOX_ACCESS_DESCR = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_TargetBoxAccessDescr"); // NOI18N
-    
     private static final String HELP_CTX_KEY = "FreeFormProjectTypeProfiler.AntTaskSelectPanel.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     
@@ -86,25 +78,25 @@ final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
     final NBHTMLLabel descriptionLabel;
 
     AntTaskSelectPanel(final List list, final int type, final JButton okButton) {
-        list.add(0, SELECT_TARGET_ITEM_STRING);
+        list.add(0, Bundle.FreeFormProjectTypeProfiler_SelectTargetItemString());
         switch (type) {
             case AntProjectSupport.TARGET_PROFILE: {
-                label = new JLabel(SELECT_PROJECT_TASK_LABEL_STRING);
+                label = new JLabel(Bundle.FreeFormProjectTypeProfiler_SelectProjectTaskLabelString());
                 break;
             }
             case AntProjectSupport.TARGET_PROFILE_SINGLE: {
-                label = new JLabel(SELECT_FILE_TASK_LABEL_STRING);
+                label = new JLabel(Bundle.FreeFormProjectTypeProfiler_SelectFileTaskLabelString());
                 break;
             }
             case AntProjectSupport.TARGET_PROFILE_TEST_SINGLE: {
-                label = new JLabel(SELECT_TEST_TASK_LABEL_STRING);
+                label = new JLabel(Bundle.FreeFormProjectTypeProfiler_SelectFileTaskLabelString());
                 break;
             }
             default: {
                 label = null; // should not be reached
             }
         }
-        descriptionLabel = new NBHTMLLabel(CREATE_NEW_TARGET_MSG);
+        descriptionLabel = new NBHTMLLabel(Bundle.FreeFormProjectTypeProfiler_CreateNewTargetMsg());
         targetBox = new JComboBox(list.toArray(new Object[list.size()]));
         targetBox.setSelectedIndex(0);
         targetBox.addItemListener(new ItemListener() {
@@ -125,8 +117,8 @@ final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.weighty = 0.0;
         gridBagConstraints.insets = new Insets(12, 12, 12, 12);
         add(label, gridBagConstraints);
-        targetBox.getAccessibleContext().setAccessibleName(TARGET_BOX_ACCESS_NAME);
-        targetBox.getAccessibleContext().setAccessibleDescription(TARGET_BOX_ACCESS_DESCR);
+        targetBox.getAccessibleContext().setAccessibleName(Bundle.FreeFormProjectTypeProfiler_TargetBoxAccessName());
+        targetBox.getAccessibleContext().setAccessibleDescription(Bundle.FreeFormProjectTypeProfiler_TargetBoxAccessDescr());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;

@@ -99,6 +99,20 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+//    # ------------------------------------------------------------------------------
+//    # Following are formats for time/date in a form that is tuned for user wrt to space needed and clarity/usefulness.
+//    # ------------------------------------------------------------------------------
+//    # Formatting patterns are described in Java API - java.text.SimpleDateFormat
+//    # ------------------------------------------------------------------------------
+    "Utils_FullDateFormat=HH\\:mm\\:ss, d MMM yyyy",
+    "Utils_FullDateFormatHiRes=HH\\:mm\\:ss.SSS, d MMM yyyy",
+    "Utils_TodayDateFormat=HH\\:mm\\:ss",
+    "Utils_TodayDateFormatHiRes=HH\\:mm\\:ss.SSS",
+    "Utils_DayDateFormat=d MMM yyyy",
+    "Utils_CannotOpenSourceMsg=Cannot show profiling point in source.\nCheck profiling point location.",
+    "Utils_InvalidPPLocationMsg=<html><b>Invalid location of {0}.</b><br><br>Location of the profiling point does not seem to be valid.<br>Make sure it points inside method definition, otherwise<br>the profiling point will not be hit during profiling.</html>"
+})
 public class Utils {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -329,16 +343,6 @@ public class Utils {
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String FULL_DATE_FORMAT = NbBundle.getMessage(Utils.class, "Utils_FullDateFormat"); // NOI18N
-    private static final String FULL_DATE_FORMAT_HIRES = NbBundle.getMessage(Utils.class, "Utils_FullDateFormatHiRes"); // NOI18N
-    private static final String TODAY_DATE_FORMAT = NbBundle.getMessage(Utils.class, "Utils_TodayDateFormat"); // NOI18N
-    private static final String TODAY_DATE_FORMAT_HIRES = NbBundle.getMessage(Utils.class, "Utils_TodayDateFormatHiRes"); // NOI18N
-    private static final String DAY_DATE_FORMAT = NbBundle.getMessage(Utils.class, "Utils_DayDateFormat"); // NOI18N
-    private static final String CANNOT_OPEN_SOURCE_MSG = NbBundle.getMessage(Utils.class, "Utils_CannotOpenSourceMsg"); // NOI18N
-    private static final String INVALID_PP_LOCATION_MSG = NbBundle.getMessage(Utils.class, "Utils_InvalidPPLocationMsg"); // NOI18N
-                                                                                                           // -----
     private static final String PROJECT_DIRECTORY_MARK = "{$projectDirectory}"; // NOI18N
 
     // TODO: Move to more "universal" location
@@ -348,11 +352,11 @@ public class Utils {
     private static final EnhancedTableCellRenderer scopeRenderer = new ProfilingPointScopeRenderer();
     private static final ProfilingPointPresenterRenderer presenterRenderer = new ProfilingPointPresenterRenderer();
     private static final ProfilingPointPresenterListRenderer presenterListRenderer = new ProfilingPointPresenterListRenderer();
-    private static final SimpleDateFormat fullDateFormat = new SimpleDateFormat(FULL_DATE_FORMAT);
-    private static final SimpleDateFormat fullDateFormatHiRes = new SimpleDateFormat(FULL_DATE_FORMAT_HIRES);
-    private static final SimpleDateFormat todayDateFormat = new SimpleDateFormat(TODAY_DATE_FORMAT);
-    private static final SimpleDateFormat todayDateFormatHiRes = new SimpleDateFormat(TODAY_DATE_FORMAT_HIRES);
-    private static final SimpleDateFormat dayDateFormat = new SimpleDateFormat(DAY_DATE_FORMAT);
+    private static final SimpleDateFormat fullDateFormat = new SimpleDateFormat(Bundle.Utils_FullDateFormat());
+    private static final SimpleDateFormat fullDateFormatHiRes = new SimpleDateFormat(Bundle.Utils_FullDateFormatHiRes());
+    private static final SimpleDateFormat todayDateFormat = new SimpleDateFormat(Bundle.Utils_TodayDateFormat());
+    private static final SimpleDateFormat todayDateFormatHiRes = new SimpleDateFormat(Bundle.Utils_TodayDateFormatHiRes());
+    private static final SimpleDateFormat dayDateFormat = new SimpleDateFormat(Bundle.Utils_DayDateFormat());
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -686,8 +690,7 @@ public class Utils {
             public void run() {
                 if (!isValidLocation(ppoint.getLocation()))
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            MessageFormat.format(INVALID_PP_LOCATION_MSG,
-                                            new Object[] { ppoint.getName() }),
+                                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()),
                                             NotifyDescriptor.WARNING_MESSAGE));
             }
         });
@@ -698,13 +701,11 @@ public class Utils {
             public void run() {
                 if (!isValidLocation(ppoint.getStartLocation()))
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            MessageFormat.format(INVALID_PP_LOCATION_MSG,
-                                            new Object[] { ppoint.getName() }),
+                                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()),
                                             NotifyDescriptor.WARNING_MESSAGE));
                 else if (ppoint.usesEndLocation() && !isValidLocation(ppoint.getEndLocation()))
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            MessageFormat.format(INVALID_PP_LOCATION_MSG,
-                                            new Object[] { ppoint.getName() }),
+                                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()),
                                             NotifyDescriptor.WARNING_MESSAGE));
             }
         });
@@ -884,7 +885,7 @@ public class Utils {
 
         if (documentOffset == -1) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    CANNOT_OPEN_SOURCE_MSG,
+                                    Bundle.Utils_CannotOpenSourceMsg(),
                                     NotifyDescriptor.ERROR_MESSAGE));
             return;
         }

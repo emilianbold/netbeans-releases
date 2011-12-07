@@ -55,12 +55,11 @@ import org.openide.util.NbBundle;
  * @author Jaroslav Bachorik
  */
 class ProjectSourcesNode extends ContainerNode {
-    private static final String SOURCES_STRING = NbBundle.getMessage(ProjectSourcesNode.class,
-            "SourcesString"); // NOI18N
     private final boolean includeSubprojects;
 
+    @NbBundle.Messages("SourcesString=Sources")
     public ProjectSourcesNode(final boolean includeSubprojects, final ProjectNode parent) {
-        super(SOURCES_STRING, Icons.getIcon(LanguageIcons.PACKAGE), parent);
+        super(Bundle.SourcesString(), Icons.getIcon(LanguageIcons.PACKAGE), parent);
         this.includeSubprojects = includeSubprojects;
     }
 

@@ -60,6 +60,9 @@ import org.netbeans.modules.profiler.attach.wizard.AttachWizardContext;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "SunAS8IntegrationProvider_InstallDirPendingMsg=Server installation directory pending...",
+})
 public class SunASIntegrationPanel extends AttachWizardPanel {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -107,7 +110,7 @@ public class SunASIntegrationPanel extends AttachWizardPanel {
 
             if (!validation.isValid()) {
                 hint = validation.getMessage();
-                domainHint = NbBundle.getMessage(this.getClass(), "SunAS8IntegrationProvider_InstallDirPendingMsg"); // NOI18N
+                domainHint = Bundle.SunAS8IntegrationProvider_InstallDirPendingMsg();
             } else {
                 hint = ""; // NOI18N
                 domainHint = ""; // NOI18N

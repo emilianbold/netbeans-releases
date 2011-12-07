@@ -49,16 +49,15 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "TomcatIntegrationProvider_Tomcat6String=Tomcat 6.x"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class Tomcat6IntegrationProvider extends Tomcat5IntegrationProvider {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final String TOMCAT_60_TITLE = NbBundle.getMessage(this.getClass(), "TomcatIntegrationProvider_Tomcat6String"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return TOMCAT_60_TITLE;
+        return Bundle.TomcatIntegrationProvider_Tomcat6String();
     }
 
     protected int getAttachWizardPriority() {

@@ -121,18 +121,12 @@ public class JPAEntitiesNode extends ContainerNode {
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String JPA_ENTITIES_STRING = NbBundle.getMessage(JPAEntitiesNode.class, "JPAEntitiesNode_JPAEntityString"); // NOI18N
-                                                                                                                                     // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of SessionBeansNode */
+    @NbBundle.Messages("JPAEntitiesNode_JPAEntityString=JPA Entities")
     public JPAEntitiesNode(final ContainerNode parent) {
-        super(JPA_ENTITIES_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
+        super(Bundle.JPAEntitiesNode_JPAEntityString(), Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

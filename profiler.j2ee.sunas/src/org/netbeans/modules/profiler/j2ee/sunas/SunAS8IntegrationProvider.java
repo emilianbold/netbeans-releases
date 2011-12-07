@@ -52,23 +52,18 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "SunAS8IntegrationProvider_SunAs8PeString=Sun Java System Application Server 8.x PE",
+    "SunAS8IntegrationProvider_ProfiledSunAs8PeConsoleString=Profiled SJSAS 8.x PE Console"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class SunAS8IntegrationProvider extends SunASAutoIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // <editor-fold defaultstate="collapsed" desc="Resources">
-    private static final String SUNAS_8PE_STRING = NbBundle.getMessage(SunAS8IntegrationProvider.class, "SunAS8IntegrationProvider_SunAs8PeString"); // NOI18N
-    private static final String PROFILED_SUNAS_CONSOLE_STRING = NbBundle.getMessage(SunAS8IntegrationProvider.class, "SunAS8IntegrationProvider_ProfiledSunAs8PeConsoleString"); // NOI18N
-
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final String INVALID_DIR_MSG = NbBundle.getMessage(this.getClass(), "SunAS8IntegrationProvider_InvalidInstallDirMsg"); // NOI18N
-                                                                                                                                   // </editor-fold>
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return SUNAS_8PE_STRING;
+        return Bundle.SunAS8IntegrationProvider_SunAs8PeString();
     }
 
     protected int getAttachWizardPriority() {
@@ -105,12 +100,12 @@ public class SunAS8IntegrationProvider extends SunASAutoIntegrationProvider {
     }
 
     protected String getWinConsoleString() {
-        return PROFILED_SUNAS_CONSOLE_STRING;
+        return Bundle.SunAS8IntegrationProvider_ProfiledSunAs8PeConsoleString();
     }
 
     // </editor-fold>
     protected String getWinSpecificCommandLineArgs(String targetOS, boolean isRemote, int portNumber) {
-        return "-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote)
+        return "-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote) // NOI18N
                + IntegrationUtils.getDirectorySeparator(targetOS) + IntegrationUtils.getProfilerAgentLibraryFile(targetOS) + "=" //NOI18N
                + "\"" + IntegrationUtils.getLibsDir(targetOS, isRemote) + "\"" + "," + portNumber; //NOI18N
     }

@@ -66,21 +66,15 @@ import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsIcons;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "LoadGenProfilingPointFactory_PpType=Load Generator",
+    "LoadGenProfilingPointFactory_PpDescr=Starts and stops a load generator script at the given source code location",
+    "LoadGenProfilingPointFactory_PpDefaultName={0} at {1}\\:{2}"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String PP_TYPE = NbBundle.getMessage(LoadGenProfilingPointFactory.class,
-                                                              "LoadGenProfilingPointFactory_PpType"); // NOI18N
-    private static final String PP_DESCR = NbBundle.getMessage(LoadGenProfilingPointFactory.class,
-                                                               "LoadGenProfilingPointFactory_PpDescr"); // NOI18N
-    private static final String PP_DEFAULT_NAME = NbBundle.getMessage(LoadGenProfilingPointFactory.class,
-                                                                      "LoadGenProfilingPointFactory_PpDefaultName"); // NOI18N
-                                                                                                                     // -----
-    private static final String LOADGEN_PP_TYPE = PP_TYPE;
-    private static final String LOADGEN_PP_DESCR = PP_DESCR;
     private static final String START_LOCATION_PREFIX = "start_"; // NOI18N
     private static final String END_LOCATION_PREFIX = "end_"; // NOI18N
     private static LoadGenProfilingPointFactory defaultInstance = null;
@@ -113,7 +107,7 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
     }
 
     public String getDescription() {
-        return LOADGEN_PP_DESCR;
+        return Bundle.LoadGenProfilingPointFactory_PpDescr();
     }
 
     public Icon getIcon() {
@@ -129,7 +123,7 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
     }
 
     public String getType() {
-        return LOADGEN_PP_TYPE;
+        return Bundle.LoadGenProfilingPointFactory_PpType();
     }
 
     public ProfilingPoint create(Lookup.Provider project) {
@@ -151,8 +145,7 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
                 File file = FileUtil.normalizeFile(new File(location.getFile()));
                 String filename = FileUtil.toFileObject(file).getName();
                 String name = Utils.getUniqueName(getType(),
-                                                  MessageFormat.format(PP_DEFAULT_NAME,
-                                                                       new Object[] { "", filename, location.getLine() }), project); // NOI18N
+                                                  Bundle.LoadGenProfilingPointFactory_PpDefaultName("", filename, location.getLine()), project);  // NOI18N
 
                 return new LoadGenProfilingPoint(name, location, null, project, this);
             }
@@ -162,9 +155,8 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
             File file = FileUtil.normalizeFile(new File(startLocation.getFile()));
             String filename = FileUtil.toFileObject(file).getName();
             String name = Utils.getUniqueName(getType(),
-                                              MessageFormat.format(PP_DEFAULT_NAME,
-                                                                   new Object[] { "", filename, startLocation.getLine() }),
-                                              project); // NOI18N
+                                              Bundle.LoadGenProfilingPointFactory_PpDefaultName("", filename, startLocation.getLine()),  // NOI18N
+                                              project);
 
             return new LoadGenProfilingPoint(name, startLocation, endLocation, project, this);
         }
