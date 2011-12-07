@@ -51,9 +51,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Ralph Ruijs
  */
-public class MoveClassTest extends RefactoringTestBase {
+public class MoveJavaFileTest extends RefactoringTestBase {
 
-    public MoveClassTest(String name) {
+    public MoveJavaFileTest(String name) {
         super(name);
     }
     
@@ -122,15 +122,15 @@ public class MoveClassTest extends RefactoringTestBase {
                       new File("A.java", "import t.B; import t.*; public class A { public void foo() { int d = B.c; } }"),
                       new File("t/B.java", "package t; public class B { public static int c = 5; }"));
         
-//        writeFilesAndWaitForScan(src,
-//                                 new File("t/package-info.java", "package t;"),
-//                                 new File("v/A.java", "package v; import u.*; public class A { public void foo() { int d = 3; } }"),
-//                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
-//        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
-//        verifyContent(src,
-//                      new File("t/package-info.java", "package t;"),
-//                      new File("v/A.java", "package v; public class A { public void foo() { int d = 3; } }"),
-//                      new File("t/B.java", "package t; public class B { public static int c = 5; }"));
+        writeFilesAndWaitForScan(src,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("v/A.java", "package v; import u.*; public class A { public void foo() { int d = 3; } }"),
+                                 new File("u/B.java", "package u; public class B { public static int c = 5; }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("u/B.java")), new URL(src.getURL(), "t/"));
+        verifyContent(src,
+                      new File("t/package-info.java", "package t;"),
+                      new File("v/A.java", "package v;public class A { public void foo() { int d = 3; } }"),
+                      new File("t/B.java", "package t; public class B { public static int c = 5; }"));
     }
     
     public void test185959() throws Exception { // #185959 - [Move] No warning on move-refactoring a package-private class with references [69cat]

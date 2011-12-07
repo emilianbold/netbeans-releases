@@ -39,29 +39,21 @@ package org.netbeans.modules.refactoring.java.suites;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.refactoring.java.test.*;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringActionsProviderTest;
+import org.netbeans.modules.refactoring.java.test.MoveFieldTest;
+import org.netbeans.modules.refactoring.java.test.MoveJavaFileTest;
+import org.netbeans.modules.refactoring.java.test.MoveMethodTest;
 
 /**
- * A TestSuite containing all the Java Refactoring Tests, excluding the performance tests.
+ * A TestSuite containing all the Move Refactoring Tests, excluding the performance tests.
  * @author Ralph Ruijs
  */
-public class JavaRefactoringTestSuite {
+public class MoveRefactoringTestSuite {
 
     public static Test suite() throws InterruptedException {
-        Class[] classes = {IntroduceParameterTest.class,
-            RenameTest.class,
-            CopyClassTest.class,
-            InlineTest.class,
-            InnerToOutterTest.class,
-            ChangeParametersTest.class,
-            UseSuperTypeTest.class,
-            MoveJavaFileTest.class,
-            EncapsulateFieldsTest.class,
-            PullUpTest.class,
-            JavaRefactoringActionsProviderTest.class};
+        Class[] classes = {MoveJavaFileTest.class,
+            MoveMethodTest.class,
+            MoveFieldTest.class};
         TestSuite testSuite = new TestSuite(classes);
-        testSuite.addTest(FindUsagesTest.suite());
         return testSuite;
     }
 }
