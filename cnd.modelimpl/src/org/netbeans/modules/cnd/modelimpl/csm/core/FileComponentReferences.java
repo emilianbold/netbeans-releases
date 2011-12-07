@@ -276,6 +276,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
         put();
         //respons_hit++;
+        ReferencesIndex.put(referencedUID, fileUID, ref);
         return true;
     }
 

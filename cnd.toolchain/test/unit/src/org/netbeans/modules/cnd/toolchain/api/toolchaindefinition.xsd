@@ -433,6 +433,7 @@
     <xs:element name="macro">
         <xs:complexType>
             <xs:attribute name="stringvalue" type="xs:string"/>
+            <xs:attribute name="hide" type="xs:string" use="optional" />
             <xs:attribute name="flags" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>

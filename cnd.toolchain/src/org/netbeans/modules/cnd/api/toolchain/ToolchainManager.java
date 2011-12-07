@@ -194,6 +194,8 @@ public final class ToolchainManager {
     public interface PredefinedMacro {
         String getMacro();
 
+        boolean isHidden();
+
         String getFlags();
     }
 
