@@ -71,7 +71,7 @@ public class PpwScript extends PhpProgram {
     public static final List<String> PHPCS_RULESET_OPTIONS = Arrays.asList("PEAR", "Zend", "PHPCS", "Squiz", "MySource"); // NOI18N
 
 
-    public PpwScript(String command) {
+    private PpwScript(String command) {
         super(command);
     }
 

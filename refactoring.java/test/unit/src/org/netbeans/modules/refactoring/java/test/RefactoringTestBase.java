@@ -47,6 +47,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -54,6 +57,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -83,6 +87,8 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 public class RefactoringTestBase extends NbTestCase {
+    // Turning off annoying info messages from treeutilities
+    private static final Logger TREEUTILITIESLOGGER = Logger.getLogger(TreeUtilities.class.getName());
 
     public RefactoringTestBase(String name) {
         super(name);
@@ -98,7 +104,7 @@ public class RefactoringTestBase extends NbTestCase {
             TestUtilities.copyStringToFile(fo, f.content);
         }
 
-        RepositoryUpdater.getDefault().refreshAll(true, true, false, null);
+        RepositoryUpdater.getDefault().refreshAll(false, true, false, null);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
@@ -177,6 +183,7 @@ public class RefactoringTestBase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        TREEUTILITIESLOGGER.setLevel(Level.SEVERE);
         Util.allMimeTypes = new HashSet<String>();
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
             "org/netbeans/modules/java/source/resources/layer.xml",

@@ -814,4 +814,41 @@ public class GrammarResolverTest extends CssModuleTestBase {
         assertResolve(pm.getGrammarElement(), "url(images/shadow.gif) no-repeat bottom right");
     }
     
+    /*
+    //Bug 206035 - Incorrect background property value validation/completion
+    public void testBackground2() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("background");
+        assertResolve(pm.getGrammarElement(), "#fff url(\"../images/google\") no-repeat center left");
+    }
+    
+    public void testURI() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("@uri");
+        assertResolve(pm.getGrammarElement(), "url(images/google)");
+        assertResolve(pm.getGrammarElement(), "url(../images/google)");        
+    }
+    
+    public void testBgPosition() {
+        PropertyModel pm = CssModuleSupport.getPropertyModel("@bg-position");
+        assertResolve(pm.getGrammarElement(), "center left");
+    }
+    
+    public void testBgPositionDetail() {
+        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        
+        //the minimized grammar to reproduce the bg-position resolving problem
+        String grammar = "[ center | a ] && [ center | b ]";
+        
+        assertResolve(grammar, "center b");
+        assertResolve(grammar, "b center");
+        assertResolve(grammar, "a b");
+        assertResolve(grammar, "b a");
+        assertResolve(grammar, "center center");        
+        assertResolve(grammar, "a center");
+        
+        assertResolve(grammar, "center a"); //fails
+        
+    }
+    */
+
 }

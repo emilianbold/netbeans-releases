@@ -49,7 +49,6 @@ import org.netbeans.modules.coherence.server.actions.PropertiesAction;
 import org.netbeans.modules.coherence.server.actions.RemoveAction;
 import org.netbeans.modules.coherence.server.actions.StartServerAction;
 import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.actions.DeleteAction;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -83,7 +82,7 @@ public class CoherenceServerFullNode extends CoherenceServerBaseNode implements 
 
     @Override
     public Action getPreferredAction() {
-        if (coherenceServer.isRunning()) {
+        if (coherenceServer.isEngaged()) {
             return SystemAction.get(StopServerAction.class);
         } else {
             return SystemAction.get(StartServerAction.class);
