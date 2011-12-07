@@ -61,7 +61,7 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
-import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.openide.util.NbBundle;
 
@@ -97,16 +97,17 @@ public class Commit extends GeneralPHP {
                 "ManipulateEmptyPHP",
                 "CreateTemplatePHP",
                 "ManipulateTemplatePHP",
-                "OpenStandalonePHP",
-                "ManipulateStandalonePHP",
+                //"OpenStandalonePHP",
+                //"ManipulateStandalonePHP",
                 //"CreateCustomPHPApplication",
                 "CreatePHPWithExistingSources",
-                "ManipulatePHPWithExistingSources").enableModules(".*").clusters(".*") //.gui( true )
+                "ManipulatePHPWithExistingSources").enableModules(".*").clusters(".*")
                 );
     }
 
     @Override
     public void setUp() {
+        System.out.println("#### " + getName() + " ####");
         if (!bUnzipped) {
             try {
                 String sBase = getDataDir().getPath() + File.separator;
@@ -229,6 +230,7 @@ public class Commit extends GeneralPHP {
             boolean bFormat,
             int iAnnotations,
             int iWarningsExpected) {
+        waitScanFinished();
         // Check file in tree
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(
@@ -256,7 +258,7 @@ public class Commit extends GeneralPHP {
             Sleep(20000);
         }
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
-        Sleep(1000);
+        new EventTool().waitNoEvent(500);
 
         // Check code completion list
         try {
@@ -293,7 +295,7 @@ public class Commit extends GeneralPHP {
             fail("Completion check failed: \"" + ex.getMessage() + "\"");
         }
 
-        Sleep(2000);
+        new EventTool().waitNoEvent(500);
 
         // Brackets
         // Predefined
@@ -351,9 +353,9 @@ public class Commit extends GeneralPHP {
         } else {
             // start class declaration
             TypeCode(eoPHP, "class a ext");
-            Sleep(1500);
+            new EventTool().waitNoEvent(100);
             eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
-            Sleep(1500);
+            new EventTool().waitNoEvent(100);
             CheckResult(eoPHP, "class a extends");
         }
 
@@ -367,37 +369,30 @@ public class Commit extends GeneralPHP {
         // Check existing notes
         int iErrorChecks = 0;
         boolean bRecheck = true;
-        while (bRecheck) {
-            Sleep(5000);
+        while (bRecheck && iErrorChecks++ < 5) {
+            new EventTool().waitNoEvent(300);
             Object[] oo = eoPHP.getAnnotations();
             int iErrors = GetErrorNumber(eoPHP, oo);
             int iWarnings = GetWarningNumber(eoPHP, oo);
-            if (iAnnotations == iErrors) {
-                if (iWarningsExpected != iWarnings) {
-                    for (Object o : oo) {
-                        System.out.println("***" + EditorOperator.getAnnotationType(o) + " : " + EditorOperator.getAnnotationShortDescription(o));
-                    }
-                    fail("Invalid number of detected warnings. Found: " + iWarnings + ", expected: " + iWarningsExpected);
-                }
+            if (iAnnotations == iErrors && iWarningsExpected == iWarnings) {
                 bRecheck = false;
-            } else if (5 <= ++iErrorChecks) {
+            } else {
+                System.out.println("---Error check failed (" + iErrorChecks + ")");
                 for (Object o : oo) {
                     System.out.println("***" + EditorOperator.getAnnotationType(o) + " : " + EditorOperator.getAnnotationShortDescription(o));
                 }
-                fail("Invalid number of detected errors. Found: " + iErrors + ", expected: " + iAnnotations);
-            } else {
-                System.out.println("---Error check failed (" + iErrorChecks + ")");
+                continue;
             }
+            assertEquals("Invalid number of detected errors.", iAnnotations, iErrors);
+            assertEquals("Invalid number of detected warnings.", iWarningsExpected, iWarnings);
         }
 
         // Insert constructor
-        Sleep(1500);
         if (getPlatform() != 4096) {
             eoPHP.pressKey(KeyEvent.VK_INSERT, InputEvent.ALT_MASK);
         } else {
             eoPHP.pressKey(KeyEvent.VK_I, InputEvent.CTRL_MASK);
         }
-        Sleep(5000);
 
         JDialogOperator jdInsetter = new JDialogOperator();
         JListOperator jlList = new JListOperator(jdInsetter);
@@ -423,7 +418,6 @@ public class Commit extends GeneralPHP {
                 eoPHP,
                 "function __construct($a,$d,$e){$this->a=$a;$this->d=$d;$this->e=$e;}",
                 true);
-        Sleep(1500);
 
         boolean b = true;
         // Insert get
@@ -432,7 +426,6 @@ public class Commit extends GeneralPHP {
         } else {
             eoPHP.pressKey(KeyEvent.VK_I, InputEvent.CTRL_MASK);
         }
-        Sleep(1500);
 
         jdInsetter = new JDialogOperator();
         jlList = new JListOperator(jdInsetter);
@@ -459,29 +452,8 @@ public class Commit extends GeneralPHP {
                 "public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getC(){return $this->c;}public function setC($c){$this->c=$c;}public function getF(){return $this->f;}public function setF($f){$this->f=$f;}",
                 true);
 
-        Sleep(2000);
-        // workaround bug 202127
-        new Thread("Close discard question dialog") {
-
-            @Override
-            public void run() {
-                for (int i = 0; i < 10; i++) {
-                    if (JDialogOperator.findJDialog("Question", false, false) != null) {
-                        new JButtonOperator(new NbDialogOperator("Question"), "Discard").push();
-                        break;
-                    }
-                    try {
-                        sleep(500);
-                    } catch (InterruptedException ex) {
-                        //ignore
-                    }
-                }
-            }
-        }.start();
-        // workaround bug 202127 - end
         // Close to prevent affect on next tests
         eoPHP.close(false);
-
     }
 
     public void ManipulateIndexPHP() {
@@ -490,7 +462,7 @@ public class Commit extends GeneralPHP {
                 TEST_PHP_NAME_1,
                 "index.php",
                 INDEX_PHP_INITIAL_CONTENT,
-                true,
+                false,
                 "// put your code here",
                 false,
                 true,

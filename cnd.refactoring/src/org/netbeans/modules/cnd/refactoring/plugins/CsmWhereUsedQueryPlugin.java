@@ -126,6 +126,10 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             if (CsmKindUtilities.isFile(referencedObject)) {
                 fireProgressListenerStart(ProgressEvent.START, 2);
                 res = processIncludeQuery((CsmFile)referencedObject);
+            } else if (Boolean.getBoolean("cnd.model.index.enabled")) {
+                Collection<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
+                fireProgressListenerStart(ProgressEvent.START, referencedObjects.size() + 2);
+                res = processObjectUsagesQuery(referencedObjects);
             } else {
                 Collection<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
                 CsmFile startFile = CsmRefactoringUtils.getCsmFile(startReferenceObject);
@@ -241,6 +245,63 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
 
     private boolean isSearchInComments() {
         return refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS);
+    }
+    
+    private Collection<RefactoringElementImplementation> processObjectUsagesQuery(final Collection<CsmObject> csmObjects) {
+        assert isFindUsages() : "must be find usages mode";
+        final boolean onlyUsages = !isFindOverridingMethods();
+        final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
+        final Collection<RefactoringElementImplementation> elements = new ConcurrentLinkedQueue<RefactoringElementImplementation>();
+        //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
+        final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
+        final Interrupter interrupter = new Interrupter() {
+
+            @Override
+            public boolean cancelled() {
+                return isCancelled();
+            }
+        };      
+        RequestProcessor rp = new RequestProcessor("FindUsagesQuery", CndUtils.getNumberCndWorkerThreads() + 1); // NOI18N
+        final CountDownLatch waitFinished = new CountDownLatch(csmObjects.size());
+        for (final CsmObject curObj : csmObjects) {
+            Runnable task = new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        if (!isCancelled()) {
+                            String oldName = Thread.currentThread().getName();
+                            try {
+                                Thread.currentThread().setName("FindUsagesQuery: Analyzing " + curObj); //NOI18N
+                                Collection<CsmReference> refs = xRef.getReferences(curObj, (CsmProject)null, kinds, interrupter);
+                                for (CsmReference csmReference : refs) {
+                                    boolean accept = true;
+                                    if (onlyUsages) {
+                                        accept = !CsmReferenceResolver.getDefault().isKindOf(csmReference, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+                                    }
+                                    if (accept) {
+                                        elements.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                    }
+                                }
+                            } finally {
+                                Thread.currentThread().setName(oldName);
+                            }
+                            synchronized (CsmWhereUsedQueryPlugin.this) {
+                                fireProgressListenerStep();
+                            }
+                        }
+                    } finally {
+                        waitFinished.countDown();
+                    }
+                }
+            };
+            rp.post(task);
+        }
+        try {
+            waitFinished.await();
+        } catch (InterruptedException ex) {
+        }
+        return elements;
     }
     
     private Collection<RefactoringElementImplementation> processObjectUsagesQuery(

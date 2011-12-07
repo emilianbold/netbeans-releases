@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -50,16 +51,21 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentReferences.ReferenceImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.*;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.spi.*;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public final class ReferencesIndex {
+public final class ReferencesIndex implements SelfPersistent, Persistent {
 
     private static final class ComparatorImpl implements Comparator<CsmUID<?>> {
 
@@ -76,9 +82,13 @@ public final class ReferencesIndex {
             int fileID1 = UIDUtilities.getFileID(o1);
             int fileID2 = UIDUtilities.getFileID(o2);
             if (fileID1 != fileID2) {
-                CharSequence fileName1 = KeyUtilities.getFileNameById(projectID1, fileID1);
-                CharSequence fileName2 = KeyUtilities.getFileNameById(projectID2, fileID2);
-                return CharSequenceUtils.ComparatorIgnoreCase.compare(fileName1, fileName2);
+                try {
+                    CharSequence fileName1 = KeyUtilities.getFileNameById(projectID1, fileID1);
+                    CharSequence fileName2 = KeyUtilities.getFileNameById(projectID2, fileID2);
+                    return CharSequenceUtils.ComparatorIgnoreCase.compare(fileName1, fileName2);
+                } catch (IndexOutOfBoundsException e) {
+                    System.err.printf("exception %s, when compare\n%s\nvs.\n%s", e.getMessage(), o1.getObject(), o2.getObject()); // NOI18N
+                }
             }
             int startOffset1 = UIDUtilities.getStartOffset(o1);
             int startOffset2 = UIDUtilities.getStartOffset(o2);
@@ -86,15 +96,15 @@ public final class ReferencesIndex {
         }
     }
 
-    private static final class RefComparator implements Comparator<CsmReference> {
+    private static final class RefComparator implements Comparator<FileComponentReferences.ReferenceImpl> {
 
         public RefComparator() {
         }
 
         @Override
-        public int compare(CsmReference o1, CsmReference o2) {
-            CharSequence containingFile1 = o1.getContainingFile().getAbsolutePath();
-            CharSequence containingFile2 = o2.getContainingFile().getAbsolutePath();
+        public int compare(FileComponentReferences.ReferenceImpl o1, FileComponentReferences.ReferenceImpl o2) {
+            CharSequence containingFile1 = UIDUtilities.getFileName(o1.getContainingFileUID());
+            CharSequence containingFile2 = UIDUtilities.getFileName(o2.getContainingFileUID());
             int res = CharSequenceUtils.ComparatorIgnoreCase.compare(containingFile1, containingFile2);
             if (res != 0) {
                 return res;
@@ -208,29 +218,60 @@ public final class ReferencesIndex {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
+
+    private ReferencesIndex() {
+    };
     
-    private ReferencesIndex() {};
+    static SelfPersistent create(RepositoryDataInput stream) throws IOException {
+        return new ReferencesIndex(stream);
+    }
     
-    private static final ReferencesIndex INSTANCE = new ReferencesIndex();
+    private static final Key INDEX_KEY = new ReferencesIndexKey();
+    private static final class Holder {
+        private static final ReferencesIndex INSTANCE = read();
+    }
+
+    static void shutdown() {
+        RepositoryUtils.closeUnit(INDEX_KEY, null, !TraceFlags.PERSISTENT_REPOSITORY);
+    }
+    private static final boolean TRACE = true;
+    private static ReferencesIndex read() {
+        if (TRACE) {
+            System.err.printf("Opening INDEX by key %s\n", INDEX_KEY); // NOI18N
+        }
+        RepositoryUtils.openUnit(INDEX_KEY);
+        ReferencesIndex instance = (ReferencesIndex) RepositoryUtils.get(INDEX_KEY);
+        if (instance == null) {
+            if (TRACE) {
+                System.err.printf("NO REFERENCES INDEX IN REPOSITORY\n"); // NOI18N
+            }
+            return new ReferencesIndex();
+        } else {
+            if (TRACE) {
+                System.err.printf("ReferencesIndex from repository has %d entries", instance.obj2refs.size()); // NOI18N
+            }
+            return instance;
+        }
+    }
 
     public static void dumpInfo(PrintWriter printOut) {
-        INSTANCE.trace(printOut);
+        Holder.INSTANCE.trace(printOut);
     }
 
     public static void clearIndex() {
-        INSTANCE.clear();
+        Holder.INSTANCE.clear();
     }
     
-    public static void put(CsmUID<?> refedObject, CsmUID<CsmFile> fileUID, CsmReference ref) {
-        INSTANCE.addRef(refedObject, fileUID, ref);
+    static void put(CsmUID<?> refedObject, CsmUID<CsmFile> fileUID, FileComponentReferences.ReferenceImpl ref) {
+        Holder.INSTANCE.addRef(refedObject, fileUID, ref);
     }
     
-    public static Collection<CsmReference> getAllReferences(CsmUID<?> referedObject) {
-        return INSTANCE.getRefs(referedObject);
+    public static Collection<? extends CsmReference> getAllReferences(CsmUID<?> referedObject) {
+        return Holder.INSTANCE.getRefs(referedObject);
     }
     
     // value either ref or collection of refs
-    private final Map<CsmUID<?>, Collection<CsmReference>> obj2refs = new HashMap<CsmUID<?>, Collection<CsmReference>>();
+    private final Map<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> obj2refs = new HashMap<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
     private void trace(PrintWriter printOut) {
@@ -242,16 +283,23 @@ public final class ReferencesIndex {
             printOut.printf("INDEX IS EMPTY\n"); // NOI18N
             return;
         }
+        printOut.printf("INDEX has %d referenced objects\n", obj2refs.size()); // NOI18N
         List<CsmUID<?>> keys = new ArrayList<CsmUID<?>>(obj2refs.keySet());
         Collections.sort(keys, new ComparatorImpl());
         int lastProjectID = -1;
         int lastFileID = -1;
+        int numKeys = 0;
         for (CsmUID<?> csmUID : keys) {
             int curProjectID = UIDUtilities.getProjectID(csmUID);
             if (lastProjectID != curProjectID) {
+                if (lastProjectID >= 0) {
+                    printOut.printf("PROJECT %s has %d referenced objects\n\n", KeyUtilities.getUnitName(lastProjectID), numKeys);// NOI18N
+                }
+                numKeys = 0;
                 lastProjectID = curProjectID;
                 printOut.printf("Elements of project [%d] %s\n", curProjectID, KeyUtilities.getUnitName(curProjectID));// NOI18N
             }
+            numKeys++;
             int curFileID = UIDUtilities.getFileID(csmUID);
             if (lastFileID != curFileID) {
                 lastFileID = curFileID;
@@ -261,28 +309,32 @@ public final class ReferencesIndex {
             if (obj == null) {
                 printOut.printf("NO REFERENCES for %s\n", csmUID); // NOI18N
             }
-            Collection<CsmReference> refs = getRefs(csmUID);
+            Collection<FileComponentReferences.ReferenceImpl> refs = getRefs(csmUID);
             if (refs.isEmpty()) {
                 printOut.printf("NO REFERENCES 2 for %s\n", csmUID); // NOI18N
             } else {
                 printOut.printf("%s is referenced from:\n", csmUID); // NOI18N
                 CsmFile prevFile = null;
-                for (CsmReference csmReference : refs) {
+                for (FileComponentReferences.ReferenceImpl csmReference : refs) {
                     CsmFile containingFile = csmReference.getContainingFile();
                     if (containingFile != null) {
                         if (containingFile != prevFile) {
                             prevFile = containingFile;
                             printOut.printf("\tFILE %s\n", containingFile.getAbsolutePath()); // NOI18N
                         }
-                        printOut.printf("\t%s\n", csmReference); // NOI18N
+                        printOut.printf("\t%s\n", toString(csmReference)); // NOI18N
                     } else {
-                        printOut.printf("NOT FROM FILE %s\n", csmReference); // NOI18N
+                        printOut.printf("NOT FROM FILE %s\n", toString(csmReference)); // NOI18N
                     }
                 }
             }
         }
     }
 
+    private String toString(FileComponentReferences.ReferenceImpl ref) {
+        return ref.toString(true);
+    }
+    
     private void clear() {
         lock.writeLock().lock();
         try {
@@ -290,37 +342,79 @@ public final class ReferencesIndex {
         } finally {
             lock.writeLock().unlock();
         }
+        RepositoryUtils.put(INDEX_KEY, this);
     }
+    
     private static final boolean ENABLED = false;
-    private void addRef(CsmUID<?> referedObject, CsmUID<CsmFile> fileUID, CsmReference ref) {
+    private void addRef(CsmUID<?> referedObject, CsmUID<CsmFile> fileUID, FileComponentReferences.ReferenceImpl ref) {
         if (!ENABLED) {
             return;
         }
-        RefImpl toPut = new RefImpl(fileUID, ref.getStartOffset(), ref.getEndOffset(), ref.getKind());
         lock.writeLock().lock();
         try {
-            Collection<CsmReference> value = obj2refs.get(referedObject);
+            Collection<FileComponentReferences.ReferenceImpl> value = obj2refs.get(referedObject);
             if (value == null) {
-                value = new TreeSet<CsmReference>(new RefComparator());
+                value = new TreeSet<FileComponentReferences.ReferenceImpl>(new RefComparator());
                 obj2refs.put(referedObject, value);
             }
-            value.add(toPut);
+            value.add(ref);
         } finally {
             lock.writeLock().unlock();
         }
+        RepositoryUtils.put(INDEX_KEY, this);
     }    
 
-    private Collection<CsmReference> getRefs(CsmUID<?> refedObject) {
+    private Collection<FileComponentReferences.ReferenceImpl> getRefs(CsmUID<?> refedObject) {
         lock.readLock().lock();
         try {
-            Collection value = obj2refs.get(refedObject);
+            Collection<FileComponentReferences.ReferenceImpl> value = obj2refs.get(refedObject);
             if (value == null) {
                 return Collections.emptyList();
             } else {
-                return new ArrayList<CsmReference>(value);
+                return new ArrayList<FileComponentReferences.ReferenceImpl>(value);
             }
         } finally {
             lock.readLock().unlock();
+        }
+    }
+    
+    @Override
+    public void write(RepositoryDataOutput out) throws IOException {
+        UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
+        lock.readLock().lock();
+        try {
+            if (TRACE) {
+                System.err.printf("writing REFERENCES INDEX [%s] with %d entries\n", INDEX_KEY, obj2refs.size()); // NOI18N
+            }
+            out.writeInt(obj2refs.size());
+            for (Map.Entry<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> entry : obj2refs.entrySet()) {
+                defaultFactory.writeUID(entry.getKey(), out);
+                Collection<ReferenceImpl> value = entry.getValue();
+                out.writeInt(value.size());
+                for (ReferenceImpl referenceImpl : value) {
+                    defaultFactory.writeUID(referenceImpl.getContainingFileUID(), out);
+                    referenceImpl.write(defaultFactory, out);
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    
+    private ReferencesIndex(RepositoryDataInput aStream) throws IOException {
+        int size = aStream.readInt();
+        UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
+        for (int i = 0; i < size; i++) {
+            CsmUID<CsmObject> key = defaultFactory.readUID(aStream);
+            Collection<FileComponentReferences.ReferenceImpl> value = new TreeSet<FileComponentReferences.ReferenceImpl>(new RefComparator());
+            int refSize = aStream.readInt();
+            for (int j = 0; j < refSize; j++) {
+                CsmUID<CsmFile> fileUID = defaultFactory.readUID(aStream);
+                FileComponentReferences.ReferenceImpl val = new FileComponentReferences.ReferenceImpl(fileUID, key, defaultFactory, aStream);
+                value.add(val);
+            }
+            obj2refs.put(key, value);
         }
     }
 }
