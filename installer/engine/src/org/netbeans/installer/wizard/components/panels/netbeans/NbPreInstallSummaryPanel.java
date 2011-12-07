@@ -48,9 +48,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
@@ -212,8 +214,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
     private boolean areThereNewFiles(final File installLocation) throws IOException {
         LogManager.log("areThereNewFiles:  location "  + installLocation);
-        List<File> installedFiles = new LinkedList<File>();
-        FilesList existentFilesList = FileUtils.listFiles(installLocation);
+        Set<File> installedFiles = new HashSet<File>();
+        Set<File> existentFilesList = FileUtils.getRecursiveFileSet(installLocation);
 
         for (Product product : Registry.getInstance().getProductsToUninstall()) {
             LogManager.log("Taking product " + product.getUid());
@@ -233,10 +235,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             }
         }
-        boolean result = !installedFiles.containsAll(existentFilesList.toList());
-        existentFilesList.toList().removeAll(installedFiles);
+        boolean result = !installedFiles.containsAll(existentFilesList);
+        existentFilesList.removeAll(installedFiles);
         LogManager.log("installedFiles " + Arrays.toString(installedFiles.toArray()));
-        LogManager.log("existentFilesList after removal " + Arrays.toString(existentFilesList.toList().toArray()));
+        LogManager.log("existentFilesList after removal " + Arrays.toString(existentFilesList.toArray()));
         LogManager.log("areThereNewFiles returned " + result);
         return result;
     }

@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.library.LibraryUtils;
+import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -94,13 +95,13 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     /**
      * Initialization of the panel values.
      */
-    private void init(){
-        coherenceLocationTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_LOCATION, ""));
-        javaFlagsTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_JAVA_FLAGS, ""));
-        customPropertiesTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_CUSTOM_PROPERTIES, ""));
+    private void init() {
+        coherenceLocationTextField.setText(instanceProperties.getString(CoherenceModuleProperties.PROP_LOCATION, ""));
+        javaFlagsTextField.setText(instanceProperties.getString(CoherenceModuleProperties.PROP_JAVA_FLAGS, ""));
+        customPropertiesTextField.setText(instanceProperties.getString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, ""));
 
         listModel = new DefaultListModel();
-        for (String cp : classpathFromStringToArray(instanceProperties.getString(CoherenceProperties.PROP_CLASSPATH, ""))) {
+        for (String cp : classpathFromStringToArray(instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""))) {
             listModel.addElement(cp);
         }
         classpathList.setModel(listModel);
@@ -142,15 +143,15 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * Storing values from this panel into {@link InstanceProperties}.
      */
     private void savePanel() {
-        instanceProperties.putString(CoherenceProperties.PROP_JAVA_FLAGS, javaFlagsTextField.getText());
-        instanceProperties.putString(CoherenceProperties.PROP_CUSTOM_PROPERTIES, customPropertiesTextField.getText());
+        instanceProperties.putString(CoherenceModuleProperties.PROP_JAVA_FLAGS, javaFlagsTextField.getText());
+        instanceProperties.putString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, customPropertiesTextField.getText());
 
         List<String> cpEntries = new ArrayList<String>();
         for (int i = 0; i < classpathList.getModel().getSize(); i++) {
             cpEntries.add((String)classpathList.getModel().getElementAt(i));
         }
 
-        instanceProperties.putString(CoherenceProperties.PROP_CLASSPATH, classpathFromListToString(cpEntries));
+        instanceProperties.putString(CoherenceModuleProperties.PROP_CLASSPATH, classpathFromListToString(cpEntries));
     }
 
     /**
@@ -161,7 +162,7 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * @return resulting {@code String[]}
      */
     private static String[] classpathFromStringToArray(String classpath) {
-        return classpath.split(CoherenceProperties.CLASSPATH_SEPARATOR);
+        return classpath.split(CoherenceModuleProperties.CLASSPATH_SEPARATOR);
     }
 
     /**
@@ -174,13 +175,13 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     private static String classpathFromListToString(List<String> classpaths) {
         StringBuilder sb = new StringBuilder();
         for (String cp : classpaths) {
-            sb.append(cp).append(CoherenceProperties.CLASSPATH_SEPARATOR);
+            sb.append(cp).append(CoherenceModuleProperties.CLASSPATH_SEPARATOR);
         }
         String resultString = sb.toString();
         if (resultString.length() == 0) {
             return ""; //NOI18N
         }
-        return resultString.substring(0, resultString.length() - CoherenceProperties.CLASSPATH_SEPARATOR.length());
+        return resultString.substring(0, resultString.length() - CoherenceModuleProperties.CLASSPATH_SEPARATOR.length());
     }
 
     private void setEnabledRemoveButton(boolean setEnabled) {
@@ -382,12 +383,12 @@ private void classpathListValueChanged(javax.swing.event.ListSelectionEvent evt)
     private void createLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createLibraryButtonActionPerformed
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage(CustomizerCommon.class, "MSG_ConfirmationForLibraryCreation", //NOI18N
-                        instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME, "")), //NOI18N
+                        instanceProperties.getString(CoherenceModuleProperties.PROP_DISPLAY_NAME, "")), //NOI18N
                 NbBundle.getMessage(CustomizerCommon.class, "TIT_LibraryCreationDialog"), //NOI18N
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE);
         if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
-            File location = new File(instanceProperties.getString(CoherenceProperties.PROP_LOCATION, ""));
+            File location = new File(instanceProperties.getString(CoherenceModuleProperties.PROP_LOCATION, ""));
             LibraryUtils.createCoherenceLibrary(location);
         }
     }//GEN-LAST:event_createLibraryButtonActionPerformed
