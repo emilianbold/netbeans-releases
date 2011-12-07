@@ -209,7 +209,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-            interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(this), name, directory);
+            if (interceptor != null) {
+                interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(this), name, directory);
+            }
         }
         ProcessUtils.ExitStatus res;
         if (directory) {
@@ -232,7 +234,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 if (USE_VCS) {
                     FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-                    interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
+                    if (interceptor != null) {
+                        interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
+                    }
                 }
                 return fo;
             } catch (ConnectException ex) {
@@ -263,7 +267,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private void creationFalure(String name, boolean directory) {
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-            interceptor.createFailure(FilesystemInterceptorProvider.toFileProxy(this), name, directory);
+            if (interceptor != null) {
+                interceptor.createFailure(FilesystemInterceptorProvider.toFileProxy(this), name, directory);
+            }
         }
     }
 

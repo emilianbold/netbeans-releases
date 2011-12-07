@@ -180,11 +180,13 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     public FileLock lock() throws IOException {
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-            FilesystemInterceptorProvider.FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
-            if (!interceptor.canWrite(fileProxy)) {
-                throw new IOException("Cannot lock "+this); // NOI18N
+            if (interceptor != null) {
+                FilesystemInterceptorProvider.FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
+                if (!interceptor.canWrite(fileProxy)) {
+                    throw new IOException("Cannot lock "+this); // NOI18N
+                }
+                interceptor.fileLocked(fileProxy);
             }
-            interceptor.fileLocked(fileProxy);
         }
         return super.lock();
     }
@@ -227,10 +229,8 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     private class DelegateOutputStream extends OutputStream {
 
         private final FileOutputStream delegate;
-        private final FilesystemInterceptorProvider.FilesystemInterceptor interceptor;
 
         public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor) throws IOException {
-            this.interceptor = interceptor;
             if (interceptor != null) {
                 interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(RemotePlainFile.this));
             }
