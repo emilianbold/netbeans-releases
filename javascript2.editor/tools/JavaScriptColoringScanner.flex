@@ -9,7 +9,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %final
 %class JavaScriptColoringLexer
 %type JsTokenId
-%function nextToken
 %unicode
 %caseless
 %char
@@ -18,6 +17,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private StateStack stack = new StateStack();
 
     private LexerInput input;
+
+    private JsTokenId lastToken;
 
     public JavaScriptColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
@@ -84,6 +85,31 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzLexicalState = state.zzLexicalState;
     }
 
+    public JsTokenId nextToken() throws java.io.IOException {
+        JsTokenId token = yylex();
+        if (token != null && !JsTokenId.UNKNOWN.equals(token)
+            && !JsTokenId.WHITESPACE.equals(token)) {
+            lastToken = token;
+        }
+        return token;
+    }
+
+    private boolean canFollowLiteral() {
+        if (lastToken == null || "operator".equals(lastToken.primaryCategory())) {
+            return true;
+        }
+
+        switch (lastToken) {
+            case BRACKET_LEFT_PAREN:
+            case BRACKET_LEFT_BRACKET:
+            case KEYWORD_RETURN:
+            case KEYWORD_THROW:
+            case RESERVED_YIELD:
+            //case EOL:
+                return true;
+        }
+        return false;
+    }
  // End user code
 
 %}
@@ -130,7 +156,7 @@ StringCharacter  = [^\r\n\"\\]
 SStringCharacter = [^\r\n\'\\]
 RegexpCharacter  = [^\r\n/\\]
 
-%state STRING STRINGEND SSTRING SSTRINGEND REGEXP REGEXPEND SLASH
+%state STRING STRINGEND SSTRING SSTRINGEND REGEXP REGEXPEND
 
 %%
 
@@ -195,6 +221,7 @@ RegexpCharacter  = [^\r\n/\\]
   "throws"                       { return JsTokenId.RESERVED_THROWS; }
   "transient"                    { return JsTokenId.RESERVED_TRANSIENT; }
   "volatile"                     { return JsTokenId.RESERVED_VOLATILE; }
+  "yield"                        { return JsTokenId.RESERVED_YIELD; }
 
   /* boolean literals */
   "true"                         { return JsTokenId.KEYWORD_TRUE; }
@@ -206,17 +233,22 @@ RegexpCharacter  = [^\r\n/\\]
   "/"{RegexpCharacter}+"/"{IdentifierPart}*
                                  {
                                      yypushback(tokenLength - 1);
-                                     yybegin(REGEXP);
-                                     return JsTokenId.REGEXP_BEGIN;
+                                     if (canFollowLiteral()) {
+                                       yybegin(REGEXP);
+                                       return JsTokenId.REGEXP_BEGIN;
+                                     } else {
+                                       yybegin(YYINITIAL);
+                                       return JsTokenId.OPERATOR_DIVISION;
+                                     }
                                  }
   /* operators */
 
-  "("                            { return JsTokenId.OPERATOR_LEFT_PARAN; }
-  ")"                            { return JsTokenId.OPERATOR_RIGHT_PARAN; }
-  "{"                            { return JsTokenId.OPERATOR_LEFT_CURLY; }
-  "}"                            { return JsTokenId.OPERATOR_RIGHT_CURLY; }
-  "["                            { return JsTokenId.OPERATOR_LEFT_BRACKET; }
-  "]"                            { return JsTokenId.OPERATOR_RIGHT_BRACKET; }
+  "("                            { return JsTokenId.BRACKET_LEFT_PAREN; }
+  ")"                            { return JsTokenId.BRACKET_RIGHT_PAREN; }
+  "{"                            { return JsTokenId.BRACKET_LEFT_CURLY; }
+  "}"                            { return JsTokenId.BRACKET_RIGHT_CURLY; }
+  "["                            { return JsTokenId.BRACKET_LEFT_BRACKET; }
+  "]"                            { return JsTokenId.BRACKET_RIGHT_BRACKET; }
   ";"                            { return JsTokenId.OPERATOR_SEMICOLON; }
   ","                            { return JsTokenId.OPERATOR_COMMA; }
   "."                            { return JsTokenId.OPERATOR_DOT; }
@@ -372,7 +404,7 @@ RegexpCharacter  = [^\r\n/\\]
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JsTokenId.UNKNOWN_TOKEN;
+        return JsTokenId.UNKNOWN;
     } else {
         return null;
     }

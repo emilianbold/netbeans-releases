@@ -70,11 +70,11 @@ public class JsLexerTest extends TestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING, "string");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
     }
 
     @SuppressWarnings("unchecked")
@@ -83,11 +83,11 @@ public class JsLexerTest extends TestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "'");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING, "string");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "'");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
     }
 
     @SuppressWarnings("unchecked")
@@ -105,11 +105,11 @@ public class JsLexerTest extends TestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP, "regexp");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
     }
 
     @SuppressWarnings("unchecked")
@@ -155,13 +155,13 @@ public class JsLexerTest extends TestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP, "regexp");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
     }
 
     @SuppressWarnings("unchecked")
@@ -170,13 +170,13 @@ public class JsLexerTest extends TestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_LEFT_PARAN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP, "regexp");
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/i");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_RIGHT_PARAN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
     }
 
 //    @SuppressWarnings("unchecked")

@@ -58,7 +58,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @author Petr Hejl
  */
 public enum JsTokenId implements TokenId {
-    UNKNOWN_TOKEN(null, "error"), // NOI18N
+    UNKNOWN(null, "error"), // NOI18N
     WHITESPACE(null, "whitespace"), // NOI18N
 
     NUMBER(null, "constant"), // NOI18N
@@ -73,12 +73,13 @@ public enum JsTokenId implements TokenId {
     REGEXP(null, "string"), // NOI18N
     REGEXP_END(null, "string"), // NOI18N
 
-    OPERATOR_LEFT_PARAN("(", "operator"), // NOI18N
-    OPERATOR_RIGHT_PARAN(")", "operator"), // NOI18N
-    OPERATOR_LEFT_CURLY("{", "operator"), // NOI18N
-    OPERATOR_RIGHT_CURLY("}", "operator"), // NOI18N
-    OPERATOR_LEFT_BRACKET("[", "operator"), // NOI18N
-    OPERATOR_RIGHT_BRACKET("]", "operator"), // NOI18N
+    BRACKET_LEFT_PAREN("(", "bracket"), // NOI18N
+    BRACKET_RIGHT_PAREN(")", "bracket"), // NOI18N
+    BRACKET_LEFT_CURLY("{", "bracket"), // NOI18N
+    BRACKET_RIGHT_CURLY("}", "bracket"), // NOI18N
+    BRACKET_LEFT_BRACKET("[", "bracket"), // NOI18N
+    BRACKET_RIGHT_BRACKET("]", "bracket"), // NOI18N
+
     OPERATOR_SEMICOLON(";", "operator"), // NOI18N
     OPERATOR_COMMA(",", "operator"), // NOI18N
     OPERATOR_DOT(".", "operator"), // NOI18N
@@ -177,6 +178,7 @@ public enum JsTokenId implements TokenId {
     RESERVED_THROWS("throws", "reserved"), // NOI18N
     RESERVED_TRANSIENT("transient", "reserved"), // NOI18N
     RESERVED_VOLATILE("volatile", "reserved"), // NOI18N
+    RESERVED_YIELD("yield", "reserved"), // NOI18N
 
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
