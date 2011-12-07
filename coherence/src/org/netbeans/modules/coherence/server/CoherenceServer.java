@@ -144,6 +144,7 @@ public class CoherenceServer {
      */
     public void stop() {
         LOGGER.log(Level.INFO, "Stopping Coherence server: {0}", getServerDisplayName());
+        starting.set(false);
         runningTask.cancel(true);
         changeSupport.fireChange();
     }
@@ -172,6 +173,14 @@ public class CoherenceServer {
             return state;
         }
         return false;
+    }
+
+    /**
+     * Says whether is Coherence server engaged or not.
+     * @return {@code true} when the server is engaged (running or starting), {@code false} otherwise
+     */
+    public boolean isEngaged() {
+        return isStarting() || isRunning();
     }
 
     /**
