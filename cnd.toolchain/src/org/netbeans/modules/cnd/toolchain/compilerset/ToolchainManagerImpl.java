@@ -561,6 +561,9 @@ public final class ToolchainManagerImpl {
                     if (p.getFlags() != null) {
                         ee.setAttribute("flags", p.getFlags()); // NOI18N
                     }
+                    if (p.isHidden()) {
+                        ee.setAttribute("hide", "true"); // NOI18N
+                    }
                     e.appendChild(ee);
                 }
             }
@@ -1621,7 +1624,8 @@ public final class ToolchainManagerImpl {
                 if (c.predefinedMacros == null) {
                     c.predefinedMacros = new ArrayList<PredefinedMacro>();
                 }
-                PredefinedMacro m = new PredefinedMacroImpl(getValue(attributes, "stringvalue"), getValue(attributes, "flags")); // NOI18N
+                PredefinedMacro m = new PredefinedMacroImpl(getValue(attributes, "stringvalue"), // NOI18N
+                        getValue(attributes, "flags"), "true".equals(getValue(attributes, "hide"))); // NOI18N
                 c.predefinedMacros.add(m);
                 return;
             }
@@ -2264,15 +2268,22 @@ public final class ToolchainManagerImpl {
     private static final class PredefinedMacroImpl implements PredefinedMacro {
         String macro;
         String flags;
+        boolean hidden;
 
-        PredefinedMacroImpl(String macro, String flags){
+        PredefinedMacroImpl(String macro, String flags, boolean hidden){
             this.macro = macro;
             this.flags = flags;
+            this.hidden = hidden;
         }
 
         @Override
         public String getMacro() {
             return macro;
+        }
+
+        @Override
+        public boolean isHidden() {
+            return hidden;
         }
 
         @Override

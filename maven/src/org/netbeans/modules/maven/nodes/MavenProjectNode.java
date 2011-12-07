@@ -79,18 +79,21 @@ public class MavenProjectNode extends AbstractNode {
     private static final String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(BADGE_ICON) + "\">&nbsp;" + ICON_BrokenProjectBadge();
 
      private NbMavenProjectImpl project;
-     private ProjectInformation info;
+     private final ProjectInformation info;
      private ProblemReporterImpl reporter;
 
      public MavenProjectNode(Lookup lookup, NbMavenProjectImpl proj) {
         super(NodeFactorySupport.createCompositeChildren(proj, "Projects/org-netbeans-modules-maven/Nodes"), lookup); //NOI18N
         this.project = proj;
-        info = project.getLookup().lookup(ProjectInformation.class);
-        NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
-                    fireNameChange(null, getName());
+        info = ProjectUtils.getInformation(project);
+        info.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override public void propertyChange(PropertyChangeEvent event) {
+                String prop = event.getPropertyName();
+                if (ProjectInformation.PROP_NAME.equals(prop)) {
+                    fireNameChange(null, null);
+                } else if (ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
                     fireDisplayNameChange(null, getDisplayName());
+                } else if (ProjectInformation.PROP_ICON.equals(prop)) {
                     fireIconChange();
                 }
             }
@@ -112,12 +115,12 @@ public class MavenProjectNode extends AbstractNode {
     }
 
     public @Override String getName() {
-        return ProjectUtils.getInformation(project).getName();
+        return info.getName();
     }
 
     @Override
     public String getDisplayName() {
-        return ProjectUtils.getInformation(project).getDisplayName();
+        return info.getDisplayName();
     }
 
     public @Override String getHtmlDisplayName() {
