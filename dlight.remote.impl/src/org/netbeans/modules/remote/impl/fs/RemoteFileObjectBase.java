@@ -64,10 +64,12 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.DeleteHandler;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.FileProxyI;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.IOHandler;
+import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 
 /**
@@ -83,6 +85,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private final FileLock lock = new FileLock();
     static final long serialVersionUID = 1931650016889811086L;
+    public static final boolean USE_VCS = Boolean.getBoolean("remote.vcs.suport");
 
     private volatile byte flags;
     
@@ -177,7 +180,6 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             getFileSystem().addFileChangeListener(new RecursiveListener(this, fcl, false));
         } else {
             addFileChangeListener(fcl);
-            return;
         }
     }
 
@@ -189,21 +191,45 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             removeFileChangeListener(fcl);
         }
     }
+
+    @Override
+    protected void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
+        super.fireFileChangedEvent(en, fe);
+    }
     
-    protected abstract void deleteImpl() throws IOException;
+    protected abstract boolean deleteImpl(FileLock lock) throws IOException;
 
     protected abstract void postDeleteChild(FileObject child);
     
     @Override
     public void delete(FileLock lock) throws IOException {
-        deleteImpl();
+        if (USE_VCS) {
+            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+            FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
+            DeleteHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
+            boolean result;
+            if (deleteHandler != null) {
+                result = deleteHandler.delete(FilesystemInterceptorProvider.toFileProxy(this));
+            } else {
+                result = deleteImpl(lock);
+            }
+            if (!result) {
+                throw new IOException("Cannot delete "+getPath()); // NOI18N
+            }
+            // TODO remove attributes
+            // TODO clear cache?
+            // TODO fireFileDeletedEvent()?
+            interceptor.deleteSuccess(fileProxy);
+        } else {
+            deleteImpl(lock);
+        }
         invalidate();
         RemoteFileObjectBase p = getParent();
         if (p != null) {
             p.postDeleteChild(this);
         }
     }
-
+    
     @Override
     public String getExt() {
         String nameExt = getNameExt();
@@ -312,27 +338,32 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     @Override
     public boolean canWrite() {
-        setFlag(CHECK_CAN_WRITE, true);
-        if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-            getFileSystem().addReadOnlyConnectNotification(this);
-            return false;
-        }
-        try {
-            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
-            if (canonicalParent == null) {
+        if (USE_VCS) {
+            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+            return interceptor.canWrite(FilesystemInterceptorProvider.toFileProxy(this));
+        } else {
+            setFlag(CHECK_CAN_WRITE, true);
+            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                getFileSystem().addReadOnlyConnectNotification(this);
                 return false;
-            } else {
-                boolean result = canonicalParent.canWrite(getNameExt());
-                if (!result) {
-                    setFlag(CHECK_CAN_WRITE, false); // even if we get disconnected, r/o status won't change
-                }
-                return result;
             }
-        } catch (ConnectException ex) {
-            return false;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
+            try {
+                RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+                if (canonicalParent == null) {
+                    return false;
+                } else {
+                    boolean result = canonicalParent.canWrite(getNameExt());
+                    if (!result) {
+                        setFlag(CHECK_CAN_WRITE, false); // even if we get disconnected, r/o status won't change
+                    }
+                    return result;
+                }
+            } catch (ConnectException ex) {
+                return false;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
         }
     }
 
@@ -443,6 +474,88 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                 throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
             }
         }
+    }
+
+    @Override
+    public FileObject copy(FileObject target, String name, String ext) throws IOException {
+        if (USE_VCS) {
+            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+            FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
+            interceptor.beforeCopy(target, to);
+            FileObject result = null;
+            try {
+                final IOHandler copyHandler = interceptor.getCopyHandler(this, to);
+                if (copyHandler != null) {
+                    if (target instanceof RemoteDirectory) {
+                        result = handleMoveCopy((RemoteDirectory)target, name, ext, copyHandler);
+                    } else {
+                        copyHandler.handle();
+                        refresh(true);
+                        //perfromance bottleneck to call refresh on folder
+                        //(especially for many files to be copied)
+                        target.refresh(true); // XXX ?
+                        result = target.getFileObject(name, ext); // XXX ?
+                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                    }
+                    FileUtil.copyAttributes(this, result);
+                } else {
+                    result = super.copy(target, name, ext);
+                }
+            } catch (IOException ioe) {
+                interceptor.copyFailure(this, to);
+                throw ioe;
+            }
+            interceptor.copySuccess(this, to);
+            return result;
+        } else {
+            return super.copy(target, name, ext);
+        }
+    }
+    
+    private RemoteFileObjectBase handleMoveCopy(RemoteDirectory target, String name, String ext, IOHandler handler) throws IOException {
+        handler.handle();
+        //  TODO find result file object
+        return null;
+        /*
+        String nameExt = FileInfo.composeName(name, ext);
+        target.getChildrenCache().getChild(nameExt, true);
+        //TODO: review
+        RemoteFileObjectBase result = null;
+        final File file = new File(target.getFileName().getFile(), nameExt);
+        for (int i = 0; i < 10; i++) {
+            result = (RemoteFileObjectBase) FileBasedFileSystem.getFileObject(file);
+            if (result != null) {
+                if (result.isData()) {
+                    result.fireFileDataCreatedEvent(false);
+                } else {
+                    result.fireFileFolderCreatedEvent(false);
+                }
+                break;
+            }
+            // #179109 - result is sometimes null, probably when moved file
+            // is not yet ready. We wait max. 1000 ms.
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+        }
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (result == null && assertsOn) {
+            AssertionError ae = new AssertionError("FileObject for " + file + " not found.");
+            dumpFileInfo(file, ae);
+            throw ae;
+        }
+        RemoteDirectory parent = getExistingParent();
+        if (parent != null) {
+            parent.refresh(true);
+        } else {
+            refresh(true);
+        }
+        //fireFileDeletedEvent(false);
+        return result;
+        */
     }
 
     @Override

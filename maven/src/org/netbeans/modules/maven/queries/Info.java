@@ -118,6 +118,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
 
     @Override public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+            pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
             pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
             pcs.firePropertyChange(ProjectInformation.PROP_ICON, null, null);
         }

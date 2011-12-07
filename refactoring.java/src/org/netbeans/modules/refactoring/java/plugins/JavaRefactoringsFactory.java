@@ -46,11 +46,12 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.*;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
-import org.netbeans.modules.refactoring.spi.*;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -92,8 +93,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new SafeDeleteRefactoringPlugin((SafeDeleteRefactoring)refactoring);
             }
         } else if (refactoring instanceof MoveRefactoring) {
-            if (checkMove(refactoring.getRefactoringSource())) {
+            if (checkMoveFile(refactoring.getRefactoringSource())) {
                 return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
+            } else if (checkMoveMembers(refactoring.getContext())) {
+                return new MoveMembersRefactoringPlugin((MoveRefactoring) refactoring);
             }
         } else if (refactoring instanceof SingleCopyRefactoring) {
             if (checkCopy(refactoring.getRefactoringSource())) {
@@ -127,7 +130,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         return null;
     }
 
-    private boolean checkMove(Lookup refactoringSource) {
+    private boolean checkMoveFile(Lookup refactoringSource) {
         for (FileObject f:refactoringSource.lookupAll(FileObject.class)) {
             if (RefactoringUtils.isJavaFile(f)) {
                 return true;
@@ -186,4 +189,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         return false;
     }
 
+    private boolean checkMoveMembers(Context context) {
+        return context.lookup(JavaMoveMembersProperties.class) != null;
+    }
 }

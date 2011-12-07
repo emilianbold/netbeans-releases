@@ -191,8 +191,7 @@ public class HudsonOptionsPanel extends JPanel {
                 ppwLearnMoreLabelMousePressed(evt);
             }
         });
-
-        ppwTextField.setText(NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwTextField.text")); Mnemonics.setLocalizedText(ppwBrowseButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwBrowseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(ppwBrowseButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwBrowseButton.text")); // NOI18N
         ppwBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 ppwBrowseButtonActionPerformed(evt);

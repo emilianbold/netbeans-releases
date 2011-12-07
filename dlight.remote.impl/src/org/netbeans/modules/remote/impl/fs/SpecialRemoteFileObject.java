@@ -125,8 +125,8 @@ public class SpecialRemoteFileObject extends RemoteFileObjectFile {
     }
     
     @Override
-    protected void deleteImpl() throws IOException {
-        RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    protected boolean deleteImpl(FileLock lock) throws IOException {
+        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override

@@ -75,20 +75,20 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
      * @return unique identifier of Coherence instance
      */
     public int getId() {
-        int id = instanceProperties.getInt(CoherenceProperties.PROP_ID, 0);
+        int id = instanceProperties.getInt(CoherenceModuleProperties.PROP_ID, 0);
         assert id != 0;
         return id;
     }
 
     @Override
     public String getDisplayName() {
-        return instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME,
-                CoherenceProperties.DISPLAY_NAME_DEFAULT);
+        return instanceProperties.getString(CoherenceModuleProperties.PROP_DISPLAY_NAME,
+                CoherenceModuleProperties.DISPLAY_NAME_DEFAULT);
     }
 
     @Override
     public String getServerDisplayName() {
-        return CoherenceProperties.DISPLAY_NAME_DEFAULT;
+        return CoherenceModuleProperties.DISPLAY_NAME_DEFAULT;
     }
 
     @Override
@@ -172,7 +172,7 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
             uniqueId++;
         }
 
-        properties.putInt(CoherenceProperties.PROP_ID, uniqueId);
+        properties.putInt(CoherenceModuleProperties.PROP_ID, uniqueId);
     }
 
     /**
