@@ -250,7 +250,7 @@ public class DiskRepositoryManager implements Repository, RepositoryWriter {
             cleanAndWriteQueue();
             if (!units.isEmpty()) {
                 if (LOG.isLoggable(Level.INFO)) {
-                    LOG.log(Level.INFO, "Not empty unit list after closing.");
+                    LOG.log(Level.INFO, "Not empty unit list after closing: {0}", units.toString());
                 }
             }
             units.clear();
