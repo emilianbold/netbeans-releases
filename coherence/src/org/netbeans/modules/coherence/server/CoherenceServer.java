@@ -92,7 +92,11 @@ public class CoherenceServer {
 
     private final InstanceProperties instanceProperties;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    /** GuardedBy("this") */
     private final AtomicBoolean starting = new AtomicBoolean(false);
+
+    /** GuardedBy("this") */
     private Future<Integer> runningTask;
 
     private static enum ServerState {
@@ -131,7 +135,7 @@ public class CoherenceServer {
     /**
      * Starts this Coherence server.
      */
-    public void start() {
+    public synchronized void start() {
         LOGGER.log(Level.INFO, "Starting Coherence server: {0}", getServerDisplayName());
         starting.set(true);
         ExecutionService startService = getStartService();
@@ -142,7 +146,7 @@ public class CoherenceServer {
     /**
      * Stops this Coherence server.
      */
-    public void stop() {
+    public synchronized void stop() {
         LOGGER.log(Level.INFO, "Stopping Coherence server: {0}", getServerDisplayName());
         starting.set(false);
         runningTask.cancel(true);
@@ -153,7 +157,7 @@ public class CoherenceServer {
      * Says whether this Coherence server is running or not.
      * @return {@code true} when the server runs, {@code false} otherwise
      */
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         if (runningTask != null) {
             boolean state = !runningTask.isDone() && !starting.get();
             LOGGER.log(Level.FINEST, "Coherence server {0} isRunning()={1}", new Object[]{getServerDisplayName(), state});
@@ -166,7 +170,7 @@ public class CoherenceServer {
     * Says whether this Coherence server is starting or not.
     * @return {@code true} when the server is starting, {@code false} otherwise
     */
-    public boolean isStarting() {
+    public synchronized boolean isStarting() {
         if (runningTask != null) {
             boolean state = !runningTask.isDone() && starting.get();
             LOGGER.log(Level.FINEST, "Coherence server {0} isStarting()={1}", new Object[]{getServerDisplayName(), state});
@@ -195,7 +199,7 @@ public class CoherenceServer {
         return instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME, ""); //NOI18N
     }
 
-    private void switchFromStartingToRunningState() {
+    private synchronized void switchFromStartingToRunningState() {
         starting.set(false);
         changeSupport.fireChange();
     }
