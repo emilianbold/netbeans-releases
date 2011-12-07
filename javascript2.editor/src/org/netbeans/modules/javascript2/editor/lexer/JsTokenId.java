@@ -125,6 +125,7 @@ public enum JsTokenId implements TokenId {
     KEYWORD_CASE("case", "keyword"), // NOI18N
     KEYWORD_CATCH("catch", "keyword"), // NOI18N
     KEYWORD_CONTINUE("continue", "keyword"), // NOI18N
+    KEYWORD_DEBUGGER("debugger", "keyword"), // NOI18N
     KEYWORD_DEFAULT("default", "keyword"), // NOI18N
     KEYWORD_DELETE("delete", "keyword"), // NOI18N
     KEYWORD_DO("do", "keyword"), // NOI18N
@@ -147,37 +148,22 @@ public enum JsTokenId implements TokenId {
     KEYWORD_WHILE("while", "keyword"), // NOI18N
     KEYWORD_WITH("with", "keyword"), // NOI18N
 
-    RESERVED_ABSTRACT("abstract", "reserved"), // NOI18N
-    RESERVED_BOOLEAN("boolean", "reserved"), // NOI18N
-    RESERVED_BYTE("byte", "reserved"), // NOI18N
-    RESERVED_CHAR("char", "reserved"), // NOI18N
     RESERVED_CLASS("class", "reserved"), // NOI18N
     RESERVED_CONST("const", "reserved"), // NOI18N
-    RESERVED_DEBUGGER("debugger", "reserved"), // NOI18N
-    RESERVED_DOUBLE("double", "reserved"), // NOI18N
     RESERVED_ENUM("enum", "reserved"), // NOI18N
     RESERVED_EXPORT("export", "reserved"), // NOI18N
     RESERVED_EXTENDS("extends", "reserved"), // NOI18N
-    RESERVED_FINAL("final", "reserved"), // NOI18N
-    RESERVED_FLOAT("float", "reserved"), // NOI18N
-    RESERVED_GOTO("goto", "reserved"), // NOI18N
-    RESERVED_IMPLEMENTS("implements", "reserved"), // NOI18N
     RESERVED_IMPORT("import", "reserved"), // NOI18N
-    RESERVED_INT("int", "reserved"), // NOI18N
+    RESERVED_SUPER("super", "reserved"), // NOI18N
+
+    RESERVED_IMPLEMENTS("implements", "reserved"), // NOI18N
     RESERVED_INTERFACE("interface", "reserved"), // NOI18N
-    RESERVED_LONG("long", "reserved"), // NOI18N
-    RESERVED_NATIVE("native", "reserved"), // NOI18N
+    RESERVED_LET("let", "reserved"), // NOI18N
     RESERVED_PACKAGE("package", "reserved"), // NOI18N
     RESERVED_PRIVATE("private", "reserved"), // NOI18N
     RESERVED_PROTECTED("protected", "reserved"), // NOI18N
     RESERVED_PUBLIC("public", "reserved"), // NOI18N
-    RESERVED_SHORT("short", "reserved"), // NOI18N
     RESERVED_STATIC("static", "reserved"), // NOI18N
-    RESERVED_SUPER("super", "reserved"), // NOI18N
-    RESERVED_SYNCHRONIZED("synchronized", "reserved"), // NOI18N
-    RESERVED_THROWS("throws", "reserved"), // NOI18N
-    RESERVED_TRANSIENT("transient", "reserved"), // NOI18N
-    RESERVED_VOLATILE("volatile", "reserved"), // NOI18N
     RESERVED_YIELD("yield", "reserved"), // NOI18N
 
     KEYWORD_TRUE("true", "keyword"), // NOI18N

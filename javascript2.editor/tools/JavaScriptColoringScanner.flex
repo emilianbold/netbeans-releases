@@ -155,6 +155,7 @@ Exponent = [eE] [+-]? [0-9]+
 StringCharacter  = [^\r\n\"\\]
 SStringCharacter = [^\r\n\'\\]
 RegexpCharacter  = [^\r\n/\\]
+RegexpFirstCharacter  = [^\r\n/\\\*]
 
 %state STRING STRINGEND SSTRING SSTRINGEND REGEXP REGEXPEND
 
@@ -162,11 +163,12 @@ RegexpCharacter  = [^\r\n/\\]
 
 <YYINITIAL> {
 
-  /* keywords */
+  /* keywords 7.6.1.1 */
   "break"                        { return JsTokenId.KEYWORD_BREAK; }
   "case"                         { return JsTokenId.KEYWORD_CASE; }
   "catch"                        { return JsTokenId.KEYWORD_CATCH; }
   "continue"                     { return JsTokenId.KEYWORD_CONTINUE; }
+  "debugger"                     { return JsTokenId.KEYWORD_DEBUGGER; }
   "default"                      { return JsTokenId.KEYWORD_DEFAULT; }
   "delete"                       { return JsTokenId.KEYWORD_DELETE; }
   "do"                           { return JsTokenId.KEYWORD_DO; }
@@ -189,39 +191,25 @@ RegexpCharacter  = [^\r\n/\\]
   "while"                        { return JsTokenId.KEYWORD_WHILE; }
   "with"                         { return JsTokenId.KEYWORD_WITH; }
 
-  /* reserved keywords */
-  "abstract"                     { return JsTokenId.RESERVED_ABSTRACT; }
-  "boolean"                      { return JsTokenId.RESERVED_BOOLEAN; }
-  "byte"                         { return JsTokenId.RESERVED_BYTE; }
-  "char"                         { return JsTokenId.RESERVED_CHAR; }
+  /* reserved keywords 7.6.1.2 */
   "class"                        { return JsTokenId.RESERVED_CLASS; }
   "const"                        { return JsTokenId.RESERVED_CONST; }
-  "debugger"                     { return JsTokenId.RESERVED_DEBUGGER; }
-  "double"                       { return JsTokenId.RESERVED_DOUBLE; }
   "enum"                         { return JsTokenId.RESERVED_ENUM; }
   "export"                       { return JsTokenId.RESERVED_EXPORT; }
   "extends"                      { return JsTokenId.RESERVED_EXTENDS; }
-  "final"                        { return JsTokenId.RESERVED_FINAL; }
-  "float"                        { return JsTokenId.RESERVED_FLOAT; }
-  "goto"                         { return JsTokenId.RESERVED_GOTO; }
-  "implements"                   { return JsTokenId.RESERVED_IMPLEMENTS; }
   "import"                       { return JsTokenId.RESERVED_IMPORT; }
-  "int"                          { return JsTokenId.RESERVED_INT; }
+  "super"                        { return JsTokenId.RESERVED_SUPER; }
+
+  "implements"                   { return JsTokenId.RESERVED_IMPLEMENTS; }
   "interface"                    { return JsTokenId.RESERVED_INTERFACE; }
-  "long"                         { return JsTokenId.RESERVED_LONG; }
-  "native"                       { return JsTokenId.RESERVED_NATIVE; }
+  "let"                          { return JsTokenId.RESERVED_LET; }
   "package"                      { return JsTokenId.RESERVED_PACKAGE; }
   "private"                      { return JsTokenId.RESERVED_PRIVATE; }
   "protected"                    { return JsTokenId.RESERVED_PROTECTED; }
   "public"                       { return JsTokenId.RESERVED_PUBLIC; }
-  "short"                        { return JsTokenId.RESERVED_SHORT; }
   "static"                       { return JsTokenId.RESERVED_STATIC; }
-  "super"                        { return JsTokenId.RESERVED_SUPER; }
-  "synchronized"                 { return JsTokenId.RESERVED_SYNCHRONIZED; }
-  "throws"                       { return JsTokenId.RESERVED_THROWS; }
-  "transient"                    { return JsTokenId.RESERVED_TRANSIENT; }
-  "volatile"                     { return JsTokenId.RESERVED_VOLATILE; }
   "yield"                        { return JsTokenId.RESERVED_YIELD; }
+
 
   /* boolean literals */
   "true"                         { return JsTokenId.KEYWORD_TRUE; }
@@ -230,7 +218,7 @@ RegexpCharacter  = [^\r\n/\\]
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"{RegexpCharacter}+"/"{IdentifierPart}*
+  "/"{RegexpFirstCharacter}{RegexpCharacter}+"/"{IdentifierPart}*
                                  {
                                      yypushback(tokenLength - 1);
                                      if (canFollowLiteral()) {
