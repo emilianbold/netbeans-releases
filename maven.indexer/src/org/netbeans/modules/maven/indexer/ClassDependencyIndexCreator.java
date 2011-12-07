@@ -251,8 +251,8 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
         }
     }
 
-    private static Map<String, byte[]> read(File jar) throws IOException {
-        JarFile jf = new JarFile(jar);
+    static Map<String,byte[]> read(File jar) throws IOException {
+        JarFile jf = new JarFile(jar, false);
         try {
             Map<String, byte[]> classfiles = new TreeMap<String, byte[]>();
             Enumeration<JarEntry> e = jf.entries();
@@ -273,6 +273,8 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
                 classfiles.put(clazz, baos.toByteArray());
             }
             return classfiles;
+        } catch (SecurityException x) {
+            throw new IOException(x);
         } finally {
             jf.close();
         }
