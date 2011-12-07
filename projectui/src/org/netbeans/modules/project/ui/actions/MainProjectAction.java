@@ -70,7 +70,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /** Invokes command on the main project.
@@ -82,7 +81,6 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     private String command;
     private ProjectActionPerformer performer;
     private String name;
-    private static final RequestProcessor RP = new RequestProcessor(MainProjectAction.class);
 
     public MainProjectAction(ProjectActionPerformer performer, String name, Icon icon) {
         this( null, performer, name, icon );
