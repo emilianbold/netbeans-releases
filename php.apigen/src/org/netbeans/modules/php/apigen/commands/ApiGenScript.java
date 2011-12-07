@@ -128,10 +128,15 @@ public final class ApiGenScript extends PhpProgram {
                     executionDescriptor,
                     Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()));
             if (status == 0) {
-                File index = new File(target, "index.html"); // NOI18N
-                if (index.isFile()) {
-                    // false for pdf e.g.
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
+                File targetDir = new File(target);
+                if (targetDir.isDirectory()) {
+                    File index = new File(target, "index.html"); // NOI18N
+                    if (index.isFile()) {
+                        // false for pdf e.g.
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
+                    }
+                    // refresh fs
+                    FileUtil.refreshFor(targetDir);
                 }
             }
         } catch (CancellationException ex) {
