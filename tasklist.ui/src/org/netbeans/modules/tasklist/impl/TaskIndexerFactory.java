@@ -42,13 +42,17 @@
 
 package org.netbeans.modules.tasklist.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Iterator;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -94,7 +98,19 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
 
     @Override
     public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
-
+        TaskManagerImpl manager = TaskManagerImpl.getInstance();
+        boolean refresh = false;
+        for (Iterator it = removedRoots.iterator(); it.hasNext();) {
+            URL url = (URL) it.next();
+            final FileObject root = FileUtil.toFileObject(new File(url.getFile()));
+            if (manager.getScope().isInScope(root)) {
+                refresh = true;
+                break;
+            }
+        }
+        if (refresh) {
+            manager.refresh(manager.getScope());
+        }
     }
 
     @Override

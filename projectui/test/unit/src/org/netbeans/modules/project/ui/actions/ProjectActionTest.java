@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -80,6 +79,10 @@ public class ProjectActionTest extends NbTestCase {
     private TestSupport.TestProject project1;
     private TestSupport.TestProject project2;
 
+    @Override protected boolean runInEQ() {
+        return true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -106,13 +109,9 @@ public class ProjectActionTest extends NbTestCase {
         project2 = (TestSupport.TestProject)ProjectManager.getDefault().findProject( p2 );                
     }
 
-    static void assertEnablement(final Action action, final boolean enabled) throws Exception {
+    private static void assertEnablement(final Action action, final boolean enabled) throws Exception {
         LookupSensitiveAction.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
-        EventQueue.invokeAndWait(new Runnable() {
-            public @Override void run() {
-                assertTrue(action.isEnabled() ^ !enabled);
-            }
-        });
+        assertTrue(action.isEnabled() ^ !enabled);
     }
     
     public void testCommandEnablement() throws Exception {
