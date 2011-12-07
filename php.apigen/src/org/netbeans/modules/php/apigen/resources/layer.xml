@@ -47,7 +47,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
             <file name="ApiGen">
                 <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/apigen/apigen.properties"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.apigen.resources.Bundle#LBL_ApiGenExportName"/>
-                <attr name="position" intvalue="240"/>
+                <attr name="position" intvalue="245"/>
             </file>
         </folder>
     </folder>
