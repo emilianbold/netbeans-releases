@@ -128,11 +128,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="ppwTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/hudson/php/ui/options/Bundle.properties" key="HudsonOptionsPanel.ppwTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="ppwBrowseButton">
       <Properties>

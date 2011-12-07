@@ -39,38 +39,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hudson.php.ui.options;
+package org.netbeans.modules.php.apigen.ui.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.hudson.php.commands.PpwScript;
-import org.netbeans.modules.hudson.php.options.HudsonOptions;
-import org.netbeans.modules.hudson.php.options.HudsonOptionsValidator;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.apigen.commands.ApiGenScript;
+import org.netbeans.modules.php.apigen.options.ApiGenOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
- * IDE options controller for Hudson PHP.
+ * IDE options controller for ApiGen.
  */
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
-    id=HudsonOptionsPanelController.OPTIONS_SUBPATH,
+    id=ApiGenOptionsPanelController.OPTIONS_SUBPATH,
     displayName="#LBL_OptionsName",
 //    toolTip="#LBL_OptionsTooltip"
-    position=160
+    position=165
 )
-public class HudsonOptionsPanelController extends OptionsPanelController implements ChangeListener {
+public class ApiGenOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Hudson"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "ApiGen"; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    private HudsonOptionsPanel hudsonOptionsPanel = null;
+    private ApiGenOptionsPanel apiGenOptionsPanel = null;
     private volatile boolean changed = false;
 
 
@@ -80,16 +79,14 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
-        hudsonOptionsPanel.setPpw(getOptions().getPpw());
-        hudsonOptionsPanel.setJobConfig(getOptions().getJobConfig());
+        apiGenOptionsPanel.setApiGen(getOptions().getApiGen());
 
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getOptions().setPpw(hudsonOptionsPanel.getPpw());
-        getOptions().setJobConfig(hudsonOptionsPanel.getJobConfig());
+        getOptions().setApiGen(apiGenOptionsPanel.getApiGen());
 
         changed = false;
     }
@@ -101,20 +98,14 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
     @Override
     public boolean isValid() {
         // warnings
-        String warning = PpwScript.validate(hudsonOptionsPanel.getPpw());
+        String warning = ApiGenScript.validate(apiGenOptionsPanel.getApiGen());
         if (warning != null) {
-            hudsonOptionsPanel.setWarning(warning);
-            return true;
-        }
-
-        warning = HudsonOptionsValidator.validateJobConfig(hudsonOptionsPanel.getJobConfig());
-        if (warning != null) {
-            hudsonOptionsPanel.setWarning(warning);
+            apiGenOptionsPanel.setWarning(warning);
             return true;
         }
 
         // everything ok
-        hudsonOptionsPanel.setError(" "); // NOI18N
+        apiGenOptionsPanel.setError(" "); // NOI18N
         return true;
     }
 
@@ -125,16 +116,16 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
-        if (hudsonOptionsPanel == null) {
-            hudsonOptionsPanel = new HudsonOptionsPanel();
-            hudsonOptionsPanel.addChangeListener(this);
+        if (apiGenOptionsPanel == null) {
+            apiGenOptionsPanel = new ApiGenOptionsPanel();
+            apiGenOptionsPanel.addChangeListener(this);
         }
-        return hudsonOptionsPanel;
+        return apiGenOptionsPanel;
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.hudson.php.ui.options.Options"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.php.apigen.ui.options.Options"); // NOI18N
     }
 
     @Override
@@ -156,8 +147,8 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private HudsonOptions getOptions() {
-        return HudsonOptions.getInstance();
+    private ApiGenOptions getOptions() {
+        return ApiGenOptions.getInstance();
     }
 
 }
