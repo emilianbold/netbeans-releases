@@ -69,9 +69,9 @@ public enum JsTokenId implements TokenId {
     STRING(null, "string"), // NOI18N
     STRING_END(null, "string"), // NOI18N
 
-    REGEXP_BEGIN(null, "string"), // NOI18N
-    REGEXP(null, "string"), // NOI18N
-    REGEXP_END(null, "string"), // NOI18N
+    REGEXP_BEGIN(null, "mod-regexp"), // NOI18N
+    REGEXP(null, "mod-regexp"), // NOI18N
+    REGEXP_END(null, "mod-regexp"), // NOI18N
 
     BRACKET_LEFT_PAREN("(", "bracket"), // NOI18N
     BRACKET_RIGHT_PAREN(")", "bracket"), // NOI18N
