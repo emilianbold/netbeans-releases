@@ -61,7 +61,7 @@ public final class ApiGenProvider extends PhpDocProvider {
 
     @NbBundle.Messages("ApiGenProvider.name=ApiGen")
     private ApiGenProvider() {
-        super("apiGen", Bundle.ApiGenProvider_name()); // NOI18N
+        super("ApiGen", Bundle.ApiGenProvider_name()); // NOI18N
     }
 
     @PhpDocProvider.Registration(position=90)
