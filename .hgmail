@@ -2,7 +2,7 @@
 ant-commits@projects.netbeans.org=o.apache.tools.ant.module*/*,ant.*/*,project.ant/*
 au-commits@platform.netbeans.org=autoupdate.*/*
 commits@apisupport.netbeans.org=*apisupport*/*,timers/*
-commits@cnd.netbeans.org=cnd*/*,lib.terminalemulator/*,terminal/*,dlight*/*
+commits@cnd.netbeans.org=cnd*/*,lib.terminalemulator/*,terminal/*,dlight*/*,remotefs.versioning/*
 commits@db.netbeans.org=db*/*,derby/*
 commits@debugger.netbeans.org=spi.debugger*/*,api.debugger*/*,spi.viewmodel/*,debugger.jpda*/*
 commits@editor.netbeans.org=editor*/*,options.editor/*,spi.editor.hints/*,parsing.api/*,csl.api/*,lexer*/*,spellchecker*/*,jumpto/*,refactoring.api/*
