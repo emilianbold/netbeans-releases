@@ -114,19 +114,11 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
     @NbBundle.Messages({
         "ApiGenPanel.error.invalidTitle=Title must be provided.",
-        "ApiGenPanel.warn.nbWillAskForDir=NetBeans will ask for the directory before generating documentation."
+        "ApiGenPanel.warn.nbWillAskForDir=NetBeans will ask for the directory before generating documentation.",
+        "ApiGenPanel.warn.targetDirWillBeCreated=Target directory will be created."
     })
     void validateData() {
         // errors
-        String target = getTarget();
-        if (StringUtils.hasText(target)) {
-            String error = FileUtils.validateDirectory(getTarget(), true);
-            if (error != null) {
-                category.setErrorMessage(error);
-                category.setValid(false);
-                return;
-            }
-        }
         if (!StringUtils.hasText(getTitle())) {
             category.setErrorMessage(Bundle.ApiGenPanel_error_invalidTitle());
             category.setValid(false);
@@ -135,8 +127,21 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         // warnings
         String warning = null;
+        String target = getTarget();
         if (!StringUtils.hasText(target)) {
             warning = Bundle.ApiGenPanel_warn_nbWillAskForDir();
+        } else {
+            if (!new File(target).exists()) {
+                warning = Bundle.ApiGenPanel_warn_targetDirWillBeCreated();
+            } else {
+                // file exists, validate it
+                String error = FileUtils.validateDirectory(target, true);
+                if (error != null) {
+                    category.setErrorMessage(error);
+                    category.setValid(false);
+                    return;
+                }
+            }
         }
 
         category.setErrorMessage(warning);
