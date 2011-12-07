@@ -61,7 +61,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
- * Top level main Versioninng menu.
+ * Top level main Versioning menu.
  * 
  * @author Maros Sandor
  */
