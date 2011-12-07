@@ -116,7 +116,7 @@ public final class ApiGenScript extends PhpProgram {
                 .addArgument("-d") // NOI18N
                 .addArgument(target)
                 // title
-                .addArgument("-title") // NOI18N
+                .addArgument("--title") // NOI18N
                 .addArgument(ApiGenPreferences.getTitle(phpModule));
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .frontWindow(false)
