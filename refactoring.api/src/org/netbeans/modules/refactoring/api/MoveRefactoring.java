@@ -58,7 +58,7 @@ import org.openide.util.Parameters;
  * @see AbstractRefactoring
  * @see RefactoringSession
  * @author Jan Becicka
- */
+  */
 public final class MoveRefactoring extends AbstractRefactoring {
 
     private Lookup target;
@@ -70,6 +70,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
      *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
      *   <tr><td>Refactoring API (Default impl.)</td><td>{@link org.openide.filesystems.FileObject}(s)</td><td>Does file(s) move</td></tr>
      *   <tr><td>Java Refactoring</td><td>{@link org.openide.filesystems.FileObject}(s) with content type text/x-java</td><td>Does refactoring inside .java files</td></tr>
+     *   <tr><td></td><td>{@link org.netbeans.api.java.source.TreePathHandle}(s)</td><td>Does refactoring of members in .java files</td></tr>
      * </table>
      * @param objectsToMove store your objects into Lookup
      */
@@ -86,6 +87,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
      *        <td>Creates directory corresponding to specified {@link java.net.URL} if does not 
      *            exist and moves all FileObjects into this folder.</td></tr>
      *   <tr><td>Java Refactoring</td><td>{@link java.net.URL}</td><td>Does move refactoring inside .java files</td></tr>
+     *   <tr><td></td><td>{@link org.netbeans.api.java.source.TreePathHandle}</td><td>Does refactoring of members in .java files</td></tr>
      * </table>
      * @param target
      */
