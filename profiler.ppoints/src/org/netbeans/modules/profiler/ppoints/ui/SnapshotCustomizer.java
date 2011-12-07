@@ -76,30 +76,21 @@ import javax.swing.event.DocumentListener;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "SnapshotCustomizer_TakeLabelText=Take\\:",
+    "SnapshotCustomizer_ProfilingDataRadioText=Profiling &data snapshot",
+    "SnapshotCustomizer_HeapDumpRadioText=He&ap dump",
+    "SnapshotCustomizer_SaveLabelText=Save\\:",
+    "SnapshotCustomizer_ToProjectRadioText=To &project",
+    "SnapshotCustomizer_ToDirectoryRadioText=To direc&tory\\:",
+    "SnapshotCustomizer_BrowseButtonText=Brow&se...",
+    "SnapshotCustomizer_ResetResultsCheckboxText=&Reset results after taking snapshot",
+    "SnapshotCustomizer_SelectSnapshotDialogCaption=Select Snapshot Directory",
+    "SnapshotCustomizer_SaveFieldAccessName=Directory where snapshot should be saved"
+})
 public class SnapshotCustomizer extends ValidityAwarePanel implements ActionListener, ChangeListener, DocumentListener {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String TAKE_LABEL_TEXT = NbBundle.getMessage(SnapshotCustomizer.class, "SnapshotCustomizer_TakeLabelText"); // NOI18N
-    private static final String PROFILING_DATA_RADIO_TEXT = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                                "SnapshotCustomizer_ProfilingDataRadioText"); // NOI18N
-    private static final String HEAPDUMP_RADIO_TEXT = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                          "SnapshotCustomizer_HeapDumpRadioText"); // NOI18N
-    private static final String SAVE_LABEL_TEXT = NbBundle.getMessage(SnapshotCustomizer.class, "SnapshotCustomizer_SaveLabelText"); // NOI18N
-    private static final String TO_PROJECT_RADIO_TEXT = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                            "SnapshotCustomizer_ToProjectRadioText"); // NOI18N
-    private static final String TO_DIRECTORY_RADIO_TEXT = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                              "SnapshotCustomizer_ToDirectoryRadioText"); // NOI18N
-    private static final String BROWSE_BUTTON_TEXT = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                         "SnapshotCustomizer_BrowseButtonText"); // NOI18N
-    private static final String RESET_RESULTS_CHECKBOX_TEXT = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                                  "SnapshotCustomizer_ResetResultsCheckboxText"); // NOI18N
-    private static final String SELECT_SNAPSHOT_DIALOG_CAPTION = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                                     "SnapshotCustomizer_SelectSnapshotDialogCaption"); // NOI18N
-    private static final String SAVE_FIELD_ACCESS_NAME = NbBundle.getMessage(SnapshotCustomizer.class,
-                                                                             "SnapshotCustomizer_SaveFieldAccessName"); // NOI18N
-                                                                                                                        // -----
     private static int defaultTextComponentHeight = -1;
     private static JFileChooser fileChooser;
 
@@ -266,7 +257,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setMultiSelectionEnabled(false);
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(SELECT_SNAPSHOT_DIALOG_CAPTION);
+            chooser.setDialogTitle(Bundle.SnapshotCustomizer_SelectSnapshotDialogCaption());
             fileChooser = chooser;
         }
 
@@ -283,7 +274,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
         GridBagConstraints constraints;
 
         // takeLabel
-        takeLabel = new JLabel(TAKE_LABEL_TEXT);
+        takeLabel = new JLabel(Bundle.SnapshotCustomizer_TakeLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -306,7 +297,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
 
         // takeSnapshotRadio
         takeSnapshotRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(takeSnapshotRadio, PROFILING_DATA_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(takeSnapshotRadio, Bundle.SnapshotCustomizer_ProfilingDataRadioText());
         takeRadiosGroup.add(takeSnapshotRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -323,7 +314,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
 
         // takeHeapdumpRadio
         takeHeapdumpRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(takeHeapdumpRadio, HEAPDUMP_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(takeHeapdumpRadio, Bundle.SnapshotCustomizer_HeapDumpRadioText());
         takeRadiosGroup.add(takeHeapdumpRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -359,7 +350,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
         ButtonGroup saveRadiosGroup = new ButtonGroup();
 
         // lineLabel
-        saveLabel = new JLabel(SAVE_LABEL_TEXT);
+        saveLabel = new JLabel(Bundle.SnapshotCustomizer_SaveLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -379,7 +370,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
 
         // saveToProjectRadio
         saveToProjectRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(saveToProjectRadio, TO_PROJECT_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(saveToProjectRadio, Bundle.SnapshotCustomizer_ToProjectRadioText());
         saveRadiosGroup.add(saveToProjectRadio);
         saveToProjectRadio.addChangeListener(this);
         constraints.gridx = 2;
@@ -413,7 +404,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
 
         // saveToFileRadio
         saveToFileRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(saveToFileRadio, TO_DIRECTORY_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(saveToFileRadio, Bundle.SnapshotCustomizer_ToDirectoryRadioText());
         saveRadiosGroup.add(saveToFileRadio);
         saveToFileRadio.setSelected(true);
         saveToFileRadio.addChangeListener(this);
@@ -435,8 +426,8 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
                     return getPreferredSize();
                 }
             };
-        saveToFileField.getAccessibleContext().setAccessibleName(TO_DIRECTORY_RADIO_TEXT);
-        saveToFileField.getAccessibleContext().setAccessibleDescription(SAVE_FIELD_ACCESS_NAME);
+        saveToFileField.getAccessibleContext().setAccessibleName(Bundle.SnapshotCustomizer_ToDirectoryRadioText());
+        saveToFileField.getAccessibleContext().setAccessibleDescription(Bundle.SnapshotCustomizer_SaveFieldAccessName());
         saveToFileField.getDocument().addDocumentListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -449,7 +440,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
 
         // saveToFileButton
         saveToFileButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(saveToFileButton, BROWSE_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(saveToFileButton, Bundle.SnapshotCustomizer_BrowseButtonText());
         saveToFileButton.addActionListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -471,7 +462,7 @@ public class SnapshotCustomizer extends ValidityAwarePanel implements ActionList
 
         // --- next row ----------------------------------------------------------
         resetResultsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(resetResultsCheckbox, RESET_RESULTS_CHECKBOX_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(resetResultsCheckbox, Bundle.SnapshotCustomizer_ResetResultsCheckboxText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 3;

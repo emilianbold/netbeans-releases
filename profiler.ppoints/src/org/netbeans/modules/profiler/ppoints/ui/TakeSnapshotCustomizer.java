@@ -75,18 +75,14 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TakeSnapshotCustomizer_NameLabelText=&Name\\:",
+    "TakeSnapshotCustomizer_SettingsLabelText=Settings",
+    "TakeSnapshotCustomizer_LocationLabelText=Location"
+})
 public class TakeSnapshotCustomizer extends ValidityAwarePanel implements DocumentListener, ValidityListener, HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String NAME_LABEL_TEXT = NbBundle.getMessage(TakeSnapshotCustomizer.class,
-                                                                      "TakeSnapshotCustomizer_NameLabelText"); // NOI18N
-    private static final String SETTINGS_LABEL_TEXT = NbBundle.getMessage(TakeSnapshotCustomizer.class,
-                                                                          "TakeSnapshotCustomizer_SettingsLabelText"); // NOI18N
-    private static final String LOCATION_LABEL_TEXT = NbBundle.getMessage(TakeSnapshotCustomizer.class,
-                                                                          "TakeSnapshotCustomizer_LocationLabelText"); // NOI18N
-                                                                                                                       // -----
     private static final String HELP_CTX_KEY = "TakeSnapshotCustomizer.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static int defaultTextComponentHeight = -1;
@@ -213,7 +209,7 @@ public class TakeSnapshotCustomizer extends ValidityAwarePanel implements Docume
 
         // nameLabel
         nameLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NAME_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, Bundle.TakeSnapshotCustomizer_NameLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -259,7 +255,7 @@ public class TakeSnapshotCustomizer extends ValidityAwarePanel implements Docume
         JPanel settingsHeaderContainer = new JPanel(new GridBagLayout());
 
         // settingsHeaderLabel
-        settingsHeaderLabel = new JLabel(SETTINGS_LABEL_TEXT);
+        settingsHeaderLabel = new JLabel(Bundle.TakeSnapshotCustomizer_SettingsLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -311,7 +307,7 @@ public class TakeSnapshotCustomizer extends ValidityAwarePanel implements Docume
         JPanel locationHeaderContainer = new JPanel(new GridBagLayout());
 
         // locationHeaderLabel
-        locationHeaderLabel = new JLabel(LOCATION_LABEL_TEXT);
+        locationHeaderLabel = new JLabel(Bundle.TakeSnapshotCustomizer_LocationLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;

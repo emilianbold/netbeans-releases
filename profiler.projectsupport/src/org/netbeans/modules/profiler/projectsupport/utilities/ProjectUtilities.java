@@ -129,6 +129,9 @@ public class ProjectUtilities {
         return false;
     }
 
+    @NbBundle.Messages({
+        "ProjectUtilities_FailedCreateOutputFolderMsg=Failed to create build output folder\\: {0}"
+    })
     public static FileObject getOrCreateBuildFolder(Project project, String buildDirProp) {
         FileObject buildDir = FileUtil.toFileObject(PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()),
                 buildDirProp));
@@ -138,8 +141,7 @@ public class ProjectUtilities {
                 // TODO: if buildDirProp is absolute, relativize via PropertyUtils
                 buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
             } catch (IOException e) {
-                MessageFormat.format(NbBundle.getMessage(ProjectUtilities.class, "FailedCreateOutputFolderMsg"),
-                        new Object[]{e.getMessage()                        }); // NOI18N
+                Bundle.ProjectUtilities_FailedCreateOutputFolderMsg(e.getMessage());
 
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
 

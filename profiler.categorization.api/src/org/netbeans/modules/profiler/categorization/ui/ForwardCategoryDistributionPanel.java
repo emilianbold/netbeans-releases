@@ -80,6 +80,12 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "ForwardCategoryDistributionPanel_NoMethodLabelText=No method selected",
+    "ForwardCategoryDistributionPanel_NoDataLabelText=No data available",
+    "ForwardCategoryDistributionPanel_MethodCategoriesString=Method categories",
+    "ForwardCategoryDistributionPanel_DescrString=Shows a per category distribution of the time spent in the selected method"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule.class)
 public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
@@ -223,23 +229,9 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String NO_METHOD_LABEL_TEXT = NbBundle.getMessage(ForwardCategoryDistributionPanel.class,
-                                                                           "ForwardCategoryDistributionPanel_NoMethodLabelText"); // NOI18N
-    private static final String NO_DATA_LABEL_TEXT = NbBundle.getMessage(ForwardCategoryDistributionPanel.class,
-                                                                         "ForwardCategoryDistributionPanel_NoDataLabelText"); // NOI18N
-    private static final String METHOD_CATEGORIES_STRING = NbBundle.getMessage(ForwardCategoryDistributionPanel.class,
-                                                                               "ForwardCategoryDistributionPanel_MethodCategoriesString"); // NOI18N
-    private static final String DESCR_STRING = NbBundle.getMessage(ForwardCategoryDistributionPanel.class,
-                                                                   "ForwardCategoryDistributionPanel_DescrString"); // NOI18N
-                                                                                                                    // -----
-
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
-    private JLabel noData = new JLabel(NO_DATA_LABEL_TEXT);
-    private JLabel noMethods = new JLabel(NO_METHOD_LABEL_TEXT);
+    private JLabel noData = new JLabel(Bundle.ForwardCategoryDistributionPanel_NoDataLabelText());
+    private JLabel noMethods = new JLabel(Bundle.ForwardCategoryDistributionPanel_NoMethodLabelText());
     private Model model;
     private RuntimeCPUCCTNode lastAppNode;
     
@@ -289,8 +281,8 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         noData.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0), noData.getBorder()));
 
         add(noMethods);
-        setName(METHOD_CATEGORIES_STRING);
-        setToolTipText(DESCR_STRING);
+        setName(Bundle.ForwardCategoryDistributionPanel_MethodCategoriesString());
+        setToolTipText(Bundle.ForwardCategoryDistributionPanel_DescrString());
 
         //    setPreferredSize(new Dimension(60, 10));
     }

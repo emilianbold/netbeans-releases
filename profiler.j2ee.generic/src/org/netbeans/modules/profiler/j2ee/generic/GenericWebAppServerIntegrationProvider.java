@@ -45,13 +45,12 @@ package org.netbeans.modules.profiler.j2ee.generic;
 
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvider;
 import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
 import org.netbeans.modules.profiler.attach.wizard.steps.WizardStep;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -59,38 +58,23 @@ import org.netbeans.modules.profiler.attach.wizard.steps.WizardStep;
  * @author Tomas Hurka
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "GenericWebAppServerIntegrationProvider_GenericWebappServerString=Generic Web/App Server",
+    "GenericWebAppServerIntegrationProvider_PathToJdkDirectory=path to {0} directory",
+    "GenericWebAppServerIntegrationProvider_ManualRemoteStep3Message=If the server is configured to run on a different JVM, set the server to run on {0}. This typically means changing the system/environment variable <code>JAVA_HOME</code> as follows\\:<br><code>{1}</code>",
+    "GenericWebAppServerIntegrationProvider_ManualRemoteStep4Message=When starting the server, provide extra startup option to the <code>java</code> command\\:<br><code>{0}</code><br>The {1}.",
+    "GenericWebAppServerIntegrationProvider_ManualRemoteStep5Message=The JVM will start, but will not proceed with server execution until you connect the profiler.",
+    "GenericWebAppServerIntegrationProvider_ManualDirectStep1Message=If the server is configured to run on a different JVM, set the server to run on {0}. This typically means the changing system/environment variable <code>JAVA_HOME</code> as follows\\:<br><code>{1}</code>",
+    "GenericWebAppServerIntegrationProvider_ManualDirectStep2Message=When starting the server, provide extra startup option to the <code>java</code> command\\:<br><code>{0}</code>",
+    "GenericWebAppServerIntegrationProvider_ManualDirectStep3Message=The JVM will start, but will not proceed with server execution until you connect the profiler.",
+    "GenericWebAppServerIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}.",
+    "GenericWebAppServerIntegrationProvider_ManualDynamicStep1Message=Start the server using {0}.",
+    "GenericWebAppServerIntegrationProvider_ManualDynamicStep2Message=When the server is running, click Attach to select the server process to attach to."
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationProvider {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    private static final String GENERIC_WEBAPP_SERVER_STRING;
-    private static final String PATH_TO_JDK_DIRECTORY_STRING;
-    private static final String MANUAL_REMOTE_STEP3_MESSAGE;
-    private static final String MANUAL_REMOTE_STEP4_MESSAGE;
-    private static final String MANUAL_REMOTE_STEP5_MESSAGE;
-    private static final String MANUAL_DIRECT_STEP1_MESSAGE;
-    private static final String MANUAL_DIRECT_STEP2_MESSAGE;
-    private static final String MANUAL_DIRECT_STEP3_MESSAGE;
-    private static final String MANUAL_DYNAMIC_STEP1_MESSAGE;
-    private static final String MANUAL_DYNAMIC_STEP2_MESSAGE;
-    private static final String DYNAMIC_WARNING_MESSAGE;
     private static final WizardStep NULL_WIZARD_STEP = new NullWizardStep();
     
-    static {
-        ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.generic.Bundle"); // NOI18N
-        GENERIC_WEBAPP_SERVER_STRING = messages.getString("GenericWebAppServerIntegrationProvider_GenericWebappServerString"); // NOI18N
-        PATH_TO_JDK_DIRECTORY_STRING = messages.getString("GenericWebAppServerIntegrationProvider_PathToJdkDirectory"); // NOI18N
-        MANUAL_REMOTE_STEP3_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
-        MANUAL_REMOTE_STEP4_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep4Message"); // NOI18N
-        MANUAL_REMOTE_STEP5_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep5Message"); // NOI18N
-        MANUAL_DIRECT_STEP1_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep1Message"); // NOI18N
-        MANUAL_DIRECT_STEP2_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep2Message"); // NOI18N
-        MANUAL_DIRECT_STEP3_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep3Message"); // NOI18N
-        MANUAL_DYNAMIC_STEP1_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDynamicStep1Message"); // NOI18N
-        MANUAL_DYNAMIC_STEP2_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDynamicStep2Message"); // NOI18N
-        DYNAMIC_WARNING_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-    }
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public IntegrationProvider.IntegrationHints getAfterInstallationHints(AttachSettings attachSettings, boolean b) {
@@ -124,7 +108,7 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
     }
 
     public String getTitle() {
-        return GENERIC_WEBAPP_SERVER_STRING;
+        return Bundle.GenericWebAppServerIntegrationProvider_GenericWebappServerString();
     }
 
     public void categorize(IntegrationCategorizer integrationCategorizer) {
@@ -174,27 +158,28 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        String pathToJDKDirectory = "&lt;"
-                                    + MessageFormat.format(PATH_TO_JDK_DIRECTORY_STRING,
-                                                           new Object[] { IntegrationUtils.getJavaPlatformName(getTargetJava()) })
+        String pathToJDKDirectory = "&lt;" // NOI18N
+                                    + Bundle.GenericWebAppServerIntegrationProvider_PathToJdkDirectory(
+                                        IntegrationUtils.getJavaPlatformName(getTargetJava()))
                                     + "&gt;"; // NOI18N
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP1_MESSAGE,
-                                                  new Object[] {
-                                                      IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                      IntegrationUtils.getExportEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                       pathToJDKDirectory, true)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualDirectStep1Message(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                                IntegrationUtils.getExportEnvVariableValueString(
+                                    targetOS, 
+                                    "JAVA_HOME", // NOI18N
+                                    pathToJDKDirectory, 
+                                    true))); // NOI18N
 
         // Step 2
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MESSAGE,
-                                                  new Object[] {
-                                                      IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                       attachSettings.isRemote(),
-                                                                                                       attachSettings.getPort())
-                                                  }));
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualDirectStep2Message(
+                                IntegrationUtils.getProfilerAgentCommandLineArgs(
+                                    targetOS, 
+                                    getTargetJava(),
+                                    attachSettings.isRemote(),
+                                    attachSettings.getPort())));
 
         // Step 3
-        instructions.addStep(MANUAL_DIRECT_STEP3_MESSAGE);
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualDirectStep3Message());
 
         // Note about spaces in path when starting Profiler agent
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
@@ -217,10 +202,10 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP1_MESSAGE,
-                                                  new Object[] { IntegrationUtils.getJavaPlatformName(getTargetJava()) }));
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualDynamicStep1Message(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava())));
         // Step 2
-        instructions.addStep(MANUAL_DYNAMIC_STEP2_MESSAGE);
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualDynamicStep2Message());
 
         // Note about spaces in path when starting Profiler agent
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
@@ -235,14 +220,8 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
             instructions.addHint(EXPORT_SETENV_MSG);
         }
 
-        instructions.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                     new Object[] {
-                                                         IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                         IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                          getTargetJava(),
-                                                                                                          attachSettings.isRemote(),
-                                                                                                          attachSettings.getPort())
-                                                     }));
+        instructions.addWarning(Bundle.GenericWebAppServerIntegrationProvider_DynamicWarningMessage(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return instructions;
     }
@@ -259,28 +238,29 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
         instructions.addStep(getManualRemoteStep2(targetOS));
 
         // Step 3
-        String pathToJDKDirectory = "&lt;"
-                                    + MessageFormat.format(PATH_TO_JDK_DIRECTORY_STRING,
-                                                           new Object[] { IntegrationUtils.getJavaPlatformName(getTargetJava()) })
+        String pathToJDKDirectory = "&lt;" // NOI18N
+                                    + Bundle.GenericWebAppServerIntegrationProvider_PathToJdkDirectory(
+                                        IntegrationUtils.getJavaPlatformName(getTargetJava()))
                                     + "&gt;"; // NOI18N
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP3_MESSAGE,
-                                                  new Object[] {
-                                                      IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                      IntegrationUtils.getExportEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                                                       pathToJDKDirectory, true)
-                                                  })); // NOI18N
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualRemoteStep3Message(
+                                IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                                IntegrationUtils.getExportEnvVariableValueString(
+                                    targetOS, 
+                                    "JAVA_HOME", // NOI18N
+                                    pathToJDKDirectory, 
+                                    true)));
 
         // Step 4
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_MESSAGE,
-                                                  new Object[] {
-                                                      IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                       attachSettings.isRemote(),
-                                                                                                       attachSettings.getPort()),
-                                                      REMOTE_ABSOLUTE_PATH_HINT
-                                                  }));
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualRemoteStep4Message(
+                                IntegrationUtils.getProfilerAgentCommandLineArgs(
+                                    targetOS, 
+                                    getTargetJava(),
+                                    attachSettings.isRemote(),
+                                    attachSettings.getPort()),
+                                REMOTE_ABSOLUTE_PATH_HINT));
 
         // Step 5
-        instructions.addStep(MANUAL_REMOTE_STEP5_MESSAGE);
+        instructions.addStep(Bundle.GenericWebAppServerIntegrationProvider_ManualRemoteStep5Message());
 
         // Note about spaces in path when starting Profiler agent
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {

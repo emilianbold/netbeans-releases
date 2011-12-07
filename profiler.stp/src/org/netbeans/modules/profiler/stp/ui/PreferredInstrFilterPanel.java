@@ -67,6 +67,13 @@ import javax.swing.SwingUtilities;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "PreferredInstrFilterPanel_ToQuickFilterString=To &QuickFilter",
+    "PreferredInstrFilterPanel_ToQuickFilterAccessDescr=Sets the current filters to QuickFilter and opens them in that dialog.",
+    "PreferredInstrFilterPanel_CloseButtonString=Close",
+    "PreferredInstrFilterPanel_PreferredPackagesCaption=Only methods from these classes/packages will be profiled\\:",
+    "PreferredInstrFilterPanel_ComputingFilterString=Computing filter..."
+})
 public class PreferredInstrFilterPanel extends JPanel {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -90,19 +97,6 @@ public class PreferredInstrFilterPanel extends JPanel {
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String TO_QUICKFILTER_STRING = NbBundle.getMessage(PreferredInstrFilterPanel.class,
-                                                                            "PreferredInstrFilterPanel_ToQuickFilterString"); //NOI18N
-    private static final String TO_QUICKFILTER_ACCESS_DESCR = NbBundle.getMessage(PreferredInstrFilterPanel.class,
-                                                                                  "PreferredInstrFilterPanel_ToQuickFilterAccessDescr"); //NOI18N
-    private static final String CLOSE_BUTTON_STRING = NbBundle.getMessage(PreferredInstrFilterPanel.class,
-                                                                          "PreferredInstrFilterPanel_CloseButtonString"); //NOI18N
-    private static final String PREFERRED_PACKAGES_CAPTION = NbBundle.getMessage(PreferredInstrFilterPanel.class,
-                                                                                 "PreferredInstrFilterPanel_PreferredPackagesCaption"); //NOI18N
-    private static final String COMPUTING_FILTER_STRING = NbBundle.getMessage(PreferredInstrFilterPanel.class,
-                                                                              "PreferredInstrFilterPanel_ComputingFilterString"); //NOI18N
-                                                                                                                                  // -----
     private static PreferredInstrFilterPanel defaultInstance;
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
@@ -134,7 +128,7 @@ public class PreferredInstrFilterPanel extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     OPEN_IN_QUICKFILTER_BUTTON.setEnabled(false);
-                    packagesArea.setText(COMPUTING_FILTER_STRING);
+                    packagesArea.setText(Bundle.PreferredInstrFilterPanel_ComputingFilterString());
 
                     // Compute filters in worker thread
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -189,10 +183,10 @@ public class PreferredInstrFilterPanel extends JPanel {
 
     private void initComponents() {
         OPEN_IN_QUICKFILTER_BUTTON = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(OPEN_IN_QUICKFILTER_BUTTON, TO_QUICKFILTER_STRING);
-        OPEN_IN_QUICKFILTER_BUTTON.getAccessibleContext().setAccessibleDescription(TO_QUICKFILTER_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(OPEN_IN_QUICKFILTER_BUTTON, Bundle.PreferredInstrFilterPanel_ToQuickFilterString());
+        OPEN_IN_QUICKFILTER_BUTTON.getAccessibleContext().setAccessibleDescription(Bundle.PreferredInstrFilterPanel_ToQuickFilterAccessDescr());
         CLOSE_BUTTON = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(CLOSE_BUTTON, CLOSE_BUTTON_STRING);
+        org.openide.awt.Mnemonics.setLocalizedText(CLOSE_BUTTON, Bundle.PreferredInstrFilterPanel_CloseButtonString());
 
         label = new JLabel();
         packagesArea = new HTMLTextArea();
@@ -202,7 +196,7 @@ public class PreferredInstrFilterPanel extends JPanel {
         setLayout(new GridBagLayout());
 
         label.setLabelFor(packagesArea);
-        org.openide.awt.Mnemonics.setLocalizedText(label, PREFERRED_PACKAGES_CAPTION);
+        org.openide.awt.Mnemonics.setLocalizedText(label, Bundle.PreferredInstrFilterPanel_PreferredPackagesCaption());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

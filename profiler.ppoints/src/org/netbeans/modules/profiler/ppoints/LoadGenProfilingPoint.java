@@ -78,6 +78,25 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "LoadGenProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
+    "LoadGenProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
+    "LoadGenProfilingPoint_NoResultsString=No results available",
+    "LoadGenProfilingPoint_AnnotationStartString={0} (start)",
+    "LoadGenProfilingPoint_AnnotationEndString={0} (end)",
+    "LoadGenProfilingPoint_ReportAccessDescr=Report of {0}",
+    "LoadGenProfilingPoint_NoHitsString=no hits",
+    "LoadGenProfilingPoint_HeaderTypeString=<b>Type\\:</b> {0}",
+    "LoadGenProfilingPoint_HeaderEnabledString=<b>Enabled\\:</b> {0}",
+    "LoadGenProfilingPoint_HeaderProjectString=<b>Project\\:</b> {0}",
+    "LoadGenProfilingPoint_HeaderLocationString=<b>Location\\:</b> {0}, line {1}",
+    "LoadGenProfilingPoint_HeaderStartLocationString=<b>Start location\\:</b> {0}, line {1}",
+    "LoadGenProfilingPoint_HeaderEndLocationString=<b>End location\\:</b> {0}, line {1}",
+    "LoadGenProfilingPoint_HeaderHitsString=<b>Hits\\:</b> {0}",
+    "LoadGenProfilingPoint_HitSuccessString=<b>{0}.</b> hit at <b>{1}</b>",
+    "LoadGenProfilingPoint_HitFailedString=<b>{0}.</b> hit at <b>{1}</b>, <b>action failed!</b>",
+    "LoadGenProfilingPoint_DataString=Data\\:"
+})
 public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -105,8 +124,8 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
                 return getName();
             }
 
-            return isStartAnnotation ? MessageFormat.format(ANNOTATION_START_STRING, new Object[] { getName() })
-                                     : MessageFormat.format(ANNOTATION_END_STRING, new Object[] { getName() });
+            return isStartAnnotation ? Bundle.LoadGenProfilingPoint_AnnotationStartString(getName())
+                                     : Bundle.LoadGenProfilingPoint_AnnotationEndString(getName());
         }
 
         @Override
@@ -228,7 +247,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
 
             synchronized(resultsSync) {
                 if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.LoadGenProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
                 } else {
                     if (results.size() > 1) {
                         Collections.sort(results,
@@ -253,7 +272,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         void refreshProperties() {
             setName(LoadGenProfilingPoint.this.getName());
             setIcon(((ImageIcon) LoadGenProfilingPoint.this.getFactory().getIcon()).getImage());
-            getAccessibleContext().setAccessibleDescription(MessageFormat.format(REPORT_ACCESS_DESCR, new Object[] { getName() }));
+            getAccessibleContext().setAccessibleDescription(Bundle.LoadGenProfilingPoint_ReportAccessDescr(getName()));
         }
 
         private String getDataResultItem(int index) {
@@ -269,9 +288,9 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
                 //      if (!LoadGenProfilingPoint.this.usesEndLocation()) {
                 //return "<b>" + (index + 1) + ".</b> hit at <b>" + hitTime + "</b> by " + threadInformation;
                 if (result.isSuccess()) {
-                    return MessageFormat.format(HIT_SUCCESS_STRING, new Object[] { (index + 1), hitTime });
+                    return Bundle.LoadGenProfilingPoint_HitSuccessString((index + 1), hitTime);
                 } else {
-                    return MessageFormat.format(HIT_FAILED_STRING, new Object[] { (index + 1), hitTime });
+                    return Bundle.LoadGenProfilingPoint_HitFailedString((index + 1), hitTime);
                 }
 
                 //      } else if (result.getEndTimestamp() == -1) {
@@ -285,7 +304,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         }
 
         private String getHeaderEnabled() {
-            return MessageFormat.format(HEADER_ENABLED_STRING, new Object[] { LoadGenProfilingPoint.this.isEnabled() });
+            return Bundle.LoadGenProfilingPoint_HeaderEnabledString(LoadGenProfilingPoint.this.isEnabled());
         }
 
         private String getHeaderEndLocation() {
@@ -295,13 +314,13 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
             int lineNumber = location.getLine();
             String locationUrl = "<a href='" + END_LOCATION_URLMASK + "'>"; // NOI18N
 
-            return MessageFormat.format(HEADER_END_LOCATION_STRING, new Object[] { locationUrl + shortFileName, lineNumber })
+            return Bundle.LoadGenProfilingPoint_HeaderEndLocationString(locationUrl + shortFileName, lineNumber)
                    + "</a>"; // NOI18N
         }
 
         private String getHeaderHitsCount() {
             synchronized(resultsSync) {
-                return MessageFormat.format(HEADER_HITS_STRING, new Object[] { results.size() });
+                return Bundle.LoadGenProfilingPoint_HeaderHitsString(results.size());
             }
         }
 
@@ -310,10 +329,8 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         }
 
         private String getHeaderProject() {
-            return MessageFormat.format(HEADER_PROJECT_STRING,
-                                        new Object[] {
-                                            ProjectUtilities.getDisplayName(LoadGenProfilingPoint.this.getProject())
-                                        });
+            return Bundle.LoadGenProfilingPoint_HeaderProjectString(
+                        ProjectUtilities.getDisplayName(LoadGenProfilingPoint.this.getProject()));
         }
 
         private String getHeaderStartLocation() {
@@ -324,14 +341,14 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
             String locationUrl = "<a href='" + START_LOCATION_URLMASK + "'>"; // NOI18N
 
             return LoadGenProfilingPoint.this.usesEndLocation()
-                   ? (MessageFormat.format(HEADER_START_LOCATION_STRING, new Object[] { locationUrl + shortFileName, lineNumber })
+                   ? (Bundle.LoadGenProfilingPoint_HeaderStartLocationString(locationUrl + shortFileName, lineNumber)
                    + "</a>")
-                   : (MessageFormat.format(HEADER_LOCATION_STRING, new Object[] { locationUrl + shortFileName, lineNumber })
+                   : (Bundle.LoadGenProfilingPoint_HeaderLocationString(locationUrl + shortFileName, lineNumber)
                    + "</a>"); // NOI18N
         }
 
         private String getHeaderType() {
-            return MessageFormat.format(HEADER_TYPE_STRING, new Object[] { LoadGenProfilingPoint.this.getFactory().getType() });
+            return Bundle.LoadGenProfilingPoint_HeaderTypeString(LoadGenProfilingPoint.this.getFactory().getType());
         }
 
         private void initComponents() {
@@ -364,7 +381,7 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
 
             JScrollPane dataAreaScrollPane = new JScrollPane(dataArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            TitledBorder tb = new TitledBorder(DATA_STRING);
+            TitledBorder tb = new TitledBorder(Bundle.LoadGenProfilingPoint_DataString());
             tb.setTitleFont(Utils.getTitledBorderFont(tb).deriveFont(Font.BOLD));
             tb.setTitleColor(javax.swing.UIManager.getColor("Label.foreground")); // NOI18N
             dataAreaScrollPane.setBorder(tb);
@@ -383,42 +400,6 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String ONE_HIT_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                     "LoadGenProfilingPoint_OneHitString"); // NOI18N
-    private static final String N_HITS_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                    "LoadGenProfilingPoint_NHitsString"); // NOI18N
-    private static final String NO_RESULTS_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                        "LoadGenProfilingPoint_NoResultsString"); // NOI18N
-    private static final String ANNOTATION_START_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                              "LoadGenProfilingPoint_AnnotationStartString"); // NOI18N
-    private static final String ANNOTATION_END_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                            "LoadGenProfilingPoint_AnnotationEndString"); // NOI18N
-    private static final String REPORT_ACCESS_DESCR = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                          "LoadGenProfilingPoint_ReportAccessDescr"); // NOI18N
-    private static final String NO_HITS_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                     "LoadGenProfilingPoint_NoHitsString"); // NOI18N
-    private static final String HEADER_TYPE_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                         "LoadGenProfilingPoint_HeaderTypeString"); // NOI18N
-    private static final String HEADER_ENABLED_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                            "LoadGenProfilingPoint_HeaderEnabledString"); // NOI18N
-    private static final String HEADER_PROJECT_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                            "LoadGenProfilingPoint_HeaderProjectString"); // NOI18N
-    private static final String HEADER_LOCATION_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                             "LoadGenProfilingPoint_HeaderLocationString"); // NOI18N
-    private static final String HEADER_START_LOCATION_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                                   "LoadGenProfilingPoint_HeaderStartLocationString"); // NOI18N
-    private static final String HEADER_END_LOCATION_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                                 "LoadGenProfilingPoint_HeaderEndLocationString"); // NOI18N
-    private static final String HEADER_HITS_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                         "LoadGenProfilingPoint_HeaderHitsString"); // NOI18N
-    private static final String HIT_SUCCESS_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                         "LoadGenProfilingPoint_HitSuccessString"); // NOI18N
-    private static final String HIT_FAILED_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class,
-                                                                        "LoadGenProfilingPoint_HitFailedString"); // NOI18N
-    private static final String DATA_STRING = NbBundle.getMessage(LoadGenProfilingPoint.class, "LoadGenProfilingPoint_DataString"); // NOI18N
-                                                                                                                                    // -----
     private static final Logger LOGGER = Logger.getLogger(LoadGenProfilingPoint.class.getName());
     public static final String PROPERTY_SCRIPTNAME = "p_ScriptName"; // NOI18N
     private static final String ANNOTATION_ENABLED = "loadgenProfilingPoint"; // NOI18N
@@ -522,17 +503,13 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         synchronized(resultsSync) {
             if (hasResults()) {
                 return (results.size() == 1)
-                       ? MessageFormat.format(ONE_HIT_STRING,
-                                              new Object[] {
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              })
-                       : MessageFormat.format(N_HITS_STRING,
-                                              new Object[] {
-                                                  results.size(),
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              });
+                       ? Bundle.LoadGenProfilingPoint_OneHitString(
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
+                       : Bundle.LoadGenProfilingPoint_NHitsString(
+                            results.size(),
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
             } else {
-                return NO_RESULTS_STRING;
+                return Bundle.LoadGenProfilingPoint_NoResultsString();
             }
         }
     }

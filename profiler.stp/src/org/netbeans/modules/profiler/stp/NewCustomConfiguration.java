@@ -85,49 +85,29 @@ import org.openide.DialogDisplayer;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "NewCustomConfiguration_MonitorString=&Monitor",
+    "NewCustomConfiguration_CpuString=&CPU",
+    "NewCustomConfiguration_MemoryString=M&emory",
+    "NewCustomConfiguration_NewConfigDialogCaption=New Custom Configuration",
+    "NewCustomConfiguration_DuplicateConfigDialogCaption=Duplicate Configuration ({0})",
+    "NewCustomConfiguration_RenameConfigDialogCaption=Rename Configuration ({0})",
+    "NewCustomConfiguration_NewConfigString=New Configuration",
+    "NewCustomConfiguration_NewMonitorString=New Monitoring",
+    "NewCustomConfiguration_NewCpuString=New CPU Analysis",
+    "NewCustomConfiguration_NewMemoryString=New Memory Analysis",
+    "NewCustomConfiguration_TypeLabelText=Type\\:",
+    "NewCustomConfiguration_NameLabelText=&Name\\:",
+    "NewCustomConfiguration_NameLabelAccessDescr=Name of the custom configuration",
+    "NewCustomConfiguration_InitSettingsLabelText=Initial Settings\\:",
+    "NewCustomConfiguration_DefaultRadioText=&Default",
+    "NewCustomConfiguration_DefaultRadioAccessDescr=Use default settings for the configuration",
+    "NewCustomConfiguration_ExistingRadioText=&From Existing Configuration\\:",
+    "NewCustomConfiguration_ExistingRadioAccessDescr=Copy settings from existing configuration",
+    "NewCustomConfiguration_OkButtonText=OK"
+})
 public class NewCustomConfiguration extends JPanel implements ChangeListener, ListSelectionListener, DocumentListener {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String MONITOR_STRING = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                     "NewCustomConfiguration_MonitorString"); // NOI18N
-    private static final String CPU_STRING = NbBundle.getMessage(NewCustomConfiguration.class, "NewCustomConfiguration_CpuString"); // NOI18N
-    private static final String MEMORY_STRING = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                    "NewCustomConfiguration_MemoryString"); // NOI18N
-    private static final String NEW_CONFIG_DIALOG_CAPTION = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                                "NewCustomConfiguration_NewConfigDialogCaption"); // NOI18N
-    private static final String DUPLICATE_CONFIG_DIALOG_CAPTION = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                                      "NewCustomConfiguration_DuplicateConfigDialogCaption"); // NOI18N
-    private static final String RENAME_CONFIG_DIALOG_CAPTION = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                                   "NewCustomConfiguration_RenameConfigDialogCaption"); // NOI18N
-    private static final String NEW_CONFIG_STRING = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                        "NewCustomConfiguration_NewConfigString"); // NOI18N
-    private static final String NEW_MONITOR_STRING = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                         "NewCustomConfiguration_NewMonitorString"); // NOI18N
-    private static final String NEW_CPU_STRING = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                     "NewCustomConfiguration_NewCpuString"); // NOI18N
-    private static final String NEW_MEMORY_STRING = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                        "NewCustomConfiguration_NewMemoryString"); // NOI18N
-    private static final String TYPE_LABEL_TEXT = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                      "NewCustomConfiguration_TypeLabelText"); // NOI18N
-    private static final String NAME_LABEL_TEXT = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                      "NewCustomConfiguration_NameLabelText"); // NOI18N
-    private static final String NAME_LABEL_ACCESS_DESCR = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                      "NewCustomConfiguration_NameLabelAccessDescr"); // NOI18N
-    private static final String INIT_SETTINGS_LABEL_TEXT = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                               "NewCustomConfiguration_InitSettingsLabelText"); // NOI18N
-    private static final String DEFAULT_RADIO_TEXT = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                         "NewCustomConfiguration_DefaultRadioText"); // NOI18N
-    private static final String DEFAULT_RADIO_ACCESS_DESCR = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                         "NewCustomConfiguration_DefaultRadioAccessDescr"); // NOI18N
-    private static final String EXISTING_RADIO_TEXT = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                          "NewCustomConfiguration_ExistingRadioText"); // NOI18N
-    private static final String EXISTING_RADIO_ACCESS_DESCR = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                          "NewCustomConfiguration_ExistingRadioAccessDescr"); // NOI18N
-    private static final String OK_BUTTON_TEXT = NbBundle.getMessage(NewCustomConfiguration.class,
-                                                                     "NewCustomConfiguration_OkButtonText"); // NOI18N
-                                                                                                             // -----
 
     // --- Constants declaration -------------------------------------------------
     private static final int MODE_NEW_ANY = 0;
@@ -178,8 +158,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         ncc.setupDuplicateConfiguration(originalConfiguration, availableConfigurations);
 
         final DialogDescriptor dd = new DialogDescriptor(ncc,
-                                                         MessageFormat.format(DUPLICATE_CONFIG_DIALOG_CAPTION,
-                                                                              new Object[] { originalConfiguration.getSettingsName() }));
+                                                         Bundle.NewCustomConfiguration_DuplicateConfigDialogCaption(originalConfiguration.getSettingsName()));
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
@@ -198,7 +177,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         NewCustomConfiguration ncc = getDefault();
         ncc.setupUniversalConfiguration(availableConfigurations);
 
-        final DialogDescriptor dd = new DialogDescriptor(ncc, NEW_CONFIG_DIALOG_CAPTION);
+        final DialogDescriptor dd = new DialogDescriptor(ncc, Bundle.NewCustomConfiguration_NewConfigDialogCaption());
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
@@ -220,17 +199,17 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         String typeString = ""; // NOI18N
 
         if (ProfilingSettings.isMonitorSettings(type)) {
-            typeString = " (" + MONITOR_STRING + ")"; // NOI18N
+            typeString = " (" + Bundle.NewCustomConfiguration_MonitorString() + ")"; // NOI18N
         } else if (ProfilingSettings.isCPUSettings(type)) {
-            typeString = " (" + CPU_STRING + ")"; // NOI18N
+            typeString = " (" + Bundle.NewCustomConfiguration_CpuString() + ")"; // NOI18N
         } else if (ProfilingSettings.isMemorySettings(type)) {
-            typeString = " (" + MEMORY_STRING + ")"; // NOI18N
+            typeString = " (" + Bundle.NewCustomConfiguration_MemoryString() + ")"; // NOI18N
         }
         
         // Remove mnemonics wildcard
         typeString = typeString.replace("&", ""); // NOI18N
 
-        final DialogDescriptor dd = new DialogDescriptor(ncc, NEW_CONFIG_DIALOG_CAPTION + typeString, true,
+        final DialogDescriptor dd = new DialogDescriptor(ncc, Bundle.NewCustomConfiguration_NewConfigDialogCaption() + typeString, true,
                                                          new Object[] { ncc.okButton, DialogDescriptor.CANCEL_OPTION },
                                                          ncc.okButton, 0, null, null);
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
@@ -252,8 +231,8 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         ncc.setupRenameConfiguration(originalConfiguration, availableConfigurations);
 
         final DialogDescriptor dd = new DialogDescriptor(ncc,
-                                                         MessageFormat.format(RENAME_CONFIG_DIALOG_CAPTION,
-                                                                              new Object[] { originalConfiguration.getSettingsName() }));
+                                                         Bundle.NewCustomConfiguration_RenameConfigDialogCaption(
+                                                            originalConfiguration.getSettingsName()));
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.pack();
         d.setVisible(true);
@@ -362,14 +341,14 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
     }
 
     private String createSettingsName(ProfilingSettings[] availableConfigurations) {
-        String nameBasis = NEW_CONFIG_STRING;
+        String nameBasis = Bundle.NewCustomConfiguration_NewConfigString();
 
         if (monitorTypeRadio.isSelected()) {
-            nameBasis = NEW_MONITOR_STRING;
+            nameBasis = Bundle.NewCustomConfiguration_NewMonitorString();
         } else if (cpuTypeRadio.isSelected()) {
-            nameBasis = NEW_CPU_STRING;
+            nameBasis = Bundle.NewCustomConfiguration_NewCpuString();
         } else if (memoryTypeRadio.isSelected()) {
-            nameBasis = NEW_MEMORY_STRING;
+            nameBasis = Bundle.NewCustomConfiguration_NewMemoryString();
         }
 
         List<String> configurationsNames = new ArrayList(availableConfigurations.length);
@@ -411,7 +390,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         ButtonGroup settingsRadiosGroup = new ButtonGroup();
 
         // typeLabel
-        typeLabel = new JLabel(TYPE_LABEL_TEXT);
+        typeLabel = new JLabel(Bundle.NewCustomConfiguration_TypeLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -422,8 +401,8 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         add(typeLabel, constraints);
 
         // monitorTypeRadio
-        monitorTypeRadio = new JExtendedRadioButton(MONITOR_STRING, ICON_MONITOR);
-        org.openide.awt.Mnemonics.setLocalizedText(monitorTypeRadio, MONITOR_STRING);
+        monitorTypeRadio = new JExtendedRadioButton(Bundle.NewCustomConfiguration_MonitorString(), ICON_MONITOR);
+        org.openide.awt.Mnemonics.setLocalizedText(monitorTypeRadio, Bundle.NewCustomConfiguration_MonitorString());
         typeRadiosGroup.add(monitorTypeRadio);
         monitorTypeRadio.setSelected(true);
         constraints = new GridBagConstraints();
@@ -436,8 +415,8 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         add(monitorTypeRadio, constraints);
 
         // cpuTypeRadio
-        cpuTypeRadio = new JExtendedRadioButton(CPU_STRING, ICON_CPU);
-        org.openide.awt.Mnemonics.setLocalizedText(cpuTypeRadio, CPU_STRING);
+        cpuTypeRadio = new JExtendedRadioButton(Bundle.NewCustomConfiguration_CpuString(), ICON_CPU);
+        org.openide.awt.Mnemonics.setLocalizedText(cpuTypeRadio, Bundle.NewCustomConfiguration_CpuString());
         typeRadiosGroup.add(cpuTypeRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -449,8 +428,8 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         add(cpuTypeRadio, constraints);
 
         // memoryTypeRadio
-        memoryTypeRadio = new JExtendedRadioButton(MEMORY_STRING, ICON_MEMORY);
-        org.openide.awt.Mnemonics.setLocalizedText(memoryTypeRadio, MEMORY_STRING);
+        memoryTypeRadio = new JExtendedRadioButton(Bundle.NewCustomConfiguration_MemoryString(), ICON_MEMORY);
+        org.openide.awt.Mnemonics.setLocalizedText(memoryTypeRadio, Bundle.NewCustomConfiguration_MemoryString());
         typeRadiosGroup.add(memoryTypeRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 3;
@@ -463,7 +442,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
 
         // nameLabel
         nameLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NAME_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, Bundle.NewCustomConfiguration_NameLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -476,8 +455,8 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         // nameTextfield
         nameTextfield = new JTextField();
         nameTextfield.getDocument().addDocumentListener(this);
-        nameTextfield.setPreferredSize(new Dimension(280, nameTextfield.getPreferredSize().height));
-        nameTextfield.getAccessibleContext().setAccessibleDescription(NAME_LABEL_ACCESS_DESCR);
+        nameTextfield.setPreferredSize(new Dimension(250, nameTextfield.getPreferredSize().height));
+        nameTextfield.getAccessibleContext().setAccessibleDescription(Bundle.NewCustomConfiguration_NameLabelAccessDescr());
         nameLabel.setLabelFor(nameTextfield);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -489,7 +468,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         add(nameTextfield, constraints);
 
         // settingsLabel
-        settingsLabel = new JLabel(INIT_SETTINGS_LABEL_TEXT);
+        settingsLabel = new JLabel(Bundle.NewCustomConfiguration_InitSettingsLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -501,9 +480,9 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
 
         // defaultSettingsRadio
         defaultSettingsRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(defaultSettingsRadio, DEFAULT_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(defaultSettingsRadio, Bundle.NewCustomConfiguration_DefaultRadioText());
         settingsRadiosGroup.add(defaultSettingsRadio);
-        defaultSettingsRadio.getAccessibleContext().setAccessibleDescription(DEFAULT_RADIO_ACCESS_DESCR);
+        defaultSettingsRadio.getAccessibleContext().setAccessibleDescription(Bundle.NewCustomConfiguration_DefaultRadioAccessDescr());
         defaultSettingsRadio.addChangeListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -516,9 +495,9 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
 
         // existingSettingsRadio
         existingSettingsRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(existingSettingsRadio, EXISTING_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(existingSettingsRadio, Bundle.NewCustomConfiguration_ExistingRadioText());
         settingsRadiosGroup.add(existingSettingsRadio);
-        existingSettingsRadio.getAccessibleContext().setAccessibleDescription(EXISTING_RADIO_ACCESS_DESCR);
+        existingSettingsRadio.getAccessibleContext().setAccessibleDescription(Bundle.NewCustomConfiguration_ExistingRadioAccessDescr());
         existingSettingsRadio.setSelected(true);
         existingSettingsRadio.addChangeListener(this);
         constraints = new GridBagConstraints();
@@ -564,7 +543,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         add(bottomRenameSpacer, constraints);
 
         // okButton
-        okButton = new JButton(OK_BUTTON_TEXT);
+        okButton = new JButton(Bundle.NewCustomConfiguration_OkButtonText());
 
         // UI tweaks
         addHierarchyListener(new HierarchyListener() {
