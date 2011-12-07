@@ -169,7 +169,6 @@ implements Runnable, ExplorerManager.Provider {
         TreeView tView = new MyBeanTreeView();
         tView.setRootVisible(false);
         tView.setDragSource (true);
-        tView.setUseSubstringInQuickSearch(true);
         setLayout(new BorderLayout());
         add (tView);
         return tView;
