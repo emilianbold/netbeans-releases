@@ -55,12 +55,14 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -239,7 +241,7 @@ public final class FileUtils {
     }
     public static List<String> readStringList(
             final File file, String charset) throws IOException {
-        final List<String> list = new LinkedList<String>();
+        final List<String> list = new ArrayList<String>();
         for (String line: StringUtils.splitByLines((readFile(file,charset)))) {
             list.add(line);
         }
@@ -247,7 +249,7 @@ public final class FileUtils {
     }
     public static List<String> readStringList(
             final File file) throws IOException {
-        final List<String> list = new LinkedList<String>();
+        final List<String> list = new ArrayList<String>();
         for (String line: StringUtils.splitByLines((readFile(file)))) {
             list.add(line);
         }
@@ -334,6 +336,36 @@ public final class FileUtils {
         return size;
     }
     
+    public static Set<File> getRecursiveFileSet(
+            final File file) throws IOException {
+        Set<File> fileSet = new HashSet();
+
+        if (file != null && exists(file)) {
+            computeRecursiveFileSet(file,fileSet);
+        }
+
+        return fileSet;
+    }
+    
+    static void computeRecursiveFileSet(final File file, Set<File> fileSet) throws IOException {
+        try {
+            fileSet.add(file);
+            if (file.isDirectory()) {
+                File[] files = file.listFiles();
+                if (files != null) {
+                    for (File f : files) {
+                        computeRecursiveFileSet(f,fileSet);
+                    }
+                }
+            }
+        } catch (SecurityException e) {
+            ErrorManager.notifyError(
+                    ResourceUtils.getString(FileUtils.class,
+                    ERROR_FILE_SECURITY_EXCEPTION_KEY, file),
+                    e);
+        }
+    }
+
     public static FilesList listFiles(
             final File file) throws IOException {
         final FilesList list = new FilesList();

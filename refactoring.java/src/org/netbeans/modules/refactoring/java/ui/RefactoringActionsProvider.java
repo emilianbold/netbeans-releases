@@ -44,20 +44,15 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -71,22 +66,17 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
-import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -616,40 +606,90 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    Element e = selectedElement.resolveElement(info);
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, int startOffset, int endOffset, CompilationInfo info) {
+                    TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
+                    Element e = info.getTrees().getElement(enclosingClassPath);
                     if (e == null) {
                         logger().log(Level.INFO, "doMove: " + selectedElement, new NullPointerException("e")); // NOI18N
                         return null;
                     }
-                    if ((e.getKind().isClass() || e.getKind().isInterface()) &&
-                            SourceUtils.getOutermostEnclosingTypeElement(e)==e) {
-                        try {
-                            FileObject fo = SourceUtils.getFile(e, info.getClasspathInfo());
-                            if (fo!=null) {
-                                DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
-                                if (d.getName().equals(e.getSimpleName().toString())) {
-                                    return wrap(new MoveClassUI(d));
-                                }
-                            }
-                        } catch (DataObjectNotFoundException ex) {
-                            throw new RuntimeException (ex);
-                        }
-                    }
-                    if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                        try {
-                            return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
-                        } catch (DataObjectNotFoundException ex) {
-                            throw new RuntimeException (ex);
-                        }
+                    if (startOffset == endOffset) {
+                        return doCursorPosition(info, selectedElement, startOffset);
                     } else {
-                        try {
-                            return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
-                        } catch (DataObjectNotFoundException ex) {
-                            throw new RuntimeException (ex);
+                        if (!(e.getKind().isClass() || e.getKind().isInterface())) {
+                            e = info.getElementUtilities().enclosingTypeElement(e);
                         }
+                        Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
+                        SourcePositions sourcePositions = info.getTrees().getSourcePositions();
+                        for (Element ele : e.getEnclosedElements()) {
+                            Tree leaf = info.getTrees().getPath(ele).getLeaf();
+                            long start = sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
+                            long end = sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
+                            if ((start >= startOffset && start <= endOffset)
+                                    || (end >= startOffset && end <= endOffset)) {
+                                handles.add(TreePathHandle.create(ele, info));
+                            }
+                        }
+                        if (handles.isEmpty()) {
+                            return doCursorPosition(info, selectedElement, startOffset);
+                        }
+                        return wrap(new MoveMembersUI(handles.toArray(new TreePathHandle[handles.size()])));
                     }
                 }
+
+                private RefactoringUI doCursorPosition(CompilationInfo info, TreePathHandle selectedElement, int position) throws RuntimeException {
+                    List<? extends TypeElement> topLevelElements = info.getTopLevelElements();
+                    Trees trees = info.getTrees();
+                    SourcePositions sourcePositions = trees.getSourcePositions();
+                    CompilationUnitTree compilationUnit = info.getCompilationUnit();
+                    
+                    for (TypeElement typeElement : topLevelElements) {
+                        ClassTree topLevelClass = trees.getTree(typeElement);
+                        long startPosition = sourcePositions.getStartPosition(compilationUnit, topLevelClass);
+                        long endPosition = sourcePositions.getEndPosition(compilationUnit, topLevelClass);
+                        if(position > startPosition && position < endPosition) {
+                            for (Element element : typeElement.getEnclosedElements()) {
+                                Tree member = trees.getTree(element);
+                                long startMember = sourcePositions.getStartPosition(compilationUnit, member);
+                                long endMember = sourcePositions.getEndPosition(compilationUnit, member);
+                                if(position > startMember && position < endMember) {
+                                    TreePathHandle tph = TreePathHandle.create(element, info);
+                                    return wrap(new MoveMembersUI(tph));
+                                }
+                            }
+                            try {
+                                // TODO: Support nested classes
+                                return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
+                            } catch (DataObjectNotFoundException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    }
+//                    if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                        try {
+                            return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
+                        } catch (DataObjectNotFoundException ex) {
+                            throw new RuntimeException(ex);
+                        }
+//                    }
+                }
+            };
+        } else if (nodeHandle(lookup)) {
+            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                    if (renameFile) {
+                        Set<FileObject> files = new HashSet<FileObject>(handles.size());
+                        for (TreePathHandle handle:handles) {
+                            files.add(handle.getFileObject());
+                        }
+                        return wrap(new MoveClassesUI(files));
+                    } else {
+                        return wrap(new MoveMembersUI(handles.toArray(new TreePathHandle[handles.size()])));
+                    }
+                }
+                
             };
         } else {
             task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
@@ -678,7 +718,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.moveAction()));
     }
 
     protected RefactoringUI wrap(RefactoringUI orig) {
