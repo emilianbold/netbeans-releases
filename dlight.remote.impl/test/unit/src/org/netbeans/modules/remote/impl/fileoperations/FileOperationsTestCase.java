@@ -191,15 +191,16 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             File ioFile = new File(localDir+"/"+name);
             fileEquals(ioFile, fileOperations, file, false);
         }
-        entries = new ArrayList<DirEntry>();
-        entries.add(getUnexistingFileEntry());
-        for(DirEntry entry : entries) {
-            String name = entry.getName();
+
+        {
+            // test unexisting file
+            String name = "unexisting";
             String path = remoteDir+"/"+name;
             FileProxyO file = FileOperationsProvider.toFileProxy(path);
             File ioFile = new File(localDir+"/"+name);
             fileEquals(ioFile, fileOperations, file, false);
         }
+        
         {
             // test of self dir
             FileProxyO file = FileOperationsProvider.toFileProxy(remoteDir);
@@ -215,16 +216,28 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
     }
 
     private void fileEquals(File ioFile, FileOperations fileOperations, FileProxyO file, boolean skipName) {
-        assertEquals(ioFile.exists(), fileOperations.exists(file));
+        assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
         if (!skipName) {
             assertEquals(ioFile.getName(), fileOperations.getName(file));
         }
         absPathEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
-        assertEquals(ioFile.canWrite(), fileOperations.canWrite(file));
-        assertEquals(ioFile.isDirectory(), fileOperations.isDirectory(file));
-        assertEquals(ioFile.isFile(), fileOperations.isFile(file));
-        listEquals(ioFile.list(), fileOperations.list(file));
+        assertEquals(message(ioFile, file, "canWrite"), ioFile.canWrite(), fileOperations.canWrite(file));
+        assertEquals(message(ioFile, file, "isDirectory"), ioFile.isDirectory(), fileOperations.isDirectory(file));
+        assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
+        listEquals(message(ioFile, file, "isFile"), ioFile.list(), fileOperations.list(file));
         absPathEquals(ioFile.getParent(), fileOperations.getDir(file));
+    }
+    
+    private String message(File ioFile, FileProxyO file, String method) {
+        return new StringBuilder().append(method)
+                .append("(")
+                .append(ioFile.getAbsolutePath())
+                .append(") # ")
+                .append(method)
+                .append("(")
+                .append(file.getPath())
+                .append(")")
+                .toString();
     }
     
     private void absPathEquals(String file, String fo) {
@@ -238,7 +251,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         }
     }
     
-    private void listEquals(String[] file, String[] fo) {
+    private void listEquals(String message, String[] file, String[] fo) {
         assertEquals(file == null , fo == null);
         if (file != null) {
             assertEquals(file.length, fo.length);
@@ -248,113 +261,9 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
                         continue loop;
                     }
                 }
-                assertTrue(false);
+                assertTrue(message, false);
             }
         }
     }
     
-    private DirEntry getUnexistingFileEntry() {
-        return new DirEntry() {
-
-            @Override
-            public String getName() {
-                return "unexisting";
-            }
-
-            @Override
-            public long getSize() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean canExecute(ExecutionEnvironment execEnv) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean canRead(ExecutionEnvironment execEnv) {
-                return false;
-            }
-
-            @Override
-            public boolean canWrite(ExecutionEnvironment execEnv) {
-                return true;
-            }
-
-            @Override
-            public String getAccessAsString() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public Date getLastModified() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean isLink() {
-                return false;
-            }
-
-            @Override
-            public boolean isDirectory() {
-                return false;
-            }
-
-            @Override
-            public boolean isPlainFile() {
-                return true;
-            }
-
-            @Override
-            public boolean isSameLastModified(DirEntry other) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean isSameType(DirEntry other) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public FileType getFileType() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean isSameUser(DirEntry other) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean isSameGroup(DirEntry other) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public String getLinkTarget() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public String getCache() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public void setCache(String cache) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public String toExternalForm() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public boolean isValid() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
-    }
 }
