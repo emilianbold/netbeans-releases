@@ -86,9 +86,17 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private Reference<RenderDataProvider> lastRendererRef = new WeakReference<RenderDataProvider>(null); // Used by lazy tooltip
     private Reference<Object> lastRenderedValueRef = new WeakReference<Object>(null);                    // Used by lazy tooltip
     private static final Border expansionBorder = new ExpansionHandleBorder();
-    private static final Class htmlRendererClass = Boolean.getBoolean("nb.useSwingHtmlRendering") ? null : HtmlRenderer.getDelegate();  // NOI18N
+    private static final Class htmlRendererClass = useSwingHtmlRendering() ? null : HtmlRenderer.getDelegate();
     private final HtmlRenderer.Renderer htmlRenderer = (htmlRendererClass != null) ? HtmlRenderer.createRenderer(htmlRendererClass) : null;
     private final boolean swingRendering = htmlRenderer == null;
+    
+    private static boolean useSwingHtmlRendering() {
+        try {
+            return Boolean.getBoolean("nb.useSwingHtmlRendering");              // NOI18N
+        } catch (SecurityException se) {
+            return false;
+        }
+    }
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
     public DefaultOutlineCellRenderer() {
@@ -504,8 +512,14 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                         }
                     } catch (ClassNotFoundException ex3) {
                         return null;
+                    } catch (SecurityException se) {
+                        return null;
                     }
+                } catch (SecurityException se) {
+                    return null;
                 }
+            } catch (SecurityException se) {
+                return null;
             }
             return delegate;
         }
