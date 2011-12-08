@@ -291,14 +291,15 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         } else {
             Map<String, Object> runAgent = runAgent(file.getPath());
             if (runAgent != null) {
-                assertEquals(message(file, "exist"), runAgent.get("exists"), fileOperations.exists(file));
-                assertEquals(runAgent.get("getName"), fileOperations.getName(file));
-                assertEquals(runAgent.get("getAbsolutePath"), fileOperations.getPath(file));
-                assertEquals(message(file, "canWrite"), runAgent.get("canWrite"), fileOperations.canWrite(file));
-                assertEquals(message(file, "isDirectory"), runAgent.get("isDirectory"), fileOperations.isDirectory(file));
-                assertEquals(message(ioFile, file, "isFile"), runAgent.get("isFile"), fileOperations.isFile(file));
-                assertEquals(runAgent.get("getParent"), fileOperations.getDir(file));
-                listEquals(message(file, "list"), (String[])runAgent.get("list"), fileOperations.list(file));
+                ioFile = new MyFile(user, runAgent);
+                assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
+                assertEquals(ioFile.getName(), fileOperations.getName(file));
+                assertEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
+                assertEquals(message(ioFile, file, "canWrite"), ioFile.canWrite(), fileOperations.canWrite(file));
+                assertEquals(message(ioFile, file, "isDirectory"), ioFile.isDirectory(), fileOperations.isDirectory(file));
+                assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
+                listEquals(message(ioFile, file, "list"), ioFile.list(), fileOperations.list(file));
+                assertEquals(ioFile.getParent(), fileOperations.getDir(file));
             }
         }
     }
@@ -352,5 +353,53 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             }
         }
     }
-    
+
+    private static final class MyFile extends File {
+        private final Map<String, Object> map;
+        
+        private MyFile(String path, Map<String, Object> map) {
+            super(path);
+            this.map = map;
+        }
+
+        @Override
+        public boolean canWrite() {
+            return (Boolean)map.get("canWrite");
+        }
+
+        @Override
+        public boolean exists() {
+            return (Boolean)map.get("exists");
+        }
+
+        @Override
+        public String getName() {
+            return (String)map.get("getName");
+        }
+
+        @Override
+        public String getAbsolutePath() {
+            return (String)map.get("getAbsolutePath");
+        }
+
+        @Override
+        public String getParent() {
+            return (String)map.get("getParent");
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return (Boolean)map.get("isDirectory");
+        }
+
+        @Override
+        public boolean isFile() {
+            return (Boolean)map.get("isFile");
+        }
+
+        @Override
+        public String[] list() {
+            return (String[])map.get("list");
+        }
+    }
 }
