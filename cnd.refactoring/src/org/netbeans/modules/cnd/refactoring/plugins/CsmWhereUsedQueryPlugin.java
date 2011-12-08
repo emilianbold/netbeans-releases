@@ -51,6 +51,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -95,6 +97,7 @@ import org.openide.util.RequestProcessor;
 public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     private final WhereUsedQuery refactoring;
     private final CsmObject startReferenceObject;
+    static final Logger LOG = Logger.getLogger(CsmWhereUsedQueryPlugin.class.getName());
     
     /** Creates a new instance of WhereUsedQuery */
     public CsmWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
@@ -122,6 +125,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (referencedObject == null) {
             return null;
         }
+        long time = System.currentTimeMillis();
         if (isFindUsages()) {
             if (CsmKindUtilities.isFile(referencedObject)) {
                 fireProgressListenerStart(ProgressEvent.START, 2);
@@ -149,6 +153,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             fireProgressListenerStart(ProgressEvent.START, 2);
             res = processOverridenMethodsQuery((CsmMethod)referencedObject);
         }   
+        LOG.log(Level.INFO, "preparing FindUsages elements took {0}ms", System.currentTimeMillis() - time);
         fireProgressListenerStep();
         return res;
     }
