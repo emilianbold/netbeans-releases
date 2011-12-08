@@ -146,12 +146,13 @@ public class CloneServerPanel extends javax.swing.JPanel {
             if (!CoherenceInstanceProvider.isUniqueDisplayNameAcrossInstances(getNewServerName())) {
                 lineSupport.setErrorMessage(Bundle.server_name_already_exists());
             }
-        }
 
-        if (lineSupport.getErrorMessage() == null) {
-            firePropertyChange(IS_VALID, false, true);
-        } else {
-            firePropertyChange(IS_VALID, true, false);
+
+            if (lineSupport.getErrorMessage() == null) {
+                firePropertyChange(IS_VALID, false, true);
+            } else {
+                firePropertyChange(IS_VALID, true, false);
+            }
         }
     }
 

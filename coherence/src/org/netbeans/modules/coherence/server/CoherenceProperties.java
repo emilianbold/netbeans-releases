@@ -43,6 +43,7 @@ package org.netbeans.modules.coherence.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarInputStream;
@@ -54,6 +55,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.coherence.server.util.Version;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -196,18 +198,24 @@ public class CoherenceProperties {
     }
 
     private static String obtainVersionFromCoherenceJar(File serverRoot) {
-        JarInputStream jis = null;
+        InputStream inputStream = null;
         try {
-            jis = new JarInputStream(FileUtil.toFileObject(getCoherenceJar(serverRoot)).getInputStream());
-            Manifest manifest = jis.getManifest();
-            if (manifest != null) {
-                return manifest.getMainAttributes().getValue("Implementation-Version"); //NOI18N
+            inputStream = FileUtil.toFileObject(getCoherenceJar(serverRoot)).getInputStream();
+            JarInputStream jis = null;
+            try {
+                jis = new JarInputStream(inputStream);
+                Manifest manifest = jis.getManifest();
+                if (manifest != null) {
+                    return manifest.getMainAttributes().getValue("Implementation-Version"); //NOI18N
+                }
+            } finally {
+                jis.close();
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         } finally {
             try {
-                jis.close();
+                inputStream.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
             }
