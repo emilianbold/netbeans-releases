@@ -57,7 +57,9 @@ Java class at runtime. There may be more than one Java class with the same
 name but loaded by different loaders. So, class name is permitted to be
 id string of the class object.
 
-If <tt>instanceof</tt> keyword is used, subtype objects are selected. If this 
+If <tt>instanceof</tt> keyword is used, objects from subclasses are also selected.
+(It is not possible to select objects from all classes implementing an interface.)
+If this 
 keyword is not specified, only the instances of exact class specified are selected. Both
 <tt>from</tt> and <tt>where</tt> clauses are optional.
 </p>

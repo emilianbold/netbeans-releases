@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.progress.module;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.apache.maven.repository.RepositorySystem;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
-import org.openide.util.lookup.ServiceProvider;
+public class LoggingUtils {
 
-@ServiceProvider(service=ArchetypeProvider.class, position=400)
-public class RemoteRepoProvider implements ArchetypeProvider {
-
-    @Override public List<Archetype> getArchetypes() {
-        List<Archetype> lst = new ArrayList<Archetype>();
-        List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
-        for (RepositoryInfo info : infos) {
-            if (RepositorySystem.DEFAULT_LOCAL_REPO_ID.equals(info.getId())) {
-                continue;
+    public static String findCaller() {
+        for (StackTraceElement line : Thread.currentThread().getStackTrace()) {
+            if (!line.getClassName().matches("(java|org[.]netbeans[.](api[.]progress|modules[.]progress|progress[.]module))[.].+")) { // NOI18N
+                return line.toString();
             }
-            search(info, lst);
         }
-        return lst;
+        return "???"; // NOI18N
     }
-
-    private void search(RepositoryInfo info, List<Archetype> lst) {
-        for (NBVersionInfo art : RepositoryQueries.findArchetypes(Collections.singletonList(info))) {
-            Archetype arch = new Archetype(false);
-            arch.setArtifactId(art.getArtifactId());
-            arch.setGroupId(art.getGroupId());
-            arch.setVersion(art.getVersion());
-            arch.setName(art.getProjectName());
-            arch.setDescription(art.getProjectDescription());
-            arch.setRepository(info.getRepositoryUrl());
-            lst.add(arch);
-        }
-    }
+    
+    private LoggingUtils() {}
 
 }

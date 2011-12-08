@@ -42,343 +42,311 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.TreeMap;
-import javax.swing.tree.TreeSelectionModel;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.repository.RepositorySystem;
-import org.codehaus.plexus.util.FileUtils;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
-import static org.netbeans.modules.maven.newproject.Bundle.*;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.awt.Mnemonics;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.explorer.view.TreeView;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
-/**
- *
- * @author  mkleint
- */
-public class ChooseArchetypePanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
+public class ChooseArchetypePanel extends JPanel {
     
     private static final RequestProcessor RP = new RequestProcessor(ChooseArchetypePanel.class.getName(),5);
+    private static final Logger LOG = Logger.getLogger(ChooseArchetypePanel.class.getName());
 
-    private static File getLocalCatalogFile() {
-        return new File(RepositorySystem.userMavenConfigurationHome, "archetype-catalog.xml"); // NOI18N
-    }
-
-    private static URL getDefaultCatalogFile() throws IOException {
-        List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.apache.maven.archetype", "archetype-common", Collections.singletonList(RepositoryPreferences.getInstance().getLocalRepository())); // NOI18N
-        if (versions.isEmpty()) {
-            return null;
-        }
-        // any need to sort?
-        NBVersionInfo newest = versions.get(0);
-        Artifact art = RepositoryUtil.createArtifact(newest);
-        File jar = art.getFile();
-        if (!jar.isFile()) {
-            return null;
-        }
-        return new URL("jar:" + jar.toURI() + "!/archetype-catalog.xml"); // NOI18N
-    }
-
-    private ExplorerManager manager;
     private ChooseWizardPanel wizardPanel;
-    static final String PROP_ARCHETYPE = "archetype"; //NOI18N
-    TreeView tv;
-    private static Archetype REMOTE_PLACEHOLDER = new Archetype();
-    private static Archetype CATALOGS_PLACEHOLDER = new Archetype();
-    private static Archetype LOCAL_PLACEHOLDER = new Archetype();
-    private static Archetype LOADING_ARCHETYPE = new Archetype();
-    private static List<Archetype> prohibited = new ArrayList<Archetype>();
-    static {
-        //prevent equals..
-        REMOTE_PLACEHOLDER.setGroupId("R"); //NOI18N
-        LOADING_ARCHETYPE.setGroupId("L"); //NOI18N
-        LOCAL_PLACEHOLDER.setGroupId("X"); //NOI18N
-        CATALOGS_PLACEHOLDER.setGroupId("@"); //NOI18N
-        prohibited.add(REMOTE_PLACEHOLDER);
-        prohibited.add(LOCAL_PLACEHOLDER);
-        prohibited.add(LOADING_ARCHETYPE);
-        prohibited.add(CATALOGS_PLACEHOLDER);
-    }
+    private final List<Archetype> archetypes = new ArrayList<Archetype>();
 
-    /** Creates new form ChooseArchetypePanel */
-    @Messages("TIT_CreateProjectStep=Select a Maven archetype as a template for your project.")
     public ChooseArchetypePanel(ChooseWizardPanel wizPanel) {
         initComponents();
-        
-        Mnemonics.setLocalizedText(jLabel2, TIT_CreateProjectStep());
-        
         this.wizardPanel = wizPanel;
-        tv = new BeanTreeView();
-        tv.setMinimumSize(new Dimension(50, 50));
-        manager = new ExplorerManager();
-        pnlView.add(tv, BorderLayout.CENTER);
-        tv.setBorder(jScrollPane1.getBorder());
-        tv.setDefaultActionAllowed(false);
-        tv.setPopupAllowed(false);
-        tv.setRootVisible(false);
-        tv.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        Childs childs = new Childs();
-        childs.addArchetype(LOADING_ARCHETYPE);
-        AbstractNode root = new AbstractNode(childs);
-        manager.setRootContext(root);
-        RP.post(this);
-        manager.addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateDescription();
-                wizardPanel.fireChangeEvent();
+        textFilter.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) {
+                updateList();
             }
+            @Override public void removeUpdate(DocumentEvent e) {
+                updateList();
+            }
+            @Override public void changedUpdate(DocumentEvent e) {}
         });
-        updateDescription();
+        listArtifact.setCellRenderer(new ArchetypeRenderer());
     }
 
     @Override
     public void addNotify() {
         super.addNotify();
-        tv.requestFocusInWindow();
+        if (archetypes.isEmpty()) {
+            listArtifact.setCursor(Utilities.createProgressCursor(listArtifact));
+            RP.post(new Runnable() {
+                @Override public void run() {
+                    for (ArchetypeProvider provider : Lookup.getDefault().lookupAll(ArchetypeProvider.class)) {
+                        final List<Archetype> added = provider.getArchetypes();
+                        LOG.log(Level.FINE, "{0} -> {1}", new Object[] {provider, added});
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override public void run() {
+                                archetypes.addAll(added);
+                                updateList();
+                            }
+                        });
+                    }
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override public void run() {
+                            listArtifact.setCursor(null);
+                            if (listArtifact.getSelectedIndex() == -1 && listArtifact.getModel().getSize() > 0) {
+                                listArtifact.setSelectedIndex(0);
+                            }
+                            listArtifact.requestFocusInWindow();
+                        }
+                    });
+                }
+            });
+        }
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
+    private void updateList() {
+        DefaultListModel model = new DefaultListModel();
+        Set<String> ids = new HashSet<String>();
+        String filter = textFilter.getText();
+        for (Archetype a : archetypes) {
+            if (!showOld.isSelected() && !ids.add(a.getGroupId() + ":" + a.getArtifactId())) {
+                continue;
+            }
+            if (!filter.isEmpty() && !a.getGroupId().contains(filter) && !a.getArtifactId().contains(filter) && !a.getVersion().contains(filter) &&
+                    (a.getRepository() == null || !a.getRepository().contains(filter))
+                    && !a.getName().contains(filter) && (a.getDescription() == null || !a.getDescription().contains(filter))) {
+                continue;
+            }
+            model.addElement(a);
+        }
+        listArtifact.setModel(model);
+    }
+
+    private class ArchetypeRenderer extends DefaultListCellRenderer {
+
+        @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof Archetype) {
+                Archetype a = (Archetype) value;
+                String n = a.getName();
+                if (showOld.isSelected()) {
+                    n += " (" + a.getVersion() + ")";
+                }
+                value = n;
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblHint = new javax.swing.JLabel();
-        pnlView = new javax.swing.JPanel();
-        btnCustom = new javax.swing.JButton();
-        btnRemove = new javax.swing.JButton();
+        labelFilter = new javax.swing.JLabel();
+        textFilter = new javax.swing.JTextField();
+        showOld = new javax.swing.JCheckBox();
+        labelArchetypes = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        listArtifact = new javax.swing.JList();
+        labelGroupId = new javax.swing.JLabel();
+        textGroupId = new javax.swing.JTextField();
+        labelArtifactId = new javax.swing.JLabel();
+        textArtifactId = new javax.swing.JTextField();
+        labelVersion = new javax.swing.JLabel();
+        textVersion = new javax.swing.JTextField();
+        labelRepository = new javax.swing.JLabel();
+        textRepository = new javax.swing.JTextField();
+        labelDesc = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         taDescription = new javax.swing.JTextArea();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
 
-        lblHint.setLabelFor(pnlView);
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_MavenArchetype")); // NOI18N
+        labelFilter.setLabelFor(textFilter);
+        org.openide.awt.Mnemonics.setLocalizedText(labelFilter, "&Filter:");
 
-        pnlView.setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnCustom, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_AddArchetype")); // NOI18N
-        btnCustom.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(showOld, "Show &Older");
+        showOld.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCustomActionPerformed(evt);
+                showOldActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnRemove, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_RemoveArchetype")); // NOI18N
-        btnRemove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRemoveActionPerformed(evt);
+        labelArchetypes.setLabelFor(listArtifact);
+        org.openide.awt.Mnemonics.setLocalizedText(labelArchetypes, "Known Arche&types:");
+
+        listArtifact.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        listArtifact.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                listArtifactValueChanged(evt);
             }
         });
+        jScrollPane2.setViewportView(listArtifact);
+
+        labelGroupId.setLabelFor(textGroupId);
+        org.openide.awt.Mnemonics.setLocalizedText(labelGroupId, "&Group ID:");
+
+        labelArtifactId.setLabelFor(textArtifactId);
+        org.openide.awt.Mnemonics.setLocalizedText(labelArtifactId, "&Artifact ID:");
+
+        labelVersion.setLabelFor(textVersion);
+        org.openide.awt.Mnemonics.setLocalizedText(labelVersion, "&Version:");
+
+        labelRepository.setLabelFor(textRepository);
+        org.openide.awt.Mnemonics.setLocalizedText(labelRepository, "&Repository:");
+
+        labelDesc.setLabelFor(taDescription);
+        org.openide.awt.Mnemonics.setLocalizedText(labelDesc, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Description")); // NOI18N
 
         taDescription.setBackground(new java.awt.Color(238, 238, 238));
         taDescription.setColumns(20);
         taDescription.setEditable(false);
         taDescription.setLineWrap(true);
         taDescription.setRows(5);
+        taDescription.setText("Searching...");
         taDescription.setWrapStyleWord(true);
         jScrollPane1.setViewportView(taDescription);
         taDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.taDescription.accessibledesc")); // NOI18N
-
-        jLabel1.setLabelFor(taDescription);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Description")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "TIT_CreateProjectStep", "")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel2)
-            .addComponent(lblHint)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(pnlView, javax.swing.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnCustom)
-                    .addComponent(btnRemove)))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 634, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addComponent(labelDesc)
                 .addContainerGap())
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(labelFilter)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(textFilter)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(showOld))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(labelGroupId)
+                    .addComponent(labelVersion))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(textGroupId, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .addComponent(textVersion))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(labelArtifactId)
+                    .addComponent(labelRepository))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(textArtifactId, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                    .addComponent(textRepository)))
+            .addComponent(jScrollPane2)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(labelArchetypes)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnCustom, btnRemove});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {textArtifactId, textGroupId});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel2)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelFilter)
+                    .addComponent(textFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(showOld))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblHint)
+                .addComponent(labelArchetypes)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnCustom)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRemove))
-                    .addComponent(pnlView, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelGroupId)
+                    .addComponent(textGroupId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(labelArtifactId)
+                    .addComponent(textArtifactId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelVersion)
+                    .addComponent(labelRepository)
+                    .addComponent(textVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(textRepository, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(labelDesc)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
-
-        pnlView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.pnlView.accessiblename")); // NOI18N
-        pnlView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.pnlView.accessibledesc")); // NOI18N
-        btnCustom.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.btnCustom.accessibledesc")); // NOI18N
-        btnRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.btnRemove.accessibledesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    @Messages("Q_RemoveArch=Really remove {0} archetype from local repository?")
-private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveActionPerformed
-    Node[] nds = getExplorerManager().getSelectedNodes();
-    if (nds.length != 0) {
-        final Archetype arch = (Archetype) nds[0].getValue(PROP_ARCHETYPE);
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                Q_RemoveArch(arch.getArtifactId()), 
-                NotifyDescriptor.YES_NO_OPTION);
-        Object ret = DialogDisplayer.getDefault().notify(nd);
-        if (ret != NotifyDescriptor.YES_OPTION) {
-            return;
-        }
-        RP.post(new Runnable() {
-            public void run() {
-                try {
-                    RepositoryInfo info = RepositoryPreferences.getInstance().getLocalRepository();
-                    List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
-                            arch.getArtifactId(), arch.getVersion(), Collections.singletonList(info));
-                    for (NBVersionInfo record : rec) {
-                        Artifact a = RepositoryUtil.createArtifact(record);
-                        RepositoryIndexer.deleteArtifactFromIndex(info, a);
-                    }
-                    File path = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(),
-                            arch.getGroupId().replace('.', File.separatorChar) + File.separator + arch.getArtifactId() + File.separator + arch.getVersion());
-                    if (path.exists()) {
-                        FileUtils.deleteDirectory(path);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+    private void listArtifactValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listArtifactValueChanged
+        Archetype a = (Archetype) listArtifact.getSelectedValue();
+        if (a != null) {
+            textGroupId.setText(a.getGroupId());
+            textArtifactId.setText(a.getArtifactId());
+            textVersion.setText(a.getVersion());
+            textRepository.setText(a.getRepository());
+            String d = a.getDescription();
+            if (d != null) {
+                taDescription.setText(d.replaceAll("\\s+", " ").replaceAll("^ | $", ""));
+            } else {
+                taDescription.setText(null);
             }
-        });
-        ((Childs) getExplorerManager().getRootContext().getChildren()).removeArchetype(arch);
-    }
-}//GEN-LAST:event_btnRemoveActionPerformed
+        } else {
+            textGroupId.setText(null);
+            textArtifactId.setText(null);
+            textVersion.setText(null);
+            textRepository.setText(null);
+            taDescription.setText(null);
+        }
+        wizardPanel.fireChangeEvent();
+    }//GEN-LAST:event_listArtifactValueChanged
 
-    @Messages({
-        "TIT_Archetype_details=Specify archetype details",
-        "LBL_Custom=Custom archetype - {0}"
-    })
-    private void btnCustomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomActionPerformed
-        CustomArchetypePanel panel = new CustomArchetypePanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, TIT_Archetype_details());
-        Object ret = DialogDisplayer.getDefault().notify(dd);
-        if (ret == NotifyDescriptor.OK_OPTION) {
-            Childs childs = (Childs)manager.getRootContext().getChildren();
-            Archetype arch = new Archetype();
-            arch.setArtifactId(panel.getArtifactId());
-            arch.setGroupId(panel.getGroupId());
-            arch.setVersion(panel.getVersion().length() == 0 ? "LATEST" : panel.getVersion()); //NOI18N
-            
-            arch.setName(LBL_Custom(panel.getArtifactId()));
-            if (panel.getRepository().length() != 0) {
-                arch.setRepository(panel.getRepository());
-            }
-            childs.addArchetype(arch);
-            //HACK - the added one will be last..
-            Node[] list =  getExplorerManager().getRootContext().getChildren().getNodes();
-            try {
-                getExplorerManager().setSelectedNodes(new Node[] {list[list.length - 1]});
-            } catch (PropertyVetoException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }//GEN-LAST:event_btnCustomActionPerformed
-    
-    
+    private void showOldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showOldActionPerformed
+        updateList();
+    }//GEN-LAST:event_showOldActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnCustom;
-    private javax.swing.JButton btnRemove;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblHint;
-    private javax.swing.JPanel pnlView;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel labelArchetypes;
+    private javax.swing.JLabel labelArtifactId;
+    private javax.swing.JLabel labelDesc;
+    private javax.swing.JLabel labelFilter;
+    private javax.swing.JLabel labelGroupId;
+    private javax.swing.JLabel labelRepository;
+    private javax.swing.JLabel labelVersion;
+    private javax.swing.JList listArtifact;
+    private javax.swing.JCheckBox showOld;
     private javax.swing.JTextArea taDescription;
+    private javax.swing.JTextField textArtifactId;
+    private javax.swing.JTextField textFilter;
+    private javax.swing.JTextField textGroupId;
+    private javax.swing.JTextField textRepository;
+    private javax.swing.JTextField textVersion;
     // End of variables declaration//GEN-END:variables
     
-    
-
-    public ExplorerManager getExplorerManager() {
-        return manager;
-    }
-    
-    public @Override void run() {
-        List<Archetype> archetypes = new ArrayList<Archetype>();
-        // XXX currently there will be none here; should reconsider UI of this panel
-        for (ArchetypeProvider provider : Lookup.getDefault().lookupAll(ArchetypeProvider.class)) {
-            for (Archetype ar : provider.getArchetypes()) {
-                if (!archetypes.contains(ar)) {
-                    archetypes.add(ar);
-                }
-            }
-        }
-        archetypes.add(CATALOGS_PLACEHOLDER);
-        archetypes.add(LOCAL_PLACEHOLDER);
-        archetypes.add(REMOTE_PLACEHOLDER);
-        Childs childs = (Childs)manager.getRootContext().getChildren();
-        childs.setArchetypes(archetypes);
-
-        try {
-            manager.setSelectedNodes(new Node[] {manager.getRootContext().getChildren().getNodes()[0]});
-        } catch (PropertyVetoException e) {
-        }
-    }
-
     void read(WizardDescriptor wizardDescriptor) {
     }
 
     void store(WizardDescriptor d) {
-        if (manager.getSelectedNodes().length > 0) {
-            d.putProperty(PROP_ARCHETYPE, manager.getSelectedNodes()[0].getValue(PROP_ARCHETYPE));
+        if (!textGroupId.getText().isEmpty()) {
+            Archetype a = new Archetype();
+            a.setGroupId(textGroupId.getText());
+            a.setArtifactId(textArtifactId.getText());
+            a.setVersion(textVersion.getText());
+            String r = textRepository.getText();
+            if (!r.isEmpty()) {
+                a.setRepository(r);
+            }
+            d.putProperty(MavenWizardIterator.PROP_ARCHETYPE, a);
         }
     }
 
@@ -386,230 +354,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        boolean isSelected = manager.getSelectedNodes().length > 0;
-        if (isSelected) {
-            Archetype arch = (Archetype)((AbstractNode)manager.getSelectedNodes()[0]).getValue(PROP_ARCHETYPE);
-            isSelected = arch != null && !prohibited.contains(arch);
-        }
-        return isSelected;
+        return !textGroupId.getText().isEmpty() && !textArtifactId.getText().isEmpty() && !textVersion.getText().isEmpty();
     }
 
-    @Messages({
-        "MSG_Description_with_repo={0}\n\nGroup ID: {1}\nArtifact ID: {2}\nVersion: {3}\nRepository: {4}",
-        "MSG_Description_no_repo={0}\n\nGroup ID: {1}\nArtifact ID: {2}\nVersion: {3}",
-        "MSG_NoTemplate=<No template selected>"
-    })
-    private void updateDescription() {
-        Node[] nds = manager.getSelectedNodes();
-        if (nds.length > 0) {
-            Archetype arch = (Archetype)((AbstractNode)nds[0]).getValue(PROP_ARCHETYPE);
-            if (arch != null && !prohibited.contains(arch)) {
-                String desc = arch.getDescription() == null ? "" : arch.getDescription().replaceAll("\\s+", " ").replaceAll("^ | $", "");
-                if (arch.getRepository() != null) {
-                    taDescription.setText(MSG_Description_with_repo(desc, arch.getGroupId(), arch.getArtifactId(), arch.getVersion(), arch.getRepository()));
-                } else {
-                    taDescription.setText(MSG_Description_no_repo(desc, arch.getGroupId(), arch.getArtifactId(), arch.getVersion()));
-                }
-                taDescription.setCaretPosition(0);
-                btnRemove.setEnabled(arch.deletable);
-                return;
-            }
-        }
-        taDescription.setText(MSG_NoTemplate());
-        btnRemove.setEnabled(false);
-    }
-    
-    @Messages({
-        "LBL_Loading=Loading more archetypes...",
-        "TIT_Archetype_Node_Name={0} ({1})"
-    })
-    public static Node[] createNodes(Archetype arch, Children childs) {
-        if (arch == LOADING_ARCHETYPE) {
-            AbstractNode loading = new AbstractNode(Children.LEAF);
-            loading.setName("loading"); //NOI18N
-            loading.setDisplayName(LBL_Loading());
-            return new Node[] {loading};
-        }
-        AbstractNode nd = new AbstractNode(childs);
-        String dn = arch.getName() == null ? arch.getArtifactId() : arch.getName();
-        nd.setName(dn);
-        nd.setDisplayName(TIT_Archetype_Node_Name(dn, arch.getVersion()));
-        nd.setIconBaseWithExtension("org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
-        nd.setValue(PROP_ARCHETYPE, arch);
-        return new Node[] { nd };
-    }
-    
-    
-    private static class Childs extends Children.Keys<Archetype> {
-        private List<Archetype> keys;
-        public Childs() {
-            this.keys = new ArrayList<Archetype>();
-        }
-        @Override
-        public void addNotify() {
-            setKeys(keys);
-        }
-        
-        @Override
-        public void removeNotify() {
-            setKeys(Collections.<Archetype>emptyList());
-        }
-        
-        public void addArchetype(Archetype arch) {
-            keys.add(Math.max(0, keys.size() - 1), arch);
-            setKeys(keys);
-            refresh();
-        }
-        
-        public void removeArchetype(Archetype arch) {
-            keys.remove(arch);
-            setKeys(keys);
-            refresh();
-        }
-        
-        public Node[] createNodes(Archetype arch) {
-            if (arch == REMOTE_PLACEHOLDER) {
-                return new Node[] { createRemoteRepoNode() };
-            }
-            if (arch == LOCAL_PLACEHOLDER) {
-                return new Node[] { createLocalRepoNode() };
-            }
-            if (arch == CATALOGS_PLACEHOLDER) {
-                return new Node[] {createLocalCatalogNode(), createDefaultCatalogNode()};
-            }
-            return ChooseArchetypePanel.createNodes(arch, Children.LEAF);
-        }
-
-        private void addArchetypes(Collection<Archetype> archetypes) {
-            keys.addAll(archetypes);
-            setKeys(keys);
-            refresh();
-        }
-
-        private void setArchetypes(Collection<Archetype> archetypes) {
-            keys = new ArrayList<Archetype>(archetypes);
-            setKeys(keys);
-            refresh();
-        }
-    }
-
-    @Messages("LBL_Remote=Archetypes from Remote Repositories")
-    private static Node createRemoteRepoNode() {
-        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new RemoteRepoProvider()));
-        nd.setName("remote-repo-content"); //NOI18N
-        nd.setDisplayName(LBL_Remote());
-        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
-        return nd;
-    }
-    
-    @Messages("LBL_Local=Archetypes from Local Repository")
-    private static Node createLocalRepoNode() {
-        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new LocalRepoProvider()));
-        nd.setName("local-repo-content"); //NOI18N
-        nd.setDisplayName(LBL_Local());
-        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
-        return nd;
-    }
-    
-    @Messages("LBL_LocalCatalog=Local Archetype Catalog")
-    private static Node createLocalCatalogNode() {
-        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider() {
-            protected @Override URL file() throws IOException {
-                File f = getLocalCatalogFile();
-                return f.isFile() ? f.toURI().toURL() : null;
-            }
-            protected @Override String repository() {
-                return RepositorySystem.DEFAULT_LOCAL_REPO_ID;
-            }
-        }));
-        nd.setName("local-catalog-content"); //NOI18N
-        nd.setDisplayName(LBL_LocalCatalog());
-        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
-        return nd;
-    }
-
-    @Messages("LBL_DefaultCatalog=Default Archetype Catalog")
-    private static Node createDefaultCatalogNode() {
-        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider() {
-            protected @Override URL file() throws IOException {
-                return getDefaultCatalogFile();
-            }
-        }));
-        nd.setName("default-catalog-content"); //NOI18N
-        nd.setDisplayName(LBL_DefaultCatalog());
-        nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
-        return nd;
-    }
-
-    private static class RepoProviderChildren extends Children.Keys<Archetype> implements Runnable {
-        private List<Archetype> keys;
-        private TreeMap<String, TreeMap<DefaultArtifactVersion, Archetype>> res = new TreeMap<String, TreeMap<DefaultArtifactVersion, Archetype>>();
-        private final ArchetypeProvider provider;
-
-        private RepoProviderChildren(ArchetypeProvider prov) {
-            keys = new ArrayList<Archetype>();
-            this.provider = prov;
-        }
-        
-        @Override
-        public void addNotify() {
-            keys.add(LOADING_ARCHETYPE);
-            setKeys(keys);
-            RP.post(this);
-        }
-        
-        @Override
-        public void removeNotify() {
-            setKeys(Collections.<Archetype>emptyList());
-        }
-        
-        @Override
-        protected Node[] createNodes(Archetype key) {
-            if (key == LOADING_ARCHETYPE) {
-                return ChooseArchetypePanel.createNodes(key, LEAF);
-            }
-            String id = key.getGroupId() + "|" + key.getArtifactId(); //NOI18N
-            TreeMap<DefaultArtifactVersion, Archetype> rs = res.get(id);
-            Children childs = Children.LEAF;
-            if (rs != null && rs.size() > 1) {
-                //can it be actually null?
-                childs = new Childs();
-                List<Archetype> lst = new ArrayList<Archetype>();
-                lst.addAll(rs.values());
-                lst.remove(key);
-                ((Childs)childs).addArchetypes(lst);
-            } 
-            return ChooseArchetypePanel.createNodes(key, childs);
-        }
-
-        public void run() {
-            for (Archetype ar : provider.getArchetypes()) {
-                String key = ar.getGroupId() + "|" + ar.getArtifactId(); //NOI18N
-                TreeMap<DefaultArtifactVersion, Archetype> archs = res.get(key);
-                if (archs == null) {
-                    archs = new TreeMap<DefaultArtifactVersion, Archetype>(new VersionComparator());
-                    res.put(key, archs);
-                }
-                if (!archs.containsValue(ar)) {
-                    DefaultArtifactVersion ver = new DefaultArtifactVersion(ar.getVersion());
-                    archs.put(ver, ar);
-                }
-            }
-            List<Archetype> archetypes = new ArrayList<Archetype>();
-            for (TreeMap<DefaultArtifactVersion, Archetype> map : res.values()) {
-                archetypes.add(map.values().iterator().next());
-            }
-            keys = archetypes;
-            setKeys(keys);
-        }
-        
-    }
-    
-    private static class VersionComparator implements Comparator<DefaultArtifactVersion> {
-        public int compare(DefaultArtifactVersion o1, DefaultArtifactVersion o2) {
-            assert o1 != null;
-            assert o2 != null;
-            return o2.compareTo(o1);
-        }
-    }
 }
