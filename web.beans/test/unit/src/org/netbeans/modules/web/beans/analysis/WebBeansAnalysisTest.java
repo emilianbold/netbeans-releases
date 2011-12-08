@@ -45,7 +45,6 @@ package org.netbeans.modules.web.beans.analysis;
 import java.io.IOException;
 
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.InjectionPointParameterAnalyzer;
 import org.openide.filesystems.FileObject;
 
 
@@ -392,6 +391,71 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(errorFile , processor);
         
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ScopedBeanAnalyzer.checkInterceptorDecorator
+     */
+    public void testScopedDecoratorInterceptor() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.inject.Scope; "+
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @Scope "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                " public interface Iface { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                " @Scope1 "+
+                "@Interceptor "+
+                " public class Clazz1 { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.inject.Inject; "+
+                " @Scope1 "+
+                "@Decorator "+
+                " public class Clazz2 implements Iface{ "+
+                " @Delegate @Inject Iface delegate; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Clazz1");
+                assertEquals( 0, result.getErrors().size() );
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Clazz2");
+                assertEquals( 0, result.getErrors().size() );
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
     }
     
     //=======================================================================
@@ -759,6 +823,38 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         
         runAnalysis( goodFile, WARNINGS_PROCESSOR );
         runAnalysis( goodFile1, WARNINGS_PROCESSOR );
+    }
+    
+    /*
+     * InjectionPointAnalyzer.checkNamed
+     */
+    public void testNamedInjectionPoint() throws IOException {
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/BeanType.java",
+                "package foo; " +
+                " @Scope1 "+
+                " public class BeanType  { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " import javax.inject.Named; "+
+                " public class Clazz  { "+
+                " @Inject @Named BeanType injectionPoint; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result.getWarings(), "foo.Clazz", "injectionPoint");
+                assertEquals( 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
     }
     
     /*
@@ -1139,6 +1235,58 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
             
         };
         runAnalysis(errorFile , processor);
+        
+    }
+    
+    /*
+     * InjectionPointParameterAnalyzer.checkName 
+     */
+    public void testNamedParameter() throws IOException {
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/BeanType.java",
+                "package foo; " +
+                " public class BeanType { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " import javax.inject.Named; "+
+                " public class Clazz1 { "+
+                " @Inject void method( @Named BeanType injectionPoint ){} "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " import javax.inject.Named; "+
+                " public class Clazz2 { "+
+                " @Inject void method( @Named(\"paramName\") BeanType injectionPoint ){} "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement(result, "foo.Clazz1", "method", "injectionPoint");
+                checkParamElement(result.getWarings(), "foo.Clazz1", "method", 
+                        "injectionPoint");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement(result.getWarings(), "foo.Clazz2", "method", 
+                        "injectionPoint");
+                assertEquals( 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
         
     }
     
