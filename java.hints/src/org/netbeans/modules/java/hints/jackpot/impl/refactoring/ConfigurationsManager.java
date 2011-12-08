@@ -111,7 +111,7 @@ public class ConfigurationsManager {
         }
         int configurationsVersion = prefs.getInt(KEY_CONFIGURATIONS_VERSION, 0);
         if (configs.isEmpty()) {
-            create("default", "default");
+            create("default", NbBundle.getMessage(ConfigurationsManager.class, "DN_Default"));
             Configuration jdk7 = create("jdk7", NbBundle.getMessage(ConfigurationsManager.class, "DN_ConvertToJDK7"));
             jdk7.enable(ConvertToDiamondBulkHint.ID);
             jdk7.enable("org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch");
