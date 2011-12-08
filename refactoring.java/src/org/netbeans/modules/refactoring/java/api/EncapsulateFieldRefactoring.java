@@ -180,7 +180,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
 
     /**
      * Should be VetoableChangeSupport generated?
-     * @return @return true if VetoableChangeSupport be generated
+     * @return true if VetoableChangeSupport be generated
      * @since 1.32
      */
     public boolean isGenerateVetoableChangeSupport() {
