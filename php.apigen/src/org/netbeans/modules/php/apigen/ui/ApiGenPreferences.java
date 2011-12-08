@@ -43,6 +43,7 @@ package org.netbeans.modules.php.apigen.ui;
 
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 
 /**
  * ApiGen preferences for {@link PhpModule}.
@@ -62,16 +63,16 @@ public final class ApiGenPreferences {
 
     public static String getTarget(PhpModule phpModule, boolean showPanel) {
         Preferences preferences = getPreferences(phpModule);
-        String phpDocTarget = preferences.get(TARGET, null);
-        if ((phpDocTarget == null || phpDocTarget.isEmpty()) && showPanel) {
-            phpDocTarget = BrowseFolderPanel.open(phpModule);
-            if (phpDocTarget == null) {
+        String target = preferences.get(TARGET, null);
+        if (StringUtils.isEmpty(target) && showPanel) {
+            target = BrowseFolderPanel.open(phpModule);
+            if (target == null) {
                 // cancelled
                 return null;
             }
-            setTarget(phpModule, phpDocTarget);
+            setTarget(phpModule, target);
         }
-        return phpDocTarget;
+        return target;
     }
 
     public static void setTarget(PhpModule phpModule, String phpDocTarget) {
