@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.versioning.options;
+package org.netbeans.modules.versioning.ui.options;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -54,14 +54,13 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
-import org.netbeans.modules.versioning.core.Utils;
-import org.netbeans.modules.versioning.core.VersioningConfig;
-import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionListener {
     
@@ -88,7 +87,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
 
     private void fillDisconnectedFolders () {
         if (cmbVersioningSystems.getSelectedItem() instanceof VersioningSystem) {
-            String[] disconnected = VersioningConfig.getDefault().getDisconnectedRoots(((VersioningSystem) cmbVersioningSystems.getSelectedItem()));
+            String[] disconnected = Utils.getDisconnectedRoots(((VersioningSystem) cmbVersioningSystems.getSelectedItem()));
             DefaultListModel model = new DefaultListModel();
             for (String f : disconnected) {
                 model.addElement(f);
@@ -138,9 +137,6 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -149,10 +145,14 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
                                 .addComponent(cmbVersioningSystems, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(190, 190, 190))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btnRemove)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAdd)
-                        .addContainerGap(195, Short.MAX_VALUE))))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(btnRemove)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnAdd)
+                                .addGap(0, 189, Short.MAX_VALUE)))
+                        .addContainerGap())))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -227,7 +227,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
         } else if (e.getSource() == btnRemove) {
             if (cmbVersioningSystems.getSelectedItem() instanceof VersioningSystem && lstDisconnectedFolders.getSelectedValue() != null) {
                 String f = (String) lstDisconnectedFolders.getSelectedValue();
-                VersioningConfig.getDefault().connectRepository((VersioningSystem) cmbVersioningSystems.getSelectedItem(), f);
+                Utils.connectRepository((VersioningSystem) cmbVersioningSystems.getSelectedItem(), f);
                 fillDisconnectedFolders();
                 refreshSystems();
             }
@@ -237,7 +237,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
                 File f = new FileChooserBuilder("VersioningOptions.disconnected").setTitle(NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_DisconnectingFolder.title")) //NOI18N
                         .setDirectoriesOnly(true).setFileHiding(true).showOpenDialog();
                 if (f != null && (vcs.getTopmostManagedAncestor(VCSFileProxy.createFileProxy(f)) != null)) {
-                    VersioningConfig.getDefault().disconnectRepository(vcs, f.getAbsolutePath());
+                    Utils.disconnectRepository(vcs, f.getAbsolutePath());
                     fillDisconnectedFolders();
                     refreshSystems();
                 }
@@ -246,10 +246,10 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     }
 
     private void refreshSystems () {
-        Utils.createTask(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run () {
-                VersioningManager.getInstance().versionedRootsChanged();
+                Utils.versionedRootsChanged();
             }
         }).schedule(100);
     }

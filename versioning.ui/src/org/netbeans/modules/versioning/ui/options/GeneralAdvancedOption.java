@@ -42,89 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.versioning.options;
+package org.netbeans.modules.versioning.ui.options;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
+import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-final class GeneralOptionsPanelController extends OptionsPanelController {
+public final class GeneralAdvancedOption extends AdvancedOption {
     
-    private GeneralOptionsPanel panel;
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
-    
-    public GeneralOptionsPanelController() { }
-
     @Override
-    public void update() {
-        getPanel().load();
-        changed = false;
+    public String getDisplayName() {
+        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_DisplayName"); // NOI18N
     }
     
     @Override
-    public void applyChanges() {
-        if (!validateFields()) return;
-        getPanel().store();        
-        changed = false;
+    public String getTooltip() {
+        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_Tooltip"); // NOI18N
     }
     
     @Override
-    public void cancel() {
-        // need not do anything special, if no changes have been persisted yet
+    public OptionsPanelController create() {
+        return new GeneralOptionsPanelController();
     }
     
-    @Override
-    public boolean isValid() {
-        return getPanel().valid();
-    }
-    
-    @Override
-    public boolean isChanged() {
-        return changed;
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(OptionsPanelController.class);
-    }
-    
-    @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return getPanel();
-    }
-    
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
-    }
-    
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }            
-
-    private Boolean validateFields() {
-        
-        return true;
-    }
-
-    private GeneralOptionsPanel getPanel() {
-        if (panel == null) {
-            panel = new GeneralOptionsPanel(this);
-        }
-        return panel;
-    }
-    
-    void changed() {
-        if (!changed) {
-            changed = true;
-            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-        }
-        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
- 
 }

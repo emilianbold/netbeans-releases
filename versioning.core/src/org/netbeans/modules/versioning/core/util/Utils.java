@@ -43,10 +43,13 @@ package org.netbeans.modules.versioning.core.util;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.FlatFolder;
 import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
+import org.netbeans.modules.versioning.core.VersioningConfig;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 
 /**
  *
@@ -56,8 +59,20 @@ public final class Utils {
     public static String EVENT_ANNOTATIONS_CHANGED = VersioningManager.EVENT_ANNOTATIONS_CHANGED;
     public static String EVENT_STATUS_CHANGED = VersioningManager.EVENT_STATUS_CHANGED;
     public static String EVENT_VERSIONED_ROOTS = VersioningManager.EVENT_VERSIONED_ROOTS;
-    
+
     private Utils() { }
+    
+    public static void disconnectRepository(VersioningSystem versioningSystem, String absolutePath) {
+        VersioningConfig.getDefault().disconnectRepository(versioningSystem, absolutePath);
+    }
+    
+    public static void connectRepository(VersioningSystem versioningSystem, String absolutePath) {
+        VersioningConfig.getDefault().connectRepository(versioningSystem, absolutePath);
+    }
+
+    public static String[] getDisconnectedRoots(VersioningSystem versioningSystem) {
+        return VersioningConfig.getDefault().getDisconnectedRoots(versioningSystem);
+    }
     
     public static void flushNullOwners() {
         VersioningManager.getInstance().flushNullOwners();
