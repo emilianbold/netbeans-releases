@@ -43,6 +43,8 @@ package org.netbeans.modules.php.apigen.commands;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -51,6 +53,7 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.options.ApiGenOptions;
 import org.netbeans.modules.php.apigen.ui.ApiGenPreferences;
@@ -66,6 +69,12 @@ public final class ApiGenScript extends PhpProgram {
 
     public static final String SCRIPT_NAME = "apigen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
+
+    private static final String SOURCE_PARAM = "--source"; // NOI18N
+    private static final String DESTINATION_PARAM = "--destination"; // NOI18N
+    private static final String TITLE_PARAM = "--title"; // NOI18N
+    private static final String CONFIG_PARAM = "--config"; // NOI18N
+    private static final String CHARSET_PARAM = "--charset"; // NOI18N
 
 
     private ApiGenScript(String command) {
@@ -108,16 +117,11 @@ public final class ApiGenScript extends PhpProgram {
             return;
         }
 
-        ExternalProcessBuilder processBuilder = getProcessBuilder()
-                // from
-                .addArgument("-s") // NOI18N
-                .addArgument(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath())
-                // to
-                .addArgument("-d") // NOI18N
-                .addArgument(target)
-                // title
-                .addArgument("--title") // NOI18N
-                .addArgument(ApiGenPreferences.getTitle(phpModule));
+        ExternalProcessBuilder processBuilder = getProcessBuilder();
+        for (String param : getParams(phpModule)) {
+            processBuilder = processBuilder
+                    .addArgument(param);
+        }
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .frontWindow(false)
                 .optionsPath(ApiGenOptionsPanelController.getOptionsPath());
@@ -147,6 +151,46 @@ public final class ApiGenScript extends PhpProgram {
             Thread.currentThread().interrupt();
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    private List<String> getParams(PhpModule phpModule) {
+        List<String> params = new ArrayList<String>();
+        setSource(phpModule, params);
+        setDestination(phpModule, params);
+        setTitle(phpModule, params);
+        setConfig(phpModule, params);
+        setCharsets(phpModule, params);
+        return params;
+    }
+
+    private void setSource(PhpModule phpModule, List<String> params) {
+        params.add(SOURCE_PARAM);
+        params.add(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath());
+    }
+
+    private void setDestination(PhpModule phpModule, List<String> params) {
+        params.add(DESTINATION_PARAM);
+        params.add(ApiGenPreferences.getTarget(phpModule, false));
+    }
+
+    private void setTitle(PhpModule phpModule, List<String> params) {
+        params.add(TITLE_PARAM);
+        params.add(ApiGenPreferences.getTitle(phpModule));
+    }
+
+    private void setConfig(PhpModule phpModule, List<String> params) {
+        String config = ApiGenPreferences.getConfig(phpModule);
+        if (StringUtils.hasText(config)) {
+            params.add(CONFIG_PARAM);
+            params.add(config);
+        }
+    }
+
+    private void setCharsets(PhpModule phpModule, List<String> params) {
+        for (String charset : ApiGenPreferences.getCharsets(phpModule)) {
+            params.add(CHARSET_PARAM);
+            params.add(charset);
         }
     }
 
