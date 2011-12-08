@@ -45,18 +45,21 @@
 package org.netbeans.core.startup;
 
 import java.io.IOException;
-import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
 
 // XXX public for reflection from contrib/modulemanager; should be changed to friend dep!
 
@@ -199,19 +202,33 @@ public final class NbProblemDisplayer {
         }
     }
 
-    static void problemMessagesForModules(Appendable writeTo, Collection<? extends Module> modules, boolean justRootCause) {
+    static void problemMessagesForModules(final Appendable writeTo, Collection<? extends Module> modules, final boolean justRootCause) {
         try {
             HashSet<String> names = new HashSet<String>();
             for (Module m : modules) {
                 names.add(m.getCodeName());
             }
             HashSet<String> dependentModules = new HashSet<String>();
+            class Report {
+                final Module m;
+                final List<Object> problems = new ArrayList<Object>();
+                Report(Module m) {
+                    this.m = m;
+                }
+                void write() throws IOException {
+                    for (Object problem : problems) {
+                        writeTo.append("\n\t").append(label(m, justRootCause) + " - " + NbProblemDisplayer.messageForProblem(m, problem, justRootCause));
+                    }
+                }
+            }
+            Map<Module,Report> reports = new HashMap<Module,Report>();
+            Map<Module,Collection<Module>> edges = new HashMap<Module,Collection<Module>>();
             for (Module m : modules) {
-                SortedSet<String> problemTexts = new TreeSet<String>(Collator.getInstance());
                 Set<Object> problems = m.getProblems();
                 if (problems.isEmpty()) {
                     throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N
                 }
+                Report r = new Report(m);
                 for (Object problem : problems) {
                     if (problem instanceof Dependency && justRootCause) {
                         Dependency d = (Dependency) problem;
@@ -220,10 +237,18 @@ public final class NbProblemDisplayer {
                             continue;
                         }
                     }
-                    problemTexts.add(label(m, justRootCause) + " - " + NbProblemDisplayer.messageForProblem(m, problem, justRootCause));
+                    r.problems.add(problem);
                 }
-                for (String s: problemTexts) {
-                    writeTo.append("\n\t").append(s); // NOI18N
+                reports.put(m, r);
+                edges.put(m, m.getManager().getModuleInterdependencies(m, true, false, false));
+            }
+            try {
+                for (Module m : Utilities.topologicalSort(edges.keySet(), edges)) {
+                    reports.get(m).write();
+                }
+            } catch (TopologicalSortException x) {
+                for (Report r : reports.values()) {
+                    r.write();
                 }
             }
             if (!dependentModules.isEmpty()) {
