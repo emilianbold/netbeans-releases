@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,17 +59,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -110,7 +101,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         long time = System.currentTimeMillis();
         try {
-            if (Boolean.getBoolean("cnd.model.index.enabled")) {
+            if (Boolean.getBoolean("cnd.model.index.enabled") && Boolean.getBoolean("cnd.model.global.index")) {
                 return ReferencesIndex.getAllReferences(UIDCsmConverter.objectToUID(target));
             }
             if (!(project instanceof ProjectBase)) {
@@ -131,7 +122,15 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 CsmOffsetable offs = (CsmOffsetable)scope;
                 out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
             } else {
-                files = basePrj.getAllFileImpls();
+                if (Boolean.getBoolean("cnd.model.global.index")) {
+                    Collection<CsmUID<CsmFile>> allFiles = ReferencesIndex.getRelevantFiles(UIDCsmConverter.objectToUID(target));
+                    files = new ArrayList<FileImpl>(allFiles.size());
+                    for (CsmUID<CsmFile> csmUID : allFiles) {
+                        files.add((FileImpl)UIDCsmConverter.UIDtoFile(csmUID));
+                    }
+                } else {
+                    files = basePrj.getAllFileImpls();
+                }
                 out = new ArrayList<CsmReference>(files.size() * 10);
                 for (FileImpl file : files) {
                     if (interrupter != null && interrupter.cancelled()) {
@@ -206,6 +205,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     private Collection<CsmReference> getReferences(final CsmObject targetDecl, final CsmObject targetDef, FileImpl file,
             final Set<CsmReferenceKind> kinds, final boolean unboxInstantiation, int startOffset, int endOffset, final Interrupter interrupter) {
+        if (Boolean.getBoolean("cnd.model.index.enabled")) {
+            return file.getReferences(targetDef == null ? Collections.singleton(targetDecl) : Arrays.asList(targetDecl, targetDef));
+        }
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";

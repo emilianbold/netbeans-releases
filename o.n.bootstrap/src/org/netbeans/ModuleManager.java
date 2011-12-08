@@ -344,6 +344,14 @@ public final class ModuleManager extends Modules {
     }
 
     /**
+     * @deprecated Use {@link #getModuleInterdependencies(Module, boolean, boolean, boolean)} instead.
+     */
+    @Deprecated
+    public Set<Module> getModuleInterdependencies(Module m, boolean reverse, boolean transitive) {
+        return Util.moduleInterdependencies(m, reverse, transitive, true, modules, modulesByName, providersOf);
+    }
+
+    /**
      * Get a set of modules depended upon or depending on this module.
      * <p>Note that provide-require/need dependencies are listed alongside direct
      * dependencies; a module with a required token is considered to depend on
@@ -354,11 +362,12 @@ public final class ModuleManager extends Modules {
      * @param reverse if true, find modules depending on this module; if false, find
      *                modules this module depends upon
      * @param transitive if true, these dependencies are considered transitively as well
+     * @param considerNeeds if true, dependencies of type {@link Dependency#TYPE_NEEDS} are considered
      * @return a set (possibly empty) of modules managed by this manager, never including m
-     * @since org.netbeans.core/1 > 1.17
+     * @since org.netbeans.bootstrap/1 > 2.48
      */
-    public Set<Module> getModuleInterdependencies(Module m, boolean reverse, boolean transitive) {
-        return Util.moduleInterdependencies(m, reverse, transitive, modules, modulesByName, providersOf);
+    public Set<Module> getModuleInterdependencies(Module m, boolean reverse, boolean transitive, boolean considerNeeds) {
+        return Util.moduleInterdependencies(m, reverse, transitive, considerNeeds, modules, modulesByName, providersOf);
     }
 
     /** Get a classloader capable of loading from any

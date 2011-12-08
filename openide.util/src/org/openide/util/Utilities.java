@@ -2365,7 +2365,7 @@ widthcheck:  {
      * @since 3.30
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=27286">Issue #27286</a>
      */
-    public static <T> List<T> topologicalSort(Collection<T> c, Map<? super T, ? extends Collection<? extends T>> edges)
+    public static <T> List<T> topologicalSort(Collection<? extends T> c, Map<? super T, ? extends Collection<? extends T>> edges)
     throws TopologicalSortException {
         Map<T,Boolean> finished = new HashMap<T,Boolean>();
         List<T> r = new ArrayList<T>(Math.max(c.size(), 1));

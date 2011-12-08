@@ -69,6 +69,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -218,7 +219,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         if (f != null && f.exists()) {
             name = ECLIPSE_LINK_LIB_2;
         }
-        return addLibrary(name, libraryList, docList);
+        return addLibrary(name, libraryList, docList,
+                NbBundle.getMessage(JavaEEServerModuleFactory.class, "DNAME_GF_ECLIPSELINK"),  // NOI18N
+                NbBundle.getMessage(JavaEEServerModuleFactory.class, "DESC_GF_ECLIPSELINK"));  // NOI18N
     }
     private static final String COMET_LIB = "Comet-GlassFish-v3-Prelude"; // NOI18N
     private static final String COMET_LIB_2 = "Comet-GlassFish-v3"; // NOI18N
@@ -246,7 +249,9 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             }
         }
 
-        return addLibrary(name, libraryList, null);
+        return addLibrary(name, libraryList, null,
+                NbBundle.getMessage(JavaEEServerModuleFactory.class, "DNAME_GF_COMET"),  // NOI18N
+                NbBundle.getMessage(JavaEEServerModuleFactory.class, "DESC_GF_COMET"));  // NOI18N
     }
 
     private static final String JERSEY_GF_SERVER = "jersey-gf-server"; //NOI18N
@@ -307,14 +312,17 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 }
             }
         }
-        return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList);
+        return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList,
+                NbBundle.getMessage(JavaEEServerModuleFactory.class, "DNAME_GF_JAVA_EE_IMPL"), // NOI18N
+                NbBundle.getMessage(JavaEEServerModuleFactory.class, "DESC_GF_JAVA_EE_IMPL")); // NOI18N
     }
 
-    private static boolean addLibrary(String name, List<URL> libraryList, List<URL> docList) {
-        return addLibrary(name, CLASS_LIBRARY_TYPE, libraryList, docList);
+    private static boolean addLibrary(String name, List<URL> libraryList, List<URL> docList, String displayName, String description) {
+        return addLibrary(name, CLASS_LIBRARY_TYPE, libraryList, docList, displayName, description);
     }
 
-    private synchronized static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList) {
+    private synchronized static boolean addLibrary(String name, String libType, List<URL> libraryList, List<URL> docList, String displayName,
+            String description) {
         LibraryManager lmgr = LibraryManager.getDefault();
 
         int size = 0;
@@ -411,10 +419,10 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
 
                 LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(libType);
                 if (null != ltp) {
-                    lib = lmgr.createLibrary(libType, name, contents);
+                    lib = lmgr.createLibrary(libType, name, displayName, description, contents);
                     Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library {0}", name);
                 } else {
-                    lmgr.addPropertyChangeListener(new InitializeLibrary(lmgr, libType, name, contents));
+                    lmgr.addPropertyChangeListener(new InitializeLibrary(lmgr, libType, name, contents, displayName, description));
                     Logger.getLogger("glassfish-javaee").log(Level.FINE, "schedule to create library {0}", name);
                 }
             } catch (IOException ex) {
@@ -440,12 +448,17 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
         private String name;
         private Map<String, List<URL>> content;
         private final String libType;
+        private final String displayName;
+        private final String description;
 
-        InitializeLibrary(LibraryManager lmgr, String libType, String name, Map<String, List<URL>> content) {
+        InitializeLibrary(LibraryManager lmgr, String libType, String name, Map<String, List<URL>> content,
+                String displayName, String description) {
             this.lmgr = lmgr;
             this.name = name;
             this.content = content;
             this.libType = libType;
+            this.displayName = displayName;
+            this.description = description;
         }
 
         @Override
@@ -458,7 +471,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                     try {
                         LibraryTypeProvider ltp = LibrariesSupport.getLibraryTypeProvider(libType);
                         if (null != ltp) {
-                            lmgr.createLibrary(libType, name, content);
+                            lmgr.createLibrary(libType, name, displayName, description, content);
                             Logger.getLogger("glassfish-javaee").log(Level.FINE, "Created library {0}", name);
                             removeFromListenerList(pcl);
                         }

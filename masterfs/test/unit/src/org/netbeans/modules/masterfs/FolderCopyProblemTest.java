@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,63 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.glassfish.common.wizards;
-
-import org.netbeans.modules.glassfish.common.ServerDetails;
-import org.netbeans.spi.server.ServerWizardProvider;
-import org.openide.WizardDescriptor.InstantiatingIterator;
-
-/**
  *
- * @author Peter Williams
- * @author vince kraemer
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public class GlassfishWizardProvider implements ServerWizardProvider {
+package org.netbeans.modules.masterfs;
 
-    public static GlassfishWizardProvider createEe6() {
-        return new GlassfishWizardProvider(
-                org.openide.util.NbBundle.getMessage(GlassfishWizardProvider.class,
-                "STR_V3_FAMILY_NAME", new Object[]{}) // NOI18N
-                );
+import java.io.File;
+import java.net.URL;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.ProxyURLStreamHandlerFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+public class FolderCopyProblemTest extends NbTestCase {
+
+    public FolderCopyProblemTest(String name) {
+        super(name);
     }
     
-    private final String displayName;
+    public void testTheCopyProblem() throws Exception {
+        clearWorkDir();
+        
+        URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory());
 
-    private GlassfishWizardProvider(
-            String displayName
-            ) {
-        this.displayName = displayName;
+        File tempFileSource = new File(getWorkDir(), "source");
+        tempFileSource.mkdirs();
+        File tempFile1 = File.createTempFile("test.test1", "", tempFileSource);
+        tempFile1.delete();
+        tempFile1.mkdir();
+        File tempFile2 = File.createTempFile("test.test2", "", tempFileSource);
+        tempFile2.delete();
+        tempFile2.mkdir();
+
+        File tempFileTarget = new File(getWorkDir(), "target");
+        tempFileTarget.mkdir();
+
+        FileObject sourceFo = FileUtil.toFileObject(tempFileSource);
+        FileObject targetFo = FileUtil.toFileObject(tempFileTarget);
+
+        FileUtil.copyFile(sourceFo, targetFo, "source");       
+
+        assertNotNull(targetFo.getFileObject("source/" + tempFile1.getName()));
+        assertNotNull(targetFo.getFileObject("source/" + tempFile2.getName()));
     }
-
-    // ------------------------------------------------------------------------
-    // ServerWizardProvider interface implementation
-    // ------------------------------------------------------------------------
-    @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public InstantiatingIterator getInstantiatingIterator() {
-        return new ServerWizardIterator(new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1_1, 
-            ServerDetails.GLASSFISH_SERVER_3_1_2,
-            ServerDetails.GLASSFISH_SERVER_4_0,
-            ServerDetails.GLASSFISH_SERVER_3_0_1, 
-            ServerDetails.GLASSFISH_SERVER_3, 
-            ServerDetails.GLASSFISH_SERVER_3_1,
-        },
-                new ServerDetails[] { 
-            ServerDetails.GLASSFISH_SERVER_3_1_2, 
-            ServerDetails.GLASSFISH_SERVER_3_1_1, 
-            ServerDetails.GLASSFISH_SERVER_3_0_1, 
-        });
-    }
-
 }

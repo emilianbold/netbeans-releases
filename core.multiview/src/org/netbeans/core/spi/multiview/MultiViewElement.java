@@ -207,10 +207,12 @@ public interface MultiViewElement {
 
         /** 
          * Icon for the MultiViewDescription's multiview component. Will be shown as TopComponent's icon
-         * when this element is selected.
+         * when this element is selected. If the icon is not provided, then the
+         * multiview component will use the icon provided by the first {@link MultiViewDescription}.
+         * 
          * @return the icon of multi view element 
          */
-        public String iconBase();
+        public String iconBase() default "";
 
         /**
          * A Description's contribution 

@@ -109,7 +109,7 @@ public enum ServerDetails {
         new String[0],
         312,
         "http://download.java.net/glassfish/3.1.2/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
-        "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-2.txt" // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v3-1-2.txt" // NOI18N
     ),
     /**
      * details for an instance of GlassFish Server 4.0.0
@@ -120,7 +120,7 @@ public enum ServerDetails {
         new String[0],
         400,
         "http://download.java.net/glassfish/4.0/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
-        "http://serverplugins.netbeans.org/glassfishv3/post701v4-0.txt" // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v4-0.txt" // NOI18N
     );
 
     /**
