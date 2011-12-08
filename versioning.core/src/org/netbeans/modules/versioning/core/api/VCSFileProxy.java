@@ -184,7 +184,7 @@ public final class VCSFileProxy {
      * @see File#isFile() 
      */
     public boolean isFile() {
-        if (proxy == null) {
+        if (proxy == null) { // XXX cache like with isDirectory
             return new File(path).isFile();
         } else {
             return proxy.isFile(this);
