@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.remote.impl.fileoperations;
 
-import java.io.File;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import org.netbeans.modules.remote.impl.fs.*;
 import java.util.List;
+import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -59,6 +59,10 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileOperations;
 import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileProxyO;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -127,6 +131,9 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
                 "ln -s ../just_a_file back_link\n" +
                 "cd ..\n"+
                 "ln -s dir_1/back_link double_link\n" +
+                "mkdir -p classes\n" +
+                "cd classes\n" +
+                "mkdir -p org\n" +
                 "";
     }
     
@@ -171,6 +178,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testFileOperations() throws Exception {
         prepareDirectory();
+        copyAgent();
         DirectoryReaderSftp directoryReader = new DirectoryReaderSftp(execEnv, remoteDir);
         directoryReader.readDirectory();
         List<DirEntry> entries = directoryReader.getEntries();
@@ -216,23 +224,68 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         }
     }
 
-    private void fileEquals(File ioFile, FileOperations fileOperations, FileProxyO file, boolean skipName) {
-        assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
-        if (!skipName) {
-            assertEquals(ioFile.getName(), fileOperations.getName(file));
+    private void copyAgent() {
+        if (!Utilities.isWindows()) {
+            try {
+                String name = Agent.class.getName().replace('.', '/');
+                FileObject classFile = FileUtil.createData(rootFO, remoteDir+"/classes/"+name+".class");
+                OutputStream outputStream = classFile.getOutputStream();
+                FileUtil.copy(Agent.class.getResourceAsStream("Agent.class"), outputStream);
+                outputStream.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
-        absPathEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
-        assertEquals(message(ioFile, file, "canWrite"), ioFile.canWrite(), fileOperations.canWrite(file));
-        assertEquals(message(ioFile, file, "isDirectory"), ioFile.isDirectory(), fileOperations.isDirectory(file));
-        assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
-        listEquals(message(ioFile, file, "isFile"), ioFile.list(), fileOperations.list(file));
-        absPathEquals(ioFile.getParent(), fileOperations.getDir(file));
+    }
+    
+    private Map<String, Object> runAgent(String path) {
+        Agent agent = new Agent(execEnv, remoteDir+"/classes");
+        return agent.execute(path);
+    }
+    
+    private void fileEquals(File ioFile, FileOperations fileOperations, FileProxyO file, boolean skipName) {
+        if (!Utilities.isWindows()) {
+            assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
+            if (!skipName) {
+                assertEquals(ioFile.getName(), fileOperations.getName(file));
+            }
+            absPathEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
+            assertEquals(message(ioFile, file, "canWrite"), ioFile.canWrite(), fileOperations.canWrite(file));
+            assertEquals(message(ioFile, file, "isDirectory"), ioFile.isDirectory(), fileOperations.isDirectory(file));
+            assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
+            listEquals(message(ioFile, file, "list"), ioFile.list(), fileOperations.list(file));
+            absPathEquals(ioFile.getParent(), fileOperations.getDir(file));
+        } else {
+            Map<String, Object> runAgent = runAgent(file.getPath());
+            if (runAgent != null) {
+                assertEquals(message(file, "exist"), runAgent.get("exists"), fileOperations.exists(file));
+                assertEquals(runAgent.get("getName"), fileOperations.getName(file));
+                assertEquals(runAgent.get("getAbsolutePath"), fileOperations.getPath(file));
+                assertEquals(message(file, "canWrite"), runAgent.get("canWrite"), fileOperations.canWrite(file));
+                assertEquals(message(file, "isDirectory"), runAgent.get("isDirectory"), fileOperations.isDirectory(file));
+                assertEquals(message(ioFile, file, "isFile"), runAgent.get("isFile"), fileOperations.isFile(file));
+                assertEquals(runAgent.get("getParent"), fileOperations.getDir(file));
+                listEquals(message(file, "list"), (String[])runAgent.get("list"), fileOperations.list(file));
+            }
+        }
     }
     
     private String message(File ioFile, FileProxyO file, String method) {
         return new StringBuilder().append(method)
                 .append("(")
                 .append(ioFile.getAbsolutePath())
+                .append(") # ")
+                .append(method)
+                .append("(")
+                .append(file.getPath())
+                .append(")")
+                .toString();
+    }
+
+    private String message(FileProxyO file, String method) {
+        return new StringBuilder().append(method)
+                .append("(")
+                .append(file.getPath())
                 .append(") # ")
                 .append(method)
                 .append("(")
