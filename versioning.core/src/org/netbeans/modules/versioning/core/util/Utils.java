@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.core.util;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.versioning.core.FlatFolder;
 import org.netbeans.modules.versioning.core.VcsVisibilityQueryImplementation;
@@ -55,6 +56,8 @@ public final class Utils {
     public static String EVENT_ANNOTATIONS_CHANGED = VersioningManager.EVENT_ANNOTATIONS_CHANGED;
     public static String EVENT_STATUS_CHANGED = VersioningManager.EVENT_STATUS_CHANGED;
     public static String EVENT_VERSIONED_ROOTS = VersioningManager.EVENT_VERSIONED_ROOTS;
+    
+    private Utils() { }
     
     public static void flushNullOwners() {
         VersioningManager.getInstance().flushNullOwners();
@@ -71,7 +74,7 @@ public final class Utils {
     public static VCSSystemProvider.VersioningSystem getOwner(VCSFileProxy proxy) {
         return VersioningManager.getInstance().getOwner(proxy);        
     }
- 
+    
     public static boolean isFlat(File file) {
         return file instanceof FlatFolder; 
     }
@@ -80,4 +83,13 @@ public final class Utils {
         return new FlatFolder(path);
     }
 
+    public static void addPropertyChangeListener(PropertyChangeListener l) {
+        VersioningManager.getInstance().addPropertyChangeListener(l);
+    }
+    
+    public static void removePropertyChangeListener(PropertyChangeListener l) {
+        VersioningManager.getInstance().removePropertyChangeListener(l);
+    }
+    
+    
 }

@@ -41,13 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.diff;
+package org.netbeans.modules.versioning.ui.diff;
 
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.DynamicMenuContent;
-import org.netbeans.modules.versioning.core.VersioningConfig;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -75,7 +74,7 @@ public class ShowDiffSidebarAction extends SystemAction implements DynamicMenuCo
     }
 
     private void updateState() {
-        menuItems[0].setSelected(VersioningConfig.getDefault().getPreferences().getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
+        menuItems[0].setSelected(DiffSidebarManager.getInstance().getPreferences().getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
     }
 
     private void createItems() {
@@ -100,7 +99,7 @@ public class ShowDiffSidebarAction extends SystemAction implements DynamicMenuCo
     }
 
     public void actionPerformed(ActionEvent e) {
-        Preferences prefs = VersioningConfig.getDefault().getPreferences();
+        Preferences prefs = DiffSidebarManager.getInstance().getPreferences();
         prefs.putBoolean(DiffSidebarManager.SIDEBAR_ENABLED, !prefs.getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
     }
 }

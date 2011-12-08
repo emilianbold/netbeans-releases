@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.versioning.diff;
+package org.netbeans.modules.versioning.ui.diff;
 
 import org.netbeans.editor.SideBarFactory;
 

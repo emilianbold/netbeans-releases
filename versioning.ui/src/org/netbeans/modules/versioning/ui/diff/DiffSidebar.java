@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.diff;
+package org.netbeans.modules.versioning.ui.diff;
 
 import java.beans.PropertyChangeEvent;
 import java.nio.ByteBuffer;
@@ -58,8 +58,7 @@ import org.netbeans.api.diff.*;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.core.VersioningManager;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.nodes.CookieSet;
 import org.openide.cookies.EditorCookie;
@@ -101,6 +100,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Mutex;
@@ -161,7 +161,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private void refreshOriginalContent() {
         VCSFileProxy file = fileObject != null ? VCSFileProxy.createFileProxy(fileObject) : null;
-        ownerVersioningSystem = file != null ? VersioningManager.getInstance().getOwner(file, fileObject != null ? !fileObject.isFolder() : null) : null;
+        ownerVersioningSystem = file != null ? Utils.getOwner(file) : null;
         originalContentSerial++;
         sidebarTemporarilyDisabled = false;
         refreshDiff();
@@ -582,7 +582,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private Reader getDocumentReader() {
-        return Utils.getDocumentReader(textComponent.getDocument());
+        return getDocumentReader(textComponent.getDocument());
     }
     
     private void refreshDiff() {
@@ -911,7 +911,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             return null;
         }
 
-        File tempFolder = Utils.getTempFolder();
+        File tempFolder = getTempFolder();
         FileObject tempFileObj = null;
 
         Collection<File> originalFiles = null;
@@ -1134,10 +1134,64 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         if (!fullyDeleted) {
-            Utils.deleteRecursively(tempFolder);
+            deleteRecursively(tempFolder);
         }
     }
 
+   private static Reader getDocumentReader(final Document doc) {
+        final String[] str = new String[1];
+        Runnable run = new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    str[0] = doc.getText(0, doc.getLength());
+                } catch (javax.swing.text.BadLocationException e) {
+                    // impossible
+                    DiffSidebarManager.LOG.log(Level.WARNING, null, e);
+                }
+            }
+        };
+        doc.render(run);
+        return new StringReader(str[0]);
+    }  
+   
+
+    /**
+     * Recursively deletes the file or directory.
+     *
+     * @param file file/directory to delete
+     */
+    private static void deleteRecursively(File file) {
+        deleteRecursively(file, Level.WARNING);
+    }
+
+    /**
+     * Recursively deletes the file or directory.
+     *
+     * @param file file/directory to delete
+     * @param level log level
+     */
+    private static void deleteRecursively(File file, Level level) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return;
+        try {
+            fo.delete();
+        } catch (IOException e) {
+            DiffSidebarManager.LOG.log(level, "", e);
+        }
+    }
+    
+    private static File getTempFolder() {
+        File tmpDir = DiffSidebarManager.getInstance().getMainTempDir();
+        for (;;) {
+            File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
+            if (!dir.exists() && dir.mkdirs()) {
+                dir.deleteOnExit();
+                return FileUtil.normalizeFile(dir);
+            }
+        }
+    }
+         
     private static final class StringDecoder {
 
         private final CharsetDecoder charsetDecoder;

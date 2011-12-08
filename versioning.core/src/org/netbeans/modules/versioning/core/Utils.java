@@ -93,11 +93,6 @@ public class Utils {
      * Keeps excluded/unversioned folders
      */
     private static VCSFileProxy [] unversionedFolders;
-    
-    /**
-     * Temporary top folder for vcs in a single session
-     */
-    private static File tempDir;
 
     /**
      * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
@@ -193,59 +188,6 @@ public class Utils {
         return item;
     }
 
-    public static File getTempFolder() {
-        File tmpDir = getMainTempDir();
-        for (;;) {
-            File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
-            if (!dir.exists() && dir.mkdirs()) {
-                dir.deleteOnExit();
-                return FileUtil.normalizeFile(dir);
-            }
-        }
-    }
-
-    /**
-     * Recursively deletes the file or directory.
-     *
-     * @param file file/directory to delete
-     */
-    public static void deleteRecursively(File file) {
-        deleteRecursively(file, Level.WARNING);
-    }
-
-    /**
-     * Recursively deletes the file or directory.
-     *
-     * @param file file/directory to delete
-     * @param level log level
-     */
-    public static void deleteRecursively(File file, Level level) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return;
-        try {
-            fo.delete();
-        } catch (IOException e) {
-            Logger.getLogger(Utils.class.getName()).log(level, "", e);
-        }
-    }
-    
-    public static Reader getDocumentReader(final Document doc) {
-        final String[] str = new String[1];
-        Runnable run = new Runnable() {
-            @Override
-            public void run () {
-                try {
-                    str[0] = doc.getText(0, doc.getLength());
-                } catch (javax.swing.text.BadLocationException e) {
-                    // impossible
-                    VersioningManager.LOG.log(Level.WARNING, null, e);
-                }
-            }
-        };
-        doc.render(run);
-        return new StringReader(str[0]);
-    }
-    
     /**
      * Creates a task that will run in the Versioning RequestProcessor (with has throughput of 1). The runnable may take long
      * to execute (connet through network, etc).
@@ -422,21 +364,6 @@ public class Utils {
         } catch (BackingStoreException ex) {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, null, ex);
         }
-    }
-
-    private static synchronized File getMainTempDir () {
-        if (tempDir == null) {
-            File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
-            for (;;) {
-                File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
-                if (!dir.exists() && dir.mkdirs()) {
-                    tempDir = FileUtil.normalizeFile(dir);
-                    tempDir.deleteOnExit();
-                    break;
-                }
-            }
-        }
-        return tempDir;
     }
 
     private static void logLasting (VCSFileProxy file, long last, String message) {

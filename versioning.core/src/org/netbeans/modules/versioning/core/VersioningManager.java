@@ -49,7 +49,6 @@ import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -61,9 +60,11 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -254,7 +255,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
 
         flushFileOwnerCache();
-        refreshDiffSidebars(null);
+        fireFileStatusChanged(null);
         VersioningAnnotationProvider.refreshAllAnnotations();
     }
 
@@ -262,9 +263,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         return filesystemInterceptor;
     }
 
-    private void refreshDiffSidebars(Set<File> files) {
+    private void fireFileStatusChanged(Set<File> files) {
         // pushing the change ... DiffSidebarManager may as well listen for changes
-        DiffSidebarManager.getInstance().refreshSidebars(files);
+        propertyChangeSupport.firePropertyChange(EVENT_STATUS_CHANGED, files, null);
     }
     
     void flushFileOwnerCache() {
@@ -551,7 +552,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         if (EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
-            refreshDiffSidebars(files);
+            fireFileStatusChanged(files);
         } else if (EVENT_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
             VersioningAnnotationProvider.instance.refreshAnnotations(files);
@@ -575,7 +576,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         } else {
             flushFileOwnerCache();
-            refreshDiffSidebars(null);
+            fireFileStatusChanged(null);
         }
     }
     
@@ -615,5 +616,14 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
         }
+    }
+
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener(l);
     }
 }
