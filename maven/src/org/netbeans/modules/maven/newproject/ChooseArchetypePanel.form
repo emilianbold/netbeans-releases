@@ -15,8 +15,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-          <Component id="lblHint" min="-2" max="-2" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <Component id="pnlView" pref="413" max="32767" attributes="2"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -25,11 +23,15 @@
                   <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" pref="508" max="32767" attributes="2"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblHint" min="-2" max="-2" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jScrollPane1" alignment="0" pref="508" max="32767" attributes="2"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -147,7 +149,7 @@
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/newproject/Bundle.properties" key="TIT_CreateProjectStep" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, &quot;&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/newproject/Bundle.properties" key="TIT_CreateProjectStep" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
