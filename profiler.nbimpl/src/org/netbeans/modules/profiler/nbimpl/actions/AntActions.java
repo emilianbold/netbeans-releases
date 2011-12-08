@@ -521,7 +521,7 @@ public final class AntActions {
             public void run() {
                 try {
                     // 1. if there is profiling in progress, ask the user and possibly cancel
-                    if (ProfilingSupport.checkProfilingInProgress()) {
+                    if (ProfilingSupport.getDefault().checkProfilingInProgress()) {
                         return;
                     }
 
