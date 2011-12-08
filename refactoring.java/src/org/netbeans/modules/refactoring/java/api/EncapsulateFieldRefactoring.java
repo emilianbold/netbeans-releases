@@ -171,7 +171,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
 
     /**
      * Should be PropertyChangeSupport generated?
-     * @param isGeneratePropertyChangeSupport @return true if PropertyChangeSupport should be generated
+     * @param isGeneratePropertyChangeSupport true if PropertyChangeSupport should be generated
      * @since 1.32
      */
     public void setGeneratePropertyChangeSupport(boolean isGeneratePropertyChangeSupport) {
@@ -189,7 +189,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
 
     /**
      * Should be VetoableChangeSupport generated?
-     * @param isGenerateVetoableChangeSupport @return true if VetoableChangeSupport should be generated
+     * @param isGenerateVetoableChangeSupport true if VetoableChangeSupport should be generated
      * @since 1.32
      */
     public void setGenerateVetoableSupport(boolean isGenerateVetoableChangeSupport) {
