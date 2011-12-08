@@ -114,22 +114,15 @@ public class CNDValidation extends JellyTestCase {
         //npwo.selectCategory(samplesLabel + "|" + develLabel + "|" + ccLabel);
         npwo.selectCategory(samplesLabel + "|" + develLabel);
         npwo.selectProject(SAMPLE_PROJECT_NAME);
-        npwo.next();
+        npwo.btNext().pushNoBlock();
+        // close "No C/C++ Compilers Found" dialog
+        NbDialogOperator dialogOper = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.cnd.toolchain.compilerset.Bundle", "NO_COMPILERS_FOUND_TITLE"));
+        dialogOper.close();
         NewCNDProjectNameLocationStepOperator npnlso = new NewCNDProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
-        npnlso.btFinish().pushNoBlock();
+        npnlso.finish();
         npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-        do {
-            try {
-                // wait for error dialog if compiler is not set
-                NbDialogOperator errorOper = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.cnd.toolchain.compilerset.Bundle", "NO_COMPILERS_FOUND_TITLE"));
-                errorOper.close();
-            } catch (TimeoutExpiredException e) {
-                // no more error dialog => we can continue
-                break;
-            }
-        } while (true);
         npnlso.waitClosed();
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);

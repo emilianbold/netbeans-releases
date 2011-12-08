@@ -81,6 +81,7 @@ public class NbInitializationAction extends WizardAction {
     public void execute() {
         final CompositeProgress progress = new CompositeProgress(this.getWizardUi());
         progress.setTitle(getProperty(TITLE_PROPERTY));
+        progress.setPercentage(10);
         progress.synchronizeDetails(false);
         if (initReg.canExecuteForward()) {
             currentAction = initReg;
@@ -126,7 +127,7 @@ public class NbInitializationAction extends WizardAction {
             if (doSearch) {
                 currentAction = searchJava;
                 Progress javaSearchProgress = new Progress();
-                progress.addChild(javaSearchProgress, 100);
+                progress.addChild(javaSearchProgress, 90);
                 searchJava.setWizard(getWizard());
                 searchJava.execute(javaSearchProgress);
             }
@@ -134,9 +135,6 @@ public class NbInitializationAction extends WizardAction {
     }
     public static final String DEFAULT_TITLE = ResourceUtils.getString(NbInitializationAction.class,
             "NIA.title"); // NOI18N
-    
-    public static final String PROGRESS_TITLE = ResourceUtils.getString(NbInitializationAction.class,
-            "NIA.progress.title"); // NOI18N
     
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(NbInitializationAction.class,
             "NIA.description"); // NOI18N*/

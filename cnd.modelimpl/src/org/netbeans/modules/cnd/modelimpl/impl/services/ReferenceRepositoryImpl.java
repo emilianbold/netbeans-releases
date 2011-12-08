@@ -89,8 +89,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -106,34 +108,42 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     @Override
     public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
-        if (!(project instanceof ProjectBase)) {
-            return Collections.<CsmReference>emptyList();
-        }
-        ProjectBase basePrj = (ProjectBase)project;
-        boolean unboxInstantiation = true;
-        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, unboxInstantiation);
-        CsmObject decl = decDef[0];
-        CsmObject def = decDef[1];
-        
-        CsmScope scope = getDeclarationScope(decl);
-        CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
-        List<CsmReference> out;
-        Collection<FileImpl> files;
-        if (scopeFile instanceof FileImpl) {
-            out = new ArrayList<CsmReference>(10);
-            CsmOffsetable offs = (CsmOffsetable)scope;
-            out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
-        } else {
-            files = basePrj.getAllFileImpls();
-            out = new ArrayList<CsmReference>(files.size() * 10);
-            for (FileImpl file : files) {
-                if (interrupter != null && interrupter.cancelled()) {
-                    break;
-                }
-                out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE, interrupter));
+        long time = System.currentTimeMillis();
+        try {
+            if (Boolean.getBoolean("cnd.model.index.enabled")) {
+                return ReferencesIndex.getAllReferences(UIDCsmConverter.objectToUID(target));
             }
-        }
-        return out;
+            if (!(project instanceof ProjectBase)) {
+                return Collections.<CsmReference>emptyList();
+            }
+            ProjectBase basePrj = (ProjectBase)project;
+            boolean unboxInstantiation = true;
+            CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, unboxInstantiation);
+            CsmObject decl = decDef[0];
+            CsmObject def = decDef[1];
+
+            CsmScope scope = getDeclarationScope(decl);
+            CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
+            List<CsmReference> out;
+            Collection<FileImpl> files;
+            if (scopeFile instanceof FileImpl) {
+                out = new ArrayList<CsmReference>(10);
+                CsmOffsetable offs = (CsmOffsetable)scope;
+                out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
+            } else {
+                files = basePrj.getAllFileImpls();
+                out = new ArrayList<CsmReference>(files.size() * 10);
+                for (FileImpl file : files) {
+                    if (interrupter != null && interrupter.cancelled()) {
+                        break;
+                    }
+                    out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE, interrupter));
+                }
+            }
+            return out;
+        } finally {
+            System.err.println("getReferences took " + (System.currentTimeMillis() - time));
+        } 
     }
     
     @Override
