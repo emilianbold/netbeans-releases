@@ -42,12 +42,16 @@
 
 package org.netbeans.modules.maven.newproject;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.repository.RepositorySystem;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -55,7 +59,12 @@ import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.openide.util.NbCollections;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * list of archetypes coming from an archetype catalog
@@ -77,9 +86,7 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
 
     protected abstract URL file() throws IOException;
 
-    protected String repository() {
-        return null;
-    }
+    protected abstract String repository();
 
     public @Override List<Archetype> getArchetypes() {
         List<Archetype> toRet = new ArrayList<Archetype>();
@@ -124,4 +131,43 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
         }
         return toRet;
     }
+
+    @ServiceProvider(service=ArchetypeProvider.class, position=100)
+    public static class LocalCatalogRepoProvider extends CatalogRepoProvider {
+
+        @Override protected URL file() throws IOException {
+            File f = new File(RepositorySystem.userMavenConfigurationHome, "archetype-catalog.xml");
+            return f.isFile() ? f.toURI().toURL() : null;
+        }
+
+        @Override protected String repository() {
+            return RepositorySystem.DEFAULT_LOCAL_REPO_ID;
+        }
+
+    }
+
+    @ServiceProvider(service=ArchetypeProvider.class, position=200)
+    public static class DefaultCatalogRepoProvider extends CatalogRepoProvider {
+
+        @Override protected URL file() throws IOException {
+            List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.apache.maven.archetype", "archetype-common", Collections.singletonList(RepositoryPreferences.getInstance().getLocalRepository())); // NOI18N
+            if (versions.isEmpty()) {
+                return null;
+            }
+            // any need to sort?
+            NBVersionInfo newest = versions.get(0);
+            Artifact art = RepositoryUtil.createArtifact(newest);
+            File jar = art.getFile();
+            if (!jar.isFile()) {
+                return null;
+            }
+            return new URL("jar:" + jar.toURI() + "!/archetype-catalog.xml"); // NOI18N
+        }
+
+        @Override protected String repository() {
+            return null;
+        }
+
+    }
+
 }
