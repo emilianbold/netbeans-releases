@@ -112,5 +112,15 @@ public class FortranFileModelTest extends TraceModelTestBase {
         // Bug 184997 - *Fortran* navigator doesn't show subroutine with two parameters
         performTest("bug184997.f"); // NOI18N
     }
+
+    public void testBug183086() throws Exception {
+        // Bug 183086 - *Fortran* Navigator: inner function should be child node of program node
+        performTest("bug183086.f"); // NOI18N
+    }
+
+    public void testBug205526() throws Exception {
+        // Bug 205526 - Fortran parser fails on some do and if statements
+        performTest("bug205526.f"); // NOI18N
+    }
     
 }

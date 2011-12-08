@@ -394,9 +394,6 @@ public final class JUnitAntLogger extends AntLogger {
                     props.setProperty(prop, val);
                 }
             }
-            // #187004
-            assert project!=null : "See bug 187004:  project must not be null "
-                    + "for projectDir=\"" + projectDir + "\"";
             outputReader = new JUnitOutputReader(
                                         session,
                                         sessionInfo,

@@ -82,6 +82,7 @@ import org.netbeans.modules.web.el.ELVariableResolvers;
 import org.netbeans.modules.web.el.ResourceBundles;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
+import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -150,8 +151,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     } else if(ELTypeUtilities.isResourceBundleVar(ccontext, nodeToResolve)) {
                         proposeBundleKeysInDotNotation(context, prefixMatcher, element, nodeToResolve, proposals);
                     } else if(resolved == null) {
-                        // not yet working properly
-                        //proposeFunctions(context, prefix, element, prefix, typeUtilities, proposals);
+                        proposeFunctions(ccontext, context, prefixMatcher, element, proposals);
                         proposeManagedBeans(ccontext, context, prefixMatcher, element, proposals);
                         proposeBundles(ccontext, context, prefixMatcher, element, proposals);
                         proposeVariables(ccontext, context, prefixMatcher, element, proposals);
@@ -437,17 +437,22 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-//    private void proposeFunctions(CodeCompletionContext context,
-//            PrefixMatcher prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
-//
-//        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix.prefix)) {
-//            ELFunctionCompletionItem item =
-//                    new ELFunctionCompletionItem(function.getName(), function.getFunctionInfo().getFunctionClass());
-//            item.setSmart(true);
-//            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-//            proposals.add(item);
-//        }
-//    }
+    private void proposeFunctions(CompilationContext info, CodeCompletionContext context,
+            PrefixMatcher prefix, ELElement elElement, List<CompletionProposal> proposals) {
+
+        for (Function function : ELTypeUtilities.getELFunctions(info)) {
+            if (!prefix.matches(function.getName())) {
+                continue;
+            }
+            ELFunctionCompletionItem item = new ELFunctionCompletionItem(
+                    function.getName(),
+                    function.getReturnType(),
+                    function.getParameters(),
+                    function.getDescription());
+            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            proposals.add(item);
+        }
+    }
 
     @Override
     public String document(ParserResult info, final ElementHandle element) {

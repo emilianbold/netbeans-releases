@@ -43,7 +43,6 @@ package org.netbeans.modules.maven;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -54,101 +53,53 @@ import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Resource;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelProblem;
-import org.apache.maven.model.resolution.UnresolvableModelException;
-import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
 import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
-import org.netbeans.modules.maven.classpath.CPExtender;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
-import org.netbeans.modules.maven.cos.CosChecker;
-import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.debug.DebuggerChecker;
-import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
-import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
-import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
-import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
-import org.netbeans.modules.maven.execute.ReactorChecker;
-import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.problems.SanityBuildAction;
-import org.netbeans.modules.maven.queries.MavenAnnotationProcessingQueryImpl;
-import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
-import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
-import org.netbeans.modules.maven.queries.MavenFileLocator;
-import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
-import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
-import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
-import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
-import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
-import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
@@ -166,24 +117,18 @@ public final class NbMavenProjectImpl implements Project {
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(NbMavenProjectImpl.class.getName());
-    private static RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
+    public static final RequestProcessor RELOAD_RP = new RequestProcessor("Maven project reloading", 1); //NOI18N
     private FileObject fileObject;
     private FileObject folderFileObject;
     private final File projectFile;
+    private final Lookup basicLookup;
     private final Lookup lookup;
     private final Updater projectFolderUpdater;
     private final Updater userFolderUpdater;
     private Reference<MavenProject> project;
     private ProblemReporterImpl problemReporter;
-    private final Info projectInfo;
-    private final MavenSharabilityQueryImpl sharability;
-    private final SubprojectProviderImpl subs;
     private final @NonNull NbMavenProject watcher;
-    private final ProjectState state;
     private final M2ConfigProvider configProvider;
-    private final ClassPathProviderImpl cppProvider;
-//    private ConfigurationProviderEnabler configEnabler;
-    private final M2AuxilaryConfigImpl auxiliary;
     private final @NonNull MavenProjectPropsImpl auxprops;
     private ProjectProfileHandlerImpl profileHandler;
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
@@ -215,27 +160,17 @@ public final class NbMavenProjectImpl implements Project {
         this.projectFile = FileUtil.normalizeFile(FileUtil.toFile(projectFO));
         fileObject = projectFO;
         folderFileObject = folder;
-        projectInfo = new Info();
-        sharability = new MavenSharabilityQueryImpl(this);
         watcher = ACCESSOR.createWatcher(this);
-        subs = new SubprojectProviderImpl(this, watcher);
-        lookup = new LazyLookup(this, watcher, projectInfo, sharability, subs, fileObject);
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml");
         userFolderUpdater = new Updater("settings.xml");
-        state = projectState;
         problemReporter = new ProblemReporterImpl(this);
-        auxiliary = new M2AuxilaryConfigImpl(this);
+        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(this);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
-        cppProvider = new ClassPathProviderImpl(this);
-//        configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
-//        if (!SwingUtilities.isEventDispatchThread()) {
-//            //#155766 sor of ugly, as not all (but the majority for sure) projects need
-//            // a loaded maven project. But will protect from accidental loading in AWT
-//            // thread.
-//            getOriginalMavenProject();
-//        }
+        // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
+        basicLookup = createBasicLookup(projectState, auxiliary);
+        lookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");
     }
 
     public File getPOMFile() {
@@ -327,7 +262,10 @@ public final class NbMavenProjectImpl implements Project {
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
     public Map<? extends String,? extends String> createSystemPropsForPropertyExpressions() {
         Map<String,String> props = NbCollections.checkedMapByCopy(cloneStaticProps(), String.class, String.class, true);
-        props.putAll(cppProvider.getJavaPlatform().getSystemProperties());
+        ActiveJ2SEPlatformProvider platformProvider = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+        if (platformProvider != null) { // may be null inside PackagingProvider
+            props.putAll(platformProvider.getJavaPlatform().getSystemProperties());
+        }
         props.putAll(configProvider.getActiveConfiguration().getProperties());
         return props;
     }
@@ -376,7 +314,7 @@ public final class NbMavenProjectImpl implements Project {
              MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
              newproject = res.getProject();
             if (res.hasExceptions()) {
-                reportExceptions(res);
+                problemReporter.reportExceptions(res);
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
@@ -422,51 +360,6 @@ public final class NbMavenProjectImpl implements Project {
         return newproject;
     }
 
-    @Messages({
-        "TXT_Artifact_Resolution_problem=Artifact Resolution problem",
-        "TXT_Artifact_Not_Found=Artifact Not Found",
-        "TXT_Cannot_Load_Project=Unable to properly load project"
-    })
-    private void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
-        for (Throwable e : res.getExceptions()) {
-            LOG.log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
-            String msg = e.getMessage();
-            if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Artifact_Resolution_problem(), msg, null);
-                problemReporter.addReport(report);
-                problemReporter.addMissingArtifact(((ArtifactResolutionException) e).getArtifact());
-            } else if (e instanceof ArtifactNotFoundException) { // XXX when does this occur?
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Artifact_Not_Found(), msg, null);
-                problemReporter.addReport(report);
-                problemReporter.addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
-            } else if (e instanceof ProjectBuildingException) {
-                problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Cannot_Load_Project(), msg, new SanityBuildAction(this)));
-                if (e.getCause() instanceof ModelBuildingException) {
-                    ModelBuildingException mbe = (ModelBuildingException) e.getCause();
-                    for (ModelProblem mp : mbe.getProblems()) {
-                        if (mp.getException() instanceof UnresolvableModelException) {
-                            // Probably obsoleted by ProblemReporterImpl.checkParent, but just in case:
-                            UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
-                            problemReporter.addMissingArtifact(getEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
-                        } else if (mp.getException() instanceof PluginResolutionException) {
-                            Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
-                            // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
-                            problemReporter.addMissingArtifact(getEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
-                        }
-                    }
-                }
-            } else {
-                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        "Error reading project model", msg, null);
-                problemReporter.addReport(report);
-            }
-        }
-    }
-
     public void fireProjectReload() {
         //#149566 prevent project firing squads to execute under project mutex.
         if (ProjectManager.mutex().isReadAccess()
@@ -487,7 +380,6 @@ public final class NbMavenProjectImpl implements Project {
             project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
-        projectInfo.reset();
         problemReporter.doBaseProblemChecks(getOriginalMavenProject());
     }
 
@@ -495,27 +387,6 @@ public final class NbMavenProjectImpl implements Project {
         String basedir = project.getEmbedder().getLocalRepository().getBasedir();
         File file = FileUtil.normalizeFile(new File(basedir));
         FileUtil.refreshFor(file);
-    }
-
-    @Messages("LBL_NoProjectName=<Maven project with no name>")
-    public String getDisplayName() {
-        String displayName = projectInfo.getDisplayName();
-        if (displayName == null) {
-            displayName = LBL_NoProjectName();
-        }
-        return displayName;
-    }
-
-    @Messages("LBL_DefaultDescription=A Maven-based project")
-    public String getShortDescription() {
-        String desc = null;
-        if (desc == null) {
-            desc = getOriginalMavenProject().getDescription();
-        }
-        if (desc == null) {
-            desc = LBL_DefaultDescription();
-        }
-        return desc;
     }
 
     /** Begin listening to pom.xml changes. */
@@ -526,10 +397,6 @@ public final class NbMavenProjectImpl implements Project {
    void detachUpdater() {
         projectFolderUpdater.detachAll();
         userFolderUpdater.detachAll();
-    }
-
-    public String getName() {
-        return getOriginalMavenProject().getId().replace(':', '_');
     }
 
     /**
@@ -585,9 +452,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public String getArtifactRelativeRepositoryPath(@NonNull Artifact artifact) {
-        //        embedder.setLocalRepositoryDirectory(FileUtil.toFile(getRepositoryRoot()));
-        String toRet = getEmbedder().getLocalRepository().pathOf(artifact);
-        return toRet;
+        return getEmbedder().getLocalRepository().pathOf(artifact);
     }
 
     public MavenEmbedder getEmbedder() {
@@ -751,41 +616,7 @@ public final class NbMavenProjectImpl implements Project {
 
     @Override
     public Lookup getLookup() {
-        return lookup;
-    }
-
-    // in 6.5 the ProjectInformation icon is used in project open dialog.
-    // however we don't want this call to initiate the comple lookup of the project
-    //as that's time consuming and suboptimal to do for all projects in the filechooser.
-    private class LazyLookup extends ProxyLookup {
-
-        private Lookup lookup;
-        boolean initialized = false;
-
-        LazyLookup(Project ths, NbMavenProject watcher, ProjectInformation info,
-                SharabilityQueryImplementation shara, SubprojectProvider subs, FileObject projectFO) {
-            setLookups(Lookups.fixed(ths, watcher, info, shara, subs, projectFO));
-        }
-
-        protected @Override void beforeLookup(Template<?> template) {
-            synchronized (this) {
-            if (!initialized
-                    && (!(ProjectInformation.class.equals(template.getType())
-                    || NbMavenProject.class.equals(template.getType())
-                    || NbMavenProjectImpl.class.equals(template.getType())
-                    || Project.class.equals(template.getType())
-                    || SharabilityQueryImplementation.class.equals(template.getType())
-                    || SubprojectProvider.class.equals(template.getType())))) {
-                initialized = true;
-                lookup = createBasicLookup();
-                setLookups(lookup);
-                Lookup lkp = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, lookup), "Projects/org-netbeans-modules-maven/Lookup");
-                assert checkForForbiddenMergers(lkp) : "Cannot have a LookupMerger for ProjectInformation or SharabilityQueryImplementation";
-                setLookups(lkp); //NOI18N
-            }
-            }
-            super.beforeLookup(template);
-        }
+        return lookup != null ? lookup : basicLookup;
     }
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
@@ -820,155 +651,24 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
-    //to be called from assert,
-    // chekc for items we optimize for at startup.
-    private boolean checkForForbiddenMergers(Lookup lkp) {
-        Collection<? extends LookupMerger> res = lkp.lookupAll(LookupMerger.class);
-        for (LookupMerger lm : res) {
-            if (ProjectInformation.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-            if (SharabilityQueryImplementation.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-            if (SubprojectProvider.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-            if (NbMavenProject.class.equals(lm.getMergeableClass())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private Lookup createBasicLookup() {
-        CPExtender extender = new CPExtender(this);
-        Lookup staticLookup = Lookups.fixed(new Object[]{
-                    projectInfo,
+    private Lookup createBasicLookup(ProjectState state, M2AuxilaryConfigImpl auxiliary) {
+        return Lookups.fixed(
                     this,
                     fileObject,
-                    new CacheDirProvider(this),
-                    new MavenForBinaryQueryImpl(this),
-                    new MavenBinaryForSourceQueryImpl(this),
-                    new ActionProviderImpl(this),
                     auxiliary,
                     auxprops,
                     new MavenProjectPropsImpl.Merger(auxprops),
                     profileHandler,
                     configProvider,
-                    new CustomizerProviderImpl(this),
-                    new LogicalViewProviderImpl(this),
-                    cppProvider,
-                    sharability,
-                    new MavenTestForSourceImpl(this),
-                    ////            new MavenFileBuiltQueryImpl(this),
-                    subs,
-                    new MavenSourcesImpl(this),
-                    new RecommendedTemplatesImpl(this),
-                    new MavenSourceLevelImpl(this),
-                    new MavenAnnotationProcessingQueryImpl(this),
                     problemReporter,
                     watcher,
-                    new MavenFileEncodingQueryImpl(this),
-                    new TemplateAttrProvider(this),
-                    //operations
-                    new OperationsImpl(this, state),
-                    //                    configEnabler,
-                    new MavenDebuggerImpl(this),
-                    new DefaultReplaceTokenProvider(this),
-                    new MavenFileLocator(this),
-                    // default mergers..        
-                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
+                    state,
+                    UILookupMergerSupport.createProjectOpenHookMerger(null),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
                     ProjectClassPathModifier.extenderForModifier(this),
-                    extender,
-                    LookupMergerSupport.createClassPathModifierMerger(),
-                    new BackwardCompatibilityWithMevenideChecker(),
-                    new DebuggerChecker(),
-                    new CosChecker(this),
-                    CosChecker.createResultChecker(),
-                    CosChecker.createCoSHook(this),
-                    new ReactorChecker(),
-                    new PrereqCheckerMerger(),
-                    new TestChecker(),
-                    new RecommendedTemplates() {
-
-                        public String[] getRecommendedTypes() {
-                            return new String[]{"scala-classes"}; //NOI18N
-                        }
-                    }
-                });
-        return staticLookup;
-    }
-
-    private final class Info implements ProjectInformation {
-
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
-        Info() {
-        }
-
-        public void reset() {
-            firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-            pcs.firePropertyChange(ProjectInformation.PROP_ICON, null, getIcon());
-        }
-
-        void firePropertyChange(String prop) {
-            pcs.firePropertyChange(prop, null, null);
-        }
-
-        @Override
-        public String getName() {
-            String toReturn = NbMavenProjectImpl.this.getName();
-            return toReturn;
-        }
-
-        
-        @Messages({
-            "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
-            "TXT_Maven_project_at=Maven project at {0}"
-        })
-        @Override public String getDisplayName() {
-            MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
-            if (NbMavenProject.isErrorPlaceholder(pr)) {
-                return LBL_misconfigured_project(getProjectDirectory().getNameExt());
-            }
-            String toReturn = pr.getName();
-            if (toReturn == null) {
-                String grId = pr.getGroupId();
-                String artId = pr.getArtifactId();
-                if (grId != null && artId != null) {
-                    toReturn = grId + ":" + artId; //NOI18N
-
-                } else {
-                    toReturn = TXT_Maven_project_at(NbMavenProjectImpl.this.getProjectDirectory().getPath());
-                }
-            }
-            return toReturn;
-        }
-
-        @Override
-        public Icon getIcon() {
-            SpecialIcon special = getLookup().lookup(SpecialIcon.class);
-            return special != null ? special.getIcon() : ImageUtilities.loadImageIcon("org/netbeans/modules/maven/resources/Maven2Icon.gif", true);
-        }
-
-        @Override
-        public Project getProject() {
-            return NbMavenProjectImpl.this;
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            pcs.addPropertyChangeListener(listener);
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
+                    LookupMergerSupport.createClassPathModifierMerger());
     }
 
     //MEVENIDE-448 seems to help against creation of duplicate project instances
@@ -999,6 +699,7 @@ public final class NbMavenProjectImpl implements Project {
         private String[] filesToWatch;
         private long lastTime = 0;
         private FileObject folder;
+        private final FileChangeListener listener = FileUtil.weakFileChangeListener(this, null);
 
         /** Relative file paths to watch. */
         Updater(String... toWatch) {
@@ -1058,11 +759,11 @@ public final class NbMavenProjectImpl implements Project {
         void attachAll(FileObject fo) {
             if (fo != null) {
                 folder = fo;
-                fo.addFileChangeListener(this);
+                fo.addFileChangeListener(listener);
                 for (String file : filesToWatch) {
                     FileObject fobj = fo.getFileObject(file);
                     if (fobj != null) {
-                        fobj.addFileChangeListener(this);
+                        fobj.addFileChangeListener(listener);
                     }
                 }
             }
@@ -1070,212 +771,15 @@ public final class NbMavenProjectImpl implements Project {
 
         void detachAll() {
             if (folder != null) {
-                folder.removeFileChangeListener(this);
+                folder.removeFileChangeListener(listener);
                 for (String file : filesToWatch) {
                     FileObject fobj = folder.getFileObject(file);
                     if (fobj != null) {
-                        fobj.removeFileChangeListener(this);
+                        fobj.removeFileChangeListener(listener);
                     }
                 }
                 folder = null;
             }
-        }
-    }
-
-    private static final class RecommendedTemplatesImpl
-            implements RecommendedTemplates, PrivilegedTemplates {
-
-        private static final String[] JAR_APPLICATION_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "java-main-class", // NOI18N
-            "java-forms", // NOI18N
-            "gui-java-application", // NOI18N
-            "java-beans", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "web-service-clients", // NOI18N
-            "REST-clients", // NOI18N
-            "wsdl", // NOI18N
-            // "servlet-types",     // NOI18N
-            // "web-types",         // NOI18N
-            "junit", // NOI18N
-            // "MIDP",              // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] JAR_PRIVILEGED_NAMES = new String[]{
-            "Templates/Classes/Class.java", // NOI18N
-            "Templates/Classes/Package", // NOI18N
-            "Templates/Classes/Interface.java", // NOI18N
-            "Templates/GUIForms/JPanel.java", // NOI18N
-            "Templates/GUIForms/JFrame.java", // NOI18N
-            "Templates/WebServices/WebServiceClient" // NOI18N
-        };
-        private static final String[] POM_APPLICATION_TYPES = new String[]{
-            "XML", // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] POM_PRIVILEGED_NAMES = new String[]{
-            "Templates/XML/XMLWizard", // NOI18N
-            "Templates/Other/Folder" // NOI18N
-        };
-        private static final String[] ALL_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "java-main-class", // NOI18N
-            "java-forms", // NOI18N
-            "java-beans", // NOI18N
-            "j2ee-types", // NOI18N
-            "gui-java-application", // NOI18N
-            "java-beans", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "ant-script", // NOI18N
-            "ant-task", // NOI18N
-            //            "web-services",         // NOI18N
-            "web-service-clients", // NOI18N
-            "REST-clients", // NOI18N
-            "wsdl", // NOI18N
-            "servlet-types", // NOI18N
-            "web-types", // NOI18N
-            "junit", // NOI18N
-            // "MIDP",              // NOI18N
-            "simple-files", // NOI18N
-            "ear-types", // NOI18N
-        };
-        private static final String[] GENERIC_WEB_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "java-main-class", // NOI18N
-            "java-beans", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "wsdl", // NOI18N
-            "junit", // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] GENERIC_EJB_TYPES = new String[]{
-            "java-classes", // NOI18N
-            "wsdl", // NOI18N
-            "java-beans", // NOI18N
-            "java-main-class", // NOI18N
-            "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "junit", // NOI18N
-            "simple-files" // NOI18N
-        };
-        private static final String[] GENERIC_EAR_TYPES = new String[]{
-            "XML", //NOPMD      // NOI18N
-            "wsdl", //NOPMD       // NOI18N
-            "simple-files" //NOPMD       // NOI18N
-        };
-        private final List<String> prohibited;
-        private final NbMavenProjectImpl project;
-
-        RecommendedTemplatesImpl(NbMavenProjectImpl proj) {
-            project = proj;
-            prohibited = new ArrayList<String>();
-            prohibited.add(NbMavenProject.TYPE_EAR);
-            prohibited.add(NbMavenProject.TYPE_EJB);
-            prohibited.add(NbMavenProject.TYPE_WAR);
-            prohibited.add(NbMavenProject.TYPE_NBM);
-            prohibited.add(NbMavenProject.TYPE_OSGI);
-        }
-
-        @Override
-        public String[] getRecommendedTypes() {
-            String packaging = project.getProjectWatcher().getPackagingType();
-            if (packaging == null) {
-                packaging = NbMavenProject.TYPE_JAR;
-            }
-            packaging = packaging.trim();
-            if (NbMavenProject.TYPE_POM.equals(packaging)) {
-                if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
-                    return JAR_APPLICATION_TYPES; // #192735
-                }
-                return POM_APPLICATION_TYPES;
-            }
-            if (NbMavenProject.TYPE_JAR.equals(packaging)) {
-                return JAR_APPLICATION_TYPES;
-            }
-
-            if (NbMavenProject.TYPE_WAR.equals(packaging)) {
-                return GENERIC_WEB_TYPES;
-            }
-            if (NbMavenProject.TYPE_EJB.equals(packaging)) {
-                return GENERIC_EJB_TYPES;
-            }
-            if (NbMavenProject.TYPE_EAR.equals(packaging)) {
-                return GENERIC_EAR_TYPES;
-            }
-
-            if (prohibited.contains(packaging)) {
-                return new String[0];
-            }
-
-            // If packaging is unknown, any type of sources is recommanded.
-            //TODO in future we probably can try to guess based on what plugins are
-            // defined in the lifecycle.
-            return ALL_TYPES;
-        }
-
-        @Override
-        public String[] getPrivilegedTemplates() {
-            String packaging = project.getProjectWatcher().getPackagingType();
-            if (packaging == null) {
-                packaging = NbMavenProject.TYPE_JAR;
-            }
-            packaging = packaging.trim();
-            if (NbMavenProject.TYPE_POM.equals(packaging)) {
-                return POM_PRIVILEGED_NAMES;
-            }
-            if (prohibited.contains(packaging)) {
-                return new String[0];
-            }
-            return JAR_PRIVILEGED_NAMES;
-        }
-    }
-
-    @SuppressWarnings("serial")
-    @ActionID(id = "org.netbeans.modules.maven.refresh", category = "Project")
-    @ActionRegistration(displayName = "#ACT_Reload_Project")
-    @ActionReference(position = 1700, path = "Projects/org-netbeans-modules-maven/Actions")
-    @Messages("ACT_Reload_Project=Reload POM")
-    public static class RefreshAction extends AbstractAction implements ContextAwareAction {
-
-        private final Lookup context;
-
-        public RefreshAction() {
-            this(Lookup.EMPTY);
-        }
-
-        @Messages("ACT_Reload_Projects=Reload {0} POMs")
-        private RefreshAction(Lookup lkp) {
-            context = lkp;
-            Collection<? extends NbMavenProjectImpl> col = context.lookupAll(NbMavenProjectImpl.class);
-            if (col.size() > 1) {
-                putValue(Action.NAME, ACT_Reload_Projects(col.size()));
-            } else {
-                putValue(Action.NAME, ACT_Reload_Project());
-            }
-        }
-
-        @Override
-        public void actionPerformed(java.awt.event.ActionEvent event) {
-            //#166919 - need to run in RP to prevent RPing later in fireProjectReload()
-            RELOAD_RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    EmbedderFactory.resetCachedEmbedders();
-                    for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
-                        NbMavenProject.fireMavenProjectReload(prj);
-                    }
-                }
-            });
-
-        }
-
-        @Override
-        public Action createContextAwareInstance(Lookup actionContext) {
-            return new RefreshAction(actionContext);
         }
     }
 

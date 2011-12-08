@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +52,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -73,7 +75,6 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -186,7 +187,7 @@ public final class Utils {
         } catch (MissingObjectException ex) {
             throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT, ex);
         } catch (IncorrectObjectTypeException ex) {
-            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", revision)); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(Utils.class).getString("MSG_Exception_IdNotACommit"), revision)); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -198,7 +199,7 @@ public final class Utils {
         } catch (RevisionSyntaxException ex) {
             throw new GitException.MissingObjectException(objectId, GitObjectType.COMMIT, ex);
         } catch (AmbiguousObjectException ex) {
-            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", objectId), ex); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(Utils.class).getString("MSG_Exception_IdNotACommit"), objectId), ex); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -300,5 +301,23 @@ public final class Utils {
             }
         }
         return tags;
+    }
+
+    /**
+     * Returns a resource bundle contained in the same package the given clazz is.
+     * @param clazz
+     * @return 
+     */
+    public static ResourceBundle getBundle (Class clazz) {
+        String pref = clazz.getName();
+        int last = pref.lastIndexOf('.');
+
+        if (last >= 0) {
+            pref = pref.substring(0, last + 1) + "Bundle"; //NOI18N
+        } else {
+            // base package, search for bundle
+            pref = "Bundle"; // NOI18N
+        }
+        return ResourceBundle.getBundle(pref);
     }
 }

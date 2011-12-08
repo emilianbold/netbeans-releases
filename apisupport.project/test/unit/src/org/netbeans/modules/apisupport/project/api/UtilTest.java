@@ -111,17 +111,4 @@ public class UtilTest extends NbTestCase {
     // XXX testLoadManifest()
     // XXX testStoreManifest()
     
-    public void testIsValidSFSFolderName() throws Exception {
-        assertTrue(Util.isValidSFSPath("a"));
-        assertTrue(Util.isValidSFSPath("a/b/c"));
-        assertTrue(Util.isValidSFSPath("a/b/c_c/"));
-        assertTrue(Util.isValidSFSPath("/a/b/c_c"));
-        assertTrue(Util.isValidSFSPath("a/1a/b/c/1d_d/"));
-        assertTrue(Util.isValidSFSPath("_a/b/c_"));
-        assertFalse(Util.isValidSFSPath("a/b/c/dd+"));
-        assertFalse(Util.isValidSFSPath("a+b"));
-        assertFalse(Util.isValidSFSPath(""));
-        assertFalse(Util.isValidSFSPath(" "));
-    }
-
 }

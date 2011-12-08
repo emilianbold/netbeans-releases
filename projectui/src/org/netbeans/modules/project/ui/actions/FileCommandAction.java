@@ -55,13 +55,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 
 /** An action sensitive to selected node. Used for 1-off actions
  */
 public final class FileCommandAction extends ProjectAction {
 
-    private String presenterName;
-        
     public FileCommandAction( String command, String namePattern, String iconResource, Lookup lookup ) {
         this( command, namePattern, ImageUtilities.loadImageIcon(iconResource, false), lookup );
     }
@@ -69,34 +68,48 @@ public final class FileCommandAction extends ProjectAction {
     public FileCommandAction( String command, String namePattern, Icon icon, Lookup lookup ) {
         super( command, namePattern, icon, lookup );
         assert namePattern != null : "Name patern must not be null";
-        presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
+        String presenterName = ActionsUtil.formatName( getNamePattern(), 0, "" );
         setDisplayName( presenterName );
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
     }
     
     @Override
-    protected void refresh(Lookup context, boolean immediate) {
+    protected void refresh(final Lookup context, final boolean immediate) {
+        Runnable r = new Runnable() {
+            @Override public void run() {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, getCommand() );
-
+        final boolean enable;
+        final String presenterName;
         if ( projects.length != 1 ) {
             if (projects.length == 0 && globalProvider(context) != null) {
-                setEnabled(true);
+                enable = true;
                 Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
                 presenterName = ActionsUtil.formatName(getNamePattern(), files.size(),
                         files.isEmpty() ? "" : files.iterator().next().getPrimaryFile().getNameExt()); // NOI18N
             } else {
-                setEnabled(false); // Zero or more than one projects found or command not supported
+                enable = false; // Zero or more than one projects found or command not supported
                 presenterName = ActionsUtil.formatName(getNamePattern(), 0, "");
             }
         }
         else {
             FileObject[] files = ActionsUtil.getFilesFromLookup( context, projects[0] );
-            setEnabled( true );
+            enable = true;
             presenterName = ActionsUtil.formatName( getNamePattern(), files.length, files.length > 0 ? files[0].getNameExt() : "" ); // NOI18N
         }
-        
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override public void run() {
         putValue("menuText", presenterName);
         putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
+        setEnabled(enable);
+            }
+        });
+            }
+        };
+        if (immediate) {
+            r.run();
+        } else {
+            RP.post(r);
+        }
     }
     
     @Override

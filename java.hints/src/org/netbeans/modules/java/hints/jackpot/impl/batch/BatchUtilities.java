@@ -110,7 +110,7 @@ public class BatchUtilities {
 
     private static final Logger LOG = Logger.getLogger(BatchUtilities.class.getName());
     
-    public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super MessageImpl> problems) {
+    public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super MessageImpl> problems) {
         final Map<Project, Set<String>> processedDependencyChanges = new IdentityHashMap<Project, Set<String>>();
         final Map<FileObject, List<ModificationResult.Difference>> result = new LinkedHashMap<FileObject, List<ModificationResult.Difference>>();
 
@@ -132,6 +132,7 @@ public class BatchUtilities {
                 setJavaSource.invoke(copy, wc.getJavaSource());
 
                 copy.toPhase(Phase.RESOLVED);
+                progress.tick();
                 
                 if (applyFixes(copy, processedDependencyChanges, hints, problems)) {
                     return false;
@@ -160,7 +161,7 @@ public class BatchUtilities {
             }
         };
 
-        BatchSearch.getVerifiedSpans(candidates, progress, callback, problems);
+        BatchSearch.getVerifiedSpans(candidates, progress, callback, problems, cancel);
         
         return Collections.singletonList(JavaSourceAccessor.getINSTANCE().createModificationResult(result, Collections.<Object, int[]>emptyMap()));
     }

@@ -50,7 +50,10 @@ made subject to such option by the copyright holder.
         <recognizer pattern=".*(SUNWspro|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
-        <system_macros flags="-xdryrun -E" parser="Sun"/>
+        <system_macros flags="-xdryrun -E" parser="Sun">
+            <macro stringvalue="__STDC__=0"/>
+            <macro stringvalue="__STDC_VERSION__=199409L"/>
+        </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
         <development_mode>

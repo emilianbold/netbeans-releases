@@ -491,14 +491,15 @@ public final class LibraryManager {
         List<LibraryManager> managers = new ArrayList<LibraryManager>();
         managers.add(getDefault());
         Set<URL> locations = new HashSet<URL>();
-        for (ArealLibraryProvider alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
+        Collection<? extends ArealLibraryProvider> alps = Lookup.getDefault().lookupAll(ArealLibraryProvider.class);
+        for (ArealLibraryProvider alp : alps) {
             for (LibraryStorageArea area : LibraryAccessor.getOpenAreas(alp)) {
                 if (locations.add(area.getLocation())) {
                     managers.add(new LibraryManager(alp, area));
                 }
             }
         }
-        for (ArealLibraryProvider alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
+        for (ArealLibraryProvider alp : alps) {
             for (URL location : LibrariesModel.createdAreas) {
                 LibraryStorageArea area = alp.loadArea(location);
                 if (area != null) {

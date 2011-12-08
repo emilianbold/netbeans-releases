@@ -49,11 +49,14 @@ import java.awt.BorderLayout;
 import javax.swing.text.Document;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
+import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ValidatorUtils;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.conversion.Converter;
 import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -73,8 +76,8 @@ public class NewDevicePanel extends javax.swing.JPanel {
         ValidationGroup group = pnl.getValidationGroup();
         Converter <String, Document> c = Converter.find(String.class, Document.class);
         Validator<Document> v = c.convert(
-                Validators.merge(Validators.REQUIRE_NON_EMPTY_STRING,
-                Validators.MAY_NOT_START_WITH_DIGIT, Validators.REQUIRE_VALID_FILENAME),
+                ValidatorUtils.merge(StringValidators.REQUIRE_NON_EMPTY_STRING,
+                StringValidators.MAY_NOT_START_WITH_DIGIT, StringValidators.REQUIRE_VALID_FILENAME),
                 new NonDuplicateFileValidator(targetFolder));
 
         group.add (displayNameField, v);
@@ -83,23 +86,23 @@ public class NewDevicePanel extends javax.swing.JPanel {
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.AddNewDevice"); //NOI18N
     }
 
-    public ValidationGroup getValidationGroup() {
+    public SwingValidationGroup getValidationGroup() {
         return pnl.getValidationGroup();
     }
 
-    private static final class NonDuplicateFileValidator implements Validator<String> {
+    private static final class NonDuplicateFileValidator extends AbstractValidator<String> {
         private final FileObject targetFolder;
         NonDuplicateFileValidator (FileObject targetFolder) {
+            super(String.class);
             this.targetFolder = targetFolder;
         }
 
-        public boolean validate(Problems p, String compName, String model) {
+        @Override public void validate(Problems p, String compName, String model) {
             boolean result = targetFolder.getFileObject(model.trim(), JCConstants.JAVACARD_DEVICE_FILE_EXTENSION) == null;
             if (!result) {
                 p.add(NbBundle.getMessage(NewDevicePanel.class,
                     "ERR_DEVICE_EXISTS", model)); //NOI18N);
             }
-            return result;
         }
 
     }

@@ -87,6 +87,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
     private String errroMessage;
     private final boolean editable;
+    private final VCSCommitPanelModifier modifier;
         
     public VCSCommitTable(VCSCommitTableModel<F> tableModel) {
         this(tableModel, true);
@@ -94,6 +95,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
     public VCSCommitTable (VCSCommitTableModel<F> tableModel, boolean isEditable) {
         this.editable = isEditable;
+        this.modifier = tableModel.getCommitModifier();
         init(tableModel);
         this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };
         setSortingStatus();
@@ -114,8 +116,8 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         
-        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(VCSCommitTable.class, "ACSN_CommitTable")); // NOI18N        
-        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VCSCommitTable.class, "ACSD_CommitTable")); // NOI18N        
+        table.getAccessibleContext().setAccessibleName(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_ACCESSIBLE_NAME));
+        table.getAccessibleContext().setAccessibleDescription(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_ACCESSIBLE_DESCRIPTION));
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
         table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { // NOI18N
@@ -140,12 +142,12 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     public boolean containsCommitable() {
         List<F> list = getCommitFiles();
         for(F file : list) {
-            if(file.getCommitOptions() != VCSCommitOptions.EXCLUDE) {
+            if(file.getCommitOptions() != modifier.getExcludedOption()) {
                 errroMessage = null;
                 return true;
             }
         }
-        errroMessage = NbBundle.getMessage(VCSCommitTable.class, "MSG_ERROR_NO_FILES");
+        errroMessage = modifier.getMessage(VCSCommitPanelModifier.BundleMessage.MESSAGE_NO_FILES);
         return false;
     }
 
@@ -346,13 +348,14 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
         boolean onlyIncluded = true;
         for (int rowIndex : table.getSelectedRows()) {
-            if (VCSCommitOptions.EXCLUDE.equals(tableModel.getOption(sorter.modelIndex(rowIndex)))) {
+            if (modifier.getExcludedOption().equals(tableModel.getOption(sorter.modelIndex(rowIndex)))) {
                 onlyIncluded = false;
                 break;
             }
         }
         final boolean include = !onlyIncluded;
-        item = menu.add(new AbstractAction(NbBundle.getMessage(VCSCommitTable.class, include ? "CTL_CommitTable_IncludeAction" : "CTL_CommitTable_ExcludeAction")) { // NOI18N
+        item = menu.add(new AbstractAction(include ? modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_INCLUDE_ACTION_NAME)
+                : modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_EXCLUDE_ACTION_NAME)) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int[] rows = table.getSelectedRows();
@@ -426,6 +429,10 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         this.modifiedFiles = modifiedFiles;
     }
 
+    VCSCommitPanelModifier getCommitModifier () {
+        return modifier;
+    }
+
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {
 
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
@@ -441,7 +448,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
                 if (!isSelected) {
                     value = node.getInformation().annotateNameHtml(node.getFile().getName()); 
                 }
-                if (options == VCSCommitOptions.EXCLUDE) {
+                if (options == modifier.getExcludedOption()) {
                     value = "<s>" + value + "</s>"; // NOI18N
                 }
                 if (modifiedFiles.contains(node.getFile())) {
@@ -460,7 +467,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     private class CheckboxCellRenderer extends JCheckBox implements TableCellRenderer {
 
         public CheckboxCellRenderer() {
-            setToolTipText(NbBundle.getMessage(VCSCommitTable.class, "CTL_CommitTable_Column_Description")); //NOI18N
+            setToolTipText(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_HEADER_COMMIT_DESC));
         }
 
         @Override

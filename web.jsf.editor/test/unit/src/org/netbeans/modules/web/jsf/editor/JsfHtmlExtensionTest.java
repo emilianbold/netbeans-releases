@@ -94,7 +94,7 @@ public class JsfHtmlExtensionTest extends TestBaseForTestProject {
         //insert test text, extract the pipe first
         content.insert(documentPipeIndex, testText);
         
-        Document testdoc = getDocument(content.toString(), "text/xhtml");
+        Document testdoc = getDocument(content.toString(), JsfUtils.XHTML_MIMETYPE);
         
         HtmlCompletionTestSupport.assertItems(
                 testdoc, 

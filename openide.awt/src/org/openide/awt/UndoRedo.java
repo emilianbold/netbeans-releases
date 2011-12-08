@@ -139,91 +139,40 @@ public interface UndoRedo {
 
         private final ChangeSupport cs = new ChangeSupport(this);
 
-        /** vector of Edits to run */
-        private final LinkedList<UndoableEditEvent> runus = new LinkedList<UndoableEditEvent>(); // for fix of #8692
-
-        /** Called from undoableEditHappened() inner class */
-        private void superUndoableEditHappened(UndoableEditEvent ue) {
-            super.undoableEditHappened(ue);
-        }
-
-        /** Called from discardAllEdits() inner class */
-        private void superDiscardAllEdits() {
-            super.discardAllEdits();
-        }
-
         /** Consume an undoable edit.
         * Delegates to superclass and notifies listeners.
         * @param ue the edit
         */
         @Override
         public void undoableEditHappened(final UndoableEditEvent ue) {
-            /* Edits are posted to request processor and the deadlock
-             * in #8692 between undoredo and document that fires
-             * the undoable edit should be avoided this way.
-             */
-            synchronized (runus) {
-                runus.add(ue);
-            }
-
-            updateTask();
+            super.undoableEditHappened(ue);
+            cs.fireChange();
         }
 
         /** Discard all the existing edits from the undomanager. */
         @Override
         public void discardAllEdits() {
-            synchronized (runus) {
-                runus.add(null);
-            }
-
-            updateTask();
+            super.discardAllEdits();
+            cs.fireChange();
         }
 
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            updateTask();
+            cs.fireChange();
         }
 
         @Override
         public void redo() throws CannotRedoException {
             super.redo();
-            updateTask();
+            cs.fireChange();
         }
 
         @Override
         public void undoOrRedo() throws CannotRedoException, CannotUndoException {
-            super.undoOrRedo();
-            updateTask();
+            super.undoOrRedo(); // cs.fireChange() either in undo() or redo()
         }
 
-        private void updateTask() {
-            for (;;) {
-                UndoableEditEvent ue;
-
-                synchronized (runus) {
-                    if (runus.isEmpty()) {
-                        break;
-                    }
-
-                    ue = runus.removeFirst();
-                }
-
-                if (ue == null) {
-                    superDiscardAllEdits();
-                } else {
-                    superUndoableEditHappened(ue);
-                }
-            }
-            cs.fireChange();
-        }
-
-        /* Attaches change listener to the this object.
-        * The listener is notified everytime the undo/redo
-        * ability of this object changes.
-        */
-
-        //#32313 - synchronization of this method was removed
         @Override
         public void addChangeListener(ChangeListener l) {
             cs.addChangeListener(l);

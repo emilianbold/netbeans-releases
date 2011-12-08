@@ -68,6 +68,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -78,14 +79,15 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.VariableAssignments;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch.BulkPattern;
-import org.netbeans.modules.java.hints.jackpot.impl.pm.Pattern;
+import org.netbeans.modules.java.hints.jackpot.impl.pm.PatternCompiler;
 import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
@@ -144,7 +146,19 @@ public class HintsInvoker {
 
     private List<ErrorDescription> computeHints(CompilationInfo info, TreePath startAt) {
         List<HintDescription> descs = new LinkedList<HintDescription>();
-        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
+        Map<HintMetadata, Collection<? extends HintDescription>> allHints = new HashMap<HintMetadata, Collection<? extends HintDescription>>(RulesManager.getInstance().allHints);
+
+        long elementBasedStart = System.currentTimeMillis();
+        List<HintDescription> elementBased = new LinkedList<HintDescription>();
+
+        RulesManager.computeElementBasedHintsXXX(info, cancel, elementBased);
+        allHints.putAll(org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.sortByMetadata(elementBased));
+
+        long elementBasedEnd = System.currentTimeMillis();
+
+        timeLog.put("Computing Element Based Hints", elementBasedEnd - elementBasedStart);
+
+        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : allHints.entrySet()) {
             HintMetadata m = e.getKey();
 
             if (!HintsSettings.isEnabled(m)) {
@@ -169,14 +183,6 @@ public class HintsInvoker {
                 }
             }
         }
-
-        long elementBasedStart = System.currentTimeMillis();
-
-        RulesManager.computeElementBasedHintsXXX(info, cancel, descs);
-
-        long elementBasedEnd = System.currentTimeMillis();
-
-        timeLog.put("Computing Element Based Hints", elementBasedEnd - elementBasedStart);
 
         List<ErrorDescription> errors = join(computeHints(info, startAt, descs, new LinkedList<MessageImpl>()));
 
@@ -492,22 +498,21 @@ public class HintsInvoker {
                     constraints.put(e.getKey(), designedType);
                 }
 
-                Pattern p = Pattern.compile(info, occ.getKey(), constraints, d.getImports());
-                TreePath toplevel = new TreePath(info.getCompilationUnit());
-                TreePath patt = new TreePath(toplevel, p.getPattern());
+                Pattern pattern = PatternCompiler.compile(info, occ.getKey(), constraints, d.getImports());
 
                 for (TreePath candidate : occ.getValue()) {
-                    VariableAssignments verified = CopyFinder.computeVariables(info, patt, candidate, cancel, p.getConstraints());
+                    Iterator<? extends OccurrenceDescription> verified = Matcher.create(info, cancel).setSearchRoot(candidate).setTreeTopSearch().match(pattern).iterator();
 
-                    if (verified == null) {
+                    if (!verified.hasNext()) {
                         continue;
                     }
 
                     Set<String> suppressedWarnings = new HashSet<String>(Utilities.findSuppressedWarnings(info, candidate));
+                    OccurrenceDescription verifiedVariables = verified.next();
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();
-                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, constraints, problems, bulkMode, cancel);
+                        HintContext c = new HintContext(info, hm, candidate, verifiedVariables.getVariables(), verifiedVariables.getMultiVariables(), verifiedVariables.getVariables2Names(), constraints, problems, bulkMode, cancel);
 
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;

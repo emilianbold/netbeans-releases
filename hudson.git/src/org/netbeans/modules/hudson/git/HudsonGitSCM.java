@@ -82,6 +82,9 @@ public class HudsonGitSCM implements HudsonSCM {
         "# {0} - repository location", "warning.local_repo={0} will only be accessible from a Hudson server on the same machine."
     })
     @Override public Configuration forFolder(File folder) {
+        if (!new File(folder, ".git").isDirectory()) {
+            return null;
+        }
         final URI origin = getRemoteOrigin(folder.toURI(), null);
         final String replacement = origin != null ? roReplacement(origin.toString()) : folder.getAbsolutePath();
         return new Configuration() {

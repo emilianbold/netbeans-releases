@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.project.ui.api.ProjectTemplates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -69,8 +70,6 @@ import org.openide.util.Utilities;
  * @author  tom
  */
 public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescriptor> {
-    public static final String PRESELECT_CATEGORY = "PRESELECT_CATEGORY";
-    public static final String PRESELECT_TEMPLATE = "PRESELECT_TEMPLATE";
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplatesPanelGUI panel;
@@ -94,11 +93,11 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
         FileObject templatesFolder = (FileObject) wd.getProperty (TemplatesPanelGUI.TEMPLATES_FOLDER);
         
         // WelcomeScreen hack, XXX Delete after WS is redesigned
-        String preselectedCategory = (String) wd.getProperty(PRESELECT_CATEGORY);
+        String preselectedCategory = (String) wd.getProperty(ProjectTemplates.PRESELECT_CATEGORY);
         if ( templatesFolder != null && templatesFolder.isFolder() && 
             ( wd.getTemplate() == null || preselectedCategory != null || needsReselect ) ) {
             
-            String preselectedTemplate = (String) wd.getProperty(PRESELECT_TEMPLATE);
+            String preselectedTemplate = (String) wd.getProperty(ProjectTemplates.PRESELECT_TEMPLATE);
             String template;
             String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
             String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
@@ -131,7 +130,7 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
         TemplateWizard wd = (TemplateWizard) settings;
         
         // WelcomeScreen hack, XXX Delete after WS is redesigned
-        String preselectedCategory = (String) wd.getProperty(PRESELECT_CATEGORY);
+        String preselectedCategory = (String) wd.getProperty(ProjectTemplates.PRESELECT_CATEGORY);
 
         TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
         FileObject fo = gui.getSelectedTemplate();

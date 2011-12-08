@@ -63,7 +63,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
@@ -113,18 +114,22 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         }
     }
     
+    @Override
     public String getName() {
         return getString ("LBL_MoveClasses");
     }
      
+    @Override
     public String getDescription() {
         return getName();
     }
     
+    @Override
     public boolean isQuery() {
         return false;
     }
         
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             String pkgName = null;
@@ -177,22 +182,25 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         }
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
     
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         if (refactoring == null) {
             if (disable) {
                 refactoring = new MoveRefactoring(Lookups.fixed(javaObjects.toArray()));
-                refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(javaObjects.toArray(new FileObject[javaObjects.size()])));
+                refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(javaObjects.toArray(new FileObject[javaObjects.size()])));
             } else {
                 refactoring = new MoveRefactoring (Lookups.fixed(resources.toArray()));
-                refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(resources.toArray(new FileObject[resources.size()])));
+                refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(resources.toArray(new FileObject[resources.size()])));
             }
         }
         return refactoring;
@@ -222,17 +230,21 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         return result;
     }
  
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(MoveClassesUI.class);
     }
 
+    @Override
     public boolean isRefactoringBypassRequired() {
         return !panel.isUpdateReferences();
     }
+    @Override
     public void doRefactoringBypass() throws IOException {
         pasteType.paste();
     }

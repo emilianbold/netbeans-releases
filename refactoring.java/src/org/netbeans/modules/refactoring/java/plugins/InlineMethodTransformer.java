@@ -79,7 +79,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.Pair;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.util.NbBundle;
 
@@ -411,7 +411,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 public Void visitVariable(VariableTree node, ExecutableElement p) {
                     Element variable = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), node));
                     if(!(variable.getKind() == ElementKind.PARAMETER && p.getParameters().contains((VariableElement)variable))) {
-                        String msg = RetoucheUtils.variableClashes(node.getName().toString(), currentPath, workingCopy);
+                        String msg = RefactoringUtils.variableClashes(node.getName().toString(), currentPath, workingCopy);
                         if (msg != null) {
                             problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InlineRefactoringPlugin.class,
                                     "ERR_InlineMethodNameClash", msg)); // NOI18N

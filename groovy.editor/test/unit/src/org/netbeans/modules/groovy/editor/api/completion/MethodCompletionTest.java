@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.Ignore;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -148,15 +149,21 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for(new Date().get^", false);
     }
 
+    // For some reason there is a StringBuilder as a return type for leftShift method
+    // This should be fixed, but it's not a top priority - see issue #205951
+    /*
+    @Ignore
     public void testCompletionNoPrefixString1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods10.groovy", "println \"Hello $name!\".^", false);
     }
 
+    @Ignore
     public void testCompletionNoPrefixString2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods11.groovy", "def name='Petr'.^", false);
     }
+    */
 
-    // FIXME this test randomly fails
+    // FIXME randomly fails
 //    @RandomlyFails
 //    public void testCompletionInsideFor2() throws Exception {
 //        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);

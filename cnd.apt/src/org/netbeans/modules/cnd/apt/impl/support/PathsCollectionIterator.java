@@ -39,34 +39,41 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
  * iterator which encapsulates two lists ans start index of combined collection
  * @author Vladimir Voskresensky
  */
-class PathsCollectionIterator implements Iterator<IncludeDirEntry> {
+final class PathsCollectionIterator implements Iterator<IncludeDirEntry> {
     private final List<IncludeDirEntry> col1;
     private final List<IncludeDirEntry> col2;
     private int startIndex;
+    private final int size1;
+    private final int size;
     
     public PathsCollectionIterator(List<IncludeDirEntry> col1, List<IncludeDirEntry> col2, int startIndex) {
         this.col1 = col1;
+        this.size1 = col1.size();
         this.col2 = col2;
+        this.size = size1 + col2.size();
         this.startIndex = startIndex;
     }
 
+    @Override
     public boolean hasNext() {
-        return startIndex < col1.size() + col2.size();
+        return startIndex < size;
     }
 
+    @Override
     public IncludeDirEntry next() {
         if (hasNext()) {
             int index = startIndex++;
-            if (index < col1.size()) {
+            if (index < size1) {
                 return col1.get(index);
             } else {
-                return col2.get(index - col1.size());
+                return col2.get(index - size1);
             }
         } else {
             throw new NoSuchElementException();
         }
     }
 
+    @Override
     public void remove() {
         throw new UnsupportedOperationException("Not supported."); // NOI18N
     }

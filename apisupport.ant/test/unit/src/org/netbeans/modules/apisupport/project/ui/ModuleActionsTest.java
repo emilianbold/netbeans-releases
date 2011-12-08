@@ -47,11 +47,13 @@ package org.netbeans.modules.apisupport.project.ui;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 // XXX much more to test
@@ -75,6 +77,30 @@ public class ModuleActionsTest extends TestBase {
         FileObject actionsJava = FileUtil.toFileObject(file("ant.freeform/src/org/netbeans/modules/ant/freeform/Actions.java"));
         assertNotNull("have Actions.java", actionsJava);
         assertTrue("Fix enabled on it", ap.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, Lookups.singleton(DataObject.find(actionsJava))));
+    }
+
+    public void testFindTestSources() throws Exception {
+        NbModuleProject p = generateStandaloneModule("p");
+        FileObject test = p.getTestSourceDirectory("unit");
+        FileObject oneTest = FileUtil.createData(test, "p/OneTest.java");
+        FileObject r = FileUtil.createData(test, "p/r.png");
+        FileObject otherTest = FileUtil.createData(test, "p/OtherTest.java");
+        FileObject pkg = test.getFileObject("p");
+        FileObject thirdTest = FileUtil.createData(test, "p2/ThirdTest.java");
+        ModuleActions a = new ModuleActions(p);
+        assertEquals("null", String.valueOf(a.findTestSources(Lookup.EMPTY, false)));
+        assertEquals("unit:p/OneTest.java", String.valueOf(a.findTestSources(Lookups.singleton(oneTest), false)));
+        assertEquals("unit:p/OneTest.java,p/OtherTest.java", String.valueOf(a.findTestSources(Lookups.fixed(oneTest, otherTest), false)));
+        assertEquals("null", String.valueOf(a.findTestSources(Lookups.singleton(pkg), false)));
+        assertEquals("null", String.valueOf(a.findTestSources(Lookups.singleton(r), false)));
+        assertEquals("null", String.valueOf(a.findTestSources(Lookups.fixed(oneTest, r), false)));
+        assertEquals("null", String.valueOf(a.findTestSources(Lookup.EMPTY, true)));
+        assertEquals("unit:p/OneTest.java", String.valueOf(a.findTestSources(Lookups.singleton(oneTest), true)));
+        assertEquals("unit:p/OneTest.java,p/OtherTest.java", String.valueOf(a.findTestSources(Lookups.fixed(oneTest, otherTest), true)));
+        assertEquals("unit:p/**", String.valueOf(a.findTestSources(Lookups.singleton(pkg), true)));
+        assertEquals("unit:p/**,p2/ThirdTest.java", String.valueOf(a.findTestSources(Lookups.fixed(pkg, thirdTest), true)));
+        assertEquals("null", String.valueOf(a.findTestSources(Lookups.singleton(r), true)));
+        assertEquals("null", String.valueOf(a.findTestSources(Lookups.fixed(oneTest, r), true)));
     }
     
 }

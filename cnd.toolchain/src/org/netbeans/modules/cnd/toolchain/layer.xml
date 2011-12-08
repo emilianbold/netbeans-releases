@@ -3,7 +3,7 @@
 <filesystem>
     <folder name="CND">
         <folder name="Tool">
-
+<!-- SunStudio_12.3 -->
             <file name="SunStudio_12.3_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudio_12.3_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -20,7 +20,7 @@
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
             <file name="SunStudio_12.3_linuxGNU_cpp" url="resources/toolchaindefinition/SunStudio_12.3_linuxGNU_cpp.xml">
-                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+                <attr name="extends" stringvalue="SunStudio_12_2_cpp"/>
             </file>
             <file name="SunStudio_12.3_linuxGNU_linker" url="resources/toolchaindefinition/SunStudio_12.3_linuxGNU_linker.xml">
                 <attr name="extends" stringvalue="SunStudio_linker"/>
@@ -37,7 +37,7 @@
             <file name="SunStudio_12.3_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudio_12.3_solaris-x86_linux_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
-            
+<!-- Spica -->
             <file name="SunStudioExpressSpica_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -71,7 +71,7 @@
             <file name="SunStudioExpressSpica_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudioExpressSpica_solaris-x86_linux_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
-
+<!-- SunStudio_12.2 -->
             <file name="SunStudio_12.2_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudio_12.2_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -105,7 +105,7 @@
             <file name="SunStudio_12.2_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudio_12.2_solaris-x86_linux_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
-
+<!-- Aten -->
             <file name="SunStudioExpressAten_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudioExpressAten_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -139,7 +139,7 @@
             <file name="SunStudioExpressAten_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudioExpressAten_solaris-x86_linux_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
-
+<!-- SunStudio_12.1 -->
             <file name="SunStudio_12.1_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudio_12.1_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -164,6 +164,7 @@
             <file name="SunStudio_12.1_solaris-x86_linux_fortran" url="resources/toolchaindefinition/SunStudio_12.1_solaris-x86_linux_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
+<!-- Ceres -->
             <file name="SunStudioExpressCeres_flavor" url="resources/toolchaindefinition/SunStudioExpressCeres_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
@@ -176,6 +177,7 @@
             <file name="SunStudioExpressCeres_fortran" url="resources/toolchaindefinition/SunStudioExpressCeres_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
             </file>
+<!-- SunStudio_12 -->
             <file name="SunStudio_12_flavor" url="resources/toolchaindefinition/SunStudio_12_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_flavor"/>
             </file>
@@ -188,6 +190,7 @@
             <file name="SunStudio_12_fortran" url="resources/toolchaindefinition/SunStudio_12_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_fortran"/>
             </file>
+<!-- SunStudio_11 -->
             <file name="SunStudio_11_flavor" url="resources/toolchaindefinition/SunStudio_11_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_flavor"/>
             </file>
@@ -200,6 +203,7 @@
             <file name="SunStudio_11_fortran" url="resources/toolchaindefinition/SunStudio_11_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_fortran"/>
             </file>
+<!-- SunStudio_10 -->
             <file name="SunStudio_10_flavor" url="resources/toolchaindefinition/SunStudio_10_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_flavor"/>
             </file>
@@ -212,6 +216,7 @@
             <file name="SunStudio_10_fortran" url="resources/toolchaindefinition/SunStudio_10_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_fortran"/>
             </file>
+<!-- SunStudio_9 -->
             <file name="SunStudio_9_flavor" url="resources/toolchaindefinition/SunStudio_9_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_flavor"/>
             </file>
@@ -224,6 +229,7 @@
             <file name="SunStudio_9_fortran" url="resources/toolchaindefinition/SunStudio_9_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_fortran"/>
             </file>
+<!-- SunStudio_8 -->
             <file name="SunStudio_8_flavor" url="resources/toolchaindefinition/SunStudio_8_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_flavor"/>
             </file>
@@ -236,8 +242,10 @@
             <file name="SunStudio_8_fortran" url="resources/toolchaindefinition/SunStudio_8_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_fortran"/>
             </file>
+<!-- OracleSolarisStudio -->
             <file name="OracleSolarisStudio_flavor" url="resources/toolchaindefinition/OracleSolarisStudio_flavor.xml">
             </file>
+<!-- SunStudio -->
             <file name="SunStudio_flavor" url="resources/toolchaindefinition/SunStudio_flavor.xml">
             </file>
             <file name="SunStudio_c" url="resources/toolchaindefinition/SunStudio_c.xml">
@@ -260,6 +268,7 @@
             </file>
             <file name="SunStudio_cmake" url="resources/toolchaindefinition/SunStudio_cmake.xml">
             </file>
+<!-- Cygwin_4.x -->
             <file name="Cygwin_4.x_flavor" url="resources/toolchaindefinition/Cygwin_4.x_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
@@ -281,6 +290,7 @@
             <file name="Cygwin_flavor" url="resources/toolchaindefinition/Cygwin_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
+<!-- Cygwin -->
             <file name="Cygwin_c" url="resources/toolchaindefinition/Cygwin_c.xml">
                 <attr name="extends" stringvalue="GNU_c"/>
             </file>
@@ -296,6 +306,7 @@
             <file name="Cygwin_linker" url="resources/toolchaindefinition/Cygwin_linker.xml">
                 <attr name="extends" stringvalue="GNU_linker"/>
             </file>
+<!-- MinGW -->
             <file name="MinGW_flavor" url="resources/toolchaindefinition/MinGW_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
@@ -317,6 +328,7 @@
             <file name="MinGW_make" url="resources/toolchaindefinition/MinGW_make.xml">
                 <attr name="extends" stringvalue="GNU_make"/>
             </file>
+<!-- MinGW_TDM -->
             <file name="MinGW_TDM_flavor" url="resources/toolchaindefinition/MinGW_TDM_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
@@ -338,6 +350,7 @@
             <file name="MinGW_TDM_make" url="resources/toolchaindefinition/MinGW_TDM_make.xml">
                 <attr name="extends" stringvalue="GNU_make"/>
             </file>
+<!-- Interix -->
             <file name="Interix_flavor" url="resources/toolchaindefinition/Interix_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
@@ -350,6 +363,7 @@
             <file name="Interix_fortran" url="resources/toolchaindefinition/Interix_fortran.xml">
                 <attr name="extends" stringvalue="GNU_fortran"/>
             </file>
+<!-- WinAVR -->
             <file name="WinAVR_flavor" url="resources/toolchaindefinition/WinAVR_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
@@ -371,6 +385,7 @@
             <file name="WinAVR_debugger" url="resources/toolchaindefinition/WinAVR_debugger.xml">
                 <attr name="extends" stringvalue="GNU_debugger"/>
             </file>
+<!-- GNU_solaris -->
             <file name="GNU_solaris_flavor" url="resources/toolchaindefinition/GNU_solaris_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
@@ -380,6 +395,7 @@
             <file name="GNU_solaris_linker" url="resources/toolchaindefinition/GNU_solaris_linker.xml">
                 <attr name="extends" stringvalue="GNU_linker"/>
             </file>
+<!-- GNU_mac -->
             <file name="GNU_mac_flavor" url="resources/toolchaindefinition/GNU_mac_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
@@ -389,6 +405,7 @@
             <file name="GNU_mac_linker" url="resources/toolchaindefinition/GNU_mac_linker.xml">
                 <attr name="extends" stringvalue="GNU_linker"/>
             </file>
+<!-- GNU -->
             <file name="GNU_flavor" url="resources/toolchaindefinition/GNU_flavor.xml">
             </file>
             <file name="GNU_c" url="resources/toolchaindefinition/GNU_c.xml">

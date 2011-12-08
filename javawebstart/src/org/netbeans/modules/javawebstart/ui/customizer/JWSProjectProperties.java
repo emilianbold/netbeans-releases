@@ -49,27 +49,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JToggleButton;
 import javax.swing.JToggleButton.ToggleButtonModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -80,20 +67,10 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -103,19 +80,20 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 
 /**
  *
  * @author Milan Kubec
+ * @author Petr Somol
  */
 public class JWSProjectProperties /*implements TableModelListener*/ {
     
+    private static final Logger LOG = Logger.getLogger(JWSProjectProperties.class.getName());
+
+    public static final String DEFAULT_PLATFORM   = JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name"); //NOI18N
+    public static final String ENDORSED_CLASSPATH = "endorsed.classpath"; //NOI18N
+
     public static final String JNLP_ENABLED      = "jnlp.enabled";
     public static final String JNLP_ICON         = "jnlp.icon";
     public static final String JNLP_OFFLINE      = "jnlp.offline-allowed";
@@ -236,9 +214,41 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     Document codebaseURLDocument;
     Document appletWidthDocument;
     Document appletHeightDocument;
+
+    /** Keeps singleton instance of JWSProjectProperties for any WS project for which property customizer is opened at once */
+    private static Map<String, JWSProjectProperties> propInstance = new TreeMap<String, JWSProjectProperties>();
+
+    /** Factory method */
+    public static JWSProjectProperties getInstance(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        JWSProjectProperties prop = propInstance.get(projDir);
+        if(prop == null) {
+            prop = new JWSProjectProperties(context);
+            propInstance.put(projDir, prop);
+        }
+        return prop;
+    }
+
+    public static void cleanup(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        propInstance.remove(projDir);
+    }
+
+    // WebStart config change detection
+    private boolean lastIsWebStartEnabled = false;
+
+    private boolean needWebStartJarsUpdate() {
+        return lastIsWebStartEnabled || enabledModel.isSelected();
+    }
+
+    private void resetWebStartChanged() {
+        lastIsWebStartEnabled = isWebStart(evaluator);
+    }
     
     /** Creates a new instance of JWSProjectProperties */
-    public JWSProjectProperties(Lookup context) {
+    private JWSProjectProperties(Lookup context) {
         
         project = context.lookup(Project.class);
         
@@ -247,7 +257,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             j2sePropEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
             
             evaluator = j2sePropEval.evaluator();
-        
+            resetWebStartChanged();
+
             enabledModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_ENABLED);
             allowOfflineModel = jnlpPropGroup.createToggleButtonModel(evaluator, JNLP_OFFLINE);
             iconDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_ICON);
@@ -271,8 +282,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             FileObject jnlpImlpFO = project.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
             if (jnlpImlpFO != null) {
                 try {
-                    String crc = JWSCompositeCategoryProvider.computeCrc32(jnlpImlpFO.getInputStream());
-                    jnlpImplOldOrModified = !JWSCompositeCategoryProvider.isJnlpImplCurrentVer(crc);
+                    String crc = JWSProjectPropertiesUtils.computeCrc32(jnlpImlpFO.getInputStream());
+                    jnlpImplOldOrModified = !JWSProjectPropertiesUtils.isJnlpImplCurrentVer(crc);
                 } catch (IOException ex) {
                     // nothing to do really
                 }
@@ -412,7 +423,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         // store signing info
         editableProps.setProperty(JNLP_SIGNING, signing);
-        editableProps.setProperty(JNLP_SIGNED, "".equals(signing) ? "false" : "true");
+        editableProps.setProperty(JNLP_SIGNED, "".equals(signing) ? "false" : "true"); //NOI18N
         setOrRemove(editableProps, JNLP_SIGNING_KEY, signingKeyAlias);
         setOrRemove(editableProps, JNLP_SIGNING_KEYSTORE, signingKeyStore);
         setOrRemove(privProps, JNLP_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
@@ -467,6 +478,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                     }
                     jnlpPropGroup.store(ep);
                     storeRest(ep, pep);
+                    if(needWebStartJarsUpdate()) {
+                        updateWebStartJarsOnChange(ep, evaluator, isJWSEnabled());
+                    }
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
@@ -493,16 +507,56 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                             os.close();
                         }
                     }
-                    updateWebStartJars(project, evaluator);
+                    //updateWebStartJars(project, evaluator);
                     return null;
                 }
             });
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         } 
-        
+        resetWebStartChanged();
     }
-    
+
+    public static void updateOnOpen(final Project project, final PropertyEvaluator eval) throws IOException {
+
+        final EditableProperties ep = new EditableProperties(true);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        try {
+            final InputStream is = projPropsFO.getInputStream();
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    try {
+                        ep.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    updateWebStartJarsOnOpen(ep, eval, isWebStart(eval));
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        ep.store(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+
+    }
+
     private DescType getSelectedDescType() {
         DescType toReturn = null;
         if (applicationDescButtonModel.isSelected()) {
@@ -550,40 +604,14 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return evaluator.getProperty(propName);
     }
 
-    public static void updateWebStartJars(
-            final Project project,
-            final PropertyEvaluator eval) throws IOException {
-        FileObject srcRoot = null;
-        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            if (!isTest(sg.getRootFolder(),project)) {
-                srcRoot = sg.getRootFolder();
-                break;
-            }
-        }
-        if (srcRoot != null) {
-            final Collection<? extends URL> toAdd  = isWebStart(eval) ? findWebStartJars(eval, isApplet(eval)) : new LinkedList<URL>();
-            final ClassPath bootCp = ClassPath.getClassPath(srcRoot, "classpath/endorsed"); //NOI18N
-            final Collection<? extends URL> included = findWebStartJars(bootCp);
-            final Collection<? extends URL> toRemove = new ArrayList<URL>(included);
-            toRemove.removeAll(toAdd);
-            toAdd.removeAll(included);
-            if (!toRemove.isEmpty()) {
-                ProjectClassPathModifier.removeRoots(toRemove.toArray(new URL[toRemove.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
-            }
-            if (!toAdd.isEmpty()) {
-                ProjectClassPathModifier.addRoots(toAdd.toArray(new URL[toAdd.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
-            }
-        }
-    }
-    
     // ----------
     
     public class CodebaseComboBoxModel extends DefaultComboBoxModel {
         
-        final String localLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Local");
-        final String webLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Web");
-        final String userLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_User");
-        final String noCodeBaseLabel = NbBundle.getMessage(JWSProjectProperties.class, "LBL_CB_No_Codebase");
+        final String localLabel = NbBundle.getMessage(JWSProjectProperties.class, "LBL_CB_Combo_Local"); //NOI18N
+        final String webLabel = NbBundle.getMessage(JWSProjectProperties.class, "LBL_CB_Combo_Web"); //NOI18N
+        final String userLabel = NbBundle.getMessage(JWSProjectProperties.class, "LBL_CB_Combo_User"); //NOI18N
+        final String noCodeBaseLabel = NbBundle.getMessage(JWSProjectProperties.class, "LBL_CB_No_Codebase"); //NOI18N
         final String visItems[] = new String[] { noCodeBaseLabel, localLabel, webLabel, userLabel};
         final String cbItems[] = new String[] { CB_NO_CODEBASE, CB_TYPE_LOCAL, CB_TYPE_WEB, CB_TYPE_USER};
         
@@ -929,6 +957,291 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return model;
     }
 
+    // ----------
+
+    /**
+     * Tokenize classpath read from project.properties
+     *
+     * @param ep EditableProperties to access raw property contents
+     * @param eval PropertyEvaluator to access dereferenced property contents
+     * @param classPathProp name of classpath property to read from
+     * @return collection of path pairs, key is the raw item, value is the dereferenced item
+     */
+    private static Map<String,String> getClassPathItems(final EditableProperties ep, final PropertyEvaluator eval, String classPathProp) {
+        String cpEdit = ep.getProperty(classPathProp);
+        String cpEval = eval.getProperty(classPathProp);
+        String pEdit[] = PropertyUtils.tokenizePath( cpEdit == null ? "" : cpEdit ); // NOI18N
+        String pEval[] = PropertyUtils.tokenizePath( cpEval == null ? "" : cpEval ); // NOI18N
+        if(pEdit.length != pEval.length) {
+            LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_ClassPathProblem", classPathProp)); //NOI18N
+        }
+        Map<String,String> map = new LinkedHashMap<String,String>();
+        for(int i = 0; i < pEdit.length && i < pEval.length; i++) {
+            map.put(pEdit[i], pEval[i]);
+        }
+        return map;
+    }
+
+    /**
+     * Filters out from map all items referring file name and returns list of those filtered
+     * items that actually exist
+     *
+     * @param map obtained using getClassPathItems()
+     * @param name file name of library to check (javaws.jar, plugin.jar)
+     * @return collection of path pairs (verified to exist, specified by name), key is the raw item, value is the dereferenced item
+     * @throws IOException
+     */
+    private static Map<String,String> filterOutLibItems(Map<String,String> map, String name) throws IOException {
+        Map<String,String> res = new LinkedHashMap<String,String>();
+        final Iterator<Map.Entry<String,String>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String,String> entry = it.next();
+            if (entry.getValue().endsWith(name)) {
+                it.remove();
+                String path = classPathItemExistsCanonical(entry.getValue());
+                if(path != null) {
+                    res.put(entry.getKey(), path);
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * Returns canonical path to item if it exists
+     * items that actually exist
+     *
+     * @param item path to existing file
+     * @return canonical path to item if it exists, null otherwise
+     * @throws IOException
+     */
+    private static String classPathItemExistsCanonical(String item) throws IOException {
+        if(item != null) {
+            final File itemFile = new File(item);
+            if(itemFile.exists()) {
+                return itemFile.getCanonicalPath();
+            }
+        }
+        return null;
+    }
+
+     /**
+     * Creates array of String paths to be passed to a classpath-defining property,
+     * out of a collection of String paths
+     *
+     * @param items collection of paths representing existing files
+     * @return String array that can be passed to setProperty()
+     */
+    private static String[] createClassPathProperty(Collection<String> items) {
+        Collection<String> otems = new ArrayList<String>();
+        for (String item : items) {
+            otems.add(item + ":"); //NOI18N
+        }
+        String arr[] = otems.toArray(new String[otems.size()]);
+        // remove ":" from last item:
+        if (arr.length != 0) {
+            arr[arr.length-1] = arr[arr.length-1].substring(0, arr[arr.length-1].length()-1);
+        }
+        return arr;
+    }
+
+    /**
+     * Returns the name of the current JavaPlatform as defined in project
+     * properties file, provided the platform exists. Otherwise returns null.
+     * The returned name is usable when accessing Ant properties/scripts
+     *
+     * @param eval PropertyEvaluator to read the name from project.properties
+     * @return name of current JavaPlatform as specified in project or null if such platform does not exist
+     */
+    private static String getActivePlatform(final PropertyEvaluator eval) {
+        final String platformName = eval.getProperty("platform.active"); //NOI18N
+        if (platformName != null) {
+            JavaPlatform active = null;
+            for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                if (platformName.equals(platform.getProperties().get("platform.ant.name"))) { //NOI18N
+                    active = platform;
+                    break;
+                }
+            }
+            if(active != null) {
+                return platformName;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns path to WS library file 'name' in JavaPlatform 'platform'
+     * in two forms: referenced (suitable as property value) and dereferenced
+     * (suitable for actual file access)
+     *
+     * @param eval PropertyEvaluator to read the name from project.properties
+     * @param platform Ant name of JavaPlatform in which 'name' is to be searched for
+     * @param name file name of library to check (javaws.jar, plugin.jar)
+     * @return pair of Strings representing the same path, key is the referenced path, value is the dereferenced path
+     * @throws IOException
+     */
+    private static String[] getPreferredPlatformLib(final PropertyEvaluator eval, final String platform, final String name) throws IOException {
+        String path[] = null;
+        if(platform != null && !platform.equals(DEFAULT_PLATFORM)) {
+            String platformProp = "platforms." + platform + ".home"; //NOI18N
+            if(eval.getProperty(platformProp) == null) {
+                LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_MissingPlatformLocation", platform)); //NOI18N
+            } else {
+                path = findLib(eval, platformProp, name);
+            }
+        }
+        if(path == null) {
+            path = findLib(eval, "jdk.home", name); //NOI18N
+        }
+        if(path == null) {
+            LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_MissingPlatformLib", platform, name)); //NOI18N
+        }
+        return path;
+    }
+
+    /**
+     * Adds source Map to the front of order-preserving Map
+     *
+     * @param map Map to be prepended by new record
+     * @param key together with value will be added as first record in map
+     * @param value together with key will be added as first record in map
+     * @return map with prepended key,value record
+     */
+    private static Map<String,String> putToFront(Map<String,String> map, String key, String value) {
+        Map<String,String> res = new LinkedHashMap<String, String>();
+        res.put(key, value);
+        res.putAll(map);
+        return res;
+    }
+
+    /**
+     * Adds source Map to the front of order-preserving Map
+     *
+     * @param map Map to be prepended by the Map 'source'
+     * @param source Map to be included at the front of ordered 'map'
+     * @return union Map of 'source' and 'map' with 'source' prependng 'map'
+     */
+    private static Map<String,String> putToFront(Map<String,String> map, Map<String,String> source) {
+        Map<String,String> res = new LinkedHashMap<String, String>(source);
+        res.putAll(map);
+        return res;
+    }
+
+    /**
+     * Adds to Map classpath representation the path to 'name' library in preferred
+     * form with respect to JavaPlatform 'platform'. If the library file can not
+     * be found, issues a warning and disables WS because the inability to find
+     * the library file indicates that WebStart can not be correctly configured
+     * for the current project.
+     *
+     * @param map Map representing classpath items
+     * @param ep EditableProperties to enable property setting
+     * @param eval PropertyEvaluator to read the name from project.properties
+     * @param platform Ant name of JavaPlatform in which 'name' is to be searched for
+     * @param name file name of library to check (javaws.jar, plugin.jar)
+     * @return 'map' with added item representing the preferred format of path to library 'name'
+     * @throws IOException
+     */
+    private static Map<String,String> addPreferredLib(Map<String,String> map, final EditableProperties ep, final PropertyEvaluator eval, String platform, String name) throws IOException {
+        String[] path = getPreferredPlatformLib(eval, platform, name);
+        if(path != null) {
+            if(!map.values().contains(path[1])) {
+                map = putToFront(map, path[0], path[1]);
+            }
+        } else {
+            LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_LibFileMissing", name)); //NOI18N
+            ep.setProperty(JNLP_ENABLED, "false"); //NOI18N
+        }
+        return map;
+    }
+
+   /**
+     * On opening of project with enabled WebStart,
+     * verifies the existence of files referenced by the endorsed.classpath
+     * property and removes those that do not exist. Then verifies that all active WebStart
+     * libraries (javaws.jar and/or plugin.jar) relevant for the active platform
+     * are already referenced in endosed.classpath; if not, the missing references
+     * are added in ${path-to-platform}/path/to/library form
+     *
+     * @param ep EditableProperties to enable access to row property form and property setting
+     * @param eval PropertyEvaluator to read the name from project.properties
+     * @param isWebStart determines whether WebStart is considered active, affects whether lib files will be added or removed
+     * @throws IOException
+     */
+    public static void updateWebStartJarsOnOpen(final EditableProperties ep, final PropertyEvaluator eval, boolean isWebStart) throws IOException {
+        Map<String,String> map = getClassPathItems(ep, eval, ENDORSED_CLASSPATH);
+        Map<String,String> wsmap = filterOutLibItems(map, LIB_JAVAWS);
+        Map<String,String> pnmap = filterOutLibItems(map, LIB_PLUGIN);
+        if(isWebStart) {
+            String active = getActivePlatform(eval);
+            if(isApplet(ep)) {
+                pnmap = addPreferredLib(pnmap, ep, eval, active, LIB_PLUGIN);
+            }
+            wsmap = addPreferredLib(wsmap, ep, eval, active, LIB_JAVAWS);
+            map = putToFront( putToFront(map, pnmap), wsmap);
+        }
+        ep.setProperty(ENDORSED_CLASSPATH, createClassPathProperty(map.keySet()));
+    }
+
+   /**
+     * On closing the Project Properties dialog by pressing OK
+     * updates all WebStart lib references in endorsed.classpath property
+     * with respect to current JavaPlatform.
+     * (in the form ${path-to-platform}/path/to/library)
+     *
+     * @param ep EditableProperties to enable access to row property form and property setting
+     * @param eval PropertyEvaluator to read the name from project.properties
+     * @param isWebStart determines whether WebStart is considered active, affects whether lib files will be added or removed
+     * @throws IOException
+     */
+    public static void updateWebStartJarsOnChange(final EditableProperties ep, final PropertyEvaluator eval, boolean isWebStart) throws IOException {
+        Map<String,String> map = getClassPathItems(ep, eval, ENDORSED_CLASSPATH);
+        filterOutLibItems(map, LIB_JAVAWS);
+        filterOutLibItems(map, LIB_PLUGIN);
+        if(isWebStart) {
+            Map<String,String> wsmap = new LinkedHashMap<String, String>();
+            Map<String,String> pnmap = new LinkedHashMap<String, String>();
+            String active = getActivePlatform(eval);
+            if(isApplet(ep)) {
+                pnmap = addPreferredLib(pnmap, ep, eval, active, LIB_PLUGIN);
+            } else {
+                pnmap.clear();
+            }
+            wsmap = addPreferredLib(wsmap, ep, eval, active, LIB_JAVAWS);
+            map = putToFront( putToFront(map, pnmap), wsmap);
+        }
+        ep.setProperty(ENDORSED_CLASSPATH, createClassPathProperty(map.keySet()));
+    }
+
+    @Deprecated
+    public static void updateWebStartJars(
+            final Project project,
+            final PropertyEvaluator eval) throws IOException {
+        FileObject srcRoot = null;
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (!isTest(sg.getRootFolder(),project)) {
+                srcRoot = sg.getRootFolder();
+                break;
+            }
+        }
+        if (srcRoot != null) {
+            final Collection<? extends URL> toAdd  = isWebStart(eval) ? findWebStartJars(eval, isApplet(eval)) : new LinkedList<URL>();
+            final ClassPath bootCp = ClassPath.getClassPath(srcRoot, "classpath/endorsed"); //NOI18N
+            final Collection<? extends URL> included = findWebStartJars(bootCp);
+            final Collection<? extends URL> toRemove = new ArrayList<URL>(included);
+            toRemove.removeAll(toAdd);
+            toAdd.removeAll(included);
+            if (!toRemove.isEmpty()) {
+                ProjectClassPathModifier.removeRoots(toRemove.toArray(new URL[toRemove.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
+            }
+            if (!toAdd.isEmpty()) {
+                ProjectClassPathModifier.addRoots(toAdd.toArray(new URL[toAdd.size()]), srcRoot, "classpath/endorsed");    //NOI18N Todo: fix ClassPath constants
+            }
+        }
+    }
+
+    @Deprecated
     private static Collection<? extends URL> findWebStartJars(
             final PropertyEvaluator evaluator,
             final boolean applet) throws IOException {
@@ -958,6 +1271,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return result;
     }
 
+    @Deprecated
     private static Collection<? extends URL> findWebStartJars(final ClassPath cp) throws IOException {
         final List<URL> result = new ArrayList<URL>(2);
         Pattern pattern = Pattern.compile(
@@ -971,6 +1285,62 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return result;
     }
 
+    /**
+     * Returns Mac path to WS library if it exists
+     *
+     * @param name file name of library to check (javaws.jar, plugin.jar)
+     * @return path to library if it exists or null
+     * @throws IOException
+     */
+    private static String findLibMac(final String name) throws IOException {
+        //On Mac deploy is fixed, attempting to find javaws.jar and plugin.jar at various fallback locations
+        String[] macFolders={
+            "/System/Library/Java/Support/Deploy.bundle/Contents/Home/lib/", //NOI18N
+            "/System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/", // NOI18N
+            "/System/Library/Java/Support/Deploy.bundle/Contents/Resources/Java/", // NOI18N
+            "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/"}; // NOI18N
+        for(String s : macFolders) {
+            final File deployFramework = new File(s);
+            final File lib = FileUtil.normalizeFile(new File(deployFramework,name));
+            if(lib.exists()) {
+                return lib.getPath();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns path (referenced if possible) to WS library if it exists
+     *
+     * @param eval PropertyEvaluator to access dereferenced property contents
+     * @param folderProp property containing path to Java platform
+     * @param name file name of library to check (javaws.jar, plugin.jar)
+     * @return path to library if it exists or null, if possible the path will be referenced by platform property
+     * @throws IOException
+     */
+    private static String[] findLib(final PropertyEvaluator eval, final String folderProp, final String name) throws IOException {
+        if (Utilities.isMac()) {
+            String[] res = new String[2];
+            res[0] = findLibMac(name);
+            res[1] = res[0];
+            return res;
+        } else {
+            final String folder = eval.getProperty(folderProp);
+            if(folder != null) {
+                final File deployFramework = new File(folder);
+                final File lib = FileUtil.normalizeFile(new File(deployFramework,"/jre/lib/"+ name)); //NOI18N
+                if(lib.exists()) {
+                    String[] res = new String[2];
+                    res[0] = "${" + folderProp + "}/jre/lib/" + name; //NOI18N
+                    res[1] = lib.getCanonicalPath();
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Deprecated
     private static URL findLib(final String name, final Iterable<? extends FileObject> installFolders) throws IOException {
         if (Utilities.isMac()) {
             //On Mac deploy is fixed in /System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/
@@ -1012,6 +1382,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     private static boolean isApplet(final PropertyEvaluator eval) {
         return DescType.applet.toString().equals(eval.getProperty(JNLP_DESCRIPTOR));
+    }
+
+    private static boolean isApplet(final EditableProperties ep) {
+        return DescType.applet.toString().equals(ep.getProperty(JNLP_DESCRIPTOR));
     }
 
     public static boolean isTrue(final String value) {

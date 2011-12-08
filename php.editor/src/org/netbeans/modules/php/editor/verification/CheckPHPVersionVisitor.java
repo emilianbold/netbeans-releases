@@ -53,8 +53,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
@@ -123,6 +125,15 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(UseStatement statement) {
         createError(statement);
+    }
+
+    @Override
+    public void visit(StaticMethodInvocation node) {
+        if (node.getClassName() instanceof Variable) {
+            createError(node.getClassName());
+        } else {
+            super.visit(node);
+        }
     }
 
     @Override

@@ -276,6 +276,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
         put();
         //respons_hit++;
+        ReferencesIndex.put(referencedUID, fileUID, refImpl);
         return true;
     }
 
@@ -380,7 +381,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.closestTopLevelObjectUID = defaultFactory.readUID(input);
         }
 
-        private void write(UIDObjectFactory defaultFactory, RepositoryDataOutput out) throws IOException {
+        void write(UIDObjectFactory defaultFactory, RepositoryDataOutput out) throws IOException {
             out.writeInt(this.start);
             out.writeInt(this.end);
             PersistentUtils.writeUTF(identifier, out);
@@ -418,6 +419,10 @@ public class FileComponentReferences extends FileComponent implements Persistent
             return file.getObject();
         }
 
+        public CsmUID<CsmFile> getContainingFileUID() {
+            return file;
+        }
+        
         @Override
         public int getStartOffset() {
             return PositionManager.getOffset(file, start);
@@ -492,7 +497,15 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
         @Override
         public String toString() {
-            return identifier+"["+start+","+end+"] file=" + file + ";refKind=" + refKind + ";refObj=" + refObj + ";topUID=" + closestTopLevelObjectUID + ";ownerUID=" + ownerUID + '}'; // NOI18N
+            return toString(false);
+        }
+        
+        /*package*/ String toString(boolean minimal) {
+            if (minimal) {
+                return identifier+"["+start+","+end+"] refKind=" + refKind; // NOI18N
+            } else {
+                return identifier+"["+start+","+end+"] file=" + file + ";refKind=" + refKind + ";refObj=" + refObj + ";topUID=" + closestTopLevelObjectUID + ";ownerUID=" + ownerUID + '}'; // NOI18N
+            }
         }
     }
 }

@@ -41,235 +41,302 @@
  */
 package org.netbeans.modules.coherence.server;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.StringTokenizer;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
- * This class represents Coherence server and supports actions for runnning or
- * stopping it, holds its state.
+ * This class represents Coherence server and supports actions for running or stopping it, holds its state.
  *
+ * @author Martin Fousek <marfous@netbeans.org>
  * @author Andrew Hopkinson (Oracle A-Team)
  */
 public class CoherenceServer {
 
-    /**
-     * Directory inside Coherence platform where are libraries placed.
-     */
-    public static final String PLATFORM_LIB_DIR = "lib"; //NOI18N
-    /**
-     * Directory inside Coherence platform where is documentation placed.
-     */
-    public static final String PLATFORM_DOC_DIR = "doc"; //NOI18N
-    /**
-     * Directory inside Coherence platform where are binaries placed.
-     */
-    public static final String PLATFORM_BIN_DIR = "bin"; //NOI18N
-
     private static final Logger LOGGER = Logger.getLogger(CoherenceServer.class.getCanonicalName());
+
     private final InstanceProperties instanceProperties;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private Thread serverThread = null;
-    private boolean running = false;
-    private static final String EXCEPTION_IN_MAIN = "Exception in thread \"main\"";
 
-    void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
+    /** GuardedBy("this") */
+    private final AtomicBoolean starting = new AtomicBoolean(false);
 
-    void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
+    /** GuardedBy("this") */
+    private Future<Integer> runningTask;
 
-    public static enum ServerState {
-
+    private static enum ServerState {
+        /** Started server which is not still fully running. */
         STARTING,
+        /** Running server. */
         RUNNING,
+        /** Stopped server. */
         STOPPED
     }
 
+    /**
+     * Adds listener for getting events about Coherence server state changes.
+     * @param listener listener to add
+     */
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    /**
+     * Removes listener.
+     * @param listener listener to remove
+     */
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    /**
+     * Creates instance of new Coherence server.
+     * @param instanceProperties properties for the Coherence server
+     */
     public CoherenceServer(InstanceProperties instanceProperties) {
         this.instanceProperties = instanceProperties;
     }
 
-    public boolean start() {
-        return start(instanceProperties);
-    }
-
-    public boolean start(final InstanceProperties instanceProperties) {
-        running = true;
-        serverThread = new Thread() {
-
-            Process process = null;
-            InputOutput io = null;
-
-            @Override
-            public void run() {
-                changeSupport.fireChange();
-                String propValue = null;
-                try {
-//            ProcessBuilder processBuilder = new ProcessBuilder("java -server -showversion com.tangosol.net.DefaultCacheServer");
-//            ProcessBuilder processBuilder = new ProcessBuilder("C:/Software/java/jdk1.6/bin/java");
-                    List<String> cmd = new ArrayList<String>();
-                    cmd.add("java");
-                    cmd.add("-server");
-                    cmd.add("-showversion");
-                    // Get ClassPath Elements
-                    String coherenceCP = instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, "");
-                    StringBuilder sbClasspath = new StringBuilder();
-                    if (coherenceCP != null) {
-                        for (String cp : coherenceCP.split(CoherenceProperties.CLASSPATH_SEPARATOR)) {
-                            sbClasspath.append(cp).append(File.pathSeparator);
-                        }
-                    }
-                    if (sbClasspath.length() > 0) {
-                        cmd.add("-cp");
-                        cmd.add(sbClasspath.toString());
-                    }
-                    io = IOProvider.getDefault().getIO(instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME,
-                            CoherenceProperties.DISPLAY_NAME_DEFAULT) + " (Run)", true); //NOI18N
-                    String javaFlags = instanceProperties.getString(CoherenceProperties.PROP_JAVA_FLAGS, "");
-                    if (javaFlags != null && javaFlags.trim().length() > 0) {
-                        StringTokenizer st = new StringTokenizer(javaFlags, " \t;:\n");
-                        String val = null;
-                        while (st.hasMoreTokens()) {
-                            val = st.nextToken();
-                            if (val != null && val.length() > 0) {
-                                cmd.add(val);
-                            }
-                        }
-                    }
-
-                    for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
-                        if (property.getPropertyName().startsWith("tangosol.")) {
-                            propValue = instanceProperties.getString(property.getPropertyName(), "");
-                            io.getOut().println(property.getPropertyName() + " = " + propValue);
-                            if (propValue != null && propValue.trim().length() > 0) {
-                                cmd.add("-D" + property.getPropertyName() + "=" + propValue);
-                            }
-                        }
-                    }
-
-                    String customProperties = instanceProperties.getString(CoherenceProperties.PROP_CUSTOM_PROPERTIES, "");
-                    if (customProperties != null && customProperties.trim().length() > 0) {
-                        StringTokenizer st = new StringTokenizer(customProperties, " \t;:\n");
-                        String val = null;
-                        while (st.hasMoreTokens()) {
-                            val = st.nextToken();
-                            if (val != null && val.length() > 0) {
-                                cmd.add(val);
-                            }
-                        }
-                    }
-
-                    cmd.add("com.tangosol.net.DefaultCacheServer");
-                    LOGGER.log(Level.INFO, "*** APH-I1 : Command {0}", cmd);
-                    ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-                    processBuilder.redirectErrorStream(true);
-                    process = processBuilder.start();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-                    String line = null;
-                    io = IOProvider.getDefault().getIO(instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME,
-                            CoherenceProperties.DISPLAY_NAME_DEFAULT) + " (Run)", false); //NOI18N
-                    io.getOut().println("************************************************************************************");
-                    io.getOut().println("Start Command : " + cmd.toString().replace(",", "").replace("[", "").replace("]", ""));
-                    io.getOut().println("************************************************************************************");
-                    while ((line = br.readLine()) != null) {
-                        io.getOut().println(line);
-                        if (line != null && line.indexOf(EXCEPTION_IN_MAIN) >= 0) {
-                            interrupt();
-                            break;
-                        }
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    LOGGER.log(Level.INFO, "*** APH-I1 : Thread.run() Finished");
-                    setRunning(false);
-                }
-            }
-
-            @Override
-            public void interrupt() {
-                super.interrupt();
-                process.destroy();
-                setRunning(false);
-                io.getOut().println("******************* Server Terminated *******************");
-            }
-
-            @Override
-            protected void finalize() throws Throwable {
-                try {
-                    io.getOut().flush();
-                } catch (Exception e) {
-                }
-                try {
-                    io.getOut().close();
-                } catch (Exception e) {
-                }
-                super.finalize();
-            }
-        };
-
-        serverThread.start();
-        running = serverThread.isAlive();
-
-        return running;
-    }
-
-    public boolean stop() {
-        return stop(instanceProperties);
-    }
-
-    public boolean stop(InstanceProperties instanceProperties) {
+    /**
+     * Starts this Coherence server.
+     */
+    public synchronized void start() {
+        LOGGER.log(Level.INFO, "Starting Coherence server: {0}", getServerDisplayName());
+        starting.set(true);
+        ExecutionService startService = getStartService();
+        runningTask = startService.run();
         changeSupport.fireChange();
-        running = false;
-        serverThread.checkAccess();
-        serverThread.interrupt();
+    }
 
-        if (serverThread.isInterrupted()) {
-            LOGGER.log(Level.INFO, "Thread interupted {0}", serverThread.getState());
-        } else {
-            LOGGER.log(Level.INFO, "Thread NOT interupted {0}", serverThread.getState());
-            serverThread.stop();
+    /**
+     * Stops this Coherence server.
+     */
+    public synchronized void stop() {
+        LOGGER.log(Level.INFO, "Stopping Coherence server: {0}", getServerDisplayName());
+        starting.set(false);
+        runningTask.cancel(true);
+        changeSupport.fireChange();
+    }
+
+    /**
+     * Says whether this Coherence server is running or not.
+     * @return {@code true} when the server runs, {@code false} otherwise
+     */
+    public synchronized boolean isRunning() {
+        if (runningTask != null) {
+            boolean state = !runningTask.isDone() && !starting.get();
+            LOGGER.log(Level.FINEST, "Coherence server {0} isRunning()={1}", new Object[]{getServerDisplayName(), state});
+            return state;
         }
-
-        serverThread = null;
-
-        return running;
+        return false;
     }
 
-    public boolean isRunning() {
-        if (serverThread != null) {
-            running = serverThread.isAlive();
-            LOGGER.log(Level.FINE, "*** APH-I1 : isRunning() isAlive {0}", serverThread.isAlive());
-            LOGGER.log(Level.FINE, "*** APH-I1 : isRunning() getState {0}", serverThread.getState());
-            LOGGER.log(Level.FINE, "*** APH-I1 : isRunning() isInterrupted {0}", serverThread.isInterrupted());
-        } else {
-            running = false;
+    /**
+    * Says whether this Coherence server is starting or not.
+    * @return {@code true} when the server is starting, {@code false} otherwise
+    */
+    public synchronized boolean isStarting() {
+        if (runningTask != null) {
+            boolean state = !runningTask.isDone() && starting.get();
+            LOGGER.log(Level.FINEST, "Coherence server {0} isStarting()={1}", new Object[]{getServerDisplayName(), state});
+            return state;
         }
-
-        return running;
+        return false;
     }
 
-    protected void setRunning(boolean running) {
-        this.running = running;
+    /**
+     * Says whether is Coherence server engaged or not.
+     * @return {@code true} when the server is engaged (running or starting), {@code false} otherwise
+     */
+    public boolean isEngaged() {
+        return isStarting() || isRunning();
     }
 
+    /**
+     * Gets {@link InstanceProperties} of this Coherence server.
+     * @return instance properties
+     */
     public InstanceProperties getInstanceProperties() {
         return instanceProperties;
+    }
+
+    private String getServerDisplayName() {
+        return instanceProperties.getString(CoherenceModuleProperties.PROP_DISPLAY_NAME, ""); //NOI18N
+    }
+
+    private synchronized void switchFromStartingToRunningState() {
+        starting.set(false);
+        changeSupport.fireChange();
+    }
+
+    private ExecutionService getStartService() {
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
+        descriptor = descriptor.frontWindow(true).inputVisible(true).outLineBased(true).
+                outProcessorFactory(new CoherenceInputProcessorFactory());
+
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(getJavaBinary()).redirectErrorStream(true);
+        processBuilder = processBuilder.addArgument("-server").addArgument("-showversion"); //NOI18N
+
+        // appending classpath elements
+        processBuilder = appendClassPathItems(processBuilder);
+        // appending java flags
+        processBuilder = appendCustomProperties(CoherenceModuleProperties.PROP_JAVA_FLAGS, processBuilder);
+        // appending server properties
+        processBuilder = appendServerProperties(processBuilder);
+        // appending java flags
+        processBuilder = appendCustomProperties(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, processBuilder);
+
+        processBuilder = processBuilder.addArgument("com.tangosol.net.DefaultCacheServer"); //NOI18N
+
+        return ExecutionService.newService(processBuilder, descriptor,
+                NbBundle.getMessage(CoherenceServer.class, "LBL_CoherenceServerOutputTab", getServerDisplayName())); //NOI18N
+    }
+
+    private static String getJavaBinary() {
+        JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        Collection<FileObject> folders = platform.getInstallFolders();
+        String javaBinary = Utilities.isWindows() ? "java.exe" : "java"; // NOI18N
+        if (folders.size() > 0) {
+            FileObject folder = folders.iterator().next();
+            File file = FileUtil.toFile(folder);
+            if (file != null) {
+                javaBinary = file.getAbsolutePath() + File.separator
+                        + "bin" + File.separator
+                        + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
+            }
+        }
+        return javaBinary;
+    }
+
+    private ExternalProcessBuilder appendClassPathItems(ExternalProcessBuilder builder) {
+        String coherenceCP = instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
+        StringBuilder sbClasspath = new StringBuilder();
+        if (coherenceCP != null) {
+            for (String cp : coherenceCP.split(CoherenceModuleProperties.CLASSPATH_SEPARATOR)) {
+                sbClasspath.append(cp).append(File.pathSeparator);
+            }
+        }
+        if (sbClasspath.length() > 0) {
+            builder = builder.addArgument("-cp").addArgument(sbClasspath.toString()); //NOI18N
+        }
+        return builder;
+    }
+
+    private ExternalProcessBuilder appendCustomProperties(String propertyName, ExternalProcessBuilder builder) {
+        String propertyValue = instanceProperties.getString(propertyName, ""); //NOI18N
+        if (propertyValue != null && propertyValue.trim().length() > 0) {
+            StringTokenizer st = new StringTokenizer(propertyValue, " \t;:\n"); //NOI18N
+            String val;
+            while (st.hasMoreTokens()) {
+                val = st.nextToken();
+                if (val != null && val.length() > 0) {
+                    LOGGER.log(Level.FINE, "Appened property {0} = {1}", new Object[]{propertyName, propertyValue});
+                    builder = builder.addArgument(val);
+                }
+            }
+        }
+        return builder;
+    }
+
+    private ExternalProcessBuilder appendServerProperties(ExternalProcessBuilder builder) {
+        StringBuilder serverProperties = new StringBuilder("Appened server properties: \n"); //NOI18N
+        for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
+            if (property.getPropertyName().startsWith("tangosol.")) { //NOI18N
+                String propValue = instanceProperties.getString(property.getPropertyName(), ""); //NOI18N
+                if (propValue != null && propValue.trim().length() > 0) {
+                    serverProperties.append(
+                            MessageFormat.format("{0} = {1} \n", property.getPropertyName(), propValue)); //NOI18N
+                    builder = builder.addArgument("-D" + property.getPropertyName() + "=" + propValue); //NOI18N
+                }
+            }
+        }
+        LOGGER.log(Level.FINE, serverProperties.toString());
+        return builder;
+    }
+
+    private class CoherenceInputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.proxy(
+                    new CoherenceDefaultInputProcessor(defaultProcessor),
+                    InputProcessors.bridge(new LastLineProcessor()));
+        }
+    }
+
+    private static class CoherenceDefaultInputProcessor implements InputProcessor {
+
+        private InputProcessor defaultProcessor;
+
+        public CoherenceDefaultInputProcessor(InputProcessor defaultProcessor) {
+            this.defaultProcessor = defaultProcessor;
+        }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            defaultProcessor.processInput(chars);
+        }
+
+        @Override
+        public void reset() throws IOException {
+            defaultProcessor.reset();
+        }
+
+        @Override
+        public void close() throws IOException {
+            defaultProcessor.processInput(
+                    NbBundle.getMessage(CoherenceServer.class, "MSG_CoherenceServerTerminated").toCharArray()); //NOI18N
+            defaultProcessor.close();
+        }
+    }
+
+    private class LastLineProcessor implements LineProcessor {
+
+        private final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+at.*$"); // NOI18N
+        private String last = "";
+
+        @Override
+        public synchronized void processLine(String line) {
+            if (line.length() != 0 && !STACK_TRACE_PATTERN.matcher(line).matches()) {
+                last = line;
+                if (line.startsWith("Started")) { //NOI18N
+                    switchFromStartingToRunningState();
+                }
+            }
+        }
+
+        public synchronized String getLastLine() {
+            return last;
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void close() {
+        }
     }
 }

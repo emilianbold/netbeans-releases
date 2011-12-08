@@ -85,10 +85,6 @@ import org.openide.util.NbBundle;
         try {
             getSystemIncludesAndDefines(getCompilerStderrCommand(), false, res);
             getSystemIncludesAndDefines(getCompilerStdoutCommand(), true, res);
-            // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
-            if (!containsMacro(res.systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
-                res.systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
-            }
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg;
@@ -99,6 +95,7 @@ import org.openide.util.NbBundle;
             }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
         }
+        completePredefinedMacros(res);
         return res;
     }
 

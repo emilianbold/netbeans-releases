@@ -74,5 +74,19 @@ $fnc = function($formUsed) use($lexUsed) {};
 
 $staticAnotherClass::$staticField;
 
+abstract class AbstractFoo
+{
+    abstract public function notHandled(array $array);
+}
+
+function FilterByNameStart($field)
+{
+    return function($param) use ($field) {return $field == $param;};
+}
+
+function($param1) use ($field1) {return $field1;};
+
+function($param11) use ($field11) {return $param11;};
+
 //END
 ?>

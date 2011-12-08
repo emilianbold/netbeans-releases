@@ -98,6 +98,7 @@ public class StartTask extends BasicTask<OperationState> {
     private List<String> jvmArgs = null;
     static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
     private final VMIntrospector vmi;
+    private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
 
     /**
      *
@@ -291,6 +292,13 @@ public class StartTask extends BasicTask<OperationState> {
             if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
                 db.start();
             }
+            int testPort = 0;
+            String portCandidate = support.getAdminPort();
+            try {
+                testPort = Integer.parseInt(portCandidate);
+            } catch (NumberFormatException nfe) {
+                Logger.getLogger("glassfish").log(Level.INFO, "could not parse {0} as an Inetger", portCandidate); // NOI18N
+            }
             // this may be an autheticated server... so we will say it is started.
             // other operations will fail if the process on the port is not a
             // GF v3 server.
@@ -300,6 +308,9 @@ public class StartTask extends BasicTask<OperationState> {
                     result = OperationState.FAILED;
                 }
                 return fireOperationStateChanged(result,
+                        "MSG_START_SERVER_OCCUPIED_PORT", instanceName); //NOI18N
+            } else if (testPort != 0 && Utils.isLocalPortOccupied(testPort)) {
+                return fireOperationStateChanged(OperationState.FAILED,
                         "MSG_START_SERVER_OCCUPIED_PORT", instanceName); //NOI18N
             }
             if (upgradeFailed()) {
@@ -333,7 +344,7 @@ public class StartTask extends BasicTask<OperationState> {
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
-            boolean httpLive = Utils.isLocalPortOccupied(adminPort);
+            boolean httpLive = CommonServerSupport.isRunning("localhost", adminPort, "localhost"); // Utils.isLocalPortOccupied(adminPort);
 
             // Sleep for a little so that we do not make our checks too often
             //
@@ -363,7 +374,7 @@ public class StartTask extends BasicTask<OperationState> {
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
                 // try to sync the states after the profiler attaches
-                RequestProcessor.getDefault().post(new Runnable () {
+                NODE_REFRESHER.post(new Runnable () {
 
                     @Override
                     public void run() {

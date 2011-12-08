@@ -54,12 +54,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.Options;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
+import org.netbeans.modules.java.hints.jackpot.impl.pm.PatternCompiler;
 
 /**
  *
@@ -76,17 +77,17 @@ public class MatcherUtilities {
     }
 
     public static boolean matches(@NonNull HintContext ctx, @NonNull TreePath variable, @NonNull String pattern, Map<String, TreePath> outVariables, Map<String, Collection<? extends TreePath>> outMultiVariables, Map<String, String> outVariables2Names) {
-        Scope s = Utilities.constructScope(ctx.getInfo(), Collections.<String, TypeMirror>emptyMap());
-        Tree  patternTree = Utilities.parseAndAttribute(ctx.getInfo(), pattern, s);
-        TreePath patternTreePath = new TreePath(new TreePath(ctx.getInfo().getCompilationUnit()), patternTree);
+        Pattern p = PatternCompiler.compile(ctx.getInfo(), pattern, Collections.<String, TypeMirror>emptyMap(), Collections.<String>emptyList());
         Map<String, TreePath> variables = new HashMap<String, TreePath>(ctx.getVariables());
         Map<String, Collection<? extends TreePath>> multiVariables = new HashMap<String, Collection<? extends TreePath>>(ctx.getMultiVariables());
         Map<String, String> variables2Names = new HashMap<String, String>(ctx.getVariableNames());
+        Iterable<? extends OccurrenceDescription> occurrences = Matcher.create(ctx.getInfo(), /*XXX*/new AtomicBoolean()).setPresetVariable(variables, multiVariables, variables2Names).setSearchRoot(variable).setTreeTopSearch().match(p);
 
-        if (CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variable, true, variables, multiVariables, variables2Names, true, Collections.<VariableElement>emptySet(), new AtomicBoolean()/*XXX*/, Options.ALLOW_VARIABLES_IN_PATTERN)) {
-            outVariables(outVariables, variables, ctx.getVariables());
-            outVariables(outMultiVariables, multiVariables, ctx.getMultiVariables());
-            outVariables(outVariables2Names, variables2Names, ctx.getVariableNames());
+        if (occurrences.iterator().hasNext()) {
+            OccurrenceDescription od = occurrences.iterator().next();
+            outVariables(outVariables, od.getVariables(), ctx.getVariables());
+            outVariables(outMultiVariables, od.getMultiVariables(), ctx.getMultiVariables());
+            outVariables(outVariables2Names, od.getVariables2Names(), ctx.getVariableNames());
 
             return true;
         }
@@ -117,10 +118,18 @@ public class MatcherUtilities {
 
         while (variableIt.hasNext() && patternTreesIt.hasNext()) {
             TreePath patternTreePath = new TreePath(new TreePath(ctx.getInfo().getCompilationUnit()), patternTreesIt.next());
+            Pattern p = Pattern.createPatternWithFreeVariables(patternTreePath, Collections.<String, TypeMirror>emptyMap());
+            Iterable<? extends OccurrenceDescription> occurrences = Matcher.create(ctx.getInfo(), /*XXX*/new AtomicBoolean()).setPresetVariable(variables, multiVariables, variables2Names).setSearchRoot(variableIt.next()).setTreeTopSearch().match(p);
 
-            if (!CopyFinder.isDuplicate(ctx.getInfo(), patternTreePath, variableIt.next(), true, variables, multiVariables, variables2Names, true, Collections.<VariableElement>emptySet(), new AtomicBoolean()/*XXX*/, Options.ALLOW_VARIABLES_IN_PATTERN)) {
+            if (!occurrences.iterator().hasNext()) {
                 return false;
             }
+
+            OccurrenceDescription od = occurrences.iterator().next();
+
+            variables = od.getVariables();
+            multiVariables = od.getMultiVariables();
+            variables2Names = od.getVariables2Names();
         }
 
         if (variableIt.hasNext() == patternTreesIt.hasNext()) {

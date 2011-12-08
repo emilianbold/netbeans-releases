@@ -102,6 +102,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
     private final DocumentListener nameChangedListener;
     private int startOffset;
     
+    @Override
     public Component getComponent() {
         return this;
     }
@@ -134,6 +135,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         try {
             if (initialized) {
@@ -142,6 +144,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
             JavaSource source = JavaSource.forFileObject(refactoredObj.getFileObject());
             source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
+                @Override
                 public void run(org.netbeans.api.java.source.CompilationController info) {
                     try {
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -170,7 +173,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                             chkGenJavadoc.setVisible(false);
                         }
                                                 
-                        String name = getName(path.getLeaf());
+                        String name = JavaPluginUtils.getName(path.getLeaf());
                         if (name == null) {
                             name = DEFAULT_NAME;
                         }
@@ -179,7 +182,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                         TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
                         scope = info.getTrees().getScope(bodyPath);
                         
-                        final String parameterName = makeNameUnique(info, scope, name, methodTree);
+                        final String parameterName = JavaPluginUtils.makeNameUnique(info, scope, name, methodTree);
                         
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
@@ -213,6 +216,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                     }
                 }
 
+                @Override
                 public void cancel() {
                 }
             }, true);
@@ -420,151 +424,4 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
         super.requestFocus();
         ((JEditorPane)singleLineEditor[1]).requestFocus();
     }
-    
-    //<editor-fold defaultstate="collapsed" desc="Copy from org.netbeans.modules.java.hints.errors.Utilities">
-    private static String makeNameUnique(CompilationInfo info, Scope s, String name, MethodTree method) {
-        int counter = 0;
-        boolean cont = true;
-        String proposedName = name;
-        
-        while (cont) {
-            proposedName = name + (counter != 0 ? String.valueOf(counter) : "");
-            
-            cont = false;
-            
-            if (s != null) {
-                for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new VariablesFilter())) {
-                    if (proposedName.equals(e.getSimpleName().toString())) {
-                        counter++;
-                        cont = true;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return proposedName;
-    }
-    
-    public static String getName(Tree et) {
-        return adjustName(getNameRaw(et));
-    }
-    
-    private static String getNameRaw(Tree et) {
-        if (et == null)
-            return null;
-        
-        switch (et.getKind()) {
-            case IDENTIFIER:
-                return ((IdentifierTree) et).getName().toString();
-            case METHOD_INVOCATION:
-                return getName(((MethodInvocationTree) et).getMethodSelect());
-            case MEMBER_SELECT:
-                return ((MemberSelectTree) et).getIdentifier().toString();
-            case NEW_CLASS:
-                return firstToLower(getName(((NewClassTree) et).getIdentifier()));
-            case PARAMETERIZED_TYPE:
-                return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
-            case STRING_LITERAL:
-                String name = guessLiteralName((String) ((LiteralTree) et).getValue());
-                if(name == null) {
-                    return firstToLower(String.class.getSimpleName());
-                } else {
-                    return firstToLower(name);
-                }
-            case VARIABLE:
-                return ((VariableTree) et).getName().toString();
-            default:
-                return null;
-        }
-    }
-    
-    static String adjustName(String name) {
-        if (name == null)
-            return null;
-        
-        String shortName = null;
-        
-        if (name.startsWith("get") && name.length() > 3) {
-            shortName = name.substring(3);
-        }
-        
-        if (name.startsWith("is") && name.length() > 2) {
-            shortName = name.substring(2);
-        }
-        
-        if (shortName != null) {
-            return firstToLower(shortName);
-        }
-        
-        if (SourceVersion.isKeyword(name)) {
-            return "a" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
-        } else {
-            return name;
-        }
-    }
-    
-    private static String firstToLower(String name) {
-        if (name.length() == 0)
-            return null;
-        
-        StringBuilder result = new StringBuilder();
-        boolean toLower = true;
-        char last = Character.toLowerCase(name.charAt(0));
-        
-        for (int i = 1; i < name.length(); i++) {
-            if (toLower && Character.isUpperCase(name.charAt(i))) {
-                result.append(Character.toLowerCase(last));
-            } else {
-                result.append(last);
-                toLower = false;
-            }
-            last = name.charAt(i);
-            
-        }
-        
-        result.append(last);
-        
-        if (SourceVersion.isKeyword(result)) {
-            return "a" + name;
-        } else {
-            return result.toString();
-        }
-    }
-    
-    private static String guessLiteralName(String str) {
-        StringBuilder sb = new StringBuilder();
-        if(str.length() == 0)
-            return null;
-        char first = str.charAt(0);
-        if(Character.isJavaIdentifierStart(str.charAt(0)))
-            sb.append(first);
-        
-        for (int i = 1; i < str.length(); i++) {
-            char ch = str.charAt(i);
-            if(ch == ' ') {
-                sb.append('_');
-                continue;
-            }
-            if (Character.isJavaIdentifierPart(ch))
-                sb.append(ch);
-            if (i > 40)
-                break;
-        }
-        if (sb.length() == 0)
-            return null;
-        else
-            return sb.toString();
-    }
-    
-    public static final class VariablesFilter implements ElementAcceptor {
-        
-        private static final Set<ElementKind> ACCEPTABLE_KINDS = EnumSet.of(ElementKind.ENUM_CONSTANT, ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
-        
-        public boolean accept(Element e, TypeMirror type) {
-            return ACCEPTABLE_KINDS.contains(e.getKind());
-        }
-        
-    }
-    //</editor-fold>
 }

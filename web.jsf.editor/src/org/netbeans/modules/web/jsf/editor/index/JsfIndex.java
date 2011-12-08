@@ -93,7 +93,7 @@ public class JsfIndex {
     }
 
     private QuerySupport createBinaryIndex() throws IOException {
-        return QuerySupport.forRoots(JsfBinaryIndexer.INDEXER_NAME, JsfBinaryIndexer.INDEX_VERSION, binaryRoots);
+        return QuerySupport.forRoots(JsfBinaryIndexer.INDEXER_NAME, JsfBinaryIndexer.INDEXER_VERSION, binaryRoots);
     }
 
     private QuerySupport createCustomIndex() throws IOException {

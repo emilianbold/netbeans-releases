@@ -44,7 +44,8 @@ package org.netbeans.modules.refactoring.java.callhierarchy;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -82,9 +83,10 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
                 win.setModel(CallHierarchyModel.create(context, win.getScopes(), win.getHierarchyType()));
             }
         };
-        RetoucheUtils.invokeAfterScanFinished(task, getName());
+        RefactoringUtils.invokeAfterScanFinished(task, getName());
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         Collection<? extends Node> nodes = new HashSet<Node>(context.lookupAll(Node.class));
         if (nodes.size() != 1) {
@@ -99,7 +101,7 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
             return false;
         }
         FileObject fo = dob.getPrimaryFile();
-        if (RetoucheUtils.isRefactorable(fo)) {
+        if (JavaRefactoringUtils.isRefactorable(fo)) {
             return true;
         }
         return false;

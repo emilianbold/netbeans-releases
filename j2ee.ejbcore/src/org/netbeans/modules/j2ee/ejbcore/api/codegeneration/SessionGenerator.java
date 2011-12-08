@@ -72,8 +72,11 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.action.BusinessMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.TimerOptions;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -335,7 +338,7 @@ public final class SessionGenerator {
         throw new UnsupportedOperationException("Method not implemented yet.");
     }
 
-    private void generateTimerMethodForBean(FileObject bean, String methodName, TimerOptions timerOptions) {
+    private void generateTimerMethodForBean(final FileObject bean, String methodName, TimerOptions timerOptions) {
         MethodModel.Annotation annotation = MethodModel.Annotation.create(
                 "javax.ejb.Schedule", timerOptions.getTimerOptionsAsMap()); // NOI18N
         final MethodModel method = MethodModel.create(
@@ -353,8 +356,16 @@ public final class SessionGenerator {
             public void run() {
                 try {
                     generator.generate(method, hasLocal, hasRemote);
+
+                    // save the document after adding timer method
+                    EditorCookie cookie = DataObject.find(bean).getLookup().lookup(EditorCookie.class);
+                    if (cookie != null) {
+                        cookie.saveDocument();
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                   Logger.getLogger(SessionGenerator.class.getName()).log(Level.INFO, null, ex);
                 } catch (IOException ioe) {
-                    Logger.getLogger(SessionGenerator.class.getName()).log(Level.WARNING, null, ioe);
+                    Logger.getLogger(SessionGenerator.class.getName()).log(Level.INFO, null, ioe);
                 }
             }
         });

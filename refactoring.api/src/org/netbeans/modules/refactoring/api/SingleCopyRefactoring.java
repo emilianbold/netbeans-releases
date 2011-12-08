@@ -68,9 +68,9 @@ public final class SingleCopyRefactoring extends AbstractRefactoring {
      * Single Copy Refactoring implementations currently understand following types:
      * <table border="1">
      *   <tr><th>Module</th><th>Types the Module Understands</th><th>Implementation</th></tr>
-     *   <tr><td>Refactoring API (Default impl.)</td><td>FileObject</td><td>Does file copy</td></tr>
+     *   <tr><td>Refactoring API (Default impl.)</td><td>{@link org.openide.filesystems.FileObject}</td><td>Does file copy</td></tr>
      *   <tr><td>Java Refactoring</td><td><ul>
-     *                                    <li>{@link FileObject}(s) with content type text/x-java (class copy)
+     *                                    <li>{@link org.openide.filesystems.FileObject}(s) with content type text/x-java (class copy)
      *                                    </ul>
      *                              <td>Updates name, package declaration and import statements</td></tr>
      * </table>

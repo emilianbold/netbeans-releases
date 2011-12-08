@@ -91,6 +91,7 @@ final class CopyHandler implements OperationListener {
 
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
@@ -125,6 +126,7 @@ final class CopyHandler implements OperationListener {
     private CopyHandler() {
     }
 
+    @Override
     public void operationCopy(Copy ev) {
         FileObject copyFO = ev.getObject().getPrimaryFile();
         FileObject origFO = ev.getOriginalDataObject().getPrimaryFile();
@@ -141,34 +143,47 @@ final class CopyHandler implements OperationListener {
         if (cp == null) {
             return;
         }
-        String pkgName = cp.getResourceName(copyFO.getParent(), '.', false);
-        try {
-            renameFO(js, pkgName, copyFO.getName(), origFO.getName());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        ClassPath origCp = ClassPath.getClassPath(origFO, ClassPath.SOURCE);
+        String pkgName = cp.getResourceName(copyFO.getParent(), '.', false);    //NOI18N
+        if (origCp == null ||
+            !pkgName.equals(origCp.getResourceName(origFO.getParent(), '.', false)) ||  //NOI18N
+            !copyFO.getName().equals(origFO.getName())) {
+            try {
+                renameFO(js, pkgName, copyFO.getName(), origFO.getName());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (RuntimeException re) {
+                Exceptions.printStackTrace(re);
+            }
         }
     }
 
+    @Override
     public void operationPostCreate(OperationEvent ev) {
         // ignore
     }
 
+    @Override
     public void operationMove(Move ev) {
         // ignore
     }
 
+    @Override
     public void operationDelete(OperationEvent ev) {
         // ignore
     }
 
+    @Override
     public void operationRename(Rename ev) {
         // ignore
     }
 
+    @Override
     public void operationCreateShadow(Copy ev) {
         // ignore
     }
 
+    @Override
     public void operationCreateFromTemplate(Copy ev) {
         // ignore
     }

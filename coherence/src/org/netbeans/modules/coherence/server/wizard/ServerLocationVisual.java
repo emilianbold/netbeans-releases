@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.coherence.server.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -50,8 +50,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
-import org.netbeans.modules.coherence.server.CoherenceServer;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -64,43 +64,48 @@ import org.openide.util.NbBundle;
  */
 public class ServerLocationVisual extends javax.swing.JPanel {
 
-    private static final String COHERENCE_LIB_BASE = File.separator + CoherenceServer.PLATFORM_LIB_DIR + File.separator;
-    private static final String COHERENCE_JAR = COHERENCE_LIB_BASE + "coherence.jar"; //NOI18N
-    private static final String COHERENCE_JPA_JAR = COHERENCE_LIB_BASE + "coherence-jpa.jar"; //NOI18N
-    private static final String COHERENCE_HIBERNATE_JAR = COHERENCE_LIB_BASE + "coherence-hibernate.jar"; //NOI18N
-    private static final String COHERENCE_LOADBALANCER_JAR = COHERENCE_LIB_BASE + "coherence-loadbalancer.jar"; //NOI18N
-    private static final String COHERENCE_TRANSACTION_JAR = COHERENCE_LIB_BASE + "coherence-transaction.jar"; //NOI18N
-    private static final String COHERENCE_TX_JAR = COHERENCE_LIB_BASE + "coherence-tx.jar"; //NOI18N
+    private static final String COHERENCE_LIB_PATH = File.separator + CoherenceProperties.PLATFORM_LIB_DIR + File.separator;
+    private static final String COHERENCE_JAR_PATH = COHERENCE_LIB_PATH + "coherence.jar"; //NOI18N
+    private static final String COHERENCE_JPA_JAR_PATH = COHERENCE_LIB_PATH + "coherence-jpa.jar"; //NOI18N
+    private static final String COHERENCE_HIBERNATE_JAR_PATH = COHERENCE_LIB_PATH + "coherence-hibernate.jar"; //NOI18N
+    private static final String COHERENCE_LOADBALANCER_JAR_PATH = COHERENCE_LIB_PATH + "coherence-loadbalancer.jar"; //NOI18N
+    private static final String COHERENCE_TRANSACTION_JAR_PATH = COHERENCE_LIB_PATH + "coherence-transaction.jar"; //NOI18N
+    private static final String COHERENCE_TX_JAR_PATH = COHERENCE_LIB_PATH + "coherence-tx.jar"; //NOI18N
 
     private String classpath = "";
 
     private static JFileChooser fileChooser;
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
+    /**
+     * Creates new form ServerLocationVisual
+     */
+    public ServerLocationVisual() {
+        initComponents();
+        initListeners();
+    }
+
     public String getServerName() {
         return serverLocationTextField.getText();
     }
 
     private String validCoherenceServerDirectory(File directory) {
-        boolean libDir, docDir, binDir;
-        libDir = docDir = binDir = false;
+        boolean libDir = false, binDir = false;
         for (File file : directory.listFiles()) {
-            if (file.getName().equals(CoherenceServer.PLATFORM_BIN_DIR)) {
+            if (file.getName().equals(CoherenceProperties.PLATFORM_BIN_DIR)) {
                 binDir = true;
-            } else if (file.getName().equals(CoherenceServer.PLATFORM_LIB_DIR)) {
+            } else if (file.getName().equals(CoherenceProperties.PLATFORM_LIB_DIR)) {
                 libDir = true;
-            } else if (file.getName().equals(CoherenceServer.PLATFORM_DOC_DIR)) {
-                docDir = true;
             }
         }
 
         // one of mandatory directories wasn't found
-        if (!libDir || !binDir || !docDir) {
+        if (!libDir || !binDir) {
             return NbBundle.getMessage(ServerLocationVisual.class, "LBL_NotValidCoherencePlatformDir"); //NOI18N
         }
 
-        // inside library directory was not found Coherence.jar
-        if (!new File(directory, COHERENCE_JAR).exists()) {
+        // coherence.jar was not found inside library directory
+        if (!new File(directory, COHERENCE_JAR_PATH).exists()) {
             return NbBundle.getMessage(ServerLocationVisual.class, "LBL_CoherenceJarNotFoundInPlatform"); //NOI18N
         }
         return null;
@@ -134,14 +139,6 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         return true;
     }
 
-    /**
-     * Creates new form ServerLocationVisual
-     */
-    public ServerLocationVisual() {
-        initComponents();
-        initListeners();
-    }
-
     private void initListeners() {
         // document listener for serverLocationTextField
         serverLocationTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -163,17 +160,18 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         });
 
         // action listeners for checkboxes
-        hibernateJarCheckBox.addActionListener(new CheckBoxActionListener());
-        jpaJarCheckBox.addActionListener(new CheckBoxActionListener());
-        transactionJarCheckBox.addActionListener(new CheckBoxActionListener());
-        txJarCheckBox.addActionListener(new CheckBoxActionListener());
-        loadbalancerJarCheckBox.addActionListener(new CheckBoxActionListener());
+        hibernateJarCheckBox.addItemListener(new CheckBoxItemListener());
+        jpaJarCheckBox.addItemListener(new CheckBoxItemListener());
+        transactionJarCheckBox.addItemListener(new CheckBoxItemListener());
+        txJarCheckBox.addItemListener(new CheckBoxItemListener());
+        loadbalancerJarCheckBox.addItemListener(new CheckBoxItemListener());
+        createLibraryCheckBox.addItemListener(new CheckBoxItemListener());
     }
 
-    private class CheckBoxActionListener implements ActionListener {
+    private class CheckBoxItemListener implements ItemListener {
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void itemStateChanged(ItemEvent e) {
             fireChangeEvent();
         }
     }
@@ -250,28 +248,32 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         return serverLocationTextField.getText();
     }
 
+    public boolean getCreateCoherenceLibrary() {
+        return createLibraryCheckBox.isSelected();
+    }
+
     public void fillInCoherenceClasspath(boolean isCoherenceValid) {
         if (isCoherenceValid) {
             String location = serverLocationTextField.getText();
             if (location != null && location.trim().length() > 0) {
-                StringBuilder classpathSB = new StringBuilder(location.concat(COHERENCE_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                StringBuilder classpathSB = new StringBuilder(location.concat(COHERENCE_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 if (hibernateJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_HIBERNATE_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_HIBERNATE_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (jpaJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_JPA_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_JPA_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (loadbalancerJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_LOADBALANCER_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_LOADBALANCER_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (transactionJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TRANSACTION_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_TRANSACTION_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 if (txJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TX_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
+                    classpathSB.append(location.concat(COHERENCE_TX_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
                 }
                 classpath = classpathSB.toString();
-                classpath = classpath.substring(0, classpath.length() - CoherenceProperties.CLASSPATH_SEPARATOR.length());
+                classpath = classpath.substring(0, classpath.length() - CoherenceModuleProperties.CLASSPATH_SEPARATOR.length());
             }
         } else {
             classpath = "";
@@ -305,6 +307,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         transactionJarCheckBox = new javax.swing.JCheckBox();
         txJarCheckBox = new javax.swing.JCheckBox();
         browseButton = new javax.swing.JButton();
+        createLibraryCheckBox = new javax.swing.JCheckBox();
 
         serverLocationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.serverLocationLabel.mnemonics").charAt(0));
         serverLocationLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -346,7 +349,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addComponent(loadbalancerJarCheckBox)
                     .addComponent(transactionJarCheckBox)
                     .addComponent(txJarCheckBox))
-                .addContainerGap(226, Short.MAX_VALUE))
+                .addContainerGap(258, Short.MAX_VALUE))
         );
         additionalClasspathPanelLayout.setVerticalGroup(
             additionalClasspathPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -370,6 +373,9 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             }
         });
 
+        createLibraryCheckBox.setSelected(true);
+        createLibraryCheckBox.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.createLibraryCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -383,8 +389,9 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                         .addComponent(serverLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
-                    .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(createLibraryCheckBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -399,6 +406,8 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                 .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(createLibraryCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -411,6 +420,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalClasspathPanel;
     private javax.swing.JButton browseButton;
+    private javax.swing.JCheckBox createLibraryCheckBox;
     private javax.swing.JCheckBox hibernateJarCheckBox;
     private javax.swing.JCheckBox jpaJarCheckBox;
     private javax.swing.JCheckBox loadbalancerJarCheckBox;

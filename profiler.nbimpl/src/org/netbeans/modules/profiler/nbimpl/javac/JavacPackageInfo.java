@@ -65,12 +65,13 @@ import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 public class JavacPackageInfo extends SourcePackageInfo {
     private static final Logger LOGGER = Logger.getLogger(JavacPackageInfo.class.getName());
     
-    private ClasspathInfo cpInfo;
+    private ClasspathInfo cpInfo, indexInfo;
     private Set<ClassIndex.SearchScope> sScope;
     
-    public JavacPackageInfo(ClasspathInfo cpInfo, String simpleName, String fqn, Scope scope) {
+    public JavacPackageInfo(ClasspathInfo cpInfo, ClasspathInfo indexInfo, String simpleName, String fqn, Scope scope) {
         super(simpleName, fqn, scope);
         this.cpInfo = cpInfo;
+        this.indexInfo = indexInfo;
         
         switch (scope) {
             case SOURCE: {
@@ -106,7 +107,7 @@ public class JavacPackageInfo extends SourcePackageInfo {
                     if (pelem != null) {
                         for (TypeElement type : ElementFilter.typesIn(pelem.getEnclosedElements())) {
                             if ((type.getKind() == ElementKind.CLASS) || (type.getKind() == ElementKind.ENUM)) {
-                                clzs.add(new JavacClassInfo(ElementHandle.create(type), cc));
+                                clzs.add(new JavacClassInfo(ElementHandle.create(type), indexInfo));
                             }
                         }
                     } else {
@@ -126,7 +127,7 @@ public class JavacPackageInfo extends SourcePackageInfo {
         List<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
 
         for (String pkgName : index.getPackageNames(getBinaryName() + ".", true, sScope)) { // NOI18N
-            pkgs.add(new JavacPackageInfo(cpInfo, pkgName, pkgName, getScope()));
+            pkgs.add(new JavacPackageInfo(cpInfo, indexInfo, pkgName, pkgName, getScope()));
         }
 
         return pkgs;

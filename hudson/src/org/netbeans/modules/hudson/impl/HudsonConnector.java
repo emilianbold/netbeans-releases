@@ -331,16 +331,7 @@ public class HudsonConnector {
                 } else if (nodeName.equals(XML_API_URL_ELEMENT)) {
                     job.putProperty(JOB_URL, normalizeUrl(d.getFirstChild().getTextContent(), "job/[^/]+/")); // NOI18N
                 } else if (nodeName.equals(XML_API_COLOR_ELEMENT)) {
-                    String color = d.getFirstChild().getTextContent().trim();
-                    try {
-                        job.putProperty(JOB_COLOR, Color.valueOf(color));
-                    } catch (IllegalArgumentException x) {
-                        Exceptions.attachMessage(x,
-                                "http://www.netbeans.org/nonav/issues/show_bug.cgi?id=126166 - no Color value '" +
-                                color + "' among " + Arrays.toString(Color.values())); // NOI18N
-                        Exceptions.printStackTrace(x);
-                        job.putProperty(JOB_COLOR, Color.red_anime);
-                    }
+                    job.putProperty(JOB_COLOR, Color.find(d.getFirstChild().getTextContent().trim()));
                 } else if (nodeName.equals(XML_API_DISPLAY_NAME_ELEMENT)) {
                     job.putProperty(JOB_DISPLAY_NAME, d.getFirstChild().getTextContent());
                 } else if (nodeName.equals(XML_API_BUILDABLE_ELEMENT)) {
@@ -377,7 +368,7 @@ public class HudsonConnector {
                             } else if (nodeName2.equals("url")) { // NOI18N
                                 url = normalizeUrl(text, "job/[^/]+/[^/]+/"); // NOI18N
                             } else if (nodeName2.equals("color")) { // NOI18N
-                                color = Color.valueOf(text);
+                                color = Color.find(text);
                             } else {
                                 LOG.fine("unexpected <module> child: " + nodeName);
                             }

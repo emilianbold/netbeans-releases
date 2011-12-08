@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
@@ -172,13 +171,8 @@ public final class ShortcutWizard extends WizardDescriptor {
         delete(shortcut);
     }
     private static void delete(FileObject file) throws IOException { // cf. #162526
-        Object delete = file.getAttribute("removeWritables"); // NOI18N
-        if (delete instanceof Callable) {
-            try {
-                ((Callable<?>) delete).call();
-            } catch (java.lang.Exception x) {
-                throw (IOException) new IOException("Could not delete " + file + ": " + x.toString()).initCause(x);
-            }
+        if (file.canRevert()) {
+            file.revert();
         } else {
             throw new IOException("Could not delete " + file);
         }

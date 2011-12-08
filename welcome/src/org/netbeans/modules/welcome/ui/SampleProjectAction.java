@@ -43,12 +43,10 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.event.ActionEvent;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.openide.util.Lookup;
+import org.netbeans.modules.project.ui.api.ProjectTemplates;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 /**
  *
@@ -56,29 +54,10 @@ import org.openide.util.Lookup;
  */
 public class SampleProjectAction extends AbstractAction {
 
-    public void actionPerformed(ActionEvent e) {
-        Action sampleProject = createSampleProjectAction();
-        if( null != sampleProject ) {
-            sampleProject.putValue( "PRESELECT_CATEGORY", "Samples" ); // NOI18N
-
-            sampleProject.actionPerformed( e );
-        }
-    }
-
-    private static Action createSampleProjectAction() {
-        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
-        if( null == loader )
-            loader = ClassLoader.getSystemClassLoader();
-        try {
-            Class clazz = Class.forName( "org.netbeans.modules.project.ui.actions.NewProject", true, loader ); // NOI18N
-            Method getDefault = clazz.getMethod( "newSample"); // NOI18N
-            Object newSample = getDefault.invoke( null );
-            if( newSample instanceof Action )
-                return (Action)newSample;
-        } catch( Exception e ) {
-            Logger.getLogger(SampleProjectAction.class.getName()).log( Level.INFO, null, e );
-        }
-        return null;
+    @Override public void actionPerformed(ActionEvent e) {
+        Action sampleProject = CommonProjectActions.newProjectAction();
+        sampleProject.putValue(ProjectTemplates.PRESELECT_CATEGORY, "Samples" ); // NOI18N
+        sampleProject.actionPerformed( e );
     }
 
 }

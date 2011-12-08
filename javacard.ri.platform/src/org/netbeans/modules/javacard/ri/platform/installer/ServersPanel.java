@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
@@ -71,6 +72,7 @@ import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.actions.CardActions;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.DialogDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -91,7 +93,7 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
 
     private final ExplorerManager mgr = new ExplorerManager();
     private final JavacardPlatform pform;
-    private final ValidationGroup grp = ValidationGroup.create();
+    private final SwingValidationGroup grp = SwingValidationGroup.create();
     private Lookup lkp;
 
     public ServersPanel(JavacardPlatform pform) {
@@ -141,7 +143,7 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
         noCustomizerLabel = new javax.swing.JLabel();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        jLabel1 = grp.createProblemLabel();
+        jLabel1 = (JLabel) grp.createProblemLabel();
 
         view.setBorder(new javax.swing.border.LineBorder(javax.swing.UIManager.getDefaults().getColor("controlShadow"), 1, true));
 
@@ -243,7 +245,7 @@ public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.
                 if (group != null) {
                     try {
                         //XXX use url boolean below does not actually work
-                        this.grp.addValidationGroup(group, false);
+                        this.grp.addItem(group, false);
                     } catch (AssertionError e) {
                         //XXX fixed in next rev of validation api - cannot add twice
                         Logger.getLogger(ServersPanel.class.getName()).log(Level.INFO, null, e);

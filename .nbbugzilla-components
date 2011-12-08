@@ -20,6 +20,7 @@ apisupport.paintapp = apisupport/harness
 apisupport.project = apisupport/project
 apisupport.refactoring = apisupport/refactoring
 apisupport.tc.cobertura = apisupport/harness
+apisupport.wizards = apisupport/templates
 api.visual = platform/graph
 api.web.webmodule = javaee/code
 api.xml = xml/api

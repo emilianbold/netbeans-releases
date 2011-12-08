@@ -42,7 +42,7 @@
 
 package org.netbeans.libs.git;
 
-import org.openide.util.NbBundle;
+import org.netbeans.libs.git.jgit.Utils;
 
 /**
  *
@@ -58,7 +58,7 @@ public enum GitRepositoryState {
             @Override
             public boolean canCommit () { return false; }
             @Override
-            public String toString () { return NbBundle.getMessage(GitRepositoryState.class, "LBL_RepositoryInfo_Bare"); } //NOI18N
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Bare"); } //NOI18N
 	},
 
 	/**
@@ -72,7 +72,7 @@ public enum GitRepositoryState {
             @Override
             public boolean canCommit () { return true; }
             @Override
-            public String toString () { return NbBundle.getMessage(GitRepositoryState.class, "LBL_RepositoryInfo_Safe"); } //NOI18N
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Safe"); } //NOI18N
 	},
 
 	/** An unfinished merge. Must resolve or reset before continuing normally
@@ -85,7 +85,7 @@ public enum GitRepositoryState {
             @Override
             public boolean canCommit () { return false; }
             @Override
-            public String toString () { return NbBundle.getMessage(GitRepositoryState.class, "LBL_RepositoryInfo_Merging"); } //NOI18N
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Merging"); } //NOI18N
 	},
 
 	/**
@@ -100,7 +100,7 @@ public enum GitRepositoryState {
             @Override
             public boolean canCommit () { return true; }
             @Override
-            public String toString () { return NbBundle.getMessage(GitRepositoryState.class, "LBL_RepositoryInfo_Merged"); } //NOI18N
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Merged"); } //NOI18N
 	},
 
 	/**
@@ -114,7 +114,7 @@ public enum GitRepositoryState {
             @Override
             public boolean canCommit () { return true; }
             @Override
-            public String toString () { return NbBundle.getMessage(GitRepositoryState.class, "LBL_RepositoryInfo_Rebasing"); } //NOI18N
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Rebasing"); } //NOI18N
 	},
 
 	/**
@@ -128,7 +128,7 @@ public enum GitRepositoryState {
             @Override
             public boolean canCommit () { return true; }
             @Override
-            public String toString () { return NbBundle.getMessage(GitRepositoryState.class, "LBL_RepositoryInfo_Apply"); } //NOI18N
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Apply"); } //NOI18N
 	},
 
 	/**
@@ -148,7 +148,7 @@ public enum GitRepositoryState {
             public boolean canCommit () { return true; }
 
             @Override
-            public String toString () { return NbBundle.getMessage(GitRepositoryState.class, "LBL_RepositoryInfo_Bisecting"); } //NOI18N
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Bisecting"); } //NOI18N
 	};
 
 	/**

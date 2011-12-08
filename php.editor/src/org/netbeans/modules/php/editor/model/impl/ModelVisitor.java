@@ -255,7 +255,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (expression instanceof ClassInstanceCreation) {
                 ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
                 ASTNodeInfo<ClassInstanceCreation> inf = ASTNodeInfo.create(instanceCreation);
-                typeName = inf.getQualifiedName().toString();
+                String pureTypeName = inf.getQualifiedName().toString();
+                typeName = VariousUtils.qualifyTypeNames(pureTypeName, node.getStartOffset(), currentScope);
             } else if (expression instanceof VariableBase) {
                 typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
                 if (typeName != null) {
@@ -264,11 +265,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     for (VariableName variable : allVariables) {
                         String name = variable.getName();
                         String type = resolveVariableType(name, functionScope, node);
-                        if (type == null) {
+                        String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
+                        if (qualifiedType == null) {
                             var2Type = Collections.emptyMap();
                             break;
                         }
-                        var2Type.put(name, type);
+                        var2Type.put(name, qualifiedType);
                     }
                     if (!var2Type.isEmpty()) {
                         typeName = VariousUtils.replaceVarNames(typeName, var2Type);
@@ -783,6 +785,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Variable field = originalNode.getField();
             if (field instanceof ReflectionVariable) {
                 return;
+            }
+            if (field instanceof ArrayAccess) {
+                ArrayAccess arrayAccess = (ArrayAccess) field;
+                VariableBase name = arrayAccess.getName();
+                if (name instanceof ReflectionVariable) {
+                    return;
+                }
             }
         }
         if (showAssertFor185229) {

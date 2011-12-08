@@ -183,7 +183,6 @@ public class J2MEAntLoggerTest extends NbTestCase {
         
         TestUtil.setLookup( new Object[] {
             TestUtil.testProjectFactory(),
-            TestUtil.testProjectChooserFactory()
         }, J2MEAntLoggerTest.class.getClassLoader());
  
         synchronized(J2MEAntLoggerTest.syncObj) {

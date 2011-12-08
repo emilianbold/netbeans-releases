@@ -676,7 +676,7 @@ public class Utils {
         
         // Fail if location immediately after method declaration - JUST A BEST GUESS!
         String lineText = line.getText().trim();
-        if (lineText.endsWith("{") && lineText.indexOf("{") == lineText.lastIndexOf("{")) return false; // NOI18N
+        if (lineText.endsWith("{") && lineText.indexOf('{') == lineText.lastIndexOf('{')) return false; // NOI18N
         
         return true;
     }

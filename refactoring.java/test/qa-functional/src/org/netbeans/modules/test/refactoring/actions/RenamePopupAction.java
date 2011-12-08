@@ -53,6 +53,7 @@ public class RenamePopupAction implements TestAction {
     
     public static final String popupPath = "Refactor | Rename...";
 
+    @Override
     public void perform(Object parameter) {
         perform((EditorOperator)parameter);
     }

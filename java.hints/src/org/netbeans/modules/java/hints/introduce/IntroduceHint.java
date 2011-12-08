@@ -43,8 +43,7 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -55,19 +54,16 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
@@ -98,10 +94,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -131,8 +125,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
-import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -291,7 +286,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 continue;
             }
 
-            List<? extends StatementTree> statements = CopyFinder.getStatements(tp);
+            List<? extends StatementTree> statements = getStatements(tp);
             statementsSpan[0] = statements.indexOf(tp.getLeaf());
             statementsSpan[1] = statementsSpan[0];
 
@@ -499,7 +494,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             exceptionHandles.add(TypeMirrorHandle.create(tm));
                         }
 
-                        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, Collections.singletonList(resolved), new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables.keySet(), cancel).size();
+                        Pattern p = Pattern.createPatternWithRemappableVariables(resolved, scanner.usedLocalVariables.keySet(), true);
+                        int duplicatesCount = Matcher.create(info, cancel).match(p).size();
 
                         typeVars.retainAll(scanner.usedTypeVariables);
 
@@ -585,7 +581,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         prepareTypeVars(method, info, typeVar2Def, typeVars);
         
         Element methodEl = info.getTrees().getElement(method);
-        List<? extends StatementTree> parentStatements = CopyFinder.getStatements(block);
+        List<? extends StatementTree> parentStatements = getStatements(block);
         List<? extends StatementTree> statementsToWrap = parentStatements.subList(statements[0], statements[1] + 1);
         FlowResult flow = Flow.assignmentsForUse(info, method, cancel);
 
@@ -686,7 +682,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         TreePathHandle returnAssignTo;
         boolean declareVariableForReturnValue;
 
-        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, pathsOfStatementsToWrap, new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables.keySet(), cancel).size();
+        Pattern p = Pattern.createPatternWithRemappableVariables(pathsOfStatementsToWrap, scanner.usedLocalVariables.keySet(), true);
+        int duplicatesCount = Matcher.create(info, cancel).match(p).size();
 
         if (!scanner.usedAfterSelection.isEmpty()) {
             VariableElement result = scanner.usedAfterSelection.keySet().iterator().next();
@@ -1364,6 +1361,18 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         parameter.rewrite(parentTree, newParent);
     }
 
+    //XXX: duplicate from CopyFinder:
+    public static List<? extends StatementTree> getStatements(TreePath firstLeaf) {
+        switch (firstLeaf.getParentPath().getLeaf().getKind()) {
+            case BLOCK:
+                return ((BlockTree) firstLeaf.getParentPath().getLeaf()).getStatements();
+            case CASE:
+                return ((CaseTree) firstLeaf.getParentPath().getLeaf()).getStatements();
+            default:
+                return Collections.singletonList((StatementTree) firstLeaf.getLeaf());
+        }
+    }
+
     private static final class IntroduceFix implements Fix {
 
         private String guessedName;
@@ -1857,7 +1866,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     
                     Scope s = copy.getTrees().getScope(firstStatement);
                     boolean isStatic = copy.getTreeUtilities().isStaticContext(s);
-                    List<? extends StatementTree> statements = CopyFinder.getStatements(firstStatement);
+                    List<? extends StatementTree> statements = getStatements(firstStatement);
                     List<StatementTree> nueStatements = new LinkedList<StatementTree>();
 
                     nueStatements.addAll(statements.subList(0, from));
@@ -2005,10 +2014,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             statementsPaths.add(new TreePath(firstStatement.getParentPath(), t));
                         }
 
-                        for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, statementsPaths, new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
-                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(new TreePath(new TreePath(mdd.firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, mdd.firstLeaf.getParentPath().getLeaf())), mdd.firstLeaf.getLeaf()));
-                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
-                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
+                        Pattern p = Pattern.createPatternWithRemappableVariables(statementsPaths, parameters, true);
+
+                        for (OccurrenceDescription desc : Matcher.create(copy, new AtomicBoolean()).match(p)) {
+                            TreePath firstLeaf = desc.getOccurrenceRoot();
+                            List<? extends StatementTree> parentStatements = getStatements(new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf())), firstLeaf.getLeaf()));
+                            int dupeStart = parentStatements.indexOf(firstLeaf.getLeaf());
+                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), parentStatements.get(dupeStart));
+                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), parentStatements.get(dupeStart + statementsPaths.size() - 1));
 
                             introduceBag(doc).clear();
                             introduceBag(doc).addHighlight(startOff, endOff, DUPE);
@@ -2024,14 +2037,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             List<StatementTree> newStatements = new LinkedList<StatementTree>();
 
-                            newStatements.addAll(parentStatements.subList(0, mdd.dupeStart));
+                            newStatements.addAll(parentStatements.subList(0, dupeStart));
 
                             //XXX:
                             List<Union2<VariableElement, TreePath>> dupeParameters = new LinkedList<Union2<VariableElement, TreePath>>();
 
                             for (VariableElement ve : parameters) {
-                                if (mdd.variablesRemapToTrees.containsKey(ve)) {
-                                    dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(mdd.variablesRemapToTrees.get(ve)));
+                                if (desc.getVariablesRemapToTrees().containsKey(ve)) {
+                                    dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(desc.getVariablesRemapToTrees().get(ve)));
                                 } else {
                                     dupeParameters.add(Union2.<VariableElement, TreePath>createFirst(ve));
                                 }
@@ -2041,8 +2054,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             ExpressionTree dupeInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), dupeRealArguments);
 
                             if (returnAssignTo != null) {
-                                TreePath remappedTree = mdd.variablesRemapToTrees.containsKey(returnAssignTo) ? mdd.variablesRemapToTrees.get(returnAssignTo) : null;
-                                VariableElement remappedElement = mdd.variablesRemapToElement.containsKey(returnAssignTo) ? (VariableElement) mdd.variablesRemapToElement.get(returnAssignTo) : null;
+                                TreePath remappedTree = desc.getVariablesRemapToTrees().containsKey(returnAssignTo) ? desc.getVariablesRemapToTrees().get(returnAssignTo) : null;
+                                VariableElement remappedElement = desc.getVariablesRemapToElement().containsKey(returnAssignTo) ? (VariableElement) desc.getVariablesRemapToElement().get(returnAssignTo) : null;
 //                                VariableElement dupeReturnAssignTo = mdd.variablesRemapToTrees.containsKey(returnAssignTo) ? (VariableElement) mdd.variablesRemapToTrees.get(returnAssignTo) : returnAssignTo;
                                 if (declareVariableForReturnValue) {
                                     assert remappedElement != null || remappedTree == null;
@@ -2060,9 +2073,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             if (dupeInvocation != null)
                                 newStatements.add(make.ExpressionStatement(dupeInvocation));
 
-                            newStatements.addAll(parentStatements.subList(mdd.dupeEnd + 1, parentStatements.size()));
+                            newStatements.addAll(parentStatements.subList(dupeStart + statementsPaths.size(), parentStatements.size()));
 
-                            doReplaceInBlockCatchSingleStatement(copy, rewritten, mdd.firstLeaf, newStatements);
+                            doReplaceInBlockCatchSingleStatement(copy, rewritten, firstLeaf, newStatements);
                         }
 
                         introduceBag(doc).clear();
@@ -2139,7 +2152,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 nueTree = make.Case(((CaseTree) toReplace).getExpression(), newStatements);
                 break;
             default:
-                assert CopyFinder.getStatements(firstLeaf).size() == 1 : CopyFinder.getStatements(firstLeaf).toString();
+                assert getStatements(firstLeaf).size() == 1 : getStatements(firstLeaf).toString();
                 assert newStatements.size() == 1 : newStatements.toString();
                 toReplace = firstLeaf.getLeaf();
                 nueTree = newStatements.get(0);
@@ -2267,10 +2280,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     if (replaceOther) {
                         //handle duplicates
                         Document doc = copy.getDocument();
+                        Pattern p = Pattern.createPatternWithRemappableVariables(expression, parameters, true);
 
-                        for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, Collections.singletonList(expression), new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
-                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), mdd.firstLeaf.getLeaf());
-                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), mdd.firstLeaf.getLeaf());
+                        for (OccurrenceDescription desc : Matcher.create(copy, new AtomicBoolean()).match(p)) {
+                            TreePath firstLeaf = desc.getOccurrenceRoot();
+                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());
+                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());
 
                             introduceBag(doc).clear();
                             introduceBag(doc).addHighlight(startOff, endOff, DUPE);
@@ -2288,8 +2303,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             List<Union2<VariableElement, TreePath>> dupeParameters = new LinkedList<Union2<VariableElement, TreePath>>();
 
                             for (VariableElement ve : parameters) {
-                                if (mdd.variablesRemapToTrees.containsKey(ve)) {
-                                    dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(mdd.variablesRemapToTrees.get(ve)));
+                                if (desc.getVariablesRemapToTrees().containsKey(ve)) {
+                                    dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(desc.getVariablesRemapToTrees().get(ve)));
                                 } else {
                                     dupeParameters.add(Union2.<VariableElement, TreePath>createFirst(ve));
                                 }
@@ -2298,7 +2313,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             List<ExpressionTree> dupeRealArguments = realArgumentsForTrees(make, dupeParameters);
                             ExpressionTree dupeInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), dupeRealArguments);
 
-                            copy.rewrite(mdd.firstLeaf.getLeaf(), dupeInvocation);
+                            copy.rewrite(firstLeaf.getLeaf(), dupeInvocation);
                         }
 
                         introduceBag(doc).clear();

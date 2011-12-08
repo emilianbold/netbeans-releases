@@ -93,6 +93,7 @@ public class HgModuleConfig {
     private static final String CONFIRM_BEFORE_COMMIT_AFTER_MERGE = "confirmBeforeCommitAfterMerge"; //NOI18N
     private static final String KEY_INTERNAL_MERGE_TOOL_ENABLED = "hgmerge.internalTool.enabled"; //NOI18N
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
+    private static final String KEY_QPATCH_MESSAGE = "qpatch.message."; //NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -107,6 +108,7 @@ public class HgModuleConfig {
     private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
     private static final HgModuleConfig INSTANCE = new HgModuleConfig();
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled."; //NOI18N
+    private static final String KEY_REMOVE_NEW_FILES_ON_REVERT = "removeNewFilesOnRevert"; //NOI18N
     
     private static String userName;
 
@@ -115,7 +117,7 @@ public class HgModuleConfig {
     }
     
     private Set<String> exclusions;
-    private String lastCanceledCommitMessage;
+    private final Map<String, String> lastCanceledCommitMessages = new HashMap<String, String>(5);
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -616,12 +618,29 @@ public class HgModuleConfig {
          getPreferences().putInt(colorName, value.getRGB());
     }
 
-    public String getLastCanceledCommitMessage() {
+    public String getLastCanceledCommitMessage (String key) {
+        String lastCanceledCommitMessage = lastCanceledCommitMessages.get(key);
         return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
     }
 
-    public void setLastCanceledCommitMessage(String message) {
-        lastCanceledCommitMessage = message;
+    public void setLastCanceledCommitMessage (String key, String message) {
+        if (message == null || message.isEmpty()) {
+            lastCanceledCommitMessages.remove(key);
+        } else {
+            lastCanceledCommitMessages.put(key, message);
+        }
+    }
+    
+    public String getLastUsedQPatchMessage (String patchName) {
+        return getPreferences().get(KEY_QPATCH_MESSAGE + patchName, ""); //NOI18N
+    }
+    
+    public void setLastUsedQPatchMessage (String patchName, String message) {
+        if (message == null) {
+            getPreferences().remove(KEY_QPATCH_MESSAGE + patchName);
+        } else {
+            getPreferences().put(KEY_QPATCH_MESSAGE + patchName, message);
+        }
     }
 
     public boolean isSearchOnBranchEnabled (String branchName) {
@@ -630,6 +649,14 @@ public class HgModuleConfig {
 
     public void setSearchOnBranchEnabled (String branchName, boolean enabled) {
         getPreferences().putBoolean(KEY_SEARCH_ON_BRANCH + branchName, enabled);
+    }
+
+    public boolean isRemoveNewFilesOnRevertModifications () {
+        return getPreferences().getBoolean(KEY_REMOVE_NEW_FILES_ON_REVERT, true);
+    }
+
+    public void setRemoveNewFilesOnRevertModifications (boolean flag) {
+        getPreferences().putBoolean(KEY_REMOVE_NEW_FILES_ON_REVERT, flag);
     }
     
     synchronized Set<String> getCommitExclusions() {

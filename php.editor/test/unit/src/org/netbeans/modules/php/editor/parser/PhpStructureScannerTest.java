@@ -77,7 +77,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
     /**
      * Test of scan method, of class PhpStructureScanner.
      */
-    
+
     public void testNamespace() throws Exception {
         performTest("structure/php53/namespace");
 
@@ -106,7 +106,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
     public void testClass() throws Exception {
         performTest("class005");
     }
-    
+
     public void testIssue142644() throws Exception {
         performTest("issue142644");
     }
@@ -117,6 +117,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
 
     public void testPHPDocTagProperty() throws Exception {
         performTest("propertyTag");
+    }
+
+    public void testIssue205886_01() throws Exception {
+        performTest("issue205886_01");
     }
 
     @Override

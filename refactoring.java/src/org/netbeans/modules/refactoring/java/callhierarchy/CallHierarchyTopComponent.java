@@ -115,13 +115,16 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         
         jPopupMenuScope.addPopupMenuListener(new PopupMenuListener() {
 
+            @Override
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 }
 
+            @Override
                 public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                     jTogBtnScope.setSelected(false);
                 }
 
+            @Override
                 public void popupMenuCanceled(PopupMenuEvent e) {
                     jTogBtnScope.setSelected(false);
                 }
@@ -130,6 +133,7 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         manager.setRootContext(CallNode.createDefault());
         manager.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 Node[] selectedNodes = manager.getSelectedNodes();
                 if (selectedNodes.length == 1) {
@@ -364,6 +368,7 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     public void componentOpened() {
         EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 jSplitPane1.setDividerLocation(0.8);
             }
@@ -402,12 +407,14 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
 
     private PropertyChangeListener modelListener = new PropertyChangeListener() {
 
+        @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName() == CallHierarchyModel.PROP_ROOT) {
                     switchRootNode();
@@ -469,6 +476,7 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     
     private final class ContextPanel extends JPanel implements ExplorerManager.Provider{
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return managerCtx;
         }

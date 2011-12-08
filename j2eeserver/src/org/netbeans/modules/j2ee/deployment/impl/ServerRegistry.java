@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -77,7 +78,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AlreadyRegisteredException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -118,9 +118,8 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     private transient Map<String, Server> servers = null;
     private transient Map<String, ServerInstance> instances = null;
-    private final transient Collection<PluginListener> pluginListeners = new ArrayList<PluginListener>();
-    private final transient Collection<InstanceListener> instanceListeners = new ArrayList<InstanceListener>();
-    private transient InstanceListener[] instanceListenersArray;
+    private final transient Collection<PluginListener> pluginListeners = new CopyOnWriteArrayList<PluginListener>();
+    private final transient Collection<InstanceListener> instanceListeners = new CopyOnWriteArrayList<InstanceListener>();
     private transient PluginInstallListener pluginL;
     private transient InstanceInstallListener instanceL;
 
@@ -572,27 +571,20 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     public void addInstanceListener(InstanceListener il) {
-        synchronized(instanceListeners) {
-            instanceListenersArray = null;
-            instanceListeners.add(il);
-        }
+        instanceListeners.add(il);
     }
 
     public void removeInstanceListener(InstanceListener il) {
-        synchronized(instanceListeners) {
-            instanceListenersArray = null;
-            instanceListeners.remove(il);
-        }
+        instanceListeners.remove(il);
     }
 
-    public synchronized void removePluginListener(PluginListener pl) {
+    public void removePluginListener(PluginListener pl) {
         pluginListeners.remove(pl);
     }
 
     private void firePluginListeners(Server server, boolean add) {
         LOGGER.log(Level.FINE, "Firing plugin listener"); // NOI18N
-        for(Iterator i = pluginListeners.iterator();i.hasNext();) {
-            PluginListener pl = (PluginListener)i.next();
+        for (PluginListener pl : pluginListeners) {
             if (add) {
                 pl.serverAdded(server);
             } else {
@@ -601,26 +593,12 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
 
-
-    private InstanceListener[] getInstanceListeners() {
-        InstanceListener[]  retValue = null;
-        synchronized (instanceListeners) {
-            retValue = instanceListenersArray;
-            if (retValue == null) {
-                retValue = (InstanceListener[])instanceListeners.toArray(new InstanceListener[instanceListeners.size()]);
-                instanceListenersArray = retValue;
-            }
-        }
-        return retValue;
-    }
-
     private void fireInstanceListeners(String instance, boolean add) {
-        InstanceListener[] instListeners = getInstanceListeners();
-        for(int i = 0; i < instListeners.length; i++) {
+        for (InstanceListener l : instanceListeners) {
             if(add) {
-                instListeners[i].instanceAdded(instance);
+                l.instanceAdded(instance);
             } else {
-                instListeners[i].instanceRemoved(instance);
+                l.instanceRemoved(instance);
             }
         }
     }

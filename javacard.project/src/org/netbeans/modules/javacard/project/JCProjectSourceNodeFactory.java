@@ -45,7 +45,6 @@ package org.netbeans.modules.javacard.project;
 
 import java.awt.Image;
 import java.io.IOException;
-import java.util.Enumeration;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -78,7 +77,7 @@ import org.netbeans.modules.javacard.project.deps.ui.DependenciesNode;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.actions.Single;
 import org.netbeans.validation.api.Problems;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.NewTemplateAction;
@@ -282,7 +281,7 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(line))) {
                 String filename = line.getInputText();
                 Problems problems = new Problems();
-                Validators.REQUIRE_VALID_FILENAME.validate(problems, 
+                StringValidators.REQUIRE_VALID_FILENAME.validate(problems,
                         NbBundle.getMessage(JCProjectSourceNodeFactory.class, 
                         "FILENAME"), filename); //NOI18N
                 // TODO validator doesn't work, investigate

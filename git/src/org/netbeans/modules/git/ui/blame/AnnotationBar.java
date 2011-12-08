@@ -195,6 +195,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private FileObject referencedFileObject;
     static final Logger LOG = Logger.getLogger(AnnotationBar.class.getName());
+    private String annotatedRevision;
 
     /**
      * Creates new instance initializing final fields.
@@ -493,6 +494,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // denotes the path of the file in the showing revision
         final File originalFile = al == null ? null : al.getFile();
         final boolean revisionCanBeRolledBack = al == null || referencedFile != null ? false : al.canBeRolledBack();
+        // source line in the original file this line annotation represents
+        final int sourceLine = al == null ? -1 : al.getSourceLineNum();
         
         diffMenu.addActionListener(new ActionListener() {
             @Override
@@ -518,6 +521,25 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(checkoutMenu);
         checkoutMenu.setEnabled(revisionCanBeRolledBack);
 
+        // an action showing annotation for line's revisions
+        final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotationsPrevious", revisionPerLine.getRevision().substring(0, 7))); //NOI18N
+        annotationsForSelectedItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GitProgressSupport() {
+                    @Override
+                    protected void perform () {
+                        try {
+                            GitUtils.openInRevision(originalFile, sourceLine , revisionPerLine.getRevision(), true, this);
+                        } catch (IOException ex) {
+                            //
+                        }
+                    }
+                }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
+            }
+        });
+        popupMenu.add(annotationsForSelectedItem);
+
         // an action showing annotation for previous revisions
         final JMenuItem previousAnnotationsMenu = new JMenuItem();
         previousAnnotationsMenu.addActionListener(new ActionListener() {
@@ -529,7 +551,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     public void run() {
                         try {
                             String previousRevision = pri.getPreviousRevision();
-                            GitUtils.openInRevision(originalFile, previousRevision, true, pri);
+                            GitUtils.openInRevision(originalFile, -1, previousRevision, true, pri);
                         } catch (IOException ex) {
                             //
                         }
@@ -569,12 +591,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(menu);
 
         diffMenu.setVisible(false);
+        annotationsForSelectedItem.setVisible(false);
         previousAnnotationsMenu.setVisible(false);
         checkoutMenu.setVisible(false);
         separator.setVisible(false);
         if (revisionPerLine != null) {
-            String previousRevision = getPreviousRevisions().get(getKeyFor(originalFile, revisionPerLine.getRevision())); // get from cache
-            if (previousRevision == null) {
+            String key = getKeyFor(originalFile, revisionPerLine.getRevision());
+            String previousRevision = getPreviousRevisions().get(key); // get from cache
+            boolean hasPrevious = previousRevision != null || !getPreviousRevisions().containsKey(key);
+            if (previousRevision == null && hasPrevious) {
                 // get revision in a bg thread and cache the value
                 final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
                 pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
@@ -590,7 +615,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         }
                     }
                 }, true, null);
-            } else {
+            } else if (hasPrevious) {
                 previousRevision = previousRevision.substring(0, 7);
             }
             String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
@@ -601,12 +626,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             checkoutMenu.setVisible(true);
             separator.setVisible(true);
             format = loc.getString("CTL_MenuItem_ShowAnnotationsPrevious"); // NOI18N
-            previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
-            previousAnnotationsMenu.setVisible(originalFile != null);
-            previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevision)); //NOI18N
+            annotationsForSelectedItem.setVisible(originalFile != null && revisionPerLine != null && !revisionPerLine.getRevision().equals(annotatedRevision));
+            if (hasPrevious && originalFile != null) {
+                previousAnnotationsMenu.setText(MessageFormat.format(format, new Object [] { previousRevision == null ? loc.getString("LBL_PreviousRevision") : previousRevision})); //NOI18N
+                previousAnnotationsMenu.setVisible(true);
+                previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevision)); //NOI18N
+            }
         }
 
         return popupMenu;
+    }
+
+    void setAnnotatedRevision (String revision) {
+        this.annotatedRevision = revision;
     }
 
     private String getKeyFor (File file, String revision) {
@@ -616,7 +648,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Class for running a code after the previous revision is determined, which may take some time
      */
-    private class PreviousRevisionInvoker extends GitProgressSupport {
+    private class PreviousRevisionInvoker extends GitProgressSupport.NoOutputLogging {
         private final GitRevisionInfo revisionPerLine;
         private String parent;
         private boolean inAWT;

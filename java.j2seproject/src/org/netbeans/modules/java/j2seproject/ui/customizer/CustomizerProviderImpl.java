@@ -186,8 +186,10 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
         // Listening to OK button ----------------------------------------------
         
         public void actionPerformed( ActionEvent e ) {
-            // Store the properties into project 
-            
+            for (ActionListener al : uiProperties.getOptionListeners()) {
+                al.actionPerformed(e);
+            }
+
 //#95952 some users experience this assertion on a fairly random set of changes in 
 // the customizer, that leads me to assume that a project can be already marked
 // as modified before the project customizer is shown. 

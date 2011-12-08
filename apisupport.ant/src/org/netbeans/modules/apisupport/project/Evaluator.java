@@ -226,6 +226,9 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     }
     
     private void reset() {
+        if (!project.getProjectDirectoryFile().exists()) {
+            return; // recently deleted?
+        }
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             public @Override Void run() {
                 ModuleList moduleList;

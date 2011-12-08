@@ -42,20 +42,15 @@
 package org.netbeans.modules.php.project.ui.logicalview;
 
 import java.util.List;
-import javax.swing.Action;
-import javax.swing.Icon;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
-import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 import org.openidex.search.SearchInfo;
@@ -68,7 +63,7 @@ public class SrcNodeTest extends PhpTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        MockLookup.setLayersAndInstances(new MockActionsFactory());
+        MockLookup.setLayersAndInstances();
     }
 
     // #202263, #200297
@@ -93,92 +88,6 @@ public class SrcNodeTest extends PhpTestCase {
                 assertEquals("Fileobjects should be same", subfolder, fileObject);
                 assertNotNull("SearchInfo should be found", sublookup.lookup(SearchInfo.class));
             }
-        }
-
-    }
-
-    //~ Inner classes
-
-    private static final class MockActionsFactory implements ActionsFactory {
-
-        @Override
-        public Action setAsMainProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action customizeProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action openSubprojectsAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action closeProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action newFileAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action deleteProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action copyProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action moveProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action newProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public ContextAwareAction projectCommandAction(String command, String namePattern, Icon icon) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action projectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action mainProjectCommandAction(String command, String name, Icon icon) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action mainProjectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action fileCommandAction(String command, String name, Icon icon) {
-            return null;
-        }
-
-        @Override
-        public Action renameProjectAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Action setProjectConfigurationAction() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
