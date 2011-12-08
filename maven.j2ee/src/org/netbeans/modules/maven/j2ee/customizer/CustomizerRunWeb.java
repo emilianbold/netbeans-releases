@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JList;
-import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -58,15 +57,13 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
-import org.netbeans.modules.maven.j2ee.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
@@ -83,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author  mkleint
  */
-public class CustomizerRunWeb extends AbstractCustomizer {
+public class CustomizerRunWeb extends BaseRunCustomizer {
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
     
     private WebModule module;
@@ -106,9 +103,14 @@ public class CustomizerRunWeb extends AbstractCustomizer {
         initComponents();
         module = WebModule.getWebModule(project.getProjectDirectory());
         moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-        assert moduleProvider != null;
-        assert module != null;
-        loadServerModel(comServer, J2eeModule.Type.WAR, module.getJ2eeProfile());
+        
+        if (module != null) {
+            Profile prof = module.getJ2eeProfile();
+            String version = prof.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.getDisplayName() : prof.getDisplayName();
+            
+            loadServerModel(comServer, J2eeModule.Type.WAR, prof);
+            txtJ2EEVersion.setText(version);
+        }
         comProfile.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -121,16 +123,12 @@ public class CustomizerRunWeb extends AbstractCustomizer {
             }
         });
 
-        Profile p = module.getJ2eeProfile();
-        String version = p.equals(Profile.JAVA_EE_6_WEB) ? Profile.JAVA_EE_6_FULL.getDisplayName() : p.getDisplayName();
-        txtJ2EEVersion.setText(version);
-        WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
-        if (Profile.JAVA_EE_6_WEB.equals(impl.getDescriptorJ2eeProfile())) {
+        if (Profile.JAVA_EE_6_WEB.equals(module.getJ2eeProfile())) {
             lblProfile.setVisible(true);
             comProfile.setVisible(true);
             comProfile.setEnabled(true);
             comProfile.setModel(new DefaultComboBoxModel(new Object[] { Profile.JAVA_EE_6_WEB, Profile.JAVA_EE_6_FULL}));
-            Profile prop = impl.getPropertyJ2eeProfile();
+            Profile prop = module.getJ2eeProfile();
             if (prop != null) {
                 comProfile.setSelectedItem(prop);
             } else {
@@ -169,7 +167,7 @@ public class CustomizerRunWeb extends AbstractCustomizer {
             comProfile.setEnabled(false);
         }
 
-        txtContextPath.setText(impl.getContextPath());
+        txtContextPath.setText(module.getContextPath());
         initValues();
         initDeployOnSaveComponent(jCheckBoxDeployOnSave, dosDescription);
         initServerComponent(comServer, lblServer);
@@ -201,8 +199,13 @@ public class CustomizerRunWeb extends AbstractCustomizer {
         isDebugCompatible = checkMapping(debug);
         isProfileCompatible = checkMapping(profile);
 
-        oldUrl = isRunCompatible ? run.getProperties().get(CLIENTURLPART) :
-                                   debug.getProperties().get(CLIENTURLPART);
+        if (isRunCompatible) {
+            if (run != null) {
+                oldUrl = run.getProperties().get(CLIENTURLPART);
+            } else if (debug != null) {
+                oldUrl = debug.getProperties().get(CLIENTURLPART);
+            }
+        }
         
         if (oldUrl != null) {
             txtRelativeUrl.setText(oldUrl);
@@ -386,11 +389,10 @@ public class CustomizerRunWeb extends AbstractCustomizer {
         } else {
             if (!txtContextPath.isEnabled()) {
                 txtContextPath.setEnabled(true);
-                WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
                 if (oldContextPath != null) {
                     txtContextPath.setText(oldContextPath);
                 } else {
-                    txtContextPath.setText(impl.getContextPath());
+                    txtContextPath.setText(module.getContextPath());
                 }
             }
         }
@@ -435,7 +437,7 @@ public class CustomizerRunWeb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChangesInAWT() {
+    public void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
         boolean bool = cbBrowser.isSelected();
         try {
@@ -451,29 +453,17 @@ public class CustomizerRunWeb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChanges() {
-        assert !SwingUtilities.isEventDispatchThread();
-
-        //#109507 workaround
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (listener.getValue() != null) {
-            sc.setServerInstanceId(null);
+    public void applyChanges() {
+        changeServer(comServer);
+        changeContextPath();
+    }
+    
+    private void changeContextPath() {
+        moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        if (txtContextPath.isEnabled()) {
+            WebModuleImpl impl = moduleProvider.getModuleImpl();
+            impl.setContextPath(txtContextPath.getText().trim());
         }
-
-        ProjectManager.mutex().postReadRequest(new Runnable() {
-
-            @Override
-            public void run() {
-                POHImpl poh = project.getLookup().lookup(POHImpl.class);
-                poh.hackModuleServerChange(false);
-                moduleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
-                if (txtContextPath.isEnabled()) {
-                    final String contextPath = txtContextPath.getText().trim();
-                    WebModuleImpl impl = moduleProvider.getWebModuleImplementation();
-                    impl.setContextPath(contextPath);
-                }
-            }
-        });
     }
     
     

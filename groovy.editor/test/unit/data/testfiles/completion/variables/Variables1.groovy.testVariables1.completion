@@ -2,7 +2,9 @@ Code completion result for source line:
 i|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      IDN                                        null
 CLASS      IFileNameFinder                            null
+CLASS      IOError                                    null
 CLASS      IOException                                null
 CLASS      IdentityHashMap                            null
 CLASS      IllegalAccessError                         null
@@ -18,7 +20,6 @@ CLASS      IllegalMonitorStateException               null
 CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
-CLASS      Immutable                                  null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IncorrectClosureArgumentsExcep             null
 CLASS      IndentPrinter                              null
@@ -36,6 +37,7 @@ CLASS      InstantiationException                     null
 CLASS      IntRange                                   null
 CLASS      Integer                                    null
 CLASS      Interceptor                                null
+CLASS      InterfaceAddress                           null
 CLASS      InternalError                              null
 CLASS      InterruptedException                       null
 CLASS      InterruptedIOException                     null

@@ -78,6 +78,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -195,8 +196,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     @Override
-    protected void deleteImpl() throws IOException {
-        RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), true);
+    protected boolean deleteImpl(FileLock lock) throws IOException {
+        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), true);
     }
 
     private FileObject create(String name, boolean directory) throws IOException {
@@ -206,6 +207,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             throw new ConnectException("Can not create " + getUrlToReport(path) + ": connection required"); //NOI18N
         }
+        if (USE_VCS) {
+            FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+            if (interceptor != null) {
+                interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(this), name, directory);
+            }
+        }
         ProcessUtils.ExitStatus res;
         if (directory) {
             res = ProcessUtils.execute(getExecutionEnvironment(), "mkdir", path); //NOI18N
@@ -213,6 +220,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             String script = String.format("ls \"%s\" || touch \"%s\"", name, name); // NOI18N
             res = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "sh", "-c", script); // NOI18N
             if (res.isOK() && res.error.length() == 0) {
+                creationFalure(name, directory);
                 throw new IOException("Already exists: " + getUrlToReport(path)); // NOI18N
             }
         }
@@ -221,24 +229,47 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 refreshDirectoryStorage(name);
                 RemoteFileObjectBase fo = getFileObject(name);
                 if (fo == null) {
+                    creationFalure(name, directory);
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
+                }
+                if (USE_VCS) {
+                    FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+                    if (interceptor != null) {
+                        interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
+                    }
                 }
                 return fo;
             } catch (ConnectException ex) {
+                creationFalure(name, directory);
                 throw new IOException("Can not create " + path + ": not connected", ex); // NOI18N
             } catch (InterruptedIOException ex) {
+                creationFalure(name, directory);
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (IOException ex) {
+                creationFalure(name, directory);
                 throw ex;
             } catch (ExecutionException ex) {
+                creationFalure(name, directory);
                 throw new IOException("Can not create " + path + ": exception occurred", ex); // NOI18N
             } catch (InterruptedException ex) {
+                creationFalure(name, directory);
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (CancellationException ex) {
+                creationFalure(name, directory);
                 throw new IOException("Can not create " + path + ": cancelled", ex); // NOI18N
             }
         } else {
+            creationFalure(name, directory);
             throw new IOException("Can not create " + getUrlToReport(path) + ": " + res.error); // NOI18N
+        }
+    }
+    
+    private void creationFalure(String name, boolean directory) {
+        if (USE_VCS) {
+            FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+            if (interceptor != null) {
+                interceptor.createFailure(FilesystemInterceptorProvider.toFileProxy(this), name, directory);
+            }
         }
     }
 

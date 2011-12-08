@@ -344,17 +344,21 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             DataFolder webInfDO = DataFolder.findFolder(webInf);
             final List<File> newConfigFiles = new ArrayList<File>(2);
             HashMap<String, Object> params = new HashMap<String, Object>();
+            String appContextTemplateName = "applicationContext-2.5.xml"; //NOI18N
+            String dispServletTemplateName = "dispatcher-servlet-2.5.xml"; //NOI18N
             if (version.startsWith("3.0")) {    //NOI18N
-                params.put("springVersion3", Boolean.TRUE); //NOI18N
+//                params.put("springVersion3", Boolean.TRUE); //NOI18N
+                appContextTemplateName = "applicationContext-3.0.xml"; //NOI18N
+                dispServletTemplateName = "dispatcher-servlet-3.0.xml"; //NOI18N
             }
-            FileObject configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext",params); // NOI18N
+            FileObject configFile = createFromTemplate(appContextTemplateName, webInfDO, "applicationContext",params); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
             String fullIndexUrl = SpringWebFrameworkUtils.instantiateDispatcherMapping(dispatcherMapping, "index"); // NOI18N
             String simpleIndexUrl = SpringWebFrameworkUtils.getSimpleDispatcherURL(fullIndexUrl);
             Map<String, ?> indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", simpleIndexUrl)); // NOI18N
             params.putAll(indexUrlParams);
-            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", params); // NOI18N
+            configFile = createFromTemplate(dispServletTemplateName, webInfDO, getComponent().getDispatcherName() + "-servlet", params); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N

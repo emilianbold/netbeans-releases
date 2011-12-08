@@ -58,7 +58,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
@@ -170,7 +170,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                         }
 
                         client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), this);
-                        
+                        org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
                         client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
                         client.checkoutRevision(branch.getName(), true, this);
 

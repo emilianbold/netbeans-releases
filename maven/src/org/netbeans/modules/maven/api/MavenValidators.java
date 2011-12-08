@@ -43,7 +43,8 @@
 package org.netbeans.modules.maven.api;
 
 import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
+import org.netbeans.validation.api.ValidatorUtils;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,34 +53,33 @@ import org.openide.util.NbBundle;
  */
 public class MavenValidators {
 
-    @SuppressWarnings("unchecked")
     public static Validator<String> createArtifactIdValidators() {
-        return Validators.merge(true,
-                    Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.MAY_NOT_START_WITH_DIGIT,
-                    Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
-               );
+        return ValidatorUtils.merge(
+                    StringValidators.REQUIRE_NON_EMPTY_STRING,
+//                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
+                    ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
+                    StringValidators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
+               ));
     }
 
-    @SuppressWarnings("unchecked")
     public static Validator<String> createGroupIdValidators() {
-        return Validators.merge(true,
-                    Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.MAY_NOT_START_WITH_DIGIT,
-                    Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
-               );
+        return ValidatorUtils.merge(
+                    StringValidators.REQUIRE_NON_EMPTY_STRING,
+//                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
+                    ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
+                    StringValidators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
+               ));
     }
 
-    @SuppressWarnings("unchecked")
     public static Validator<String> createVersionValidators() {
-        return Validators.merge(true,
-                    Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.MAY_NOT_START_WITH_DIGIT,
-                    Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
-               );
+        return ValidatorUtils.merge(
+                    StringValidators.REQUIRE_NON_EMPTY_STRING,
+//                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
+                    ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
+                    StringValidators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
+               ));
+    }
+    private MavenValidators() {
     }
 
 }

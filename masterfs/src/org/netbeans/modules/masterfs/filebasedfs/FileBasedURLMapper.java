@@ -54,6 +54,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
 import org.openide.util.Exceptions;
@@ -90,6 +92,9 @@ catch] at org.netbeans.modules.javacore.JMManager.scanFiles(JMManager.java:1112)
 */
 
 public final class FileBasedURLMapper extends URLMapper {
+    private static final Logger LOG = Logger.getLogger(FileBasedURLMapper.class.getName());
+    
+    @Override
     public final URL getURL(final FileObject fo, final int type) {
         if (type == URLMapper.NETWORK) {
             return null;
@@ -123,11 +128,10 @@ public final class FileBasedURLMapper extends URLMapper {
         try {
             file = FileUtil.normalizeFile(new File(url.toURI()));
         } catch (URISyntaxException e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.INFO, "URL=" + url, e); // NOI18N
             return null;
         } catch (IllegalArgumentException iax) {
-            // catch possible IAE from File constructor and re-throw with URL
-            Exceptions.printStackTrace(Exceptions.attachMessage(iax, "URL="+url));  //NOI18N
+            LOG.log(Level.INFO, "URL=" + url, iax); // NOI18N
             return null;
         }
         

@@ -80,7 +80,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
@@ -132,7 +132,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     }
 
     private void checkNewModifier(TreePath tree, Element p) throws MissingResourceException {
-        ClassTree classTree = (ClassTree) RetoucheUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
+        ClassTree classTree = (ClassTree) RefactoringUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
         if(!problemClasses.contains(classTree) && !newModifiers.contains(Modifier.PUBLIC)) { // Only give one warning for every file
             Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree));
             TypeElement enclosingTypeElement1 = workingCopy.getElementUtilities().outermostTypeElement(el);

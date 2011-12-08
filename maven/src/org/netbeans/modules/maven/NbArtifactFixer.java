@@ -50,7 +50,6 @@ import java.util.Map;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.ArtifactFixer;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -78,13 +77,9 @@ public class NbArtifactFixer implements ArtifactFixer {
                 return null; // for now, we prefer the repository version when available
             }
         }
-        // MavenFileOwnerQueryImpl could give us the dir location quickly, but we would still need to verify that the version matches, so loading the project is necessary.
-        Project owner = MavenFileOwnerQueryImpl.getInstance().getOwner(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
-        if (owner != null) {
-            NbMavenProjectImpl mavenProject = owner.getLookup().lookup(NbMavenProjectImpl.class);
-            if (mavenProject != null) {
-                return mavenProject.getPOMFile();
-            }
+        File pom = MavenFileOwnerQueryImpl.getInstance().getOwnerPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+        if (pom != null) {
+            return pom;
         }
         try {
             return createFallbackPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());

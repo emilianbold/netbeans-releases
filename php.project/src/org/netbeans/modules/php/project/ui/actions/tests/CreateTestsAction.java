@@ -306,29 +306,35 @@ public final class CreateTestsAction extends NodeAction {
                 toOpen.add(testFile);
                 continue;
             }
-
-            // test does not exist yet
-            Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
-            try {
-                final File generatedFile = getGeneratedFile(className, parent);
-                if (result.get() != 0
-                        || !generatedFile.isFile()) {
-                    // test not generated or not found
-                    failed.add(sourceFo);
-                    if (!generatedFile.isFile()) {
-                        LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found [PHPUnit version {1}].",
-                                new Object[] {generatedFile.getName(), Arrays.toString(PhpUnit.getVersions(phpUnit))});
-                    }
+            // # 205135
+            final File generatedFile = getGeneratedFile(className, parent);
+            if (generatedFile.isFile()) {
+                // test already exists, next to source file
+                if (!useExistingTestInSources(generatedFile)) {
                     continue;
                 }
-                File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
-                if (moved == null) {
-                    failed.add(sourceFo);
-                } else {
-                    toOpen.add(moved);
+            } else {
+                // test does not exist yet
+                Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
+                try {
+                    if (result.get() != 0) {
+                        // test not generated
+                        failed.add(sourceFo);
+                        if (!generatedFile.isFile()) {
+                            LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found [PHPUnit version {1}].",
+                                    new Object[] {generatedFile.getName(), Arrays.toString(PhpUnit.getVersions(phpUnit))});
+                        }
+                        continue;
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+            }
+            File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
+            if (moved == null) {
+                failed.add(sourceFo);
+            } else {
+                toOpen.add(moved);
             }
         }
     }
@@ -386,6 +392,13 @@ public final class CreateTestsAction extends NodeAction {
         File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
 
         return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
+    }
+
+    private boolean useExistingTestInSources(File testFile) {
+        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(CreateTestsAction.class, "MSG_UseTestFileInSources", testFile.getName()),
+                NotifyDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
     }
 
     private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File sourceFile) {

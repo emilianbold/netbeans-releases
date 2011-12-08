@@ -50,33 +50,20 @@ package org.netbeans.modules.whitelist.project;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.prefs.Preferences;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.UserSelectable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -84,11 +71,6 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class WhiteListCategoryPanel extends javax.swing.JPanel implements ActionListener {
 
-    private static final String WHITELISTS_PATH = "org-netbeans-api-java/whitelists/";  //NOI18N
-
-    //@GuardedBy("lookupCache")
-    private final static Map<Project,Reference<WhiteListLookup>> lookupCache =
-            Collections.synchronizedMap(new WeakHashMap<Project, Reference<WhiteListLookup>>());
 
     private Project p;
 
@@ -107,8 +89,8 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
 
     private List<Desc> getTableContent() {
         List<Desc> l = new ArrayList<Desc>();
-        for (WhiteListQueryImplementation.UserSelectable impl : getUserSelectableWhiteLists()) {
-            l.add(new Desc(impl, isWhiteListEnabledInProject(p, impl.getId())));
+        for (WhiteListQueryImplementation.UserSelectable impl : WhiteListLookupProvider.getUserSelectableWhiteLists()) {
+            l.add(new Desc(impl, WhiteListLookupProvider.isWhiteListEnabledInProject(p, impl.getId())));
         }
         return l;
     }
@@ -120,7 +102,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     @Override
     public void actionPerformed(ActionEvent e) {
         for (Desc d : ((WhiteListsModel)jTable1.getModel()).whitelists) {
-            enableWhiteListInProject(p, d.w.getId(), d.active);
+            WhiteListLookupProvider.enableWhiteListInProject(p, d.w.getId(), d.active);
         }
     }
 
@@ -139,14 +121,14 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             if (p == null) {
                 return null;
             }
-            if (getUserSelectableWhiteLists().isEmpty()) {
+            if (WhiteListLookupProvider.getUserSelectableWhiteLists().isEmpty()) {
                 return null;
             }
-            if (!isWhiteListPanelEnabled(p) && !alwaysShowWhiteListPanel) {
+            if (!WhiteListLookupProvider.isWhiteListPanelEnabled(p) && !alwaysShowWhiteListPanel) {
                 return null;
             }
             return ProjectCustomizer.Category.create(
-                    CATEGORY_WHITELIST, 
+                    CATEGORY_WHITELIST,
                     NbBundle.getMessage(WhiteListCategoryPanel.class, "LBL_CategoryWhitelist"), //NOI18N
                     null);
         }
@@ -159,53 +141,6 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
             return customizerPanel;
         }
     } // End of Factory class
-    
-    public static final String PROP_WHITELIST_ENABLED = "whitelist-enabled";
-    public static final String PROP_WHITELIST = "whitelist-";
-    
-    public static boolean isWhiteListPanelEnabled(@NonNull Project p) {
-        Preferences prefs = ProjectUtils.getPreferences(p, WhiteListQuery.class, true);
-        return prefs.getBoolean(PROP_WHITELIST_ENABLED, false);
-    }
-    
-    public static boolean isWhiteListEnabledInProject(@NonNull Project p, @NonNull String whiteListId) {
-        Preferences prefs = ProjectUtils.getPreferences(p, WhiteListQuery.class, true);
-        return prefs.getBoolean(PROP_WHITELIST+whiteListId, false);
-    }
-    
-    public static void enableWhiteListInProject(@NonNull Project p, final @NonNull String whiteListId, final boolean enable) {
-        final Preferences prefs = ProjectUtils.getPreferences(p, WhiteListQuery.class, true);
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            @Override
-            public void run() {
-                prefs.putBoolean(PROP_WHITELIST+whiteListId, enable);
-                 if (enable) {
-                    prefs.putBoolean(PROP_WHITELIST_ENABLED, true);
-                }
-            }
-        });
-        final Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
-        final WhiteListLookup lkp;
-        if (lkpRef != null && (lkp=lkpRef.get())!=null) {
-            lkp.updateLookup();
-        }
-    }
-
-    public static Collection<? extends WhiteListQueryImplementation.UserSelectable> getUserSelectableWhiteLists() {
-        return Lookups.forPath(WHITELISTS_PATH).lookupResult(WhiteListQueryImplementation.UserSelectable.class).allInstances();
-    }
-
-    public static Lookup getEnabledUserSelectableWhiteLists(@NonNull Project p) {
-        synchronized (lookupCache) {
-            Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
-            WhiteListLookup lkp;
-            if (lkpRef == null || (lkp=lkpRef.get())==null) {
-                lkp = new WhiteListLookup(p);
-                lookupCache.put(p,new WeakReference<WhiteListLookup>(lkp));
-            }
-            return lkp;
-        }
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -319,48 +254,5 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         public void removeTableModelListener(TableModelListener l) {
         }
         
-    }
-
-    private static class WhiteListLookup extends ProxyLookup {
-
-        private Project p;
-        private final AtomicBoolean initialized = new AtomicBoolean();
-
-        public WhiteListLookup(Project p) {
-            this.p = p;
-        }
-
-        @Override
-        protected void beforeLookup(Template<?> template) {
-            if (WhiteListQueryImplementation.class.isAssignableFrom(template.getType())) {
-                if (!initialized.get()) {
-                    //Threading: Weak consistency - may be performed several times
-                    //by more threads in parallel but should be idempotent only several
-                    //events will be fired
-                    final UserSelectable[] queries = createQueries();
-                    if (!initialized.get()) {
-                        setLookups(Lookups.fixed((Object[])queries));
-                        initialized.set(true);
-                    }
-                }
-            }
-            super.beforeLookup(template);
-        }
-
-        private void updateLookup() {
-            setLookups(Lookups.fixed((Object[])createQueries()));
-        }
-
-        @NonNull
-        private UserSelectable[] createQueries() {
-            final List<WhiteListQueryImplementation.UserSelectable> impls = new ArrayList<WhiteListQueryImplementation.UserSelectable>();
-            for (WhiteListQueryImplementation.UserSelectable w :
-                    Lookups.forPath(WHITELISTS_PATH).lookupAll(WhiteListQueryImplementation.UserSelectable.class)) {
-                if (WhiteListCategoryPanel.isWhiteListEnabledInProject(p, w.getId())) {
-                    impls.add(w);
-                }
-            }
-            return impls.toArray(new UserSelectable[impls.size()]);
-        }
     }
 }

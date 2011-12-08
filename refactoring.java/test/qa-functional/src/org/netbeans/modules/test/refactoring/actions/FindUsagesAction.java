@@ -64,6 +64,7 @@ public class FindUsagesAction implements TestAction {
         jpmo.pushMenuNoBlock(new String[]{popupPath});        
     }
 
+    @Override
     public void perform(Object parameter) {
         perform((EditorOperator)parameter);
     }

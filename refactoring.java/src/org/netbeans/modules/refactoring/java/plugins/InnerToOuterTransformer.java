@@ -61,7 +61,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
@@ -265,7 +265,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 rewrite(outerTree, newOuter);
                 JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
-                String relativePath = RetoucheUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
+                String relativePath = RefactoringUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
                 CompilationUnitTree newCompilation = make.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
                 rewrite(null, newCompilation);
                 return newOuter;
@@ -371,12 +371,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 newTree = make.Identifier(refactoring.getClassName());
                 rewrite(memberSelect, newTree);
                 TreePath tp = workingCopy.getTrees().getPath(inner);
-                String innerPackageName = RetoucheUtils.getPackageName(tp.getCompilationUnit());
-                if (!innerPackageName.equals(RetoucheUtils.getPackageName(workingCopy.getCompilationUnit())) &&
+                String innerPackageName = RefactoringUtils.getPackageName(tp.getCompilationUnit());
+                if (!innerPackageName.equals(RefactoringUtils.getPackageName(workingCopy.getCompilationUnit())) &&
                         !containsImport(innerPackageName + ".*")) { //NOI18N
                     String import1 = innerPackageName + "." + refactoring.getClassName(); //NOI18N
                     try {
-                        CompilationUnitTree cut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), Collections.singletonList(import1), make);
+                        CompilationUnitTree cut = RefactoringUtils.addImports(workingCopy.getCompilationUnit(), Collections.singletonList(import1), make);
                         rewrite(workingCopy.getCompilationUnit(), cut);
                     } catch (IOException ex1) {
                         Exceptions.printStackTrace(ex1);

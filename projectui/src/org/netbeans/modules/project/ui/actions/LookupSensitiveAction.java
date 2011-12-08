@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -64,6 +63,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.ProxyLookup;
@@ -75,6 +75,7 @@ import org.openide.windows.TopComponent;
 abstract class LookupSensitiveAction extends BasicAction implements Runnable, LookupListener, Presenter.Popup, Presenter.Menu {
     static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
     private static Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
+    protected static final RequestProcessor RP = new RequestProcessor(LookupSensitiveAction.class);
 
     private Lookup lookup;
     private Class<?>[] watch;
@@ -105,7 +106,6 @@ abstract class LookupSensitiveAction extends BasicAction implements Runnable, Lo
         if (initialized) {
             return false;
         }
-        assert EventQueue.isDispatchThread () : "Cannot be called outside EQ!";
         this.results = new Lookup.Result[watch.length];
         // Needs to listen on changes in results
         for ( int i = 0; i < watch.length; i++ ) {

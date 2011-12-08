@@ -110,10 +110,10 @@ public final class ActionUtils {
      * Typically {@link org.openide.loaders.DataNode}s will form a node selection
      * which will be placed in the context. This method does <em>not</em> directly
      * look for nodes in the selection; but generally the lookups of the nodes in
-     * a node selection are spliced into the context as well, so the {@link DataObject}s
+     * a node selection are spliced into the context as well, so the {@link FileObject}s
      * should be available. A corollary of not checking nodes directly is that any
      * nodes in the context which do not correspond to files at all (i.e. do not have
-     * {@link DataObject} as a cookie) are ignored, even with the strict parameter on;
+     * {@link FileObject} in their lookup) are ignored, even with the strict parameter on;
      * and that multiple nodes in the context with the same associated file are treated
      * as a single entry.
      * </p>
@@ -132,10 +132,20 @@ public final class ActionUtils {
         if (suffix != null && suffix.indexOf('/') != -1) {
             throw new IllegalArgumentException("Cannot includes slashes in suffix: " + suffix); // NOI18N
         }
+        Collection<? extends FileObject> candidates = context.lookupAll(FileObject.class);
+        if (candidates.isEmpty()) { // should not be for DataNode selections, but for compatibility
+            Collection<? extends DataObject> compatibilityCandidates = context.lookupAll(DataObject.class);
+            if (compatibilityCandidates.isEmpty()) {
+                return null; // shortcut - just not a file selection at all
+            }
+            List<FileObject> _candidates = new ArrayList<FileObject>();
+            for (DataObject d : compatibilityCandidates) {
+                _candidates.add(d.getPrimaryFile());
+            }
+            candidates = _candidates;
+        }
         Collection<FileObject> files = new LinkedHashSet<FileObject>(); // #50644: remove dupes
-        // XXX this should perhaps also check for FileObject's...
-        for (DataObject d : context.lookupAll(DataObject.class)) {
-            FileObject f = d.getPrimaryFile();
+        for (FileObject f : candidates) {
             boolean matches = FileUtil.toFile(f) != null;
             if (dir != null) {
                 matches &= (FileUtil.isParentOf(dir, f) || dir == f);
@@ -254,7 +264,7 @@ public final class ActionUtils {
         if (!dir.isFolder()) {
             throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
         }
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         for (int i = 0; i < files.length; i++) {
             String path = FileUtil.getRelativePath(dir, files[i]);
             if (path == null) {

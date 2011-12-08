@@ -52,7 +52,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
@@ -93,7 +93,7 @@ public class MoveTransformer extends RefactoringVisitor {
     public void setWorkingCopy(WorkingCopy copy) throws ToPhaseException {
         super.setWorkingCopy(copy);
         originalFolder = workingCopy.getFileObject().getParent();
-        originalPackage = RetoucheUtils.getPackageName(originalFolder);
+        originalPackage = RefactoringUtils.getPackageName(originalFolder);
         isThisFileMoving = move.filesToMove.contains(workingCopy.getFileObject());
         elementsToImport = new HashSet<Element>();
         isThisFileReferencingOldPackage = false;
@@ -126,7 +126,7 @@ public class MoveTransformer extends RefactoringVisitor {
                             Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                             
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                            TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if(enclosingTypeElement != null && enclosingClass != null
                                     && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -145,7 +145,7 @@ public class MoveTransformer extends RefactoringVisitor {
                             Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
 
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                            TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if(enclosingTypeElement != null && enclosingClass != null
                                     && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -184,14 +184,14 @@ public class MoveTransformer extends RefactoringVisitor {
                     if (isElementMoving(el)) {
                         if (!elementsAlreadyImported.contains(el)) {
                             String targetPackageName = getTargetPackageName(el);
-                            if (!RetoucheUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName))
+                            if (!RefactoringUtils.getPackageName(workingCopy.getCompilationUnit()).equals(targetPackageName))
                                 elementsToImport.add(el);
                         }
                 } else if (el.getKind() != ElementKind.PACKAGE) {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                        TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                         Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                         if(enclosingTypeElement != null && enclosingClass != null
                                 && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -216,11 +216,13 @@ public class MoveTransformer extends RefactoringVisitor {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                        TreePath enclosingClassPath = RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
-                        Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
-                        if(enclosingTypeElement != null && enclosingClass != null
-                                && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
-                            neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                        TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        if (enclosingClassPath != null) {
+                            Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
+                            if (enclosingTypeElement != null && enclosingClass != null
+                                    && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
+                                neededMods = EnumSet.of(Modifier.PUBLIC, Modifier.PROTECTED);
+                            }
                         }
                         
                         if (getPackageOf(el).toString().equals(originalPackage)
@@ -278,21 +280,6 @@ public class MoveTransformer extends RefactoringVisitor {
         return move.isRenameRefactoring;
     }
     
-//    private boolean isThisFileReferencedbyOldPackage() {
-//        Set<FileObject> references = new HashSet<FileObject>(move.whoReferences.get(workingCopy.getFileObject()));
-//        references.removeAll(move.filesToMove);
-//        for (FileObject file:references) {
-//            if (file.getParent().equals(originalFolder))
-//                return true;
-//        }
-//        return false;
-//    }
-    
-//    private boolean isThisFileReferencingOldPackage() {
-//        //TODO: correctly implement
-//        return true;
-//    }
-
     private boolean isElementMoving(Element el, Boolean[] cache) {
         if (cache[0] == null) {
             cache[0] = isElementMoving(el);
@@ -355,7 +342,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 ExpressionTree newPackageName = cut.getPackageName();
                 if (newPackageName != null) {
                     try {
-                        cut = RetoucheUtils.addImports(cut, new LinkedList<String>(importToAdd), make);
+                        cut = RefactoringUtils.addImports(cut, new LinkedList<String>(importToAdd), make);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -406,7 +393,7 @@ public class MoveTransformer extends RefactoringVisitor {
                     String newPackageName = getTargetPackageName(el);
 
                     if (!"".equals(newPackageName)) {
-                        String cuPackageName = RetoucheUtils.getPackageName(workingCopy.getCompilationUnit());
+                        String cuPackageName = RefactoringUtils.getPackageName(workingCopy.getCompilationUnit());
                         if (cuPackageName.equals(newPackageName)) { //remove newly created import from same package
                             importToRemove.add(node);
                             return node;

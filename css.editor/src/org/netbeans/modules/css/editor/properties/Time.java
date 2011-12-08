@@ -48,16 +48,18 @@ package org.netbeans.modules.css.editor.properties;
  */
 public class Time implements CssPropertyValueAcceptor {
 
+    @Override
     public String id() {
         return "time"; //NOI18N
     }
 
+    @Override
     public boolean accepts(String token) {
         token = token.toLowerCase();
         String numberPart = token.endsWith("ms") ? token.substring(0, token.length() - 2) : token.endsWith("s") ? token.substring(0, token.length() - 1) : null;
         if(numberPart != null) {
             try {
-                java.lang.Integer.parseInt(numberPart);
+                java.lang.Float.parseFloat(numberPart);
                 return true;
             } catch (NumberFormatException nfe) {
                 return false;

@@ -185,8 +185,7 @@ public class HudsonInstanceNode extends AbstractNode {
             if (job.getColor().equals(Color.red) || job.getColor().equals(Color.red_anime))
                 warn = true;
             
-            if (job.getColor().equals(Color.blue_anime) || job.getColor().equals(Color.grey_anime)
-                    || job.getColor().equals(Color.red_anime) || job.getColor().equals(Color.yellow_anime))
+            if (job.getColor().isRunning())
                 run = true;
             
             if (warn && run)

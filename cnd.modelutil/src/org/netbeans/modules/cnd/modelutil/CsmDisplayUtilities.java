@@ -158,7 +158,7 @@ public class CsmDisplayUtilities {
         String content = doc.getText(startLine, endLine - startLine);
 
         String mime = (String) doc.getProperty("mimeType"); // NOI18N
-        if (startBold >= 0 && endBold >= 0) {
+        if (startBold >= 0 && endBold >= 0 && startBold <= content.length() && endBold <= content.length()  && startBold < endBold) {
             StringBuilder buf = new StringBuilder();
             buf.append(getHtml(mime, trimStart(content.substring(0, startBold))));
             buf.append("<b>"); //NOI18N

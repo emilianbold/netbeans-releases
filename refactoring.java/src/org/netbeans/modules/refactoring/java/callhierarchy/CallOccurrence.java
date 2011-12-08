@@ -60,22 +60,27 @@ final class CallOccurrence implements CallDescriptor {
     private PositionBounds selectionBounds;
     private TreePathHandle occurrence;
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
 
+    @Override
     public Icon getIcon() {
         return null;
     }
 
+    @Override
     public boolean isLeaf() {
         return true;
     }
 
+    @Override
     public void open() {
         Call.doOpen(occurrence.getFileObject(), selectionBounds);
     }

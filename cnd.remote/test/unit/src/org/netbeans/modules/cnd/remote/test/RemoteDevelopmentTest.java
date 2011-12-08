@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.remote.full.FullRemoteBuildTestCase;
 import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
-import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
 import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
 import org.netbeans.modules.cnd.remote.support.TransportTestCase;
 import org.netbeans.modules.cnd.remote.support.UploadTestCase;
@@ -84,7 +83,6 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
            RfsGnuRemoteBuildTestCase.class,
            RfsSunStudioRemoteBuildTestCase.class,
            DownloadTestCase.class,
-           RemoteUtilTestCase.class,
            ServerListTestCase.class,
            TransportTestCase.class,
            UploadTestCase.class,

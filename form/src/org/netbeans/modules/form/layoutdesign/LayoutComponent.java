@@ -312,12 +312,32 @@ public final class LayoutComponent implements LayoutConstants {
     }
 
     void setLayoutRoots(List<LayoutInterval[]> roots) {
+        LayoutRegion[] space;
+        if (layoutRoots != null && !layoutRoots.isEmpty()) {
+            space = new LayoutRegion[] {
+                layoutRoots.get(0)[HORIZONTAL].getCurrentSpace(),
+                layoutRoots.get(0)[VERTICAL].getCurrentSpace() };
+        } else {
+            space = null;
+        }
+
         if (roots == null && layoutRoots != null) {
             // instead of no roots create default empty roots (to keep this a container)
             // for no roots use setLayoutContainer(false, null)
             createRoots();
         } else {
             layoutRoots = roots;
+        }
+
+        if (space != null) {
+            for (LayoutInterval[] r : layoutRoots) {
+                for (int i=0; i < r.length; i++) {
+                    LayoutRegion rs = r[i].getCurrentSpace();
+                    if (space[i].isSet() && !rs.isSet()) {
+                        rs.set(space[i]);
+                    }
+                }
+            }
         }
     }
 

@@ -38,11 +38,17 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.text.DecimalFormat;
 
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
+import javafx.embed.swing.JFXPanel;
+
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.embed.swing.JFXPanel;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -61,9 +67,9 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -84,15 +90,12 @@ public class SwingInterop extends JApplet {
     private static final int PANEL_WIDTH_INT = 675;
     private static final int PANEL_HEIGHT_INT = 400;
     private static final int TABLE_PANEL_HEIGHT_INT = 100;
-    
     private static JFXPanel chartFxPanel;
     private static JFXPanel browserFxPanel;
     private static SampleTableModel tableModel;
-    
     private Chart chart;
     private Pane browser;
 
-    @Override
     public void init() {
         tableModel = new SampleTableModel();
         // create javafx panel for charts
@@ -104,7 +107,7 @@ public class SwingInterop extends JApplet {
 
         //create tabbed pane
         JTabbedPane tabbedPane = new JTabbedPane();
-
+        
         //JTable
         JTable table = new JTable(tableModel);
         table.setAutoCreateRowSorter(true);
@@ -131,10 +134,9 @@ public class SwingInterop extends JApplet {
         tabbedPane.addTab("Web Browser", browserFxPanel);
 
         add(tabbedPane, BorderLayout.CENTER);
-
+        
         // create JavaFX scene
         Platform.runLater(new Runnable() {
-
             public void run() {
                 createScene();
             }
@@ -147,9 +149,8 @@ public class SwingInterop extends JApplet {
             public void run() {
                 try {
                     UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-                } catch (Exception e) {
-                }
-
+                } catch (Exception e) {}
+                
                 JFrame frame = new JFrame("JavaFX 2.0 in Swing");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -173,7 +174,7 @@ public class SwingInterop extends JApplet {
         browser = createBrowser();
         browserFxPanel.setScene(new Scene(browser));
     }
-
+    
     private BarChart createBarChart() {
         CategoryAxis xAxis = new CategoryAxis();
         xAxis.setCategories(FXCollections.<String>observableArrayList(tableModel.getColumnNames()));
@@ -195,7 +196,6 @@ public class SwingInterop extends JApplet {
                     final Object value = ((SampleTableModel) e.getSource()).getValueAt(row, column);
 
                     Platform.runLater(new Runnable() {
-
                         public void run() {
                             XYChart.Series<String, Number> s = (XYChart.Series<String, Number>) chart.getData().get(row);
                             BarChart.Data data = s.getData().get(column);
@@ -219,9 +219,7 @@ public class SwingInterop extends JApplet {
         eng.load("http://www.oracle.com/us/index.html");
 
         ChangeListener handler = new ChangeListener<Number>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+            @Override public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 if (warningLabel.isVisible()) {
                     warningLabel.setVisible(false);
                 }
@@ -234,9 +232,7 @@ public class SwingInterop extends JApplet {
         Button goButton = new Button("Go");
         goButton.setDefaultButton(true);
         EventHandler<ActionEvent> goAction = new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent event) {
+            @Override public void handle(ActionEvent event) {
                 eng.load(locationField.getText().startsWith("http://") ? locationField.getText()
                         : "http://" + locationField.getText());
             }
@@ -244,9 +240,7 @@ public class SwingInterop extends JApplet {
         goButton.setOnAction(goAction);
         locationField.setOnAction(goAction);
         eng.locationProperty().addListener(new ChangeListener<String>() {
-
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 locationField.setText(newValue);
             }
         });
@@ -266,14 +260,11 @@ public class SwingInterop extends JApplet {
     }
 
     private static class DecimalFormatRenderer extends DefaultTableCellRenderer {
-
         private static final DecimalFormat formatter = new DecimalFormat("#.0");
 
-        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             value = formatter.format((Number) value);
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
 }
-

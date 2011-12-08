@@ -109,11 +109,9 @@ public class SavableDataObjectTest extends NbTestCase {
         return (ContextAwareAction)obj;
     }
     private static Action findSaveAllAction() {
-        FileObject fo = FileUtil.getConfigFile("Actions/System/org-openide-actions-SaveAllAction.instance");
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertTrue("action found: " + obj, obj instanceof ContextAwareAction);
-        return (Action)obj;
+        Action a = FileUtil.getConfigObject("Actions/System/org-openide-actions-SaveAllAction.instance", Action.class);
+        assertNotNull("action found: " + a, a);
+        return a;
     }
     
     public static final class Pool extends DataLoaderPool {

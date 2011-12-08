@@ -320,7 +320,7 @@ public class XMLBraceMatcher implements BracesMatcher {
                     }
                 }
                 return new int[]{start, start+token.length()};
-            }            
+            }
         }
         return null;        
     }
@@ -353,7 +353,7 @@ public class XMLBraceMatcher implements BracesMatcher {
             String tag = t.text().toString();
             if(">".equals(tag))
                 continue;
-            if (tag.startsWith("</")) {
+            if (tag.startsWith("</") || tag.equals("/>")) {
                 if (stack.empty()) {
                     if (tag.length() == 3 || tag.equals("</" + tagToMatch)) {
                         return findTagPosition(ts, false);

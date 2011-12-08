@@ -1,4 +1,4 @@
-7:13-7:14:error:method test in class javahints.TestShortErrorsMethodInvocation1 cannot be applied to given types;
-  required:java.lang.Integer
-  found:java.lang.Object
-  reason:actual argument java.lang.Object cannot be converted to java.lang.Integer by method invocation conversion
+7:13-7:14:error:method test in class TestShortErrorsMethodInvocation1 cannot be applied to given types;
+  required:Integer
+  found:Object
+  reason:actual argument Object cannot be converted to Integer by method invocation conversion

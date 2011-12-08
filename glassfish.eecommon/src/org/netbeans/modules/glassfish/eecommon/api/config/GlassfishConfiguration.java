@@ -344,7 +344,9 @@ public abstract class GlassfishConfiguration implements
             String instance = provider.getServerInstanceID();
             if (Utils.notEmpty(instance)) {
                 try {
-                    String asInstallPath = instance.substring(1, instance.indexOf("deployer") - 1);
+                    String asInstallPath = instance.substring(1, instance.indexOf("]deployer:"));
+                    if (asInstallPath.contains(File.pathSeparator)) 
+                        asInstallPath = asInstallPath.substring(0, asInstallPath.indexOf(File.pathSeparator));
                     File asInstallFolder = new File(asInstallPath);
                     if (asInstallFolder.exists()) {
                         result = getInstalledAppServerVersion(asInstallFolder);

@@ -51,6 +51,7 @@ import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,12 +65,14 @@ public class ConstructorNode extends SelectorNode {
     
     /** Creates a new instance of ConstructorNode */
     public ConstructorNode(SourceMethodInfo mi, ConstructorsNode parent) {
-        super(mi.getName(), mi.getName(), null, SelectorChildren.LEAF, parent);
+        super((mi != null ? mi.getName() : NbBundle.getMessage(ConstructorNode.class, "LBL_Unknown")), (mi != null ? mi.getName() : NbBundle.getMessage(ConstructorNode.class, "LBL_Unknown")), null, SelectorChildren.LEAF, parent); // NOI18N
         this.method = mi;
 
-        signature = new SourceCodeSelection(method.getClassName(),
-                    method.getName(), method.getSignature());
-        updateDisplayName(formatterFactory.getFormatter().formatMethodName(signature).toFormatted());
+        if (method != null) {
+            signature = new SourceCodeSelection(method.getClassName(),
+                        method.getName(), method.getSignature());
+            updateDisplayName(formatterFactory.getFormatter().formatMethodName(signature).toFormatted());
+        }
     }
 
     @Override
@@ -91,6 +94,8 @@ public class ConstructorNode extends SelectorNode {
     final public Icon getIcon() {
         Icon icon;
 
+        if (method == null) return Icons.getIcon(LanguageIcons.CONSTRUCTOR_PUBLIC);
+        
         if (Modifier.isPublic(method.getModifiers())) {
             icon = Icons.getIcon(LanguageIcons.CONSTRUCTOR_PUBLIC);
         } else if (Modifier.isProtected(method.getModifiers())) {

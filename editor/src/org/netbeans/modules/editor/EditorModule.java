@@ -78,7 +78,6 @@ import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
-import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.cookies.EditorCookie;
@@ -324,8 +323,7 @@ public class EditorModule extends ModuleInstall {
             @Override public void operationRename(Rename ev) {}
             @Override public void operationCreateShadow(Copy ev) {}
             @Override public void operationCreateFromTemplate(Copy ev) {
-                Object removeWritables = ev.getOriginalDataObject().getPrimaryFile().getAttribute("removeWritables");
-                if (removeWritables == null) {
+                if (!ev.getOriginalDataObject().getPrimaryFile().canRevert()) {
                     // Reformat only files created from original templates.
                     reformat(ev.getObject());
                 }

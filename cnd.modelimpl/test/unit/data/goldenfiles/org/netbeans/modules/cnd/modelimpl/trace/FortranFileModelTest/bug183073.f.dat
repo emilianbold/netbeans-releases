@@ -11,20 +11,8 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-FUNCTION DEFINITION A  [1:7/6-4:10/55] ProgramImpl SCOPE: $Global$ 
-    SIGNATURE 
-    UNIQUE NAME f:A
-    DECLARATION: A  [1:7/6-4:10/55]
-    PARAMETERS:
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
-    STATEMENT is null
+NAMESPACE DEFINITOIN A [1:7/6-4:10/55] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION DEFINITION A  [1:7/6-4:10/55] ProgramImpl SCOPE: $Global$ 
-    SIGNATURE 
-    UNIQUE NAME f:A
-    DECLARATION: A  [1:7/6-4:10/55]
-    PARAMETERS:
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
-    STATEMENT is null
+NAMESPACE DEFINITOIN A [1:7/6-4:10/55] SCOPE: $Global$ 
 

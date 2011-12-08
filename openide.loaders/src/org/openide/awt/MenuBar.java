@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -187,6 +188,13 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
     }
 
+    @Override
+    public int getMenuCount() {
+        if (menuBarFolder != null && !Thread.holdsLock(getTreeLock())) {
+            menuBarFolder.waitFinished();
+        }
+        return super.getMenuCount();
+    }
     
     public @Override void addImpl (Component c, Object constraint, int idx) {
         //Issue 17559, Apple's screen menu bar implementation blindly casts
@@ -331,7 +339,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
     private final class MenuBarFolder extends FolderInstance {
         /** List of the components this FolderInstance manages. */
-        private ArrayList<Component> managed = new ArrayList<Component>();
+        private ArrayList<Component> managed;
 
         /** Creates a new menubar folder on the specified <code>DataFolder</code>.
          * @param folder a <code>DataFolder</code> to work with
@@ -347,16 +355,20 @@ public class MenuBar extends JMenuBar implements Externalizable {
         /** Removes the components added by this FolderInstance from the MenuBar.
          * Called when menu is refreshed. */
         private void cleanUp() {
-            for (Iterator<Component> it = managed.iterator(); it.hasNext(); ) {
-                MenuBar.this.remove(it.next());
+            synchronized (getTreeLock()) {
+                for (Iterator<Component> it = getManaged().iterator(); it.hasNext(); ) {
+                    MenuBar.this.remove(it.next());
+                }
+                getManaged().clear();
             }
-            managed.clear();
         }
 
         /** Adds the component to the MenuBar after the last added one */
         private void addComponent (Component c) {
-            MenuBar.this.add(c, managed.size());
-            managed.add(c);
+            synchronized (getTreeLock()) {
+                MenuBar.this.add(c, getManaged().size());
+                getManaged().add(c);
+            }
         }
 
         /** Full name of the data folder's primary file separated by dots.
@@ -476,6 +488,17 @@ public class MenuBar extends JMenuBar implements Externalizable {
             return new AWTTask (run);
         }
 
+        /**
+         * @return the managed
+         */
+        private ArrayList<Component> getManaged() {
+            assert Thread.holdsLock(getTreeLock());
+            if (managed == null) {
+                 managed = new ArrayList<Component>();
+            }
+            return managed;
+        }
+
     }
     
     /**
@@ -508,6 +531,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
             this.icon = icon;
             this.dynaModel = new DynaMenuModel();
             this.slave = new MenuFolder();
+            
+            setName(df.getName());
 
             // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
@@ -523,6 +548,30 @@ public class MenuBar extends JMenuBar implements Externalizable {
             } else {
                 Mutex.EVENT.readAccess(this);
             }
+        }
+        @Override
+        public int getItemCount() {
+            conditionalInitialize();
+            return super.getItemCount();
+        }
+
+        @Override
+        public int getMenuComponentCount() {
+            conditionalInitialize();
+            return super.getMenuComponentCount();
+        }
+
+        @Override
+        public Component[] getMenuComponents() {
+            conditionalInitialize();
+            return super.getMenuComponents();
+        }
+        
+        private void conditionalInitialize() {
+            if (Thread.holdsLock(getTreeLock())) {
+                return;
+            }
+            doInitialize();
         }
         
         protected @Override boolean processKeyBinding(KeyStroke ks,
@@ -611,7 +660,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
         public void nodeDestroyed (NodeEvent ev) {}
             
         private boolean selected = false;
-
+    
         /* Used on Mac only where setPopupMenuVisible does not work */
         public void stateChanged(ChangeEvent event) {
             if (Utilities.isMac()) {
@@ -648,7 +697,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
         
 	private void doInitialize() {
-        slave.waitFinishedSuper();
+        if (slave != null) {
+            slave.waitFinishedSuper();
+        }
 	}
 	    
 	/** This class can be used to update a <code>JMenu</code> instance

@@ -151,7 +151,6 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
         tv.setPopupAllowed(false);
         tv.setRootVisible(false);
         tv.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        tv.setUseSubstringInQuickSearch(true);
         Childs childs = new Childs();
         childs.addArchetype(LOADING_ARCHETYPE);
         AbstractNode root = new AbstractNode(childs);

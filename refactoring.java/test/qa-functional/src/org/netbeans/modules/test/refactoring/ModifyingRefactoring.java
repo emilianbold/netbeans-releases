@@ -93,6 +93,7 @@ public class ModifyingRefactoring extends RefactoringTestCase {
         List<FileObject> l = new LinkedList<FileObject>(modifiedFiles);
         Collections.sort(l, new Comparator<FileObject>() {
 
+            @Override
             public int compare(FileObject o1, FileObject o2) {
                 return o1.getName().compareTo(o2.getName());
             }

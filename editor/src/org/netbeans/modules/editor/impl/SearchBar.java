@@ -59,8 +59,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -863,7 +861,6 @@ public final class SearchBar extends JPanel {
             findPreviousButton.setEnabled(false);
             findNextButton.setEnabled(false);
         }
-        selectCheckBoxes();
         searched = false;
     }
 
@@ -899,17 +896,7 @@ public final class SearchBar extends JPanel {
 
         // configure find properties
         EditorFindSupport findSupport = EditorFindSupport.getInstance();
-
-        findProps.put(EditorFindSupport.FIND_WHAT, incrementalSearchText);
-        findProps.put(EditorFindSupport.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
-        findProps.put(EditorFindSupport.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
-        findProps.put(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
-        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !empty && highlightCheckBox.isSelected());
-
-        findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, false);
-        findProps.put(EditorFindSupport.FIND_INC_SEARCH, true);
-
-        findSupport.putFindProperties(findProps);
+        findSupport.putFindProperties(getFindProps());
 
         // search starting at current caret position
         int caretPosition = getActualTextComponent().getCaretPosition();
@@ -983,9 +970,9 @@ public final class SearchBar extends JPanel {
     @SuppressWarnings("unchecked")
     void initBlockSearch() {
         JTextComponent c = EditorRegistry.lastFocusedComponent();
-        String selText = null;
-        int startSelection = 0;
-        int endSelection = 0;
+        String selText;
+        int startSelection;
+        int endSelection;
         boolean blockSearchVisible = false;
 
         if (c != null) {

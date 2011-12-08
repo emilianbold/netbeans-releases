@@ -74,30 +74,20 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
     
-    private void init(CsmScope scope, AST ast, boolean register) {
+    private void init(CsmScope scope, AST ast, final CsmFile file, boolean register) {
 	initScope(scope);
         temporaryRepositoryRegistration(register, this);
-        initEnumeratorList(ast, register);
+        initEnumeratorList(ast, file, register);
         if (register) {
             register(scope, true);
         }
     }
     
-    public static EnumImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
+    public static EnumImpl create(AST ast, CsmScope scope, final CsmFile file, boolean register) {
         NameHolder nameHolder = NameHolder.createEnumName(ast);
 	EnumImpl impl = new EnumImpl(ast, nameHolder, file);
-	impl.init(scope, ast, register);
+	impl.init(scope, ast, file, register);
         nameHolder.addReference(file, impl);
-	return impl;
-    }
-
-    public static EnumImpl create(String name, String qName,CsmFile file, CsmScope scope, int startOffset, int endOffset, boolean register) {
-	EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
-	impl.initScope(scope);
-        temporaryRepositoryRegistration(register, impl);
-        if (register) {
-            impl.register(scope, true);
-        }
 	return impl;
     }
 
@@ -107,11 +97,11 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators.add(uid);
     }
     
-    private void initEnumeratorList(AST ast, boolean global){
+    private void initEnumeratorList(AST ast, final CsmFile file, boolean global){
         //enum A { a, b, c };
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                addList(token, global);
+                addList(token, file, global);
                 return;
             }
         }
@@ -127,15 +117,15 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
                 enumList = token.getNextSibling();
             }
             if (enumList != null && enumList.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST) {
-                addList(enumList, global);
+                addList(enumList, file, global);
             }
         }
     }
     
-    private void addList(AST token, boolean global){
+    private void addList(AST token, final CsmFile file, boolean global){
         for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
             if( t.getType() == CPPTokenTypes.ID ) {
-                EnumeratorImpl ei = EnumeratorImpl.create(t, this, global);
+                EnumeratorImpl ei = EnumeratorImpl.create(t, file, this, global);
                 CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
                 enumerators.add(uid);
             }

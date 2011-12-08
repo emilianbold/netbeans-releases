@@ -87,6 +87,11 @@ public interface GlobalElement extends Element, ReferenceableSchemaComponent,
     Set<Final> getFinalDefault();
     Set<Final> getFinalEffective();
     
+    /**
+     * The substitution group to which this element belongs
+     * @return the substitution group to which this element belongs, or null if
+     * the element does not belong to a substitution group
+     */
     NamedComponentReference<GlobalElement> getSubstitutionGroup();
     void setSubstitutionGroup(NamedComponentReference<GlobalElement> element);
     

@@ -50,7 +50,6 @@ import org.openide.windows.WindowManager;
 import java.awt.BorderLayout;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 
 
 /**

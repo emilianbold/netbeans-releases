@@ -854,6 +854,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         switch (kind) {
             case WEB:
                 return new String[]{
+                            "javacard", // NOI18N
                             "java-classes", // NOI18N
                             "java-beans", //NOI18N
                             "XML", // NOI18N
@@ -866,6 +867,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
             case EXTENSION_LIBRARY:
             case CLASSIC_LIBRARY:
                 return new String[]{
+                            "javacard", // NOI18N
                             "java-classes", // NOI18N
                             "java-beans", //NOI18N
                             "simple-files", // NOI18N

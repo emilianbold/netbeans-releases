@@ -47,6 +47,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -54,6 +57,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -83,6 +87,8 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 public class RefactoringTestBase extends NbTestCase {
+    // Turning off annoying info messages from treeutilities
+    private static final Logger TREEUTILITIESLOGGER = Logger.getLogger(TreeUtilities.class.getName());
 
     public RefactoringTestBase(String name) {
         super(name);
@@ -98,7 +104,7 @@ public class RefactoringTestBase extends NbTestCase {
             TestUtilities.copyStringToFile(fo, f.content);
         }
 
-        RepositoryUpdater.getDefault().refreshAll(true, true, false, null);
+        RepositoryUpdater.getDefault().refreshAll(false, true, false, null);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
@@ -177,6 +183,7 @@ public class RefactoringTestBase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        TREEUTILITIESLOGGER.setLevel(Level.SEVERE);
         Util.allMimeTypes = new HashSet<String>();
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
             "org/netbeans/modules/java/source/resources/layer.xml",
@@ -184,6 +191,7 @@ public class RefactoringTestBase extends NbTestCase {
             "org/netbeans/libs/freemarker/layer.xml",
             "org/netbeans/modules/refactoring/java/test/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
             new ClassPathProvider() {
+            @Override
                 public ClassPath findClassPath(FileObject file, String type) {
                     if ((src != null && (file == src || FileUtil.isParentOf(src, file)))
                             || (test != null && (file == test || FileUtil.isParentOf(test, file)))){
@@ -202,15 +210,19 @@ public class RefactoringTestBase extends NbTestCase {
                 }
             },
             new ProjectFactory() {
+            @Override
             public boolean isProject(FileObject projectDirectory) {
                 return src != null && src.getParent() == projectDirectory;
             }
+            @Override
             public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
                 if (!isProject(projectDirectory)) return null;
                 return new Project() {
+                    @Override
                     public FileObject getProjectDirectory() {
                         return projectDirectory;
                     }
+                    @Override
                     public Lookup getLookup() {
                         final Project p = this;
                         return Lookups.singleton(new Sources() {
@@ -232,6 +244,7 @@ public class RefactoringTestBase extends NbTestCase {
                     }
                 };
             }
+            @Override
             public void saveProject(Project project) throws IOException, ClassCastException {}
             },
             new TestLocator() {
@@ -326,6 +339,7 @@ public class RefactoringTestBase extends NbTestCase {
 
         private static final Lookup L = Lookups.singleton(new JavaCustomIndexer.Factory());
 
+        @Override
         public Lookup getLookup(MimePath mimePath) {
             if ("text/x-java".equals(mimePath.getPath())) {
                 return L;

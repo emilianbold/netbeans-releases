@@ -60,10 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.beans.UsageLogger;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.beans.hints.CDIAnnotation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -84,12 +81,6 @@ import com.sun.source.tree.Tree;
  */
 public class CdiAnalysisResult {
     
-    
-    static final String BEANS = "beans";                 // NOI18N
-    static final String BEANS_XML = BEANS+".xml";                 // NOI18N
-    private static final String META_INF = "META-INF";           // NOI18N
-    private static final String WEB_INF = "WEB-INF";             // NOI18N
-
     public CdiAnalysisResult( CompilationInfo info, 
             CdiEditorAwareJavaSourceTaskFactory factory )
     {
@@ -144,7 +135,15 @@ public class CdiAnalysisResult {
         if ( project == null ){
             return;
         }
-        if ( !isCdiEnabled( project ) ) {
+        CdiUtil lookup = project.getLookup().lookup( CdiUtil.class );
+        boolean needFix = false;
+        if ( lookup == null ){
+            needFix = !CdiUtil.hasBeansXml(project);
+        }
+        else {
+            needFix = !lookup.isCdiEnabled();
+        }
+        if ( needFix) {
             Fix fix = new BeansXmlFix( project , fileObject , myFactory );
             addError(element, NbBundle.getMessage(CdiAnalysisResult.class, 
                 "ERR_RequireWebBeans"), fix );        // NOI18N
@@ -161,84 +160,6 @@ public class CdiAnalysisResult {
     
     public List<CDIAnnotation> getAnnotations(){
         return Collections.unmodifiableList(myCollectedAnnotations);
-    }
-    
-    public static boolean isCdiEnabled(Project project){
-        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
-        for (FileObject fileObject : beansTargetFolder) {
-            if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    static Collection<FileObject> getBeansTargetFolder(Project project, 
-            boolean create) 
-    {
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null) {
-            FileObject webInf = wm.getWebInf();
-            if (webInf == null && create ) {
-                try {
-                    webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
-                } catch (IOException ex) {
-                    Logger.getLogger( CdiAnalysisResult.class.getName() ).log( 
-                            Level.WARNING, null, ex );
-                }
-            }
-            return Collections.singleton(webInf);
-        } 
-        else {
-            EjbJar ejbs[] = EjbJar.getEjbJars(project);
-            if (ejbs.length > 0) {
-                return Collections.singleton(ejbs[0].getMetaInf());
-            } else {
-                Car cars[] = Car.getCars(project);
-                if (cars.length > 0) {
-                    return Collections.singleton(cars[0].getMetaInf());
-                } 
-            }
-        }
-        Sources sources = project.getLookup().lookup(Sources.class);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
-        Collection<FileObject> result = new ArrayList<FileObject>(2);
-        if ( fileObject != null ){
-            result.add(fileObject);
-        }
-        sourceGroups = sources.getSourceGroups(
-                    JavaProjectConstants.SOURCES_TYPE_RESOURCES );
-        fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
-        if ( fileObject != null ){
-            result.add(fileObject);
-        }
-        if ( result.size() == 0 && create ){
-            fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
-            result.add(fileObject);
-        }
-        return result;
-    }
-
-    private static FileObject getDefaultBeansTargetFolder( SourceGroup[] sourceGroups,
-            boolean create )
-    {
-        if ( sourceGroups.length >0 ){
-            FileObject metaInf = sourceGroups[0].getRootFolder().getFileObject( META_INF );
-            if ( metaInf == null && create ){
-                try {
-                    metaInf = FileUtil.createFolder(
-                        sourceGroups[0].getRootFolder(), META_INF);
-                }
-                catch( IOException e ){
-                    Logger.getLogger( CdiAnalysisResult.class.getName() ).log( 
-                            Level.WARNING, null, e );
-                }
-            }
-            return metaInf;
-        }
-        return null;
     }
     
     private CompilationInfo myInfo ;

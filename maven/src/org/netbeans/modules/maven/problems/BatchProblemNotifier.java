@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
@@ -83,6 +84,7 @@ public class BatchProblemNotifier {
 
     /** reactors by root directory */
     private static final Map<File,Reactor> reactors = new HashMap<File,Reactor>();
+    private static final Map<NbMavenProjectImpl,File> roots = new WeakHashMap<NbMavenProjectImpl,File>();
 
     public static void opened(NbMavenProjectImpl p) {
         ProblemReporterImpl pr = p.getProblemReporter();
@@ -100,6 +102,9 @@ public class BatchProblemNotifier {
                 }
             }
             final File root = ReactorChecker.findReactor(p.getProjectWatcher()).getMavenProject().getBasedir();
+            synchronized (roots) {
+                roots.put(p, root);
+            }
             File basedir = p.getPOMFile().getParentFile();
             String path = FileUtilities.relativizeFile(root, basedir);
             if (path == null) {
@@ -117,7 +122,13 @@ public class BatchProblemNotifier {
     }
 
     public static void closed(NbMavenProjectImpl p) {
-        File root = ReactorChecker.findReactor(p.getProjectWatcher()).getMavenProject().getBasedir();
+        File root;
+        synchronized (roots) {
+            root = roots.remove(p);
+        }
+        if (root == null) {
+            return;
+        }
         File basedir = p.getPOMFile().getParentFile();
         String path = FileUtilities.relativizeFile(root, basedir);
         if (path == null) {

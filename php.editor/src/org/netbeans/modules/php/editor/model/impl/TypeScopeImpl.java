@@ -71,12 +71,15 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
     private Map<String, List<? extends InterfaceScope>> ifaces = new HashMap<String, List<? extends InterfaceScope>>();
+    private Collection<QualifiedName> fqIfaces = new HashSet<QualifiedName>();
 
     TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody());
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
-            ifaces.put(CodeUtils.extractQualifiedName(identifier), null);
+            String ifaceName = CodeUtils.extractQualifiedName(identifier);
+            ifaces.put(ifaceName, null);
+            fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
         }
     }
 
@@ -84,18 +87,31 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
-            ifaces.put(CodeUtils.extractQualifiedName(identifier), null);
+            String ifaceName = CodeUtils.extractQualifiedName(identifier);
+            ifaces.put(ifaceName, null);
+            fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
         }
     }
 
     protected TypeScopeImpl(Scope inScope, ClassElement element) {
-        //TODO: in idx is no info about ifaces
         super(inScope, element, PhpElementKind.CLASS);
+        fqIfaces = element.getFQSuperInterfaceNames();
+        for (QualifiedName qualifiedName : element.getSuperInterfaces()) {
+            ifaces.put(qualifiedName.toString(), null);
+        }
     }
 
     protected TypeScopeImpl(Scope inScope, InterfaceElement element) {
-        //TODO: in idx is no info about ifaces
         super(inScope, element, PhpElementKind.IFACE);
+        fqIfaces = element.getFQSuperInterfaceNames();
+        for (QualifiedName qualifiedName : element.getSuperInterfaces()) {
+            ifaces.put(qualifiedName.toString(), null);
+        }
+    }
+
+    @Override
+    public Collection<QualifiedName> getFQSuperInterfaceNames() {
+        return this.fqIfaces;
     }
 
     @Override
@@ -115,40 +131,47 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     public List<? extends InterfaceScope> getSuperInterfaceScopes() {
         Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
         Set<String> keySet = (indexedElement instanceof TypeElement) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
-        for (String ifaceName : keySet) {
-            List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
-            if (iface == null) {
-                if (indexedElement == null) {
-                    NamespaceScope top = (NamespaceScope) getInScope();
-                    NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
-                    retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
-                    ifaces.put(ifaceName,iface);
-                    /*for (InterfaceScopeImpl interfaceScope : iface) {
-                        retval.addAll(interfaceScope.getInterfaces());
-                    }*/
-                    if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
-                        IndexScope indexScope = ModelUtils.getIndexScope(ps);
-                        if (indexScope != null) {
-                            Collection<? extends InterfaceScope> cIfaces =IndexScopeImpl.getInterfaces(QualifiedName.create(ifaceName), this);
-                            ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
-                            for (InterfaceScope interfaceScope : cIfaces) {
-                                retval.add((InterfaceScopeImpl)interfaceScope);
+        if (!fqIfaces.isEmpty()) {
+            for (QualifiedName qualifiedName : fqIfaces) {
+                retval.addAll(IndexScopeImpl.getInterfaces(qualifiedName, this));
+            }
+        }
+        if (retval.isEmpty() && !keySet.isEmpty()) {
+            for (String ifaceName : keySet) {
+                List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
+                if (iface == null) {
+                    if (indexedElement == null) {
+                        NamespaceScope top = (NamespaceScope) getInScope();
+                        NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
+                        retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
+                        ifaces.put(ifaceName,iface);
+                        /*for (InterfaceScopeImpl interfaceScope : iface) {
+                            retval.addAll(interfaceScope.getInterfaces());
+                        }*/
+                        if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
+                            IndexScope indexScope = ModelUtils.getIndexScope(ps);
+                            if (indexScope != null) {
+                                Collection<? extends InterfaceScope> cIfaces =IndexScopeImpl.getInterfaces(QualifiedName.create(ifaceName), this);
+                                ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
+                                for (InterfaceScope interfaceScope : cIfaces) {
+                                    retval.add((InterfaceScopeImpl)interfaceScope);
+                                }
+                            } else {
+                                //TODO: create it from idx
+                                throw new UnsupportedOperationException();
+                                /*assert iface != null;
+                                ifaces.put(key, iface);*/
                             }
-                        } else {
-                            //TODO: create it from idx
-                            throw new UnsupportedOperationException();
-                            /*assert iface != null;
-                            ifaces.put(key, iface);*/
                         }
+                    } else {
+                        iface = Collections.emptyList();
                     }
                 } else {
-                    iface = Collections.emptyList();
+                    retval.addAll(iface);
                 }
-            } else {
-                retval.addAll(iface);
+                assert iface != null;
+            //duplicatesChecker.addAll(iface);
             }
-            assert iface != null;
-        //duplicatesChecker.addAll(iface);
         }
         return new ArrayList<InterfaceScope>(retval);
     }
@@ -204,9 +227,16 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     public String getNormalizedName() {
         StringBuilder sb = new StringBuilder();
         //Set<String> ifaceNames = ifaces.keySet();
-        List<? extends String> ifaceNames = getSuperInterfaceNames();
-        for (String ifName : ifaceNames) {
-            sb.append(ifName);
+        Collection<QualifiedName> fQSuperInterfaceNames = getFQSuperInterfaceNames();
+        if (fQSuperInterfaceNames.isEmpty()) {
+            List<? extends String> ifaceNames = getSuperInterfaceNames();
+            for (String ifName : ifaceNames) {
+                sb.append(ifName);
+            }
+        } else {
+            for (QualifiedName qualifiedName : fQSuperInterfaceNames) {
+                sb.append(qualifiedName.toString());
+            }
         }
         return sb.toString()+super.getNormalizedName();
     }

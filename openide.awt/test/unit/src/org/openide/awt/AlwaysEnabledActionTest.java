@@ -48,7 +48,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
@@ -73,6 +77,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -101,6 +106,27 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     @Override
     protected boolean runInEQ() {
         return true;
+    }
+    
+    public void testMemoryLeak() throws Exception {
+        final AtomicInteger count = new AtomicInteger();
+        Action singleton = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                count.incrementAndGet();
+            }
+        };
+        Object heavy = new Object();
+        AlwaysEnabledAction always = AlwaysEnabledAction.create(
+            Collections.singletonMap("delegate", singleton)
+        );
+        Action clone = always.createContextAwareInstance(Lookups.singleton(heavy));
+        clone.actionPerformed(null);
+        assertEquals(1, count.get());
+        Reference<?> r = new WeakReference<Object>(heavy);
+        clone = null;
+        heavy = null;
+        assertGC("should not leak context", r, Collections.singleton(singleton));        
     }
 
     public void testIconIsCorrect() throws Exception {

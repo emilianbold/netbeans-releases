@@ -116,6 +116,7 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME python "python*"
     rm -rf python*
+    rm -rf ruby*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME nb-etc "*"
 }

@@ -52,7 +52,7 @@ import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.refactoring.api.Entry;
-import org.netbeans.modules.css.indexing.CssIndex;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;

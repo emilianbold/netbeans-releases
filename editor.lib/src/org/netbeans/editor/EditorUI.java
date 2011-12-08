@@ -71,13 +71,14 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
-import javax.swing.text.Document;
+import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -568,9 +569,16 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     }
     
     private void checkUndoManager(Document doc) {
+        // Check if there's any undo manager listening already and if so return immediately
+        if (doc instanceof AbstractDocument && ((AbstractDocument)doc).getUndoableEditListeners().length >= 1) {
+            return;
+        }
         // If there is the wrapper component the default UndoManager
         // of the document gets cleared so that only the TopComponent's one gets used.
         UndoManager undoManager = (UndoManager) doc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (undoManager == null) {
+            undoManager = (UndoManager) doc.getProperty(UndoManager.class);
+        }
         if (hasExtComponent()) {
             if (undoManager != null) {
                 doc.removeUndoableEditListener(undoManager);
@@ -1523,10 +1531,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             FontMetrics lnFM = FontMetricsCache.getFontMetrics(lnFont, component);
             if (lnFM == null) return lineNumberDigitWidth;
             int maxWidth = 1;
-            char[] digit = new char[1]; // will be used for '0' - '9'
             for (int i = 0; i <= 9; i++) {
-                digit[0] = (char)('0' + i);
-                maxWidth = Math.max(maxWidth, lnFM.charsWidth(digit, 0, 1));
+                maxWidth = Math.max(maxWidth, lnFM.charWidth((char)('0' + i)));
             }
             return maxWidth;
         }
@@ -1663,13 +1669,21 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             return new Color(255, 235, 235);
         }
     }
-
+    
     private void showPopupMenuForPopupTrigger(final MouseEvent evt) {
         if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
             // Postponing menu creation in order to give other listeners chance
             // to do their job. See IZ #140127 for details.
             SwingUtilities.invokeLater(new Runnable() {
                 public @Override void run() {
+                    // #205150 - must position the caret before building popup menu
+                    if (component != null) {
+                            Caret c = component.getCaret();
+                            if ((c instanceof BaseCaret) && !Utilities.isSelectionShowing(c)) {
+                                int offset = ((BaseCaret)c).mouse2Offset(evt);
+                                component.getCaret().setDot(offset);
+                            }
+                    }
                     showPopupMenu(evt.getX(), evt.getY());
                 }
             });

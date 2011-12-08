@@ -119,7 +119,6 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         TestUtil.setLookup( new Object[] {
             TestUtil.testProjectFactory(),
             TestUtil.testFileLocator(),
-            TestUtil.testProjectChooserFactory(),
             new MyProvider()
         }, J2MEProjectGeneratorTest.class.getClassLoader());
         

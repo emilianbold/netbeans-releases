@@ -57,9 +57,11 @@ import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -68,6 +70,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author  Milos Kleint 
  */
+@ProjectServiceProvider(service={ClassPathProvider.class, ActiveJ2SEPlatformProvider.class, ProjectSourcesClassPathProvider.class}, projectType="org-netbeans-modules-maven")
 public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2SEPlatformProvider, ProjectSourcesClassPathProvider {
     
     private static final int TYPE_SRC = 0;
@@ -75,11 +78,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_WEB = 5;
     private static final int TYPE_UNKNOWN = -1;
     
-    private final @NonNull NbMavenProjectImpl project;
+    private final @NonNull Project proj;
     private ClassPath[] cache = new ClassPath[9];
     
-    public ClassPathProviderImpl(@NonNull NbMavenProjectImpl proj) {
-        project = proj;
+    public ClassPathProviderImpl(@NonNull Project proj) {
+        this.proj = proj;
     }
     
     /**
@@ -171,7 +174,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private synchronized ClassPath getProvidedClassPath() {
         ClassPath cp = cache[7];
         if (cp == null) {
-            cp = ClassPathFactory.createClassPath(new PackagedClassPathImpl(project));
+            cp = ClassPathFactory.createClassPath(new PackagedClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class)));
             cache[7] = cp;
         }
         return cp;
@@ -204,6 +207,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     
     
     private int getType(FileObject file) {
+        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         if (isChildOf(file, project.getSourceRoots(false)) ||
             isChildOf(file, project.getGeneratedSourceRoots(false))) {
             return TYPE_SRC;
@@ -239,6 +243,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
         ClassPath cp = cache[type];
         if (cp == null) {
+            NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
             if (type == TYPE_SRC) {
                 cp = ClassPathFactory.createClassPath(new SourceClassPathImpl(project));
             } else {
@@ -255,6 +260,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
         ClassPath cp = cache[2+type];
         if (cp == null) {
+            NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
             if (type == TYPE_SRC) {
                 cp = ClassPathFactory.createClassPath(new CompileClassPathImpl(project));
             } else {
@@ -271,6 +277,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
         ClassPath cp = cache[4+type];
         if (cp == null) {
+            NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
             if (type == TYPE_SRC) {
                 cp = ClassPathFactory.createClassPath(new RuntimeClassPathImpl(project));
             } else {
@@ -293,7 +300,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private BootClassPathImpl bcpImpl;
     private synchronized BootClassPathImpl getBootClassPathImpl() {
         if (bcpImpl == null) {
-            bcpImpl = new BootClassPathImpl(project, getEndorsedClassPathImpl());
+            bcpImpl = new BootClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), getEndorsedClassPathImpl());
         }
         return bcpImpl;
     }
@@ -305,7 +312,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private EndorsedClassPathImpl ecpImpl;
     private synchronized EndorsedClassPathImpl getEndorsedClassPathImpl() {
         if (ecpImpl == null) {
-            ecpImpl = new EndorsedClassPathImpl(project);
+            ecpImpl = new EndorsedClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class));
         }
         return ecpImpl;
     }

@@ -76,6 +76,7 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
 import org.codehaus.plexus.util.FileUtils;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
@@ -139,9 +140,15 @@ import org.openide.util.lookup.Lookups;
  * @author  Milos Kleint 
  */
 public class DependencyNode extends AbstractNode implements PreferenceChangeListener {
-    private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
-    private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
-    private static final String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
+    private static final @StaticResource String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
+    private static final @StaticResource String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
+    private static final @StaticResource String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
+    private static final @StaticResource String ARTIFACT_ICON = "org/netbeans/modules/maven/ArtifactIcon.png";
+    private static final @StaticResource String DEPENDENCY_ICON = "org/netbeans/modules/maven/DependencyIcon.png";
+    private static final @StaticResource String MAVEN_ICON = "org/netbeans/modules/maven/resources/Maven2Icon.gif";
+    private static final @StaticResource String TRANSITIVE_ARTIFACT_ICON = "org/netbeans/modules/maven/TransitiveArtifactIcon.png";
+    private static final @StaticResource String TRANSITIVE_DEPENDENCY_ICON = "org/netbeans/modules/maven/TransitiveDependencyIcon.png";
+    private static final @StaticResource String TRANSITIVE_MAVEN_ICON = "org/netbeans/modules/maven/TransitiveMaven2Icon.gif";
 
     private Artifact art;
     private NbMavenProjectImpl project;
@@ -235,20 +242,20 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private void setIconBase(boolean longLiving) {
         if (longLiving && isDependencyProjectAvailable()) {
             if (isTransitive()) {
-                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
+                setIconBaseWithExtension(TRANSITIVE_MAVEN_ICON);
             } else {
-                setIconBaseWithExtension("org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
+                setIconBaseWithExtension(MAVEN_ICON);
             }
         } else if (isTransitive()) {
             if (isAddedToCP()) {
-                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveDependencyIcon.png"); //NOI18N
+                setIconBaseWithExtension(TRANSITIVE_DEPENDENCY_ICON);
             } else {
-                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveArtifactIcon.png"); //NOI18N
+                setIconBaseWithExtension(TRANSITIVE_ARTIFACT_ICON);
             }
-        } else if (isAddedToCP()) { //NOI18N
-            setIconBaseWithExtension("org/netbeans/modules/maven/DependencyIcon.png"); //NOI18N
+        } else if (isAddedToCP()) {
+            setIconBaseWithExtension(DEPENDENCY_ICON);
         } else {
-            setIconBaseWithExtension("org/netbeans/modules/maven/ArtifactIcon.png"); //NOI18N
+            setIconBaseWithExtension(ARTIFACT_ICON);
         }
     }
 
@@ -1004,7 +1011,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return null;
         }
 
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override public boolean contains(FileObject file) {
             return true;
         }
 

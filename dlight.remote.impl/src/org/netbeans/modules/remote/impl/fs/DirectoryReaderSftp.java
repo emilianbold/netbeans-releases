@@ -53,10 +53,11 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 
 /**
- *
+ * Note: public access is needed for tests
+ * 
  * @author Vladimir Kvashin
  */
-class DirectoryReaderSftp implements DirectoryReader {
+public class DirectoryReaderSftp implements DirectoryReader {
 
     private final ExecutionEnvironment execEnv;
     private final String remotePath;
@@ -75,12 +76,14 @@ class DirectoryReaderSftp implements DirectoryReader {
         }
     }
 
+    @Override
     public List<DirEntry> getEntries() {
         synchronized (lock) {
             return Collections.<DirEntry>unmodifiableList(entries);
         }
     }
 
+    @Override
     public void readDirectory() throws InterruptedException, CancellationException, ExecutionException {
         Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
         StatInfo[] infos = res.get();

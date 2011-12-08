@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
@@ -58,7 +59,6 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -121,19 +121,19 @@ public class CheckoutIndex {
 
         boolean exists = file.exists();
         if (exists && e.getFileMode() == FileMode.SYMLINK) {
-            monitor.notifyWarning(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_SymLink", file.getAbsolutePath())); //NOI18N
+            monitor.notifyWarning(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_SymLink"), file.getAbsolutePath())); //NOI18N
             return;
         }
 
         if (exists && file.isDirectory()) {
-            monitor.notifyWarning(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_ReplacingDirectory", file.getAbsolutePath())); //NOI18N
+            monitor.notifyWarning(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_ReplacingDirectory"), file.getAbsolutePath())); //NOI18N
             Utils.deleteRecursively(file);
         }
         file.createNewFile();
         if (file.isFile()) {
             DirCacheCheckout.checkoutEntry(repository, file, e);
         } else {
-            monitor.notifyError(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_CannotCreateFile", file.getAbsolutePath())); //NOI18N
+            monitor.notifyError(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_CannotCreateFile"), file.getAbsolutePath())); //NOI18N
         }
     }
 
@@ -144,10 +144,10 @@ public class CheckoutIndex {
         }
         if (predecessor.isFile()) {
             if (!predecessor.delete()) {
-                monitor.notifyError(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_CannotCreateFile", predecessor.getAbsolutePath())); //NOI18N
+                monitor.notifyError(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_CannotCreateFile"), predecessor.getAbsolutePath())); //NOI18N
                 return false;
             }
-            monitor.notifyWarning(NbBundle.getMessage(CheckoutIndex.class, "MSG_Warning_ReplacingFile", predecessor.getAbsolutePath())); //NOI18N
+            monitor.notifyWarning(MessageFormat.format(Utils.getBundle(CheckoutIndex.class).getString("MSG_Warning_ReplacingFile"), predecessor.getAbsolutePath())); //NOI18N
         }
         return parentFolder.mkdirs() || parentFolder.exists();
     }

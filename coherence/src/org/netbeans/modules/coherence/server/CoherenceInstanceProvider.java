@@ -176,12 +176,29 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
     /**
      * Checks if the given id is unique across all already registered instances.
      *
-     * @param id id checked for unique value across instances
+     * @param id id checked for unique value across all instances
      * @return {@code true} if the id is unique; {@code false} otherwise
      */
-    public static boolean isUniqueAcrossInstances(Integer id) {
+    public static boolean isUniqueIdAcrossInstances(Integer id) {
         synchronized (instances) {
             return !instances.containsKey(id);
+        }
+    }
+
+    /**
+     * Checks if the given display name is unique across all already registered instances.
+     *
+     * @param displayName display name checked for unique value across all instances
+     * @return {@code true} if the display name is unique; {@code false} otherwise
+     */
+    public static boolean isUniqueDisplayNameAcrossInstances(String displayName) {
+        synchronized (instances) {
+            for (Entry<Integer, ServerInstance> entry : instances.entrySet()) {
+                if (displayName.equals(entry.getValue().getDisplayName())) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

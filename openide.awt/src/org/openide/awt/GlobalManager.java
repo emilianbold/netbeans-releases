@@ -76,11 +76,11 @@ class GlobalManager extends Object implements LookupListener {
     
     private Lookup.Result<ActionMap> result;
     private Reference<ActionMap> actionMap = new WeakReference<ActionMap>(null);
-    private Map<Object,Set<GeneralAction.DelegateAction>> listeners;
+    private Map<Object,Set<GeneralAction.BaseDelAction>> listeners;
     private PropertyChangeListener changeL;
     
     private GlobalManager(Lookup lookup) {
-        this.listeners = new HashMap<Object,Set<GeneralAction.DelegateAction>>();
+        this.listeners = new HashMap<Object,Set<GeneralAction.BaseDelAction>>();
         this.result = lookup.lookupResult(ActionMap.class);
         result.addLookupListener(this);
         resultChanged(null);
@@ -123,14 +123,14 @@ class GlobalManager extends Object implements LookupListener {
         return a;
     }
     
-    public final void registerListener(Object key, GeneralAction.DelegateAction a) {
+    public final void registerListener(Object key, GeneralAction.BaseDelAction a) {
         if (key == null) {
             return;
         }
         synchronized (CACHE) {
-            Set<GeneralAction.DelegateAction> existing = listeners.get(key);
+            Set<GeneralAction.BaseDelAction> existing = listeners.get(key);
             if (existing == null) {
-                existing = new WeakSet<GeneralAction.DelegateAction>();
+                existing = new WeakSet<GeneralAction.BaseDelAction>();
                 listeners.put(key, existing);
             }
             existing.add(a);
@@ -138,12 +138,12 @@ class GlobalManager extends Object implements LookupListener {
         }
     }
 
-    public final void unregisterListener(Object key, GeneralAction.DelegateAction a) {
+    public final void unregisterListener(Object key, GeneralAction.BaseDelAction a) {
         if (key == null) {
             return;
         }
         synchronized (CACHE) {
-            Set<GeneralAction.DelegateAction> existing = listeners.get(key);
+            Set<GeneralAction.BaseDelAction> existing = listeners.get(key);
             if (existing != null) {
                 existing.remove(a);
                 if (existing.isEmpty()) {
@@ -200,11 +200,11 @@ class GlobalManager extends Object implements LookupListener {
         }
 
         for (Object k : keys) {
-            Set<GeneralAction.DelegateAction> actions = listeners.get(k);
+            Set<GeneralAction.BaseDelAction> actions = listeners.get(k);
             if (actions == null) {
                 continue;
             }
-            for (GeneralAction.DelegateAction del : actions) {
+            for (GeneralAction.BaseDelAction del : actions) {
                 if (del != null) {
                     del.updateState(prev, now, true);
                 }
