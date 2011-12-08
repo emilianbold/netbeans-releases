@@ -52,56 +52,136 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 
 /**
- *
+ * Provides access to some versioning.core functionality needed by versioning.spi and versioning.ui.
+ * 
+ * WARNING: VCS internal use only, might be subject of future change and shouldn't be accessed by vcs clients.
+ * 
  * @author Tomas Stupka
  */
 public final class Utils {
-    public static String EVENT_ANNOTATIONS_CHANGED = VersioningManager.EVENT_ANNOTATIONS_CHANGED;
-    public static String EVENT_STATUS_CHANGED = VersioningManager.EVENT_STATUS_CHANGED;
-    public static String EVENT_VERSIONED_ROOTS = VersioningManager.EVENT_VERSIONED_ROOTS;
+    
+/**
+     * Indicates to the Versioning manager that the layout of versioned files may have changed. Previously unversioned 
+     * files became versioned, versioned files became unversioned or the versioning system for some files changed.
+     * The manager will flush any caches that may be holding such information.  
+     * A versioning system usually needs to fire this after an Import action. 
+     */
+    public static final String EVENT_VERSIONED_ROOTS = "null VCS.VersionedFilesChanged";
+
+    /**
+     * The NEW value is a Set of Files whose versioning status changed. This event is used to re-annotate files, re-fetch
+     * original content of files and generally refresh all components that are connected to these files.
+     */
+    public static final String EVENT_STATUS_CHANGED = "Set<File> VCS.StatusChanged";
+
+    /**
+     * Used to signal the Versioning manager that some annotations changed. Note that this event is NOT required in case
+     * the status of the file changes in which case annotations are updated automatically. Use this event to force annotations
+     * refresh in special cases, for example when the format of annotations changes.
+     * Use null as new value to force refresh of all annotations.
+     */
+    public static final String EVENT_ANNOTATIONS_CHANGED = "Set<File> VCS.AnnotationsChanged";
 
     private Utils() { }
     
+    /**
+     * Stop managing the given path by the given versioning system
+     * 
+     * @param versioningSystem the versioning system to stop manage for the given path
+     * @param absolutePath the path to stop managed by the given versioning system
+     * @see #connectRepository(org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem, java.lang.String) 
+     */
     public static void disconnectRepository(VersioningSystem versioningSystem, String absolutePath) {
         VersioningConfig.getDefault().disconnectRepository(versioningSystem, absolutePath);
     }
-    
+
+    /**
+     * Start again to manage the given path by the given versioning system
+     * 
+     * @param versioningSystem the versioning system to stop manage for the given path
+     * @param absolutePath the path to stop managed by the given versioning system
+     * @see #disconnectRepository(org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem, java.lang.String) 
+     */
     public static void connectRepository(VersioningSystem versioningSystem, String absolutePath) {
         VersioningConfig.getDefault().connectRepository(versioningSystem, absolutePath);
     }
 
+    /**
+     * Returns all paths marked as not to managed by the given system
+     * 
+     * @param versioningSystem the versioning system 
+     * @return path not managed by the given versioning system
+     */
     public static String[] getDisconnectedRoots(VersioningSystem versioningSystem) {
         return VersioningConfig.getDefault().getDisconnectedRoots(versioningSystem);
     }
     
+    /**
+     * Empties the file owner cache
+     */
     public static void flushNullOwners() {
         VersioningManager.getInstance().flushNullOwners();
     }
     
+    /**
+     * Notifies about visibility changes according to {@link VisibilityQueryImplementation}
+     */
     public static void fireVisibilityChanged() {
         VcsVisibilityQueryImplementation.visibilityChanged();
     }
     
+    /**
+     * Notifies that a versioning system started to manage some previously unversioned files 
+     * (e.g. those files were imported into repository).
+     */
     public static void versionedRootsChanged() {
         VersioningManager.getInstance().versionedRootsChanged();
     }
     
+    /**
+     * Queries the Versioning infrastructure for file ownership.
+     * 
+     * @param proxy
+     * @return VersioningSystem a system that owns (manages) the file or null if the file is not versioned
+     */
     public static VCSSystemProvider.VersioningSystem getOwner(VCSFileProxy proxy) {
         return VersioningManager.getInstance().getOwner(proxy);        
     }
     
+    /**
+     * Tests whether the given file represents a flat folder (eg a java package), that is a folder 
+     * that contains only its direct children.
+     * 
+     * @param file a File to test
+     * @return true if the File represents a flat folder (eg a java package), false otherwise
+     */
     public static boolean isFlat(File file) {
         return file instanceof FlatFolder; 
     }
 
+    /**
+     * Creates a File that is marked is flat (eg a java package), that is a folder 
+     * that contains only its direct children.
+     * 
+     * @param path a file path
+     * @return File a flat file representing given abstract path
+     */    
     public static File getFlat(String path) {
         return new FlatFolder(path);
     }
 
+    /**
+     * Add PropertyChangeListener to be notified about changes in the versioning infrastructure.
+     * @param l 
+     */
     public static void addPropertyChangeListener(PropertyChangeListener l) {
         VersioningManager.getInstance().addPropertyChangeListener(l);
     }
-    
+
+    /**
+     * Remove PropertyChangeListener 
+     * @param l 
+     */
     public static void removePropertyChangeListener(PropertyChangeListener l) {
         VersioningManager.getInstance().removePropertyChangeListener(l);
     }

@@ -51,21 +51,31 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.LookupListener;
 
 /**
- * Provides VersioningSystem implementations for {@link org.netbeans.modules.versioning.spi.VersioningSystem} 
+ * Warning: VCS internal use only. Not to be implemented by clients.
+ * 
+ * Provides implementations for {@link org.netbeans.modules.versioning.spi.VersioningSystem} 
  * and {@link org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem}
  * 
- * VCS internal use only. Not to be implemented by clients.
  * @author Tomas Stupka
  */
 public abstract class VCSSystemProvider {
 
+    /**
+     * 
+     * @param l 
+     */
     public abstract void addLookupListener(LookupListener l);
     
+    /**
+     * Provides all registered versioning systems 
+     * 
+     * @return a collections of all registered versioning systems 
+     */
     public abstract Collection<VersioningSystem> getVersioningSystems();
     
     /**
-     * Wraps either {@link org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem}
-     * or {@link org.netbeans.modules.versioning.spi.VersioningSystem}
+     * Provides abstraction either over a {@link org.netbeans.modules.versioning.fileproxy.spi.VersioningSystem}
+     * or a {@link org.netbeans.modules.versioning.spi.VersioningSystem}
      * @param <S> 
      */
     public interface VersioningSystem<S> {

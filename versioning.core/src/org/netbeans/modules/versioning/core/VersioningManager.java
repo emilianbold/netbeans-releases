@@ -80,26 +80,19 @@ import org.openide.util.*;
 public class VersioningManager implements PropertyChangeListener, LookupListener, PreferenceChangeListener {
     
     /**
-     * Indicates to the Versioning manager that the layout of versioned files may have changed. Previously unversioned 
-     * files became versioned, versioned files became unversioned or the versioning system for some files changed.
-     * The manager will flush any caches that may be holding such information.  
-     * A versioning system usually needs to fire this after an Import action. 
+     * @see org.netbeans.modules.versioning.core.util.Utils#EVENT_VERSIONED_ROOTS
      */
-    public static final String EVENT_VERSIONED_ROOTS = "null VCS.VersionedFilesChanged";
+    public static final String EVENT_VERSIONED_ROOTS = org.netbeans.modules.versioning.core.util.Utils.EVENT_VERSIONED_ROOTS;
 
     /**
-     * The NEW value is a Set of Files whose versioning status changed. This event is used to re-annotate files, re-fetch
-     * original content of files and generally refresh all components that are connected to these files.
+     * @see org.netbeans.modules.versioning.core.util.Utils#EVENT_STATUS_CHANGED
      */
-    public static final String EVENT_STATUS_CHANGED = "Set<File> VCS.StatusChanged";
+    public static final String EVENT_STATUS_CHANGED = org.netbeans.modules.versioning.core.util.Utils.EVENT_STATUS_CHANGED;
 
     /**
-     * Used to signal the Versioning manager that some annotations changed. Note that this event is NOT required in case
-     * the status of the file changes in which case annotations are updated automatically. Use this event to force annotations
-     * refresh in special cases, for example when the format of annotations changes.
-     * Use null as new value to force refresh of all annotations.
+     * @see org.netbeans.modules.versioning.core.util.Utils#EVENT_ANNOTATIONS_CHANGED
      */
-    public static final String EVENT_ANNOTATIONS_CHANGED = "Set<File> VCS.AnnotationsChanged";
+    public static final String EVENT_ANNOTATIONS_CHANGED = org.netbeans.modules.versioning.core.util.Utils.EVENT_ANNOTATIONS_CHANGED;
 
 
     /**

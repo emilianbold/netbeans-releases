@@ -62,7 +62,7 @@ import org.openide.filesystems.FileUtil;
 public final class VCSFileProxy {
 
     private final String path;
-    final VCSFileProxyOperations proxy;
+    private final VCSFileProxyOperations proxy;
     private boolean isFlat = false;
     private Boolean isDirectory = null;
     
