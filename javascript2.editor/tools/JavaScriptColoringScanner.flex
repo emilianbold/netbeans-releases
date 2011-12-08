@@ -134,7 +134,7 @@ WhiteSpace = [ \t\f]+
 
 /* comments */
 TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
-EndOfLineComment = "//" {InputCharacter}* {LineTerminator}?
+EndOfLineComment = "//" {InputCharacter}*
 
 /* identifiers */
 IdentifierPart = [:jletterdigit:]
@@ -173,6 +173,7 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
 %state SSTRINGEND
 %state REGEXP
 %state REGEXPEND
+%state LCOMMENTEND
 
 %%
 
@@ -320,7 +321,10 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   {TraditionalComment}           { return JsTokenId.BLOCK_COMMENT; }
 
   /* comments */
-  {EndOfLineComment}             { return JsTokenId.LINE_COMMENT; }
+  {EndOfLineComment}             {
+                                   yybegin(LCOMMENTEND);
+                                   return JsTokenId.LINE_COMMENT;
+                                 }
 
   /* whitespace */
   {WhiteSpace}                   { return JsTokenId.WHITESPACE; }
@@ -420,6 +424,13 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   "/"{IdentifierPart}*           {
                                      yybegin(YYINITIAL);
                                      return JsTokenId.REGEXP_END;
+                                 }
+}
+
+<LCOMMENTEND> {
+  {LineTerminator}?              {
+                                     yybegin(YYINITIAL);
+                                     return JsTokenId.EOL;
                                  }
 }
 

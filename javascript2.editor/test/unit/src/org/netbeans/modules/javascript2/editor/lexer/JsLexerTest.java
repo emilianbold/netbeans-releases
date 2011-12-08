@@ -263,7 +263,8 @@ public class JsLexerTest extends TestCase {
         String text = "// This is my comment\n";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, text);
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, "// This is my comment");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
     }
 
     @SuppressWarnings("unchecked")
