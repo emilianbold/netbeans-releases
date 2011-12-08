@@ -49,6 +49,8 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -260,7 +262,56 @@ public class MultiViewProcessorTest extends NbTestCase {
                 + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
                 + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
         + "@MultiViewElement.Registration(displayName = \"Testing\","
-        + "iconBase = \"none\","
+        + "iconBase = \"one.png\","
+        + "mimeType = \"text/ble\","
+        + "persistenceType = 0,"
+        + "preferredID = \"bleple\")"
+                + "  public static MultiViewElement create() {\n"
+                + "    return new Test();\n"
+                + "  }\n"
+                + "}\n";
+        generateIcon("one.png");
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "pkg.Test", src);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertTrue("Compilation should succeed:\n" + os.toString(), res);
+    }
+    
+    public void testCompileInAptFullPath() throws Exception {
+        clearWorkDir();
+        String src = "\n"
+                + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
+                + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
+        + "@MultiViewElement.Registration(displayName = \"Testing\","
+        + "iconBase = \"pkg/one.png\","
+        + "mimeType = \"text/ble\","
+        + "persistenceType = 0,"
+        + "preferredID = \"bleple\")"
+                + "  public static MultiViewElement create() {\n"
+                + "    return new Test();\n"
+                + "  }\n"
+                + "}\n";
+        generateIcon("one.png");
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "pkg.Test", src);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertTrue("Compilation should succeed:\n" + os.toString(), res);
+    }
+
+    private void generateIcon(String icon) throws IOException {
+        File pkg = new File(getWorkDir(), "pkg");
+        pkg.mkdirs();
+        File f = new File(pkg, icon);
+        f.createNewFile();
+    }
+
+    public void testFailsWithoutAnIcon() throws Exception {
+        clearWorkDir();
+        String src = "\n"
+                + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
+                + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
+        + "@MultiViewElement.Registration(displayName = \"Testing\","
+        + "iconBase = \"none-existing.png\","
         + "mimeType = \"text/ble\","
         + "persistenceType = 0,"
         + "preferredID = \"bleple\")"
@@ -271,7 +322,13 @@ public class MultiViewProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "pkg.Test", src);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
-        assertTrue("Compilation should succeed:\n" + os.toString(), res);
+        if (AnnotationProcessorTestUtils.searchClasspathBroken()) {
+            assertTrue("Alas, compilation succeded", res);
+            return;
+        }
+        assertFalse("Compilation should fail:\n" + os.toString(), res);
+        assertTrue("because of missing icon:\n" + os.toString(), os.toString().contains("iconBase"));
+        assertTrue("because of missing icon:\n" + os.toString(), os.toString().contains("Cannot find resource pkg/none-existing.png"));
     }
     
     public void testIsSourceView() {
@@ -369,7 +426,7 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="org.netbeans.core.multiview.TestBundle#FIGARO",
-        iconBase="none",
+        iconBase="empty.png",
         mimeType="text/figaro",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="figaro"
@@ -446,7 +503,7 @@ public class MultiViewProcessorTest extends NbTestCase {
     
     @MultiViewElement.Registration(
         displayName="Contextual",
-        iconBase="none",
+        iconBase="empty.png",
         mimeType="text/context",
         persistenceType=TopComponent.PERSISTENCE_ALWAYS,
         preferredID="context"
@@ -470,7 +527,7 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="Source",
-        iconBase="none",
+        iconBase="empty.png",
         mimeType="text/plaintest",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="source"

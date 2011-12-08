@@ -104,12 +104,25 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 fileBaseName += "-" + binAndMethodNames[1];
             }
             for (String type : mvr.mimeType()) {
-                LayerBuilder.File f = layer(e).file("Editors/" + (type.equals("") ? "" : type + '/') + "MultiView/" + fileBaseName + ".instance");
+                final LayerBuilder builder = layer(e);
+                LayerBuilder.File f = builder.file("Editors/" + (type.equals("") ? "" : type + '/') + "MultiView/" + fileBaseName + ".instance");
                 f.methodvalue("instanceCreate", MultiViewFactory.class.getName(), "createMultiViewDescription");
                 f.stringvalue("instanceClass", ContextAwareDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
                 f.bundlevalue("displayName", mvr.displayName(), mvr, "displayName");
-                f.stringvalue("iconBase", mvr.iconBase());
+                String fullIconPath = LayerBuilder.absolutizeResource(e, mvr.iconBase());
+                try {
+                    builder.validateResource(fullIconPath, e, mvr, "iconBase", true);
+                } catch (LayerGenerationException ex) {
+                    try {
+                        fullIconPath = mvr.iconBase();
+                        builder.validateResource(fullIconPath, e, mvr, "iconBase", true);
+                    } catch (LayerGenerationException snd) {
+                        // throw the first exception to encourage people to use relative paths
+                        throw ex;
+                    }
+                }
+                f.stringvalue("iconBase", fullIconPath);
                 f.stringvalue("preferredID", mvr.preferredID());
                 f.intvalue("persistenceType", mvr.persistenceType());
                 f.position(mvr.position());
