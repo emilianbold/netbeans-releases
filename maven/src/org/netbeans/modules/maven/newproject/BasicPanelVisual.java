@@ -631,7 +631,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (arch != null) {
             return arch;
         }
-        return (Archetype)settings.getProperty(ChooseArchetypePanel.PROP_ARCHETYPE);
+        return (Archetype) settings.getProperty(MavenWizardIterator.PROP_ARCHETYPE);
     }
 
     @Messages("Handle_Download=Downloading Archetype")
