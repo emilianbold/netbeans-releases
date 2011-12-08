@@ -14,8 +14,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %char
 
 %{
-    private StateStack stack = new StateStack();
-
     private LexerInput input;
 
     private boolean canFollowLiteral = true;
@@ -29,20 +27,18 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         } else {
             //initial state
             zzState = zzLexicalState = YYINITIAL;
-            stack.clear();
         }
     }
 
     public LexerState getState() {
-        if (stack.isEmpty() && zzState == YYINITIAL && zzLexicalState == YYINITIAL
+        if (zzState == YYINITIAL && zzLexicalState == YYINITIAL
                 && canFollowLiteral) {
             return null;
         }
-        return new LexerState(stack.createClone(), zzState, zzLexicalState, canFollowLiteral);
+        return new LexerState(zzState, zzLexicalState, canFollowLiteral);
     }
 
     public void setState(LexerState state) {
-        this.stack.copyFrom(state.stack);
         this.zzState = state.zzState;
         this.zzLexicalState = state.zzLexicalState;
         this.canFollowLiteral = state.canFollowLiteral;
@@ -51,7 +47,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     public JsTokenId nextToken() throws java.io.IOException {
         JsTokenId token = yylex();
         if (token != null && !JsTokenId.UNKNOWN.equals(token)
-            && !JsTokenId.WHITESPACE.equals(token)) {
+                && !JsTokenId.WHITESPACE.equals(token)
+                && !JsTokenId.LINE_COMMENT.equals(token)
+                && !JsTokenId.BLOCK_COMMENT.equals(token)) {
             canFollowLiteral = canFollowLiteral(token);
         }
         return token;
@@ -75,7 +73,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     public static final class LexerState  {
-        final StateStack stack;
         /** the current state of the DFA */
         final int zzState;
         /** the current lexical state */
@@ -83,8 +80,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         /** can be the literal used here */
         final boolean canFollowLiteral;
 
-        LexerState (StateStack stack, int zzState, int zzLexicalState, boolean canFollowLiteral) {
-            this.stack = stack;
+        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowLiteral = canFollowLiteral;
@@ -99,9 +95,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 return false;
             }
             final LexerState other = (LexerState) obj;
-            if (this.stack != other.stack && (this.stack == null || !this.stack.equals(other.stack))) {
-                return false;
-            }
             if (this.zzState != other.zzState) {
                 return false;
             }
@@ -116,12 +109,16 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
         @Override
         public int hashCode() {
-            int hash = 7;
-            hash = 71 * hash + (this.stack != null ? this.stack.hashCode() : 0);
-            hash = 71 * hash + this.zzState;
-            hash = 71 * hash + this.zzLexicalState;
-            hash = 71 * hash + (this.canFollowLiteral ? 1 : 0);
+            int hash = 5;
+            hash = 29 * hash + this.zzState;
+            hash = 29 * hash + this.zzLexicalState;
+            hash = 29 * hash + (this.canFollowLiteral ? 1 : 0);
             return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState + ", canFollowLiteral=" + canFollowLiteral + '}';
         }
     }
 
