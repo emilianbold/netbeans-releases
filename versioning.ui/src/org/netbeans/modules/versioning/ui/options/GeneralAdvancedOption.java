@@ -42,21 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.versioning.diff;
+package org.netbeans.modules.versioning.ui.options;
 
-import org.netbeans.editor.SideBarFactory;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-
-/**
- * Hook into editor.
- *
- * @author Maros Sandor
- */
-public class DiffSidebarFactory implements SideBarFactory  {
-
-    public JComponent createSideBar(JTextComponent target) {
-        return DiffSidebarManager.getInstance().createSideBar(target);
+public final class GeneralAdvancedOption extends AdvancedOption {
+    
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_DisplayName"); // NOI18N
     }
+    
+    @Override
+    public String getTooltip() {
+        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_Tooltip"); // NOI18N
+    }
+    
+    @Override
+    public OptionsPanelController create() {
+        return new GeneralOptionsPanelController();
+    }
+    
 }

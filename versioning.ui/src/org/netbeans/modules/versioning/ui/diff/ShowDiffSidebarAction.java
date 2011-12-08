@@ -41,28 +41,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.versioning.ui.diff;
 
-package org.netbeans.modules.versioning.options;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.HelpCtx;
+import org.openide.awt.Mnemonics;
+import org.openide.awt.DynamicMenuContent;
 
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
 
-public final class GeneralAdvancedOption extends AdvancedOption {
-    
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_DisplayName"); // NOI18N
+/**
+ * View/Show Diff Sidebar toggle item in main menu.
+ * 
+ * @author Maros Sandor
+ */
+public class ShowDiffSidebarAction extends SystemAction implements DynamicMenuContent {
+
+    private JCheckBoxMenuItem [] menuItems;
+
+    public JComponent[] getMenuPresenters() {
+        createItems();
+        updateState();
+        return menuItems;
     }
-    
-    @Override
-    public String getTooltip() {
-        return NbBundle.getMessage(GeneralAdvancedOption.class, "AdvancedOption_Tooltip"); // NOI18N
+
+    public JComponent[] synchMenuPresenters(JComponent[] items) {
+        updateState();
+        return items;
     }
-    
-    @Override
-    public OptionsPanelController create() {
-        return new GeneralOptionsPanelController();
+
+    private void updateState() {
+        menuItems[0].setSelected(DiffSidebarManager.getInstance().getPreferences().getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
     }
-    
+
+    private void createItems() {
+        if (menuItems == null) {
+            menuItems = new JCheckBoxMenuItem[1];
+            menuItems[0] = new JCheckBoxMenuItem(this);
+            menuItems[0].setIcon(null);
+            Mnemonics.setLocalizedText(menuItems[0], NbBundle.getMessage(ShowDiffSidebarAction.class, "CTL_ShowDiffSidebar"));
+        }
+    }
+
+    public String getName() {
+        return NbBundle.getMessage(ShowDiffSidebarAction.class, "CTL_ShowDiffSidebar");
+    }
+
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ShowDiffSidebarAction.class);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        Preferences prefs = DiffSidebarManager.getInstance().getPreferences();
+        prefs.putBoolean(DiffSidebarManager.SIDEBAR_ENABLED, !prefs.getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
+    }
 }

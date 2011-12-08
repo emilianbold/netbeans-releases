@@ -3,4 +3,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/versioning/core/Bundle.pr
 OpenIDE-Module-Layer: org/netbeans/modules/versioning/resources/layer.xml
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Provides: org.netbeans.modules.versioning.core
-
+OpenIDE-Module-Recommends: org.netbeans.modules.versioning.ui

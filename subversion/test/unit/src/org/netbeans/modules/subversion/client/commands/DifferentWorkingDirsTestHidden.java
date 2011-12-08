@@ -44,7 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -92,7 +92,7 @@ public class DifferentWorkingDirsTestHidden extends AbstractCommandTestCase {
         File file2_12 = createFile(folder12, "file2_12");
         File tmpFolder = File.createTempFile("testDifferentWorkingDirs", null);
         tmpFolder = new File(tmpFolder.getParentFile(), "tmpFolder");
-        Utils.deleteRecursively(tmpFolder);
+        TestUtilities.deleteRecursively(tmpFolder);
         tmpFolder.mkdirs();
 
         cleanUpRepo(new String[] {tmpFolder.getName()});

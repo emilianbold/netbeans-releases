@@ -41,11 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.diff;
+package org.netbeans.modules.versioning.ui.diff;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
-import org.netbeans.modules.versioning.core.VersioningConfig;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.FileObject;
@@ -59,23 +60,38 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Document;
 import java.io.File;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  * Central place of diff integration into editor and errorstripe.
  * 
  * @author Maros Sandor
  */
-public class DiffSidebarManager implements PreferenceChangeListener {
+public class DiffSidebarManager implements PreferenceChangeListener, PropertyChangeListener {
 
     static final String SIDEBAR_ENABLED = "diff.sidebarEnabled"; // NOI18N
 
     private static DiffSidebarManager instance;
 
+    /**
+     * Temporary top folder for diffsidebar in a single session
+     */
+    private static File tempDir;
+    
+    /**
+     * Request processor for long running tasks.
+     */
+    private static final RequestProcessor blockingRequestProcessor = new RequestProcessor("Diffsidebar long tasks", 1, false, false);
+    static final Logger LOG = Logger.getLogger(DiffSidebarManager.class.getName());
+    
     public static synchronized DiffSidebarManager getInstance() {
         if (instance == null) {
             instance = new DiffSidebarManager();
+            Utils.addPropertyChangeListener(instance);
         }
         return instance;
     }
@@ -88,8 +104,8 @@ public class DiffSidebarManager implements PreferenceChangeListener {
     private final Map<DiffSidebar, Object> sideBars = new WeakHashMap<DiffSidebar, Object>();
 
     private DiffSidebarManager() {
-        sidebarEnabled = VersioningConfig.getDefault().getPreferences().getBoolean(SIDEBAR_ENABLED, true); 
-        VersioningConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        sidebarEnabled = getPreferences().getBoolean(SIDEBAR_ENABLED, true); 
+        getPreferences().addPreferenceChangeListener(this);
     }
 
     public void refreshSidebars(final Set<File> files) {
@@ -124,6 +140,9 @@ public class DiffSidebarManager implements PreferenceChangeListener {
         return false;
     }
 
+    Preferences getPreferences() {
+        return NbPreferences.forModule(DiffSidebarManager.class);
+    }    
     /**
      * Creates a new task needed by a diff sidebar to update its structures (compute diff). 
      * 
@@ -131,7 +150,7 @@ public class DiffSidebarManager implements PreferenceChangeListener {
      * @return RP task
      */
     RequestProcessor.Task createDiffSidebarTask(Runnable runnable) {
-        return Utils.createTask(runnable);
+        return blockingRequestProcessor.create(runnable);
     }
 
     JComponent createSideBar(JTextComponent target) {
@@ -204,9 +223,31 @@ public class DiffSidebarManager implements PreferenceChangeListener {
         return sideBars.keySet().iterator().next();
     }
 
+    synchronized File getMainTempDir () {
+        if (tempDir == null) {
+            File tmpDir = new File(System.getProperty("java.io.tmpdir"));   // NOI18N
+            for (;;) {
+                File dir = new File(tmpDir, "vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
+                if (!dir.exists() && dir.mkdirs()) {
+                    tempDir = FileUtil.normalizeFile(dir);
+                    tempDir.deleteOnExit();
+                    break;
+                }
+            }
+        }
+        return tempDir;
+    }
+
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().equals(SIDEBAR_ENABLED)) {
             setSidebarEnabled(Boolean.valueOf(evt.getNewValue()));
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Utils.EVENT_STATUS_CHANGED)) {
+            refreshSidebars((Set<File>)evt.getNewValue());
         }
     }
 }

@@ -41,66 +41,90 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.diff;
 
-import org.openide.util.actions.SystemAction;
+package org.netbeans.modules.versioning.ui.options;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
-import org.openide.awt.Mnemonics;
-import org.openide.awt.DynamicMenuContent;
-import org.netbeans.modules.versioning.core.VersioningConfig;
+import org.openide.util.Lookup;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.util.prefs.Preferences;
-import org.openide.util.NbBundle;
+final class GeneralOptionsPanelController extends OptionsPanelController {
+    
+    private GeneralOptionsPanel panel;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
+    
+    public GeneralOptionsPanelController() { }
 
-/**
- * View/Show Diff Sidebar toggle item in main menu.
- * 
- * @author Maros Sandor
- */
-public class ShowDiffSidebarAction extends SystemAction implements DynamicMenuContent {
-
-    private JCheckBoxMenuItem [] menuItems;
-
-    public JComponent[] getMenuPresenters() {
-        createItems();
-        updateState();
-        return menuItems;
+    @Override
+    public void update() {
+        getPanel().load();
+        changed = false;
     }
-
-    public JComponent[] synchMenuPresenters(JComponent[] items) {
-        updateState();
-        return items;
+    
+    @Override
+    public void applyChanges() {
+        if (!validateFields()) return;
+        getPanel().store();        
+        changed = false;
     }
-
-    private void updateState() {
-        menuItems[0].setSelected(VersioningConfig.getDefault().getPreferences().getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
+    
+    @Override
+    public void cancel() {
+        // need not do anything special, if no changes have been persisted yet
     }
-
-    private void createItems() {
-        if (menuItems == null) {
-            menuItems = new JCheckBoxMenuItem[1];
-            menuItems[0] = new JCheckBoxMenuItem(this);
-            menuItems[0].setIcon(null);
-            Mnemonics.setLocalizedText(menuItems[0], NbBundle.getMessage(ShowDiffSidebarAction.class, "CTL_ShowDiffSidebar"));
-        }
+    
+    @Override
+    public boolean isValid() {
+        return getPanel().valid();
     }
-
-    public String getName() {
-        return NbBundle.getMessage(ShowDiffSidebarAction.class, "CTL_ShowDiffSidebar");
+    
+    @Override
+    public boolean isChanged() {
+        return changed;
     }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(OptionsPanelController.class);
+    }
+    
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+    
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+    
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }            
 
-    public boolean isEnabled() {
+    private Boolean validateFields() {
+        
         return true;
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowDiffSidebarAction.class);
+    private GeneralOptionsPanel getPanel() {
+        if (panel == null) {
+            panel = new GeneralOptionsPanel(this);
+        }
+        return panel;
     }
-
-    public void actionPerformed(ActionEvent e) {
-        Preferences prefs = VersioningConfig.getDefault().getPreferences();
-        prefs.putBoolean(DiffSidebarManager.SIDEBAR_ENABLED, !prefs.getBoolean(DiffSidebarManager.SIDEBAR_ENABLED, true));
+    
+    void changed() {
+        if (!changed) {
+            changed = true;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
+ 
 }
