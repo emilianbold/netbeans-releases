@@ -43,8 +43,11 @@ package org.netbeans.modules.versioning.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
 /**
@@ -52,7 +55,7 @@ import org.openide.util.LookupListener;
  * @author tomas
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.core.util.VCSSystemProvider.class)
-public class FileProxyBasedVCSProvider extends VCSSystemProvider {
+public class FileProxyBasedVCSProvider extends VCSSystemProvider implements LookupListener {
 
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
@@ -64,8 +67,11 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
      */
     private final Collection<VersioningSystem> versioningSystems = new ArrayList<VersioningSystem>(5);
 
+    private ChangeSupport changeSupport = new ChangeSupport(this);
+    
     public FileProxyBasedVCSProvider() {
         systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.core.spi.VersioningSystem>(org.netbeans.modules.versioning.core.spi.VersioningSystem.class));
+        systemsLookupResult.addLookupListener(this);
     }
     
     private int refreshSerial;
@@ -89,8 +95,18 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider {
     }
 
     @Override
-    public void addLookupListener(LookupListener l) {
-        systemsLookupResult.addLookupListener(l);
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        changeSupport.fireChange();
     }
     
 }

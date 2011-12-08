@@ -43,12 +43,12 @@ package org.netbeans.modules.versioning.core.util;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.util.LookupListener;
 
 /**
  * Warning: VCS internal use only. Not to be implemented by clients.
@@ -61,10 +61,16 @@ import org.openide.util.LookupListener;
 public abstract class VCSSystemProvider {
 
     /**
-     * 
+     * Add a listener to changes in registered versioning systems
      * @param l 
      */
-    public abstract void addLookupListener(LookupListener l);
+    public abstract void addChangeListener(ChangeListener l);
+    
+    /**
+     * Stop listening to changes in registered versioning systems
+     * @param l 
+     */
+    public abstract void removeChangeListener(ChangeListener l);
     
     /**
      * Provides all registered versioning systems 

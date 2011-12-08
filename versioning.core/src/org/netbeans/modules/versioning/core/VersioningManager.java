@@ -64,6 +64,7 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -71,13 +72,14 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.*;
+import org.openide.util.Lookup.Result;
 
 /**
  * Top level versioning manager that mediates communitation between IDE and registered versioning systems.
  * 
  * @author Maros Sandor
  */
-public class VersioningManager implements PropertyChangeListener, LookupListener, PreferenceChangeListener {
+public class VersioningManager implements PropertyChangeListener, ChangeListener, PreferenceChangeListener {
     
     /**
      * @see org.netbeans.modules.versioning.core.util.Utils#EVENT_VERSIONED_ROOTS
@@ -201,14 +203,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         @Override public String getMenuLabel() { throw new IllegalStateException(); }
     };
     
+    
+    private final Result<VCSSystemProvider> providersLookupResult;
+    
     private VersioningManager() {
-//        systemsLookupResult = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
+        providersLookupResult = Lookup.getDefault().lookupResult(VCSSystemProvider.class);
+        Collection<? extends VCSSystemProvider> providers = providersLookupResult.allInstances();
+        for (VCSSystemProvider p : providers) {
+            p.addChangeListener(this);
+        }
         filesystemInterceptor = new FilesystemInterceptor(true);
     }
     
     private void init() {
         try {
-//            systemsLookupResult.addLookupListener(this);
             refreshVersioningSystems();
             filesystemInterceptor.init(this);
             VersioningSupport.getPreferences().addPreferenceChangeListener(this);
@@ -217,19 +225,17 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
     }
 
-    private int refreshSerial;
-    
     /**
      * List of versioning systems changed.
      */
     private void refreshVersioningSystems() {
-        Collection<? extends VCSSystemProvider> providers = Lookup.getDefault().lookupAll(VCSSystemProvider.class);
         synchronized(versioningSystems) {
             // inline unloadVersioningSystems();
             for (VCSSystemProvider.VersioningSystem system : versioningSystems) {
                 system.removePropertyCL(this);
             }
             versioningSystems.clear();
+            Collection<? extends VCSSystemProvider> providers = providersLookupResult.allInstances();
             for (VCSSystemProvider p : providers) {
                 Collection<VCSSystemProvider.VersioningSystem> systems = p.getVersioningSystems();
                 localHistory = null;
@@ -533,10 +539,10 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     }
 
     @Override
-    public void resultChanged(LookupEvent ev) {
+    public void stateChanged(ChangeEvent e) {
         refreshVersioningSystems();
     }
-
+    
     /**
      * Versioning status or other parameter changed. 
      */
