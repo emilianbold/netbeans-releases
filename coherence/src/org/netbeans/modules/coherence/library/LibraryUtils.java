@@ -96,11 +96,11 @@ public class LibraryUtils {
         }
 
         URI coherenceServerURI = CoherenceProperties.getCoherenceJar(serverRoot).toURI();
-        URI coherenceDocDirURI = CoherenceProperties.getCoherenceJavadocDir(serverRoot).toURI();
         Map<String, List<URI>> content = new HashMap<String, List<URI>>();
         content.put("classpath", Collections.<URI>singletonList(coherenceServerURI)); //NOI18N
-        if (coherenceDocDirURI != null) {
-            content.put("javadoc", Collections.<URI>singletonList(coherenceDocDirURI)); //NOI18N
+        File coherenceDocDir = CoherenceProperties.getCoherenceJavadocDir(serverRoot);
+        if (coherenceDocDir != null) {
+            content.put("javadoc", Collections.<URI>singletonList(coherenceDocDir.toURI())); //NOI18N
         }
         try {
             LibraryManager.getDefault().createURILibrary(
