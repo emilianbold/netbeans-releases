@@ -173,9 +173,9 @@ public class ChooseArchetypePanel extends JPanel {
         taDescription = new javax.swing.JTextArea();
 
         labelFilter.setLabelFor(textFilter);
-        org.openide.awt.Mnemonics.setLocalizedText(labelFilter, "&Filter:");
+        org.openide.awt.Mnemonics.setLocalizedText(labelFilter, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.labelFilter.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(showOld, "Show &Older");
+        org.openide.awt.Mnemonics.setLocalizedText(showOld, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.showOld.text")); // NOI18N
         showOld.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showOldActionPerformed(evt);
@@ -183,7 +183,7 @@ public class ChooseArchetypePanel extends JPanel {
         });
 
         labelArchetypes.setLabelFor(listArtifact);
-        org.openide.awt.Mnemonics.setLocalizedText(labelArchetypes, "Known Arche&types:");
+        org.openide.awt.Mnemonics.setLocalizedText(labelArchetypes, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.labelArchetypes.text")); // NOI18N
 
         listArtifact.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listArtifact.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -194,16 +194,16 @@ public class ChooseArchetypePanel extends JPanel {
         jScrollPane2.setViewportView(listArtifact);
 
         labelGroupId.setLabelFor(textGroupId);
-        org.openide.awt.Mnemonics.setLocalizedText(labelGroupId, "&Group ID:");
+        org.openide.awt.Mnemonics.setLocalizedText(labelGroupId, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.labelGroupId.text")); // NOI18N
 
         labelArtifactId.setLabelFor(textArtifactId);
-        org.openide.awt.Mnemonics.setLocalizedText(labelArtifactId, "&Artifact ID:");
+        org.openide.awt.Mnemonics.setLocalizedText(labelArtifactId, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.labelArtifactId.text")); // NOI18N
 
         labelVersion.setLabelFor(textVersion);
-        org.openide.awt.Mnemonics.setLocalizedText(labelVersion, "&Version:");
+        org.openide.awt.Mnemonics.setLocalizedText(labelVersion, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.labelVersion.text")); // NOI18N
 
         labelRepository.setLabelFor(textRepository);
-        org.openide.awt.Mnemonics.setLocalizedText(labelRepository, "&Repository:");
+        org.openide.awt.Mnemonics.setLocalizedText(labelRepository, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.labelRepository.text")); // NOI18N
 
         labelDesc.setLabelFor(taDescription);
         org.openide.awt.Mnemonics.setLocalizedText(labelDesc, org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_Description")); // NOI18N
@@ -213,7 +213,7 @@ public class ChooseArchetypePanel extends JPanel {
         taDescription.setEditable(false);
         taDescription.setLineWrap(true);
         taDescription.setRows(5);
-        taDescription.setText("Searching...");
+        taDescription.setText(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ChooseArchetypePanel.taDescription.text")); // NOI18N
         taDescription.setWrapStyleWord(true);
         jScrollPane1.setViewportView(taDescription);
         taDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseArchetypePanel.class, "ArchetypesPanel.taDescription.accessibledesc")); // NOI18N
