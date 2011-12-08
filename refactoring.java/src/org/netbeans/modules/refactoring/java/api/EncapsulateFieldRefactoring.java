@@ -63,6 +63,8 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
     private Set<Modifier> methodModifiers;
     private Set<Modifier> fieldModifiers;
     private boolean alwaysUseAccessors;
+    private boolean isGeneratePropertyChangeSupport;
+    private boolean isGenerateVetoableSupport;
     
     /**
      * Creates a new instance of EncapsulateFieldRefactoring
@@ -157,4 +159,41 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
     public void setAlwaysUseAccessors(boolean alwaysUseAccessors) {
         this.alwaysUseAccessors = alwaysUseAccessors;
     }
+
+    /**
+     * Should be PropertyChangeSupport generated?
+     * @return true if PropertyChangeSupport should be generated
+     * @since 1.32
+     */
+    public boolean isGeneratePropertyChangeSupport() {
+        return isGeneratePropertyChangeSupport;
+    }
+
+    /**
+     * Should be PropertyChangeSupport generated?
+     * @param isGeneratePropertyChangeSupport @return true if PropertyChangeSupport should be generated
+     * @since 1.32
+     */
+    public void setGeneratePropertyChangeSupport(boolean isGeneratePropertyChangeSupport) {
+        this.isGeneratePropertyChangeSupport = isGeneratePropertyChangeSupport;
+    }
+
+    /**
+     * Should be VetoableChangeSupport generated?
+     * @return @return true if VetoableChangeSupport be generated
+     * @since 1.32
+     */
+    public boolean isGenerateVetoableChangeSupport() {
+        return isGenerateVetoableSupport;
+    }
+
+    /**
+     * Should be VetoableChangeSupport generated?
+     * @param isGenerateVetoableChangeSupport @return true if VetoableChangeSupport should be generated
+     * @since 1.32
+     */
+    public void setGenerateVetoableSupport(boolean isGenerateVetoableChangeSupport) {
+        this.isGenerateVetoableSupport = isGenerateVetoableChangeSupport;
+    }
+    
 }
