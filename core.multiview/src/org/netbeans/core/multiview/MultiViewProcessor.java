@@ -110,19 +110,10 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 f.stringvalue("instanceClass", ContextAwareDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
                 f.bundlevalue("displayName", mvr.displayName(), mvr, "displayName");
-                String fullIconPath = LayerBuilder.absolutizeResource(e, mvr.iconBase());
-                try {
-                    builder.validateResource(fullIconPath, e, mvr, "iconBase", true);
-                } catch (LayerGenerationException ex) {
-                    try {
-                        fullIconPath = mvr.iconBase();
-                        builder.validateResource(fullIconPath, e, mvr, "iconBase", true);
-                    } catch (LayerGenerationException snd) {
-                        // throw the first exception to encourage people to use relative paths
-                        throw ex;
-                    }
+                if (!mvr.iconBase().isEmpty()) {
+                    builder.validateResource(mvr.iconBase(), e, mvr, "iconBase", true);
+                    f.stringvalue("iconBase", mvr.iconBase());
                 }
-                f.stringvalue("iconBase", fullIconPath);
                 f.stringvalue("preferredID", mvr.preferredID());
                 f.intvalue("persistenceType", mvr.persistenceType());
                 f.position(mvr.position());

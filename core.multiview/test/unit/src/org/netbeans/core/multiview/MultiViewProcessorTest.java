@@ -262,7 +262,6 @@ public class MultiViewProcessorTest extends NbTestCase {
                 + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
                 + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
         + "@MultiViewElement.Registration(displayName = \"Testing\","
-        + "iconBase = \"one.png\","
         + "mimeType = \"text/ble\","
         + "persistenceType = 0,"
         + "preferredID = \"bleple\")"
@@ -270,7 +269,6 @@ public class MultiViewProcessorTest extends NbTestCase {
                 + "    return new Test();\n"
                 + "  }\n"
                 + "}\n";
-        generateIcon("one.png");
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "pkg.Test", src);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
@@ -311,7 +309,7 @@ public class MultiViewProcessorTest extends NbTestCase {
                 + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
                 + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
         + "@MultiViewElement.Registration(displayName = \"Testing\","
-        + "iconBase = \"none-existing.png\","
+        + "iconBase = \"pkg/none-existing.png\","
         + "mimeType = \"text/ble\","
         + "persistenceType = 0,"
         + "preferredID = \"bleple\")"
