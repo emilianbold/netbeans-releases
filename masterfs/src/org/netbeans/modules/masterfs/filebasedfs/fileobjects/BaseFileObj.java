@@ -240,6 +240,9 @@ public abstract class BaseFileObj extends FileObject {
                 }
                 FileUtil.copyAttributes(this, result);
             } else {
+                if (isFolder() && ext != null && !ext.isEmpty()) {
+                    name = name + '.' + ext;
+                }
                 result = super.copy(target, name, ext);
             }
         } catch (IOException ioe) {
