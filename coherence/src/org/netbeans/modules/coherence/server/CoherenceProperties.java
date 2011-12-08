@@ -71,6 +71,9 @@ public class CoherenceProperties {
     /** Directory inside Coherence platform where are binaries placed. */
     public static final String PLATFORM_BIN_DIR = "bin"; //NOI18N
 
+    /** Directory inside Coherence platform where is documentation placed. */
+    public static final String PLATFORM_DOC_DIR = "doc"; //NOI18N
+
     /** File name of base Coherence JAR file. */
     public static final String COHERENCE_JAR_NAME = "coherence.jar"; //NOI18N
 
@@ -152,7 +155,7 @@ public class CoherenceProperties {
     }
 
     /**
-     * Gets coherence.jar file inside given dir root.
+     * Gets coherence.jar file inside given server root.
      *
      * @param serverRoot root directory of Coherence server
      * @return coherence.jar file
@@ -160,6 +163,18 @@ public class CoherenceProperties {
     public static File getCoherenceJar(File serverRoot) {
         return new File(serverRoot.getAbsolutePath() + File.separator
                 + PLATFORM_LIB_DIR + File.separator + COHERENCE_JAR_NAME);
+    }
+
+    /**
+     * Gets 'doc' directory inside given server root.
+     *
+     * @param serverRoot root directory of Coherence server
+     * @return doc directory if exists, {@code null} otherwise
+     */
+    public static File getCoherenceJavadocDir(File serverRoot) {
+        File docDir = new File(serverRoot.getAbsolutePath() + File.separator
+                + PLATFORM_DOC_DIR + File.separator + "api"); //NOI18I
+        return (docDir.exists()) ? docDir : null;
     }
 
     private static String obtainVersionFromProductFile(File productFile) {
