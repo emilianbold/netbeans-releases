@@ -63,6 +63,7 @@ import org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyze
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
+import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
@@ -242,10 +243,15 @@ public class InjectionPointParameterAnalyzer
     {
         AnnotationMirror annotation = AnnotationUtil.getAnnotationMirror( 
                 var , AnnotationUtil.NAMED, model.getCompilationController());
-        if ( annotation!= null && annotation.getElementValues().size() == 0 ){
-            result.addError(var, element,  model, 
+        if ( annotation!= null){
+            result.addNotification( Severity.WARNING , var, element , model,  
+                        NbBundle.getMessage(InjectionPointAnalyzer.class, 
+                                "WARN_NamedInjectionPoint"));                       // NOI18N
+            if ( annotation.getElementValues().size() == 0 ){
+                result.addError(var, element,  model, 
                         NbBundle.getMessage( InjectionPointParameterAnalyzer.class, 
                                 "ERR_ParameterNamedInjectionPoint"));        // NOI18N
+            }
         }
     }
 
