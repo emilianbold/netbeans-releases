@@ -430,7 +430,9 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
 <LCOMMENTEND> {
   {LineTerminator}?              {
                                      yybegin(YYINITIAL);
-                                     return JsTokenId.EOL;
+                                     if (tokenLength > 0) {
+                                         return JsTokenId.EOL;
+                                     }
                                  }
 }
 
