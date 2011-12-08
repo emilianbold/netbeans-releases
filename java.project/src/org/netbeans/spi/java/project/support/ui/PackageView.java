@@ -168,7 +168,9 @@ public class PackageView {
     }
 
     private static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group, ProgressHandle progress, int start, int end) {
-        
+        if (!fo.isValid() || fo.isVirtual()) {
+            return;
+        }
         if (!fo.isFolder()) {
             throw new IllegalArgumentException("Package view only accepts folders, given: " + FileUtil.getFileDisplayName(fo)); // NOI18N
         }
@@ -178,11 +180,6 @@ public class PackageView {
             assert path != null : fo + " in " + children.getRoot();
             progress.progress(path.replace('/', '.'), start);
         }
-        
-        if (!fo.isValid()) {
-            return;
-        }
-               
         if ( !VisibilityQuery.getDefault().isVisible( fo ) ) {
             return; // Don't show hidden packages
         }

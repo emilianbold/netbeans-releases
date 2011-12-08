@@ -669,7 +669,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     }
     
     public static void cancelRunningTask() {
-        if (runningTask != null) {
+        if (runningTask != null && runOnCancel != null) {
             runningTask = null;
             for (Runnable run : runOnCancel) {
                 run.run();

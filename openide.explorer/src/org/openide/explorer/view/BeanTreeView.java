@@ -51,6 +51,8 @@ import java.awt.*;
 import java.beans.*;
 import javax.swing.*;
 import javax.swing.BorderFactory;
+import javax.swing.plaf.TreeUI;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.*;
 
 
@@ -164,7 +166,16 @@ public class BeanTreeView extends TreeView {
     */
     private void showPathWithoutExpansion(TreePath path) {
         Rectangle rect = tree.getPathBounds(path);
-
+        if (rect != null) { //PENDING
+            TreeUI tmp = tree.getUI();
+            int correction = 0;
+            if (tmp instanceof BasicTreeUI) {
+                correction = ((BasicTreeUI) tmp).getLeftChildIndent();
+                correction += ((BasicTreeUI) tmp).getRightChildIndent();
+            }
+            rect.x = Math.max(0, rect.x - correction);
+            tree.scrollRectToVisible(rect);
+        }
         if (rect != null && rect.y >= 0) { //#197514 - do not scroll to negative y values
             tree.scrollRectToVisible(rect);
         }

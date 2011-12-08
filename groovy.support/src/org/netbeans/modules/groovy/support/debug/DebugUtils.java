@@ -73,8 +73,29 @@ public class DebugUtils {
     }
 
     public static String getClassFilter(String url) {
+        String relativePath = getRelativePath(url);
+        if (relativePath.endsWith(".groovy")) { // NOI18N
+            relativePath = relativePath.substring(0, relativePath.length() - 7);
+        }
+        return relativePath.replace('/', '.') + "*";
+    }
+
+    public static String getJspName(String url) {
+        FileObject fo = getFileObjectFromUrl(url);
+        if (fo != null) {
+            return fo.getNameExt();
+        }
+        return (url == null) ? null : url.toString();
+    }
+    
+    public static String getJspPath(String url) {
+        return getRelativePath(url);
+    }
+
+    private static String getRelativePath(String url) {
         FileObject fo = getFileObjectFromUrl(url);
         String relativePath = url;
+        
         if (fo != null) {
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             if (cp == null) {
@@ -87,32 +108,7 @@ public class DebugUtils {
             }
             relativePath = FileUtil.getRelativePath(root, fo);
         }
-        if (relativePath.endsWith(".groovy")) { // NOI18N
-            relativePath = relativePath.substring(0, relativePath.length() - 7);
-        }
-        return relativePath.replace('/', '.') + "*";
-    }
-
-    public static String getJspName(String url) {
-
-        FileObject fo = getFileObjectFromUrl(url);
-        if (fo != null) {
-            return fo.getNameExt();
-        }
-        return (url == null) ? null : url.toString();
-    }
-    
-    public static String getJspPath(String url) {
-       
-        FileObject fo = getFileObjectFromUrl(url);
-        String relativePath = url;
-        if (fo != null) {
-            FileObject root = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
-            relativePath = FileUtil.getRelativePath(root, fo);
-        }
         
         return relativePath;
-
     }
-    
 }
