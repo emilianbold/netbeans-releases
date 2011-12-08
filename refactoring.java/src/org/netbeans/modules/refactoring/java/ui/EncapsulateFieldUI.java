@@ -115,6 +115,8 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         refactoring.setMethodModifiers(panel.getMethodModifiers());
         refactoring.setFieldModifiers(panel.getFieldModifiers());
         refactoring.setAlwaysUseAccessors(panel.isCheckAccess());
+        refactoring.setGeneratePropertyChangeSupport(panel.isBound());
+        refactoring.setGenerateVetoableSupport(panel.isVetoable());
         refactoring.getContext().add(panel.getInsertPoint());
         refactoring.getContext().add(panel.getSortBy());
         refactoring.getContext().add(panel.getJavadoc());

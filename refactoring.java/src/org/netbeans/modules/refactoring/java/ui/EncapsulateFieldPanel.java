@@ -114,6 +114,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
 
     private static final String ENCAPSULATE_FIELDS_JAVADOC_PREF = "ENCAPSULATE_FIELDS_JAVADOC";
     private static final String ENCAPSULATE_FIELDS_SORT_PREF = "ENCAPSULATE_FIELDS_SORT";
+    private static final String PROPERTY_SUPPORT_PREF = "PROPERTY_SUPPORT_PREF";
+    private static final String VETOABLE_SUPPORT_PREF = "VETOABLE_SUPPORT_PREF";
     
     private static final String modifierNames[] = {
         "public", // NOI18N
@@ -177,6 +179,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
 
         initEnumCombo(jComboSort, SortBy.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_SORT_PREF, SortBy.PAIRS.ordinal())]);
         initEnumCombo(jComboJavadoc, Javadoc.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_JAVADOC_PREF, Javadoc.DEFAULT.ordinal())]);
+        
+        boundCheckBox.setSelected(RefactoringModule.getOption(PROPERTY_SUPPORT_PREF, false));
+        vetoableCheckBox.setSelected(RefactoringModule.getOption(VETOABLE_SUPPORT_PREF, false));
     }
 
     @Override
@@ -350,6 +355,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jCheckAccess = new javax.swing.JCheckBox();
         jScrollField = new javax.swing.JScrollPane();
         jTableFields = new javax.swing.JTable();
+        boundCheckBox = new javax.swing.JCheckBox();
+        vetoableCheckBox = new javax.swing.JCheckBox();
+
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
         jLblTitle.setLabelFor(jTableFields);
         org.openide.awt.Mnemonics.setLocalizedText(jLblTitle, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_FieldList")); // NOI18N
@@ -411,6 +420,16 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jScrollField.setViewportView(jTableFields);
         jTableFields.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_jTableFields")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(boundCheckBox, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.boundCheckBox.text")); // NOI18N
+        boundCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boundCheckBoxActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(vetoableCheckBox, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.vetoableCheckBox.text")); // NOI18N
+        vetoableCheckBox.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -418,34 +437,54 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckAccess)
-                    .addComponent(jLblTitle)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLblAccessVis)
-                            .addComponent(jLblFieldVis)
-                            .addComponent(jLblInsertPoint)
-                            .addComponent(jLblSort)
-                            .addComponent(jLblJavadoc))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jComboInsertPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollField, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
+                        .addComponent(jScrollField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jButtonSelectSetters)
                             .addComponent(jButtonSelectNone)
                             .addComponent(jButtonSelectAll)
-                            .addComponent(jButtonSelectGetters))))
+                            .addComponent(jButtonSelectGetters)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLblAccessVis)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLblFieldVis)
+                            .addComponent(jLblInsertPoint)
+                            .addComponent(jLblSort)
+                            .addComponent(jLblJavadoc)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(29, 29, 29)
+                                        .addComponent(vetoableCheckBox))
+                                    .addComponent(boundCheckBox)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(136, 136, 136)
+                                .addComponent(jComboField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(136, 136, 136)
+                                .addComponent(jComboJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(136, 136, 136)
+                                .addComponent(jComboSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(136, 136, 136)
+                                .addComponent(jComboInsertPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(jCheckAccess))
+                            .addComponent(jLblTitle))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jButtonSelectAll, jButtonSelectGetters, jButtonSelectNone, jButtonSelectSetters});
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jComboAccess, jComboField, jComboInsertPoint, jComboJavadoc, jComboSort});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -485,6 +524,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                     .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckAccess)
+                .addGap(11, 11, 11)
+                .addComponent(boundCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(vetoableCheckBox)
                 .addContainerGap())
         );
 
@@ -516,8 +559,13 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     makeSelection(true, 3);
 }//GEN-LAST:event_jButtonSelectSettersActionPerformed
 
+    private void boundCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boundCheckBoxActionPerformed
+        vetoableCheckBox.setEnabled(boundCheckBox.isSelected());        // TODO add your handling code here:
+    }//GEN-LAST:event_boundCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox boundCheckBox;
     private javax.swing.JButton jButtonSelectAll;
     private javax.swing.JButton jButtonSelectGetters;
     private javax.swing.JButton jButtonSelectNone;
@@ -536,6 +584,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JLabel jLblTitle;
     private javax.swing.JScrollPane jScrollField;
     private javax.swing.JTable jTableFields;
+    private javax.swing.JCheckBox vetoableCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String key) {
@@ -653,6 +702,16 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     public boolean isCheckAccess() {
         ALWAYS_USE_ACCESSORS = jCheckAccess.isSelected();
         return ALWAYS_USE_ACCESSORS;
+    }
+    
+    public boolean isBound() {
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_SORT_PREF, boundCheckBox.isSelected());
+        return boundCheckBox.isSelected();
+    }
+    
+    public boolean isVetoable() {
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_SORT_PREF, vetoableCheckBox.isSelected());
+        return vetoableCheckBox.isSelected();
     }
     
     public Set<Modifier> getFieldModifiers() {
