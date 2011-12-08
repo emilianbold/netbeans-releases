@@ -88,4 +88,10 @@ public class StartServerAction extends NodeAction {
         }
         return false;
     }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }

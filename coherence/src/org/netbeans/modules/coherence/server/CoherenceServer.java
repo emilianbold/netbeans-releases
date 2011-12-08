@@ -286,7 +286,7 @@ public class CoherenceServer {
         }
     }
 
-    private class CoherenceDefaultInputProcessor implements InputProcessor {
+    private static class CoherenceDefaultInputProcessor implements InputProcessor {
 
         private InputProcessor defaultProcessor;
 
