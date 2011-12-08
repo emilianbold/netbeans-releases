@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -144,7 +145,8 @@ public final class ParserThread implements Runnable {
                         if (stw != null) {
                             long parseTime;
                             if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
-                                parseTime = stw.stopAndReport("parsing " + file.getBuffer().getUrl()); // NOI18N
+                                String standalone = CsmStandaloneFileProvider.getDefault().isStandalone(file) ? "STANDALONE " : ""; // NOI18N
+                                parseTime = stw.stopAndReport("parsing " + standalone + file.getBuffer().getUrl()); // NOI18N
                             } else {
                                 parseTime = stw.stop();
                             }

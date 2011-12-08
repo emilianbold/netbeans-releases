@@ -221,12 +221,6 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
 
-            if (font != null) {
-                setFont(font);
-            }
-            if (foreColor != null) {
-                setForeground(foreColor);
-            }
             if (backColor != null) {
                 setBackground(backColor);
             }
@@ -244,6 +238,12 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             expButton.setContentAreaFilled(false);
             add(expButton);
             JLabel l = new JLabel(toolTipText);
+            if (font != null) {
+                l.setFont(font);
+            }
+            if (foreColor != null) {
+                l.setForeground(foreColor);
+            }
             add(l);
         }
 
