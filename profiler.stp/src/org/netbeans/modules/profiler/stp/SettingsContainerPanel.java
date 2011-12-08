@@ -82,7 +82,7 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
     "SettingsContainerPanel_BasicSettingsString=Basic settings",
     "SettingsContainerPanel_AdvancedSettingsString=Advanced settings",
     "SettingsContainerPanel_ReadOnlySettingsMsg=<b>Advanced settings of default configurations\nare read-only.</b>\n\nTo customize advanced settings, create a new custom\nconfiguration or a duplicate of this configuration.\n",
-    "SettingsContainerPanel_OverheadLabelText=Overhead\\:"
+    "SettingsContainerPanel_OverheadLabelText=Overhead:"
 })
 public class SettingsContainerPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------

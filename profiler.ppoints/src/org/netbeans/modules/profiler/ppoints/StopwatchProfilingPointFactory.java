@@ -63,7 +63,7 @@ import org.openide.util.Lookup;
 @NbBundle.Messages({
     "StopwatchProfilingPointFactory_PpType=Stopwatch",
     "StopwatchProfilingPointFactory_PpDescr=You may use this profiling point to obtain a timestamp instead of calling System.currentTimeMillis(). You can also measure the time between start and end locations to obtain the execution time of a method fragment.",
-    "StopwatchProfilingPointFactory_PpDefaultName={0} at {1}\\:{2}"
+    "StopwatchProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
 })
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {

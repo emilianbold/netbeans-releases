@@ -62,8 +62,8 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "FreeFormProjectTypeProfiler_SelectTargetItemString=<select target>",
-    "FreeFormProjectTypeProfiler_SelectProjectTaskLabelString=Select task for Profile Project action\\:",
-    "FreeFormProjectTypeProfiler_SelectFileTaskLabelString=Select task for Profile File action\\:",
+    "FreeFormProjectTypeProfiler_SelectProjectTaskLabelString=Select task for Profile Project action:",
+    "FreeFormProjectTypeProfiler_SelectFileTaskLabelString=Select task for Profile File action:",
     "FreeFormProjectTypeProfiler_CreateNewTargetMsg=Please note that you have to create a <b>new</b> target for profiling, similar to the \"run\" target.<br>Click Help to get information about how to write the profiling targets.",
     "FreeFormProjectTypeProfiler_TargetBoxAccessName=List of targets defined in project build script.",
     "FreeFormProjectTypeProfiler_TargetBoxAccessDescr=Select target that will be used for profiling."

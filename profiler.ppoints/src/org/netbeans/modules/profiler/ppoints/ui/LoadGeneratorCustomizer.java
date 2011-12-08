@@ -90,11 +90,11 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "LoadGeneratorCustomizer_NameLabelText=&Name\\:",
+    "LoadGeneratorCustomizer_NameLabelText=&Name:",
     "LoadGeneratorCustomizer_SettingsLabelText=Settings",
-    "LoadGeneratorCustomizer_ScriptLabelText=&Script\\:",
+    "LoadGeneratorCustomizer_ScriptLabelText=&Script:",
     "LoadGeneratorCustomizer_BrowseButtonText=Br&owse...",
-    "LoadGeneratorCustomizer_StopLabelText=Stop\\:",
+    "LoadGeneratorCustomizer_StopLabelText=Stop:",
     "LoadGeneratorCustomizer_DefineRadioText=&Define",
     "LoadGeneratorCustomizer_StopRadioText=W&hen profiling stops",
     "LoadGeneratorCustomizer_LocationBeginLabelText=Location (begin)",

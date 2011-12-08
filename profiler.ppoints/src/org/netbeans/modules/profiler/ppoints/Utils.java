@@ -105,10 +105,10 @@ import org.openide.util.RequestProcessor;
 //    # ------------------------------------------------------------------------------
 //    # Formatting patterns are described in Java API - java.text.SimpleDateFormat
 //    # ------------------------------------------------------------------------------
-    "Utils_FullDateFormat=HH\\:mm\\:ss, d MMM yyyy",
-    "Utils_FullDateFormatHiRes=HH\\:mm\\:ss.SSS, d MMM yyyy",
-    "Utils_TodayDateFormat=HH\\:mm\\:ss",
-    "Utils_TodayDateFormatHiRes=HH\\:mm\\:ss.SSS",
+    "Utils_FullDateFormat=HH:mm:ss, d MMM yyyy",
+    "Utils_FullDateFormatHiRes=HH:mm:ss.SSS, d MMM yyyy",
+    "Utils_TodayDateFormat=HH:mm:ss",
+    "Utils_TodayDateFormatHiRes=HH:mm:ss.SSS",
     "Utils_DayDateFormat=d MMM yyyy",
     "Utils_CannotOpenSourceMsg=Cannot show profiling point in source.\nCheck profiling point location.",
     "Utils_InvalidPPLocationMsg=<html><b>Invalid location of {0}.</b><br><br>Location of the profiling point does not seem to be valid.<br>Make sure it points inside method definition, otherwise<br>the profiling point will not be hit during profiling.</html>"

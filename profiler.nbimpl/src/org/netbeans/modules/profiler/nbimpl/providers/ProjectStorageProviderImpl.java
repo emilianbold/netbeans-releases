@@ -108,7 +108,7 @@ public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
         }
     }
 
-    @NbBundle.Messages("ProjectStorageProviderImpl_ErrorSavingAttachSettingsMessage=Error encountered while saving attach settings\\: {0}")
+    @NbBundle.Messages("ProjectStorageProviderImpl_ErrorSavingAttachSettingsMessage=Error encountered while saving attach settings: {0}")
     @Override
     public void saveAttachSettings(Provider project, AttachSettings settings) {
         FileLock lock = null;

@@ -76,7 +76,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "TakeSnapshotCustomizer_NameLabelText=&Name\\:",
+    "TakeSnapshotCustomizer_NameLabelText=&Name:",
     "TakeSnapshotCustomizer_SettingsLabelText=Settings",
     "TakeSnapshotCustomizer_LocationLabelText=Location"
 })

@@ -77,12 +77,12 @@ import javax.swing.event.DocumentListener;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "SnapshotCustomizer_TakeLabelText=Take\\:",
+    "SnapshotCustomizer_TakeLabelText=Take:",
     "SnapshotCustomizer_ProfilingDataRadioText=Profiling &data snapshot",
     "SnapshotCustomizer_HeapDumpRadioText=He&ap dump",
-    "SnapshotCustomizer_SaveLabelText=Save\\:",
+    "SnapshotCustomizer_SaveLabelText=Save:",
     "SnapshotCustomizer_ToProjectRadioText=To &project",
-    "SnapshotCustomizer_ToDirectoryRadioText=To direc&tory\\:",
+    "SnapshotCustomizer_ToDirectoryRadioText=To direc&tory:",
     "SnapshotCustomizer_BrowseButtonText=Brow&se...",
     "SnapshotCustomizer_ResetResultsCheckboxText=&Reset results after taking snapshot",
     "SnapshotCustomizer_SelectSnapshotDialogCaption=Select Snapshot Directory",

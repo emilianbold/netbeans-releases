@@ -81,10 +81,10 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
     "MonitorSettingsAdvancedPanel_ChooseWorkDirDialogCaption=Choose Working Directory",
     "MonitorSettingsAdvancedPanel_GlobalSettingsCaption=Global Settings",
     "MonitorSettingsAdvancedPanel_OverrideSettingsCheckboxText=&Override global settings",
-    "MonitorSettingsAdvancedPanel_WorkDirLabelText=&Working directory\\:",
+    "MonitorSettingsAdvancedPanel_WorkDirLabelText=&Working directory:",
     "MonitorSettingsAdvancedPanel_ChooseWorkDirLinkText=Choose...",
-    "MonitorSettingsAdvancedPanel_JavaPlatformLabelText=&Java platform\\:",
-    "MonitorSettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments\\:"
+    "MonitorSettingsAdvancedPanel_JavaPlatformLabelText=&Java platform:",
+    "MonitorSettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments:"
 })
 public class MonitorSettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------

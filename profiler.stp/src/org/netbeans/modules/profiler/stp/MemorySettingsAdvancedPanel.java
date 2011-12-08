@@ -85,7 +85,7 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
     "MemorySettingsAdvancedPanel_DoNotOverrideString=<Do not override>",
     "MemorySettingsAdvancedPanel_ChooseWorkDirDialogCaption=Choose Working Directory",
     "MemorySettingsAdvancedPanel_SettingsCaption=Settings",
-    "MemorySettingsAdvancedPanel_RecordTracesLabelText=Record stack trace for allocations\\:",
+    "MemorySettingsAdvancedPanel_RecordTracesLabelText=Record stack trace for allocations:",
     "MemorySettingsAdvancedPanel_FullStackRadioText=&Full stack depth",
     "MemorySettingsAdvancedPanel_LimitStackRadioText=&Limit stack to",
 //# Used as Limit stack to [JSpinner] frames
@@ -96,10 +96,10 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
     "MemorySettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states",
     "MemorySettingsAdvancedPanel_GlobalSettingsCaption=Global Settings",
     "MemorySettingsAdvancedPanel_OverrideSettingsCheckboxText=&Override global settings",
-    "MemorySettingsAdvancedPanel_WorkDirLabelText=&Working directory\\:",
+    "MemorySettingsAdvancedPanel_WorkDirLabelText=&Working directory:",
     "MemorySettingsAdvancedPanel_ChooseWorkDirLinkText=Choose...",
-    "MemorySettingsAdvancedPanel_JavaPlatformLabelText=&Java platform\\:",
-    "MemorySettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments\\:"
+    "MemorySettingsAdvancedPanel_JavaPlatformLabelText=&Java platform:",
+    "MemorySettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments:"
 })
 public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------

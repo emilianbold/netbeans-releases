@@ -91,26 +91,26 @@ import org.openide.util.Lookup;
  */
 @NbBundle.Messages({
     "TimedTakeSnapshotProfilingPoint_NoDataAvailableMsg=no data available",
-    "TimedTakeSnapshotProfilingPoint_NoDataRemoteMsg=no data available\\: not supported for remote profiling",
-    "TimedTakeSnapshotProfilingPoint_NoDataJdkMsg=no data available\\: JDK 1.6, 1.7 or 1.5.0_12 is required",
+    "TimedTakeSnapshotProfilingPoint_NoDataRemoteMsg=no data available: not supported for remote profiling",
+    "TimedTakeSnapshotProfilingPoint_NoDataJdkMsg=no data available: JDK 1.6, 1.7 or 1.5.0_12 is required",
     "TimedTakeSnapshotProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
     "TimedTakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
     "TimedTakeSnapshotProfilingPoint_NoResultsString=No results available",
     "TimedTakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
     "TimedTakeSnapshotProfilingPoint_NoHitsString=no hits",
-    "TimedTakeSnapshotProfilingPoint_HeaderTypeString=<b>Type\\:</b> {0}",
-    "TimedTakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled\\:</b> {0}",
-    "TimedTakeSnapshotProfilingPoint_HeaderProjectString=<b>Project\\:</b> {0}",
-    "TimedTakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type\\:</b> profiling data",
-    "TimedTakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type\\:</b> heap dump",
-    "TimedTakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to\\:</b> project",
-    "TimedTakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to\\:</b> {0}",
-    "TimedTakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results\\:</b> {0}",
-    "TimedTakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits\\:</b> {0}",
+    "TimedTakeSnapshotProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
+    "TimedTakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
+    "TimedTakeSnapshotProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
+    "TimedTakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type:</b> profiling data",
+    "TimedTakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type:</b> heap dump",
+    "TimedTakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to:</b> project",
+    "TimedTakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to:</b> {0}",
+    "TimedTakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results:</b> {0}",
+    "TimedTakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
     "TimedTakeSnapshotProfilingPoint_OpenSnapshotString=open snapshot",
     "TimedTakeSnapshotProfilingPoint_HitString=<b>{0}.</b> hit at <b>{1}</b>, {2}",
     "TimedTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg=Saved snapshot is no longer available.",
-    "TimedTakeSnapshotProfilingPoint_DataString=Data\\:"
+    "TimedTakeSnapshotProfilingPoint_DataString=Data:"
 })
 public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingPoint implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

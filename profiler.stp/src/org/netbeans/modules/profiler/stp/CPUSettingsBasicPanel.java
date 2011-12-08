@@ -108,14 +108,14 @@ import org.openide.util.RequestProcessor;
     "CPUSettingsBasicPanel_SampleAppRadioText=&Sample application",
     "CPUSettingsBasicPanel_ProfileAppRadioText=&Profile application",
     "CPUSettingsBasicPanel_StopwatchRadioText=Stopwatch",
-    "CPUSettingsBasicPanel_FilterLabelText=&Filter\\:",
+    "CPUSettingsBasicPanel_FilterLabelText=&Filter:",
     "CPUSettingsBasicPanel_ShowFilterString=Show filter value",
     "CPUSettingsBasicPanel_EditFilterString=Edit filter value",
     "CPUSettingsBasicPanel_EditFilterSetString=Edit filter sets",
     "CPUSettingsBasicPanel_UsePpsCheckboxText=&Use defined Profiling Points",
     "CPUSettingsBasicPanel_ShowPpsString=Show active Profiling Points",
     "CPUSettingsBasicPanel_EditGlobalFilterString=Edit G&lobal Filters...",
-    "CPUSettingsBasicPanel_ShowFilterCaption=Filter Value\\: {0}"
+    "CPUSettingsBasicPanel_ShowFilterCaption=Filter Value: {0}"
 })
 public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements ActionListener, PopupMenuListener, HelpCtx.Provider {
 

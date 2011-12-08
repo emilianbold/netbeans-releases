@@ -80,13 +80,13 @@ import org.openide.util.Lookup;
     "ResetResultsProfilingPoint_NoResultsString=No results available",
     "ResetResultsProfilingPoint_ReportAccessDescr=Report of {0}",
     "ResetResultsProfilingPoint_NoHitsString=no hits",
-    "ResetResultsProfilingPoint_HeaderTypeString=<b>Type\\:</b> {0}",
-    "ResetResultsProfilingPoint_HeaderEnabledString=<b>Enabled\\:</b> {0}",
-    "ResetResultsProfilingPoint_HeaderProjectString=<b>Project\\:</b> {0}",
-    "ResetResultsProfilingPoint_HeaderLocationString=<b>Location\\:</b> <a href='#'>{0}, line {1}</a>",
-    "ResetResultsProfilingPoint_HeaderHitsString=<b>Hits\\:</b> {0}",
+    "ResetResultsProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
+    "ResetResultsProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
+    "ResetResultsProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
+    "ResetResultsProfilingPoint_HeaderLocationString=<b>Location:</b> <a href='#'>{0}, line {1}</a>",
+    "ResetResultsProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
     "ResetResultsProfilingPoint_HitSuccessString=<b>{0}.</b> hit at <b>{1}</b>",
-    "ResetResultsProfilingPoint_DataString=Data\\:"
+    "ResetResultsProfilingPoint_DataString=Data:"
 })
 public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

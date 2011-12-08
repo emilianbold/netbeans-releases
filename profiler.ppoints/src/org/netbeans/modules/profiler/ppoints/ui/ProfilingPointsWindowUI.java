@@ -108,7 +108,7 @@ import org.openide.util.Lookup;
  */
 @NbBundle.Messages({
     "ProfilingPointsWindowUI_AllProjectsString=All Projects",
-    "ProfilingPointsWindowUI_ProjectLabelText=Pr&oject\\:",
+    "ProfilingPointsWindowUI_ProjectLabelText=Pr&oject:",
     "ProfilingPointsWindowUI_InclSubprojCheckboxText=in&clude open subprojects",
     "ProfilingPointsWindowUI_AddButtonToolTip=Add Profiling Point",
     "ProfilingPointsWindowUI_RemoveButtonToolTip=Delete Profiling Point(s)",

@@ -95,9 +95,9 @@ import org.openide.DialogDisplayer;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "J2EEProfilerSPI_FailedDeterminePlatformMsg=Failed to determine version of Java platform\\: {0}",
-    "J2EEProfilerSPI_DirectAttachMsg=\nThe server will be started for Direct Attach with these settings\\:   \n\n    Java Platform: {0}\n    Agent port: {1}\n\nClick \"OK\" to start the server.",
-    "J2EEProfilerSPI_FailedLoadSettingsMsg=Failed to load attach settings for main project\\: {0}",
+    "J2EEProfilerSPI_FailedDeterminePlatformMsg=Failed to determine version of Java platform: {0}",
+    "J2EEProfilerSPI_DirectAttachMsg=\nThe server will be started for Direct Attach with these settings:   \n\n    Java Platform: {0}\n    Agent port: {1}\n\nClick \"OK\" to start the server.",
+    "J2EEProfilerSPI_FailedLoadSettingsMsg=Failed to load attach settings for main project: {0}",
     "J2EEProfilerSPI_StoppingServerMsg=Stopping profiled server",
     "J2EEProfilerSPI_StoppedServerMsg=Profiled server stopped",
     "J2EEProfilerSPI_StoppingServerFailedMsg=Stopping profiled server failed"

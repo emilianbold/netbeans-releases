@@ -75,7 +75,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "TriggeredTakeSnapshotCustomizer_NameLabelText=&Name\\:",
+    "TriggeredTakeSnapshotCustomizer_NameLabelText=&Name:",
     "TriggeredTakeSnapshotCustomizer_SettingsLabelText=Settings",
     "TriggeredTakeSnapshotCustomizer_TriggerLabelText=Trigger"
 })

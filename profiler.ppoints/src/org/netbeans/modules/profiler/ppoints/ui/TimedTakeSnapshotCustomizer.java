@@ -72,7 +72,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "TimedTakeSnapshotCustomizer_NameLabelText=&Name\\:",
+    "TimedTakeSnapshotCustomizer_NameLabelText=&Name:",
     "TimedTakeSnapshotCustomizer_SettingsLabelText=Settings",
     "TimedTakeSnapshotCustomizer_TimeLabelText=Time"
 })

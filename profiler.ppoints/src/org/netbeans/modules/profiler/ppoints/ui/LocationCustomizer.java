@@ -88,13 +88,13 @@ import javax.swing.filechooser.FileFilter;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "LocationCustomizer_FileLabelText=F&ile\\:",
+    "LocationCustomizer_FileLabelText=F&ile:",
     "LocationCustomizer_BrowseButtonText=Bro&wse...",
     "LocationCustomizer_CurrentLineButtonText=&Current\nLine",
-    "LocationCustomizer_LineLabelText=&Line\\:",
+    "LocationCustomizer_LineLabelText=&Line:",
     "LocationCustomizer_BeginRadioText=Be&gin",
     "LocationCustomizer_EndRadioText=&End",
-    "LocationCustomizer_OffsetRadioText=&Offset\\:",
+    "LocationCustomizer_OffsetRadioText=&Offset:",
     "LocationCustomizer_ChooseFileDialogCaption=Choose Java Source File",
     "LocationCustomizer_FileDialogFilterName=Java Sources (*.java)"
 })

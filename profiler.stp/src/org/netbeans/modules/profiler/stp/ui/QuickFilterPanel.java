@@ -65,16 +65,16 @@ import javax.swing.event.DocumentListener;
  * @author  Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "QuickFilterPanel_FilterTypeLabelText=Filter Type\\:",
+    "QuickFilterPanel_FilterTypeLabelText=Filter Type:",
     "QuickFilterPanel_FilterTypeExclusiveRadioText=&Exclusive",
     "QuickFilterPanel_FilterTypeInclusiveRadioText=&Inclusive",
-    "QuickFilterPanel_FilterValueLabelText=&Filter Value\\:",
+    "QuickFilterPanel_FilterValueLabelText=&Filter Value:",
     "QuickFilterPanel_OkButtonText=OK",
     "QuickFilterPanel_CancelButtonText=Cancel",
     "QuickFilterPanel_EmptyFilterMsg=Empty instrumentation filter",
     "QuickFilterPanel_InvalidFilterMsg=Not a valid profiling instrumentation filter",
 //# HTML-formatted
-    "QuickFilterPanel_HintMsg=<strong>Example\\:</strong> <code>java.*</code> or <code>javax.swing.</code> or <code>javax.xml.parsers.SAXParser</code><br><br><strong>Exclusive</strong> filter means listed methods are not instrumented. <strong>Inclusive</strong> filter means only listed methods are instrumented. Wildcard '<strong>*</strong>' symbol can only be used at end of filter value.",
+    "QuickFilterPanel_HintMsg=<strong>Example:</strong> <code>java.*</code> or <code>javax.swing.</code> or <code>javax.xml.parsers.SAXParser</code><br><br><strong>Exclusive</strong> filter means listed methods are not instrumented. <strong>Inclusive</strong> filter means only listed methods are instrumented. Wildcard '<strong>*</strong>' symbol can only be used at end of filter value.",
     "QuickFilterPanel_FilterTypeExclusiveRadioAccessDescr=Selected classes will not be instrumented.",
     "QuickFilterPanel_FilterTypeInclusiveRadioAccessDescr=Only selected classes will be instrumented.",
     "QuickFilterPanel_FilterValueTextFieldAccessName=Enter quick filter value here."

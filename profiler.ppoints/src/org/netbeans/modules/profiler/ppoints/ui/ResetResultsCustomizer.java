@@ -76,7 +76,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "ResetResultsCustomizer_NameLabelText=&Name\\:",
+    "ResetResultsCustomizer_NameLabelText=&Name:",
     "ResetResultsCustomizer_LocationLabelText=Location"
 })
 public class ResetResultsCustomizer extends ValidityAwarePanel implements DocumentListener, ValidityListener, HelpCtx.Provider {

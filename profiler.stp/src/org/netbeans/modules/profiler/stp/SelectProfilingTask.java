@@ -114,7 +114,7 @@ import org.openide.util.lookup.ServiceProvider;
     "SelectProfilingTask_MonitorString=Monitor",
     "SelectProfilingTask_CpuString=CPU",
     "SelectProfilingTask_MemoryString=Memory",
-    "SelectProfilingTask_AttachLabelText=Attach to\\:",
+    "SelectProfilingTask_AttachLabelText=Attach to:",
     "SelectProfilingTask_RunButtonText=Run",
     "SelectProfilingTask_AttachButtonText=Attach",
     "SelectProfilingTask_OkButtonText=OK",

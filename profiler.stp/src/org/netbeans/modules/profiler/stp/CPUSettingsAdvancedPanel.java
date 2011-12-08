@@ -91,16 +91,16 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
     "CPUSettingsAdvancedPanel_DoNotOverrideString=<Do not override>",
     "CPUSettingsAdvancedPanel_ChooseWorkDirDialogCaption=Choose Working Directory",
     "CPUSettingsAdvancedPanel_SettingsCaption=Settings",
-    "CPUSettingsAdvancedPanel_MethodsTrackingLabelText=Methods tracking\\:",
+    "CPUSettingsAdvancedPanel_MethodsTrackingLabelText=Methods tracking:",
     "CPUSettingsAdvancedPanel_InstrRadioText=&Exact call tree and timing",
     "CPUSettingsAdvancedPanel_SamplingRadioText=Exact call tree, &sampled timing",
     "CPUSettingsAdvancedPanel_ExcludeTimeCheckboxText=E&xclude time spent in Thread.sleep() and Object.wait()",
     "CPUSettingsAdvancedPanel_ProfileFrameworkCheckboxText=&Profile underlying framework startup",
     "CPUSettingsAdvancedPanel_ProfileThreadsCheckboxText=Profile new &Threads/Runnables",
-    "CPUSettingsAdvancedPanel_LimitThreadsCheckboxText=&Limit number of profiled threads\\:",
+    "CPUSettingsAdvancedPanel_LimitThreadsCheckboxText=&Limit number of profiled threads:",
     "CPUSettingsAdvancedPanel_ThreadTimerCheckboxText=&Use thread CPU timer",
-    "CPUSettingsAdvancedPanel_InstrSchemeLabelText=&Instrumentation scheme\\:",
-    "CPUSettingsAdvancedPanel_InstrumentLabelText=Instrument\\:",
+    "CPUSettingsAdvancedPanel_InstrSchemeLabelText=&Instrumentation scheme:",
+    "CPUSettingsAdvancedPanel_InstrumentLabelText=Instrument:",
     "CPUSettingsAdvancedPanel_MethodInvokeCheckboxText=Method.in&voke()",
     "CPUSettingsAdvancedPanel_GetterSetterCheckboxText=&Getter/setter methods",
     "CPUSettingsAdvancedPanel_EmptyMethodsCheckboxText=Empt&y methods",
@@ -109,10 +109,10 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
     "CPUSettingsAdvancedPanel_EnableSamplingCheckboxText=&Sample threads states",
     "CPUSettingsAdvancedPanel_GlobalSettingsCaption=Global Settings",
     "CPUSettingsAdvancedPanel_OverrideSettingsCheckboxText=&Override global settings",
-    "CPUSettingsAdvancedPanel_WorkDirLabelText=&Working directory\\:",
+    "CPUSettingsAdvancedPanel_WorkDirLabelText=&Working directory:",
     "CPUSettingsAdvancedPanel_ChooseWorkDirLinkText=Choose...",
-    "CPUSettingsAdvancedPanel_JavaPlatformLabelText=&Java platform\\:",
-    "CPUSettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments\\:"
+    "CPUSettingsAdvancedPanel_JavaPlatformLabelText=&Java platform:",
+    "CPUSettingsAdvancedPanel_JvmArgumentsLabelText=JVM &arguments:"
 })
 public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------

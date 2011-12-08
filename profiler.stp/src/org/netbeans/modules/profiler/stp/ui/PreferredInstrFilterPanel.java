@@ -71,7 +71,7 @@ import javax.swing.SwingUtilities;
     "PreferredInstrFilterPanel_ToQuickFilterString=To &QuickFilter",
     "PreferredInstrFilterPanel_ToQuickFilterAccessDescr=Sets the current filters to QuickFilter and opens them in that dialog.",
     "PreferredInstrFilterPanel_CloseButtonString=Close",
-    "PreferredInstrFilterPanel_PreferredPackagesCaption=Only methods from these classes/packages will be profiled\\:",
+    "PreferredInstrFilterPanel_PreferredPackagesCaption=Only methods from these classes/packages will be profiled:",
     "PreferredInstrFilterPanel_ComputingFilterString=Computing filter..."
 })
 public class PreferredInstrFilterPanel extends JPanel {

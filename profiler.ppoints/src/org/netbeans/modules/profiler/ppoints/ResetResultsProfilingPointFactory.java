@@ -64,7 +64,7 @@ import org.openide.util.Lookup;
     "ResetResultsProfilingPointFactory_PpType=Reset Results",
     "ResetResultsProfilingPointFactory_PpDescr=Resets currently collected profiling results similarly to Reset Results action in Profiler UI. You may use this Profiling Point for collecting results deltas when combined with Take Snapshot Profiling Point.",
 //# Reset Results at Anagrams.java:32
-    "ResetResultsProfilingPointFactory_PpDefaultName={0} at {1}\\:{2}"
+    "ResetResultsProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
 })
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory {

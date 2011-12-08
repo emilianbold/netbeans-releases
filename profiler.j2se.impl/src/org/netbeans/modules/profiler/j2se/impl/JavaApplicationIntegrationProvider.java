@@ -61,10 +61,10 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "JavaApplicationIntegrationProvider_Title=Java Application",
-    "JavaApplicationIntegrationProvider_ManualRemoteStep3Message=Run the application using {0}. When starting the application, provide the extra startup option to the <code>java</code> command\\:<br><code>{1}</code><br>The {2}.",
+    "JavaApplicationIntegrationProvider_ManualRemoteStep3Message=Run the application using {0}. When starting the application, provide the extra startup option to the <code>java</code> command:<br><code>{1}</code><br>The {2}.",
     "JavaApplicationIntegrationProvider_ManualRemoteStep4Message=The JVM will start, but will not proceed with application execution until you connect the profiler.",
     "JavaApplicationIntegrationProvider_ManualRemoteHintMessage=You can use <code>{0}</code> command instead of <code>java</code> command to run your application in profiling mode. Check the script for any additional modifications according to your system configuration.",
-    "JavaApplicationIntegrationProvider_ManualDirectStep1Message=Run the application using {0}. When starting the application, provide the extra startup option to the <code>java</code> command\\:<br><code>{1}</code>",
+    "JavaApplicationIntegrationProvider_ManualDirectStep1Message=Run the application using {0}. When starting the application, provide the extra startup option to the <code>java</code> command:<br><code>{1}</code>",
     "JavaApplicationIntegrationProvider_ManualDirectStep2Message=The JVM will start, but will not proceed with application execution until you connect the profiler.",
     "JavaApplicationIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}.",
     "JavaApplicationIntegrationProvider_ManualDynamicStep1Message=Start the Application using {0}.",

@@ -130,7 +130,7 @@ public class ProjectUtilities {
     }
 
     @NbBundle.Messages({
-        "ProjectUtilities_FailedCreateOutputFolderMsg=Failed to create build output folder\\: {0}"
+        "ProjectUtilities_FailedCreateOutputFolderMsg=Failed to create build output folder: {0}"
     })
     public static FileObject getOrCreateBuildFolder(Project project, String buildDirProp) {
         FileObject buildDir = FileUtil.toFileObject(PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()),

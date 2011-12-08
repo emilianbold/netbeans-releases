@@ -71,7 +71,7 @@ import org.netbeans.lib.profiler.common.Profiler;
     "GlobalFiltersPanel_DefaultFilterName=New Filter",
     "GlobalFiltersPanel_ColumnNameName=Name",
     "GlobalFiltersPanel_ColumnNameValue=Value",
-    "GlobalFiltersPanel_DefinedFiltersLabelText=Defined &Filters\\:",
+    "GlobalFiltersPanel_DefinedFiltersLabelText=Defined &Filters:",
     "GlobalFiltersPanel_NewButtonText=&New",
     "GlobalFiltersPanel_EditButtonText=Edit",
     "GlobalFiltersPanel_DeleteButtonText=&Delete",
@@ -80,7 +80,7 @@ import org.netbeans.lib.profiler.common.Profiler;
     "GlobalFiltersPanel_OkButtonText=&OK",
     "GlobalFiltersPanel_CancelButtonText=Cancel",
 //# HTML-formatted
-    "GlobalFiltersPanel_HintMsg=<strong>Example Filter\\:</strong> java.*, javax.swing., javax.xml.parsers.SAXParser<br><br>If you define more patterns within a single filter, they must be separated by space and/or comma. The '*' sign is not necessary, however, if you use it, it must be placed at end of filter value.",
+    "GlobalFiltersPanel_HintMsg=<strong>Example Filter:</strong> java.*, javax.swing., javax.xml.parsers.SAXParser<br><br>If you define more patterns within a single filter, they must be separated by space and/or comma. The '*' sign is not necessary, however, if you use it, it must be placed at end of filter value.",
     "GlobalFiltersPanel_FilterTableAccessName=List of defined global filters.",
     "GlobalFiltersPanel_NewButtonAccessDesc=Create new global filter.",
     "GlobalFiltersPanel_EditButtonAccessDesc=Edit selected global filter.",

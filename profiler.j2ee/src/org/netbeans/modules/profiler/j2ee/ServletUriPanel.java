@@ -84,7 +84,7 @@ public class ServletUriPanel extends javax.swing.JPanel {
     }
 
     @NbBundle.Messages({
-        "LBL_setServletURI=<html>If required, provide some request parameters for the servlet\\:<br>e.g. /flowerServlet<b>?flower\\=rose&amp;color\\=red</b></html>",
+        "LBL_setServletURI=<html>If required, provide some request parameters for the servlet:<br>e.g. /flowerServlet<b>?flower\\=rose&amp;color\\=red</b></html>",
         "ACC_setServletURI=Provide parameters that will be passed to the servlet."
     })
     private void initComponents() {

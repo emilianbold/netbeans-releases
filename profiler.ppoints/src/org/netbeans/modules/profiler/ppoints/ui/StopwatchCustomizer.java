@@ -80,9 +80,9 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "StopwatchCustomizer_NameLabelText=&Name\\:",
+    "StopwatchCustomizer_NameLabelText=&Name:",
     "StopwatchCustomizer_SettingsLabelText=Settings",
-    "StopwatchCustomizer_MeasureLabelText=Measure\\:",
+    "StopwatchCustomizer_MeasureLabelText=Measure:",
     "StopwatchCustomizer_TimestampRadioText=&Timestamp",
     "StopwatchCustomizer_DurationRadioText=Timestamp and &duration",
     "StopwatchCustomizer_BeginLocationLabelText=Location (begin)",

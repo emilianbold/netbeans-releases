@@ -82,10 +82,10 @@ import org.openide.util.Lookup;
  */
 @NbBundle.Messages({
     "WizardPanel1UI_SelectProjectString=<Select Profiling Point project>",
-    "WizardPanel1UI_PpTypeString=Profiling point &type\\:",
-    "WizardPanel1UI_PpProjectString=Profiling point &project\\:",
-    "WizardPanel1UI_DescriptionLabelText=Description\\:",
-    "WizardPanel1UI_SupportedModesLabelText=Supported modes\\:",
+    "WizardPanel1UI_PpTypeString=Profiling point &type:",
+    "WizardPanel1UI_PpProjectString=Profiling point &project:",
+    "WizardPanel1UI_DescriptionLabelText=Description:",
+    "WizardPanel1UI_SupportedModesLabelText=Supported modes:",
     "WizardPanel1UI_MonitorModeString=Monitor",
     "WizardPanel1UI_CpuModeString=CPU",
     "WizardPanel1UI_MemoryModeString=Memory",

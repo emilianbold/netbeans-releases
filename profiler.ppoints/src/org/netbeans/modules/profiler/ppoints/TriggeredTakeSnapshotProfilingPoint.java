@@ -91,22 +91,22 @@ import org.openide.ErrorManager;
  */
 @NbBundle.Messages({
     "TriggeredTakeSnapshotProfilingPoint_NoDataAvailableMsg=no data available",
-    "TriggeredTakeSnapshotProfilingPoint_NoDataRemoteMsg=no data available\\: not supported for remote profiling",
-    "TriggeredTakeSnapshotProfilingPoint_NoDataJdkMsg=no data available\\: JDK 1.6, 1.7 or 1.5.0_12 is required",
+    "TriggeredTakeSnapshotProfilingPoint_NoDataRemoteMsg=no data available: not supported for remote profiling",
+    "TriggeredTakeSnapshotProfilingPoint_NoDataJdkMsg=no data available: JDK 1.6, 1.7 or 1.5.0_12 is required",
     "TriggeredTakeSnapshotProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
     "TriggeredTakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
     "TriggeredTakeSnapshotProfilingPoint_NoResultsString=No results available",
     "TriggeredTakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
     "TriggeredTakeSnapshotProfilingPoint_NoHitsString=no hits",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderTypeString=<b>Type\\:</b> {0}",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled\\:</b> {0}",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderProjectString=<b>Project\\:</b> {0}",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type\\:</b> profiling data",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type\\:</b> heap dump",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to\\:</b> project",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to\\:</b> {0}",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results\\:</b> {0}",
-    "TriggeredTakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits\\:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type:</b> profiling data",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type:</b> heap dump",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to:</b> project",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
     "TriggeredTakeSnapshotProfilingPoint_OpenSnapshotString=open snapshot",
     "TriggeredTakeSnapshotProfilingPoint_UsedHeapResultString=(hit for {0}MB used heap)",
     "TriggeredTakeSnapshotProfilingPoint_HeapUsageResultString=(hit for {0}% heap usage)",
@@ -114,7 +114,7 @@ import org.openide.ErrorManager;
     "TriggeredTakeSnapshotProfilingPoint_LoadedClassesResultString=(hit for {0} loaded classes)",
     "TriggeredTakeSnapshotProfilingPoint_HitString=<b>{0}.</b> hit at <b>{1}</b>, {2} {3}",
     "TriggeredTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg=Saved snapshot is no longer available.",
-    "TriggeredTakeSnapshotProfilingPoint_DataString=Data\\:"
+    "TriggeredTakeSnapshotProfilingPoint_DataString=Data:"
 })
 public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalProfilingPoint implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

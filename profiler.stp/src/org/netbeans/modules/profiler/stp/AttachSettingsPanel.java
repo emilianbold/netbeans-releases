@@ -72,7 +72,7 @@ import org.openide.util.Lookup;
     "AttachSettingsPanel_RemoteAttachHintText=Remote {0} to {1} on {2}, <a href=\"#\" {3}>change...</a>",
 //# Local direct attach to Tomcat, change...
     "AttachSettingsPanel_LocalAttachHintText=Local {0} to {1}, <a href=\"#\" {2}>change...</a>",
-    "AttachSettingsPanel_AttachModeLabelText=Attach Mo&de\\:"
+    "AttachSettingsPanel_AttachModeLabelText=Attach Mo&de:"
 })
 public class AttachSettingsPanel extends JPanel {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------

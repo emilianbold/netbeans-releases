@@ -64,7 +64,7 @@ import org.openide.util.Lookup;
     "TakeSnapshotProfilingPointFactory_PpType=Take Snapshot",
     "TakeSnapshotProfilingPointFactory_PpDescr=Takes snapshot of currently collected profiling results similarly to Take Snapshot action in Profiler UI. You may use this Profiling Point for collecting results deltas when combined with Reset Results Profiling Point or by setting appropriate flag.",
 //# Take Snapshot at Anagrams.java:32
-    "TakeSnapshotProfilingPointFactory_PpDefaultName={0} at {1}\\:{2}"
+    "TakeSnapshotProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
 })
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory {

@@ -69,7 +69,7 @@ import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsIcons;
 @NbBundle.Messages({
     "LoadGenProfilingPointFactory_PpType=Load Generator",
     "LoadGenProfilingPointFactory_PpDescr=Starts and stops a load generator script at the given source code location",
-    "LoadGenProfilingPointFactory_PpDefaultName={0} at {1}\\:{2}"
+    "LoadGenProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
 })
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {

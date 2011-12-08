@@ -92,14 +92,14 @@ import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
  */
 @NbBundle.Messages({
     "AntActions_FileTestNotFoundMsg=Test for the file does not exist.",
-    "AntActions_FailedDetermineJavaPlatformMsg=Failed to determine version of Java platform\\: {0}",
+    "AntActions_FailedDetermineJavaPlatformMsg=Failed to determine version of Java platform: {0}",
     "AntActions_FailedDetermineProjectBuildScriptMsg=Cannot determine build script for project {0}",
     "AntActions_IncorrectJavaSpecVersionDialogCaption=Warning",
     "AntActions_IncorrectJavaSpecVersionDialogMsg=The specification version of project Java Platform is greater than specification version of the\nplatform that will be used for profiling. You may experience problems unless you set the compiler\nparameter to generate bytecode compatible with the platform that will be used.\n\nDo you want to continue with the current settings?",
     "AntActions_UnsupportedProjectTypeMsg=Profiling this project type is not supported.",
-    "AntActions_InvalidJavaplatformMsg=Failed to determine overridden platform\\: {0}",
-    "AntActions_InvalidPlatformProjectMsg=The Java platform defined for the project is invalid. Right-click the project\nand choose a different platform using Properties | Libraries | Java Platform.\n\nInvalid platform\\: {0}",
-    "AntActions_InvalidPlatformProfilerMsg=The Java platform defined for profiling is invalid. Choose a different platform\nin Tools | Options | Miscellaneous | Profiler | Profiler Java Platform.\n\nInvalid platform\\: {0}",
+    "AntActions_InvalidJavaplatformMsg=Failed to determine overridden platform: {0}",
+    "AntActions_InvalidPlatformProjectMsg=The Java platform defined for the project is invalid. Right-click the project\nand choose a different platform using Properties | Libraries | Java Platform.\n\nInvalid platform: {0}",
+    "AntActions_InvalidPlatformProfilerMsg=The Java platform defined for profiling is invalid. Choose a different platform\nin Tools | Options | Miscellaneous | Profiler | Profiler Java Platform.\n\nInvalid platform: {0}",
     "AntActions_LazyEnablementFailure=<html><b>Unable to start profiling.</b><br><br>Please, make sure the project type is supported</p><p>and/or the selected file can be executed.",
     "AntActions_LazyEnablementProgressMessage=Validating profiler action"
 })

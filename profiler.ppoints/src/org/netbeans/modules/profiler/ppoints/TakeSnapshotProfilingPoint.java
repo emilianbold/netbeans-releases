@@ -92,27 +92,27 @@ import org.openide.util.Lookup;
  */
 @NbBundle.Messages({
     "TakeSnapshotProfilingPoint_NoDataAvailableMsg=no data available",
-    "TakeSnapshotProfilingPoint_RemoteUnsupportedMsg=no data available\\: not supported for remote profiling",
-    "TakeSnapshotProfilingPoint_NoDataJdkMsg=no data available\\: JDK 1.6, 1.7 or 1.5.0_12 is required",
+    "TakeSnapshotProfilingPoint_RemoteUnsupportedMsg=no data available: not supported for remote profiling",
+    "TakeSnapshotProfilingPoint_NoDataJdkMsg=no data available: JDK 1.6, 1.7 or 1.5.0_12 is required",
     "TakeSnapshotProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
     "TakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
     "TakeSnapshotProfilingPoint_NoResultsString=No results available",
     "TakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
     "TakeSnapshotProfilingPoint_NoHitsString=no hits",
-    "TakeSnapshotProfilingPoint_HeaderTypeString=<b>Type\\:</b> {0}",
-    "TakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled\\:</b> {0}",
-    "TakeSnapshotProfilingPoint_HeaderProjectString=<b>Project\\:</b> {0}",
-    "TakeSnapshotProfilingPoint_HeaderLocationString=<b>Location\\:</b> <a href='#'>{0}, line {1}</a>",
-    "TakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type\\:</b> profiling data",
-    "TakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type\\:</b> heap dump",
-    "TakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to\\:</b> project",
-    "TakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to\\:</b> {0}",
-    "TakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results\\:</b> {0}",
-    "TakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits\\:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderLocationString=<b>Location:</b> <a href='#'>{0}, line {1}</a>",
+    "TakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type:</b> profiling data",
+    "TakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type:</b> heap dump",
+    "TakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to:</b> project",
+    "TakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results:</b> {0}",
+    "TakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
     "TakeSnapshotProfilingPoint_OpenSnapshotString=open snapshot",
     "TakeSnapshotProfilingPoint_HitString=<b>{0}.</b> hit at <b>{1}</b>, {2}",
     "TakeSnapshotProfilingPoint_SnapshotNotAvailableMsg=Saved snapshot is no longer available.",
-    "TakeSnapshotProfilingPoint_DataString=Data\\:"
+    "TakeSnapshotProfilingPoint_DataString=Data:"
 })
 public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
