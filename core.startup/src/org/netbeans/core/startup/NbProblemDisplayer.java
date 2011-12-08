@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.InvalidException;
@@ -205,40 +205,32 @@ public final class NbProblemDisplayer {
             for (Module m : modules) {
                 names.add(m.getCodeName());
             }
-
-            HashSet<String> dependantModules = new HashSet<String>();
+            HashSet<String> dependentModules = new HashSet<String>();
             for (Module m : modules) {
                 SortedSet<String> problemTexts = new TreeSet<String>(Collator.getInstance());
-                Iterator pit = m.getProblems().iterator();
-                if (pit.hasNext()) {
-                    while (pit.hasNext()) {
-                        Object problem = pit.next();
-                        if (problem instanceof Dependency && justRootCause) {
-                            Dependency d = (Dependency)problem;
-                            if (
-                                d.getType() == Dependency.TYPE_MODULE &&
-                                names.contains(d.getName())
-                            ) {
-                                dependantModules.add(m.getCodeName());
-                                continue;
-                            }
-                        }
-
-                        problemTexts.add(label(m, justRootCause) + " - " + // NOI18N
-                                         NbProblemDisplayer.messageForProblem(m, problem, justRootCause));
-                    }
-                } else {
+                Set<Object> problems = m.getProblems();
+                if (problems.isEmpty()) {
                     throw new IllegalStateException("Module " + m + " could not be installed but had no problems"); // NOI18N
+                }
+                for (Object problem : problems) {
+                    if (problem instanceof Dependency && justRootCause) {
+                        Dependency d = (Dependency) problem;
+                        if (d.getType() == Dependency.TYPE_MODULE && names.contains(d.getName())) {
+                            dependentModules.add(m.getCodeName());
+                            continue;
+                        }
+                    }
+                    problemTexts.add(label(m, justRootCause) + " - " + NbProblemDisplayer.messageForProblem(m, problem, justRootCause));
                 }
                 for (String s: problemTexts) {
                     writeTo.append("\n\t").append(s); // NOI18N
                 }
             }
-            if (!dependantModules.isEmpty()) {
-                writeTo.append("\n\t").append(NbBundle.getMessage(NbProblemDisplayer.class, "MSG_also_dep_modules", dependantModules.size()));
+            if (!dependentModules.isEmpty()) {
+                writeTo.append("\n\t").append(NbBundle.getMessage(NbProblemDisplayer.class, "MSG_also_dep_modules", dependentModules.size()));
             }
         } catch (IOException ex) {
-            throw (IllegalStateException)new IllegalStateException().initCause(ex);
+            throw new IllegalStateException(ex);
         }
     }
     
