@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,29 +42,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript.editing.lexer;
+package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import javax.swing.text.BadLocationException;
 
 /**
- * Test tokens dump of JavaScript code input. Based on the Ruby one.
+ * Test for JsBracesMatcher
+ * 
+ * @author Marek Slama
+ *
  */
-public class JsTokenDumpTest extends NbTestCase {
+public class JsBracesMatcherTest extends JsTestBase {
     
-    public JsTokenDumpTest(String testName) {
+    public JsBracesMatcherTest(String testName) {
         super(testName);
     }
     
-    @Override
-    protected void setUp() throws java.lang.Exception {
-        // Set-up testing environment
-        LexerTestUtilities.setTesting(true);
+    private void match2(String original) throws BadLocationException {
+        super.assertMatches2(original);
+    }
+    
+    public void testFindMatching1() throws Exception {
+        match2("if (true) ^{\n^}");
     }
 
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.js.txt",
-                JsTokenId.language());
+    public void testFindMatching2() throws Exception {
+        match2("x=^(true^)\ny=5");
     }
+
+    public void testFindMatching3() throws Exception {
+        match2("x=^(true || (false)^)\ny=5");
+    }
+
+    public void testFindMatching4() throws Exception {
+        match2("function foo() ^{\nif (true) {\n}\n^}\n}");
+    }
+
 }

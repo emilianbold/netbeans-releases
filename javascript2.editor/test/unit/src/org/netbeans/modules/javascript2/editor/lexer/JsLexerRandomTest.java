@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript.editing.lexer;
+package org.netbeans.modules.javascript2.editor.lexer;
 
 import junit.framework.TestCase;
 import org.netbeans.lib.lexer.test.FixedTextDescriptor;

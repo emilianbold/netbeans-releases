@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing.lexer;
+package org.netbeans.modules.javascript2.editor.lexer;
 
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
