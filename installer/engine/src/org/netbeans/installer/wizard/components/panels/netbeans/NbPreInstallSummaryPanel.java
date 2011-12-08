@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
@@ -170,6 +171,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     
     @Override
     public void initialize() {
+        assert ! SwingUtilities.isEventDispatchThread() : "Cannot run initialize() in EQ!";
         final List<Product> toInstall =
                 Registry.getInstance().getProductsToInstall();
         final List<Product> toUnInstall =
@@ -205,12 +207,6 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     private boolean doRemoveNBUserDir() {
         return removeNBUserDir;
     }
-
-    private File getUserDir() {
-        return userDir;
-    }
-
-
 
     private boolean areThereNewFiles(final File installLocation) throws IOException {
         LogManager.log("areThereNewFiles:  location "  + installLocation);

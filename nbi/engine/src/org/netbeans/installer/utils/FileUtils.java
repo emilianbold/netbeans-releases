@@ -349,14 +349,18 @@ public final class FileUtils {
     
     static void computeRecursiveFileSet(final File file, Set<File> fileSet) throws IOException {
         try {
-            fileSet.add(file);
             if (file.isDirectory()) {
                 File[] files = file.listFiles();
                 if (files != null) {
+                    if (files.length > 0) {
+                        fileSet.add(file);
+                    }
                     for (File f : files) {
                         computeRecursiveFileSet(f,fileSet);
                     }
                 }
+            } else {
+                fileSet.add(file);
             }
         } catch (SecurityException e) {
             ErrorManager.notifyError(
