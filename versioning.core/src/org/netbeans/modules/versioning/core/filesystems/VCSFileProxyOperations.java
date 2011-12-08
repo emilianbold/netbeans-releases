@@ -72,7 +72,5 @@ public interface VCSFileProxyOperations {
     
     VCSFileProxy[] list(VCSFileProxy file);
     
-    boolean isFlat(VCSFileProxy file);
-
     ProcessBuilder createProcessBuilder(VCSFileProxy file);
 }

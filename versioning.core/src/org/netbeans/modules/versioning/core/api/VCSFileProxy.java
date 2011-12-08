@@ -339,11 +339,7 @@ public final class VCSFileProxy {
     }
     
     boolean isFlat() {
-        if (proxy == null) {
-            return isFlat;
-        } else {
-            return proxy.isFlat(this);
-        }
+        return isFlat;
     }
     
     private static VCSFileProxyOperations getFileProxyOperations(FileSystem fs) {
