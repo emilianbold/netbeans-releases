@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.apigen.ui;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -52,6 +54,10 @@ public final class ApiGenPreferences {
 
     private static final String TARGET = "target"; // NOI18N
     private static final String TITLE = "title"; // NOI18N
+    private static final String CONFIG = "config"; // NOI18N
+    private static final String CHARSETS = "charsets"; // NOI18N
+
+    private static final String SEPARATOR = ","; // NOI18N
 
 
     private ApiGenPreferences() {
@@ -61,9 +67,12 @@ public final class ApiGenPreferences {
         return phpModule.getDisplayName();
     }
 
+    public static String getDefaultCharset(PhpModule phpModule) {
+        return phpModule.getProperties().getEncoding();
+    }
+
     public static String getTarget(PhpModule phpModule, boolean showPanel) {
-        Preferences preferences = getPreferences(phpModule);
-        String target = preferences.get(TARGET, null);
+        String target = getPreferences(phpModule).get(TARGET, null);
         if (StringUtils.isEmpty(target) && showPanel) {
             target = BrowseFolderPanel.open(phpModule);
             if (target == null) {
@@ -75,8 +84,8 @@ public final class ApiGenPreferences {
         return target;
     }
 
-    public static void setTarget(PhpModule phpModule, String phpDocTarget) {
-        getPreferences(phpModule).put(TARGET, phpDocTarget);
+    public static void setTarget(PhpModule phpModule, String target) {
+        getPreferences(phpModule).put(TARGET, target);
     }
 
     public static String getTitle(PhpModule phpModule) {
@@ -85,9 +94,31 @@ public final class ApiGenPreferences {
 
     public static void setTitle(PhpModule phpModule, String title) {
         if (title.equals(getDefaultTitle(phpModule))) {
+            getPreferences(phpModule).remove(TITLE);
             return;
         }
         getPreferences(phpModule).put(TITLE, title);
+    }
+
+    public static String getConfig(PhpModule phpModule) {
+        return getPreferences(phpModule).get(CONFIG, null);
+    }
+
+    public static void setConfig(PhpModule phpModule, String config) {
+        getPreferences(phpModule).put(CONFIG, config);
+    }
+
+    public static List<String> getCharsets(PhpModule phpModule) {
+        return StringUtils.explode(getPreferences(phpModule).get(CHARSETS, getDefaultCharset(phpModule)), SEPARATOR);
+    }
+
+    public static void setCharsets(PhpModule phpModule, List<String> charsets) {
+        if (charsets.isEmpty()
+                || Collections.singletonList(getDefaultCharset(phpModule)).equals(charsets)) {
+            getPreferences(phpModule).remove(CHARSETS);
+            return;
+        }
+        getPreferences(phpModule).put(CHARSETS, StringUtils.implode(charsets, SEPARATOR));
     }
 
     private static Preferences getPreferences(PhpModule phpModule) {
