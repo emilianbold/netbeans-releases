@@ -10,10 +10,16 @@
         classname="JFlex.anttask.JFlexTask"
         classpath="/home/sickboy/software/jflex/lib/JFlex.jar" />
 
-    <target name="gen-lexer" >
-        <jflex file="tools/JavaScriptColoringScanner.flex"
-        destdir="src"/>
-    </target> -->
+    <target name="-gen-lexer">
+        <jflex file="tools/JavaScriptColoringScanner.flex" destdir="src" nobak="true"/>
+    </target>
+
+    <target name="-patch-lexer">
+        <patch patchfile="tools/lexer.patch"
+            dir="src/org/netbeans/modules/javascript2/editor/lexer"/>
+    </target>
+
+    <target name="gen-lexer" depends="-gen-lexer,-patch-lexer"/> -->
     
 </project>
 
