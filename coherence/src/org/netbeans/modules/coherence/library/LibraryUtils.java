@@ -98,6 +98,10 @@ public class LibraryUtils {
         URI coherenceServerURI = CoherenceProperties.getCoherenceJar(serverRoot).toURI();
         Map<String, List<URI>> content = new HashMap<String, List<URI>>();
         content.put("classpath", Collections.<URI>singletonList(coherenceServerURI)); //NOI18N
+        File coherenceDocDir = CoherenceProperties.getCoherenceJavadocDir(serverRoot);
+        if (coherenceDocDir != null) {
+            content.put("javadoc", Collections.<URI>singletonList(coherenceDocDir.toURI())); //NOI18N
+        }
         try {
             LibraryManager.getDefault().createURILibrary(
                     "j2se", //NOI18N
@@ -124,7 +128,7 @@ public class LibraryUtils {
         // create coherence library if not exists in this version yet
         Version coherenceVersion = CoherenceProperties.getServerVersion(serverRoot);
         String libraryName = LibraryUtils.getCoherenceLibraryDisplayName(coherenceVersion);
-        String message = null;
+        String message;
         if (LibraryUtils.registerCoherenceLibrary(libraryName, serverRoot)) {
             message = NbBundle.getMessage(LibraryUtils.class, "MSG_CoherenceLibraryCreated", libraryName); //NOI18N
         } else {

@@ -149,6 +149,11 @@ public class CloneAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
     /**
      * Copies property defined by {@code String} key from one properties to another one.
      *

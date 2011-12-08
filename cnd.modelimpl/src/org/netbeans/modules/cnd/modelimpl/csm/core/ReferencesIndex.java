@@ -234,7 +234,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
     static void shutdown() {
         RepositoryUtils.closeUnit(INDEX_KEY, null, !TraceFlags.PERSISTENT_REPOSITORY);
     }
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     private static ReferencesIndex read() {
         if (TRACE) {
             System.err.printf("Opening INDEX by key %s\n", INDEX_KEY); // NOI18N
