@@ -89,4 +89,9 @@ public class StopServerAction extends NodeAction {
         return false;
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }
