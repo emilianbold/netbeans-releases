@@ -306,7 +306,7 @@ public class ActionProcessorTest extends NbTestCase {
         );
         assertNotNull("File found", fo);
         Object icon = fo.getAttribute("iconBase");
-        assertTrue("Icon found", icon instanceof String);
+        assertEquals("Icon found", "org/openide/awt/TestIcon.png", icon);
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Attribute present", obj);
         assertTrue("It is context aware action", obj instanceof ContextAwareAction);
