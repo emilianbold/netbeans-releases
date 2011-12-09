@@ -74,10 +74,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProjectStorageProvider.class)
 public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
-    
-    private static final String ERROR_SAVING_ATTACH_SETTINGS_MESSAGE = NbBundle.getMessage(ProjectStorageProviderImpl.class,
-                                                                                           "ProjectStorageProviderImpl_ErrorSavingAttachSettingsMessage"); //NOI18N
-    
     private static final String ATTACH_SETTINGS_FILENAME = "attach"; //NOI18N
     private static final String SETTINGS_FOR_ATTR = "settingsFor"; //NOI18N
 
@@ -112,6 +108,7 @@ public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
         }
     }
 
+    @NbBundle.Messages("ProjectStorageProviderImpl_ErrorSavingAttachSettingsMessage=Error encountered while saving attach settings: {0}")
     @Override
     public void saveAttachSettings(Provider project, AttachSettings settings) {
         FileLock lock = null;
@@ -142,7 +139,7 @@ public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
             }
         } catch (Exception e) {
             ProfilerLogger.log(e);
-            ProfilerDialogs.displayError(MessageFormat.format(ERROR_SAVING_ATTACH_SETTINGS_MESSAGE, new Object[] { e.getMessage() }));
+            ProfilerDialogs.displayError(Bundle.ProjectStorageProviderImpl_ErrorSavingAttachSettingsMessage(e.getMessage()));
         } finally {
             if (lock != null) {
                 lock.releaseLock();
