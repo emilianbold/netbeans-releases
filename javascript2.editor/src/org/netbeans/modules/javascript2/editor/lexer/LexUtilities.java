@@ -45,6 +45,7 @@ package org.netbeans.modules.javascript2.editor.lexer;
 
 import java.util.List;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -52,7 +53,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -166,6 +170,66 @@ public final class LexUtilities {
         }
 
         return null;
+    }
+
+    /**
+     * Return true iff the line for the given offset is a JavaScript comment line.
+     * This will return false for lines that contain comments (even when the
+     * offset is within the comment portion) but also contain code.
+     */
+    public static boolean isCommentOnlyLine(BaseDocument doc, int offset)
+            throws BadLocationException {
+
+        int begin = Utilities.getRowFirstNonWhite(doc, offset);
+
+        if (begin == -1) {
+            return false; // whitespace only
+        }
+
+        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin);
+        if (token != null) {
+            return token.id() == JsTokenId.LINE_COMMENT;
+        }
+
+        return false;
+    }
+
+    /** Compute the balance of begin/end tokens on the line */
+    public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down) {
+        try {
+            int begin = Utilities.getRowStart(doc, offset);
+            int end = Utilities.getRowEnd(doc, offset);
+
+            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
+            if (ts == null) {
+                return 0;
+            }
+
+            ts.move(begin);
+
+            if (!ts.moveNext()) {
+                return 0;
+            }
+
+            int balance = 0;
+
+            do {
+                Token<?extends JsTokenId> token = ts.token();
+                TokenId id = token.id();
+
+                if (id == up) {
+                    balance++;
+                } else if (id == down) {
+                    balance--;
+                }
+            } while (ts.moveNext() && (ts.offset() <= end));
+
+            return balance;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+
+            return 0;
+        }
     }
 
     public static TokenSequence<?extends JsTokenId> getPositionedSequence(Document doc, int offset) {
