@@ -47,10 +47,12 @@ import javax.swing.*;
 import java.awt.Image;
 
 /**
- * Anntoator provides these services based on files' versioning status:
- * - coloring for labels (file and folder names, editor tabs, etc.)
- * - badging (modification of node icons)
- * - provides set of Actions
+ * Annotator provides these services based on files' versioning status:
+ * <ul>
+ * <li>coloring for labels (file and folder names, editor tabs, etc.)
+ * <li>badging (modification of node icons)
+ * <li>provides set of Actions
+ * </ul>
  * 
  * @author Maros Sandor
  * @author Tomas Stupka
