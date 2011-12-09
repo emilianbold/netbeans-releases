@@ -2213,10 +2213,6 @@ public class RADComponent {
                             accParent = BeanSupport.NO_VALUE;
                         }
                         @Override
-                        public PropertyEditor getExpliciteEditor() {
-                            return new RADVisualComponent.AccessibleParentEditor();
-                        }
-                        @Override
                         String getPartialSetterCode(String javaInitStr) {
                             return javaInitStr == null ? null :
                                 "getAccessibleContext().setAccessibleParent(" // NOI18N

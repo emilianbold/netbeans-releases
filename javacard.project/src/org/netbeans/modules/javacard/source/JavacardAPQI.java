@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javacard.source;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -88,7 +90,11 @@ public class JavacardAPQI implements AnnotationProcessingQueryImplementation {
 
         @Override
         public Iterable<? extends String> annotationProcessorsToRun() {
-            return Collections.singleton("org.netbeans.modules.javacard.source.JavaCardErrorProcessor");
+//            return Collections.singleton("org.netbeans.modules.javacard.source.JavaCardErrorProcessor"); // NOI18N
+            List<String> list = new ArrayList<String>(2);
+            list.add("org.netbeans.modules.javacard.source.JavaCardErrorProcessor"); // NOI18N
+            list.add("com.oracle.javacard.stringproc.StringConstantsProcessor"); // NOI18N
+            return list;
         }
 
         @Override
