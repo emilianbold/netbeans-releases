@@ -63,6 +63,14 @@ public class StringUtilsTest extends NbTestCase {
         assertFalse(StringUtils.hasText(" "));
     }
 
+    public void testIsEmpty() {
+        assertFalse(StringUtils.isEmpty("a"));
+
+        assertTrue(StringUtils.isEmpty(null));
+        assertTrue(StringUtils.isEmpty(""));
+        assertFalse(StringUtils.isEmpty(" "));
+    }
+
     public void testImplode() {
         final List<String> items = Arrays.asList("one", "two");
         assertEquals("one*two", StringUtils.implode(items, "*"));

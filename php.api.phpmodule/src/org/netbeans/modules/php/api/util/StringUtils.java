@@ -63,9 +63,23 @@ public final class StringUtils {
      * @param input input <tt>String</tt>, can be <code>null</code>.
      * @return <code>true</code> if the String is not <code>null</code>
      *         and has any character after trimming.
+     * @see #isEmpty(String)
      */
     public static boolean hasText(String input) {
-        return input != null && input.trim().length() > 0;
+        return input != null && !input.trim().isEmpty();
+    }
+
+    /**
+     * Return <code>true</code> if the String is <code>null</code>
+     * or has no characters.
+     * @param input input <tt>String</tt>, can be <code>null</code>
+     * @return <code>true</code> if the String is <code>null</code>
+     *         or has no characters
+     * @see  #hasText(String)
+     * @since 1.57
+     */
+    public static boolean isEmpty(String input) {
+        return input == null || input.isEmpty();
     }
 
     /**

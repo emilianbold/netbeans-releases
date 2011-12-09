@@ -41,15 +41,26 @@
  */
 package org.netbeans.modules.coherence.server.wizard;
 
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.openide.WizardDescriptor;
@@ -66,22 +77,32 @@ public class ServerLocationVisual extends javax.swing.JPanel {
 
     private static final String COHERENCE_LIB_PATH = File.separator + CoherenceProperties.PLATFORM_LIB_DIR + File.separator;
     private static final String COHERENCE_JAR_PATH = COHERENCE_LIB_PATH + "coherence.jar"; //NOI18N
-    private static final String COHERENCE_JPA_JAR_PATH = COHERENCE_LIB_PATH + "coherence-jpa.jar"; //NOI18N
-    private static final String COHERENCE_HIBERNATE_JAR_PATH = COHERENCE_LIB_PATH + "coherence-hibernate.jar"; //NOI18N
-    private static final String COHERENCE_LOADBALANCER_JAR_PATH = COHERENCE_LIB_PATH + "coherence-loadbalancer.jar"; //NOI18N
-    private static final String COHERENCE_TRANSACTION_JAR_PATH = COHERENCE_LIB_PATH + "coherence-transaction.jar"; //NOI18N
-    private static final String COHERENCE_TX_JAR_PATH = COHERENCE_LIB_PATH + "coherence-tx.jar"; //NOI18N
 
     private String classpath = "";
 
     private static JFileChooser fileChooser;
     private ChangeSupport changeSupport = new ChangeSupport(this);
+    private final AdditionalCpTableModel model = new AdditionalCpTableModel();
+    private static final Set<String> COHERENCE_SERVER_JARS = new HashSet<String>(Arrays.asList(new String[] {
+        "coherence-jpa.jar", //NOI18N
+        "coherence-hibernate.jar", //NOI18N
+        "coherence-toplink.jar", //NOI18N
+        "coherence-web.jar", //NOI18N
+        "coherence-work.jar" //NOI18N
+    }));
 
     /**
-     * Creates new form ServerLocationVisual
+     * Creates new form ServerLocationVisual.
      */
     public ServerLocationVisual() {
         initComponents();
+
+        AdditionalCpTableCellRenderer renderer = new AdditionalCpTableCellRenderer();
+        renderer.setBooleanRenderer(additionalCPTable.getDefaultRenderer(Boolean.class));
+        additionalCPTable.setDefaultRenderer(Boolean.class, renderer);
+        initAdditionalCpTableVisualProperties();
+        initAdditionalCpTableContent();
+
         initListeners();
     }
 
@@ -145,26 +166,26 @@ public class ServerLocationVisual extends javax.swing.JPanel {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                fireChangeEvent();
+                fireChange();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                fireChangeEvent();
+                fireChange();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
+                fireChange();
+            }
+
+            private void fireChange() {
                 fireChangeEvent();
+                initAdditionalCpTableContent();
             }
         });
 
         // action listeners for checkboxes
-        hibernateJarCheckBox.addItemListener(new CheckBoxItemListener());
-        jpaJarCheckBox.addItemListener(new CheckBoxItemListener());
-        transactionJarCheckBox.addItemListener(new CheckBoxItemListener());
-        txJarCheckBox.addItemListener(new CheckBoxItemListener());
-        loadbalancerJarCheckBox.addItemListener(new CheckBoxItemListener());
         createLibraryCheckBox.addItemListener(new CheckBoxItemListener());
     }
 
@@ -254,38 +275,21 @@ public class ServerLocationVisual extends javax.swing.JPanel {
 
     public void fillInCoherenceClasspath(boolean isCoherenceValid) {
         if (isCoherenceValid) {
-            String location = serverLocationTextField.getText();
+            String location = getServerLocation();
             if (location != null && location.trim().length() > 0) {
-                StringBuilder classpathSB = new StringBuilder(location.concat(COHERENCE_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
-                if (hibernateJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_HIBERNATE_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
-                }
-                if (jpaJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_JPA_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
-                }
-                if (loadbalancerJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_LOADBALANCER_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
-                }
-                if (transactionJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TRANSACTION_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
-                }
-                if (txJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TX_JAR_PATH).concat(CoherenceModuleProperties.CLASSPATH_SEPARATOR));
+                StringBuilder classpathSB = new StringBuilder(location).append(COHERENCE_JAR_PATH);
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    AdditionalCpTableModelItem item = model.getItem(i);
+                    if (item.getSelected()) {
+                        classpathSB.append(CoherenceModuleProperties.CLASSPATH_SEPARATOR).
+                                append(location).append(COHERENCE_LIB_PATH).append(item.getName());
+                    }
                 }
                 classpath = classpathSB.toString();
-                classpath = classpath.substring(0, classpath.length() - CoherenceModuleProperties.CLASSPATH_SEPARATOR.length());
             }
         } else {
-            classpath = "";
+            classpath = ""; //NOI18N
         }
-    }
-
-    public void setEnabledCheckboxes(boolean enabled) {
-        hibernateJarCheckBox.setEnabled(enabled);
-        jpaJarCheckBox.setEnabled(enabled);
-        loadbalancerJarCheckBox.setEnabled(enabled);
-        transactionJarCheckBox.setEnabled(enabled);
-        txJarCheckBox.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -301,11 +305,8 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         serverLocationTextField = new javax.swing.JTextField();
         serverPropertiesNoticeLabel = new javax.swing.JLabel();
         additionalClasspathPanel = new javax.swing.JPanel();
-        hibernateJarCheckBox = new javax.swing.JCheckBox();
-        jpaJarCheckBox = new javax.swing.JCheckBox();
-        loadbalancerJarCheckBox = new javax.swing.JCheckBox();
-        transactionJarCheckBox = new javax.swing.JCheckBox();
-        txJarCheckBox = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        additionalCPTable = new javax.swing.JTable();
         browseButton = new javax.swing.JButton();
         createLibraryCheckBox = new javax.swing.JCheckBox();
 
@@ -323,46 +324,19 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         additionalClasspathPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.additionalClasspathPanel.border.title"))); // NOI18N
         additionalClasspathPanel.setName(""); // NOI18N
 
-        hibernateJarCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.hibernateJarCheckBox.mnemonics").charAt(0));
-        hibernateJarCheckBox.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.hibernateJarCheckBox.text")); // NOI18N
-
-        jpaJarCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.jpaJarCheckBox.mnemonics").charAt(0));
-        jpaJarCheckBox.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.jpaJarCheckBox.text")); // NOI18N
-
-        loadbalancerJarCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.loadbalancerJarCheckBox.mnemonics").charAt(0));
-        loadbalancerJarCheckBox.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.loadbalancerJarCheckBox.text")); // NOI18N
-
-        transactionJarCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.transactionJarCheckBox.mnemonics").charAt(0));
-        transactionJarCheckBox.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.transactionJarCheckBox.text")); // NOI18N
-
-        txJarCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.txJarCheckBox.mnemonics").charAt(0));
-        txJarCheckBox.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.txJarCheckBox.text")); // NOI18N
+        additionalCPTable.setModel(model);
+        additionalCPTable.setColumnSelectionAllowed(true);
+        jScrollPane1.setViewportView(additionalCPTable);
 
         javax.swing.GroupLayout additionalClasspathPanelLayout = new javax.swing.GroupLayout(additionalClasspathPanel);
         additionalClasspathPanel.setLayout(additionalClasspathPanelLayout);
         additionalClasspathPanelLayout.setHorizontalGroup(
             additionalClasspathPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(additionalClasspathPanelLayout.createSequentialGroup()
-                .addGroup(additionalClasspathPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hibernateJarCheckBox)
-                    .addComponent(jpaJarCheckBox)
-                    .addComponent(loadbalancerJarCheckBox)
-                    .addComponent(transactionJarCheckBox)
-                    .addComponent(txJarCheckBox))
-                .addContainerGap(258, Short.MAX_VALUE))
+            .addComponent(jScrollPane1)
         );
         additionalClasspathPanelLayout.setVerticalGroup(
             additionalClasspathPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(additionalClasspathPanelLayout.createSequentialGroup()
-                .addComponent(hibernateJarCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jpaJarCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(loadbalancerJarCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(transactionJarCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txJarCheckBox))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.browseButtonLabel.mnemonics").charAt(0));
@@ -386,13 +360,14 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(serverLocationLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(serverLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                        .addComponent(serverLocationTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
-                    .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(createLibraryCheckBox))
-                .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(createLibraryCheckBox)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -404,7 +379,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addComponent(serverLocationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(createLibraryCheckBox)
@@ -418,16 +393,162 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         showFileChooser();
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable additionalCPTable;
     private javax.swing.JPanel additionalClasspathPanel;
     private javax.swing.JButton browseButton;
     private javax.swing.JCheckBox createLibraryCheckBox;
-    private javax.swing.JCheckBox hibernateJarCheckBox;
-    private javax.swing.JCheckBox jpaJarCheckBox;
-    private javax.swing.JCheckBox loadbalancerJarCheckBox;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel serverLocationLabel;
     private javax.swing.JTextField serverLocationTextField;
     private javax.swing.JLabel serverPropertiesNoticeLabel;
-    private javax.swing.JCheckBox transactionJarCheckBox;
-    private javax.swing.JCheckBox txJarCheckBox;
     // End of variables declaration//GEN-END:variables
+
+    private void initAdditionalCpTableContent() {
+        model.removeAllItems();
+        File serverRoot = new File(getServerLocation());
+        File libDir = new File(serverRoot, CoherenceProperties.PLATFORM_LIB_DIR);
+        if (libDir.exists()) {
+            File[] jars = libDir.listFiles(new FilenameFilter() {
+
+                @Override
+                public boolean accept(File file, String name) {
+                    return name.endsWith(".jar") && COHERENCE_SERVER_JARS.contains(name); //NOI18N
+                }
+            });
+
+            for (File file : jars) {
+                model.addItem(new AdditionalCpTableModelItem(Boolean.FALSE, file.getName()));
+            }
+            model.fireTableDataChanged();
+            additionalCPTable.repaint();
+        }
+    }
+
+    private void initAdditionalCpTableVisualProperties() {
+        additionalCPTable.setColumnSelectionAllowed(false);
+        additionalCPTable.setRowSelectionAllowed(true);
+        additionalCPTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        additionalCPTable.setTableHeader(null);
+        additionalCPTable.setRowHeight(additionalCPTable.getRowHeight() + 4);
+        additionalCPTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        additionalCPTable.getParent().setBackground(additionalCPTable.getBackground());
+        additionalCPTable.setShowHorizontalLines(false);
+        additionalCPTable.setShowVerticalLines(false);
+        additionalCPTable.getColumnModel().getColumn(0).setMaxWidth(30);
+    }
+
+    private class AdditionalCpTableModel extends AbstractTableModel {
+
+        private final Class<?>[] columnTypes = new Class<?>[] {Boolean.class, String.class};
+        private final DefaultListModel listModel = new DefaultListModel();
+
+        @Override
+        public int getRowCount() {
+            return listModel.getSize();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnTypes.length;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            AdditionalCpTableModelItem item = getItem(rowIndex);
+            switch(columnIndex) {
+                case 0:
+                    return item.getSelected();
+                case 1:
+                    return item.getName();
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            AdditionalCpTableModelItem item = getItem(rowIndex);
+            switch(columnIndex) {
+                case 0:
+                    item.setSelected((Boolean) aValue);
+                    fireChangeEvent();
+                    break;
+                case 1:
+                    item.setName((String) aValue);
+                    break;
+                default:
+                    break;
+            }
+            super.setValueAt(aValue, rowIndex, columnIndex);
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return columnTypes[columnIndex];
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex == 0;
+        }
+
+        private AdditionalCpTableModelItem getItem(int row) {
+            return (AdditionalCpTableModelItem) listModel.get(row);
+        }
+
+        private void addItem(AdditionalCpTableModelItem item) {
+            listModel.addElement(item);
+        }
+
+        private void removeAllItems() {
+            listModel.clear();
+        }
+    }
+
+    private static class AdditionalCpTableModelItem {
+
+        private Boolean selected;
+        private String name;
+
+        public AdditionalCpTableModelItem(Boolean selected, String name) {
+            this.selected = selected;
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Boolean getSelected() {
+            return selected;
+        }
+
+        public void setSelected(Boolean selected) {
+            this.selected = selected;
+        }
+
+    }
+
+    private static class AdditionalCpTableCellRenderer extends DefaultTableCellRenderer {
+
+        private TableCellRenderer booleanRenderer;
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (value instanceof Boolean && booleanRenderer != null) {
+                return booleanRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
+            } else {
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        }
+
+        public void setBooleanRenderer(TableCellRenderer booleanRenderer) {
+            this.booleanRenderer = booleanRenderer;
+        }
+
+    }
 }
