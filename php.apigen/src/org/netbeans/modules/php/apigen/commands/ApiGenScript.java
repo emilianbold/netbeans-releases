@@ -75,7 +75,7 @@ public final class ApiGenScript extends PhpProgram {
     private static final String TITLE_PARAM = "--title"; // NOI18N
     private static final String CONFIG_PARAM = "--config"; // NOI18N
     private static final String CHARSET_PARAM = "--charset"; // NOI18N
-    private static final String COLORS_PARAM = "----colors"; // NOI18N
+    private static final String COLORS_PARAM = "--colors"; // NOI18N
 
 
     private ApiGenScript(String command) {
