@@ -512,7 +512,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         }
 
         public Problem getProblem() {
-            if (setterUsed) {
+            if (setterUsed && descs.get(0).refactoring.isGenerateVetoableChangeSupport()) {
                 problem = createProblem(problem, 
                         false, 
                         NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulatePropertyVetoException"));
