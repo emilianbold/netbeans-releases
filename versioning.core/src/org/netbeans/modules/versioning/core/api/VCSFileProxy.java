@@ -157,7 +157,6 @@ public final class VCSFileProxy {
     
     /**
      * Returns the name of this file.
-     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return this files name
      * @see File#getName() () 
