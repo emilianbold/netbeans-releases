@@ -97,7 +97,13 @@ abstract public class FileOperationsProvider {
         }
         
         protected String normalizeUnixPath(FileProxyO file) {
-            return PathUtilities.normalizeUnixPath(file.getPath());
+            String path = PathUtilities.normalizeUnixPath(file.getPath());
+            // TODO resolve inconsistency of PathUtilities && FileUtils.
+            if (path.isEmpty() && file.getPath().startsWith("/") || //NOI18N
+                path.equals("/..")) { //NOI18N
+                return "/"; //NOI18N
+            }
+            return path;
         }
 
         protected boolean isDirectory(FileProxyO file) {
