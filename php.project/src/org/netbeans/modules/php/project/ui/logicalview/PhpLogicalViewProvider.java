@@ -475,7 +475,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             }
         }
 
-        private static abstract class BaseSubMenu extends JMenu {
+        private abstract static class BaseSubMenu extends JMenu {
 
             public BaseSubMenu(String name) {
                 super(name);
