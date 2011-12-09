@@ -604,9 +604,10 @@ abstract class OperationValidator {
                     }
                 } else {
                     result.add (depM);
-                    depends.retainAll (installedEagers);
-                    if (! depends.isEmpty ()) {
-                        affectedEagers.addAll (depends);
+                    Collection<Module> reducedDepends = new HashSet<Module> (depends);
+                    reducedDepends.retainAll (installedEagers);
+                    if (! reducedDepends.isEmpty ()) {
+                        affectedEagers.addAll (reducedDepends);
                     }
                 }
             }
@@ -616,7 +617,7 @@ abstract class OperationValidator {
         // add only affected eagers again
         LOGGER.log (Level.FINE, "Affected eagers are " + affectedEagers);
         result.addAll (affectedEagers);
-
+        
         result.removeAll (findDeepRequired (mustRemain, mm));
 
         return result;
