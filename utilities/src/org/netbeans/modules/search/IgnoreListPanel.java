@@ -23,6 +23,10 @@ import org.openide.util.NbBundle;
  */
 final class IgnoreListPanel extends javax.swing.JPanel {
 
+    static final String SIMPLE_PREFIX = "s: ";                          //NOI18N
+    static final String REGEXP_PREFIX = "x: ";                          //NOI18N
+    static final String FILE_PREFIX = "f: ";                            //NOI18N
+
     private IgnoredListModel ignoreListModel;
     private JFileChooser jFileChooser;
 
@@ -43,7 +47,8 @@ final class IgnoreListPanel extends javax.swing.JPanel {
         boolean editable = false;
         if (cnt == 1 && list.getSelectedValue() != null) {
             String value = list.getSelectedValue().toString();
-            if (value.startsWith("s:") || value.startsWith("x:")) {     //NOI18N
+            if (value.startsWith(SIMPLE_PREFIX)
+                    || value.startsWith(REGEXP_PREFIX)) {
                 editable = true;
             }
         }
@@ -196,9 +201,9 @@ final class IgnoreListPanel extends javax.swing.JPanel {
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
         final String val = list.getSelectedValue().toString();
-        boolean regex = val.startsWith("x:");
+        boolean regex = val.startsWith(REGEXP_PREFIX);
         PatternSandbox.openDialog(new PatternSandbox.PathPatternSandbox(
-                val.substring(2), regex) {
+                val.substring(REGEXP_PREFIX.length()), regex) {
 
             @Override
             protected void onApply(String pattern, boolean regexp) {
@@ -255,7 +260,7 @@ final class IgnoreListPanel extends javax.swing.JPanel {
         }
 
         public void addFile(File f) {
-            list.add("f:" + f.getAbsolutePath());                       //NOI18N
+            list.add(FILE_PREFIX + f.getAbsolutePath());
             fireIntervalAdded(this, list.size() - 1, list.size());
             persist();
         }
@@ -269,13 +274,13 @@ final class IgnoreListPanel extends javax.swing.JPanel {
         }
 
         public void addSimplePatter(String p) {
-            list.add("s: " + p);
+            list.add(SIMPLE_PREFIX + p);
             fireIntervalAdded(this, list.size() - 1, list.size());
             persist();
         }
 
         public void addRegularExpression(String x) {
-            list.add("x: " + x);
+            list.add(REGEXP_PREFIX + x);
             fireIntervalAdded(this, list.size() - 1, list.size());
             persist();
         }
@@ -326,19 +331,19 @@ final class IgnoreListPanel extends javax.swing.JPanel {
         public IgnoreListManager(List<String> ignoreList) {
             items = new LinkedList<IgnoredItemDefinition>();
             for (String s : ignoreList) {
-                String[] parts = s.split(": ");
-                if (parts.length == 2) {
-                    try {
-                        if (parts[0].equals("s")) {
-                            items.add(new IgnoredPatternDefinition(parts[1]));
-                        } else if (parts[0].equals("x")) {
-                            items.add(new IgnoredRegexpDefinition(parts[1]));
-                        } else if (parts[0].equals("f")) {
-                            items.add(new IgnoredDirDefinition(parts[1]));
-                        }
-                    } catch (Exception e) {
-                        Exceptions.printStackTrace(e);
+                try {
+                    if (s.startsWith(SIMPLE_PREFIX)) {
+                        String p = s.substring(SIMPLE_PREFIX.length());
+                        items.add(new IgnoredPatternDefinition(p));
+                    } else if (s.startsWith(REGEXP_PREFIX)) {
+                        String x = s.substring(REGEXP_PREFIX.length());
+                        items.add(new IgnoredRegexpDefinition(x));
+                    } else if (s.startsWith(FILE_PREFIX)) {
+                        String f = s.substring(FILE_PREFIX.length());
+                        items.add(new IgnoredDirDefinition(f));
                     }
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
