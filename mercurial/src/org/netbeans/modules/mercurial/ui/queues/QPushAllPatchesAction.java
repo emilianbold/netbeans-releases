@@ -92,6 +92,7 @@ public class QPushAllPatchesAction extends ContextAction {
                     logger.output(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_INFO_SEP", root.getAbsolutePath())); //NOI18N
                     HgCommand.qPushPatches(root, null, logger);
                     HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
+                    Mercurial.getInstance().refreshOpenedFiles(root);
                     logger.output(""); // NOI18N
                     HgUtils.logHgLog(parent, logger);
                     logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_DONE")); // NOI18N
