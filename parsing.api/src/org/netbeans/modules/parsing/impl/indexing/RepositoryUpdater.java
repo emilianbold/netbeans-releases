@@ -3829,7 +3829,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 } finally {
                     binaryScanFinished(binaryIndexers, contexts);
                     if (success && file != null && !upToDate) {
-                        ArchiveTimeStamps.getLastModified(file); //remove
                         ArchiveTimeStamps.setLastModified(file, createBinaryIndexersTimeStamp(currentLastModified,contexts));
                     }
                 }
