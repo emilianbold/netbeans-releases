@@ -53,6 +53,7 @@ import org.openide.util.Parameters;
  * @author Tomas Mysik
  */
 public final class PhpModuleProperties {
+    private final String encoding;
     private final FileObject tests;
     private final FileObject webRoot;
     private final FileObject indexFile;
@@ -64,11 +65,37 @@ public final class PhpModuleProperties {
     }
 
     private PhpModuleProperties(PhpModulePropertiesData data) {
+        encoding = data.encoding;
         tests = data.tests;
         webRoot = data.webRoot;
         indexFile = data.indexFile;
         url = data.url;
         includePath = data.includePath;
+    }
+
+    /**
+     * Get encoding of the {@link PhpModule}.
+     * @return encoding of the {@link PhpModule}
+     * @since 1.58
+     */
+    public String getEncoding() {
+        return encoding;
+    }
+
+    /**
+     * Return properties with configured encoding of the {@link PhpModule}. It is responsibility of caller
+     * to provide valid encoding name.
+     * <p>
+     * All other properties of the returned properties are inherited from
+     * <code>this</code>.
+     *
+     * @param encoding encoding of the {@link PhpModule}
+     * @return new properties with configured encoding of the {@link PhpModule}
+     * @since 1.58
+     */
+    public PhpModuleProperties setEncoding(String encoding) {
+        Parameters.notNull("encoding", encoding);
+        return new PhpModuleProperties(new PhpModulePropertiesData(this).setEncoding(encoding));
     }
 
     /**
@@ -189,6 +216,7 @@ public final class PhpModuleProperties {
     }
 
     private static final class PhpModulePropertiesData {
+        String encoding;
         FileObject tests;
         FileObject webRoot;
         FileObject indexFile;
@@ -199,11 +227,17 @@ public final class PhpModuleProperties {
         }
 
         PhpModulePropertiesData(PhpModuleProperties properties) {
+            encoding = properties.getEncoding();
             tests = properties.getTests();
             webRoot = properties.getWebRoot();
             indexFile = properties.getIndexFile();
             url = properties.getUrl();
             includePath = properties.getIncludePath();
+        }
+
+        PhpModulePropertiesData setEncoding(String encoding) {
+            this.encoding = encoding;
+            return this;
         }
 
         PhpModulePropertiesData setTests(FileObject tests) {

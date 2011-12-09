@@ -65,6 +65,9 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
     private Set<Modifier> methodModifiers = Collections.emptySet();
     private Set<Modifier> fieldModifiers = Collections.emptySet();;
     private boolean alwaysUseAccessors;
+    private boolean isGeneratePropertyChangeSupport;
+    private boolean isGenerateVetoableSupport;
+    
 
     /** Creates a new instance of EcapsulateFields.
      * @param selectedObject field to encapsulate, whatever tree of class
@@ -146,6 +149,38 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
     public TreePathHandle getSelectedObject() {
         return getRefactoringSource().lookup(TreePathHandle.class);
     }
+    
+    /**
+     * 
+     * @return
+     */
+    public boolean isGeneratePropertyChangeSupport() {
+        return isGeneratePropertyChangeSupport;
+    }
+
+    /**
+     * 
+     * @param isGeneratePropertyChangeSupport
+     */
+    public void setGeneratePropertyChangeSupport(boolean isGeneratePropertyChangeSupport) {
+        this.isGeneratePropertyChangeSupport = isGeneratePropertyChangeSupport;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public boolean isGenerateVetoableSupport() {
+        return isGenerateVetoableSupport;
+    }
+
+    /**
+     * 
+     * @param isGenerateVetoableSupport
+     */
+    public void setGenerateVetoableSupport(boolean isGenerateVetoableSupport) {
+        this.isGenerateVetoableSupport = isGenerateVetoableSupport;
+    }    
     
 
     ////////////////////////////////////////////////////////////////////////////

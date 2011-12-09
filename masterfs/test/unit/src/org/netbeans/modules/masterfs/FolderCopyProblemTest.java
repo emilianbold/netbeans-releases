@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.masterfs;
 
-package org.netbeans.modules.maven.newproject;
+import java.io.File;
+import java.net.URL;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.ProxyURLStreamHandlerFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.apache.maven.repository.RepositorySystem;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
-import org.openide.util.lookup.ServiceProvider;
+public class FolderCopyProblemTest extends NbTestCase {
 
-@ServiceProvider(service=ArchetypeProvider.class, position=400)
-public class RemoteRepoProvider implements ArchetypeProvider {
-
-    @Override public List<Archetype> getArchetypes() {
-        List<Archetype> lst = new ArrayList<Archetype>();
-        List<RepositoryInfo> infos = RepositoryPreferences.getInstance().getRepositoryInfos();
-        for (RepositoryInfo info : infos) {
-            if (RepositorySystem.DEFAULT_LOCAL_REPO_ID.equals(info.getId())) {
-                continue;
-            }
-            search(info, lst);
-        }
-        return lst;
+    public FolderCopyProblemTest(String name) {
+        super(name);
     }
+    
+    public void testTheCopyProblem() throws Exception {
+        clearWorkDir();
+        
+        URL.setURLStreamHandlerFactory(new ProxyURLStreamHandlerFactory());
 
-    private void search(RepositoryInfo info, List<Archetype> lst) {
-        for (NBVersionInfo art : RepositoryQueries.findArchetypes(Collections.singletonList(info))) {
-            Archetype arch = new Archetype(false);
-            arch.setArtifactId(art.getArtifactId());
-            arch.setGroupId(art.getGroupId());
-            arch.setVersion(art.getVersion());
-            arch.setName(art.getProjectName());
-            arch.setDescription(art.getProjectDescription());
-            arch.setRepository(info.getRepositoryUrl());
-            lst.add(arch);
-        }
+        File tempFileSource = new File(getWorkDir(), "source");
+        tempFileSource.mkdirs();
+        File tempFile1 = File.createTempFile("test.test1", "", tempFileSource);
+        tempFile1.delete();
+        tempFile1.mkdir();
+        File tempFile2 = File.createTempFile("test.test2", "", tempFileSource);
+        tempFile2.delete();
+        tempFile2.mkdir();
+
+        File tempFileTarget = new File(getWorkDir(), "target");
+        tempFileTarget.mkdir();
+
+        FileObject sourceFo = FileUtil.toFileObject(tempFileSource);
+        FileObject targetFo = FileUtil.toFileObject(tempFileTarget);
+
+        FileUtil.copyFile(sourceFo, targetFo, "source");       
+
+        assertNotNull(targetFo.getFileObject("source/" + tempFile1.getName()));
+        assertNotNull(targetFo.getFileObject("source/" + tempFile2.getName()));
     }
-
 }

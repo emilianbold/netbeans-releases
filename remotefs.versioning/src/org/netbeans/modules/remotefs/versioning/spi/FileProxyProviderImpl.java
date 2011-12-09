@@ -145,11 +145,6 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
         }
 
         @Override
-        public boolean isFlat(VCSFileProxy path) {
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
-        }
-
-        @Override
         public ProcessBuilder createProcessBuilder(VCSFileProxy file) {
             return createProcessBuilder(toFileProxy(file));
         }

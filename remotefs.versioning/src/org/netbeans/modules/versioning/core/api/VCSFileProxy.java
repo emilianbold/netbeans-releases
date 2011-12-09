@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
 public final class VCSFileProxy {
 
     private final String path;
-    final VCSFileProxyOperations proxy;
+    private final VCSFileProxyOperations proxy;
     private boolean isFlat = false;
     private Boolean isDirectory = null;
     
@@ -187,7 +187,7 @@ public final class VCSFileProxy {
      * @see File#isFile() 
      */
     public boolean isFile() {
-        if (proxy == null) {
+        if (proxy == null) { // XXX cache like with isDirectory
             return new File(path).isFile();
         } else {
             return proxy.isFile(this);
@@ -259,7 +259,6 @@ public final class VCSFileProxy {
             }
             return null;
         } else {
-            // Fixed to build
             return proxy.list(this);
         }
         
@@ -344,11 +343,7 @@ public final class VCSFileProxy {
     }
     
     boolean isFlat() {
-        if (proxy == null) {
-            return isFlat;
-        } else {
-            return proxy.isFlat(this);
-        }
+        return isFlat;
     }
     
     private static VCSFileProxyOperations getFileProxyOperations(FileSystem fs) {

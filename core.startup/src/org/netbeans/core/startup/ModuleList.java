@@ -342,7 +342,7 @@ final class ModuleList implements Stamps.Updater {
             LOG.log(Level.INFO, null, ie);
             Module bad = ie.getModule();
             if (bad == null) throw new IllegalStateException();
-            Set<Module> affectedModules = mgr.getModuleInterdependencies (bad, true, true);
+            Set<Module> affectedModules = mgr.getModuleInterdependencies(bad, true, true, true);
             ev.log(Events.FAILED_INSTALL_NEW_UNEXPECTED, bad, affectedModules, ie);
             modules.removeAll (affectedModules);
             // Try again without it. Note that some other dependent modules might

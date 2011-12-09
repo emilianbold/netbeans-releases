@@ -233,8 +233,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         }
         boolean result = !installedFiles.containsAll(existentFilesList);
         existentFilesList.removeAll(installedFiles);
-        LogManager.log("installedFiles " + Arrays.toString(installedFiles.toArray()));
-        LogManager.log("existentFilesList after removal " + Arrays.toString(existentFilesList.toArray()));
+        LogManager.log(ErrorLevel.DEBUG, "installedFiles " + Arrays.toString(installedFiles.toArray()));
+        LogManager.log(ErrorLevel.DEBUG, "existentFilesList after removal " + Arrays.toString(existentFilesList.toArray()));
         LogManager.log("areThereNewFiles returned " + result);
         return result;
     }
