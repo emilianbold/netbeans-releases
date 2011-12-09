@@ -53,7 +53,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
@@ -77,7 +76,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     private final String displayName;
     private final String menuLabel;
     
-    private static Logger LOG = Logger.getLogger(DelegatingVCS.class.getName());
+    private static final Logger LOG = Logger.getLogger(DelegatingVCS.class.getName());
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
@@ -105,6 +104,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", displayName); // NOI18N
     }
 
+    @Override
     public org.netbeans.modules.versioning.spi.VersioningSystem getDelegate() {
         synchronized(DELEGATE_LOCK) {
             if(delegate == null) {
@@ -204,12 +204,14 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return menuLabel;
     }
 
+    @Override
     public final void addPropertyCL(PropertyChangeListener listener) {
         synchronized(support) {
             support.addPropertyChangeListener(listener);
         }
     }
     
+    @Override
     public final void removePropertyCL(PropertyChangeListener listener) {
         synchronized(support) {
             support.removePropertyChangeListener(listener);
@@ -357,7 +359,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 }
 
                 @Override
-                public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
+                public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
                     List<? super File> files = new ArrayList<File>(children.size());
                     for (Iterator<? super VCSFileProxy> it = children.iterator(); it.hasNext();) {
                         VCSFileProxy fileProxy = (VCSFileProxy) it.next();
@@ -395,8 +397,8 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     
     Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {
         if(map == null || isAlive()) {
-            VCSAnnotator annotator = getAnnotator();
-            return annotator != null ? annotator.getActions(ctx, actionDestination) : new Action[0];
+            VCSAnnotator tmp = getAnnotator();
+            return tmp != null ? tmp.getActions(ctx, actionDestination) : new Action[0];
         } else {
             Action[] ia = getInitActions(ctx);
             Action[] ga = getGlobalActions(ctx);
