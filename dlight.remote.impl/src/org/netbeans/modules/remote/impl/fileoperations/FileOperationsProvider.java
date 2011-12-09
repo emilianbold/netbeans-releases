@@ -99,9 +99,9 @@ abstract public class FileOperationsProvider {
         protected String normalizeUnixPath(FileProxyO file) {
             String path = PathUtilities.normalizeUnixPath(file.getPath());
             // TODO resolve inconsistency of PathUtilities && FileUtils.
-            if (path.isEmpty() && file.getPath().startsWith("/") ||
-                path.equals("/..")) {
-                return "/";
+            if (path.isEmpty() && file.getPath().startsWith("/") || //NOI18N
+                path.equals("/..")) { //NOI18N
+                return "/"; //NOI18N
             }
             return path;
         }

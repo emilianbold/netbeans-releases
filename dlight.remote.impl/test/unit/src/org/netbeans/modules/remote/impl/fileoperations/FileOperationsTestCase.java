@@ -306,7 +306,6 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
                 assertEquals(ioFile2, ioFile);
                 
                 FileProxyO file2 = FileOperationsProvider.toFileProxy(file.getPath()+"/test/..");
-                fileOperations.normalizeUnixPath(file2);
                 absPathEquals(ioFile2.getAbsolutePath(), fileOperations.normalizeUnixPath(file2));
             }
         } else {
