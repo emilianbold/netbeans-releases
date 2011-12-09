@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -53,8 +51,6 @@ import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -72,9 +68,8 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
     private static final String ATTR_NAME_PATTERN = "namePattern";    //NOI18N
     private static final String PROP_CHECKED = "ProxyBinaryIndexerFactory_checked";  //NOI18N
     private static final String PROP_MATCHED_FILES = "ProxyBinaryIndexerFactory_matchedFiles";  //NOI18N
-    private static final String PROP_LAST_MODIFIED = "ProxyBinaryIndexerFactory_lastModified";  //NOI18N
     private static final String MIME_UNKNOWN = "content/unknown";   //NOI18N
-    private static final String TIME_STAMP_FILE = ".timestamp";     //NOI18N
+    private static final int USED = 1;
 
     private final Map<String,Object> params;
     private final String indexerName;
@@ -126,7 +121,8 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
 
     @Override
     public boolean scanStarted (final Context context) {
-        if (supports(context) != null) {
+        if (supports(context) != null ||
+           (isUpToDate(context) && ArchiveTimeStamps.getIndexerState(context) == USED)) {
             return SPIAccessor.getInstance().scanStarted(getDelegate(),context);
         }
         return true;
@@ -141,7 +137,8 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
 
 
     @CheckForNull
-    private Map<String,? extends Iterable<? extends FileObject>> supports(@NonNull final Context ctx) {
+    private Map<String,? extends Iterable<? extends FileObject>> supports(
+            @NonNull final Context ctx) {
         final FileObject root = ctx.getRoot();
         if (root == null) {
             return null;
@@ -222,57 +219,7 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
     }
 
     private static boolean isUpToDate(@NonNull final Context ctx) {
-        boolean vote = false;
-        final FileObject root = ctx.getRoot();
-        FileObject file = FileUtil.getArchiveFile(root);
-        if (file == null) {
-            assert SPIAccessor.getInstance().getProperty(ctx, PROP_LAST_MODIFIED) == null;
-            return false;
-        }
-        final long timeStamp = file.lastModified().getTime();
-        try {
-            final FileObject indexFolder = ctx.getIndexFolder();
-            if (indexFolder == null) {
-                return false;
-            }
-            final File indexDir = FileUtil.toFile(indexFolder);
-            if (indexDir == null) {
-                return false;
-            }
-            final File timeStampFile = new File (indexDir,TIME_STAMP_FILE);
-            final long lastTimeStamp = timeStampFile.lastModified();
-            if (lastTimeStamp == 0) {
-                return false;
-            }
-            vote = timeStamp == lastTimeStamp;
-            return vote;
-        } finally {
-            SPIAccessor.getInstance().putProperty(
-                    ctx,
-                    PROP_LAST_MODIFIED,
-                    vote ? null : timeStamp);
-        }
-    }
-
-    private static void storeLastModified(@NonNull final Context ctx) {
-        final Object timeStamp = SPIAccessor.getInstance().getProperty(ctx, PROP_LAST_MODIFIED);
-        if (timeStamp instanceof Long) {
-            final FileObject indexFodler = ctx.getIndexFolder();
-            if (indexFodler == null) {
-                return;
-            }
-            final File indexDir = FileUtil.toFile(indexFodler);
-            if (indexDir == null) {
-                return;
-            }
-            try {
-                final File timeStampFile = new File(indexDir,TIME_STAMP_FILE);
-                timeStampFile.createNewFile();
-                timeStampFile.setLastModified((Long)timeStamp);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
+        return !ctx.isAllFilesIndexing();
     }
 
     private final class Indexer extends BinaryIndexer {
@@ -286,8 +233,8 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
                     getDelegate(),
                     matchedFiles,
                     context);
+                ArchiveTimeStamps.setIndexerState(context, USED);
             }
-            storeLastModified(context);
         }
     }
 }
