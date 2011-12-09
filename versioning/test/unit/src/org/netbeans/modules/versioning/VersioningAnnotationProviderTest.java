@@ -211,24 +211,20 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     lastEvent = System.currentTimeMillis();
-                    Collection<? extends AnnotationProvider> providers = Lookup.getDefault().lookupAll(AnnotationProvider.class);
-                    for (AnnotationProvider provider : providers) {
-                        if (provider instanceof VersioningAnnotationProvider) {
-                            long time = System.currentTimeMillis();
-                            for (FileObject fo : files) {
-                                String name = fo.getNameExt();
-                                name = provider.annotateNameHtml(name, Collections.singleton(fo));
-                                annotationsLabels.put(fo, name);
-                                Image image = ImageUtilities.assignToolTipToImage(VersioningAnnotationProviderTest.IMAGE, fo.getNameExt());
-                                ImageUtilities.getImageToolTip(image);
-                                image = provider.annotateIcon(image, 0, Collections.singleton(fo));
-                                annotationsIcons.put(fo, image);
-                            }
-                            time = System.currentTimeMillis() - time;
-                            if (time > 500) {
-                                ex = new Exception("Annotation takes more than 200ms");
-                            }
-                        }
+                    VersioningAnnotationProvider provider = VersioningAnnotationProvider.getDefault();
+                    long time = System.currentTimeMillis();
+                    for (FileObject fo : files) {
+                        String name = fo.getNameExt();
+                        name = provider.annotateNameHtml(name, Collections.singleton(fo));
+                        annotationsLabels.put(fo, name);
+                        Image image = ImageUtilities.assignToolTipToImage(VersioningAnnotationProviderTest.IMAGE, fo.getNameExt());
+                        ImageUtilities.getImageToolTip(image);
+                        image = provider.annotateIcon(image, 0, Collections.singleton(fo));
+                        annotationsIcons.put(fo, image);
+                    }
+                    time = System.currentTimeMillis() - time;
+                    if (time > 500) {
+                        ex = new Exception("Annotation takes more than 200ms");
                     }
                 }
             });
