@@ -143,7 +143,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
     
     private String instructions=null;
     private boolean oneline=false;
-    private boolean customEd=true;
+    private boolean customEd=false; // until PropertyEnv is attached
     private PropertyEnv env;
     /** null or name to use for null value */
     private String nullValue;

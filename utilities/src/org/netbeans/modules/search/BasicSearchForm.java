@@ -421,7 +421,18 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.setSelected(searchCriteria.isWholeWords());
         chkCaseSensitive.setSelected(searchCriteria.isCaseSensitive());
         chkRegexp.setSelected(searchCriteria.isRegexp());
-        chkPreserveCase.setSelected(searchCriteria.isPreserveCase());
+        chkFileNameRegex.setSelected(searchCriteria.isFileNameRegexp());
+        chkUseIgnoreList.setSelected(searchCriteria.isUseIgnoreList());
+
+        selectChk(chkPreserveCase, searchCriteria.isPreserveCase());
+        selectChk(chkArchives, searchCriteria.isSearchInArchives());
+        selectChk(chkGenerated, searchCriteria.isSearchInGenerated());
+    }
+
+    private static void selectChk(JCheckBox checkbox, boolean value) {
+        if (checkbox != null) {
+            checkbox.setSelected(value);
+        }
     }
     
     /**

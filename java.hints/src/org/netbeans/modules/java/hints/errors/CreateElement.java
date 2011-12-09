@@ -342,7 +342,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //field like or class (type):
-        if (classType != null) {
+        if (classType != null && e.asType().getKind() == TypeKind.ERROR) {
             if (wasMemberSelect) {
                  result.addAll(prepareCreateInnerClassFix(info, null, (TypeElement) target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
             } else {

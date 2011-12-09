@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,53 +34,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s): theanuradha@netbeans.org
- *
+ * 
+ * Contributor(s):
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.buildplan;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.maven.lifecycle.model.MojoBinding;
+package org.netbeans.modules.java.source.javac;
+
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
+import com.sun.tools.javadoc.JavadocEnter;
+import com.sun.tools.javadoc.Messager;
 
 /**
- *
- * @author Anuradha G
+ * JavadocEnter which doesn't ignore class duplicates unlike the base JavadocEnter
+ * Enter - does't ignore duplicates
+ * JavadocEnter - ignors duplicates
+ * NBJavadocEnter - does't ignore duplicates
+ * @author Tomas Zezula
  */
-public class BuildPlanGroup {
-
-    private List<String> phaseList = new ArrayList<String>();
-    Map<String, List<MojoBinding>> map = new HashMap<String, List<MojoBinding>>();
-
-    public List<String> getPhaseList() {
-        return new ArrayList<String>(phaseList);
+public class NBJavadocEnter extends JavadocEnter {
+        
+    public static void preRegister(final Context context) {
+        context.put(enterKey, new Context.Factory<Enter>() {
+            public Enter make(Context c) {
+                return new NBJavadocEnter(c);
+            }
+        });
     }
 
-    public List<MojoBinding> getMojoBindings(String phase) {
-        return map.get(phase);
+    private final Messager messager;
+    private final CancelService cancelService;
+
+    protected NBJavadocEnter(Context context) {
+        super(context);
+        messager = Messager.instance0(context);
+        cancelService = CancelService.instance(context);
     }
 
-    public void putMojoBinding(String key, MojoBinding mb) {
-        if (!phaseList.contains(key)) {
-            phaseList.add(key);
-        }
-        List<MojoBinding> mbs = map.get(key);
-        if (mbs == null) {
-            mbs = new ArrayList<MojoBinding>();
-            map.put(key, mbs);
-        }
-        mbs.add(mb);
+    public @Override void main(com.sun.tools.javac.util.List<JCCompilationUnit> trees) {
+        //Todo: Check everytime after the java update that JavaDocEnter.main or Enter.main
+        //are not changed.
+        this.complete(trees, null);
     }
 
-    public boolean removePhase(String o) {
-        return phaseList.remove(o);
+    @Override
+    protected void duplicateClass(DiagnosticPosition pos, ClassSymbol c) {
+        messager.error(pos, "duplicate.class", c.fullname);
     }
-
-    public boolean containsPhase(String o) {
-        return phaseList.contains(o);
+    
+    @Override
+    public void visitClassDef(JCClassDecl tree) {
+        cancelService.abortIfCanceled();
+        super.visitClassDef(tree);
     }
 }

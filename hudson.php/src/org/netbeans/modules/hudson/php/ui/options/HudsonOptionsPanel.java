@@ -183,6 +183,14 @@ public class HudsonOptionsPanel extends JPanel {
 
         ppwLabel.setLabelFor(ppwTextField);
         Mnemonics.setLocalizedText(ppwLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwLabel.text")); // NOI18N
+        ppwLearnMoreLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                ppwLearnMoreLabelMouseEntered(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                ppwLearnMoreLabelMousePressed(evt);
+            }
+        });
 
         ppwTextField.setText(NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwTextField.text")); Mnemonics.setLocalizedText(ppwBrowseButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.ppwBrowseButton.text")); // NOI18N
         ppwBrowseButton.addActionListener(new ActionListener() {
@@ -209,6 +217,8 @@ public class HudsonOptionsPanel extends JPanel {
                 ppwLearnMoreLabelMousePressed(evt);
             }
         });
+
+        jobConfigLabel.setLabelFor(jobConfigTextField);
         Mnemonics.setLocalizedText(jobConfigLabel, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.jobConfigLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(jobConfigBrowseButton, NbBundle.getMessage(HudsonOptionsPanel.class, "HudsonOptionsPanel.jobConfigBrowseButton.text")); // NOI18N
         jobConfigBrowseButton.addActionListener(new ActionListener() {

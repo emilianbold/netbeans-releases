@@ -2776,8 +2776,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     @Override
     public Mirror visitArrayType(ArrayTypeTree arg0, EvaluationContext evaluationContext) {
-        Type type = (Type) arg0.getType().accept(this, evaluationContext);
-        if (type == null) return null;
+        Mirror arrayType = arg0.getType().accept(this, evaluationContext);
+        if (!(arrayType instanceof Type)) {
+            return arrayType;
+        }
+        Type type = (Type) arrayType;
         String arrayClassName = type.name()+"[]";
         ReferenceType aType = getOrLoadClass(type.virtualMachine(), arrayClassName, evaluationContext);
         if (aType != null) {
