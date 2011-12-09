@@ -75,6 +75,7 @@ public final class ApiGenScript extends PhpProgram {
     private static final String TITLE_PARAM = "--title"; // NOI18N
     private static final String CONFIG_PARAM = "--config"; // NOI18N
     private static final String CHARSET_PARAM = "--charset"; // NOI18N
+    private static final String COLORS_PARAM = "----colors"; // NOI18N
 
 
     private ApiGenScript(String command) {
@@ -161,6 +162,7 @@ public final class ApiGenScript extends PhpProgram {
         setTitle(phpModule, params);
         setConfig(phpModule, params);
         setCharsets(phpModule, params);
+        setColors(phpModule, params);
         return params;
     }
 
@@ -192,6 +194,12 @@ public final class ApiGenScript extends PhpProgram {
             params.add(CHARSET_PARAM);
             params.add(charset);
         }
+    }
+
+    // always set colors since output windows supports ANSI coloring
+    private void setColors(PhpModule phpModule, List<String> params) {
+        params.add(COLORS_PARAM);
+        params.add("yes"); // NOI18N
     }
 
 }
