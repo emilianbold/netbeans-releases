@@ -49,7 +49,6 @@ import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
@@ -69,8 +68,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
 import org.openide.util.*;
 import org.openide.util.Lookup.Result;
 
@@ -108,6 +111,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     private static boolean initialized = false;
     private static boolean initializing = false;
     private static final Object INIT_LOCK = new Object();
+    private static volatile Set<FileStatusListener> statusListeners = Collections.emptySet();
 
     public static synchronized VersioningManager getInstance() {
         if (instance == null) {
@@ -135,9 +139,13 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         return false;
     }
 
-    // ======================================================================================================
+    public static void deliverStatusEvent(FileStatusEvent ev) {
+        for (FileStatusListener l : statusListeners) {
+            l.annotationChanged(ev);
+        }
+    }
 
-    private final FilesystemInterceptor filesystemInterceptor;
+    // ======================================================================================================
 
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
@@ -212,13 +220,11 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         for (VCSSystemProvider p : providers) {
             p.addChangeListener(this);
         }
-        filesystemInterceptor = new FilesystemInterceptor(true);
     }
     
     private void init() {
         try {
             refreshVersioningSystems();
-            filesystemInterceptor.init(this);
             VersioningSupport.getPreferences().addPreferenceChangeListener(this);
         } finally {
             initialized = true;                                    
@@ -255,11 +261,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
         flushFileOwnerCache();
         fireFileStatusChanged(null);
-        VersioningAnnotationProvider.refreshAllAnnotations();
-    }
-
-    InterceptionListener getInterceptionListener() {
-        return filesystemInterceptor;
+        refreshAllAnnotations();
     }
 
     private void fireFileStatusChanged(Set<File> files) {
@@ -550,11 +552,11 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     public void propertyChange(PropertyChangeEvent evt) {
         if (EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
-            VersioningAnnotationProvider.instance.refreshAnnotations(files);
+            // XXX: cannot work on files anyway VersioningAnnotationProvider.instance.refreshAnnotations(files);
             fireFileStatusChanged(files);
         } else if (EVENT_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
-            VersioningAnnotationProvider.instance.refreshAnnotations(files);
+            // XXX: cannot work on files anyway VersioningAnnotationProvider.instance.refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
             if(evt.getSource() instanceof VersioningSystem) {
                 versionedRootsChanged((VersioningSystem) evt.getSource());
@@ -581,7 +583,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
-        VersioningAnnotationProvider.instance.refreshAnnotations(null);
+        refreshAllAnnotations();
     }
 
     /**
@@ -591,7 +593,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
      * @return <code>true</code> if the given methodName is implemented by local histories {@link VCSInterceptor}
      * otherwise <code>false</code>
      */
-    boolean needsLocalHistory(String methodName) {
+    public boolean needsLocalHistory(String methodName) {
         boolean ret = false;
         try {
             synchronized(versioningSystems) {
@@ -615,6 +617,21 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
         }
+    }
+
+    public synchronized static void statusListener(FileStatusListener listener, boolean add) {
+        WeakSet<FileStatusListener> newSet = new WeakSet<FileStatusListener>(statusListeners);
+        if (add) {
+            newSet.add(listener);
+        } else {
+            newSet.remove(listener);
+        }
+        statusListeners = newSet;
+    }
+
+    private static void refreshAllAnnotations() {
+        FileStatusEvent ev = new FileStatusEvent(Utils.getRootFilesystem(), true, true);
+        deliverStatusEvent(ev);
     }
 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);

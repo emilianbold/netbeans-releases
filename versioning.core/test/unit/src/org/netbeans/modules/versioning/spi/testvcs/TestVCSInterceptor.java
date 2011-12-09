@@ -43,12 +43,12 @@
  */
 package org.netbeans.modules.versioning.spi.testvcs;
 
+import java.io.*;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 
-import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.FileUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Maros Sandor
@@ -156,7 +156,11 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doCopy(VCSFileProxy from, VCSFileProxy to) throws IOException {
         doCopyFiles.add(from);
         doCopyFiles.add(to);
-        FileUtils.copyFile(from.toFile(), to.toFile());
+        InputStream is = new FileInputStream (from.toFile());
+        OutputStream os = new FileOutputStream(to.toFile());
+        FileUtil.copy(is, os);
+        is.close();
+        os.close();
     }
 
     public void afterCopy(VCSFileProxy from, VCSFileProxy to) {
@@ -233,7 +237,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
+    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
         refreshRecursivelyFiles.add(dir);
         if(dir.getName().equals("administrative")) {
             return 0;

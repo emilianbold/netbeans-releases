@@ -56,9 +56,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -112,64 +110,6 @@ public class FSInterceptorTest extends NbTestCase {
             }
         }
     }  
-
-    private static abstract class W {
-        private static LogHandler lh;
-        private static Set<String> calledMethods = new HashSet<String>();
-        private static FilesystemInterceptor fi;
-
-        W() {
-            if(lh == null) {
-                lh = new LogHandler();
-                VersioningManager.LOG.addHandler(lh);
-                fi = new FilesystemInterceptor(true);
-                fi.init(VersioningManager.getInstance());
-            }
-        }
-
-        abstract void callInterceptorMethod(FilesystemInterceptor fi);
-
-        void test() {
-            test(null);
-        }
-        void test(String[] mustHaveIntercepted) {
-            lh.reset();
-            TestInterceptor.instance.methodNames.clear();
-
-            callInterceptorMethod(fi);
-
-            assertNotNull(lh.methodNames);
-            for (String m : lh.methodNames) {
-                if(!TestInterceptor.instance.methodNames.contains(m)) {
-                   fail(" missing logged method name " + m + " between intercepted");
-                }
-            }
-            for (String m : TestInterceptor.instance.methodNames) {
-                if(!lh.methodNames.contains(m) && !ignore(m, mustHaveIntercepted)) {
-                    fail(" missing intercepted method name " + m + " between logged");
-                }
-            }
-            if(mustHaveIntercepted != null) {
-                for (String m : mustHaveIntercepted) {
-                    if(!TestInterceptor.instance.methodNames.contains(m)) {
-                       fail(" missing must have intercepted method name " + m);
-                    }
-                }
-            }
-            calledMethods.addAll(TestInterceptor.instance.methodNames);
-        }
-
-        private boolean ignore(String name, String[] toBeIgnored) {
-            if(toBeIgnored == null) return false;
-            for (String i : toBeIgnored) {
-                if(i.equals(name)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
 
     public static class TestInterceptor extends VCSInterceptor {
         Set<String> methodNames = new HashSet<String>();
@@ -281,7 +221,7 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         @Override
-        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
+        public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
             storeMethodName();
             return super.refreshRecursively(dir, lastTimeStamp, children);
         }

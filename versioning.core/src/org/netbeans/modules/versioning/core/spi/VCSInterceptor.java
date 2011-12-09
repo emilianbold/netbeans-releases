@@ -282,7 +282,7 @@ public abstract class VCSInterceptor {
      *   0 if the directory does not have any special timestamp. Return
      *   -1 if you are not providing any special implementation
      */
-    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<VCSFileProxy> children) {
+    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
         return -1;
     }
 }

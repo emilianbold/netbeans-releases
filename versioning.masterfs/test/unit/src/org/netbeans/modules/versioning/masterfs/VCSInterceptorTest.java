@@ -41,10 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.core.spi;
+package org.netbeans.modules.versioning.masterfs;
 
 
-import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;

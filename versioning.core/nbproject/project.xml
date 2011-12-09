@@ -68,15 +68,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>2.30</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -205,10 +196,6 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.versioning.util</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -221,8 +208,10 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.versioning</friend>
+                <friend>org.netbeans.modules.versioning.masterfs</friend>
                 <friend>org.netbeans.modules.versioning.ui</friend>
                 <package>org.netbeans.modules.versioning.core.api</package>
+                <package>org.netbeans.modules.versioning.core.filesystems</package>
                 <package>org.netbeans.modules.versioning.core.spi</package>
                 <package>org.netbeans.modules.versioning.core.util</package>
             </friend-packages>

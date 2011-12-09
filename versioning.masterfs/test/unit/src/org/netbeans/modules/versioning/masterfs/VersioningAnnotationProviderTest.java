@@ -40,9 +40,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.versioning;
+package org.netbeans.modules.versioning.masterfs;
 
-import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -68,7 +67,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -87,6 +85,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         super(arg);
     }
 
+    @Override
     protected void setUp () throws IOException {
         MockLookup.setLayersAndInstances();
         File userdir = new File(getWorkDir() + "/userdir");
@@ -193,6 +192,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
             this.allFiles = keySet;
         }
 
+        @Override
         public void annotationChanged(FileStatusEvent ev) {
             HashSet<FileObject> fos = new HashSet<FileObject>();
             for (FileObject fo : allFiles) {
@@ -212,6 +212,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
 
         private void startAnnotation(final Set<FileObject> files) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     lastEvent = System.currentTimeMillis();
                     Collection<? extends AnnotationProvider> providers = Lookup.getDefault().lookupAll(AnnotationProvider.class);

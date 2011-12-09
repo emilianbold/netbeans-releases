@@ -44,8 +44,6 @@
 package org.netbeans.modules.versioning.core;
 
 import java.util.Map.Entry;
-import org.netbeans.modules.masterfs.providers.InterceptionListener;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.filesystems.*;
@@ -76,25 +74,27 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
-public class VersioningAnnotationProvider extends AnnotationProvider {
+public class VersioningAnnotationProvider {
     
-    static VersioningAnnotationProvider instance;
+    private static final VersioningAnnotationProvider instance = new VersioningAnnotationProvider();
+    
     private static final Logger LOG = Logger.getLogger(VersioningAnnotationProvider.class.getName());
     private static final int CACHE_INITIAL_SIZE = 500;
     private static final long CACHE_ITEM_MAX_AGE = getMaxAge();
     private static final boolean ANNOTATOR_ASYNC = !"false".equals(System.getProperty("versioning.asyncAnnotator", "true")); //NOI18N
     private static final Image EMPTY_ICON = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 
-    public VersioningAnnotationProvider() {
-        instance = this;
+    private VersioningAnnotationProvider() {
+    }
+    
+    public static VersioningAnnotationProvider getDefault() {
+        return instance;
     }
     
     private VersioningSystem getOwner(VCSFileProxy file, Boolean isFile) {
         return file == null ? null : VersioningManager.getInstance().getOwner(file, isFile);
     }
 
-    @Override
     public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
         Image annotatedIcon;
         if (ANNOTATOR_ASYNC) {
@@ -111,13 +111,11 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         return annotatedIcon;
     }
 
-    @Override
     public String annotateNameHtml(String name, Set<? extends FileObject> files) {
         String annotatedName = labelCache.getValue(labelCache.new ItemKey<String, String>(files, name, name));
         return annotatedName == null ? htmlEncode(name) : annotatedName;
     }
 
-    @Override
     public Action[] actions(Set files) {
         if (files.isEmpty()) return new Action[0];
 
@@ -290,16 +288,6 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
     }
 
-    @Override
-    public InterceptionListener getInterceptionListener() {
-        return VersioningManager.getInstance().getInterceptionListener();
-    }
-
-    @Override
-    public String annotateName(String name, Set files) {
-        return name;    // do not support 'plain' annotations
-    }
-
     static void refreshAllAnnotations() {
         if (instance != null) {
             instance.refreshAnnotations(null);
@@ -377,7 +365,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             iconCache.removeAll();
             
             FileSystem fileSystem = Utils.getRootFilesystem();
-            fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));
+            VersioningManager.deliverStatusEvent(new FileStatusEvent(fileSystem, true, true));
         }
     });    
     
@@ -437,7 +425,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         
         private void fireFileStatusEvents(Collection<FileStatusEvent> events) {
             for(FileStatusEvent event : events) {
-                fireFileStatusChanged(event);
+                VersioningManager.deliverStatusEvent(event);
             }
         }          
     });    
