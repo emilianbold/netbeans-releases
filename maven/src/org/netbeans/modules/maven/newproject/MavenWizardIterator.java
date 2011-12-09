@@ -69,6 +69,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     
     private static final long serialVersionUID = 1L;
     static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
+    static final String PROP_ARCHETYPE = "archetype";
     private transient int index;
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
@@ -117,7 +118,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
             c.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[0]));
       }
         if (archetype != null) {
-            wiz.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, archetype);
+            wiz.putProperty(PROP_ARCHETYPE, archetype);
         }
     }
     
