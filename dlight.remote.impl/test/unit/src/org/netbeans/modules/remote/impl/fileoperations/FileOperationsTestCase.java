@@ -267,16 +267,14 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
     }
 
     private void copyAgent() {
-        if (!Utilities.isWindows()) {
-            try {
-                String name = Agent.class.getName().replace('.', '/');
-                FileObject classFile = FileUtil.createData(rootFO, remoteDir+"/classes/"+name+".class");
-                OutputStream outputStream = classFile.getOutputStream();
-                FileUtil.copy(Agent.class.getResourceAsStream("Agent.class"), outputStream);
-                outputStream.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        try {
+            String name = Agent.class.getName().replace('.', '/');
+            FileObject classFile = FileUtil.createData(rootFO, remoteDir+"/classes/"+name+".class");
+            OutputStream outputStream = classFile.getOutputStream();
+            FileUtil.copy(Agent.class.getResourceAsStream("Agent.class"), outputStream);
+            outputStream.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

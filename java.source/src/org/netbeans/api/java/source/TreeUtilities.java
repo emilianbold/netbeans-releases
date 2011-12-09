@@ -232,7 +232,6 @@ public final class TreeUtilities {
 
             if (automap) {
                 GeneratorUtilities.importComments(info, tree, info.getCompilationUnit());
-                set.commentsMapped();
             }
         }
     }
