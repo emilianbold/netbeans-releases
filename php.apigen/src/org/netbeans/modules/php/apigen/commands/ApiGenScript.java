@@ -110,7 +110,7 @@ public final class ApiGenScript extends PhpProgram {
         return Bundle.ApiGenScript_prefix(error);
     }
 
-    @NbBundle.Messages("ApiGenScript.api.generating=Generating API for {0}")
+    @NbBundle.Messages("ApiGenScript.api.generating=Generating API documentation for {0}")
     public void generateDocumentation(final PhpModule phpModule) {
         String target = ApiGenPreferences.getTarget(phpModule, true);
         if (target == null) {
