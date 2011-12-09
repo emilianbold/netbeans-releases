@@ -46,19 +46,13 @@ package org.netbeans.api.debugger.jpda;
 
 import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
-import java.net.URL;
 import java.util.ArrayList;
-
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-
 import java.util.prefs.Preferences;
-import javax.lang.model.element.TypeElement;
+
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Properties;
@@ -66,15 +60,8 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbPreferences;
 
 /**
@@ -197,7 +184,7 @@ public class JPDABreakpoint extends Breakpoint {
     public void setPrintText (String printText) {
         String old;
         synchronized (this) {
-            if (printText == this.printText || (printText != null && printText.equals(this.printText))) {
+            if (printText == null ? this.printText == null : printText.equals(this.printText)) {
                 return;
             }
             old = this.printText;
@@ -314,7 +301,7 @@ public class JPDABreakpoint extends Breakpoint {
     }
 
     DebuggerEngine[] getEngines() {
-        if (engines.size() == 0) {
+        if (engines.isEmpty()) {
             return null;
         } else {
             return engines.toArray(new DebuggerEngine[0]);
