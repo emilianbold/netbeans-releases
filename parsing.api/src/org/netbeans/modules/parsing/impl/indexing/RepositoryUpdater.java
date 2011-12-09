@@ -45,13 +45,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -2242,15 +2236,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             LOGGER.fine("InvalidateSources took: " + (et-st));  //NOI18N
         }
 
-        protected final void binaryScanStarted(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Context> contexts, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
-            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-            for(BinaryIndexerFactory bif : indexers.bifs) {
-                final Context ctx = SPIAccessor.getInstance().createContext(
-                    cacheRoot, root, bif.getIndexerName(), bif.getIndexVersion(), null, false, false,
-                    false, getShuttdownRequest());
-                contexts.put(bif, ctx);
+        protected final void binaryScanStarted(
+                @NonNull final URL root,
+                final boolean upToDate,
+                @NonNull final Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+            for(Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
+                final Context ctx = e.getValue();
+                final BinaryIndexerFactory bif = e.getKey();
+                SPIAccessor.getInstance().setAllFilesJob(ctx, !upToDate);
                 boolean vote = bif.scanStarted(ctx);
-                votes.put(bif, vote);
+                if (!vote) {
+                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
+                }
             }
         }
 
@@ -2269,11 +2266,61 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
+        protected final void createBinaryContexts(
+                @NonNull final URL root,
+                @NonNull final BinaryIndexers indexers,
+                @NonNull final Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            for(BinaryIndexerFactory bif : indexers.bifs) {
+                final Context ctx = SPIAccessor.getInstance().createContext(
+                    cacheRoot, root, bif.getIndexerName(), bif.getIndexVersion(), null, false, false,
+                    false, getShuttdownRequest());
+                contexts.put(bif, ctx);
+            }
+        }
+
+        protected final  boolean checkBinaryIndexers(
+                @NullAllowed Pair<Long,Map<Pair<String,Integer>,Integer>> lastState,
+                @NonNull Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+            if (lastState == null || lastState.first == 0L) {
+                //Nothing known about the last state
+                return false;
+            }
+            if (contexts.size() != lastState.second.size()) {
+                //Factories changed
+                return false;
+            }
+            final Map<Pair<String,Integer>,Integer> copy = new HashMap<Pair<String,Integer>,Integer>(lastState.second);
+            for (Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
+                final BinaryIndexerFactory bif = e.getKey();
+                final Integer state = copy.remove(Pair.<String,Integer>of(bif.getIndexerName(),bif.getIndexVersion()));
+                if (state == null) {
+                    //Factories changed
+                    return false;
+                }
+                ArchiveTimeStamps.setIndexerState(e.getValue(),state);
+            }
+            return copy.isEmpty();
+        }
+
+        protected final Pair<Long,Map<Pair<String,Integer>,Integer>> createBinaryIndexersTimeStamp (
+                final long currentTimeStamp,
+                @NonNull final Map<BinaryIndexerFactory, Context> contexts) {
+            final Map<Pair<String,Integer>,Integer> pairs = new HashMap<Pair<String, Integer>,Integer>();
+            for (Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
+                final BinaryIndexerFactory bf = e.getKey();
+                final Context ctx = e.getValue();
+                pairs.put(
+                        Pair.<String,Integer>of(bf.getIndexerName(),bf.getIndexVersion()),
+                        ArchiveTimeStamps.getIndexerState(ctx));
+            }
+            return Pair.<Long,Map<Pair<String,Integer>,Integer>>of(currentTimeStamp,pairs);
+        }
+
         protected final boolean indexBinary(
                 final URL root,
                 final BinaryIndexers indexers,
-                final Map<BinaryIndexerFactory,Context> contexts,
-                final Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
+                final Map<BinaryIndexerFactory,Context> contexts) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
             if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false)) {
@@ -2293,7 +2340,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     final Context ctx = contexts.get(f);
                     assert ctx != null;
-                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
 
                     final BinaryIndexer indexer = f.createIndexer();
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -3756,17 +3802,36 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, long [] scannedRootsCnt, long [] completeTime) {
             final long tmStart = System.currentTimeMillis();
             final Map<BinaryIndexerFactory, Context> contexts = new HashMap<BinaryIndexerFactory, Context>();
-            final Map<BinaryIndexerFactory, Boolean> votes = new HashMap<BinaryIndexerFactory, Boolean>();
             try {
-                binaryScanStarted(root, binaryIndexers, contexts, votes);
+                createBinaryContexts(root, binaryIndexers, contexts);
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                final FileObject file = rootFo == null ? null : FileUtil.getArchiveFile(rootFo);
+                final boolean upToDate;
+                final long currentLastModified;
+                if (file != null) {
+                    final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file);
+                    final boolean indexersUpToDate = checkBinaryIndexers(lastState, contexts);
+                    currentLastModified = file.lastModified().getTime();
+                    upToDate = indexersUpToDate && lastState.first ==  currentLastModified;
+                } else {
+                    currentLastModified = 0L;
+                    upToDate = false;
+                }
+                boolean success = false;
+                binaryScanStarted(root, upToDate, contexts);
                 try {
                     updateProgress(root, true);
-                    indexBinary(root, binaryIndexers, contexts, votes);
+                    indexBinary(root, binaryIndexers, contexts);
+                    success = true;
                     return true;
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
                     binaryScanFinished(binaryIndexers, contexts);
+                    if (success && file != null && !upToDate) {
+                        ArchiveTimeStamps.getLastModified(file); //remove
+                        ArchiveTimeStamps.setLastModified(file, createBinaryIndexersTimeStamp(currentLastModified,contexts));
+                    }
                 }
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
