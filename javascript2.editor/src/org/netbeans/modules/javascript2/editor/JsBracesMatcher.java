@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -51,6 +52,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
@@ -178,5 +180,15 @@ public class JsBracesMatcher implements BracesMatcher {
         } finally {
             ((AbstractDocument) context.getDocument()).readUnlock();
         }
+    }
+
+    @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = BracesMatcherFactory.class, position=0)
+    public static class JsBracesMatcherFactory implements BracesMatcherFactory {
+
+        @Override
+        public BracesMatcher createMatcher(MatcherContext context) {
+            return new JsBracesMatcher(context);
+        }
+
     }
 }

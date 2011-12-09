@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 
 /**
@@ -73,7 +74,12 @@ public final class LexUtilities {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
         return getJsTokenSequence(th, offset);
     }
-    
+
+    public static TokenSequence<?extends JsTokenId> getJsTokenSequence(Snapshot snapshot, int offset) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        return getJsTokenSequence(th, offset);
+    }
+
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     public static TokenSequence<?extends JsTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
         TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.language());
@@ -152,4 +158,45 @@ public final class LexUtilities {
         return OffsetRange.NONE;
     }
 
+    public static Token<?extends JsTokenId> getToken(Document doc, int offset) {
+        TokenSequence<?extends JsTokenId> ts = getPositionedSequence(doc, offset);
+
+        if (ts != null) {
+            return ts.token();
+        }
+
+        return null;
+    }
+
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Document doc, int offset) {
+        return getPositionedSequence(doc, offset, true);
+    }
+
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset) {
+        return getPositionedSequence(snapshot, offset, true);
+    }
+
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Document doc, int offset, boolean lookBack) {
+        return _getPosSeq(getJsTokenSequence(doc, offset), offset, lookBack);
+    }
+
+    public static TokenSequence<?extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset, boolean lookBack) {
+        return _getPosSeq(getJsTokenSequence(snapshot, offset), offset, lookBack);
+    }
+
+    private static TokenSequence<?extends JsTokenId> _getPosSeq(TokenSequence<? extends JsTokenId> ts, int offset, boolean lookBack) {
+        if (ts != null) {
+            ts.move(offset);
+
+            if (!lookBack && !ts.moveNext()) {
+                return null;
+            } else if (lookBack && !ts.moveNext() && !ts.movePrevious()) {
+                return null;
+            }
+
+            return ts;
+        }
+
+        return null;
+    }
 }
