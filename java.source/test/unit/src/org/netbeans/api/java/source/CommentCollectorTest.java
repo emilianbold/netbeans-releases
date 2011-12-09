@@ -537,6 +537,32 @@ public class CommentCollectorTest extends NbTestCase {
         src.runModificationTask(task);
 
     }
+
+    public void test205525() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "package test;\n" +
+                       "public class Test {\n public void aa() {\n//aa\n } public void bb() {\n//bb\n } }\n";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+
+                clazz = GeneratorUtilities.get(workingCopy).importComments(clazz, workingCopy.getCompilationUnit());
+
+                final CommentHandlerService service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+
+                assertTrue(service.getComments(clazz).areCommentsMapped());
+
+                verify(clazz, CommentSet.RelativePosition.INNER, service);
+            }
+        };
+        src.runModificationTask(task);
+
+    }
     
     void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
         assertNotNull("Comments handler service not null", service);
