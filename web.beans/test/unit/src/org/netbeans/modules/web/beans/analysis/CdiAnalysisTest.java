@@ -297,6 +297,51 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
     }
     
     /*
+     * AnnotationsAnalyzer(ClassAnalyzer) checkNamed , checkAlternatives
+     */
+    public void testInterceptorAlternativeNamed() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                " import javax.inject.Named; "+
+                "@Named "+
+                "@Interceptor "+
+                " public class Clazz { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                "import javax.enterprise.inject.Alternative; "+
+                "@Alternative "+
+                "@Interceptor "+
+                " public class Clazz1 { "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Clazz");
+                assertEquals( 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Clazz1");
+                assertEquals( 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+    }
+    
+    /*
      * CtorsAnalyzer
      */
     public void testInitializerCtors() throws IOException{
