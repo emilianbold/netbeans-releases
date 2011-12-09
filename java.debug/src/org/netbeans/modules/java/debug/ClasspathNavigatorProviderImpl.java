@@ -239,9 +239,9 @@ public class ClasspathNavigatorProviderImpl implements NavigatorPanel {
                 if (cp != null) {
                     if (translate) {
                         if (ClassPath.SOURCE.equals(id)) {
-                            cp = CacheClassPath.forSourcePath(cp,false);
+                            cp = CacheClassPath.forSourcePath(cp, false);
                         } else {
-                            cp = CacheClassPath.forClassPath(cp,false);
+                            cp = CacheClassPath.forClassPath(cp, false);
                         }
                     }
                     StringBuffer sb = new StringBuffer();
