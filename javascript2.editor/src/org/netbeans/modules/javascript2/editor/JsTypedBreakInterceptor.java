@@ -190,8 +190,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             //doc.insertString(offset, delimiter + " + " + delimiter, null);
             //caret.setDot(offset+3);
             //return offset + 5 + indent;
-            String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\\n"  : "\\\n";
-            context.setText(str, -1, 2);
+            String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+            context.setText(str, -1, str.length());
             //doc.insertString(offset, str, null);
             //caret.setDot(offset+str.length());
             //return offset + 1 + str.length();
@@ -207,9 +207,10 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             //doc.insertString(offset, "/ + /", null);
             //caret.setDot(offset+3);
             //return offset + 5 + indent;
-            String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\"  : "\\";
-            doc.insertString(offset, str, null);
-            caret.setDot(offset+str.length());
+            String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+            context.setText(str, -1, str.length());
+            //doc.insertString(offset, str, null);
+            //caret.setDot(offset+str.length());
             //return offset + 1 + str.length();
             return;
         }
