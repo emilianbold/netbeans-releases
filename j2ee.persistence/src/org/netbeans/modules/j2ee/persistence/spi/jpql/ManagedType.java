@@ -58,6 +58,7 @@ abstract public class ManagedType implements IManagedType {
     private final Element element;
     private final IManagedTypeProvider provider;
     private Map<String, IMapping> mappings;
+    private IType type;
 
     public ManagedType(Element element, IManagedTypeProvider provider){
         this.element = element;
@@ -78,7 +79,10 @@ abstract public class ManagedType implements IManagedType {
 
     @Override
     public IType getType() {
-        return new Type(null, null);//TODO create or get type from type repository
+        if (type == null) {
+                type = provider.getTypeRepository().getType(element.getSimpleName().toString());
+        }
+        return type;
     }
 
     @Override
@@ -95,7 +99,11 @@ abstract public class ManagedType implements IManagedType {
     private void initMappings(){
         if(mappings == null){
             mappings = new HashMap<String, IMapping>();
-            //TODO fill
+//		Map<String, IMapping> mappings = new HashMap<String, IMapping>();
+//		for (AttributeMapping mapping  : managedType.getAllAttributeMappings()) {
+//			mappings.put(mapping.getName(), buildMapping(mapping));
+//		}
+//		return mappings;
         }
     }
     

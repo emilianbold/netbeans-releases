@@ -69,7 +69,7 @@ public class InspectionRenderer extends JLabel implements ListCellRenderer, UIRe
             int index,
             boolean isSelected,
             boolean cellHasFocus) {
-        
+
         if (isSelected) {
             setBackground(list.getSelectionBackground());
             setForeground(list.getSelectionForeground());
@@ -80,16 +80,17 @@ public class InspectionRenderer extends JLabel implements ListCellRenderer, UIRe
 
         if (value != null) {
             if (value instanceof HintMetadata) {
-            if (((HintMetadata) value).options.contains(Options.QUERY)) {
-                setFont(getFont().deriveFont(Font.ITALIC));
-            } else {
-                setFont(getFont().deriveFont(Font.PLAIN));
-            }
-                
+                if (((HintMetadata) value).options.contains(Options.QUERY)) {
+                    setFont(getFont().deriveFont(Font.ITALIC));
+                } else {
+                    setFont(getFont().deriveFont(Font.PLAIN));
+                }
+
                 setText("  " + ((HintMetadata) value).displayName);
                 setEnabled(true);
             } else if (value instanceof HintsPanelLogic.HintCategory) {
-                setText("<html><body><i>" + ((HintsPanelLogic.HintCategory) value).displayName + "</i></body></html>");
+                setFont(getFont().deriveFont(Font.ITALIC));
+                setText(((HintsPanelLogic.HintCategory) value).displayName);
                 setEnabled(false);
                 setBackground(list.getBackground());
                 setForeground(UIManager.getColor("Label.disabledForeground"));
@@ -97,7 +98,7 @@ public class InspectionRenderer extends JLabel implements ListCellRenderer, UIRe
         }
         // #89393: GTK needs name to render cell renderer "natively"
         setName("ComboBox.listRenderer"); // NOI18N
-        
+
         return this;
     }
 
@@ -107,5 +108,4 @@ public class InspectionRenderer extends JLabel implements ListCellRenderer, UIRe
         String name = super.getName();
         return name == null ? "ComboBox.renderer" : name;  // NOI18N
     }
-    
 }

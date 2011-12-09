@@ -84,32 +84,30 @@ public class PriorityMutex {
      */
     public synchronized void lock() {
         Thread thread = Thread.currentThread();
-        if (thread != lockThread) { // not nested locking
-            // Will wait if either there is another thread already holding the lock
-            // or if there is a priority thread waiting but it's not this thread
-            while (lockThread != null
-                || (waitingPriorityThread != null && waitingPriorityThread != thread)
-            ) {
-                try {
-                    if (waitingPriorityThread == null && isPriorityThread()) {
-                        waitingPriorityThread = thread;
-                    }
+        try {
+            if (thread != lockThread) { // not nested locking
+                // Will wait if either there is another thread already holding the lock
+                // or if there is a priority thread waiting but it's not this thread
+                while (lockThread != null
+                    || (waitingPriorityThread != null && waitingPriorityThread != thread)
+                ) {
+                        if (waitingPriorityThread == null && isPriorityThread()) {
+                            waitingPriorityThread = thread;
+                        }
+                        wait();
+                }
 
-                    wait();
-
-                } catch (InterruptedException e) {
-                    waitingPriorityThread = null;
+                lockThread = thread;
+                assert (lockDepth == 0);
+                if (thread == waitingPriorityThread) {
+                    waitingPriorityThread = null; // it's now allowed to enter
                 }
             }
-
-            lockThread = thread;
-
-            if (thread == waitingPriorityThread) {
-                waitingPriorityThread = null; // it's now allowed to enter
-            }
+            lockDepth++;
+        } catch (InterruptedException e) {
+            waitingPriorityThread = null;
+            throw new Error("Interrupted mutex acquiring"); // NOI18N
         }
-
-        lockDepth++;
     }
     
     /**
@@ -121,10 +119,8 @@ public class PriorityMutex {
         if (Thread.currentThread() != lockThread) {
             throw new IllegalStateException("Not locker. lockThread=" + lockThread); // NOI18N
         }
-        
         if (--lockDepth == 0) {
             lockThread = null;
-
             notifyAll(); // must all to surely notify waitingPriorityThread too
         }
     }

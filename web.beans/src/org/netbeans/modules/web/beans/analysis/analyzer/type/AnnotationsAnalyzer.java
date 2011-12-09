@@ -57,6 +57,7 @@ import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
 import org.openide.util.NbBundle;
+import org.netbeans.spi.editor.hints.Severity;
 
 
 /**
@@ -101,12 +102,41 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
                 return;
             }
             checkSession( element , result);
+            if ( cancel.get() ){
+                return;
+            }
+            checkNamed( element , result );
+            if ( cancel.get() ){
+                return;
+            }
+            checkAlternatives(element , result );
         }
         if ( isDecorator ){
             if ( cancel.get() ){
                 return;
             }
             checkDelegateInjectionPoint(element , result);
+        }
+    }
+
+    private void checkAlternatives( TypeElement element,
+            CdiAnalysisResult result )
+    {
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.ALTERNATVE, 
+                result.getInfo()))
+        {
+            result.addNotification(Severity.WARNING, element, NbBundle.getMessage(
+                    AnnotationsAnalyzer.class,  
+                    "WARN_AlternativeInterceptorDecorator")); // NOI18N
+        }        
+    }
+
+    private void checkNamed( TypeElement element, CdiAnalysisResult result ) {
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.NAMED, 
+                result.getInfo()))
+        {
+            result.addNotification(Severity.WARNING, element, NbBundle.getMessage(
+                    AnnotationsAnalyzer.class,  "WARN_NamedInterceptorDecorator")); // NOI18N
         }
     }
 

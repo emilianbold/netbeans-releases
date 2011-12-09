@@ -94,13 +94,11 @@ public class ServerLocationPanel implements WizardDescriptor.Panel, ChangeListen
     @Override
     public boolean isValid() {
         if (!component.valid(wizardDescriptor)) {
-            component.setEnabledCheckboxes(false);
             component.fillInCoherenceClasspath(false);
             return false;
         }
 
         // enable additional CP checkboxes
-        component.setEnabledCheckboxes(true);
         component.fillInCoherenceClasspath(true);
 
         // if the properties are valid, store them

@@ -125,7 +125,9 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         initRefactorings(fields,
                 refactoring.getMethodModifiers(),
                 refactoring.getFieldModifiers(),
-                refactoring.isAlwaysUseAccessors());
+                refactoring.isAlwaysUseAccessors(),
+                refactoring.isGeneratePropertyChangeSupport(),
+                refactoring.isGenerateVetoableSupport());
         try {
             return validation(1, null);
         } catch (IOException ex) {
@@ -222,7 +224,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         return prob != null ? prob : problem;
     }
     
-    private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors) {
+    private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors, boolean pcs, boolean vcs) {
         refactorings = new ArrayList<EncapsulateFieldRefactoringPlugin>(refactorFields.size());
         for (EncapsulateFieldInfo info: refactorFields) {
             EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField());
@@ -231,6 +233,8 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             ref.setMethodModifiers(methodModifier);
             ref.setFieldModifiers(fieldModifier);
             ref.setAlwaysUseAccessors(alwaysUseAccessors);
+            ref.setGeneratePropertyChangeSupport(pcs);
+            ref.setGenerateVetoableSupport(vcs);
             refactorings.add(new EncapsulateFieldRefactoringPlugin(ref));
         }
     }

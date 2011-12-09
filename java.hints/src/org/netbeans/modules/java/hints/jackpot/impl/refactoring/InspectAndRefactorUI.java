@@ -40,6 +40,8 @@
 package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -117,6 +119,7 @@ public class InspectAndRefactorUI implements RefactoringUI {
             public Component getComponent() {
                 if (panel == null) {
                     panel = new InspectAndRefactorPanel(context, parent, query, cpBased);
+                    panel.setPreferredSize(new Dimension(panel.getFontMetrics(panel.getFont()).charWidth('A')*75, panel.getPreferredSize().height));//NOI18N
                 }
 
                 return panel;
