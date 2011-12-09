@@ -66,6 +66,7 @@ import org.openide.util.Exceptions;
  */
 public final class ClassIndexManager {
 
+    public static final String PROP_DIRTY_ROOT = "dirty"; //NOI18N
     public static final String PROP_SOURCE_ROOT = "source";  //NOI18N
     
     private static final byte OP_ADD    = 1;
@@ -74,15 +75,13 @@ public final class ClassIndexManager {
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final Map<URL, ClassIndexImpl> transientInstances = new HashMap<URL, ClassIndexImpl> ();
-    private final InternalLock internalLock;
+    private final InternalLock internalLock = new InternalLock();
     private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
+    private final ThreadLocal<Changes> changes = new ThreadLocal<Changes>();
     private boolean invalid;
-    private Set<URL> added;
-    private Set<URL> removed;
-    private int depth = 0;
+
 
     private ClassIndexManager() {
-        this.internalLock = new InternalLock();
     }
 
     public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
@@ -98,55 +97,30 @@ public final class ClassIndexManager {
     @Deprecated
     public <T> T writeLock (final Action<T> r) throws IOException, InterruptedException {
         //Ugly, in scala much more cleaner.
-        return prepareWriteLock(
-            new Action<T>() {
-                @Override
-                public T run() throws IOException, InterruptedException {
-                    return IndexManager.writeAccess(r);
-                }
-            });
+        return IndexManager.writeAccess(r);
     }
 
-    public <T> T prepareWriteLock(final Action<T> r) throws IOException, InterruptedException {
-        synchronized (internalLock) {
-            depth++;
-            if (depth == 1) {
-                this.added = new HashSet<URL>();
-                this.removed = new HashSet<URL>();
-            }
+    public static void beginTrans() {
+        final ClassIndexManager ins = getDefault();
+        assert ins.changes.get() == null;
+        ins.changes.set(new Changes());
+    }
+
+    public static void endTrans() {
+        final ClassIndexManager ins = getDefault();
+        final Changes cs = ins.changes.get();
+        assert cs != null;
+        ins.changes.set(null);
+        final Set<? extends URL> added = cs.getAddedRoots();
+        final Set<? extends URL> removed = cs.getRemovedRoots();
+        if (!removed.isEmpty()) {
+            ins.fire (removed, OP_REMOVE);
         }
-        try {
-            try {
-                return r.run();
-            } finally {
-                Set<URL> addedCp = null;
-                Set<URL> removedCp = null;
-                synchronized (internalLock) {
-                    if (depth == 1) {
-                        if (!removed.isEmpty()) {
-                            removedCp = new HashSet<URL>(removed);
-                            removed.clear();
-                        }
-                        if (!added.isEmpty()) {
-                            addedCp = new HashSet<URL>(added);
-                            added.clear();
-                        }
-                    }
-                }
-                if (removedCp != null) {
-                    fire (removedCp, OP_REMOVE);
-                }
-                if (addedCp != null) {
-                    fire (addedCp, OP_ADD);
-                }
-            }
-        } finally {
-            synchronized (internalLock) {
-                depth--;
-            }
+        if (!added.isEmpty()) {
+            ins.fire (added, OP_ADD);
         }
     }
-          
+
     @CheckForNull
     public ClassIndexImpl getUsagesQuery (@NonNull final URL root, final boolean beforeCreateAllowed) {
         synchronized (internalLock) {
@@ -170,14 +144,22 @@ public final class ClassIndexManager {
                 translatedRoot = root;
             }
             if (beforeCreateAllowed) {
-                String attr = null;
                 try {
-                    attr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);            
-                    if (Boolean.TRUE.toString().equals(attr)) {
-                        index = PersistentClassIndex.create (root, JavaIndex.getIndex(root), true);
+                    final String typeAttr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);
+                    final String dirtyAttr = JavaIndex.getAttribute(translatedRoot, PROP_DIRTY_ROOT, null);
+                    if (Boolean.TRUE.toString().equals(typeAttr)) {
+                        index = PersistentClassIndex.create (
+                                root,
+                                JavaIndex.getIndex(root),
+                                ClassIndexImpl.Type.SOURCE,
+                                ClassIndexImpl.Type.SOURCE);
                         this.transientInstances.put(root,index);
-                    } else if (Boolean.FALSE.toString().equals(attr)) {
-                        index = PersistentClassIndex.create (root, JavaIndex.getIndex(root), false);
+                    } else if (Boolean.FALSE.toString().equals(typeAttr)) {
+                        index = PersistentClassIndex.create (
+                                root,
+                                JavaIndex.getIndex(root),
+                                ClassIndexImpl.Type.BINARY,
+                                ClassIndexImpl.Type.BINARY);
                         this.transientInstances.put(root,index);
                     }
                 } catch(IOException ioe) {/*Handled bellow by return null*/
@@ -192,7 +174,9 @@ public final class ClassIndexManager {
         }
     }
 
-    public ClassIndexImpl createUsagesQuery (final URL root, final boolean source) throws IOException {
+    public ClassIndexImpl createUsagesQuery (
+            final URL root,
+            final boolean source) throws IOException {
         assert root != null;
         synchronized (internalLock) {
             if (invalid) {
@@ -201,40 +185,44 @@ public final class ClassIndexManager {
             Pair<ClassIndexImpl,Boolean> pair = getClassIndex (root, true, true);
             ClassIndexImpl qi = pair.first;
             if (qi == null) {
-                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);
-                this.instances.put(root,qi);
-                if (added != null) {
-                    added.add (root);
+                qi = getUsagesQuery(root, true);
+                if (qi == null) {
+                    qi = PersistentClassIndex.create (
+                            root,
+                            JavaIndex.getIndex(root),
+                            ClassIndexImpl.Type.EMPTY,
+                            source ? ClassIndexImpl.Type.SOURCE : ClassIndexImpl.Type.BINARY);
+                    this.instances.put(root,qi);
+                    markAddedRoot(root);
                 }
-            } else if (source && !qi.isSource()){
+            }
+            if (source && qi.getType() == ClassIndexImpl.Type.BINARY){
                 //Wrongly set up freeform project, which is common for it, prefer source
                 qi.close ();
-                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);
+                qi = PersistentClassIndex.create (
+                        root,
+                        JavaIndex.getIndex(root),
+                        ClassIndexImpl.Type.SOURCE,
+                        ClassIndexImpl.Type.SOURCE);
                 this.instances.put(root,qi);
-                if (added != null) {
-                    added.add (root);
-                }
+                markAddedRoot(root);
             } else if (pair.second) {
-                if (added != null) {
-                    added.add (root);
-                }
+                markAddedRoot(root);
             }
             return qi;
         }
     }
-    
+
     public void removeRoot (final URL root) throws IOException {
         synchronized (internalLock) {
             ClassIndexImpl ci = this.instances.remove(root);
             if (ci != null) {
                 ci.close();
-                if (removed != null) {
-                    removed.add (root);
-                }
+                markRemovedRoot(root);
             }
         }
     }
-    
+
     public void close () {
         synchronized (internalLock) {
             invalid = true;
@@ -247,7 +235,7 @@ public final class ClassIndexManager {
             }
         }
     }
-            
+
     private void fire (final Set<? extends URL> roots, final byte op) {
         if (!this.listeners.isEmpty()) {
             ClassIndexManagerListener[] _listeners;
@@ -289,8 +277,22 @@ public final class ClassIndexManager {
         }
         return Pair.<ClassIndexImpl,Boolean>of(index,promoted);
     }
-    
-    
+
+    private void markAddedRoot(@NonNull URL root) {
+        final Changes cs = changes.get();
+        if (cs != null) {
+            cs.added(root);
+        }
+    }
+
+    private void markRemovedRoot(@NonNull URL root) {
+        final Changes cs = changes.get();
+        if (cs != null) {
+            cs.removed(root);
+        }
+    }
+
+
     public static synchronized ClassIndexManager getDefault () {
         if (instance == null) {
             instance = new ClassIndexManager ();            
@@ -298,8 +300,30 @@ public final class ClassIndexManager {
         return instance;
     }
 
-    private static final class InternalLock {
-        
-        private InternalLock(){}
+    private static final class Changes {
+        private Set<URL> added = new HashSet<URL>();
+        private Set<URL> removed = new HashSet<URL>();
+
+        private Changes() {}
+
+        Set<? extends URL> getAddedRoots() {
+            return Collections.unmodifiableSet(added);
+        }
+
+        Set<? extends URL> getRemovedRoots() {
+            return Collections.unmodifiableSet(removed);
+        }
+
+        void added (@NonNull URL url) {
+            assert url != null;
+            added.add(url);
+        }
+
+        void removed (@NonNull URL url) {
+            assert url != null;
+            removed.add(url);
+        }
     }
+
+    private class InternalLock {}
 }

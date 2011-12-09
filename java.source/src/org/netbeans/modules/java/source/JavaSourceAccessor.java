@@ -123,37 +123,7 @@ public abstract class JavaSourceAccessor {
         }
         return tmp;
     }
-        
-    public void runSpecialTask (final Mutex.ExceptionAction task, final JavaSource.Priority priority) {        
-        final int tp = translatePriority(priority);
-        final ParserResultTask wrapper = new ParserResultTask() {            
-            @Override
-            public void run(Result _null, SchedulerEvent event) {
-                try {
-                    task.run();
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
 
-            @Override
-            public int getPriority() {
-                return tp;
-            }
-
-            @Override
-            public Class<? extends Scheduler> getSchedulerClass() {
-                return null;
-            }
-
-            @Override
-            public void cancel() {
-            }
-        };
-        Utilities.scheduleSpecialTask(wrapper);
-    }
-    
-    
     public void revalidate(final JavaSource js) {
         final Collection<Source> sources = getSources(js);
         assert sources != null;

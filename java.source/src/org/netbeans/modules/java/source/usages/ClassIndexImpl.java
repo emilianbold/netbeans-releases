@@ -71,18 +71,39 @@ import org.openide.util.Utilities;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public abstract class ClassIndexImpl {
-        
+
     public static enum State {
         NEW,
         INITIALIZED,
     }
-    
+
     public static enum UsageType {
         SUPER_CLASS,
         SUPER_INTERFACE,
         FIELD_REFERENCE,
         METHOD_REFERENCE,
         TYPE_REFERENCE;
+    }
+
+    /**
+     * Type of ClassIndexImpl
+     */
+    public static enum Type {
+        /**
+         * Index does not exist yet or
+         * it's broken
+         */
+        EMPTY,
+
+        /**
+         * Index for source root
+         */
+        SOURCE,
+
+        /**
+         * Index for binary root
+         */
+        BINARY;
     }
 
     public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> ();       
@@ -122,10 +143,8 @@ public abstract class ClassIndexImpl {
     
     public abstract boolean isValid ();
 
-    public abstract boolean isSource ();
+    public abstract Type getType();
 
-    public abstract boolean isEmpty ();   
-            
     protected abstract void close () throws IOException;    
     
     public void addClassIndexImplListener (final ClassIndexImplListener listener) {
@@ -174,11 +193,11 @@ public abstract class ClassIndexImpl {
         }
     }
 
-    public State getState() {
+    public final State getState() {
         return this.state;
     }
 
-    public void setState(final State state) {
+    public final void setState(final State state) {
         assert state != null;
         assert this.state != null;
         if (state.ordinal() < this.state.ordinal()) {

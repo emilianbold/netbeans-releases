@@ -123,7 +123,6 @@ import org.openide.util.Utilities;
 public class JavaCustomIndexer extends CustomIndexer {
 
             static final boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
-    private static final String DIRTY_ROOT = "dirty"; //NOI18N
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
@@ -158,117 +157,111 @@ public class JavaCustomIndexer extends CustomIndexer {
             final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
                     splitSources(files,javaSources),
                     context.getRootURI());
+            final JavaParsingContext javaContext;
+            try {
+                //todo: Ugly hack, the ClassIndexManager.createUsagesQuery has to be called before the root is set to dirty mode.
+                javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
+            } finally {
+                JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
+            }
+            boolean finished = false;
+            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+            final Set<File> removedFiles = new HashSet<File> ();
+            final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
+            CompileWorker.ParsingOutput compileResult = null;
+            try {
+                if (context.isAllFilesIndexing()) {
+                    cleanUpResources(context.getRootURI());
+                }
+                if (javaContext.uq == null)
+                    return; //IDE is exiting, indeces are already closed.
 
-            ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    try {
-                        JavaIndex.setAttribute(context.getRootURI(), DIRTY_ROOT, Boolean.TRUE.toString());
-                        boolean finished = false;
-                        final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                        final Set<File> removedFiles = new HashSet<File> ();
-                        final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
-                        CompileWorker.ParsingOutput compileResult = null;
-                        final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
-                        try {
-                            if (context.isAllFilesIndexing()) {
-                                cleanUpResources(context.getRootURI());
-                            }
-                            if (javaContext.uq == null)
-                                return null; //IDE is exiting, indeces are already closed.
-
-                            javaContext.uq.setDirty(null);
-                            for (Indexable i : javaSources) {
-                                final CompileTuple tuple = createTuple(context, javaContext, i);
-                                if (tuple != null) {
-                                    toCompile.add(tuple);
-                                }
-                                clear(context, javaContext, i, removedTypes, removedFiles);
-                            }
-                            for (CompileTuple tuple : virtualSourceTuples) {
-                                clear(context, javaContext, tuple.indexable, removedTypes, removedFiles);
-                            }
-                            toCompile.addAll(virtualSourceTuples);
-                            List<CompileTuple> toCompileRound = toCompile;
-                            int round = 0;
-                            while (round++ < 2) {
-                                CompileWorker[] WORKERS = {
-                                    toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
-                                    new MultiPassCompileWorker()
-                                };
-                                for (CompileWorker w : WORKERS) {
-                                    compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
-                                    if (compileResult == null || context.isCancelled()) {
-                                        return null; // cancelled, IDE is sutting down
-                                    }
-                                    if (compileResult.success) {
-                                        break;
-                                    }
-                                }
-                                if (compileResult.aptGenerated.isEmpty()) {
-                                    round++;
-                                } else {
-                                    toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
-                                    for (CompileTuple ct : compileResult.aptGenerated) {
-                                        toCompileRound.add(ct);
-                                        toCompile.add(ct);
-                                    }
-                                    compileResult.aptGenerated.clear();
-                                }
-                            }
-                            finished = compileResult.success;
-                        } finally {
-                            try {
-                                javaContext.finish();
-                            } finally {
-                                if (finished) {
-                                    JavaIndex.setAttribute(context.getRootURI(), DIRTY_ROOT, null);
-                                }
-                            }
+                javaContext.uq.setDirty(null);
+                for (Indexable i : javaSources) {
+                    final CompileTuple tuple = createTuple(context, javaContext, i);
+                    if (tuple != null) {
+                        toCompile.add(tuple);
+                    }
+                    clear(context, javaContext, i, removedTypes, removedFiles);
+                }
+                for (CompileTuple tuple : virtualSourceTuples) {
+                    clear(context, javaContext, tuple.indexable, removedTypes, removedFiles);
+                }
+                toCompile.addAll(virtualSourceTuples);
+                List<CompileTuple> toCompileRound = toCompile;
+                int round = 0;
+                while (round++ < 2) {
+                    CompileWorker[] WORKERS = {
+                        toCompileRound.size() < TRESHOLD ? new SuperOnePassCompileWorker() : new OnePassCompileWorker(),
+                        new MultiPassCompileWorker()
+                    };
+                    for (CompileWorker w : WORKERS) {
+                        compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
+                        if (compileResult == null || context.isCancelled()) {
+                            return; // cancelled, IDE is sutting down
                         }
-                        assert compileResult != null;
-
-                        Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
-                        Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
-                        _at.removeAll(removedTypes);
-                        _rt.removeAll(compileResult.addedTypes);
-                        compileResult.addedTypes.retainAll(removedTypes); //Changed types
-
-                        if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
-                            compileResult.modifiedTypes.addAll(_rt);
-                            Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
-                            Set<URL> urls = root2Rebuild.get(context.getRootURI());
-                            if (urls != null) {
-                                if (context.isAllFilesIndexing()) {
-                                    root2Rebuild.remove(context.getRootURI());
-                                } else {
-                                    for (CompileTuple ct : toCompile)
-                                        urls.remove(ct.indexable.getURL());
-                                    if (urls.isEmpty())
-                                        root2Rebuild.remove(context.getRootURI());
-                                }
-                            }
-                            for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
-                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                            }
+                        if (compileResult.success) {
+                            break;
                         }
-                        javaContext.checkSums.store();
-                        javaContext.fqn2Files.store();
-                        javaContext.sa.store();
-                        javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
-                        if (!context.checkForEditorModifications()) { // #152222
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+                    }
+                    if (compileResult.aptGenerated.isEmpty()) {
+                        round++;
+                    } else {
+                        toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
+                        for (CompileTuple ct : compileResult.aptGenerated) {
+                            toCompileRound.add(ct);
+                            toCompile.add(ct);
                         }
-                        return null;
-                    } catch (NoSuchAlgorithmException ex) {
-                        throw new IOException(ex);
+                        compileResult.aptGenerated.clear();
                     }
                 }
-            });
-        } catch (InterruptedException ex) {
+                finished = compileResult.success;
+            } finally {
+                try {
+                    javaContext.finish();
+                } finally {
+                    if (finished) {
+                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null);
+                    }
+                }
+            }
+            assert compileResult != null;
+
+            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
+            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
+            _at.removeAll(removedTypes);
+            _rt.removeAll(compileResult.addedTypes);
+            compileResult.addedTypes.retainAll(removedTypes); //Changed types
+
+            if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
+                compileResult.modifiedTypes.addAll(_rt);
+                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
+                Set<URL> urls = root2Rebuild.get(context.getRootURI());
+                if (urls != null) {
+                    if (context.isAllFilesIndexing()) {
+                        root2Rebuild.remove(context.getRootURI());
+                    } else {
+                        for (CompileTuple ct : toCompile)
+                            urls.remove(ct.indexable.getURL());
+                        if (urls.isEmpty())
+                            root2Rebuild.remove(context.getRootURI());
+                    }
+                }
+                for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
+                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                }
+            }
+            javaContext.checkSums.store();
+            javaContext.fqn2Files.store();
+            javaContext.sa.store();
+            javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
+            if (!context.checkForEditorModifications()) { // #152222
+                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+            }
+        } catch (NoSuchAlgorithmException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
     }
 
@@ -325,42 +318,32 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
         try {
-            ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    try {
-                        final JavaParsingContext javaContext = new JavaParsingContext(context, true);
-                        try {
-                            if (javaContext.uq == null)
-                                return null; //IDE is exiting, indeces are already closed.
-                            if (javaContext.uq.isEmpty())
-                                return null; //No java no need to continue
-                            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                            final Set<File> removedFiles = new HashSet<File> ();
-                            for (Indexable i : files) {
-                                clear(context, javaContext, i, removedTypes, removedFiles);
-                                ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
-                                ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
-                                javaContext.checkSums.remove(i.getURL());
-                            }
-                            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
-                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                            }
-                            javaContext.checkSums.store();
-                            javaContext.fqn2Files.store();
-                            javaContext.sa.store();
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
-                            javaContext.uq.typesEvent(null, removedTypes, null);
-                            return null;
-                        } finally {
-                            javaContext.finish();
-                        }
-                    } catch (NoSuchAlgorithmException ex) {
-                        throw new IOException(ex);
-                    }
+            final JavaParsingContext javaContext = new JavaParsingContext(context, true);
+            try {
+                if (javaContext.uq == null)
+                    return; //IDE is exiting, indeces are already closed.
+                if (javaContext.uq.getType() == ClassIndexImpl.Type.EMPTY)
+                    return; //No java no need to continue
+                final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                final Set<File> removedFiles = new HashSet<File> ();
+                for (Indexable i : files) {
+                    clear(context, javaContext, i, removedTypes, removedFiles);
+                    ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
+                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
+                    javaContext.checkSums.remove(i.getURL());
                 }
-            });
-        } catch (InterruptedException ex) {
+                for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
+                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                }
+                javaContext.checkSums.store();
+                javaContext.fqn2Files.store();
+                javaContext.sa.store();
+                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
+                javaContext.uq.typesEvent(null, removedTypes, null);
+            } finally {
+                javaContext.finish();
+            }
+        } catch (NoSuchAlgorithmException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -624,10 +607,10 @@ public class JavaCustomIndexer extends CustomIndexer {
             switch (TasklistSettings.getDependencyTracking()) {
                 case DISABLED:
                     if (depRoots == null) {
-                        JavaIndex.setAttribute(root, DIRTY_ROOT, Boolean.TRUE.toString());
+                        JavaIndex.setAttribute(root, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                     } else {
                         for (URL url : depRoots) {
-                            JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                            JavaIndex.setAttribute(url, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                         }
                     }
                     return ret;
@@ -636,7 +619,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         depRoots = Collections.singletonList(root);
                     } else {
                         for (URL url : depRoots) {
-                            JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                            JavaIndex.setAttribute(url, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                         }
                     }
                     break;
@@ -654,7 +637,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     } else {                        
                         if (rootPrj == null) {
                             for (URL url : depRoots) {
-                                JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                                JavaIndex.setAttribute(url, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                             }
                             depRoots = Collections.singletonList(root);
                         } else {
@@ -663,7 +646,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 if (FileOwnerQuery.getOwner(url.toURI()) == rootPrj) {
                                     l.add(url);
                                 } else {
-                                    JavaIndex.setAttribute(url, DIRTY_ROOT, Boolean.TRUE.toString());
+                                    JavaIndex.setAttribute(url, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                                 }
                             }
                             l.add(root);
@@ -698,8 +681,9 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         final Queue<ElementHandle<TypeElement>> queue = new LinkedList<ElementHandle<TypeElement>>(classes);
         final Map<URL, Set<ElementHandle<TypeElement>>> bases = new HashMap<URL, Set<ElementHandle<TypeElement>>>();
-        for (URL depRoot : depRoots) {            
-            if (!ClassIndexManager.getDefault().createUsagesQuery(depRoot, true).isEmpty()) {
+        for (URL depRoot : depRoots) {
+            final ClassIndexImpl ciImpl = ClassIndexManager.getDefault().getUsagesQuery(depRoot, true);
+            if (ciImpl != null) {
                 final ClassIndex index = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(depRoot)).getClassIndex();
                 final Collection<Map<URL,List<URL>>> depMaps = new ArrayList<Map<URL,List<URL>>>(2);
                 if (sourceDeps != null) {
@@ -714,9 +698,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             if (b != null)
                                 queue.addAll(b);
                         }
-                    }                    
+                    }
                 }
-                
+
                 final Set<ElementHandle<TypeElement>> toHandle = new HashSet<ElementHandle<TypeElement>>();
                 while (!queue.isEmpty()) {
                     final ElementHandle<TypeElement> e = queue.poll();
@@ -728,7 +712,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 if (!includeCurrentSourceRoot && depRoot.equals(root)) {
                     continue;
                 }
-                
+
                 final Set<FileObject> files = new HashSet<FileObject>();
                 for (ElementHandle<TypeElement> e : toHandle)
                     files.addAll(index.getResources(e, EnumSet.complementOf(EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS)), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
@@ -793,26 +777,22 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
+            ClassIndexManager.beginTrans();
             boolean vote = true;
             try {
-                boolean classIndexConsistent = ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Boolean>() {
+                boolean classIndexConsistent = IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
                     @Override
                     public Boolean run() throws IOException, InterruptedException {
-                        return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
-                            @Override
-                            public Boolean run() throws IOException, InterruptedException {
-                                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-                                if (uq == null) {
-                                    //Closing...
-                                    return true;
-                                }
-                                if (uq.getState() != ClassIndexImpl.State.NEW) {
-                                    //Already checked
-                                    return true;
-                                }
-                                return uq.isValid();
-                            }
-                        });
+                        final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+                        if (uq == null) {
+                            //Closing...
+                            return true;
+                        }
+                        if (uq.getState() != ClassIndexImpl.State.NEW) {
+                            //Already checked
+                            return true;
+                        }
+                        return uq.isValid();
                     }
                 });
 
@@ -825,19 +805,19 @@ public class JavaCustomIndexer extends CustomIndexer {
                 if (root == null) {
                     return vote;
                 }
-                
+
                 APTUtils aptUtils = APTUtils.get(root);
 
                 if (aptUtils != null && aptUtils.verifyAttributes(context.getRoot(), false)) {
                     vote = false;
                 }
-                                
+
                 if (ensureSourcePath(root)) {
                     JavaIndex.LOG.fine("forcing reindex due to source path change"); //NOI18N
                     vote = false;
                 }
 
-                if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
+                if (JavaIndex.ensureAttributeValue(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null)) {
                     JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
                     vote = false;
                 }
@@ -865,10 +845,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     //Closing
                     return;
                 }
-                uq.setState(ClassIndexImpl.State.INITIALIZED);            
+                uq.setState(ClassIndexImpl.State.INITIALIZED);
                 JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {
+                ClassIndexManager.endTrans();
             }
         }
         
@@ -890,35 +872,29 @@ public class JavaCustomIndexer extends CustomIndexer {
             APTUtils.sourceRootUnregistered(removedRoots);
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
+            ClassIndexManager.beginTrans();
             try {
-                cim.prepareWriteLock(new IndexManager.Action<Void>() {
-                    @Override
-                    public Void run() throws IOException, InterruptedException {
-                        final Set<URL> toRefresh = new HashSet<URL>();
-                        for (URL removedRoot : removedRoots) {
-                            cim.removeRoot(removedRoot);
-                            ffl.stopListeningOn(removedRoot);                            
-                            final FileObject root = URLMapper.findFileObject(removedRoot);
-                            if (root == null) {
-                                JavaIndex.setAttribute(removedRoot, DIRTY_ROOT, Boolean.TRUE.toString());
-                            } else {
-                                ensureSourcePath(root);
-                            }
-                        }
-                        for (URL removedRoot : removedRoots) {
-                            toRefresh.remove(removedRoot);
-                        }
-                        for (URL url : toRefresh) {
-                            IndexingManager.getDefault().refreshIndex(url, null, true);
-                        }
-                        return null;
+                final Set<URL> toRefresh = new HashSet<URL>();
+                for (URL removedRoot : removedRoots) {
+                    cim.removeRoot(removedRoot);
+                    ffl.stopListeningOn(removedRoot);
+                    final FileObject root = URLMapper.findFileObject(removedRoot);
+                    if (root == null) {
+                        JavaIndex.setAttribute(removedRoot, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
+                    } else {
+                        ensureSourcePath(root);
                     }
-                });
+                }
+                for (URL removedRoot : removedRoots) {
+                    toRefresh.remove(removedRoot);
+                }
+                for (URL url : toRefresh) {
+                    IndexingManager.getDefault().refreshIndex(url, null, true);
+                }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
-
-            } catch (InterruptedException e) {
-                Exceptions.printStackTrace(e);
+            } finally {
+                ClassIndexManager.endTrans();
             }
         }
 

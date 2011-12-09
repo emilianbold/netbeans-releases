@@ -99,8 +99,8 @@ public class Utilities {
     /**
      * Temporary may be replaced by scheduler, hepefully.
      */
-    public static void scheduleSpecialTask (final SchedulerTask task) {
-        TaskProcessor.scheduleSpecialTask(task);
+    public static void scheduleSpecialTask (final Runnable runnable, int priority) {
+        TaskProcessor.scheduleSpecialTask(runnable, priority);
     }
 
     /**

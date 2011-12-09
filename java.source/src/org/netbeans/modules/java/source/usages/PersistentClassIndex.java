@@ -83,12 +83,13 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
-public class PersistentClassIndex extends ClassIndexImpl {
-    
+public final class PersistentClassIndex extends ClassIndexImpl {
+
     private final Index index;
     private final URL root;
     private final File cacheRoot;
-    private final boolean isSource;
+    private final Type beforeInitType;
+    private final Type finalType;
     private volatile URL dirty;
     //@GuardedBy("this")
     private Set<String> rootPkgCache;
@@ -96,13 +97,18 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private static final String REFERENCES = "refs";    // NOI18N
     
     /** Creates a new instance of ClassesAndMembersUQ */
-    private PersistentClassIndex(final URL root, final File cacheRoot, final boolean source) 
+    private PersistentClassIndex(
+            final URL root,
+            final File cacheRoot,
+            final Type beforeInitType,
+            final Type finalType)
 	    throws IOException, IllegalArgumentException {
         assert root != null;
         this.root = root;
         this.cacheRoot = cacheRoot;
+        this.beforeInitType = beforeInitType;
+        this.finalType = finalType;
         this.index = IndexManager.createIndex(getReferencesCacheFolder(cacheRoot), DocumentUtil.createAnalyzer());
-        this.isSource = source;
     }
     
     @Override
@@ -116,27 +122,10 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
 
     @Override
-    public boolean isSource () {
-        return this.isSource;
+    public Type getType () {
+        return getState() == State.INITIALIZED ? finalType : beforeInitType;
     }
 
-    @Override
-    public boolean isEmpty () {
-        try {
-            return IndexManager.readAccess(new IndexManager.Action<Boolean>() {
-                @Override
-                public Boolean run() throws IOException, InterruptedException {
-                    return index.getStatus(false) == Index.Status.EMPTY;
-                }
-            }).booleanValue();
-        } catch (InterruptedException ie) {
-            //Not thrown but declared
-            return false;
-        } catch (IOException ioe) {
-            //Not thrown but declared
-            return false;
-        }
-    }
     
     @Override
     public boolean isValid() {
@@ -150,7 +139,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public FileObject[] getSourceRoots () {
         FileObject[] rootFos;
-        if (isSource) {
+        if (getType() == Type.SOURCE) {
             FileObject rootFo = URLMapper.findFileObject (this.root);
             rootFos = rootFo == null ? new FileObject[0]  : new FileObject[] {rootFo};
         }
@@ -175,9 +164,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
 
     // Factory method
     
-    public static ClassIndexImpl create(URL root, final File cacheRoot, final boolean indexNow) 
+    public static ClassIndexImpl create(
+            final URL root,
+            final File cacheRoot,
+            final Type beforeInitType,
+            final Type finalType)
 	    throws IOException, IllegalArgumentException {        
-        return new PersistentClassIndex(root, cacheRoot, indexNow);
+        return new PersistentClassIndex(root, cacheRoot, beforeInitType, finalType);
     }
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
@@ -353,8 +346,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
     protected final void close () throws IOException {
         this.index.close();
     }
-    
-        
+
+
     // Private methods ---------------------------------------------------------                          
     
     private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {

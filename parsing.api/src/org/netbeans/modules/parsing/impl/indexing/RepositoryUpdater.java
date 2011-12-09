@@ -103,6 +103,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
@@ -115,10 +116,6 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -1103,6 +1100,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private static final Logger SFEC_LOGGER = Logger.getLogger("org.netbeans.ui.ScanForExternalChanges"); //NOI18N
     private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.indexing");   //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("RepositoryUpdater.delay"); //NOI18N
+    private static final RequestProcessor WORKER = new RequestProcessor("RepositoryUpdater.worker", 1, false, false);
     private static final boolean notInterruptible = getSystemBoolean("netbeans.indexing.notInterruptible", false); //NOI18N
     private static final boolean useRecursiveListeners = getSystemBoolean("netbeans.indexing.recursiveListeners", true); //NOI18N
     private static final int FILE_LOCKS_DELAY = org.openide.util.Utilities.isWindows() ? 2000 : 1000;
@@ -4166,7 +4164,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     } // End of InitialRootsWork class
 
-    private static final class Task extends ParserResultTask {
+    private static final class Task implements Runnable {
 
         // -------------------------------------------------------------------
         // Public implementation
@@ -4262,7 +4260,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         if (!scheduled && protectedOwners.isEmpty()) {
                             scheduled = true;
                             LOGGER.fine("scheduled = true");    //NOI18N
-                            Utilities.scheduleSpecialTask(this);
+                            WORKER.submit(this);
                         }
                         waitForWork = wait;
                     }
@@ -4410,17 +4408,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         // ParserResultTask implementation
         // -------------------------------------------------------------------
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        @Override
-        public Class<? extends Scheduler> getSchedulerClass() {
-            return null;
-        }
-
-        @Override
         public void cancel() {
                         
             if (notInterruptible) {
@@ -4448,7 +4435,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         @Override
-        public void run(Result nil, final SchedulerEvent nothing) {
+        public void run() {
             synchronized (todo) {
                 cancelled = false;
                 cancelledWork = null;
@@ -4469,9 +4456,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         scheduled = false;
                         LOGGER.fine("scheduled = false");   //NOI18N
                     } else {
-                        Utilities.scheduleSpecialTask(this);
+                        WORKER.submit(this);
                     }
                     todo.notifyAll();
+                    TaskProcessor.performDeferredTasks();
                 }
             }
         }

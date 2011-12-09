@@ -132,9 +132,11 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.TestUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 /**
  *
@@ -1175,7 +1177,7 @@ public class JavaSourceTest extends NbTestCase {
 
         };
 
-        class RUT implements ExceptionAction<Void> {
+        class RUT implements Runnable {
             private final CountDownLatch start;
             private final CountDownLatch latch;
 
@@ -1186,15 +1188,15 @@ public class JavaSourceTest extends NbTestCase {
                 this.latch = latch;
             }
 
-            public void cancel() {
-            }
 
-            public Void run() throws Exception {
-                this.start.countDown();
-                this.latch.await();
-                return null;
+            public void run() {
+                try {
+                    this.start.countDown();
+                    this.latch.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-
         };
 
         CountDownLatch latch = new CountDownLatch (1);
@@ -1207,7 +1209,7 @@ public class JavaSourceTest extends NbTestCase {
         CountDownLatch rutLatch = new CountDownLatch (1);
         CountDownLatch rutStart = new CountDownLatch (1);
         RUT rut = new RUT (rutStart, rutLatch);
-        JavaSourceAccessor.getINSTANCE().runSpecialTask(rut, JavaSource.Priority.MAX);
+        Utilities.scheduleSpecialTask(rut, 0);
         latch = new CountDownLatch (1);
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);
@@ -1229,7 +1231,7 @@ public class JavaSourceTest extends NbTestCase {
         rutLatch = new CountDownLatch (1);
         rutStart = new CountDownLatch (1);
         rut = new RUT (rutStart, rutLatch);
-        JavaSourceAccessor.getINSTANCE().runSpecialTask(rut, JavaSource.Priority.MAX);
+        Utilities.scheduleSpecialTask(rut, 0);
         latch = new CountDownLatch (1);
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);
