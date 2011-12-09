@@ -162,8 +162,8 @@ FLit3    = [0-9]+
 Exponent = [eE] [+-]? [0-9]+
 
 /* string and character literals */
-StringCharacter  = [^\r\n\"\\]
-SStringCharacter = [^\r\n\'\\]
+StringCharacter  = [^\r\n\"\\]|\\{LineTerminator}
+SStringCharacter = [^\r\n\'\\]|\\{LineTerminator}
 RegexpCharacter  = [^\r\n/\\]
 RegexpFirstCharacter  = [^\r\n/\\\*]
 

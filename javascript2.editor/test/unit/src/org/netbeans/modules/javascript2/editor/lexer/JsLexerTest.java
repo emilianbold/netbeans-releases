@@ -350,4 +350,15 @@ public class JsLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.UNKNOWN, "pavel)");
         assertFalse(ts.moveNext());
     }
+
+    @SuppressWarnings("unchecked")
+    public void testMultilineString1() {
+        String text = "\"Hello\\\nthis is multiline\"";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING, "Hello\\\nthis is multiline");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "\"");
+        assertFalse(ts.moveNext());
+    }
 }
