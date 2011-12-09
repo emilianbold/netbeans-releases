@@ -308,10 +308,11 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
                 FileProxyO file2 = FileOperationsProvider.toFileProxy(file.getPath()+"/test/..");
                 absPathEquals(ioFile2.getAbsolutePath(), fileOperations.normalizeUnixPath(file2));
             }
-        } else {
-            Map<String, Object> runAgent = runAgent(file.getPath());
-            if (runAgent != null) {
-                ioFile = new MyFile(user, runAgent);
+        }// else {
+            Map<String, Object> agentResults = runAgent(file.getPath());
+            assertNotNull(agentResults);
+            //if (runAgent != null) {
+                ioFile = new MyFile(user, agentResults);
                 assertEquals(message(ioFile, file, "exist"), ioFile.exists(), fileOperations.exists(file));
                 assertEquals(ioFile.getName(), fileOperations.getName(file));
                 assertEquals(ioFile.getAbsolutePath(), fileOperations.getPath(file));
@@ -320,8 +321,8 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
                 assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
                 listEquals(message(ioFile, file, "list"), ioFile.list(), fileOperations.list(file));
                 assertEquals(ioFile.getParent(), fileOperations.getDir(file));
-            }
-        }
+            //}
+        //}
     }
 
     private String message(File ioFile, FileProxyO file, String method) {
