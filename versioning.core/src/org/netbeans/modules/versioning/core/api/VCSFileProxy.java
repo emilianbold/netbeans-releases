@@ -147,6 +147,7 @@ public final class VCSFileProxy {
     
     /**
      * Returns the name of this file.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return this files name
      * @see File#getName() () 
@@ -160,7 +161,8 @@ public final class VCSFileProxy {
     }
     
     /**
-     * Determines whether this file is a directory or not
+     * Determines whether this file is a directory or not.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return <code>true</code> if this file exists and is a directory, otherwise <code>false</code>
      * @see File#isDirectory() 
@@ -179,6 +181,7 @@ public final class VCSFileProxy {
     
     /**
      * Determines whether this file is a normal file or not.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return <code>true</code> if this file is a normal file, otherwise <code>false</code>
      * @see File#isFile() 
@@ -193,6 +196,7 @@ public final class VCSFileProxy {
     
     /**
      * Determines whether this file is writable or not.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return <code>true</code> if this file is writable, otherwise <code>false</code>
      * @see File#canWrite() 
@@ -207,6 +211,7 @@ public final class VCSFileProxy {
     
     /**
      * Returns this files parent or <code>null</code> if this file doesn't have a parent.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return this files parent 
      * @see File#getParentFile() 
@@ -225,6 +230,7 @@ public final class VCSFileProxy {
     
     /**
      * Determines whether this file exists or not.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return <code>true</code> if this files exists, otherwise <code>false</code>
      * @see File#exists() 
@@ -239,6 +245,7 @@ public final class VCSFileProxy {
     
     /**
      * Returns an array of files located in a directory given by this file.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return an array of files located in a directory given by this file or 
      * <code>null</code> if this file isn't a directory or an error occurs.
@@ -264,6 +271,7 @@ public final class VCSFileProxy {
     /**
      * Returns the corresponding java.io.File in case this instance was created 
      * based either on java.io.File or a {@link FileObject} based on java.io.File.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return the corresponding java.io.File instance or <Code>null</code> if none
      * is available.
@@ -278,7 +286,9 @@ public final class VCSFileProxy {
     }
     
     /**
-     * Returns the corresponding FileObject
+     * Returns the corresponding FileObject.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
+     * 
      * @return the corresponding FileObject or <code>null</code> if none available
      */
     public FileObject toFileObject() {
@@ -291,6 +301,7 @@ public final class VCSFileProxy {
 
     /**
      * Normalize a file path to a clean form.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
      * 
      * @return a VCSFileProxy with a normalized file path
      * @see FileUtil#normalizePath(java.lang.String) 
