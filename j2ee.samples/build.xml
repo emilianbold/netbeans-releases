@@ -19,5 +19,8 @@
         <zip basedir="samples_src/AsyncRequest" excludes="${excludes}" destfile="${examples}/AsyncRequest.zip"/>
         <zip basedir="samples_src/PetCatalog" excludes="${excludes}" destfile="${examples}/PetCatalog.zip"/>
         <zip basedir="samples_src/ScrumToys" excludes="${excludes}" destfile="${examples}/ScrumToys.zip"/>
+        <zip basedir="samples_src/EmbeddedGlassfish" excludes="${excludes}" destfile="${examples}/EmbeddedGlassfish.zip"/>
+        <zip basedir="samples_src/EjbContainer" excludes="${excludes}" destfile="${examples}/EjbContainer.zip"/>
+        <zip basedir="samples_src/ApplicationScopedResources" excludes="${excludes}" destfile="${examples}/ApplicationScopedResources.zip"/>
     </target>
 </project>
