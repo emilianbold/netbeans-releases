@@ -96,9 +96,11 @@ public enum JsTokenId implements TokenId {
     OPERATOR_TERNARY("?", "operator"), // NOI18N
     OPERATOR_COLON(":", "operator"), // NOI18N
     OPERATOR_EQUALS("==", "operator"), // NOI18N
+    OPERATOR_EQUALS_EXACTLY("===", "operator"), // NOI18N
     OPERATOR_LOWER_EQUALS("<=", "operator"), // NOI18N
     OPERATOR_GREATER_EQUALS(">=", "operator"), // NOI18N
     OPERATOR_NOT_EQUALS("!=", "operator"), // NOI18N
+    OPERATOR_NOT_EQUALS_EXACTLY("!==", "operator"), // NOI18N
     OPERATOR_AND("&&", "operator"), // NOI18N
     OPERATOR_OR("||", "operator"), // NOI18N
     OPERATOR_INCREMENT("++", "operator"), // NOI18N

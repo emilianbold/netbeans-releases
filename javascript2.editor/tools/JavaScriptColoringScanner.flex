@@ -165,7 +165,7 @@ Exponent = [eE] [+-]? [0-9]+
 StringCharacter  = [^\r\n\"\\]|\\{LineTerminator}
 SStringCharacter = [^\r\n\'\\]|\\{LineTerminator}
 RegexpCharacter  = [^\r\n/\\]
-RegexpFirstCharacter  = [^\r\n/\\\*]
+RegexpFirstCharacter  = [^\r\n/\\\*\[]
 
 %state STRING
 %state STRINGEND
@@ -262,9 +262,11 @@ RegexpFirstCharacter  = [^\r\n/\\\*]
   "?"                            { return JsTokenId.OPERATOR_TERNARY; }
   ":"                            { return JsTokenId.OPERATOR_COLON; }
   "=="                           { return JsTokenId.OPERATOR_EQUALS; }
+  "==="                          { return JsTokenId.OPERATOR_EQUALS_EXACTLY; }
   "<="                           { return JsTokenId.OPERATOR_LOWER_EQUALS; }
   ">="                           { return JsTokenId.OPERATOR_GREATER_EQUALS; }
   "!="                           { return JsTokenId.OPERATOR_NOT_EQUALS; }
+  "!=="                          { return JsTokenId.OPERATOR_NOT_EQUALS_EXACTLY; }
   "&&"                           { return JsTokenId.OPERATOR_AND; }
   "||"                           { return JsTokenId.OPERATOR_OR; }
   "++"                           { return JsTokenId.OPERATOR_INCREMENT; }
