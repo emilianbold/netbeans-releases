@@ -257,6 +257,15 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         listEquals(message(file, "list"), output.get().split("\n"), fileOperations.list(file));
     }
 
+    @ForAllEnvironments
+    public void testNormalizeUnixPath() throws Exception {
+        if (!Utilities.isWindows()) {
+            assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/..")));
+            assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../.")));
+            assertEquals("/tmp", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../../tmp")));
+        }
+    }
+
     private void copyAgent() {
         if (!Utilities.isWindows()) {
             try {
@@ -288,6 +297,17 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             assertEquals(message(ioFile, file, "isFile"), ioFile.isFile(), fileOperations.isFile(file));
             listEquals(message(ioFile, file, "list"), ioFile.list(), fileOperations.list(file));
             absPathEquals(ioFile.getParent(), fileOperations.getDir(file));
+            String normalized = fileOperations.normalizeUnixPath(file);
+            absPathEquals(FileUtil.normalizePath(ioFile.getAbsolutePath()), normalized);
+            assertEquals(normalized, fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy(normalized)));
+            if (fileOperations.isDirectory(file)) {
+                File ioFile2 = new File(ioFile, "test/..");
+                ioFile2 = FileUtil.normalizeFile(ioFile2);
+                assertEquals(ioFile2, ioFile);
+                
+                FileProxyO file2 = FileOperationsProvider.toFileProxy(file.getPath()+"/test/..");
+                absPathEquals(ioFile2.getAbsolutePath(), fileOperations.normalizeUnixPath(file2));
+            }
         } else {
             Map<String, Object> runAgent = runAgent(file.getPath());
             if (runAgent != null) {
@@ -303,7 +323,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             }
         }
     }
-    
+
     private String message(File ioFile, FileProxyO file, String method) {
         return new StringBuilder().append(method)
                 .append("(")
