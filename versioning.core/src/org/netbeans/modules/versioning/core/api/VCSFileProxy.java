@@ -64,6 +64,11 @@ public final class VCSFileProxy {
     private final String path;
     private final VCSFileProxyOperations proxy;
     private boolean isFlat = false;
+    
+    /**
+     * Cache if a file is a directory. We know that in case of an io.File based FileObject 
+     * this value is already cached as well so we are able to avoid unnecessary io access.
+     */
     private Boolean isDirectory = null;
     
     static {
@@ -86,12 +91,6 @@ public final class VCSFileProxy {
         if(file instanceof FlatFolder) {
             p.setFlat(true);
         }
-        return p;
-    }
-    
-    public static VCSFileProxy createFileProxy(File file, boolean isDirectory) {
-        VCSFileProxy p = createFileProxy(file);
-        p.isDirectory = isDirectory;
         return p;
     }
 
@@ -133,6 +132,12 @@ public final class VCSFileProxy {
         return new VCSFileProxy(fileObject.getPath(), null);
     }
 
+    private static VCSFileProxy createFileProxy(File file, boolean isDirectory) {
+        VCSFileProxy p = createFileProxy(file);
+        p.isDirectory = isDirectory;
+        return p;
+    }
+    
     /**
      * Determines this files path. Depending on its origin it will be either 
      * {@link FileObject#getPath()} or {@link File#getAbsoluteFile()}.
@@ -187,8 +192,12 @@ public final class VCSFileProxy {
      * @see File#isFile() 
      */
     public boolean isFile() {
-        if (proxy == null) { // XXX cache like with isDirectory
-            return new File(path).isFile();
+        if (proxy == null) { 
+            if(isDirectory != null) {
+                return !isDirectory;
+            } else {
+                return new File(path).isFile();
+            }
         } else {
             return proxy.isFile(this);
         }
