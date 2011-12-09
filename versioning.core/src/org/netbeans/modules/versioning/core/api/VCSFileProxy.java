@@ -63,6 +63,11 @@ public final class VCSFileProxy {
 
     private final String path;
     private final VCSFileProxyOperations proxy;
+    
+    /**
+     * Flag if this file is to be handled as a flat folder. 
+     * @see NonRecursiveFolder
+     */
     private boolean isFlat = false;
     
     /**
