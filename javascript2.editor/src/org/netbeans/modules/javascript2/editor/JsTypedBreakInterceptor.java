@@ -164,9 +164,10 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
+                sb.append("\n"); // NOI18N
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" * "); // NOI18N
-                int offsetDelta = sb.length()+1;
+                int carretOffset = sb.length();
                 sb.append("\n"); // NOI18N
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append(" */"); // NOI18N
@@ -174,8 +175,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 //if (text.startsWith("/**")) {
                 //
                 //}
-                doc.insertString(offset, sb.toString(), null);
-                caret.setDot(offset);
+                context.setText(sb.toString(), 0, carretOffset);
+                //doc.insertString(offset, sb.toString(), null);
+                //caret.setDot(offset);
                 //return offset+offsetDelta;
                 return;
             }
