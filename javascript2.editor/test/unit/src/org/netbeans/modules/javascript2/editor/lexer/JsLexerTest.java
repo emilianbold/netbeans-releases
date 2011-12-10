@@ -212,6 +212,16 @@ public class JsLexerTest extends TestCase {
     }
 
     @SuppressWarnings("unchecked")
+    public void testPartialRegexp4() {
+        String text = "/[ something";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.UNKNOWN, "/[");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "something");
+    }
+
+    @SuppressWarnings("unchecked")
     public void testNotRegexp() {
         String text = "//foo";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
@@ -272,6 +282,14 @@ public class JsLexerTest extends TestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, text);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testComments5() {
+        String text = "/* This is \n";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.UNKNOWN, text);
     }
 
     public void testStrings() {
@@ -351,7 +369,7 @@ public class JsLexerTest extends TestCase {
     }
 
     @SuppressWarnings("unchecked")
-    public void testMultilineString1() {
+    public void testMultilineString() {
         String text = "\"Hello\\\nthis is multiline\"";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();

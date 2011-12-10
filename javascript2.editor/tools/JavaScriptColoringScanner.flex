@@ -234,6 +234,7 @@ RegexpFirstCharacter  = [^\r\n/\\\*\[]
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
+  "/"[\\\*\[]                    { return JsTokenId.UNKNOWN; }
   "/"
                                  {
                                      if (canFollowLiteral) {
@@ -241,6 +242,16 @@ RegexpFirstCharacter  = [^\r\n/\\\*\[]
                                        return JsTokenId.REGEXP_BEGIN;
                                      } else {
                                        return JsTokenId.OPERATOR_DIVISION;
+                                     }
+                                 }
+  "/="
+                                 {
+                                     if (canFollowLiteral) {
+                                       yypushback(1);
+                                       yybegin(REGEXP);
+                                       return JsTokenId.REGEXP_BEGIN;
+                                     } else {
+                                       return JsTokenId.OPERATOR_DIVISION_ASSIGNMENT;
                                      }
                                  }
   /* operators */
@@ -284,7 +295,6 @@ RegexpFirstCharacter  = [^\r\n/\\\*\[]
   "+="                           { return JsTokenId.OPERATOR_PLUS_ASSIGNMENT; }
   "-="                           { return JsTokenId.OPERATOR_MINUS_ASSIGNMENT; }
   "*="                           { return JsTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT; }
-  "/="                           { return JsTokenId.OPERATOR_DIVISION_ASSIGNMENT; }
   "&="                           { return JsTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT; }
   "|="                           { return JsTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT; }
   "^="                           { return JsTokenId.OPERATOR_BITWISE_XOR_ASSIGNMENT; }
@@ -411,8 +421,8 @@ RegexpFirstCharacter  = [^\r\n/\\\*\[]
                                      }
                                  }
 
-  {RegexpFirstCharacter}         { }
-  {RegexpCharacter}+             { }
+  {RegexpFirstCharacter}{RegexpCharacter}+
+                                 { }
   {LineTerminator}               {
                                      yypushback(1);
                                      yybegin(YYINITIAL);
