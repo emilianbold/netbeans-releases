@@ -171,6 +171,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public void beforeCreate(FileObject parent, String name, boolean isFolder) {
+        VCSFilesystemInterceptor.beforeCreate(VCSFileProxy.createFileProxy(parent), name, isFolder);
     }
 
     @Override

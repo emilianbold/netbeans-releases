@@ -77,7 +77,7 @@ public class VCSInterceptorTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        super.setUp();
+        clearWorkDir();
         MockLookup.setLayersAndInstances();
         dataRootDir = getDataDir(); 
         File userdir = new File(dataRootDir + "userdir");
