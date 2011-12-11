@@ -130,8 +130,8 @@ public class PackageNode extends ContainerNode {
 
     /** Creates a new instance of PackageNode */
     public PackageNode(SourcePackageInfo pkg, ContainerNode parent) {
-        super(pkg != null ? pkg.getSimpleName() : NbBundle.getMessage(PackageNode.class, "LBL_Unknown"), 
-              stripName(defaultizeName(pkg != null ? pkg.getBinaryName() : NbBundle.getMessage(PackageNode.class, "LBL_Unknown"))), 
+        super(pkg != null ? pkg.getSimpleName() : Bundle.LBL_Unknown(), 
+              stripName(defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown())), 
               Icons.getIcon(LanguageIcons.PACKAGE), parent);
         
         this.pkg = pkg;

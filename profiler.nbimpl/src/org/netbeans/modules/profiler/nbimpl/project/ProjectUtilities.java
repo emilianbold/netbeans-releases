@@ -107,6 +107,20 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Ian Formanek
  * @deprecated
  */
+@NbBundle.Messages({
+    "ProjectUtilities_UnknownProjectString=Unknown",
+    "ProjectUtilities_FailedCreateClassesDirMsg=Failed to create classes directory: {0}",
+    "ProjectUtilities_FailedGenerateAppletFileMsg=Failed to generate Applet HTML file: {0}",
+    "ProjectUtilities_FailedCopyAppletFileMsg=Failed to copy Applet HTML file: {0}",
+    "ProjectUtilities_FailedCreateOutputFolderMsg=Failed to create build output folder: {0}",
+    "ProjectUtilities_ProfilerWillBeUnintegratedMsg=<html><br><strong>Profiler integration will be removed from {0}.</strong><br><br>The backup of the original build script was created when the project was<br>modified to enable profiling. Modifications made to the build script after<br>the backup was created will be lost. Do you want to continue?</html>",
+    "ProjectUtilities_ProfilerIsntIntegratedMsg=<html><br><strong>Profiler does not seem to be integrated with {0}.<br>Do you still want to perform the unintegration?</strong><br><br>The backup of the original build script was created when the project was<br>modified to enable profiling. Modifications made to the build script after<br>the backup was created may be lost. Do you want to continue?</html>",
+    "ProjectUtilities_RenamingBuildFailedMsg=Renaming build-before-profiler.xml to build.xml failed: {0}\n",
+    "ProjectUtilities_RemovingBuildFailedMsg=Removing profiler-build-impl.xml failed: {0}\n",
+    "ProjectUtilities_RemovingDataFailedMsg=Removing <data> section from private/private.xml failed: {0}\n",
+    "ProjectUtilities_UnintegrationErrorsOccuredMsg=Errors occurred during unintegration. Details:\n\n{0}",
+    "ProjectUtilities_UnintegrationSuccessfulMsg=Unintegration from {0} performed successfully."
+})
 @Deprecated
 public final class ProjectUtilities {
     @ProjectServiceProvider(service=ProjectOpenedHook.class, 
@@ -141,34 +155,6 @@ public final class ProjectUtilities {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectUtilities.class.getName());
     public static final String PROFILER_NAME_SPACE = "http://www.netbeans.org/ns/profiler/1"; // NOI18N
-
-    // -----
-    // I18N String constants
-    private static final String UNKNOWN_PROJECT_STRING = NbBundle.getMessage(ProjectUtilities.class,
-                                                                             "ProjectUtilities_UnknownProjectString"); // NOI18N
-    private static final String FAILED_CREATE_CLASSES_DIR_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                    "ProjectUtilities_FailedCreateClassesDirMsg"); // NOI18N
-    private static final String FAILED_GENERATE_APPLET_FILE_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                      "ProjectUtilities_FailedGenerateAppletFileMsg"); // NOI18N
-    private static final String FAILED_COPY_APPLET_FILE_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                  "ProjectUtilities_FailedCopyAppletFileMsg"); // NOI18N
-    private static final String FAILED_CREATE_OUTPUT_FOLDER_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                      "ProjectUtilities_FailedCreateOutputFolderMsg"); // NOI18N
-    private static final String PROFILER_WILL_BE_UNINTEGRATED_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                        "ProjectUtilities_ProfilerWillBeUnintegratedMsg"); // NOI18N
-    private static final String PROFILER_ISNT_INTEGRATED_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                   "ProjectUtilities_ProfilerIsntIntegratedMsg"); // NOI18N
-    private static final String RENAMING_BUILD_FAILED_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                "ProjectUtilities_RenamingBuildFailedMsg"); // NOI18N
-    private static final String REMOVING_BUILD_FAILED_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                "ProjectUtilities_RemovingBuildFailedMsg"); // NOI18N
-    private static final String REMOVING_DATA_FAILED_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                               "ProjectUtilities_RemovingDataFailedMsg"); // NOI18N
-    private static final String UNINTEGRATION_ERRORS_OCCURED_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                       "ProjectUtilities_UnintegrationErrorsOccuredMsg"); // NOI18N
-    private static final String UNINTEGRATION_SUCCESSFUL_MSG = NbBundle.getMessage(ProjectUtilities.class,
-                                                                                   "ProjectUtilities_UnintegrationSuccessfulMsg"); // NOI18N
-                                                                                                                                   // -----
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -236,7 +222,7 @@ public final class ProjectUtilities {
                 buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
             } catch (IOException e) {
                 ErrorManager.getDefault()
-                            .annotate(e, MessageFormat.format(FAILED_CREATE_OUTPUT_FOLDER_MSG, new Object[] { e.getMessage() }));
+                            .annotate(e, Bundle.ProjectUtilities_FailedCreateOutputFolderMsg(e.getMessage()));
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
 
                 return null;
@@ -392,7 +378,7 @@ public final class ProjectUtilities {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
 
         if (info == null) {
-            return UNKNOWN_PROJECT_STRING;
+            return Bundle.ProjectUtilities_UnknownProjectString();
         } else {
             return info.getDisplayName();
         }
@@ -657,7 +643,7 @@ public final class ProjectUtilities {
             }
         } catch (IOException e) {
             ErrorManager.getDefault()
-                        .annotate(e, MessageFormat.format(FAILED_COPY_APPLET_FILE_MSG, new Object[] { e.getMessage() }));
+                        .annotate(e, Bundle.ProjectUtilities_FailedCopyAppletFileMsg(e.getMessage()));
             ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
 
             return null;
@@ -696,7 +682,7 @@ public final class ProjectUtilities {
                 classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
             } catch (IOException e) {
                 ErrorManager.getDefault()
-                            .annotate(e, MessageFormat.format(FAILED_CREATE_CLASSES_DIR_MSG, new Object[] { e.getMessage() }));
+                            .annotate(e, Bundle.ProjectUtilities_FailedCreateClassesDirMsg(e.getMessage()));
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
 
                 return null;
@@ -707,7 +693,7 @@ public final class ProjectUtilities {
             return AppletSupport.generateHtmlFileURL(profiledClassFile, buildFolder, classesDir, activePlatformName);
         } catch (FileStateInvalidException e) {
             ErrorManager.getDefault()
-                        .annotate(e, MessageFormat.format(FAILED_GENERATE_APPLET_FILE_MSG, new Object[] { e.getMessage() }));
+                        .annotate(e, Bundle.ProjectUtilities_FailedGenerateAppletFileMsg(e.getMessage()));
             ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
 
             return null;
@@ -836,13 +822,11 @@ public final class ProjectUtilities {
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
 
         if (isProfilerIntegrated(project)) {
-            if (!ProfilerDialogs.displayConfirmation(MessageFormat.format(PROFILER_WILL_BE_UNINTEGRATED_MSG,
-                                                                          new Object[] { projectName }))) {
+            if (!ProfilerDialogs.displayConfirmation(Bundle.ProjectUtilities_ProfilerWillBeUnintegratedMsg(projectName))) {
                 return; // cancelled by the user
             }
         } else {
-            if (!ProfilerDialogs.displayConfirmation(MessageFormat.format(PROFILER_ISNT_INTEGRATED_MSG,
-                                                                          new Object[] { projectName }))) {
+            if (!ProfilerDialogs.displayConfirmation(Bundle.ProjectUtilities_ProfilerIsntIntegratedMsg(projectName))) {
                 return; // cancelled by the user
             }
         }
@@ -869,7 +853,7 @@ public final class ProjectUtilities {
                     buildBackupFile.rename(buildBackupFileLock, "build", "xml"); //NOI18N
                 } catch (Exception e) {
                     failed = true;
-                    exceptionsReport.append(MessageFormat.format(RENAMING_BUILD_FAILED_MSG, new Object[] { e.getMessage() }));
+                    exceptionsReport.append(Bundle.ProjectUtilities_RenamingBuildFailedMsg(e.getMessage()));
                     ProfilerLogger.log(e);
                 }
             }
@@ -892,7 +876,7 @@ public final class ProjectUtilities {
                 }
             } catch (Exception e) {
                 failed = true;
-                exceptionsReport.append(MessageFormat.format(REMOVING_BUILD_FAILED_MSG, new Object[] { e.getMessage() }));
+                exceptionsReport.append(Bundle.ProjectUtilities_RemovingBuildFailedMsg(e.getMessage()));
                 ProfilerLogger.log(e);
             }
         } finally {
@@ -908,15 +892,14 @@ public final class ProjectUtilities {
             ProjectManager.getDefault().saveProject(project);
         } catch (Exception e) {
             failed = true;
-            exceptionsReport.append(MessageFormat.format(REMOVING_DATA_FAILED_MSG, new Object[] { e.getMessage() }));
+            exceptionsReport.append(Bundle.ProjectUtilities_RemovingDataFailedMsg(e.getMessage()));
             ProfilerLogger.log(e);
         }
 
         if (failed) {
-            ProfilerDialogs.displayError(MessageFormat.format(UNINTEGRATION_ERRORS_OCCURED_MSG,
-                                                       new Object[] { exceptionsReport.toString() }));
+            ProfilerDialogs.displayError(Bundle.ProjectUtilities_UnintegrationErrorsOccuredMsg(exceptionsReport.toString()));
         } else {
-            ProfilerDialogs.displayInfo(MessageFormat.format(UNINTEGRATION_SUCCESSFUL_MSG, new Object[] { projectName }));
+            ProfilerDialogs.displayInfo(Bundle.ProjectUtilities_UnintegrationSuccessfulMsg(projectName));
         }
     }
     

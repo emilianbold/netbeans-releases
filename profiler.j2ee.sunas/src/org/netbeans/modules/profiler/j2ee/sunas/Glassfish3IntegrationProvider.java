@@ -54,18 +54,16 @@ import org.w3c.dom.Element;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "GlassFishV3IntegraionProvider_GlassFishV3String=GlassFish v3",
+    "GlassFishV3IntegraionProvider_ProfiledGlassFish3ConsoleString=Profiled GlassFish v3"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class Glassfish3IntegrationProvider extends SunASAutoIntegrationProvider {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final String APP_SERVER_CONSOLE_TITLE = NbBundle.getMessage(this.getClass(),
-                                                                        "GlassFishV3IntegraionProvider_ProfiledGlassFish3ConsoleString"); // NOI18N
-    private final String APP_SERVER_TITLE = NbBundle.getMessage(this.getClass(), "GlassFishV3IntegraionProvider_GlassFishV3String"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return APP_SERVER_TITLE; // NOI18N
+        return Bundle.GlassFishV3IntegraionProvider_GlassFishV3String();
     }
 
     protected int getAttachWizardPriority() {
@@ -77,18 +75,18 @@ public class Glassfish3IntegrationProvider extends SunASAutoIntegrationProvider 
     }
 
     protected String getWinConsoleString() {
-        return APP_SERVER_CONSOLE_TITLE; // NOI18N
+        return Bundle.GlassFishV3IntegraionProvider_ProfiledGlassFish3ConsoleString();
     }
 
     protected String getWinSpecificCommandLineArgs(String targetOS, boolean isRemote, int portNumber) {
-        return "\"-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote)
+        return "\"-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote) // NOI18N
                + IntegrationUtils.getDirectorySeparator(targetOS) + IntegrationUtils.getProfilerAgentLibraryFile(targetOS) + "=" //NOI18N
                + "\\\"" + IntegrationUtils.getLibsDir(targetOS, isRemote) + "\\\"" + "," + portNumber + "\""; //NOI18N
     }
 
     @Override
     protected String getConfigDir(String targetOS) {
-        return "glassfish" + IntegrationUtils.getDirectorySeparator(targetOS) + super.getConfigDir(targetOS);
+        return "glassfish" + IntegrationUtils.getDirectorySeparator(targetOS) + super.getConfigDir(targetOS); // NOI18N
     }
 
     @Override

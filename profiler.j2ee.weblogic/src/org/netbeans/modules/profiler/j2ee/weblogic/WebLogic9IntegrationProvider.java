@@ -43,36 +43,24 @@
 
 package org.netbeans.modules.profiler.j2ee.weblogic;
 
-import java.text.MessageFormat;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "WebLogicIntegrationProvider_WebLogic9String=WebLogic 9+"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class WebLogic9IntegrationProvider extends WebLogicIntegrationProvider {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final String COPY_FILES_9_MSG = messages.getString("WebLogicIntegrationProvider_CopyFiles9Msg"); // NOI18N
-    private final String MANUAL_DIRECT_DYNAMIC_STEP3_WL_9_MSG = messages.getString("WebLogicIntegrationProvider_ManualDirectDynamicStep3Wl9Msg"); // NOI18N
-    private final String MANUAL_DIRECT_DYNAMIC_STEP4_WL_9_MSG = messages.getString("WebLogicIntegrationProvider_ManualDirectDynamicStep4Wl9Msg"); // NOI18N
-    private final String MANUAL_DIRECT_STEP5_WL_9_MSG = messages.getString("WebLogicIntegrationProvider_ManualDirectStep5Wl9Msg"); // NOI18N
-    private final String MANUAL_DYNAMIC_STEP5_WL_9_MSG = messages.getString("WebLogicIntegrationProvider_ManualDynamicStep5Wl9Msg"); // NOI18N
-    private final String MANUAL_REMOTE_STEP5_WL_9_MSG = messages.getString("WebLogicIntegrationProvider_ManualRemoteStep5Wl9Msg"); // NOI18N
-    private final String MANUAL_REMOTE_STEP6_WL_9_MSG = messages.getString("WebLogicIntegrationProvider_ManualRemoteStep6Wl9Msg"); // NOI18N
-    private final String MANUAL_REMOTE_STEP7_WL_9_MSG = messages.getString("WebLogicIntegrationProvider_ManualRemoteStep7Wl9Msg"); // NOI18N
-    private final String WEBLOGIC_9_STRING = messages.getString("WebLogicIntegrationProvider_WebLogic9String"); // NOI18N
-    private final String WL_9_ANCHOR_TEXT = messages.getString("WebLogicIntegrationProvider_Wl9AnchorText"); // NOI18N
-    private final String WL_9_CLEANUP_TEXT = messages.getString("WebLogicIntegrationProvider_Wl9CleanupText"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return WEBLOGIC_9_STRING;
+        return Bundle.WebLogicIntegrationProvider_WebLogic9String();
     }
 
     public boolean supportsDynamic() {
@@ -88,62 +76,55 @@ public class WebLogic9IntegrationProvider extends WebLogicIntegrationProvider {
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("BEA_HOME", targetOS), // NOI18N
-        IntegrationUtils.getDirectorySeparator(targetOS), "bin", // NOI18N
-        "base_domain", // NOI18N
-        MessageFormat.format(COPY_FILES_9_MSG, new Object[] { getStartScriptExtension(targetOS) })
-                                                  }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectDynamicStep1Msg(
+                                IntegrationUtils.getEnvVariableReference("BEA_HOME", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS), "bin", // NOI18N
+                                "base_domain", // NOI18N
+                                Bundle.WebLogicIntegrationProvider_CopyFiles9Msg(
+                                    getStartScriptExtension(targetOS))));
 
         // Step 2
         String wlSettings = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_VENDOR", "Sun") // NOI18N
                             + "<br>" // NOI18N
-                            + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                               MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                    new Object[] {
-                                                                                                        IntegrationUtils
-                                                                                                           .getJavaPlatformName(getTargetJava())
-                                                                                                    })); // NOI18N
+                            + IntegrationUtils.getAssignEnvVariableValueString(
+                                targetOS, 
+                                "JAVA_HOME",  // NOI18N
+                                Bundle.WebLogicIntegrationProvider_PathToJvmDirText(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
-        final String cleanupText = MessageFormat.format(WL_9_CLEANUP_TEXT,
-                                                        new Object[] { IntegrationUtils.getBatchExtensionString(targetOS) });
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_STEP2_MSG,
-                                                  new Object[] {
-                                                      getStartScriptExtension(targetOS),
-                                                      IntegrationUtils.isWindowsPlatform(targetOS) ? WINDOWS_ANCHOR_TEXT
-                                                                                                   : WL_9_ANCHOR_TEXT, wlSettings,
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_OPTIONS",
-                                                                                                       IntegrationUtils
-                                                                                                                       .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                        getTargetJava(),
-                                                                                                                                                        attachSettings
-                                                                                                                                                        .isRemote(),
-                                                                                                                                                        attachSettings
-                                                                                                                                                        .getPort())
-                                                                                                       + " "
-                                                                                                       + IntegrationUtils
-                                                                                                                               .getEnvVariableReference("JAVA_OPTIONS",
-                                                                                                                                                        targetOS)),
-                                                      cleanupText
-                                                  })); // NOI18N
+        final String cleanupText = Bundle.WebLogicIntegrationProvider_Wl9CleanupText(
+                                        IntegrationUtils.getBatchExtensionString(targetOS));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectStep2Msg(
+                                getStartScriptExtension(targetOS),
+                                IntegrationUtils.isWindowsPlatform(targetOS) ? 
+                                    Bundle.WebLogicIntegrationProvider_WindowsAnchorText()
+                                    : Bundle.WebLogicIntegrationProvider_Wl9AnchorText(), 
+                                wlSettings,
+                                IntegrationUtils.getAssignEnvVariableValueString(
+                                    targetOS, 
+                                    "JAVA_OPTIONS",
+                                    IntegrationUtils.getProfilerAgentCommandLineArgs(
+                                        targetOS,
+                                        getTargetJava(),
+                                        attachSettings.isRemote(),
+                                        attachSettings.getPort())
+                                        + " "
+                                        + IntegrationUtils.getEnvVariableReference(
+                                            "JAVA_OPTIONS",
+                                            targetOS)),
+                                cleanupText)); // NOI18N
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_WL_9_MSG,
-                                                  new Object[] {
-                                                      getStartScriptExtension(targetOS),
-                                                      MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                           new Object[] {
-                                                                               IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                           })
-                                                  }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectDynamicStep3Wl9Msg(
+                                getStartScriptExtension(targetOS),
+                                Bundle.WebLogicIntegrationProvider_PathToJvmDirText(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava()))));
 
         // Step 4
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP4_WL_9_MSG,
-                                                  new Object[] { getStartScriptExtension(targetOS) }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectDynamicStep4Wl9Msg(getStartScriptExtension(targetOS)));
 
         // Step 5
-        instructions.addStep(MANUAL_DIRECT_STEP5_WL_9_MSG);
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectStep5Wl9Msg());
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
@@ -156,60 +137,43 @@ public class WebLogic9IntegrationProvider extends WebLogicIntegrationProvider {
         IntegrationProvider.IntegrationHints instructions = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP1_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("BEA_HOME", targetOS), // NOI18N
-        IntegrationUtils.getDirectorySeparator(targetOS), "bin", // NOI18N
-        "base_domain", // NOI18N
-        MessageFormat.format(COPY_FILES_9_MSG, new Object[] { getStartScriptExtension(targetOS) })
-                                                  }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectDynamicStep1Msg(
+                                IntegrationUtils.getEnvVariableReference("BEA_HOME", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS), "bin", // NOI18N
+                                "base_domain", // NOI18N
+                                Bundle.WebLogicIntegrationProvider_CopyFiles9Msg(getStartScriptExtension(targetOS))));
 
         // Step 2
         String wlSettings = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_VENDOR", "Sun") // NOI18N
                             + "<br>" // NOI18N
-                            + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                               MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                    new Object[] {
-                                                                                                        IntegrationUtils
-                                                                                                                                                                               .getJavaPlatformName(getTargetJava())
-                                                                                                    })); // NOI18N
+                            + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",  // NOI18N
+                                                                               Bundle.WebLogicIntegrationProvider_PathToJvmDirText(
+                                                                                IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
-        final String cleanupText = MessageFormat.format(WL_9_CLEANUP_TEXT,
-                                                        new Object[] { IntegrationUtils.getBatchExtensionString(targetOS) });
-        instructions.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP2_MSG,
-                                                  new Object[] {
-                                                      getStartScriptExtension(targetOS),
-                                                      IntegrationUtils.isWindowsPlatform(targetOS) ? WINDOWS_ANCHOR_TEXT
-                                                                                                   : WL_9_ANCHOR_TEXT, wlSettings,
-                                                      cleanupText
-                                                  }));
+        final String cleanupText = Bundle.WebLogicIntegrationProvider_Wl9CleanupText(IntegrationUtils.getBatchExtensionString(targetOS));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDynamicStep2Msg(
+                                getStartScriptExtension(targetOS),
+                                IntegrationUtils.isWindowsPlatform(targetOS) ? 
+                                    Bundle.WebLogicIntegrationProvider_WindowsAnchorText()
+                                    : Bundle.WebLogicIntegrationProvider_Wl9AnchorText(), 
+                                wlSettings,
+                                cleanupText));
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP3_WL_9_MSG,
-                                                  new Object[] {
-                                                      getStartScriptExtension(targetOS),
-                                                      MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                           new Object[] {
-                                                                               IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                           })
-                                                  }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectDynamicStep3Wl9Msg(
+                                getStartScriptExtension(targetOS),
+                                Bundle.WebLogicIntegrationProvider_PathToJvmDirText(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava()))));
 
         // Step 4
-        instructions.addStep(MessageFormat.format(MANUAL_DIRECT_DYNAMIC_STEP4_WL_9_MSG,
-                                                  new Object[] { getStartScriptExtension(targetOS) }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDirectDynamicStep4Wl9Msg(getStartScriptExtension(targetOS)));
 
         // Step 5
-        instructions.addStep(MANUAL_DYNAMIC_STEP5_WL_9_MSG); // NOI18N
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDynamicStep5Wl9Msg());
 
         // Put here a warning that the IDE must be run under JDK6/7
-        instructions.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                                     new Object[] {
-                                                         IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                         IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                          getTargetJava(),
-                                                                                                          attachSettings.isRemote(),
-                                                                                                          attachSettings.getPort())
-                                                     }));
+        instructions.addWarning(Bundle.WebLogicIntegrationProvider_DynamicWarningMessage(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return instructions;
     }
@@ -225,61 +189,52 @@ public class WebLogic9IntegrationProvider extends WebLogicIntegrationProvider {
         instructions.addStep(getManualRemoteStep2(targetOS));
 
         // Step 3
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP3_MSG,
-                                                  new Object[] {
-                                                      IntegrationUtils.getEnvVariableReference("BEA_HOME", targetOS), // NOI18N
-        IntegrationUtils.getDirectorySeparator(targetOS), "bin", // NOI18N
-        "base_domain", // NOI18N
-        MessageFormat.format(COPY_FILES_9_MSG, new Object[] { getStartScriptExtension(targetOS) })
-                                                  }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualRemoteStep3Msg(
+                                IntegrationUtils.getEnvVariableReference("BEA_HOME", targetOS), // NOI18N
+                                IntegrationUtils.getDirectorySeparator(targetOS), "bin", // NOI18N
+                                "base_domain", // NOI18N
+                                Bundle.WebLogicIntegrationProvider_CopyFiles9Msg(getStartScriptExtension(targetOS))));
 
         // Step 4
         String wlSettings = IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_VENDOR", "Sun") // NOI18N
                             + "<br>" // NOI18N
-                            + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",
-                                                                               MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                                                    new Object[] {
-                                                                                                        IntegrationUtils
-                                                                                                                                                                                                                                                    .getJavaPlatformName(getTargetJava())
-                                                                                                    })); // NOI18N
+                            + IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_HOME",  // NOI18N
+                                                                               Bundle.WebLogicIntegrationProvider_PathToJvmDirText(
+                                                                                    IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
-        final String cleanupText = MessageFormat.format(WL_9_CLEANUP_TEXT,
-                                                        new Object[] { IntegrationUtils.getBatchExtensionString(targetOS) });
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP4_MSG,
-                                                  new Object[] {
-                                                      getStartScriptExtension(targetOS),
-                                                      IntegrationUtils.isWindowsPlatform(targetOS) ? WINDOWS_ANCHOR_TEXT
-                                                                                                   : WL_9_ANCHOR_TEXT, wlSettings,
-                                                      IntegrationUtils.getAssignEnvVariableValueString(targetOS, "JAVA_OPTIONS",
-                                                                                                       IntegrationUtils
-                                                                                                                                                                                                                                                                .getProfilerAgentCommandLineArgs(targetOS,
-                                                                                                                                                                                                                                                                                                 getTargetJava(),
-                                                                                                                                                                                                                                                                                                 attachSettings
-                                                                                                                                                                                                                                                                                                 .isRemote(),
-                                                                                                                                                                                                                                                                                                 attachSettings
-                                                                                                                                                                                                                                                                                                 .getPort())
-                                                                                                       + " "
-                                                                                                       + IntegrationUtils
-                                                                                                                                                                                                                                                                        .getEnvVariableReference("JAVA_OPTIONS",
-                                                                                                                                                                                                                                                                                                 targetOS)),
-                                                      IntegrationUtils.getRemoteAbsolutePathHint(), cleanupText
-                                                  })); // NOI18N
+        final String cleanupText = Bundle.WebLogicIntegrationProvider_Wl9CleanupText(IntegrationUtils.getBatchExtensionString(targetOS));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualRemoteStep4Msg(
+                                getStartScriptExtension(targetOS),
+                                IntegrationUtils.isWindowsPlatform(targetOS) ? 
+                                    Bundle.WebLogicIntegrationProvider_WindowsAnchorText()
+                                    : Bundle.WebLogicIntegrationProvider_Wl9AnchorText(), 
+                                wlSettings,
+                                IntegrationUtils.getAssignEnvVariableValueString(
+                                    targetOS, 
+                                    "JAVA_OPTIONS", // NOI18N
+                                    IntegrationUtils.getProfilerAgentCommandLineArgs(
+                                        targetOS,
+                                        getTargetJava(),
+                                        attachSettings.isRemote(),
+                                        attachSettings.getPort())
+                                        + " "
+                                        + IntegrationUtils.getEnvVariableReference(
+                                            "JAVA_OPTIONS", // NOI18N
+                                            targetOS)),
+                                IntegrationUtils.getRemoteAbsolutePathHint(), 
+                                cleanupText));
 
         // Step 5
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP5_WL_9_MSG,
-                                                  new Object[] {
-                                                      getStartScriptExtension(targetOS),
-                                                      MessageFormat.format(PATH_TO_JVM_DIR_TEXT,
-                                                                           new Object[] {
-                                                                               IntegrationUtils.getJavaPlatformName(getTargetJava())
-                                                                           })
-                                                  }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualRemoteStep5Wl9Msg(
+                                getStartScriptExtension(targetOS),
+                                Bundle.WebLogicIntegrationProvider_PathToJvmDirText(
+                                    IntegrationUtils.getJavaPlatformName(getTargetJava()))));
 
         // Step 6
-        instructions.addStep(MessageFormat.format(MANUAL_REMOTE_STEP6_WL_9_MSG, new Object[] { getStartScriptExtension(targetOS) }));
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualRemoteStep6Wl9Msg(getStartScriptExtension(targetOS)));
 
         // Step 7
-        instructions.addStep(MANUAL_REMOTE_STEP7_WL_9_MSG);
+        instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualRemoteStep7Wl9Msg());
 
         // Note about decreasing CPU profiling overhead
         instructions.addHint(REDUCE_OVERHEAD_MSG);
