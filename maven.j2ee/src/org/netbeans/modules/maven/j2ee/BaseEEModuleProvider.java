@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -88,29 +88,31 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
         return changeReporter;
     }
     
-    @NonNull
     @Override
+    @CheckForNull
     public DeployOnSaveSupport getDeployOnSaveSupport() {
         return getCopyOnSave();
     }
 
     /**
-     * Returns actual or creates new instance of CopyOnSave class. This method also call initialize method, but it's up to 
-     * client to call copyOnSave.cleanup()
+     * Returns actual CopyOnSave instance registered for the project. This method also call initialize method, 
+     * but it's up to client to call copyOnSave.cleanup(). 
      * 
      * @return actual or newly created instance
      */
-    @NonNull
+    @CheckForNull
     public CopyOnSave getCopyOnSaveSupport() {
         return getCopyOnSave();
     }
     
-    @NonNull
+    @CheckForNull
     private CopyOnSave getCopyOnSave() {
         if (copyOnSave == null) {
             try {
                 copyOnSave = project.getLookup().lookup(CopyOnSave.class);
-                copyOnSave.initialize();
+                if (copyOnSave != null) {
+                    copyOnSave.initialize();
+                }
                 
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
