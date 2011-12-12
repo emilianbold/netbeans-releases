@@ -138,8 +138,11 @@ public class MultiViewProcessorTest extends NbTestCase {
         
         CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
         assertNotNull("MultiViewComponent created", cmv);
+        cmv.open();
         TopComponent mvc = cmv.cloneTopComponent();
         doCheck(mvc, ic);
+        
+        assertTrue("First component can be closed without any questions", cmv.close());
         
         CntAction accept = new CntAction();
         CntAction discard = new CntAction();

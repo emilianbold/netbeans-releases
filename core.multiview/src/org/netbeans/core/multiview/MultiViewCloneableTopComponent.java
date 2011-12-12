@@ -309,10 +309,11 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     }    
     
     /**
-     * This method is called when this <code>TopComponent</code> is about to close.
+     * This method is called when last <code>CloneableTopComponent</code> is about to close.
      * Delegates to CloseOperationHandler.
      */
-    public boolean canClose() {
+    @Override
+    protected boolean closeLast() {
         return peer.canClose();
     }
     

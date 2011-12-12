@@ -187,6 +187,12 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         ref = another;
     }
 
+    @Override
+    protected void componentOpened() {
+        super.componentOpened();
+        getReference().register(this);
+    }
+
     /** Overrides superclass method, adds unregistering from references.
      * @see Ref */
     protected void componentClosed() {
