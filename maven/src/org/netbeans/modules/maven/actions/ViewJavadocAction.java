@@ -60,7 +60,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Anuradha G
  */
-public class ViewJavadocAction extends AbstractAction {
+public final class ViewJavadocAction extends AbstractAction {
 
     private Artifact artifact;
 
@@ -68,6 +68,7 @@ public class ViewJavadocAction extends AbstractAction {
     public ViewJavadocAction(Artifact artifact) {
         this.artifact = artifact;
         putValue(Action.NAME, LBL_View_Javadoc());
+        setEnabled(getJavadocFile().isFile());
 
     }
 
