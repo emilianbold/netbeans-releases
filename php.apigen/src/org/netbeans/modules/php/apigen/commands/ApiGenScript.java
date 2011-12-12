@@ -147,22 +147,24 @@ public final class ApiGenScript extends PhpProgram {
                     processBuilder,
                     executionDescriptor,
                     ioTitle);
+            File targetDir = new File(target);
             if (status == 0) {
-                File targetDir = new File(target);
                 if (targetDir.isDirectory()) {
                     File index = new File(target, "index.html"); // NOI18N
                     if (index.isFile()) {
                         // false for pdf e.g.
                         HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
                     }
-                    // refresh fs
-                    FileUtil.refreshFor(targetDir);
                 }
             } else {
                 // error?
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                         Bundle.ApiGenScript_error_generating(phpModule.getDisplayName()), NotifyDescriptor.ERROR_MESSAGE));
                 output.select();
+            }
+            // refresh fs
+            if (targetDir.isDirectory()) {
+                FileUtil.refreshFor(targetDir);
             }
         } catch (CancellationException ex) {
             // canceled
