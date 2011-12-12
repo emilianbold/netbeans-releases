@@ -120,20 +120,16 @@ public class ClasspathPropertyUtilsTest extends NbTestCase {
         assertFalse(ClasspathPropertyUtils.isCoherenceServerJar(jarPath));
     }
 
-    public void testUpdateClasspathProperty() throws Exception {
+    public void testGetUpdatedClasspath() throws Exception {
         String classpath = "/home/marfous/Coherence/lib/coherence.jar";
-        InstanceProperties properties = InstancePropertiesManager.getInstance().createProperties("coherence");
-        properties.putString(CoherenceModuleProperties.PROP_CLASSPATH, classpath);
 
         String addtionalCp = "/home/marfous/jars/jaxb.jar";
-        ClasspathPropertyUtils.updateClasspathProperty(properties, new String[] {addtionalCp}, null);
-        assertEquals(classpath + CoherenceModuleProperties.CLASSPATH_SEPARATOR + addtionalCp,
-                properties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""));
+        String cp = ClasspathPropertyUtils.getUpdatedClasspath(classpath, new String[] {addtionalCp}, null);
+        assertEquals(classpath + CoherenceModuleProperties.CLASSPATH_SEPARATOR + addtionalCp, cp);
 
         String libCp = "/home/marfous/Coherence/lib/coherence-jpa.jar";
-        ClasspathPropertyUtils.updateClasspathProperty(properties, null, new String[] {libCp});
-        assertEquals(libCp + CoherenceModuleProperties.CLASSPATH_SEPARATOR + classpath + CoherenceModuleProperties.CLASSPATH_SEPARATOR + addtionalCp,
-                properties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""));
+        cp = ClasspathPropertyUtils.getUpdatedClasspath(classpath, null, new String[] {libCp});
+        assertEquals(libCp + CoherenceModuleProperties.CLASSPATH_SEPARATOR + classpath, cp);
     }
 
 }
