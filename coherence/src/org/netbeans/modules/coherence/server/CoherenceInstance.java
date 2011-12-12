@@ -43,8 +43,11 @@ package org.netbeans.modules.coherence.server;
 
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.coherence.server.ui.CustomizerClasspath;
 import org.netbeans.modules.coherence.server.ui.CustomizerCommon;
 import org.netbeans.modules.coherence.server.ui.CustomizerServerProperties;
 import org.netbeans.spi.server.ServerInstanceFactory;
@@ -113,7 +116,17 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
     public JComponent getCustomizer() {
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        tabbedPane.add(new CustomizerCommon(instanceProperties));
+        final CustomizerClasspath customizerClasspath = new CustomizerClasspath(instanceProperties);
+        CustomizerCommon customizerGeneral = new CustomizerCommon(instanceProperties);
+        customizerGeneral.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                customizerClasspath.updateClasspathTextArea();
+            }
+        });
+        tabbedPane.add(customizerGeneral);
+        tabbedPane.add(customizerClasspath);
         tabbedPane.add(new CustomizerServerProperties(instanceProperties));
         return tabbedPane;
     }
