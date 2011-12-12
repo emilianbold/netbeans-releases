@@ -69,6 +69,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -214,7 +215,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }
     
     static String getActionName(Action action) {
@@ -279,7 +280,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
 //        }
-        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
+        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
     }
 
     /**
@@ -375,7 +376,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.whereUsedAction()));
+        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.whereUsedAction()));
     }
 
     /**
@@ -471,7 +472,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
+        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
     }
     
     private FileObject getTarget(Lookup look) {
@@ -718,7 +719,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.moveAction()));
+        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.moveAction()));
     }
 
     protected RefactoringUI wrap(RefactoringUI orig) {

@@ -60,6 +60,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -334,7 +335,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         for (final CloneableEditorSupport ces : ceSupports) {
             final Document d = ces.getDocument();
             if (d!=null) {
-                NbDocument.runAtomic((StyledDocument)d, new Runnable() {
+                runAtomic(d, new Runnable() {
                     @Override
                     public void run() {
                         synchronized(allCES) {
@@ -376,6 +377,20 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
                 clearIfPossible();
             }
         //}
+    }
+    
+    private static void runAtomic(Document doc, Runnable runnable) {
+        // FiXME: workaround for #206134 - [regression] Use of FindUsages modifies all documents with references
+        if (doc instanceof AbstractDocument) {
+            ((AbstractDocument) doc).readLock();
+            try {
+                runnable.run();
+            } finally {
+                ((AbstractDocument) doc).readUnlock();
+            }
+        } else {
+            NbDocument.runAtomic((StyledDocument) doc, runnable);
+        }
     }
     
     private static java.lang.reflect.Field undoRedo;

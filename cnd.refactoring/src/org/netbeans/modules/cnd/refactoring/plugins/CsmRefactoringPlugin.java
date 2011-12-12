@@ -43,14 +43,10 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -77,6 +73,7 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
+    static final Logger LOG = Logger.getLogger(CsmWhereUsedQueryPlugin.class.getName());
 
     protected volatile boolean cancelRequest = false;
 
@@ -125,11 +122,26 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         Iterable<? extends List<CsmFile>> fileGroups = groupByRoot(files);
         AtomicReference<Problem> outProblem = new AtomicReference<Problem>(null);
         final Collection<ModificationResult> results = processFiles(fileGroups, outProblem);
+        final Map<FileObject, Set<Difference>> antiDuplicates = new HashMap<FileObject, Set<Difference>>(1000);
         elements.registerTransaction(new RefactoringCommit(results));
         for (ModificationResult result : results) {
             for (FileObject fo : result.getModifiedFileObjects()) {
-                for (Difference dif : result.getDifferences(fo)) {
-                    elements.add(refactoring, DiffElement.create(dif, fo, result));
+                Set<Difference> added = antiDuplicates.get(fo);
+                if (added == null) {
+                    added = new HashSet<Difference>();
+                    antiDuplicates.put(fo, added);
+                }
+                final Iterator<? extends Difference> differences = result.getDifferences(fo).iterator();
+                while (differences.hasNext()) {
+                    Difference dif = differences.next();
+                    if (!added.contains(dif)) {
+                        added.add(dif);
+                        elements.add(refactoring, DiffElement.create(dif, fo, result));
+                    } else {
+                        // # 205913 - IllegalArgumentException: len=-23 < 0
+                        LOG.log(Level.INFO, "remove duplicated {0} for {1}", new Object[] {dif, fo});
+                        differences.remove();
+                    }
                 }
             }
         }

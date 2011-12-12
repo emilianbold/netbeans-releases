@@ -68,6 +68,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
@@ -135,7 +136,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractInterfaceAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractInterfaceAction()));
     }
 
     @Override
@@ -203,7 +204,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractSuperclassAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractSuperclassAction()));
     }
 
     @Override
@@ -275,7 +276,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pushDownAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pushDownAction()));
     }
 
     @Override
@@ -346,7 +347,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pullUpAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pullUpAction()));
     }
 
     @Override
@@ -447,7 +448,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
     }
     
     @Override
@@ -539,7 +540,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 };
             }
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }
     
     @Override
@@ -600,7 +601,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }    
     
     private static final Set<TypeKind> NOT_ACCEPTED_TYPES = EnumSet.of(TypeKind.ERROR, TypeKind.NONE, TypeKind.OTHER, TypeKind.VOID, TypeKind.EXECUTABLE);
@@ -755,7 +756,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
     }
 
     @Override
@@ -852,7 +853,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
     }
     
     @Override
@@ -926,7 +927,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RefactoringUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.inlineAction()));
     }
     
     protected RefactoringUI wrap(RefactoringUI orig) {

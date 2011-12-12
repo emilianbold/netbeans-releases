@@ -42,6 +42,9 @@ import org.openide.util.NbPreferences;
  */
 public class RefactoringModule {
 
+    private RefactoringModule() {
+    }
+
     /** Holds the file objects whose attributes represents options */
     private static Preferences preferences = NbPreferences.forModule(RefactoringModule.class);
 

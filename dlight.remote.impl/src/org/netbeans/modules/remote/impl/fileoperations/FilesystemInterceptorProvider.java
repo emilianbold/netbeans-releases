@@ -71,10 +71,6 @@ abstract public class FilesystemInterceptorProvider {
         FileSystem getFileSystem();
     }
 
-    // ==================================================================================================
-    // QUERIES
-    // ==================================================================================================
-
     public interface QueryOperations {
         boolean canWrite(FileProxyI file);
         Object getAttribute(FileProxyI file, String attrName);
@@ -105,15 +101,14 @@ abstract public class FilesystemInterceptorProvider {
     }
 
     public interface CopyOperations {
-        IOHandler getCopyHandler(FileObject from, FileProxyI to);
-        void beforeCopy(FileObject from, FileProxyI to);
-        void copySuccess(FileObject from, FileProxyI to);
-        void copyFailure(FileObject from, FileProxyI to);
+        IOHandler getCopyHandler(FileProxyI from, FileProxyI to);
+        void beforeCopy(FileProxyI from, FileProxyI to);
+        void copySuccess(FileProxyI from, FileProxyI to);
     }
 
     public interface MiscOperations {
         void fileLocked(FileProxyI fo);
-        long refreshRecursively(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children);
+        long listFiles(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children);
     }
 
     public interface IOHandler {
@@ -199,6 +194,32 @@ abstract public class FilesystemInterceptorProvider {
         @Override
         public String toString() {
             return path;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 79 * hash + (this.fs != null ? this.fs.hashCode() : 0);
+            hash = 79 * hash + (this.path != null ? this.path.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileObjectFileProxyI other = (FileObjectFileProxyI) obj;
+            if (this.fs != other.fs && (this.fs == null || !this.fs.equals(other.fs))) {
+                return false;
+            }
+            if ((this.path == null) ? (other.path != null) : !this.path.equals(other.path)) {
+                return false;
+            }
+            return true;
         }
     }
     
