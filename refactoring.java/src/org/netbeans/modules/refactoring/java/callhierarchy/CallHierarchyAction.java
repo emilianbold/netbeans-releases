@@ -44,7 +44,7 @@ package org.netbeans.modules.refactoring.java.callhierarchy;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
@@ -83,7 +83,7 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
                 win.setModel(CallHierarchyModel.create(context, win.getScopes(), win.getHierarchyType()));
             }
         };
-        RefactoringUtils.invokeAfterScanFinished(task, getName());
+        ScanDialog.runWhenScanFinished(task, getName());
     }
 
     @Override
