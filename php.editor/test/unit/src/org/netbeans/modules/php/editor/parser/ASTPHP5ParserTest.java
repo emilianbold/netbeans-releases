@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -54,10 +54,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  * @author Petr Pisl
  */
 public class ASTPHP5ParserTest extends ParserTestBase {
-    
+
     public ASTPHP5ParserTest(String testName) {
         super(testName);
-    }            
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -68,7 +68,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     public void testGotoStatment() throws Exception {
         performTest("php53/gotostatement");
     }
@@ -130,7 +130,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         // testing real file from phpwiki
         performTest("TextSearchQuery");
     }
-    
+
     public void testPHPDoc () throws Exception {
         //unfinished phpdoc
         performTest("test01");
@@ -175,6 +175,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("heredoc_012");
         performTest("heredoc_013");
         performTest("heredoc_014");
+        performTest("heredoc_015");
     }
 
     public void testVarCommentSimple01() throws Exception {
@@ -192,35 +193,59 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     public void testVarCommentMixedType02() throws Exception {
         performTest("varcomment/mixed02");
     }
-    
+
     public void testMagicMethod01() throws Exception {
         performTest("phpdoc/magicMethod01");
     }
-    
+
     public void testMagicMethod02() throws Exception {
         performTest("phpdoc/magicMethod02");
     }
-    
+
     public void testMagicMethod03() throws Exception {
         performTest("phpdoc/magicMethod03");
     }
-    
+
     public void testMagicMethod04() throws Exception {
         performTest("phpdoc/magicMethod04");
     }
-    
+
     public void testMagicMethod05() throws Exception {
         performTest("phpdoc/magicMethod05");
     }
-    
+
     public void testMagicMethod06() throws Exception {
         performTest("phpdoc/magicMethod06");
     }
-    
+
     public void testMagicMethod07() throws Exception {
         performTest("phpdoc/magicMethod07");
     }
-    
+
+    public void testTraits_01() throws Exception {
+        performTest("traits_01");
+    }
+
+    public void testTraits_02() throws Exception {
+        performTest("traits_02");
+    }
+
+    public void testTraits_03() throws Exception {
+        performTest("traits_03");
+    }
+
+    public void testTraits_04() throws Exception {
+        performTest("traits_04");
+    }
+
+    public void testTraits_05() throws Exception {
+        performTest("traits_05");
+    }
+
+    public void testTraits_06() throws Exception {
+        performTest("traits_06");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
