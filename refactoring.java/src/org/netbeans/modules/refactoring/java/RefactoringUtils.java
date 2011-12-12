@@ -45,24 +45,19 @@ package org.netbeans.modules.refactoring.java;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Logger;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
@@ -78,12 +73,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -818,108 +810,10 @@ public class RefactoringUtils {
         }
     }
 
-    /**
-     * This is a helper method to provide support for delaying invocations of
-     * actions depending on java model. See <a
-     * href="http://java.netbeans.org/ui/waitscanfinished.html">UI
-     * Specification</a>. <br>Behavior of this method is following:<br> If
-     * classpath scanning is not in progress, runnable's run() is called. <br>
-     * If classpath scanning is in progress, modal cancellable notification
-     * dialog with specified tile is opened. </ul> As soon as classpath scanning
-     * finishes, this dialog is closed and runnable's run() is called. This
-     * method must be called in AWT EventQueue. Runnable is performed in AWT
-     * thread.
-     *
-     * @param runnable Runnable instance which will be called.
-     * @param actionName Title of wait dialog.
-     * @return true action was cancelled <br> false action was performed
-     */
-    public static boolean invokeAfterScanFinished(final Runnable runnable, final String actionName) {
-        assert SwingUtilities.isEventDispatchThread();
-        if (SourceUtils.isScanInProgress()) {
-            final ActionPerformer ap = new ActionPerformer(runnable);
-            ActionListener listener = new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ap.cancel();
-                    waitTask.cancel();
-                }
-            };
-            JLabel label = new JLabel(getString("MSG_WaitScan"), javax.swing.UIManager.getIcon("OptionPane.informationIcon"), SwingConstants.LEFT);
-            label.setBorder(new EmptyBorder(12, 12, 11, 11));
-            DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{getString("LBL_CancelAction", new Object[]{actionName})}, null, 0, null, listener);
-            waitDialog = DialogDisplayer.getDefault().createDialog(dd);
-            waitDialog.pack();
-            //100ms is workaround for 127536
-            waitTask = RP.post(ap, 100);
-            waitDialog.setVisible(true);
-            waitTask = null;
-            waitDialog = null;
-            return ap.hasBeenCancelled();
-        } else {
-            runnable.run();
-            return false;
-        }
-    }
-    private static Dialog waitDialog = null;
-    private static RequestProcessor.Task waitTask = null;
-
     private static String getString(String key) {
         return NbBundle.getMessage(RefactoringUtils.class, key);
     }
 
-    private static String getString(String key, Object values) {
-        return new MessageFormat(getString(key)).format(values);
-    }
-
-    private static class ActionPerformer implements Runnable {
-
-        private Runnable action;
-        private boolean cancel = false;
-
-        ActionPerformer(Runnable a) {
-            this.action = a;
-        }
-
-        public boolean hasBeenCancelled() {
-            return cancel;
-        }
-
-        @Override
-        public void run() {
-            try {
-                SourceUtils.waitScanFinished();
-            } catch (InterruptedException ie) {
-                Exceptions.printStackTrace(ie);
-            }
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    if (!cancel) {
-                        if (waitDialog != null) {
-                            waitDialog.setVisible(false);
-                            waitDialog.dispose();
-                        }
-                        action.run();
-                    }
-                }
-            });
-        }
-
-        public void cancel() {
-            assert SwingUtilities.isEventDispatchThread();
-            // check if the scanning did not finish during cancel
-            // invocation - in such case do not set cancel to true
-            // and do not try to hide waitDialog window
-            if (waitDialog != null) {
-                cancel = true;
-                waitDialog.setVisible(false);
-                waitDialog.dispose();
-            }
-        }
-    }
 
     //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
     public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
@@ -983,8 +877,7 @@ public class RefactoringUtils {
         lookup.scan(scopeBlok, var);
 
         if (lookup.hasRefernces()) {
-            return new MessageFormat(getString("MSG_LocVariableClash")).format(
-                    new Object[]{newName});
+            return NbBundle.getMessage(RefactoringUtils.class, "MSG_LocVariableClash",newName);
         }
 
         TreePath temp = tp;
@@ -992,8 +885,7 @@ public class RefactoringUtils {
             Scope scope = info.getTrees().getScope(temp);
             for (Element el : scope.getLocalElements()) {
                 if (el.getSimpleName().toString().equals(newName)) {
-                    return new MessageFormat(getString("MSG_LocVariableClash")).format(
-                            new Object[]{newName});
+                    return NbBundle.getMessage(RefactoringUtils.class, "MSG_LocVariableClash",newName);
                 }
             }
             temp = temp.getParentPath();
