@@ -80,6 +80,10 @@ public final class ApiGenScript extends PhpProgram {
     private static final String CONFIG_PARAM = "--config"; // NOI18N
     private static final String CHARSET_PARAM = "--charset"; // NOI18N
     private static final String COLORS_PARAM = "--colors"; // NOI18N
+    private static final String UPDATE_CHECK_PARAM = "--update-check"; // NOI18N
+
+    // check for update just once
+    private static boolean updateChecked = false;
 
 
     private ApiGenScript(String command) {
@@ -179,6 +183,7 @@ public final class ApiGenScript extends PhpProgram {
         setConfig(phpModule, params);
         setCharsets(phpModule, params);
         setColors(phpModule, params);
+        setUpdateCheck(phpModule, params);
         return params;
     }
 
@@ -216,6 +221,14 @@ public final class ApiGenScript extends PhpProgram {
     private void setColors(PhpModule phpModule, List<String> params) {
         params.add(COLORS_PARAM);
         params.add("yes"); // NOI18N
+    }
+
+    private void setUpdateCheck(PhpModule phpModule, List<String> params) {
+        params.add(UPDATE_CHECK_PARAM);
+        params.add(updateChecked ? "no" : "yes"); // NOI18N
+        if (!updateChecked) {
+            updateChecked = true;
+        }
     }
 
 }
