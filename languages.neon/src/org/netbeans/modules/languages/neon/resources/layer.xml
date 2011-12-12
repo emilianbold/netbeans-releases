@@ -85,7 +85,7 @@
             <file name="NeonTemplate.neon" url="NeonTemplate.neon">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.languages.neon.resources.Bundle#Templates/Other/NeonTemplate.neon"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/ini/resources/NeonFileDescription.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/neon/resources/NeonFileDescription.html"/>
                 <attr name="position" intvalue="910"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/neon/resources/neon_file_16.png"/>
