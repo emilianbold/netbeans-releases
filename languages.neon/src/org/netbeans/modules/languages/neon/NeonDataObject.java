@@ -68,8 +68,7 @@ public class NeonDataObject extends MultiDataObject {
 
     public NeonDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        registerEditor(NeonLanguageProvider.MIME_TYPE, true);
     }
 
     @Override
@@ -78,8 +77,8 @@ public class NeonDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     @Messages("Source=&Source")
