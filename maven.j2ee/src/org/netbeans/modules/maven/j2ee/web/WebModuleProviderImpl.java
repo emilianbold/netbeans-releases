@@ -71,8 +71,7 @@ import org.openide.util.Exceptions;
  * @author  Milos Kleint 
  */
 @ProjectServiceProvider(service = {WebModuleProviderImpl.class, WebModuleProvider.class, J2eeModuleProvider.class}, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
 })
 public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebModuleProvider {
     
@@ -91,7 +90,7 @@ public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebMo
         }
         return implementation;
     }
-    
+
     @Override
     public WebModule findWebModule(FileObject fileObject) {
         WebModuleImpl impl = getModuleImpl();
