@@ -49,6 +49,14 @@ made subject to such option by the copyright holder.
         <folder name="Source">
             <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
         </folder>
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-jackpot30-refactoring-noconstructor-ReplaceConstructorAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.jackpot30.refactoring.noconstructor.ReplaceConstructorAction.create"/>
+            </file>
+            <file name="org-netbeans-modules-jackpot30-refactoring-invertboolean-InvertBooleanAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.jackpot30.refactoring.invertboolean.InvertBooleanAction.create"/>
+            </file>
+        </folder>
         <folder name="Window">
             <file name="org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
@@ -74,6 +82,23 @@ made subject to such option by the copyright holder.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1840"/>
             </file>
+            <file name="org-netbeans-modules-jackpot30-refactoring-noconstructor-ReplaceConstructorAction-separatorAfter.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="2175"/>
+            </file>
+            <file name="org-netbeans-modules-jackpot30-refactoring-noconstructor-ReplaceConstructorAction-separatorBefore.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="2125"/>
+            </file>
+            <file name="org-netbeans-modules-jackpot30-refactoring-noconstructor-ReplaceConstructorAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-jackpot30-refactoring-noconstructor-ReplaceConstructorAction.instance"/>
+                <attr name="position" intvalue="2150"/>
+            </file>
+            <file name="org-netbeans-modules-jackpot30-refactoring-invertboolean-InvertBooleanAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-jackpot30-refactoring-invertboolean-InvertBooleanAction.instance"/>
+                <attr name="position" intvalue="2152"/>
+            </file>
+            
         </folder>
 
         <folder name="Window">
