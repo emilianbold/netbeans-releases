@@ -141,14 +141,14 @@ public class ClasspathPropertyUtils {
     /**
      * Saves a new classpath into properties.
      *
-     * @param properties instance properties of Coherence server
+     * @param classpath original classpath property value
      * @param additionalCp jars from additional classpath (absolute path)
      * @param coreCp core Coherence libraries jars (absolute path)
+     * @return classpath value updated about new CP entries
      */
-    public static void updateClasspathProperty(InstanceProperties properties, String[] additionalCp, String[] coreCp) {
+    public static String getUpdatedClasspath(String classpath, String[] additionalCp, String[] coreCp) {
         assert additionalCp != null || coreCp != null;
         List<String> newCp = new ArrayList<String>();
-        String classpath = properties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
         String[] oldCp = ClasspathPropertyUtils.classpathFromStringToArray(classpath);
 
         // core Coherence jars
@@ -180,7 +180,7 @@ public class ClasspathPropertyUtils {
             }
             sb.append(cpEntry);
         }
-        properties.putString(CoherenceModuleProperties.PROP_CLASSPATH, sb.toString());
+        return sb.toString();
     }
 
 }

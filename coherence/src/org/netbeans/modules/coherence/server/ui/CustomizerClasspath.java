@@ -41,15 +41,13 @@
  */
 package org.netbeans.modules.coherence.server.ui;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
+import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.util.ClasspathPropertyUtils;
 import org.netbeans.modules.coherence.server.util.ClasspathTable;
 
@@ -59,17 +57,17 @@ import org.netbeans.modules.coherence.server.util.ClasspathTable;
  */
 public class CustomizerClasspath extends javax.swing.JPanel implements ChangeListener {
 
-    private InstanceProperties instanceProperties;
+    private CoherenceProperties coherenceProperties;
 
     /**
      * Creates new form CustomizerClasspath.
      */
-    public CustomizerClasspath(InstanceProperties instanceProperties) {
-        this.instanceProperties = instanceProperties;
+    public CustomizerClasspath(CoherenceProperties coherenceProperties) {
+        this.coherenceProperties = coherenceProperties;
 
         initComponents();
 
-        getTable().refreshClasspathEntries(instanceProperties.getString(CoherenceModuleProperties.PROP_LOCATION, "")); //NOI18N
+        getTable().refreshClasspathEntries(coherenceProperties.getServerRoot()); //NOI18N
         getTable().setSelectedEntries(getSelectedServerLibraries());
         updateClasspathTextArea();
 
@@ -86,7 +84,7 @@ public class CustomizerClasspath extends javax.swing.JPanel implements ChangeLis
 
     private List<String> getSelectedServerLibraries() {
         List<String> selected = new ArrayList<String>();
-        String classpath = instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
+        String classpath = coherenceProperties.getClasspath();
         String[] classpathArray = ClasspathPropertyUtils.classpathFromStringToArray(classpath);
         for (String cpEntry : classpathArray) {
             if (ClasspathPropertyUtils.isCoherenceServerJar(cpEntry)) {
@@ -96,8 +94,8 @@ public class CustomizerClasspath extends javax.swing.JPanel implements ChangeLis
         return selected;
     }
 
-    public void updateClasspathTextArea() {
-        String classpath = instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
+    public final void updateClasspathTextArea() {
+        String classpath = coherenceProperties.getClasspath();
         classpath = classpath.replaceAll(CoherenceModuleProperties.CLASSPATH_SEPARATOR, File.pathSeparator);
         serverClasspathTextArea.setText(classpath);
     }
@@ -173,17 +171,17 @@ public class CustomizerClasspath extends javax.swing.JPanel implements ChangeLis
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        ClasspathPropertyUtils.updateClasspathProperty(instanceProperties, null, getCoreJars());
+        String cp = ClasspathPropertyUtils.getUpdatedClasspath(coherenceProperties.getClasspath(), null, getCoreJars());
+        coherenceProperties.setClasspath(cp);
         updateClasspathTextArea();
     }
 
     private String[] getCoreJars() {
         List<String> cp = new ArrayList<String>();
-        String location = instanceProperties.getString(CoherenceModuleProperties.PROP_LOCATION, ""); //NOI18N
         for (int i = 0; i < serverLibrariesTable.getRowCount(); i++) {
             ClasspathTable.TableModelItem item = getTableModel().getItem(i);
             if (item.getSelected()) {
-                cp.add(ClasspathPropertyUtils.getAbsolutePath(location, item.getName()));
+                cp.add(ClasspathPropertyUtils.getAbsolutePath(coherenceProperties.getServerRoot(), item.getName()));
             }
         }
         return cp.toArray(new String[cp.size()]);
