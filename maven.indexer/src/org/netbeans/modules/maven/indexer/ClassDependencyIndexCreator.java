@@ -182,7 +182,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
         String searchString = crc32base64(className.replace('.', '/'));
         Query refClassQuery = indexer.constructQuery(ClassDependencyIndexCreator.FLD_NB_DEPENDENCY_CLASS.getOntology(), new StringSearchExpression(searchString));
         TopScoreDocCollector collector = TopScoreDocCollector.create(NexusRepositoryIndexerImpl.MAX_RESULT_COUNT, true);
-        IndexingContext context = contexts.iterator().next(); // XXX check for hasNext
+        for (IndexingContext context : contexts) {
         context.getIndexSearcher().search(refClassQuery, collector);
         ScoreDoc[] hits = collector.topDocs().scoreDocs;
         LOG.log(Level.FINER, "for {0} ~ {1} found {2} hits", new Object[] {className, searchString, hits.length});
@@ -202,6 +202,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
                     }
                 }
             }
+        }
         }
     }
     private static Set<String> parseField(String refereeCRC, String field, String referrersNL) {
