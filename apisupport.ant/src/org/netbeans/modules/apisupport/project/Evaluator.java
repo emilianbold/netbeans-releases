@@ -72,6 +72,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.DestDirProvider;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -437,6 +438,12 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             buildDefaults.put("cp.extra", ""); // NOI18N
             buildDefaults.put(CP, "${module.classpath}:${cp.extra}"); // NOI18N
             buildDefaults.put(RUN_CP, "${module.run.classpath}:${cp.extra}:${build.classes.dir}"); // NOI18N
+            if (type == NbModuleType.NETBEANS_ORG && "true".equals(projectProperties.getProperties().get("requires.nb.javac"))) {
+                ModuleEntry javacapi = ml.getEntry("org.netbeans.libs.javacapi");
+                if (javacapi != null) {
+                    buildDefaults.put(ClassPathProviderImpl.BOOTCLASSPATH_PREPEND, javacapi.getClassPathExtensions());
+                }
+            }
             
             baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
 
