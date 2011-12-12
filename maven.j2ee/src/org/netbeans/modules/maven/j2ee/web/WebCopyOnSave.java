@@ -77,7 +77,10 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private WebModule getWebModule() {
-        return ((WebModuleProviderImpl)getJ2eeModuleProvider()).findWebModule(getProject().getProjectDirectory());
+        if (getJ2eeModuleProvider() instanceof WebModuleProviderImpl) {
+            return ((WebModuleProviderImpl) getJ2eeModuleProvider()).findWebModule(getProject().getProjectDirectory());
+        }
+        return null;
     }
 
     private boolean isInPlace() throws IOException {
@@ -104,9 +107,13 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private void smallinitialize() throws FileStateInvalidException {
-        docBase = getWebModule().getDocumentBase();
-        if (docBase != null) {
-            docBase.getFileSystem().addFileChangeListener(listener);
+        WebModule webModule = getWebModule();
+        
+        if (webModule != null) {
+            docBase = webModule.getDocumentBase();
+            if (docBase != null) {
+                docBase.getFileSystem().addFileChangeListener(listener);
+            }
         }
     }
 
