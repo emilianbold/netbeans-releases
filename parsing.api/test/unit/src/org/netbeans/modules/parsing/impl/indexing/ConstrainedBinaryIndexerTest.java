@@ -67,6 +67,7 @@ import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -411,6 +412,82 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
         indexer.await(5);
     }
 
+    /**
+     * Tests transitions among results of predicate evaluation
+     */
+    public void testTransitions() throws Exception {
+        final String[] reqRes = new String[]{"required_resource.txt"};  //NOI18N
+        final MockConstrainedIndexer indexer = new MockConstrainedIndexer();
+        registerProxyBinaryIndexer(indexer,reqRes,null,null);
+        URL root = createArchive (getWorkDir(), "tr.jar", new String[0]); //NOI18N
+        ClassPath cp = ClassPathSupport.createClassPath(root);
+
+        //Jar registered for first time (never seen before), predicates evaluate to false
+        // -> nothing should be called.
+        indexer.expect();
+        globalPathRegistry_register(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar unregistered, predicate was false -> nothing should be called
+        indexer.expect();
+        globalPathRegistry_unregister(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar registered for second time (seen before but modified) predicate evaluates to false
+        //-> nothing should be called
+        waitFS();
+        root = createArchive (getWorkDir(), "tr.jar", new String[0]); //NOI18N
+        cp = ClassPathSupport.createClassPath(root);
+        indexer.expect();
+        globalPathRegistry_register(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar unregistered, predicate was false -> nothing should be called
+        indexer.expect();
+        globalPathRegistry_unregister(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar registered for second time (seen before but modified) now predicate evaluates to true
+        //-> started, indexed, finished should be called
+        waitFS();
+        root = createArchive (getWorkDir(), "tr.jar", reqRes); //NOI18N
+        cp = ClassPathSupport.createClassPath(root);
+        indexer.expect(MockConstrainedIndexer.Event.STARTED, MockConstrainedIndexer.Event.INDEXED, MockConstrainedIndexer.Event.FINISHED);
+        globalPathRegistry_register(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+        assertTrue(indexer.hasResources(Collections.<String,Set<String>>emptyMap()));
+
+        //Jar unregistered rootsRemoved should be called
+        indexer.expect(MockConstrainedIndexer.Event.REMOVED);
+        globalPathRegistry_unregister(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar registered for second time (seen before) scanStarted should be called.
+        //The ConstrainedBinaryIndexer accepted the jar in prev scan -> the scanStarted
+        //has to be called to give a chance to indexer to force rescan of it when needed.
+        indexer.expect(MockConstrainedIndexer.Event.STARTED);
+        globalPathRegistry_register(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar unregistered rootsRemoved should be called
+        indexer.expect(MockConstrainedIndexer.Event.REMOVED);
+        globalPathRegistry_unregister(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar modified and predicate is now false -> nothing should be called
+        waitFS();
+        root = createArchive (getWorkDir(), "tr.jar", new String[0]); //NOI18N
+        cp = ClassPathSupport.createClassPath(root);
+        indexer.expect();
+        globalPathRegistry_register(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+
+        //Jar unregistered, predicate was false -> nothing should be called
+        indexer.expect();
+        globalPathRegistry_unregister(PATH_LIB, cp);
+        assertTrue(indexer.await(5));
+    }
+
 
     private void globalPathRegistry_register(String id, ClassPath... classpaths) {
         Set<ClassPath> set = registeredClasspaths.get(id);
@@ -461,18 +538,35 @@ public class ConstrainedBinaryIndexerTest extends NbTestCase {
             @NonNull final File dir,
             @NonNull final String name,
             @NonNull String[] requiredResources) throws IOException {
-        final File tmp = new File (dir,name);
-        final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(tmp));
+        final FileObject folder = FileUtil.toFileObject(dir);
+        FileObject tmp = folder.getFileObject(name);
+        if (tmp != null) {
+            tmp.delete();
+        }
+        tmp = folder.createData(name);
+        final FileLock lock = tmp.lock();
         try {
-            //Put at least something.
-            out.putNextEntry(new ZipEntry("nothing.txt"));  //NOI18N
-            for (String res : requiredResources) {
-                out.putNextEntry(new ZipEntry(res));
+            final ZipOutputStream out = new ZipOutputStream(tmp.getOutputStream(lock));
+            try {
+                //Put at least something.
+                out.putNextEntry(new ZipEntry("nothing.txt"));  //NOI18N
+                for (String res : requiredResources) {
+                    out.putNextEntry(new ZipEntry(res));
+                }
+            } finally {
+                out.close();
             }
         } finally {
-            out.close();
+            lock.releaseLock();
         }
-        return FileUtil.getArchiveRoot(tmp.toURI().toURL());
+        return FileUtil.getArchiveRoot(tmp.getURL());
+    }
+
+    /**
+     * Waits for FS timestamp
+     */
+    public void waitFS() throws InterruptedException {
+        Thread.sleep(2000);
     }
 
 
