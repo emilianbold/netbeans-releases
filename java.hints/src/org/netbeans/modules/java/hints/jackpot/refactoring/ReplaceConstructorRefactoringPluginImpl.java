@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jackpot30.refactoring.noconstructor;
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -58,7 +58,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.jackpot30.spi.refactoring.JackpotBasedRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.openide.util.Exceptions;
 

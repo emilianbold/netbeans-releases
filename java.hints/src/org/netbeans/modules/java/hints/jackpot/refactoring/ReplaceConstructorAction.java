@@ -36,34 +36,40 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-package org.netbeans.modules.jackpot30.refactoring.noconstructor;
+import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.openide.util.lookup.Lookups;
+@ActionID(id = "org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_ReplaceConstructorAction")
+@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ReplaceConstructorAction", position = 1820)
+public final class ReplaceConstructorAction extends JavaRefactoringGlobalAction {
 
-/**
- *
- * @author lahvac
- */
-public class ReplaceConstructorRefactoring extends AbstractRefactoring {
-    
-    private final TreePathHandle constructor;
-    private final String factoryName;
-
-    public ReplaceConstructorRefactoring(TreePathHandle constructor, String factoryName) {
-        super(Lookups.singleton(constructor));
-        this.constructor = constructor;
-        this.factoryName = factoryName;
+    public ReplaceConstructorAction() {
+        super(NbBundle.getMessage(ReplaceConstructorAction.class, "LBL_ReplaceConstructorAction"), null); // NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    public TreePathHandle getConstructor() {
-        return constructor;
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
-    public String getFactoryName() {
-        return factoryName;
+    protected boolean asynchronous() {
+        return false;
     }
 
+    protected boolean enable(Lookup context) {
+        return RefactoringActionsProviderExt.canReplaceConstructor(context);
+    }
+
+    @Override
+    public void performAction(Lookup context) {
+        RefactoringActionsProviderExt.doReplaceConstructor(context);
+    }
 }

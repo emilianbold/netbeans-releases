@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010-2011 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,20 +34,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010-2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jackpot30.refactoring.noconstructor;
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-import org.netbeans.modules.jackpot30.spi.refactoring.RefactoringActionsProviderExt;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public final class ReplaceConstructorAction extends JavaRefactoringGlobalAction {
 
-    public ReplaceConstructorAction() {
-        super(NbBundle.getMessage(ReplaceConstructorAction.class, "LBL_ReplaceConstructorAction"), null); // NOI18N
+@ActionID( id = "org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_InvertBooleanAction")
+@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "InvertBooleanAction", position = 1830)
+public final class InvertBooleanAction extends JavaRefactoringGlobalAction {
+
+    public InvertBooleanAction() {
+        super(NbBundle.getMessage(InvertBooleanAction.class, "LBL_InvertBooleanAction"), null); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
@@ -60,11 +66,12 @@ public final class ReplaceConstructorAction extends JavaRefactoringGlobalAction 
     }
 
     protected boolean enable(Lookup context) {
-        return RefactoringActionsProviderExt.canReplaceConstructor(context);
+        return RefactoringActionsProviderExt.canInvertBoolean(context);
     }
+
 
     @Override
     public void performAction(Lookup context) {
-        RefactoringActionsProviderExt.doReplaceConstructor(context);
+        RefactoringActionsProviderExt.doInvertBoolean(context);
     }
 }

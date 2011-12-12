@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,39 +34,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010-2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jackpot30.refactoring.invertboolean;
 
-import org.netbeans.modules.jackpot30.spi.refactoring.RefactoringActionsProviderExt;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-public final class InvertBooleanAction extends JavaRefactoringGlobalAction {
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.openide.util.lookup.Lookups;
 
-    @Messages("LBL_InvertBooleanAction=Invert Boolean")
-    public InvertBooleanAction() {
-        super(Bundle.LBL_InvertBooleanAction(), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+/**
+ *
+ * @author lahvac
+ */
+public class ReplaceConstructorRefactoring extends AbstractRefactoring {
+    
+    private final TreePathHandle constructor;
+    private final String factoryName;
+
+    public ReplaceConstructorRefactoring(TreePathHandle constructor, String factoryName) {
+        super(Lookups.singleton(constructor));
+        this.constructor = constructor;
+        this.factoryName = factoryName;
     }
 
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public TreePathHandle getConstructor() {
+        return constructor;
     }
 
-    protected boolean asynchronous() {
-        return false;
+    public String getFactoryName() {
+        return factoryName;
     }
 
-    protected boolean enable(Lookup context) {
-        return RefactoringActionsProviderExt.canInvertBoolean(context);
-    }
-
-
-    @Override
-    public void performAction(Lookup context) {
-        RefactoringActionsProviderExt.doInvertBoolean(context);
-    }
 }

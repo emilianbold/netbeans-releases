@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jackpot30.refactoring.invertboolean;
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
 import java.awt.Component;
 import javax.lang.model.SourceVersion;

@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jackpot30.spi.refactoring;
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -49,8 +49,8 @@ import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ScanDialog;
-import org.netbeans.modules.jackpot30.refactoring.invertboolean.InvertBooleanRefactoringUI;
-import org.netbeans.modules.jackpot30.refactoring.noconstructor.ReplaceConstructorRefactoringUI;
+import org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoringUI;
+import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorRefactoringUI;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;

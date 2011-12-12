@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jackpot30.spi;
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;

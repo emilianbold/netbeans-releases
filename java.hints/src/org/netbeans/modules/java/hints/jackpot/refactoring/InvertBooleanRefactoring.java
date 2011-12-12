@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jackpot30.refactoring.invertboolean;
+package org.netbeans.modules.java.hints.jackpot.refactoring;
 
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
