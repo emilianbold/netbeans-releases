@@ -54,6 +54,7 @@ import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -95,8 +96,10 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Anuradha
  */
 public class VersionNode extends AbstractNode {
-    private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"; //NOI18N
-    private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencySrcIncluded.png"; //NOI18N
+
+    private static final @StaticResource String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
+    private static final @StaticResource String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png";
+    private static final @StaticResource String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencySrcIncluded.png";
 
     private static final RequestProcessor RP = new RequestProcessor(VersionNode.class);
 
@@ -146,7 +149,7 @@ public class VersionNode extends AbstractNode {
         } else {
             setName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
         }
-        setIconBaseWithExtension("org/netbeans/modules/maven/repository/DependencyJar.gif"); //NOI18N
+        setIconBaseWithExtension(DEPENDENCY_JAR);
         setLocalArtifact(localArtifact);
     }
 
