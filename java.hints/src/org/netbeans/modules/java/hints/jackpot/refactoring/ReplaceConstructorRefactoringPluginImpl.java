@@ -130,7 +130,7 @@ public class ReplaceConstructorRefactoringPluginImpl extends JackpotBasedRefacto
                         rule.append(" :: ").append(constraints);
                     }
                     rule.append(" => ").append(parent.getQualifiedName()).append(".").append(replaceConstructorRefactoring.getFactoryName()).append("(").append(parameters).append(");;");
-                    result.addScript(parent.getQualifiedName().toString(), rule.toString(), ScriptOptions.RUN, ScriptOptions.STORE);
+                    result.addScript(parent.getQualifiedName().toString(), rule.toString(), ScriptOptions.RUN/*, ScriptOptions.STORE*/);
                 }
             });
 
