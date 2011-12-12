@@ -95,6 +95,10 @@ public final class BuildImplTest extends NbTestCase {
         return Level.FINE;
     }
 
+    @Override protected String logRoot() {
+        return "org.apache.tools.ant.module";
+    }
+
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -549,7 +553,7 @@ public final class BuildImplTest extends NbTestCase {
         assertTrue("compile target was not executed", output.contains("compile:"));
         assertTrue("compile-test target was not executed", output.contains("compile-test:"));
         assertTrue("test target was not executed", output.contains("test:"));
-        assertTrue("test 0 was not executed", output.contains("Source0Test test executed"));
+        assertTrue("test 0 was not executed: " + output, output.contains("Source0Test test executed"));
         assertTrue("test 1 was not executed", output.contains("Source1Test test executed"));
 
         FileObject fo = aph.getProjectDirectory();
