@@ -58,9 +58,13 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.options.ApiGenOptions;
 import org.netbeans.modules.php.apigen.ui.ApiGenPreferences;
 import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents <a href="http://apigen.org/">apigen</a> command line tool.
@@ -110,7 +114,10 @@ public final class ApiGenScript extends PhpProgram {
         return Bundle.ApiGenScript_prefix(error);
     }
 
-    @NbBundle.Messages("ApiGenScript.api.generating=Generating API documentation for {0}")
+    @NbBundle.Messages({
+        "ApiGenScript.api.generating=Generating API documentation for {0}",
+        "ApiGenScript.error.generating=Generating API documentation for {0} failed, review Output window for details."
+    })
     public void generateDocumentation(final PhpModule phpModule) {
         String target = ApiGenPreferences.getTarget(phpModule, true);
         if (target == null) {
@@ -118,12 +125,16 @@ public final class ApiGenScript extends PhpProgram {
             return;
         }
 
+        // XXX can be removed once #206254 is fixed
+        final String ioTitle = Bundle.ApiGenScript_api_generating(phpModule.getDisplayName());
+        final InputOutput output = IOProvider.getDefault().getIO(ioTitle, false);
         ExternalProcessBuilder processBuilder = getProcessBuilder();
         for (String param : getParams(phpModule)) {
             processBuilder = processBuilder
                     .addArgument(param);
         }
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
+                .inputOutput(output)
                 .frontWindow(false)
                 .optionsPath(ApiGenOptionsPanelController.getOptionsPath());
 
@@ -131,7 +142,7 @@ public final class ApiGenScript extends PhpProgram {
             int status = executeAndWait(
                     processBuilder,
                     executionDescriptor,
-                    Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()));
+                    ioTitle);
             if (status == 0) {
                 File targetDir = new File(target);
                 if (targetDir.isDirectory()) {
@@ -143,6 +154,11 @@ public final class ApiGenScript extends PhpProgram {
                     // refresh fs
                     FileUtil.refreshFor(targetDir);
                 }
+            } else {
+                // error?
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                        Bundle.ApiGenScript_error_generating(phpModule.getDisplayName()), NotifyDescriptor.ERROR_MESSAGE));
+                output.select();
             }
         } catch (CancellationException ex) {
             // canceled
