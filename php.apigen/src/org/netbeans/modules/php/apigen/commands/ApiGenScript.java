@@ -177,32 +177,32 @@ public final class ApiGenScript extends PhpProgram {
 
     private List<String> getParams(PhpModule phpModule) {
         List<String> params = new ArrayList<String>();
-        setSource(phpModule, params);
-        setDestination(phpModule, params);
-        setTitle(phpModule, params);
-        setConfig(phpModule, params);
-        setCharsets(phpModule, params);
-        setColors(phpModule, params);
-        setUpdateCheck(phpModule, params);
+        addSource(phpModule, params);
+        addDestination(phpModule, params);
+        addTitle(phpModule, params);
+        addConfig(phpModule, params);
+        addCharsets(phpModule, params);
+        addColors(phpModule, params);
+        addUpdateCheck(phpModule, params);
         return params;
     }
 
-    private void setSource(PhpModule phpModule, List<String> params) {
+    private void addSource(PhpModule phpModule, List<String> params) {
         params.add(SOURCE_PARAM);
         params.add(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath());
     }
 
-    private void setDestination(PhpModule phpModule, List<String> params) {
+    private void addDestination(PhpModule phpModule, List<String> params) {
         params.add(DESTINATION_PARAM);
         params.add(ApiGenPreferences.getTarget(phpModule, false));
     }
 
-    private void setTitle(PhpModule phpModule, List<String> params) {
+    private void addTitle(PhpModule phpModule, List<String> params) {
         params.add(TITLE_PARAM);
         params.add(ApiGenPreferences.getTitle(phpModule));
     }
 
-    private void setConfig(PhpModule phpModule, List<String> params) {
+    private void addConfig(PhpModule phpModule, List<String> params) {
         String config = ApiGenPreferences.getConfig(phpModule);
         if (StringUtils.hasText(config)) {
             params.add(CONFIG_PARAM);
@@ -210,7 +210,7 @@ public final class ApiGenScript extends PhpProgram {
         }
     }
 
-    private void setCharsets(PhpModule phpModule, List<String> params) {
+    private void addCharsets(PhpModule phpModule, List<String> params) {
         for (String charset : ApiGenPreferences.getCharsets(phpModule)) {
             params.add(CHARSET_PARAM);
             params.add(charset);
@@ -218,12 +218,12 @@ public final class ApiGenScript extends PhpProgram {
     }
 
     // always set colors since output windows supports ANSI coloring
-    private void setColors(PhpModule phpModule, List<String> params) {
+    private void addColors(PhpModule phpModule, List<String> params) {
         params.add(COLORS_PARAM);
         params.add("yes"); // NOI18N
     }
 
-    private void setUpdateCheck(PhpModule phpModule, List<String> params) {
+    private void addUpdateCheck(PhpModule phpModule, List<String> params) {
         params.add(UPDATE_CHECK_PARAM);
         params.add(updateChecked ? "no" : "yes"); // NOI18N
         if (!updateChecked) {
