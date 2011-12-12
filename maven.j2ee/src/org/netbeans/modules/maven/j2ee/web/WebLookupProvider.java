@@ -64,14 +64,17 @@ public class WebLookupProvider implements LookupProvider, PropertyChangeListener
 
     private Project project;
     private InstanceContent ic;
+
+    private JsfSupportHandle jsfSupport;
     
     
     @Override
     public Lookup createAdditionalLookup(Lookup baseLookup) {
         project = baseLookup.lookup(Project.class);
         ic = new InstanceContent();
-        changeAdditionalLookups();
+        jsfSupport = new JsfSupportHandle();
         
+        addLookupInstances();
         NbMavenProject.addPropertyChangeListener(project, this);
         
         return new AbstractLookup(ic);
@@ -85,11 +88,19 @@ public class WebLookupProvider implements LookupProvider, PropertyChangeListener
     }
     
     private void changeAdditionalLookups() {
+        removeLookupInstances();
+        addLookupInstances();
+    }
+    
+    private void addLookupInstances() {
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         
-        ic = new InstanceContent();
         if (MavenProjectSupport.isWebSupported(project, packaging)) {
-            ic.add(new JsfSupportHandle());
+            ic.add(jsfSupport);
         }
+    }
+    
+    private void removeLookupInstances() {
+        ic.remove(jsfSupport);
     }
 }

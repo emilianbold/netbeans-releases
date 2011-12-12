@@ -163,7 +163,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
         Window newFocusedW = SwingUtilities.getWindowAncestor(selectedTopComponent);
         //#177550: Call requestFocus on selected TC only if TC is in AWT hierarchy
         if (newFocusedW != null) {
-            if (newFocusedW.equals(oldFocusedW)) {
+            if (newFocusedW.equals(oldFocusedW) || null == oldFocusedW) {
                 // focus transfer inside one window or system is not active in OS at all
                 // so requestFocusInWindow call is right and enough
                 selectedTopComponent.requestFocusInWindow();
