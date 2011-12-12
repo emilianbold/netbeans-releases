@@ -104,10 +104,6 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             if (Boolean.getBoolean("cnd.model.index.enabled") && Boolean.getBoolean("cnd.model.global.index")) {
                 return ReferencesIndex.getAllReferences(UIDCsmConverter.objectToUID(target));
             }
-            if (!(project instanceof ProjectBase)) {
-                return Collections.<CsmReference>emptyList();
-            }
-            ProjectBase basePrj = (ProjectBase)project;
             boolean unboxInstantiation = true;
             CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, unboxInstantiation);
             CsmObject decl = decDef[0];
@@ -122,13 +118,17 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 CsmOffsetable offs = (CsmOffsetable)scope;
                 out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
             } else {
-                if (Boolean.getBoolean("cnd.model.global.index")) {
+                if (Boolean.getBoolean("cnd.model.index.enabled")) {
                     Collection<CsmUID<CsmFile>> allFiles = ReferencesIndex.getRelevantFiles(UIDCsmConverter.objectToUID(target));
                     files = new ArrayList<FileImpl>(allFiles.size());
                     for (CsmUID<CsmFile> csmUID : allFiles) {
                         files.add((FileImpl)UIDCsmConverter.UIDtoFile(csmUID));
                     }
                 } else {
+                    if (!(project instanceof ProjectBase)) {
+                        return Collections.<CsmReference>emptyList();
+                    }
+                    ProjectBase basePrj = (ProjectBase) project;
                     files = basePrj.getAllFileImpls();
                 }
                 out = new ArrayList<CsmReference>(files.size() * 10);
