@@ -47,21 +47,17 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
 import org.netbeans.modules.cnd.refactoring.support.RefactoringCommit;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
@@ -270,6 +266,39 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             }
             // element is still available
             return null;
+        }
+    }
+
+    protected final Collection<? extends CsmObject> getEqualObjects(CsmObject csmObject) {
+        if (false && CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
+            CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
+            CharSequence uniqueName = decl.getUniqueName();
+            Collection<CsmProject> projects = new LinkedHashSet<CsmProject>(CsmModelAccessor.getModel().projects());
+            Collection<CsmObject> out = new HashSet<CsmObject>(projects.size());
+            CsmFile file = decl.getContainingFile();
+            if (file != null) {
+                FileObject fo = file.getFileObject();
+                FSPath fsPath = FSPath.toFSPath(fo);
+                Collection<CsmProject> allProjects = new LinkedHashSet<CsmProject>(projects);
+                for (CsmProject csmProject : projects) {
+                    allProjects.addAll(csmProject.getLibraries());
+                }
+                for (CsmProject csmProject : allProjects) {
+                    final CsmFile projFile = csmProject.findFile(fsPath, false, false);
+                    if (projFile != null) {
+                        final Collection<CsmOffsetableDeclaration> findDeclarations = csmProject.findDeclarations(uniqueName);
+                        for (CsmOffsetableDeclaration prjDecl : findDeclarations) {
+                            if (CsmReferenceSupport.sameDeclaration(prjDecl, decl)) {
+                                out.add(prjDecl);
+                            }
+                        }
+                    }
+                }
+            }
+            assert out.contains(decl) : "no original object in out collection " + out;
+            return out;
+        } else {
+            return Collections.singleton(csmObject);
         }
     }
 }
