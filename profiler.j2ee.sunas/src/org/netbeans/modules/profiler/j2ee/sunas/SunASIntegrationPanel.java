@@ -61,7 +61,8 @@ import org.netbeans.modules.profiler.attach.wizard.AttachWizardContext;
  * @author Jaroslav Bachorik
  */
 @NbBundle.Messages({
-    "SunAS8IntegrationProvider_InstallDirPendingMsg=Server installation directory pending..."
+    "SunAS8IntegrationProvider_InstallDirPendingMsg=Server installation directory pending...",
+    "SunAS8IntegrationProvider_ProvideInfoLabelText=Provide information required for automatic integration"
 })
 public class SunASIntegrationPanel extends AttachWizardPanel {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.j2ee.weblogic;
 
-import java.util.ResourceBundle;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvider;
 import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
