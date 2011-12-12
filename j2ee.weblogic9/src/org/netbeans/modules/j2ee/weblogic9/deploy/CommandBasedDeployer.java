@@ -88,6 +88,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -683,11 +684,15 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     private String getClassPath() {
-        File weblogicJar = WLPluginProperties.getWeblogicJar(getDeploymentManager());
-        if (weblogicJar != null && weblogicJar.isFile() && weblogicJar.exists()) {
-            return weblogicJar.getAbsolutePath();
+        File[] files = WLPluginProperties.getClassPath(getDeploymentManager());
+        StringBuilder sb = new StringBuilder();
+        for (File file : files) {
+            sb.append(file.getAbsolutePath()).append(File.pathSeparatorChar);
         }
-        return "";
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 1);
+        }
+        return sb.toString();
     }
 
     private String getJavaBinary() {
@@ -902,7 +907,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     private static class LastLineProcessor implements LineProcessor {
 
-        private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+at.*$"); // NOI18N
+        private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+((at)|(\\.\\.\\.)).*$"); // NOI18N
 
         private String last = "";
 
