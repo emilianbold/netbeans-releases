@@ -67,7 +67,11 @@ public class ClasspathPropertyUtils {
      * @return resulting {@code String[]}
      */
     public static String[] classpathFromStringToArray(String classpath) {
+        if ("".equals(classpath.trim())) { //NOI18N
+            return new String[0];
+        }
         return classpath.split(CoherenceModuleProperties.CLASSPATH_SEPARATOR);
+
     }
 
     /**
@@ -90,9 +94,9 @@ public class ClasspathPropertyUtils {
     }
 
     /**
-     * Gets full absolute path to given jar.
+     * Gets full absolute path to given Coherence library jar.
      * @param serverRoot root dir of Coherence server
-     * @param jarName Coherence jar
+     * @param jarName Coherence library jar
      * @return full path
      */
     public static String getAbsolutePath(String serverRoot, String jarName) {
@@ -136,11 +140,13 @@ public class ClasspathPropertyUtils {
 
     /**
      * Saves a new classpath into properties.
+     *
      * @param properties instance properties of Coherence server
      * @param additionalCp jars from additional classpath (absolute path)
      * @param coreCp core Coherence libraries jars (absolute path)
      */
     public static void updateClasspathProperty(InstanceProperties properties, String[] additionalCp, String[] coreCp) {
+        assert additionalCp != null || coreCp != null;
         List<String> newCp = new ArrayList<String>();
         String classpath = properties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
         String[] oldCp = ClasspathPropertyUtils.classpathFromStringToArray(classpath);
