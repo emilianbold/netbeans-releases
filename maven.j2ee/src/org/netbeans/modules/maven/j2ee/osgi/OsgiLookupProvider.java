@@ -52,10 +52,13 @@ import org.netbeans.modules.maven.j2ee.MavenPersistenceProviderSupplier;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
+import org.netbeans.modules.maven.j2ee.web.WebCopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -70,13 +73,33 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
     private Project project;
     private InstanceContent ic;
     
+    private MavenPersistenceProviderSupplier mavenPersistenceProviderSupplier;
+    private MavenWebProjectWebRootProvider mavenWebProjectWebRootProvider;
+    private WebReplaceTokenProvider webReplaceTokenProvider;
+    private EntRefContainerImpl entRefContainerImpl;
+    private EMGSResolverImpl eMGSResolverImpl;
+    private JsfSupportHandle jsfSupportHandle;
+    private WebModuleProviderImpl provider;
+    private JPAStuffImpl jPAStuffImpl;
+    private CopyOnSave copyOnSave;
+
     
     @Override
     public Lookup createAdditionalLookup(Lookup baseLookup) {
         project = baseLookup.lookup(Project.class);
         ic = new InstanceContent();
-        changeAdditionalLookups();
         
+        mavenPersistenceProviderSupplier = new MavenPersistenceProviderSupplier(project);
+        mavenWebProjectWebRootProvider = new MavenWebProjectWebRootProvider(project);
+        webReplaceTokenProvider = new WebReplaceTokenProvider(project);
+        entRefContainerImpl = new EntRefContainerImpl(project);
+        eMGSResolverImpl = new EMGSResolverImpl();
+        jsfSupportHandle = new JsfSupportHandle();
+        jPAStuffImpl = new JPAStuffImpl(project);
+        copyOnSave = new WebCopyOnSave(project);
+        provider = new WebModuleProviderImpl(project);
+        
+        addLookupInstances();
         NbMavenProject.addPropertyChangeListener(project, this);
         
         return new AbstractLookup(ic);
@@ -89,29 +112,62 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         }
     }
     
+    /*
+     * At the moment there is no way to conditionaly register some objects using @ProjectServiceProvider annotation.
+     * Because of issue #179584 we want to provide some Java EE instances only in certain situations for OSGI type.
+     * So the only way to do so (for now) is to add these instances manualy when changing packaging type to bundle
+     * type - which is the reason why this weird method is here.
+     * 
+     * In the future this should be removed and replaced by some kind of multiple @PSP registrator which allows to 
+     * combine more than one packaging type and merges registrated lookup instances
+     */
     private void changeAdditionalLookups() {
+        removeOldLookupInstances();
+        addLookupInstances();
+    }
+    
+    private void removeOldLookupInstances() {
+        ic.remove(mavenPersistenceProviderSupplier);
+        ic.remove(mavenWebProjectWebRootProvider);
+        ic.remove(webReplaceTokenProvider);
+        ic.remove(entRefContainerImpl);
+        ic.remove(eMGSResolverImpl);
+        ic.remove(jsfSupportHandle);
+        ic.remove(jPAStuffImpl);
+        ic.remove(provider);
+
+        if (copyOnSave != null) {
+            try {
+                copyOnSave.cleanup();
+                ic.remove(copyOnSave);
+                
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    private void addLookupInstances() {
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         
-        ic = new InstanceContent(); // Clear old content
         if (MavenProjectSupport.isBundlePackaging(project, packaging)) {
-            WebModuleProviderImpl provider = new WebModuleProviderImpl(project);
-            CopyOnSave copyOnSave = provider.getCopyOnSaveSupport();
+            
             try {
-                if (copyOnSave != null) {
-                    copyOnSave.initialize();
-                    ic.add(copyOnSave);
-                }
+                copyOnSave.initialize();
+                ic.add(copyOnSave);
+
             } catch (FileStateInvalidException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
             
             ic.add(provider);
-            ic.add(new WebReplaceTokenProvider(project));
-            ic.add(new EntRefContainerImpl(project));
-            ic.add(new JPAStuffImpl(project));
-            ic.add(new EMGSResolverImpl());
-            ic.add(new MavenPersistenceProviderSupplier(project));
-            ic.add(new MavenWebProjectWebRootProvider(project));
+            ic.add(webReplaceTokenProvider);
+            ic.add(entRefContainerImpl);
+            ic.add(jsfSupportHandle);
+            ic.add(jPAStuffImpl);
+            ic.add(eMGSResolverImpl);
+            ic.add(mavenPersistenceProviderSupplier);
+            ic.add(mavenWebProjectWebRootProvider);
         }
     }
 }
