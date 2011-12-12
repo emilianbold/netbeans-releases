@@ -53,6 +53,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.annotations.Description;
 import org.netbeans.spi.sendopts.annotations.Arg;
 import org.openide.filesystems.annotations.LayerBuilder.File;
@@ -109,7 +110,9 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
                 }
                 Description d = e.getAnnotation(Description.class);
 
-                f.charvalue(cnt + ".shortName", o.shortName());
+                if (o.shortName() != Option.NO_SHORT_NAME) {
+                    f.charvalue(cnt + ".shortName", o.shortName());
+                }
                 if (!o.longName().isEmpty()) {
                     f.stringvalue(cnt + ".longName", o.longName());
                 }
@@ -136,6 +139,9 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
     }
 
     private static void writeBundle(File f, String key, String value, Element e) throws LayerGenerationException {
+        if (value.isEmpty()) {
+            return;
+        }
         // test first
         f.bundlevalue(key, value);
         

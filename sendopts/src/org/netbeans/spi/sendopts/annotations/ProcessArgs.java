@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.spi.sendopts.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.netbeans.api.sendopts.CommandException;
+import org.netbeans.spi.sendopts.Env;
 
-/**
+/** Method in this interface is invoked to finish processing 
+ * of options defined by subclass of this interface. <code>public</code>
+ * fields annotated by {@link Arg} have been initialized before 
+ * the {@link #process(org.netbeans.spi.sendopts.Env)} method is invoked.
+ * The subclass needs to have public default constructor.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Target({ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Description {
-    String displayName() default "";
-    String shortDescription();
+public interface ProcessArgs {
+    public void process(Env env) throws CommandException;
 }

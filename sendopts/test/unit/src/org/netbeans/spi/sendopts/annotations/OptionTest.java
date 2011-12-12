@@ -49,6 +49,7 @@ import java.io.StringWriter;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.api.sendopts.CommandLine;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.sendopts.Env;
 import org.openide.util.NbBundle;
 import org.openide.util.test.AnnotationProcessorTestUtils;
 
@@ -71,10 +72,11 @@ public class OptionTest extends NbTestCase {
     protected void setUp() throws Exception {
         cmd = CommandLine.getDefault();
         methodCalled = null;
+        methodEnv = null;
     }
 
     public void testParseEnabled() throws Exception {
-        cmd.process("-e");
+        cmd.process("--enabled");
         assertNotNull("options processed", methodCalled);
         assertTrue("enabled set", methodCalled.enabled);
     }
@@ -121,6 +123,7 @@ public class OptionTest extends NbTestCase {
         assertEquals("two", 2, methodCalled.additionalParams.length);
         assertEquals("no", methodCalled.additionalParams[0]);
         assertEquals("Param", methodCalled.additionalParams[1]);
+        assertNotNull("environment provided", methodEnv);
     }
     public void testHelp() throws CommandException {
         StringWriter w = new StringWriter();
@@ -133,8 +136,8 @@ public class OptionTest extends NbTestCase {
             "NAME=AddOnParams", 
             "SHORT=ShortHelp"
         })
-    public static final class SampleOptions implements Runnable {
-        @Arg(shortName='e')
+    public static final class SampleOptions implements ProcessArgs {
+        @Arg(longName="enabled")
         public boolean enabled;
 
         @Arg(shortName='p')
@@ -145,12 +148,14 @@ public class OptionTest extends NbTestCase {
         public String[] additionalParams;
         
         @Override
-        public void run() {
+        public void process(Env env) {
+            methodEnv = env;
             methodCalled = this;
         }
     }
     
 
+    private static Env methodEnv;
     private static SampleOptions methodCalled;
     
     public void testCheckForStatic() throws IOException {

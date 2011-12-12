@@ -43,65 +43,56 @@
 package org.netbeans.modules.project.ui.groups;
 
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
-import org.netbeans.spi.sendopts.Option;
-import org.netbeans.spi.sendopts.OptionProcessor;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.spi.sendopts.annotations.Arg;
+import org.netbeans.spi.sendopts.annotations.Description;
+import org.netbeans.spi.sendopts.annotations.ProcessArgs;
 
-@ServiceProvider(service=OptionProcessor.class)
 @Messages({
     "GroupOptionProcessor.open.name=--open-group NAME",
     "GroupOptionProcessor.open.desc=open a project group by name",
     "GroupOptionProcessor.close.desc=close any open project group",
     "GroupOptionProcessor.list.desc=list available project groups"
 })
-public class GroupOptionProcessor extends OptionProcessor {
+public class GroupOptionProcessor implements ProcessArgs {
+    @Arg(longName="open-group")
+    @Description(
+        displayName="#GroupOptionProcessor.open.name",
+        shortDescription="#GroupOptionProcessor.open.desc"
+    )
+    public String openOption;
+    @Arg(longName="close-group")
+    @Description(
+        shortDescription="#GroupOptionProcessor.close.desc"
+    )
+    public boolean closeOption;
 
-    private static final Option OPEN_OPTION =
-            Option.shortDescription(
-            Option.displayName(
-            Option.requiredArgument(Option.NO_SHORT_NAME, "open-group"),
-            Bundle.class.getName(), "GroupOptionProcessor.open.name"),
-            Bundle.class.getName(), "GroupOptionProcessor.open.desc");
-    private static final Option CLOSE_OPTION =
-            Option.shortDescription(
-            Option.withoutArgument(Option.NO_SHORT_NAME, "close-group"),
-            Bundle.class.getName(), "GroupOptionProcessor.close.desc");
-    private static final Option LIST_OPTION =
-            Option.shortDescription(
-            Option.withoutArgument(Option.NO_SHORT_NAME, "list-groups"),
-            Bundle.class.getName(), "GroupOptionProcessor.list.desc");
-
-    @Override protected Set<Option> getOptions() {
-        return new LinkedHashSet<Option>(Arrays.asList(OPEN_OPTION, CLOSE_OPTION, LIST_OPTION));
-    }
+    @Arg(longName="list-groups")
+    @Description(
+        shortDescription="#GroupOptionProcessor.list.desc"
+    )
+    public boolean listOption;
 
     @Messages({
         "# {0} - name of group", "GroupOptionProcessor.no_such_group=No such group: {0}",
         "GroupOptionProcessor.column_id=Shortened Name",
         "GroupOptionProcessor.column_name=Full Name"
     })
-    @Override protected void process(Env env, Map<Option,String[]> optionValues) throws CommandException {
-        String[] val = optionValues.get(OPEN_OPTION);
-        if (val != null) {
-            String name = val[0];
+    @Override public void process(Env env) throws CommandException {
+        if (openOption != null) {
             for (Group g : Group.allGroups()) {
-                if (g.id.equals(name) || g.getName().equals(name)) {
+                if (g.id.equals(openOption) || g.getName().equals(openOption)) {
                     Group.setActiveGroup(g);
                     return;
                 }
             }
-            throw new CommandException(2, GroupOptionProcessor_no_such_group(name));
-        } else if (optionValues.containsKey(CLOSE_OPTION)) {
+            throw new CommandException(2, GroupOptionProcessor_no_such_group(openOption));
+        } else if (closeOption) {
             Group.setActiveGroup(null);
-        } else if (optionValues.containsKey(LIST_OPTION)) {
+        } else if (listOption) {
             int max_size = GroupOptionProcessor_column_id().length();
             for (Group g : Group.allGroups()) {
                 max_size = Math.max(max_size, g.id.length());
@@ -113,5 +104,4 @@ public class GroupOptionProcessor extends OptionProcessor {
             }
         }
     }
-
 }

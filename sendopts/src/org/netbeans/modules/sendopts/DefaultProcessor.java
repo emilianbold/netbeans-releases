@@ -53,6 +53,8 @@ import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
 import org.netbeans.spi.sendopts.annotations.Arg;
+import org.netbeans.spi.sendopts.annotations.ProcessArgs;
+import org.openide.util.Lookup;
 
 /** Processor that is configured from a map, usually from a layer.
  *
@@ -71,6 +73,9 @@ final class DefaultProcessor extends OptionProcessor {
 
     private static Option createOption(String type, Character shortName, String longName, String displayName, String description) {
         Option o = null;
+        if (shortName == null) {
+            shortName = Option.NO_SHORT_NAME;
+        }
         switch (Type.valueOf(type)) {
             case withoutArgument: o = Option.withoutArgument(shortName, longName); break;
             case requiredArgument: o = Option.requiredArgument(shortName, longName); break;
@@ -114,7 +119,14 @@ final class DefaultProcessor extends OptionProcessor {
     @Override
     protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
         try {
-            Class<?> realClazz = Class.forName(clazz);
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = Thread.currentThread().getContextClassLoader();
+            }
+            if (l == null) {
+                l = DefaultProcessor.class.getClassLoader();
+            }
+            Class<?> realClazz = Class.forName(clazz, true, l);
             Object instance = realClazz.newInstance();
             Map<Option,Field> map = processFields(realClazz, options);
             for (Map.Entry<Option, String[]> entry : optionValues.entrySet()) {
@@ -130,8 +142,8 @@ final class DefaultProcessor extends OptionProcessor {
                         f.set(instance, entry.getValue()); break;
                 }
             }
-            if (instance instanceof Runnable) {
-                ((Runnable)instance).run();
+            if (instance instanceof ProcessArgs) {
+                ((ProcessArgs)instance).process(env);
             }
         } catch (Exception exception) {
             throw (CommandException)new CommandException(10, exception.getLocalizedMessage()).initCause(exception);
@@ -147,10 +159,10 @@ final class DefaultProcessor extends OptionProcessor {
             }
             Option o = null;
             for (Option c : options) {
-                int shortN = OptionImpl.Trampoline.DEFAULT.getShortName(c);
+                char shortN = (char)OptionImpl.Trampoline.DEFAULT.getShortName(c);
                 String longN = OptionImpl.Trampoline.DEFAULT.getLongName(c);
                 
-                if (shortN == arg.shortName() && equalStrings(longN, arg)) {
+                if (shortN == (int)arg.shortName() && equalStrings(longN, arg)) {
                     o = c;
                     break;
                 }
