@@ -192,19 +192,15 @@ public class VersionNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         Artifact artifact = RepositoryUtil.createArtifact(record);
-        List<Action> actions = new ArrayList<Action>(5);
+        List<Action> actions = new ArrayList<Action>();
         actions.add(new ShowArtifactAction(record));
         actions.add(new AddAsDependencyAction(artifact));
         actions.add(CommonArtifactActions.createFindUsages(artifact));
-        if (info.isLocal()) {
-            actions.add(CommonArtifactActions.createViewJavadocAction(artifact));
-        }
-        if (getLookup().lookup(OpenCookie.class) != null) {
-            actions.add(OpenAction.get(OpenAction.class));
-        }
-        if (localArtifact == null && info.isRemoteDownloadable()) {
-            actions.add(new DownloadAction(artifact));
-        }
+        actions.add(CommonArtifactActions.createViewJavadocAction(artifact));
+        actions.add(OpenAction.get(OpenAction.class));
+        actions.add(new DownloadAction(artifact));
+        actions.add(new DownloadAction(artifact, false));
+        actions.add(new DownloadAction(artifact, true));
         actions.add(CopyAction.get(CopyAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
@@ -266,10 +262,23 @@ public class VersionNode extends AbstractNode {
 
     private class DownloadAction extends AbstractAction {
         private final Artifact art;
+        private final boolean primary;
         @Messages("DownloadAction_label=Download")
-        public DownloadAction(Artifact art) {
+        DownloadAction(Artifact art) {
             super(DownloadAction_label());
             this.art = art;
+            primary = true;
+            setEnabled(localArtifact == null && info.isRemoteDownloadable());
+        }
+        @Messages({
+            "DownloadAction_sources_label=Download Sources",
+            "DownloadAction_javadoc_label=Download Javadoc"
+        })
+        DownloadAction(Artifact primaryArt, boolean javadoc) {
+            super(javadoc ? DownloadAction_javadoc_label() : DownloadAction_sources_label());
+            art = EmbedderFactory.getProjectEmbedder().createArtifactWithClassifier(primaryArt.getGroupId(), primaryArt.getArtifactId(), primaryArt.getVersion(), "jar", javadoc ? "javadoc" : "sources");
+            primary = false;
+            setEnabled((javadoc ? hasJavadoc : hasSources) && info.isRemoteDownloadable() && !FileUtilities.convertArtifactToLocalRepositoryFile(art).isFile());
         }
         @Messages({"# {0} - artifact ID", "DownloadAction_downloading=Downloading {0}"})
         public @Override void actionPerformed(ActionEvent e) {
@@ -290,6 +299,9 @@ public class VersionNode extends AbstractNode {
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
+                    }
+                    if (!primary) {
+                        return;
                     }
                     RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), Collections.singletonList(art));
                     setLocalArtifact(findLocalArtifact(info, record));
