@@ -45,6 +45,8 @@
 package org.netbeans.modules.languages.neon;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -55,9 +57,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /**
- * 
+ *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class NeonDataObject extends MultiDataObject {
@@ -76,5 +80,18 @@ public class NeonDataObject extends MultiDataObject {
     @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
+    }
+
+    @Messages("Source=&Source")
+    @MultiViewElement.Registration(
+            displayName="#Source",
+            iconBase="org/netbeans/modules/languages/neon/resources/neon_file_16.png",
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+            mimeType="text/x-neon",
+            preferredID="neon.source",
+            position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 }
