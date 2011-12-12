@@ -407,7 +407,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             canonical = null;
         }
         if (canonical != null && !canonical.equals(absPath)) {
-            CsmFile out = findFile(canonical, true, snapShot);
+            CsmFile out = findFile(canonical, createIfPossible, snapShot);
             if (out != null) {
                 ret = out;
             }
