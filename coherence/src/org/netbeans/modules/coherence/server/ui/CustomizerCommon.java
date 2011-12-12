@@ -62,6 +62,7 @@ import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.library.LibraryUtils;
 import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
+import org.netbeans.modules.coherence.server.util.ClasspathPropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
@@ -101,8 +102,10 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         customPropertiesTextField.setText(instanceProperties.getString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, ""));
 
         listModel = new DefaultListModel();
-        for (String cp : classpathFromStringToArray(instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""))) {
-            listModel.addElement(cp);
+        for (String cp : ClasspathPropertyUtils.classpathFromStringToArray(instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""))) {
+            if (!ClasspathPropertyUtils.isCoherenceServerJar(cp, true)) {
+                listModel.addElement(cp);
+            }
         }
         classpathList.setModel(listModel);
 
@@ -110,6 +113,14 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         coherenceLocationTextField.getDocument().addDocumentListener(new SaveDocumentListener());
         javaFlagsTextField.getDocument().addDocumentListener(new SaveDocumentListener());
         customPropertiesTextField.getDocument().addDocumentListener(new SaveDocumentListener());
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     @Override
@@ -146,42 +157,15 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         instanceProperties.putString(CoherenceModuleProperties.PROP_JAVA_FLAGS, javaFlagsTextField.getText());
         instanceProperties.putString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, customPropertiesTextField.getText());
 
+        // update classpath property
         List<String> cpEntries = new ArrayList<String>();
         for (int i = 0; i < classpathList.getModel().getSize(); i++) {
-            cpEntries.add((String)classpathList.getModel().getElementAt(i));
+            cpEntries.add((String) classpathList.getModel().getElementAt(i));
         }
-
-        instanceProperties.putString(CoherenceModuleProperties.PROP_CLASSPATH, classpathFromListToString(cpEntries));
-    }
-
-    /**
-     * Converts one long string which represents additional classpath into {@code
-     * String[]}.
-     *
-     * @param classpath {@code String} consists from all classpaths
-     * @return resulting {@code String[]}
-     */
-    private static String[] classpathFromStringToArray(String classpath) {
-        return classpath.split(CoherenceModuleProperties.CLASSPATH_SEPARATOR);
-    }
-
-    /**
-     * Converts {@code List} of {@code Strings} into one long {@code String} for
-     * storing that into {@link InstanceProperties}.
-     *
-     * @param classpaths {@code List} of all classpath entries
-     * @return resulting {@code String}
-     */
-    private static String classpathFromListToString(List<String> classpaths) {
-        StringBuilder sb = new StringBuilder();
-        for (String cp : classpaths) {
-            sb.append(cp).append(CoherenceModuleProperties.CLASSPATH_SEPARATOR);
-        }
-        String resultString = sb.toString();
-        if (resultString.length() == 0) {
-            return ""; //NOI18N
-        }
-        return resultString.substring(0, resultString.length() - CoherenceModuleProperties.CLASSPATH_SEPARATOR.length());
+        ClasspathPropertyUtils.updateClasspathProperty(
+                instanceProperties,
+                cpEntries.toArray(new String[cpEntries.size()]),
+                null);
     }
 
     private void setEnabledRemoveButton(boolean setEnabled) {
@@ -377,7 +361,6 @@ private void classpathListValueChanged(javax.swing.event.ListSelectionEvent evt)
     if (classpathList.getSelectedValue() == null) {
         return;
     }
-    setEnabledRemoveButton(!((String)classpathList.getSelectedValue()).endsWith(CoherenceProperties.COHERENCE_JAR_NAME));
 }//GEN-LAST:event_classpathListValueChanged
 
     private void createLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createLibraryButtonActionPerformed

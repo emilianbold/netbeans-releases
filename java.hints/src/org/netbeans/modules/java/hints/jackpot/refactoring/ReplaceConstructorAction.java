@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,14 +13,14 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,36 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.cnd.refactoring;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformerTestCase;
-import org.netbeans.modules.cnd.refactoring.plugins.WhereUsedInQuoteTestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
-
-/**
  *
- * @author Vladimir Voskresensky
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-public class RefactoringTest extends CndBaseTestSuite {
-    
-    private RefactoringTest() {
-        super("C/C++ Refactoring Test"); // NOI18N
-        
-        addTestSuite(InstantRenamePerformerTestCase.class);
-        addTestSuite(WhereUsedInQuoteTestCase.class);
+package org.netbeans.modules.java.hints.jackpot.refactoring;
+
+import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+
+@ActionID(id = "org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_ReplaceConstructorAction")
+@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ReplaceConstructorAction", position = 1820)
+public final class ReplaceConstructorAction extends JavaRefactoringGlobalAction {
+
+    public ReplaceConstructorAction() {
+        super(NbBundle.getMessage(ReplaceConstructorAction.class, "LBL_ReplaceConstructorAction"), null); // NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    public static Test suite() {
-        TestSuite suite = new RefactoringTest();
-        return suite;
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    protected boolean enable(Lookup context) {
+        return RefactoringActionsProviderExt.canReplaceConstructor(context);
+    }
+
+    @Override
+    public void performAction(Lookup context) {
+        RefactoringActionsProviderExt.doReplaceConstructor(context);
+    }
 }

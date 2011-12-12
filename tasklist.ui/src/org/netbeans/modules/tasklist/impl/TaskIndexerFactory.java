@@ -102,7 +102,7 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
         boolean refresh = false;
         for (Iterator it = removedRoots.iterator(); it.hasNext();) {
             URL url = (URL) it.next();
-            final FileObject root = FileUtil.toFileObject(new File(url.getFile()));
+            final FileObject root = FileUtil.toFileObject(FileUtil.normalizeFile(new File(url.getFile())));
             if (manager.getScope().isInScope(root)) {
                 refresh = true;
                 break;

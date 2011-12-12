@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -50,9 +51,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 
 /**
- *
+ * Base class for ModuleProvider implementation of different project types
+ * At the moment it's not a base class only for EAR projects, because there is different API provider which need to be
+ * implemented in EAR projects.
+ * 
  * @author mjanicek
  */
 public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
@@ -83,21 +89,38 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     }
     
     @Override
+    @CheckForNull
     public DeployOnSaveSupport getDeployOnSaveSupport() {
         return getCopyOnSave();
     }
-    
+
+    /**
+     * Returns actual CopyOnSave instance registered for the project. This method also call initialize method, 
+     * but it's up to client to call copyOnSave.cleanup(). 
+     * 
+     * @return actual or newly created instance
+     */
+    @CheckForNull
     public CopyOnSave getCopyOnSaveSupport() {
         return getCopyOnSave();
     }
     
+    @CheckForNull
     private CopyOnSave getCopyOnSave() {
-        if (copyOnSave != null) {
-            copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        if (copyOnSave == null) {
+            try {
+                copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+                if (copyOnSave != null) {
+                    copyOnSave.initialize();
+                }
+                
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return copyOnSave;
     }
-    
+
     @Override
     public synchronized J2eeModule getJ2eeModule() {
         if (j2eemodule == null) {
