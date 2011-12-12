@@ -39,47 +39,49 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fileoperations;
+package org.netbeans.modules.remotefs.versioning.spi;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import java.awt.Image;
+import java.util.Set;
+import javax.swing.Action;
+import org.netbeans.modules.remote.impl.fileoperations.AnnotationProvider;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusListener;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FileOperationsTest extends NativeExecutionBaseTestSuite {
-    @SuppressWarnings("unchecked")
-    public FileOperationsTest() {
-        this("FileOperations API", getTestClasses());
+@org.openide.util.lookup.ServiceProvider(service = AnnotationProvider.class, position = 1000)
+public class VersioningAnnotationProviderImpl extends AnnotationProvider {
+
+    public VersioningAnnotationProviderImpl() {
     }
 
-    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-            FileOperationsTestCase.class
-            ,InterceptorTestCase.class
-        };
-    }
-    
-    @SuppressWarnings("unchecked")
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new FileOperationsTest(testClass.getName(), testClass);
+    @Override
+    public void registerFileStatusListener(FileStatusListener listener) {
+        VCSFilesystemInterceptor.registerFileStatusListener(listener);
     }
 
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
-        Class[] classes = new Class[timesToRepeat];
-        for (int i = 0; i < classes.length; i++) {
-            classes[i] = testClass;            
-        }
-        return new FileOperationsTest(testClass.getName(), classes);
-    }
-    
-    public FileOperationsTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
+    @Override
+    public String annotateName(String name, Set<? extends FileObject> files) {
+        return null;
     }
 
-    public static Test suite() {
-        return new FileOperationsTest();
+    @Override
+    public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
+        return VCSFilesystemInterceptor.annotateIcon(icon, iconType, files);
     }
+
+    @Override
+    public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+        return VCSFilesystemInterceptor.annotateNameHtml(name, files);
+    }
+
+    @Override
+    public Action[] actions(Set<? extends FileObject> files) {
+        return VCSFilesystemInterceptor.actions(files);
+    }
+
 }
