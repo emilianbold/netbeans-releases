@@ -94,6 +94,8 @@ import org.openide.windows.OutputWriter;
  */
 public class BridgeImpl implements BridgeInterface {
 
+    private static final Logger LOG = Logger.getLogger(BridgeImpl.class.getName());
+
     private static final RequestProcessor RP = new RequestProcessor(BridgeImpl.class);
     
     /** Number of milliseconds to wait before forcibly halting a runaway process. */
@@ -178,9 +180,7 @@ public class BridgeImpl implements BridgeInterface {
         // which can cause various undesirable effects.
         ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
         ClassLoader newCCL = Project.class.getClassLoader();
-        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            AntModule.err.log("Fixing CCL: " + oldCCL + " -> " + newCCL);
-        }
+        LOG.log(Level.FINER, "Fixing CCL: {0} -> {1}", new Object[] {oldCCL, newCCL});
         Thread.currentThread().setContextClassLoader(newCCL);
         AntBridge.fakeJavaClassPath();
         try {
@@ -222,9 +222,7 @@ public class BridgeImpl implements BridgeInterface {
                     AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
-            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                AntModule.err.log("CCL when configureProject is called: " + Thread.currentThread().getContextClassLoader());
-            }
+            LOG.log(Level.FINER, "CCL when configureProject is called: {0}", Thread.currentThread().getContextClassLoader());
             ProjectHelper projhelper = ProjectHelper.getProjectHelper();
             // Cf. Ant #32668 & #32216; ProjectHelper.configureProject undeprecated in 1.7
             project.addReference("ant.projectHelper", projhelper); // NOI18N
@@ -309,9 +307,7 @@ public class BridgeImpl implements BridgeInterface {
         
         } finally {
             AntBridge.unfakeJavaClassPath();
-            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                AntModule.err.log("Restoring CCL: " + oldCCL);
-            }
+            LOG.log(Level.FINER, "Restoring CCL: {0}", oldCCL);
             Thread.currentThread().setContextClassLoader(oldCCL);
         }
         
@@ -320,7 +316,7 @@ public class BridgeImpl implements BridgeInterface {
 
     private static final RequestProcessor.Task refreshFilesystemsTask = RP.create(new Runnable() {
         public @Override void run() {
-            Logger.getLogger(BridgeImpl.class.getName()).log(Level.FINE, "Refreshing filesystems");
+            LOG.log(Level.FINE, "Refreshing filesystems");
             FileUtil.refreshAll(); 
         }
     });
