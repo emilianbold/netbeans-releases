@@ -122,11 +122,11 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
      * combine more than one packaging type and merges registrated lookup instances
      */
     private void changeAdditionalLookups() {
-        removeOldLookupInstances();
+        removeLookupInstances();
         addLookupInstances();
     }
     
-    private void removeOldLookupInstances() {
+    private void removeLookupInstances() {
         ic.remove(mavenPersistenceProviderSupplier);
         ic.remove(mavenWebProjectWebRootProvider);
         ic.remove(webReplaceTokenProvider);
