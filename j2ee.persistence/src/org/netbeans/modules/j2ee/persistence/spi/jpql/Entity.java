@@ -42,64 +42,39 @@
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
+
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
-import org.eclipse.persistence.jpa.jpql.spi.IMapping;
+import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IQuery;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 
 /**
  *
  * @author sp153251
  */
-public class Entity implements IEntity {
-    private final ManagedTypeProvider provider;
-    private final org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity entity;
+public class Entity extends ManagedType implements IEntity {
 
-    public Entity(org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity entity, ManagedTypeProvider provider){
-        this.entity = entity;
-        this.provider = provider;
-    }
-    
-    @Override
-    public String getName() {
-        return entity.getName();
-    }
-
-    @Override
-    public IQuery getNamedQuery(String string) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Entity(org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity entity, IManagedTypeProvider provider){
+        super((PersistentObject) entity, provider);
     }
 
     @Override
     public void accept(IManagedTypeVisitor imtv) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        imtv.visit(this);
     }
 
     @Override
-    public IMapping getMappingNamed(String string) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public String getName() {
+        return ((org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity)getPersistentObject()).getName();
     }
 
     @Override
-    public IManagedTypeProvider getProvider() {
-        return provider;
-    }
-
-    @Override
-    public IType getType() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Iterable<IMapping> mappings() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int compareTo(IManagedType o) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public IQuery getNamedQuery(String string) {
+        NamedQuery nq = ((org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity)getPersistentObject()).newNamedQuery();
+        nq.setQuery(string);
+        nq.setName("");
+        return new Query(nq, string, getProvider());
     }
     
 }
