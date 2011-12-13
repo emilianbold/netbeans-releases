@@ -107,7 +107,7 @@ public class JPQLValidation extends JPAClassRule {
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
         List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
         for(String value:values){
-            helper.setQuery(new Query(value, new ManagedTypeProvider(project)));
+            helper.setQuery(new Query(null, value, new ManagedTypeProvider(project)));
             List<JPQLQueryProblem> tmp = helper.validateGrammar();
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
         }
