@@ -36,14 +36,27 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.classfile.Attribute;
+import com.sun.tools.classfile.ClassFile;
+import com.sun.tools.classfile.Code_attribute;
+import com.sun.tools.classfile.ConstantPoolException;
+import com.sun.tools.classfile.Method;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javap.ClassWriter;
+import com.sun.tools.javap.CodeWriter;
+import com.sun.tools.javap.Context;
+import com.sun.tools.javap.Messages;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -52,6 +65,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -72,18 +86,27 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
+import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.java.source.query.CommentHandler;
+import org.netbeans.modules.java.source.query.CommentSet;
+import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -242,8 +265,10 @@ public class CodeGenerator {
 
     private static final class TreeBuilder extends AbstractElementVisitor6<Tree, Void> {
 
-        private TreeMaker make;
-        private WorkingCopy wc;
+        private final TreeMaker make;
+        private final WorkingCopy wc;
+        private ClassFile cf;
+        private Map<String, Method> sig2Method;
 
         public TreeBuilder(TreeMaker make, WorkingCopy wc) {
             this.make = make;
@@ -257,28 +282,54 @@ public class CodeGenerator {
 
         @Override
         public Tree visitType(TypeElement e, Void p) {
-            List<Tree> members = new LinkedList<Tree>();
+            ClassFile oldCf = cf;
+            Map<String, Method> oldMethods = sig2Method;
 
-            for (Element m : e.getEnclosedElements()) {
-                Tree member = visit(m);
+            cf = null;
+            sig2Method = new HashMap<String, Method>();
 
-                if (member != null)
-                    members.add(member);
-            }
+            try {
+                try {
+                    JavaFileObject classfile = ((ClassSymbol) e).classfile;
 
-            ModifiersTree mods = computeMods(e);
+                    if (classfile != null && classfile.getKind() == Kind.CLASS) {
+                        cf = ClassFile.read(classfile.openInputStream());
+                        for (Method m : cf.methods) {
+                            sig2Method.put(cf.constant_pool.getUTF8Value(m.name_index) + ":" + cf.constant_pool.getUTF8Value(m.descriptor.index), m);
+                        }
+                    }
+                } catch (ConstantPoolException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 
-            switch (e.getKind()) {
-                case CLASS:
-                    return addDeprecated(e, make.Class(mods, e.getSimpleName(), constructTypeParams(e.getTypeParameters()), computeSuper(e.getSuperclass()), computeSuper(e.getInterfaces()), members));
-                case INTERFACE:
-                    return addDeprecated(e, make.Interface(mods, e.getSimpleName(), constructTypeParams(e.getTypeParameters()), computeSuper(e.getInterfaces()), members));
-                case ENUM:
-                    return addDeprecated(e, make.Enum(mods, e.getSimpleName(), computeSuper(e.getInterfaces()), members));
-                case ANNOTATION_TYPE:
-                    return addDeprecated(e, make.AnnotationType(mods, e.getSimpleName(), members));
-                default:
-                    throw new UnsupportedOperationException();
+                List<Tree> members = new LinkedList<Tree>();
+
+                for (Element m : e.getEnclosedElements()) {
+                    Tree member = visit(m);
+
+                    if (member != null)
+                        members.add(member);
+                }
+
+                ModifiersTree mods = computeMods(e);
+
+                switch (e.getKind()) {
+                    case CLASS:
+                        return addDeprecated(e, make.Class(mods, e.getSimpleName(), constructTypeParams(e.getTypeParameters()), computeSuper(e.getSuperclass()), computeSuper(e.getInterfaces()), members));
+                    case INTERFACE:
+                        return addDeprecated(e, make.Interface(mods, e.getSimpleName(), constructTypeParams(e.getTypeParameters()), computeSuper(e.getInterfaces()), members));
+                    case ENUM:
+                        return addDeprecated(e, make.Enum(mods, e.getSimpleName(), computeSuper(e.getInterfaces()), members));
+                    case ANNOTATION_TYPE:
+                        return addDeprecated(e, make.AnnotationType(mods, e.getSimpleName(), members));
+                    default:
+                        throw new UnsupportedOperationException();
+                }
+            } finally {
+                cf = oldCf;
+                sig2Method = oldMethods;
             }
         }
 
@@ -433,7 +484,53 @@ public class CodeGenerator {
                 ExpressionTree def = createTreeForAnnotationValue(make, e.getDefaultValue());
                 return addDeprecated(e, make.Method(mods, e.getSimpleName(), returnValue, constructTypeParams(e.getTypeParameters()), parameters, throwsList, (BlockTree) null, def));
             } else {
-                return addDeprecated(e, make.Method(mods, e.getSimpleName(), returnValue, constructTypeParams(e.getTypeParameters()), parameters, throwsList, "{//compiled code\nthrow new RuntimeException(\"Compiled Code\");}", null));
+                MethodTree method = make.Method(mods, e.getSimpleName(), returnValue, constructTypeParams(e.getTypeParameters()), parameters, throwsList, "{ }", null);
+                String[] signature = SourceUtils.getJVMSignature(ElementHandle.create(e));
+                Method m = sig2Method.get(signature[1] + ":" + signature[2]);
+                CommentHandler handler = CommentHandlerService.instance(JavaSourceAccessor.getINSTANCE().getJavacTask(wc).getContext());
+                CommentSet set = handler.getComments(method.getBody());
+
+                if (m != null) {
+                    Attribute code = m.attributes.get(Attribute.Code);
+
+                    if (code instanceof Code_attribute) {
+                        Context ctx = new Context();
+                        StringWriter decompiled = new StringWriter();
+                        PrintWriter w = new PrintWriter(decompiled);
+                        ctx.put(PrintWriter.class, w);
+                        ctx.put(Messages.class, new Messages() {
+                            @Override public String getMessage(String key, Object... args) {
+                                return "";
+                            }
+                            @Override public String getMessage(Locale locale, String key, Object... args) {
+                                return "";
+                            }
+                        });
+                        ctx.put(ClassWriter.class, new ClassWriter(ctx) {
+                            {
+                                setClassFile(cf);
+                            }
+                        });
+
+                        CodeWriter codeWriter = CodeWriter.instance(ctx);
+                        
+                        codeWriter.writeInstrs((Code_attribute) code);
+                        codeWriter.writeExceptionTable((Code_attribute) code);
+
+                        w.println();
+                        w.close();
+
+                        set.addComment(RelativePosition.INNER, Comment.create(Style.LINE, "<editor-fold defaultstate=\"collapsed\" desc=\"Compiled Code\">"));
+                        set.addComment(RelativePosition.INNER, Comment.create(decompiled.toString()));
+                        set.addComment(RelativePosition.INNER, Comment.create(Style.LINE, "</editor-fold>"));
+                    }
+                }
+
+                if (!set.hasComments()) {
+                    set.addComment(RelativePosition.INNER, Comment.create(Style.LINE, "compiled code"));
+                }
+                
+                return addDeprecated(e, method);
             }
         }
 
