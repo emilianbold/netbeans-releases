@@ -222,6 +222,8 @@ public class FixImportsHelper {
             return -1;
         }
 
+        int lineOffset = 0;
+        
         // nothing set:
         if (importEnd == -1 && packageOffset == -1) {
             // place imports in the first line
@@ -233,6 +235,7 @@ public class FixImportsHelper {
             // place imports behind package statement
             LOG.log(Level.FINEST, "importEnd == -1 && packageOffset != -1");
             useOffset = packageOffset;
+            lineOffset++; // we want to have first import two lines behind package statement
         } // only imports set:
         else if (importEnd != -1 && packageOffset == -1) {
             // place imports after the last import statement
@@ -246,10 +249,8 @@ public class FixImportsHelper {
 
         }
 
-        int lineOffset = 0;
-
         try {
-            lineOffset = Utilities.getLineOffset(doc, useOffset);
+            lineOffset = lineOffset + Utilities.getLineOffset(doc, useOffset);
         } catch (BadLocationException ex) {
             LOG.log(Level.FINEST, "BadLocationException for offset : {0}", useOffset);
             LOG.log(Level.FINEST, "BadLocationException : {0}", ex.getMessage());
