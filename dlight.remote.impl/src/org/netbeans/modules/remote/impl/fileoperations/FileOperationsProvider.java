@@ -120,7 +120,6 @@ abstract public class FileOperationsProvider {
                         case Directory:
                             return true;
                         case SymbolicLink:
-                            // TODO support links
                             String linkTarget = statInfo.getLinkTarget();
                             if (linkTarget.startsWith("/")) { // NOI18N
                                 return isDirectory(toFileProxy(linkTarget), deep);
@@ -157,7 +156,6 @@ abstract public class FileOperationsProvider {
                         case Regular:
                             return true;
                         case SymbolicLink:
-                            // TODO support links
                             String linkTarget = statInfo.getLinkTarget();
                             if (linkTarget.startsWith("/")) { // NOI18N
                                 return isFile(toFileProxy(linkTarget), deep);
@@ -192,14 +190,7 @@ abstract public class FileOperationsProvider {
             Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
             try {
                 FileInfoProvider.StatInfo statInfo = stat.get();
-                if (statInfo.isDirectory()) {
-                    return statInfo.canWrite(env);
-                } else {
-                    String dirName = PathUtilities.getDirName(file.getPath());
-                    if (dirName != null) {
-                        return canWrite(toFileProxy(dirName));
-                    }
-                }
+                return statInfo.canWrite(env);
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
                 if (notExist(ex)) {
