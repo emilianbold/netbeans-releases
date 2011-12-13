@@ -90,6 +90,11 @@ public class CsmRefactoringElementImpl extends
     public PositionBounds getPosition() {
         return bounds;
     }
+
+    @Override
+    public String toString() {
+        return "{" + "bounds=" + bounds + ", displayText=" + displayText + ", enclosing=" + enclosing + ", fo=" + fo + '}'; // NOI18N
+    }
     
     public static RefactoringElementImplementation create(CsmReference ref,boolean nameInBold) {
         CsmFile csmFile = ref.getContainingFile();
