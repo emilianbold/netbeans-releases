@@ -63,9 +63,12 @@ public abstract class SearchAndReplaceBarHandler {
     public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
     public static final String INCREMENTAL_SEARCH_BACKWARD = "incremental-search-backward";
     public static final String REPLACE_ACTION = "replace"; // NOI18N
-    private static final ExtKit.FindAction dialogFindAction = new ExtKit.FindAction();
-    private static final ExtKit.ReplaceAction dialogReplaceAction = new ExtKit.ReplaceAction();
+    private static final ExtKit.FindAction DIALOG_FIND_ACTION = new ExtKit.FindAction();
+    private static final ExtKit.ReplaceAction DIALOG_REPLACE_ACTION = new ExtKit.ReplaceAction();
 
+    private SearchAndReplaceBarHandler() {
+    }
+    
     /**
      * Factory for creating the incremental search sidebar
      */
@@ -110,7 +113,7 @@ public abstract class SearchAndReplaceBarHandler {
                             return;
                         } 
                     }
-                    dialogFindAction.actionPerformed(evt, target);
+                    DIALOG_FIND_ACTION.actionPerformed(evt, target);
                 }
             }
         }
@@ -162,8 +165,9 @@ public abstract class SearchAndReplaceBarHandler {
                             return;
                         }
                     }
-                    if (target.isEditable())
-                        dialogReplaceAction.actionPerformed(evt, target);
+                    if (target.isEditable()) {
+                        DIALOG_REPLACE_ACTION.actionPerformed(evt, target);
+                    }
                 }
             }
         }
@@ -173,9 +177,7 @@ public abstract class SearchAndReplaceBarHandler {
         if (depth > 0) {
             for (Component c : container.getComponents()) {
                 if (componentClass.isAssignableFrom(c.getClass())) {
-                    @SuppressWarnings("unchecked")
-                    T target = (T) c;
-                    return target;
+                    return (T) c;
                 } else if (c instanceof Container) {
                     T target = findComponent((Container) c, componentClass, depth - 1);
                     if (target != null) {
@@ -188,7 +190,7 @@ public abstract class SearchAndReplaceBarHandler {
     }
     private static PropertyChangeListener searchAndReplaceBarPersistentListener = null;
 
-    private static void makeSearchAndReplaceBarPersistent() {
+    private synchronized static void makeSearchAndReplaceBarPersistent() {
         if (searchAndReplaceBarPersistentListener == null) {
             searchAndReplaceBarPersistentListener = new PropertyChangeListener() {
 
