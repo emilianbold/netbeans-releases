@@ -53,8 +53,10 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import java.util.Set;
 import java.util.EnumSet;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -132,16 +134,13 @@ public class FixImportsHelper {
             return result;
         }
 
-        Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
+        Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
+                missingClass, NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
 
-        typeNames = pathInfo.getClassIndex().getDeclaredTypes(missingClass, NameKind.SIMPLE_NAME,
-                EnumSet.allOf(ClassIndex.SearchScope.class));
+        for (ElementHandle<TypeElement> typeName : typeNames) {
+            ElementKind ek = typeName.getKind();
 
-        for (org.netbeans.api.java.source.ElementHandle<TypeElement> typeName : typeNames) {
-            javax.lang.model.element.ElementKind ek = typeName.getKind();
-
-            if (ek == javax.lang.model.element.ElementKind.CLASS ||
-                    ek == javax.lang.model.element.ElementKind.INTERFACE) {
+            if (ek == ElementKind.CLASS || ek == ElementKind.INTERFACE) {
                 String fqnName = typeName.getQualifiedName();
                 LOG.log(Level.FINEST, "Found     : " + fqnName);
 
