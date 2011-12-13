@@ -57,13 +57,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-
-import com.sun.source.tree.ClassTree;
 
 /**
  *
@@ -190,15 +190,18 @@ public class Utils {
             AnnotationModelHelper helper) 
     {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        // Fix for BZ#201039 - REST configuration dialog appears after expanding a web project with WebLogic target
-        ClassTree tree = helper.getCompilationController().getTrees().getTree(element);
-        if ( tree == null ){
-            // the element is not in source , it's binary
+        
+        if ( restSupport == null || restSupport.isRestSupportOn() ){
             return false;
         }
-        if (restSupport != null && ! restSupport.isRestSupportOn() && 
-                isRest(element, helper)) 
-        {
+        if ( isRest(element, helper) ){
+            // Fix for BZ#201039 - REST configuration dialog appears after expanding a web project with WebLogic target
+            FileObject sourceFile = SourceUtils.getFile(ElementHandle.
+                    create(element), helper.getClasspathInfo());
+            if ( sourceFile == null ){
+                // the element is not in source , it's binary
+                return false;
+            }
             try {
                 restSupport.ensureRestDevelopmentReady();
                 return true;

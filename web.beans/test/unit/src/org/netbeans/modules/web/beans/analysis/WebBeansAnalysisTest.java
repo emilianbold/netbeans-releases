@@ -1796,6 +1796,62 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(goodFile1, NO_ERRORS_PROCESSOR);
     }
     
+    /*
+     * StereotypeAnalyzer. checkQualifiers, checkTyped
+     */
+    public void testQualifiedTypedStereotype() throws IOException {
+        getUtilities().createQualifier("Qualifier1");
+        FileObject errorFile =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                "@Qualifier1 "+
+                "public @interface Stereotype1 {}" );
+        
+        FileObject errorFile1 =  TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.inject.Typed; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+
+                "@Retention(RUNTIME) "+
+                "@Stereotype "+
+                "@Typed({}) "+
+                "public @interface Stereotype2 {}" );
+        
+        ResultProcessor processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Stereotype1");
+                assertEquals( 0, result.getErrors().size());
+            }
+                        
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Stereotype2");
+                assertEquals( 0, result.getErrors().size());
+            }
+                        
+        };
+        runAnalysis(errorFile1 , processor);
+        
+    }
+    
     //=======================================================================
     //
     //  AnnotationModelAnalyzer - InterceptorBindingAnalyzer
