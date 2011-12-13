@@ -130,7 +130,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         }
     }
     
-    private static final Comparator<FileComponentReferences.ReferenceImpl> REF_COMPARATOR = new RefComparator();
+    static final Comparator<FileComponentReferences.ReferenceImpl> REF_COMPARATOR = new RefComparator();
 
     private static final class RefImpl implements CsmReference {
         private final CsmUID<CsmFile> containingFile;

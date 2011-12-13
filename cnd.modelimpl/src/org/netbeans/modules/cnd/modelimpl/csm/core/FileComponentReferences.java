@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -204,7 +205,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return null;
     }
     
-    CsmReference getReferenceImpl(int offset, SortedMap<ReferenceImpl, CsmUID<CsmObject>> storage) {
+    ReferenceImpl getReferenceImpl(int offset, SortedMap<ReferenceImpl, CsmUID<CsmObject>> storage) {
         //if (request > 0 && request%1000 == 0) {
         //    System.err.println("Reference statictic:");
         //    System.err.println("\tRequest:"+request+" hit "+request_hit);
@@ -278,11 +279,20 @@ public class FileComponentReferences extends FileComponent implements Persistent
         //}
         referencesLock.writeLock().lock();
         try {
-            storage.put(refImpl, referencedUID);
+            CsmUID<CsmObject> old = storage.put(refImpl, referencedUID);
             if (index) {
+                if (!referencedUID.equals(old) && old != null) {
+                    Collection<ReferenceImpl> refsToOld = obj2refs.get(old);
+                    if (refsToOld != null) {
+                        refsToOld.remove(refImpl);
+                        if (refsToOld.isEmpty()) {
+                            obj2refs.remove(old);
+                        }
+                    }
+                }
                 Collection<FileComponentReferences.ReferenceImpl> value = obj2refs.get(referencedUID);
                 if (value == null) {
-                    value = new ArrayList<ReferenceImpl>(1);
+                    value = new HashSet<ReferenceImpl>(1);
                     obj2refs.put(referencedUID, value);
                 }
                 value.add(refImpl);
@@ -347,6 +357,32 @@ public class FileComponentReferences extends FileComponent implements Persistent
             }
         } finally {
             referencesLock.readLock().unlock();
+        }
+    }
+
+    void dump(PrintWriter printOut) {
+        printOut.printf("Has %d references:\n", references.size());// NOI18N 
+        for (Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
+            printOut.printf("ref %s\n\t%s:\n", entry.getKey().toString(true), entry.getValue());// NOI18N 
+        }
+        printOut.printf("Has %d type2classifier:\n", type2classifier.size());// NOI18N 
+        for (Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : type2classifier.entrySet()) {
+            printOut.printf("type ref %s\n\t%s:\n", entry.getKey().toString(true), entry.getValue());// NOI18N 
+        }        
+        printOut.printf("Has %d obj2refs:\n", obj2refs.size());// NOI18N 
+        int refNum = 0;
+        for (Map.Entry<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> entry : obj2refs.entrySet()) {
+            printOut.printf("refs on %s:\n", entry.getKey());// NOI18N 
+            Collection<ReferenceImpl> value = new TreeSet<ReferenceImpl>(ReferencesIndex.REF_COMPARATOR);
+            value.addAll(entry.getValue());
+            refNum += value.size();
+            int index = 1;
+            for (ReferenceImpl referenceImpl : value) {
+                printOut.printf("[%d] %s\n", index++, referenceImpl.toString(true));// NOI18N 
+            }
+        }    
+        if (refNum != references.size()) {
+            printOut.printf("DIFFERENT number of references refs=%d vs obj2refs=%d:\n", references.size(), refNum);// NOI18N 
         }
     }
     
@@ -529,7 +565,9 @@ public class FileComponentReferences extends FileComponent implements Persistent
         
         /*package*/ String toString(boolean minimal) {
             if (minimal) {
-                return identifier+"["+start+","+end+"] refKind=" + refKind; // NOI18N
+                String stString = PositionManager.getPosition(file, start).toString();
+                String endString = PositionManager.getPosition(file, end).toString();
+                return identifier+"["+stString+"-"+endString+"] refKind=" + refKind; // NOI18N
             } else {
                 return identifier+"["+start+","+end+"] file=" + file + ";refKind=" + refKind + ";refObj=" + refObj + ";topUID=" + closestTopLevelObjectUID + ";ownerUID=" + ownerUID + '}'; // NOI18N
             }
