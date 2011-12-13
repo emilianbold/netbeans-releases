@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IQuery;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 
 /**
  *
@@ -50,17 +51,24 @@ import org.eclipse.persistence.jpa.jpql.spi.IQuery;
  */
 public class Query implements IQuery{
 
-    private String query;
+    private String queryStr;
     private IManagedTypeProvider provider;
+    private NamedQuery query;
     
-    public Query(String query, IManagedTypeProvider provider){
-        this.query = query;
+    
+    
+    public Query(NamedQuery query, String queryStr, IManagedTypeProvider provider){
+        this.queryStr = queryStr;
         this.provider = provider;
+        this.query = query;
     }
     
+    public Query(NamedQuery query, IManagedTypeProvider provider){
+        this(query, query.getQuery(), provider);
+    }    
     @Override
     public String getExpression() {
-        return query;
+        return queryStr;
     }
 
     @Override
