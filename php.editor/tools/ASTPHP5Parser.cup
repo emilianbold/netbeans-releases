@@ -2365,6 +2365,12 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = expr;
 :}
 
+| T_OPEN_RECT:start array_pair_list:list T_CLOSE_RECT:end
+{:
+    Expression expr = new ArrayCreation(startleft, endright, list);
+	RESULT = expr;
+:}
+
 | T_BACKQUATE:start encaps_list:list T_BACKQUATE:end
 {:
 	BackTickExpression backTickExpression = new BackTickExpression(startleft, endright, /*parser.ast,*/ list);
