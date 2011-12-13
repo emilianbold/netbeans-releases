@@ -83,9 +83,9 @@ public final class ExecutionDescriptor {
 
     private final boolean noReset;
 
-    private boolean outLineBased;
+    private final boolean outLineBased;
 
-    private boolean errLineBased;
+    private final boolean errLineBased;
 
     private final LineConvertorFactory outConvertorFactory;
 

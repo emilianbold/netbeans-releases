@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
@@ -270,35 +271,31 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     }
 
     protected final Collection<? extends CsmObject> getEqualObjects(CsmObject csmObject) {
-        if (false && CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
+        if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
             CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
-            CharSequence uniqueName = decl.getUniqueName();
-            Collection<CsmProject> projects = new LinkedHashSet<CsmProject>(CsmModelAccessor.getModel().projects());
-            Collection<CsmObject> out = new HashSet<CsmObject>(projects.size());
+//            CharSequence uniqueName = decl.getUniqueName();
             CsmFile file = decl.getContainingFile();
             if (file != null) {
                 FileObject fo = file.getFileObject();
                 FSPath fsPath = FSPath.toFSPath(fo);
-                Collection<CsmProject> allProjects = new LinkedHashSet<CsmProject>(projects);
-                for (CsmProject csmProject : projects) {
-                    allProjects.addAll(csmProject.getLibraries());
-                }
-                for (CsmProject csmProject : allProjects) {
-                    final CsmFile projFile = csmProject.findFile(fsPath, false, false);
-                    if (projFile != null) {
-                        final Collection<CsmOffsetableDeclaration> findDeclarations = csmProject.findDeclarations(uniqueName);
-                        for (CsmOffsetableDeclaration prjDecl : findDeclarations) {
-                            if (CsmReferenceSupport.sameDeclaration(prjDecl, decl)) {
-                                out.add(prjDecl);
+                CsmFile[] findFiles = CsmModelAccessor.getModel().findFiles(fsPath, false, false);
+                Collection<CsmObject> out = new HashSet<CsmObject>(findFiles.length);
+                out.add(csmObject);
+                CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(decl.getStartOffset()+1);
+                for (CsmFile csmFile : findFiles) {
+                    if (!file.equals(csmFile)) {
+                        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(csmFile, filter);
+                        while (declarations.hasNext()) {
+                            CsmOffsetableDeclaration other = declarations.next();
+                            if (CsmReferenceSupport.sameDeclaration(other, decl)) {
+                                out.add(other);
                             }
                         }
                     }
                 }
+                return out;
             }
-            assert out.contains(decl) : "no original object in out collection " + out;
-            return out;
-        } else {
-            return Collections.singleton(csmObject);
         }
+        return Collections.singleton(csmObject);
     }
 }

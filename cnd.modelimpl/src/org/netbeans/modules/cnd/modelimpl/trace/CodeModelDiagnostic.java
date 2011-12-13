@@ -178,6 +178,30 @@ public final class CodeModelDiagnostic {
         }
     }
     
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1375)
+    public final static class ModelFileIndex implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return "File References Index";// NOI18N 
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            printOut.printf("====File Indices:\n");// NOI18N
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if (csmFile instanceof FileImpl) {
+                    ((FileImpl) csmFile).dumpIndex(printOut);
+                } else if (csmFile instanceof FileSnapshot) {
+                    ((FileSnapshot) csmFile).dumpIndex(printOut);
+                } else {
+                    printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+                }
+            }
+        }
+    }
+    
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
     public final static class FileImplModelTrace implements CndDiagnosticProvider {
 
