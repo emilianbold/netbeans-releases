@@ -310,7 +310,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         line2Annotations.clear();
 
         file2Holder.remove(od);
-        doc.removeDocumentListener(this);
+        DocumentUtilities.removePriorityDocumentListener(this.doc, this, DocumentListenerPriority.AFTER_CARET_UPDATE);
 
         getBag(doc).clear();
     }
