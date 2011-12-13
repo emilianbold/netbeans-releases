@@ -171,7 +171,7 @@ public class CreateSubclass {
                     }
                 });
                 desc.setValid(panel.isValidData());
-                if (DialogDisplayer.getDefault().notify(desc) == DialogDescriptor.CANCEL_OPTION) {
+                if (DialogDisplayer.getDefault().notify(desc) != DialogDescriptor.OK_OPTION) {
                     return null;
                 }
                 simpleName = panel.getClassName();

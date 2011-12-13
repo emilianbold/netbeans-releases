@@ -48,8 +48,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
@@ -62,7 +60,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -88,18 +85,17 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
-public class ReplaceBar extends JPanel {
+public final class ReplaceBar extends JPanel {
 
     private static ReplaceBar replacebarInstance = null;
     private static final Logger LOG = Logger.getLogger(ReplaceBar.class.getName());
     private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
-    private static final int defaultIncremantalSearchComboWidth = 200;
-    private static final int maxIncremantalSearchComboWidth = 350;
+    private static final int DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH = 200;
+    private static final int MAX_INCREMANTAL_SEARCH_COMBO_WIDTH = 350;
     private SearchBar searchBar;
     private final FocusAdapter focusAdapterForComponent;
     private final JComboBox replaceComboBox;
@@ -113,7 +109,7 @@ public class ReplaceBar extends JPanel {
     private ActionListener actionListenerForPreserveCase;
     private final JCheckBox backwardsCheckBox;
     private final FocusTraversalPolicy searchBarFocusTraversalPolicy;
-    private ArrayList<JComponent> focusList = new ArrayList<JComponent>();
+    private List<JComponent> focusList = new ArrayList<JComponent>();
     private final JButton expandButton;
     private final JPopupMenu expandPopup;
     /**
@@ -289,7 +285,7 @@ public class ReplaceBar extends JPanel {
         }
     }
 
-    private JButton createExpandButton() throws MissingResourceException {
+    private JButton createExpandButton() {
         JButton expButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_expand.png", false)); // NOI18N
         expButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ReplaceExpandButton_Mnemonic").charAt(0)); // NOI18N
         expButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceExpandButton")); // NOI18N
@@ -461,7 +457,7 @@ public class ReplaceBar extends JPanel {
         
     }
 
-    private ArrayList<JComponent> getFocusList() {
+    private List<JComponent> getFocusList() {
         return focusList;
     }
 
@@ -524,14 +520,13 @@ public class ReplaceBar extends JPanel {
 
     private static JComboBox createReplaceComboBox() {
         JComboBox incSearchComboBox = new JComboBox() {
-
-            public @Override
-            Dimension getMinimumSize() {
+            @Override
+            public Dimension getMinimumSize() {
                 return getPreferredSize();
             }
 
-            public @Override
-            Dimension getMaximumSize() {
+            @Override
+            public Dimension getMaximumSize() {
                 return getPreferredSize();
             }
 
@@ -539,12 +534,12 @@ public class ReplaceBar extends JPanel {
             public Dimension getPreferredSize() {
                 int width;
                 int editsize = this.getEditor().getEditorComponent().getPreferredSize().width + 10;
-                if (editsize > defaultIncremantalSearchComboWidth && editsize < maxIncremantalSearchComboWidth) {
+                if (editsize > DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH && editsize < MAX_INCREMANTAL_SEARCH_COMBO_WIDTH) {
                     width = editsize;
-                } else if (editsize >= maxIncremantalSearchComboWidth) {
-                    width = maxIncremantalSearchComboWidth;
+                } else if (editsize >= MAX_INCREMANTAL_SEARCH_COMBO_WIDTH) {
+                    width = MAX_INCREMANTAL_SEARCH_COMBO_WIDTH;
                 } else {
-                    width = defaultIncremantalSearchComboWidth;
+                    width = DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH;
                 }
                 return new Dimension(width,
                         super.getPreferredSize().height);
@@ -596,18 +591,19 @@ public class ReplaceBar extends JPanel {
 
     private ActionListener closeButtonListener;
     private ActionListener getCloseButtonListener() {
-        if (closeButtonListener == null)
+        if (closeButtonListener == null) {
             closeButtonListener = new ActionListener() {
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                looseFocus();
-            }
-        };
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    looseFocus();
+                }
+            };
+        }
         return closeButtonListener;
     }
     
-    private void unchangeSearchBarToBeOnlySearchBar() throws MissingResourceException {
+    private void unchangeSearchBarToBeOnlySearchBar() {
         searchBar.getCloseButton().removeActionListener(getCloseButtonListener());
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Find")); // NOI18N
         Dimension oldDimensionForFindLabel = searchBar.getFindLabel().getUI().getMinimumSize(searchBar.getFindLabel());
@@ -623,7 +619,7 @@ public class ReplaceBar extends JPanel {
         searchBar.looseFocus();
     }
 
-    private void changeSearchBarToBePartOfReplaceBar() throws MissingResourceException {
+    private void changeSearchBarToBePartOfReplaceBar() {
         searchBar.getCloseButton().addActionListener(getCloseButtonListener());
         Mnemonics.setLocalizedText(searchBar.getFindLabel(), NbBundle.getMessage(SearchBar.class, "CTL_Replace_Find")); // NOI18N
         Dimension newDimensionForFindLabel = new Dimension(replaceLabel.getPreferredSize().width, searchBar.getFindLabel().getPreferredSize().height);

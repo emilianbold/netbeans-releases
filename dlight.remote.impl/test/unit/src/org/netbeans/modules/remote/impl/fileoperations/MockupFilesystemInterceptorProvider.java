@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileOperations;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
 
@@ -106,7 +107,13 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
 
         @Override
         public boolean canWrite(FileProxyI file) {
-            return true;
+            FileOperations fileOperations = FileOperationsProvider.getDefault().getFileOperations(fs);
+            final boolean canWrite = fileOperations.canWrite(FileOperationsProvider.toFileProxy(file.getPath()));
+            if (canWrite) {
+                return canWrite;
+            }
+            isMutableFiles.add(file);
+            return canWrite;
         }
 
         @Override
