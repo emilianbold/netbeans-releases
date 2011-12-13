@@ -51,6 +51,28 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="HelpCtx.display">
+        <api name="util"/>
+        <summary><code>HelpCtx.display</code> added</summary>
+        <version major="8" minor="21"/>
+        <date year="2011" month="12" day="13"/>
+        <author login="jglick"/>
+        <compatibility binary="compatible">
+            <p>
+                Modules calling <code>org.netbeans.api.javahelp.Help.showHelp</code>
+                via reflection should use this new API instead.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                To permit modules to display help pages where available without
+                a direct dependency on the JavaHelp API, <code>HelpCtx.display()</code>
+                was added together with a matching SPI.
+            </p>
+        </description>
+        <class package="org.openide.util" name="HelpCtx"/>
+        <issue number="205992"/>
+    </change>
     <change id="rp.cancel">
         <api name="util"/>
         <summary>RequestProcessor tweaks</summary>

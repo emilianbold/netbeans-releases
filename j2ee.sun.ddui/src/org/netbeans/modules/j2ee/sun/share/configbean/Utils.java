@@ -49,8 +49,6 @@ import java.net.URLClassLoader;
 import java.net.URLEncoder;
 import javax.swing.SwingUtilities;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.netbeans.api.javahelp.Help;
 import org.openide.ErrorManager;
 
 
@@ -316,7 +314,7 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
     public static void invokeHelp(final HelpCtx helpCtx) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Lookup.getDefault().lookup(Help.class).showHelp(helpCtx);
+                helpCtx.display();
             }
         });
     }
