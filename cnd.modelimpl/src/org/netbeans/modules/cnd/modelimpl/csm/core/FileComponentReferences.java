@@ -282,7 +282,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             if (index) {
                 Collection<FileComponentReferences.ReferenceImpl> value = obj2refs.get(referencedUID);
                 if (value == null) {
-                    value = new ArrayList<ReferenceImpl>(1);
+                    value = new HashSet<ReferenceImpl>(1);
                     obj2refs.put(referencedUID, value);
                 }
                 value.add(refImpl);
