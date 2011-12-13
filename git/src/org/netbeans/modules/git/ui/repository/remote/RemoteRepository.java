@@ -95,15 +95,15 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private boolean enabled = true;
 
     private enum Scheme {
-        FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
-        HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),             // NOI18N
-        HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),           // NOI18N
-//        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
-//        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
-        SSH("ssh", "ssh://host.xz[:port]/path/to/repo.git/"),                   // NOI18N    
-        SFTP("sftp", "sftp://host.xz[:port]/path/to/repo.git/"),              // NOI18N
-//        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/"),                    // NOI18N
-        GIT("git", "git://host.xz[:port]/path/to/repo.git/");                   // NOI18N
+        FILE("file", NbBundle.getMessage(RemoteRepository.class, "Scheme.FILE")), //NOI18N
+        HTTP("http", NbBundle.getMessage(RemoteRepository.class, "Scheme.HTTP")), //NOI18N
+        HTTPS("https", NbBundle.getMessage(RemoteRepository.class, "Scheme.HTTPS")), //NOI18N
+//        FTP("ftp", NbBundle.getMessage(RemoteRepository.class, "Scheme.FTP")), //NOI18N
+//        FTPS("ftps", NbBundle.getMessage(RemoteRepository.class, "Scheme.FTPS")), //NOI18N
+        SSH("ssh", NbBundle.getMessage(RemoteRepository.class, "Scheme.SSH")), //NOI18N
+        SFTP("sftp", NbBundle.getMessage(RemoteRepository.class, "Scheme.SFTP")), //NOI18N
+//        RSYNC("rsync", NbBundle.getMessage(RemoteRepository.class, "Scheme.RSYNC")), //NOI18N
+        GIT("git", NbBundle.getMessage(RemoteRepository.class, "Scheme.GIT")); //NOI18N
         
         private final String name;
         private final String tip;

@@ -43,12 +43,18 @@ package org.openide.filesystems;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 
 public class FsMimeResolverTest extends NbTestCase {
 
     public FsMimeResolverTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     @Override

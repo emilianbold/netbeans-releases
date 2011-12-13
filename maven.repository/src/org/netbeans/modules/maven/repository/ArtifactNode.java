@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.StaticResource;
 
 import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -59,6 +60,9 @@ import org.openide.util.ImageUtilities;
  * @author Anuradha G
  */
 public class ArtifactNode extends AbstractNode {
+
+    private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/repository/ArtifactBadge.png";
+
     public ArtifactNode(RepositoryInfo info,String id, String art) {
         super(Children.create(new ArtifactChildren(info,id, art), true));
         setName(art);
@@ -89,7 +93,7 @@ public class ArtifactNode extends AbstractNode {
 
     @Override
     public Image getIcon(int arg0) {
-        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ArtifactBadge.png", true); //NOI18N
+        Image badge = ImageUtilities.loadImage(ARTIFACT_BADGE, true);
         return badge;
     }
 

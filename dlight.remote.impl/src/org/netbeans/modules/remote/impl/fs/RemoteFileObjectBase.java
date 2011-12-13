@@ -486,83 +486,33 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
                 FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                interceptor.beforeCopy(target, to);
+                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(this);
+                interceptor.beforeCopy(from, to);
                 FileObject result = null;
                 try {
-                    final IOHandler copyHandler = interceptor.getCopyHandler(this, to);
+                    final IOHandler copyHandler = interceptor.getCopyHandler(from, to);
                     if (copyHandler != null) {
-                        if (target instanceof RemoteDirectory) {
-                            result = handleMoveCopy((RemoteDirectory)target, name, ext, copyHandler);
-                        } else {
-                            copyHandler.handle();
-                            refresh(true);
-                            //perfromance bottleneck to call refresh on folder
-                            //(especially for many files to be copied)
-                            target.refresh(true); // XXX ?
-                            result = target.getFileObject(name, ext); // XXX ?
-                            assert result != null : "Cannot find " + target + " with " + name + "." + ext;
-                        }
+                        copyHandler.handle();
+                        refresh(true);
+                        //perfromance bottleneck to call refresh on folder
+                        //(especially for many files to be copied)
+                        target.refresh(true); // XXX ?
+                        result = target.getFileObject(name, ext); // XXX ?
+                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
                         FileUtil.copyAttributes(this, result);
                     } else {
                         result = super.copy(target, name, ext);
                     }
                 } catch (IOException ioe) {
-                    interceptor.copyFailure(this, to);
                     throw ioe;
                 }
-                interceptor.copySuccess(this, to);
+                interceptor.copySuccess(from, to);
                 return result;
             }
         }
         return super.copy(target, name, ext);
     }
     
-    private RemoteFileObjectBase handleMoveCopy(RemoteDirectory target, String name, String ext, IOHandler handler) throws IOException {
-        handler.handle();
-        //  TODO find result file object
-        return null;
-        /*
-        String nameExt = FileInfo.composeName(name, ext);
-        target.getChildrenCache().getChild(nameExt, true);
-        //TODO: review
-        RemoteFileObjectBase result = null;
-        final File file = new File(target.getFileName().getFile(), nameExt);
-        for (int i = 0; i < 10; i++) {
-            result = (RemoteFileObjectBase) FileBasedFileSystem.getFileObject(file);
-            if (result != null) {
-                if (result.isData()) {
-                    result.fireFileDataCreatedEvent(false);
-                } else {
-                    result.fireFileFolderCreatedEvent(false);
-                }
-                break;
-            }
-            // #179109 - result is sometimes null, probably when moved file
-            // is not yet ready. We wait max. 1000 ms.
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-        }
-        boolean assertsOn = false;
-        assert assertsOn = true;
-        if (result == null && assertsOn) {
-            AssertionError ae = new AssertionError("FileObject for " + file + " not found.");
-            dumpFileInfo(file, ae);
-            throw ae;
-        }
-        RemoteDirectory parent = getExistingParent();
-        if (parent != null) {
-            parent.refresh(true);
-        } else {
-            refresh(true);
-        }
-        //fireFileDeletedEvent(false);
-        return result;
-        */
-    }
-
     @Override
     public Object getAttribute(String attrName) {
         if (attrName.equals("isRemoteAndSlow")) { // NOI18N

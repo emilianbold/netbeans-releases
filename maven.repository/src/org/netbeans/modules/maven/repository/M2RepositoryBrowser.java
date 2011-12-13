@@ -77,7 +77,7 @@ import org.openide.util.Union2;
 })
 public final class M2RepositoryBrowser extends AbstractNode {
 
-    static final String ICON_PATH = "org/netbeans/modules/maven/repository/MavenRepoBrowser.png"; //NOI18N
+    static final /* XXX javac bug @StaticResource */ String ICON_PATH = "org/netbeans/modules/maven/repository/MavenRepoBrowser.png";
 
     private M2RepositoryBrowser() {
         super(Children.create(new RootNodes(), true));
