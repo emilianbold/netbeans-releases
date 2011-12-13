@@ -146,6 +146,9 @@ public final class ActionUtils {
         }
         Collection<FileObject> files = new LinkedHashSet<FileObject>(); // #50644: remove dupes
         for (FileObject f : candidates) {
+            if (f.hasExt("form")) {
+                continue; // #206309
+            }
             boolean matches = FileUtil.toFile(f) != null;
             if (dir != null) {
                 matches &= (FileUtil.isParentOf(dir, f) || dir == f);
