@@ -260,29 +260,32 @@ public class Property {
      * {@link #supportsCustomEditor}.
      */
     public void openEditor() {
-        if(supportsCustomEditor()) {
-            final JTableOperator table = propertySheetOper.tblSheet();
-            // Need to request focus before selection because invokeCustomEditor action works
-            // only when table is focused
-            table.makeComponentVisible();
-            table.requestFocus();
-            table.waitHasFocus();
-            // run action in a separate thread in AWT (no block)
-            new Thread(new Runnable() {
-                public void run() {
-                    new QueueTool().invokeSmoothly(new Runnable() {
-                        public void run() {
-                            // need to select property first
-                            ((javax.swing.JTable)table.getSource()).changeSelection(getRow(), 0, false, false);
+        final JTableOperator table = propertySheetOper.tblSheet();
+        // Need to request focus before selection because invokeCustomEditor action works
+        // only when table is focused
+        table.makeComponentVisible();
+        table.requestFocus();
+        table.waitHasFocus();
+        // run action in a separate thread in AWT (no block)
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                new QueueTool().invokeSmoothly(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        // need to select property first
+                        ((javax.swing.JTable) table.getSource()).changeSelection(getRow(), 0, false, false);
+                        if (supportsCustomEditor()) {
                             // find action
-                            Action customEditorAction = ((JComponent)table.getSource()).getActionMap().get("invokeCustomEditor");  // NOI18N
+                            Action customEditorAction = ((JComponent) table.getSource()).getActionMap().get("invokeCustomEditor");  // NOI18N
                             customEditorAction.actionPerformed(new ActionEvent(table.getSource(), 0, null));
                         }
-                    });
-                }
-            }, "Thread to open custom editor no block").start(); // NOI18N
-            return;
-        }
+                    }
+                });
+            }
+        }, "Thread to open custom editor no block").start(); // NOI18N
     }
     
     /** Checks whether this property supports custom editor.
