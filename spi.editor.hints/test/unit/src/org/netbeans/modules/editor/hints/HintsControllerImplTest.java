@@ -43,13 +43,17 @@
  */
 package org.netbeans.modules.editor.hints;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
@@ -73,7 +77,28 @@ public class HintsControllerImplTest extends NbTestCase {
             }
         });
     }
-    
+
+    public void testSubFixesLeak() throws Exception {
+        class TestFix implements Fix {
+            @Override public String getText() { return null; }
+            @Override public ChangeInfo implement() throws Exception { return null; }
+        }
+
+        Fix main = new TestFix();
+        Fix sub  = new TestFix();
+
+        HintsControllerImpl.attachSubfixes(main, Collections.singletonList(sub));
+
+        Reference<Fix> mainRef = new WeakReference<Fix>(main);
+        Reference<Fix> subRef = new WeakReference<Fix>(sub);
+
+        main = null;
+        sub = null;
+
+        assertGC("main", mainRef);
+        assertGC("sub", subRef);
+    }
+
     private void doTestComputeLineSpan(DocumentCreator creator) throws Exception {
         Document bdoc = creator.createDocument();
         
