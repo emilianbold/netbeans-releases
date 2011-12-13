@@ -73,7 +73,8 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.uiapi.CategoryModel;
 import org.netbeans.modules.project.uiapi.CategoryView;
 import org.netbeans.modules.project.uiapi.CategoryChangeSupport;
@@ -89,6 +90,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /** Support for creating dialogs which can be used as project
  * customizers. The dialog may display multiple panels or categories.
@@ -132,7 +134,7 @@ public final class ProjectCustomizer {
     public static Dialog createCustomizerDialog( Category[] categories,
                                                  CategoryComponentProvider componentProvider,
                                                  String preselectedCategory,
-                                                 ActionListener okOptionListener,
+                                                 @NonNull ActionListener okOptionListener,
                                                  HelpCtx helpCtx ) {
         return createCustomizerDialog(categories, componentProvider, preselectedCategory, okOptionListener, null, helpCtx);
     }
@@ -171,9 +173,10 @@ public final class ProjectCustomizer {
     public static Dialog createCustomizerDialog( Category[] categories,
                                                  CategoryComponentProvider componentProvider,
                                                  String preselectedCategory,
-                                                 ActionListener okOptionListener,
-                                                 ActionListener storeListener,
+                                                 @NonNull ActionListener okOptionListener,
+                                                 @NullAllowed ActionListener storeListener,
                                                  HelpCtx helpCtx ) {
+        Parameters.notNull("okOptionListener", okOptionListener);
         CustomizerPane innerPane = createCustomizerPane(categories, componentProvider, preselectedCategory);
         Dialog dialog = CustomizerDialog.createDialog(okOptionListener, storeListener, innerPane, helpCtx, categories, componentProvider);
         return dialog;
@@ -205,7 +208,7 @@ public final class ProjectCustomizer {
     public static Dialog createCustomizerDialog( String folderPath,
                                                  Lookup context,
                                                  String preselectedCategory,
-                                                 ActionListener okOptionListener,
+                                                 @NonNull ActionListener okOptionListener,
                                                  HelpCtx helpCtx) {
         return createCustomizerDialog(folderPath, context, preselectedCategory, 
                                       okOptionListener, null, helpCtx);
@@ -244,8 +247,8 @@ public final class ProjectCustomizer {
     public static Dialog createCustomizerDialog( String folderPath,
                                                  Lookup context,
                                                  String preselectedCategory,
-                                                 ActionListener okOptionListener,
-                                                 ActionListener storeListener,
+                                                 @NonNull ActionListener okOptionListener,
+                                                 @NullAllowed ActionListener storeListener,
                                                  HelpCtx helpCtx) {
         FileObject root = FileUtil.getConfigFile(folderPath);
         if (root == null) {

@@ -52,7 +52,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -97,7 +96,6 @@ import org.openide.util.RequestProcessor;
 public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     private final WhereUsedQuery refactoring;
     private final CsmObject startReferenceObject;
-    static final Logger LOG = Logger.getLogger(CsmWhereUsedQueryPlugin.class.getName());
     
     /** Creates a new instance of WhereUsedQuery */
     public CsmWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
@@ -457,6 +455,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             for (CsmWhereUsedExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmWhereUsedExtraObjectsProvider.class)) {
                 allObjects.addAll(provider.getExtraObjects(primaryObject));
             }
+            allObjects.addAll(getEqualObjects(primaryObject));
         }
         return allObjects;
     }    

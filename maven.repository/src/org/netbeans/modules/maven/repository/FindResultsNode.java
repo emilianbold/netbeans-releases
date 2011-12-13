@@ -53,6 +53,7 @@ import java.util.Observer;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.apache.lucene.search.BooleanQuery;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -76,6 +77,10 @@ import org.openide.util.actions.SystemAction;
  */
 public class FindResultsNode extends AbstractNode {
 
+    private static final @StaticResource String FIND_IN_REPO = "org/netbeans/modules/maven/repository/FindInRepo.png";
+    private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/repository/ArtifactBadge.png";
+    private static final @StaticResource String EMPTY_ICON = "org/netbeans/modules/maven/repository/empty.png";
+
     private final QueryRequest queryRequest;
     
     private static final RequestProcessor queryRP = new RequestProcessor(FindResultsNode.class.getName(), 10);
@@ -83,7 +88,7 @@ public class FindResultsNode extends AbstractNode {
         super(Children.create(new FindResultsChildren(queryRequest), true));
         this.queryRequest = queryRequest;
         setDisplayName(queryRequest.getQueryFields().get(0).getValue());
-        setIconBaseWithExtension("org/netbeans/modules/maven/repository/FindInRepo.png");
+        setIconBaseWithExtension(FIND_IN_REPO);
     }
 
     @Override public boolean canDestroy() {
@@ -236,7 +241,7 @@ public class FindResultsNode extends AbstractNode {
 
         @Override
         public Image getIcon(int arg0) {
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ArtifactBadge.png", true); //NOI18N
+            Image badge = ImageUtilities.loadImage(ARTIFACT_BADGE, true);
 
             return badge;
         }
@@ -296,7 +301,7 @@ public class FindResultsNode extends AbstractNode {
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
+                    return ImageUtilities.loadImage(EMPTY_ICON);
                     }
 
                 @Override
@@ -321,7 +326,7 @@ public class FindResultsNode extends AbstractNode {
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
+                    return ImageUtilities.loadImage(EMPTY_ICON);
                     }
 
                 @Override

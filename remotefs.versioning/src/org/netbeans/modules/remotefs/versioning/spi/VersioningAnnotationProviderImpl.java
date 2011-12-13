@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,74 +35,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): theanuradha@netbeans.org
+ * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.repository;
+package org.netbeans.modules.remotefs.versioning.spi;
 
 import java.awt.Image;
+import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.api.annotations.common.StaticResource;
-
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
+import org.netbeans.modules.remote.impl.fileoperations.AnnotationProvider;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusListener;
 
 /**
  *
- * @author mkleint
- * @author Anuradha G
+ * @author Alexander Simon
  */
-public class ArtifactNode extends AbstractNode {
+@org.openide.util.lookup.ServiceProvider(service = AnnotationProvider.class, position = 1000)
+public class VersioningAnnotationProviderImpl extends AnnotationProvider {
 
-    private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/repository/ArtifactBadge.png";
-
-    public ArtifactNode(RepositoryInfo info,String id, String art) {
-        super(Children.create(new ArtifactChildren(info,id, art), true));
-        setName(art);
-        setDisplayName(art);
-    }
-
-    public ArtifactNode(final RepositoryInfo info,final NBArtifactInfo artifactInfo) {
-        super(new Children.Keys<NBVersionInfo>() {
-
-            @Override
-            protected Node[] createNodes(NBVersionInfo arg0) {
-
-
-                return new Node[]{new VersionNode(info,arg0,arg0.isJavadocExists(),
-                    arg0.isSourcesExists(), arg0.getGroupId() != null)
-                };
-            }
-
-            @Override
-            protected void addNotify() {
-                super.addNotify();
-                setKeys(artifactInfo.getVersionInfos());
-            }
-            });
-        setName(artifactInfo.getName());
-        setDisplayName(artifactInfo.getName());
+    public VersioningAnnotationProviderImpl() {
     }
 
     @Override
-    public Image getIcon(int arg0) {
-        Image badge = ImageUtilities.loadImage(ARTIFACT_BADGE, true);
-        return badge;
+    public void registerFileStatusListener(FileStatusListener listener) {
+        VCSFilesystemInterceptor.registerFileStatusListener(listener);
     }
 
     @Override
-    public Image getOpenedIcon(int arg0) {
-        return getIcon(arg0);
+    public String annotateName(String name, Set<? extends FileObject> files) {
+        return null;
     }
 
-    public @Override Action[] getActions(boolean context) {
-        return new Action[0];
+    @Override
+    public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
+        return VCSFilesystemInterceptor.annotateIcon(icon, iconType, files);
     }
+
+    @Override
+    public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+        return VCSFilesystemInterceptor.annotateNameHtml(name, files);
+    }
+
+    @Override
+    public Action[] actions(Set<? extends FileObject> files) {
+        return VCSFilesystemInterceptor.actions(files);
+    }
+
 }

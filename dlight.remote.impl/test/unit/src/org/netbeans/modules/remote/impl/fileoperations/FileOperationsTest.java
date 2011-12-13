@@ -58,6 +58,7 @@ public class FileOperationsTest extends NativeExecutionBaseTestSuite {
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
             FileOperationsTestCase.class
+            ,InterceptorTestCase.class
         };
     }
     

@@ -44,14 +44,15 @@ package org.netbeans.modules.remotefs.versioning.spi;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -59,52 +60,48 @@ import org.openide.util.Lookup;
  */
 @org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 1000)
 public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProvider {
+    private Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
 
     @Override
-    public FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {
-        VCSFilesystemInterceptor delegate = Lookup.getDefault().lookup(VCSFilesystemInterceptor.class);
-        if (delegate == null) {
-            return null;
+    public synchronized FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {
+        FilesystemInterceptor interceptor = map.get(fs);
+        if (interceptor == null) {
+            interceptor = new FilesystemInterceptorImpl(fs);
+            map.put(fs, interceptor);
         }
-        return new FilesystemInterceptorImpl(fs, delegate);
+        return interceptor;
     }
 
     private static final class FilesystemInterceptorImpl implements FilesystemInterceptor {
         private final FileSystem fs;
-        private final VCSFilesystemInterceptor delegate;
         
-        public FilesystemInterceptorImpl(FileSystem fs, VCSFilesystemInterceptor delegate) {
+        public FilesystemInterceptorImpl(FileSystem fs) {
             this.fs = fs;
-            this.delegate = delegate;
-        }
-
-        private VCSFilesystemInterceptor getDelegate() {
-            return delegate;
         }
 
         @Override
         public boolean canWrite(FileProxyI file) {
-            return getDelegate().canWrite(toVCSFileProxy(file));
+            return VCSFilesystemInterceptor.canWrite(toVCSFileProxy(file));
         }
 
         @Override
         public Object getAttribute(FileProxyI file, String attrName) {
-            return getDelegate().getAttribute(toVCSFileProxy(file), attrName);
+            return VCSFilesystemInterceptor.getAttribute(toVCSFileProxy(file), attrName);
         }
 
         @Override
         public void beforeChange(FileProxyI file) {
-            getDelegate().beforeChange(toVCSFileProxy(file));
+            VCSFilesystemInterceptor.beforeChange(toVCSFileProxy(file));
         }
 
         @Override
         public void fileChanged(FileProxyI file) {
-            getDelegate().fileChanged(toVCSFileProxy(file));
+            VCSFilesystemInterceptor.fileChanged(toVCSFileProxy(file));
         }
 
         @Override
         public DeleteHandler getDeleteHandler(FileProxyI file) {
-            final VCSFilesystemInterceptor.DeleteHandler deleteHandler = getDelegate().getDeleteHandler(toVCSFileProxy(file));
+            final VCSFilesystemInterceptor.DeleteHandler deleteHandler = VCSFilesystemInterceptor.getDeleteHandler(toVCSFileProxy(file));
             return new DeleteHandler() {
 
                 @Override
@@ -116,37 +113,37 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public void deleteSuccess(FileProxyI file) {
-            getDelegate().deleteSuccess(toVCSFileProxy(file));
+            VCSFilesystemInterceptor.deleteSuccess(toVCSFileProxy(file));
         }
 
         @Override
         public void deletedExternally(FileProxyI file) {
-            getDelegate().deletedExternally(toVCSFileProxy(file));
+            VCSFilesystemInterceptor.deletedExternally(toVCSFileProxy(file));
         }
 
         @Override
         public void beforeCreate(FileProxyI parent, String name, boolean isFolder) {
-            getDelegate().beforeCreate(toVCSFileProxy(parent), name, isFolder);
+            VCSFilesystemInterceptor.beforeCreate(toVCSFileProxy(parent), name, isFolder);
         }
 
         @Override
         public void createFailure(FileProxyI parent, String name, boolean isFolder) {
-            getDelegate().createFailure(toVCSFileProxy(parent), name, isFolder);
+            VCSFilesystemInterceptor.createFailure(toVCSFileProxy(parent), name, isFolder);
         }
 
         @Override
         public void createSuccess(FileProxyI fo) {
-            getDelegate().createSuccess(toVCSFileProxy(fo));
+            VCSFilesystemInterceptor.createSuccess(toVCSFileProxy(fo));
         }
 
         @Override
         public void createdExternally(FileProxyI fo) {
-            getDelegate().createdExternally(toVCSFileProxy(fo));
+            VCSFilesystemInterceptor.createdExternally(toVCSFileProxy(fo));
         }
 
         @Override
         public IOHandler getMoveHandler(FileProxyI from, FileProxyI to) {
-            final VCSFilesystemInterceptor.IOHandler moveHandler = getDelegate().getMoveHandler(toVCSFileProxy(from), toVCSFileProxy(to));
+            final VCSFilesystemInterceptor.IOHandler moveHandler = VCSFilesystemInterceptor.getMoveHandler(toVCSFileProxy(from), toVCSFileProxy(to));
             return new IOHandler() {
 
                 @Override
@@ -158,7 +155,7 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public IOHandler getRenameHandler(FileProxyI from, String newName) {
-            final VCSFilesystemInterceptor.IOHandler renameHandler = getDelegate().getRenameHandler(toVCSFileProxy(from), newName);
+            final VCSFilesystemInterceptor.IOHandler renameHandler = VCSFilesystemInterceptor.getRenameHandler(toVCSFileProxy(from), newName);
             return new IOHandler() {
 
                 @Override
@@ -170,12 +167,12 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public void afterMove(FileProxyI from, FileProxyI to) {
-            getDelegate().afterMove(toVCSFileProxy(from), toVCSFileProxy(from));
+            VCSFilesystemInterceptor.afterMove(toVCSFileProxy(from), toVCSFileProxy(from));
         }
 
         @Override
-        public FilesystemInterceptorProvider.IOHandler getCopyHandler(FileObject from, FileProxyI to) {
-            final VCSFilesystemInterceptor.IOHandler copyHandler = getDelegate().getCopyHandler(toVCSFileProxy(from), toVCSFileProxy(to));
+        public FilesystemInterceptorProvider.IOHandler getCopyHandler(FileProxyI from, FileProxyI to) {
+            final VCSFilesystemInterceptor.IOHandler copyHandler = VCSFilesystemInterceptor.getCopyHandler(toVCSFileProxy(from), toVCSFileProxy(to));
             return new FilesystemInterceptorProvider.IOHandler() {
 
                 @Override
@@ -186,39 +183,33 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
-        public void beforeCopy(FileObject from, FileProxyI to) {
-            getDelegate().beforeCopy(toVCSFileProxy(from), toVCSFileProxy(to));
+        public void beforeCopy(FileProxyI from, FileProxyI to) {
+            VCSFilesystemInterceptor.beforeCopy(toVCSFileProxy(from), toVCSFileProxy(to));
         }
 
         @Override
-        public void copySuccess(FileObject from, FileProxyI to) {
-            getDelegate().copySuccess(toVCSFileProxy(from), toVCSFileProxy(to));
-        }
-
-        @Override
-        public void copyFailure(FileObject from, FileProxyI to) {
-            // Missing method in VCSFilesystemInterceptor or should be processed in FS?
+        public void copySuccess(FileProxyI from, FileProxyI to) {
+            VCSFilesystemInterceptor.copySuccess(toVCSFileProxy(from), toVCSFileProxy(to));
         }
 
         @Override
         public void fileLocked(FileProxyI fo) {
-            getDelegate().fileLocked(toVCSFileProxy(fo));
+            VCSFilesystemInterceptor.fileLocked(toVCSFileProxy(fo));
         }
 
         @Override
-        public long refreshRecursively(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children) {
+        public long listFiles(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children) {
             List<VCSFileProxy> res = new ArrayList<VCSFileProxy>();
             for(Object f : children) {
                 res.add(toVCSFileProxy((FileProxyI)f));
             }
-            return getDelegate().refreshRecursively(toVCSFileProxy(dir), lastTimeStamp, res);
+            return VCSFilesystemInterceptor.listFiles(toVCSFileProxy(dir), lastTimeStamp, res);
         }
 
         @Override
         public String toString() {
             return fs.getDisplayName();
         }
-        
     }
 
     public static VCSFileProxy toVCSFileProxy(FileObject file) {

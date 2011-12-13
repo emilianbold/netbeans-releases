@@ -98,10 +98,8 @@ public class ServerLocationPanel implements WizardDescriptor.Panel, ChangeListen
             return false;
         }
 
-        // enable additional CP checkboxes
-        component.fillInCoherenceClasspath(true);
-
         // if the properties are valid, store them
+        component.fillInCoherenceClasspath(true);
         instantiatingIterator.setCoherenceLocation(component.getServerLocation());
         instantiatingIterator.setCoherenceClasspath(component.getClasspath());
         instantiatingIterator.setCreateCoherenceLibrary(component.getCreateCoherenceLibrary());

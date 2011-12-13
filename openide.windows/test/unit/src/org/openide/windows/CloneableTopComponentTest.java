@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,36 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.cnd.refactoring;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformerTestCase;
-import org.netbeans.modules.cnd.refactoring.plugins.WhereUsedInQuoteTestCase;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
-
-/**
  *
- * @author Vladimir Voskresensky
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public class RefactoringTest extends CndBaseTestSuite {
+package org.openide.windows;
+
+import org.netbeans.junit.NbTestCase;
+import org.openide.windows.CloneableTopComponent.Ref;
+
+public class CloneableTopComponentTest extends NbTestCase {
     
-    private RefactoringTest() {
-        super("C/C++ Refactoring Test"); // NOI18N
-        
-        addTestSuite(InstantRenamePerformerTestCase.class);
-        addTestSuite(WhereUsedInQuoteTestCase.class);
+    public CloneableTopComponentTest(String n) {
+        super(n);
     }
 
-    public static Test suite() {
-        TestSuite suite = new RefactoringTest();
-        return suite;
+    public void testOpenCloseOpen() throws Exception {
+        CloneableTopComponent c = new CloneableTopComponent(){
+            @Override
+            public int getPersistenceType() {
+                return PERSISTENCE_NEVER;
+            }
+        };
+        Ref ref = c.getReference();
+        assertEquals("C is registered in the reference", c, ref.getArbitraryComponent());
+        c.open();
+        assertEquals("C is still registered", c, ref.getArbitraryComponent());
+        assertTrue("Can be closed", c.close());
+        assertNull("Set of references is empty", ref.getArbitraryComponent());
+        c.open();
+        assertEquals("Reference remains the same", ref, c.getReference());
+        assertEquals("C is registered again", c, ref.getArbitraryComponent());
+        c.close();
+        assertNull("Not there again", ref.getArbitraryComponent());
     }
-
 }

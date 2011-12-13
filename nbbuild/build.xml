@@ -960,7 +960,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
 	<isset property="env.NBDISPLAY"/>
     </condition>
-    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes">
+    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -968,7 +968,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
     </exec>
-    <exec osfamily="unix" dir="." executable="sh" failonerror="yes">
+    <exec osfamily="unix" executable="sh" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
