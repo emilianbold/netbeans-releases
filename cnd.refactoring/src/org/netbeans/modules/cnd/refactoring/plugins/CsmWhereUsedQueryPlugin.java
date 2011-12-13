@@ -455,6 +455,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             for (CsmWhereUsedExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmWhereUsedExtraObjectsProvider.class)) {
                 allObjects.addAll(provider.getExtraObjects(primaryObject));
             }
+            allObjects.addAll(getEqualObjects(primaryObject));
         }
         return allObjects;
     }    

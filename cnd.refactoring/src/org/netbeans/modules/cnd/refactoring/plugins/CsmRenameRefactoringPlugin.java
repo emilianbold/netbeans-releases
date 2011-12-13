@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.refactoring.spi.CsmRenameExtraObjectsProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -151,12 +152,16 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     private void initReferencedObjects() {
         CsmObject primaryObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
         if (primaryObject != null) {
-            Collection<CsmObject> allObjects = new HashSet<CsmObject>();
-            allObjects.add(primaryObject);
+            Collection<CsmObject> objects = new HashSet<CsmObject>();
+            objects.add(primaryObject);
             for (CsmRenameExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
-                allObjects.addAll(provider.getExtraObjects(primaryObject));
+                objects.addAll(provider.getExtraObjects(primaryObject));
             }
             this.referencedObjects = new LinkedHashSet<CsmObject>();
+            Collection<CsmObject> allObjects = new HashSet<CsmObject>();            
+            for (CsmObject csmObject : objects) {
+                allObjects.addAll(getEqualObjects(csmObject));
+            }
             for (CsmObject referencedObject : allObjects) {
                 if (CsmKindUtilities.isClass(referencedObject)) {
                     // for class we need to add all needed elements
