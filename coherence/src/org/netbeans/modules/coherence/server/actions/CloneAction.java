@@ -106,7 +106,7 @@ public class CloneAction extends NodeAction {
             }
         });
         if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION) {
-            InstanceProperties oldProperties = coherenceServer.getInstanceProperties();
+            InstanceProperties oldProperties = coherenceServer.getCoherenceProperties().getInstanceProperties();
             InstanceProperties newProperties = InstancePropertiesManager.getInstance().
                     createProperties(CoherenceInstanceProvider.COHERENCE_INSTANCES_NS);
 

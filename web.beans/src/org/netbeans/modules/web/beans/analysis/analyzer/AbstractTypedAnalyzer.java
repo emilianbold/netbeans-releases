@@ -69,8 +69,6 @@ import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
  */
 public abstract class AbstractTypedAnalyzer {
     
-    private static final String TYPED = "javax.enterprise.inject.Typed";    // NOI18N
-    
     public void analyze( Element element, TypeMirror elementType, 
             AtomicBoolean cancel , CdiAnalysisResult result )
     {
@@ -145,7 +143,7 @@ public abstract class AbstractTypedAnalyzer {
             CompilationInfo compInfo , AtomicBoolean cancel)
     {
         AnnotationMirror typedMirror = AnnotationUtil.getAnnotationMirror(element, 
-                TYPED, compInfo);
+                AnnotationUtil.TYPED, compInfo);
         if ( typedMirror == null ){
             return null;
         }

@@ -95,9 +95,9 @@ public class OperatorsCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "SafeNavigation1.groovy", "        r?.t^", true);
     }
 
-    public void testSafeNavigation4() throws Exception {
+    /*public void testSafeNavigation4() throws Exception {
         checkCompletion(TEST_BASE + "SafeNavigation2.groovy", "        \"\"?.^", true);
-    }
+    }*/
 
     public void testMethodClosure1() throws Exception {
         checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        x.&b^", true);
@@ -111,7 +111,7 @@ public class OperatorsCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        r.&t^", true);
     }
 
-    public void testMethodClosure4() throws Exception {
+    /*public void testMethodClosure4() throws Exception {
         checkCompletion(TEST_BASE + "MethodClosure2.groovy", "        \"\".&^", true);
-    }
+    }*/
 }
