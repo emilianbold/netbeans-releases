@@ -2062,6 +2062,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         printOut.printf("\tfileBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
     }
 
+    public void dumpIndex(PrintWriter printOut) {
+        getFileReferences().dump(printOut);
+    }
+
     public void dumpPPStates(PrintWriter printOut) {
         int i = 0;
         final Collection<PreprocessorStatePair> preprocStatePairs = this.getPreprocStatePairs();
