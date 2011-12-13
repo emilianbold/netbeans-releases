@@ -246,6 +246,14 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("traits_06");
     }
 
+    public void testShortArrays_01() throws Exception {
+        performTest("shortArrays_01");
+    }
+
+    public void testShortArrays_02() throws Exception {
+        performTest("shortArrays_02");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
