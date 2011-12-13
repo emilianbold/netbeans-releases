@@ -258,7 +258,7 @@ public final class InternalHandle {
      */
     public synchronized void progress(String message, int workunit) {
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
-            LOG.log(Level.WARNING, "Cannot call progress on a taks that was never started at {0}", LoggingUtils.findCaller()); //NOI18N
+            LOG.log(Level.WARNING, "Cannot call progress on a task that was never started at {0}", LoggingUtils.findCaller()); //NOI18N
             return;
         }
 
