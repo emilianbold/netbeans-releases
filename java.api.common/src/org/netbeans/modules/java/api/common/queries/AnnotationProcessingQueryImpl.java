@@ -100,16 +100,29 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
         this.processorOptionsProperty = processorOptionsProperty;
     }
 
+    //@GuardedBy("this")
     private Reference<Result> cache;
 
-    public synchronized Result getAnnotationProcessingOptions(FileObject file) {
-        Result current = cache != null ? cache.get() : null;
-
-        if (current == null) {
-            cache = new WeakReference<Result>(current = new ResultImpl(SourceLevelQuery.getSourceLevel2(file)));
+    public Result getAnnotationProcessingOptions(FileObject file) {
+        Result current;
+        synchronized (this) {
+            current = cache != null ? cache.get() : null;
+            if (current != null) {
+                return current;
+            }
         }
 
-        return current;
+        current = new ResultImpl(SourceLevelQuery.getSourceLevel2(file));
+
+        synchronized (this) {
+            final Result updated = cache != null ? cache.get() : null;
+            if (updated != null) {
+                return updated;
+            } else {
+                cache = new WeakReference<Result>(current);
+                return current;
+            }
+        }
     }
 
     private static final Set<String> TRUE = new HashSet<String>(Arrays.asList("true", "on", "1"));

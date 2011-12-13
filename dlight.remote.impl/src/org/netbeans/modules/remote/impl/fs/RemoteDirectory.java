@@ -54,16 +54,7 @@ import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -79,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.F
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -1102,11 +1094,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // fire all event under lock
             if (changed) {
                 dropMagic();
+                FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
+                if (USE_VCS) {
+                    interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+                }
                 for (FileObject deleted : filesToFireDeleted) {
+                    if (interceptor != null) {
+                        interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(deleted));
+                    }
                     fireFileDeletedEvent(getListeners(), new FileEvent(this, deleted));
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObjectBase fo = createFileObject(entry);
+                    if (interceptor != null) {
+                        interceptor.createdExternally(FilesystemInterceptorProvider.toFileProxy(fo));
+                    }
                     fireRemoteFileObjectCreated(fo);
                 }
                 for (DirEntry entry : entriesToFireChanged) {
@@ -1126,7 +1128,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         return storage;
     }
-
+    
     private boolean isFileNotFoundException(Throwable ex) {
         while (ex != null) {
             if (ex instanceof FileNotFoundException) {
@@ -1296,6 +1298,22 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (recursive) {
             for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
                 child.refreshImpl(true, antiLoop);
+            }
+        }
+        if (USE_VCS) {
+            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+            if (interceptor != null) {
+                LinkedList<FilesystemInterceptorProvider.FileProxyI> arr = new LinkedList<FilesystemInterceptorProvider.FileProxyI>();
+                long ts = interceptor.listFiles(FilesystemInterceptorProvider.toFileProxy(this), -1, arr);
+                for (FilesystemInterceptorProvider.FileProxyI proxy : arr) {
+                    DirEntry entry = getEntry(PathUtilities.getBaseName(proxy.getPath()));
+                    if (entry != null && !entry.isDirectory()) {
+                        long lm = entry.getLastModified().getTime();
+                        if (lm > ts) {
+                            ts = lm;
+                        }
+                    }
+                }
             }
         }
     }

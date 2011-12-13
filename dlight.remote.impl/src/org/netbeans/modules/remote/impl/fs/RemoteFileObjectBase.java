@@ -298,6 +298,12 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     @Deprecated
     public boolean isReadOnly() {
+        if (USE_VCS) {
+            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+            if (interceptor != null) {
+                return !interceptor.canWrite(FilesystemInterceptorProvider.toFileProxy(this)) && isValid();
+            }
+        }
         return !canRead();
     }
 
@@ -315,6 +321,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             return true;
         }
     }
+
     
     public boolean canExecute() {
         try {
@@ -464,18 +471,31 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 throw new IOException("No connection: Can not rename in " + p.getPath()); //NOI18N
             }
-            try {
-                p.renameChild(lock, this, newNameExt);
-            } catch (ConnectException ex) {
-                throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
-            } catch (InterruptedException ex) {
-                InterruptedIOException outEx = new InterruptedIOException("interrupted: Can not rename in " + p.getPath()); //NOI18N
-                outEx.initCause(ex);
-                throw outEx;
-            } catch (CancellationException ex) {
-                throw new IOException("cancelled: Can not rename in " + p.getPath(), ex); //NOI18N
-            } catch (ExecutionException ex) {
-                throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
+            boolean isRenamed = false;
+            if (USE_VCS) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                if (interceptor != null) {
+                    IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(this), newNameExt);
+                    if (renameHandler != null) {
+                        renameHandler.handle();
+                        isRenamed = true;
+                    }
+                }
+            }
+            if (!isRenamed) {
+                try {
+                    p.renameChild(lock, this, newNameExt);
+                } catch (ConnectException ex) {
+                    throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
+                } catch (InterruptedException ex) {
+                    InterruptedIOException outEx = new InterruptedIOException("interrupted: Can not rename in " + p.getPath()); //NOI18N
+                    outEx.initCause(ex);
+                    throw outEx;
+                } catch (CancellationException ex) {
+                    throw new IOException("cancelled: Can not rename in " + p.getPath(), ex); //NOI18N
+                } catch (ExecutionException ex) {
+                    throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
+                }
             }
         }
     }
@@ -511,6 +531,38 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             }
         }
         return super.copy(target, name, ext);
+    }
+
+    @Override
+    public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+        if (USE_VCS) {
+            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+            if (interceptor != null) {
+                FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
+                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(this);
+                FileObject result = null;
+                try {
+                    final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
+                    if (moveHandler != null) {
+                        moveHandler.handle();
+                        refresh(true);
+                        //perfromance bottleneck to call refresh on folder
+                        //(especially for many files to be moved)
+                        target.refresh(true);
+                        result = target.getFileObject(name, ext); // XXX ?
+                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                        FileUtil.copyAttributes(this, result);
+                    } else {
+                        result = super.move(lock, target, name, ext);
+                    }
+                } catch (IOException ioe) {
+                    throw ioe;
+                }
+                interceptor.afterMove(from, to);
+                return result;
+            }
+        }
+        return super.move(lock, target, name, ext);
     }
     
     @Override

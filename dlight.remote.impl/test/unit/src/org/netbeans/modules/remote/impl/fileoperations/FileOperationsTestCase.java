@@ -43,10 +43,12 @@
 package org.netbeans.modules.remote.impl.fileoperations;
 
 import java.io.*;
+import java.util.ArrayList;
 import org.netbeans.modules.remote.impl.fs.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.api.extexecution.ProcessBuilder;
@@ -216,6 +218,29 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         File ioFile = new File(localDir+"/"+name);
         fileEquals(ioFile, file, false);
     }
+
+    @ForAllEnvironments
+    public void testReadOnlyFile() throws Exception {
+        // test unexisting file
+        String name = "just_a_file";
+        String path = remoteDir+"/"+name;
+        FileProxyO file = FileOperationsProvider.toFileProxy(path);
+        makeReadOnly(file, name);
+        File ioFile = new File(localDir+"/"+name);
+        ioFile.setReadOnly();
+        fileEquals(ioFile, file, false);
+    }
+
+    @ForAllEnvironments
+    public void testReadOnlyDir() throws Exception {
+        // test unexisting file
+        String path = remoteDir;
+        FileProxyO file = FileOperationsProvider.toFileProxy(path);
+        makeReadOnly(file, path);
+        File ioFile = new File(localDir);
+        ioFile.setReadOnly();
+        fileEquals(ioFile, file, true);
+    }
         
     @ForAllEnvironments
     public void testSelfDir() throws Exception {
@@ -266,6 +291,36 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         }
     }
 
+    private void makeReadOnly(FileProxyO file, String name) throws IOException, InterruptedException, ExecutionException {
+        ProcessBuilder pb = fileOperations.createProcessBuilder(file);
+        pb.setExecutable("chmod");
+        pb.setWorkingDirectory(remoteDir);
+        List<String> list = new ArrayList<String>();
+        list.add("oag-w");
+        list.add(name);
+        pb.setArguments(list);
+        final Process process = pb.call();
+        Future<String> error = NativeTaskExecutorService.submit(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return ProcessUtils.readProcessErrorLine(process);
+                }
+            }, "e"); // NOI18N
+        Future<String> output = NativeTaskExecutorService.submit(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return ProcessUtils.readProcessOutputLine(process);
+            }
+        }, "o"); // NOI18N
+        process.waitFor();
+        if (error.get().length()>0) {
+            System.err.println(error.get());
+        }
+        if (output.get().length()>0) {
+            System.err.println(output.get());
+        }
+    }
+    
     private void copyAgent() {
         try {
             String name = Agent.class.getName().replace('.', '/');

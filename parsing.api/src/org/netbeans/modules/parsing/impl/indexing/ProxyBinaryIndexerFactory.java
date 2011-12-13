@@ -114,19 +114,29 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
                 filtered.add(removedRoot);
             }
         }
-        SPIAccessor.getInstance().rootsRemoved(
-                getDelegate(),
-                Collections.unmodifiableSet(filtered));
+        if (!filtered.isEmpty()) {
+            SPIAccessor.getInstance().rootsRemoved(
+                    getDelegate(),
+                    Collections.unmodifiableSet(filtered));
+        }
     }
 
     @Override
     public boolean scanStarted (final Context context) {
-        if (supports(context) != null ||
-           (isUpToDate(context) && ArchiveTimeStamps.getIndexerState(context) == USED)) {
+        if (supports(context) != null) {
             return SPIAccessor.getInstance().scanStarted(getDelegate(),context);
         }
-        return true;
-    }
+        boolean vote = true;
+        if (isUpToDate(context) && ArchiveTimeStamps.getIndexerState(context) == USED) {
+            vote = SPIAccessor.getInstance().scanStarted(getDelegate(),context);
+            if (!vote) {
+                SPIAccessor.getInstance().putProperty(context, PROP_CHECKED, Boolean.FALSE);
+            } else {
+                activeRoots.add(context.getRootURI());
+            }
+        }
+        return vote;
+     }
 
     @Override
     public void scanFinished (final Context context) {
