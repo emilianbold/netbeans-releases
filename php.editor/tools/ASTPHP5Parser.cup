@@ -4,13 +4,7 @@ import java.util.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 parser code {:
-        private static short[][] get_action_table() {
-            return unpackFromStrings(new String[]{
-                        new EncodedActionTableFirst().getTableData(),
-                        new EncodedActionTableNext().getTableData(),
-                        new EncodedActionTableLast().getTableData()
-                    });
-        }
+    private static short[][] getActionTable() {}
 
 	protected final static Integer PUBLIC = new Integer(BodyDeclaration.Modifier.PUBLIC);
 	protected final static Integer PRIVATE = new Integer(BodyDeclaration.Modifier.PRIVATE);
@@ -18,7 +12,7 @@ parser code {:
 	protected final static Integer ABSTRACT = new Integer(BodyDeclaration.Modifier.ABSTRACT);
 	protected final static Integer FINAL = new Integer(BodyDeclaration.Modifier.FINAL);
 	protected final static Integer STATIC = new Integer(BodyDeclaration.Modifier.STATIC);
-	
+
         private ErrorStrategy defaultStrategy = new DefaultErrorStrategy();;
         private ErrorStrategy errorStrategy = defaultStrategy;
 
@@ -33,10 +27,10 @@ parser code {:
         }
 
 	/*AST ast;
-  
+
 	public final void setAST (AST ast) {
 		this.ast = ast;
-	}*/	
+	}*/
 
 	public Dispatch createDispatch(VariableBase dispatcher, VariableBase property) {
 		Dispatch dispatch = null;
@@ -83,9 +77,9 @@ parser code {:
 			if (((Symbol)info).left != -1)
 				System.err.println(" at character " + ((Symbol)info).left + " of input");
 			else System.err.println("");
-	     else 
+	     else
 	   		System.err.println("");*/
-    }	
+    }
 
     /**
      * This method is called when a syntax error has been detected and recovery is about to be invoked.
@@ -232,6 +226,8 @@ terminal T_NEKUDOTAIM;
 terminal T_DOLLAR;
 terminal T_QUATE,T_BACKQUATE;
 terminal T_START_NOWDOC, T_END_NOWDOC;
+terminal T_TRAIT;
+terminal T_INSTEADOF;
 
 /* Non terminals */
 
@@ -308,6 +304,19 @@ non terminal Expression internal_functions_in_yacc;
 non terminal String string_st;
 non terminal Integer interface_entry;
 non terminal List interface_extends_list;
+non terminal List use_traits;
+non terminal Block use_traits_body;
+non terminal List use_traits_body_statement_list;
+non terminal Statement use_traits_body_statement;
+non terminal Statement trait_conflict_resolution_declaration;
+non terminal Statement trait_method_alias_declaration;
+non terminal TraitMethodAliasDeclaration.Modifier traits_alias_modifier;
+non terminal List trait_statement_list;
+non terminal Statement trait_statement;
+non terminal List interface_statement_list;
+non terminal Statement interface_statement;
+non terminal UseTraitStatementPart use_trait;
+non terminal Quote heredoc;
 
 non terminal VariableBase w_variable;
 non terminal Expression class_name;
@@ -316,8 +325,6 @@ non terminal List class_variable_declaration;
 non terminal List constant_declaration;
 non terminal Integer method_modifiers;
 non terminal Block method_body;
-non terminal List non_empty_member_modifiers;
-non terminal Integer member_modifier;
 non terminal List method_or_not;
 non terminal List variable_properties;
 non terminal FunctionDeclaration function_declaration_statement;
@@ -341,6 +348,9 @@ non terminal VariableBase variable_property;
 non terminal VariableBase static_member;
 non terminal List isset_variables;
 non terminal Variable tracked_variable;
+non terminal Integer static_modifier;
+non terminal Integer ppp_modifiers;
+non terminal Integer af_modifiers;
 
 non terminal ClassName class_name_reference;
 non terminal StaticConstantAccess class_constant;
@@ -930,12 +940,104 @@ T_CURLY_OPEN:blockStart class_statement_list:statementList T_CURLY_CLOSE:blockEn
 |
 interface_entry:start T_STRING:className
 interface_extends_list:interfaces
-T_CURLY_OPEN:blockStart class_statement_list:statementList T_CURLY_CLOSE:blockEnd
+T_CURLY_OPEN:blockStart interface_statement_list:statementList T_CURLY_CLOSE:blockEnd
 {:
 	Identifier classId = new Identifier(classNameleft, classNameright, /*parser.ast,*/ className);
 	Block block = new Block(blockStartleft, blockEndright, /*parser.ast,*/ statementList);
 	InterfaceDeclaration interfaceDeclaration = new InterfaceDeclaration(startleft ,blockEndright, /*parser.ast,*/ classId, interfaces, block);
 	RESULT = interfaceDeclaration;
+:}
+
+|
+T_TRAIT:start T_STRING:traitName
+T_CURLY_OPEN:blockStart trait_statement_list:statementList T_CURLY_CLOSE:blockEnd
+{:
+	Identifier traitId = new Identifier(traitNameleft, traitNameright, traitName);
+	Block block = new Block(blockStartleft, blockEndright, statementList);
+	TraitDeclaration traitDeclaration = new TraitDeclaration(startleft, blockEndright, traitId, block);
+	RESULT = traitDeclaration;
+:}
+;
+
+interface_statement_list ::=
+interface_statement_list:list interface_statement:interfaceStatement
+{:
+	list.add(interfaceStatement);
+	RESULT = list;
+:}
+
+| /* empty */
+{:
+	List list = new LinkedList();
+	RESULT = list;
+:}
+;
+
+interface_statement ::=
+constant_declaration:list T_SEMICOLON:end
+{:
+	ConstantDeclaration classConstantDeclaration = new ConstantDeclaration(listleft, endright, /*parser.ast,*/ list);
+	RESULT = classConstantDeclaration;
+:}
+
+| method_modifiers:modifier T_FUNCTION:start is_reference:isReference string_st:functionName
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE T_SEMICOLON:end
+{:
+	int methodStart = modifier == null ? startleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
+	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, endright, functionId, paramList, null, isReference.booleanValue());
+	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, endright, modifier.intValue(), functionDeclaration, true);
+	RESULT = methodDeclaration;
+:}
+
+| T_VAR_COMMENT:varComment
+{:
+
+:}
+;
+
+trait_statement_list ::=
+trait_statement_list:list trait_statement:traitStatement
+{:
+	list.add(traitStatement);
+	RESULT = list;
+:}
+
+| /* empty */
+{:
+	List list = new LinkedList();
+	RESULT = list;
+:}
+;
+
+trait_statement ::=
+variable_modifiers:modifier class_variable_declaration:decList T_SEMICOLON:end
+{:
+	FieldsDeclaration fieldsDeclaration = new FieldsDeclaration(modifierleft, endright, /*parser.ast,*/ modifier.intValue(), decList);
+	RESULT = fieldsDeclaration;
+:}
+
+| method_modifiers:modifier T_FUNCTION:start string_st:functionName
+T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE
+method_body:body
+{:
+	int methodStart = modifier == null ? startleft : modifierleft;
+	modifier = modifier == null ? ASTPHP5Parser.PUBLIC : modifier;
+	Identifier functionId = new Identifier(functionNameleft, functionNameright, functionName);
+	FunctionDeclaration functionDeclaration = new FunctionDeclaration(startleft, bodyright, functionId, paramList, body, false);
+	MethodDeclaration methodDeclaration = new MethodDeclaration(methodStart, bodyright, modifier.intValue(), functionDeclaration, true);
+	RESULT = methodDeclaration;
+:}
+
+| T_VAR_COMMENT:varComment
+{:
+
+:}
+
+| T_USE:s use_traits:list use_traits_body:body
+{:
+	RESULT = new UseTraitStatement(sleft, bodyright, list, body);
 :}
 ;
 
@@ -1494,6 +1596,134 @@ method_body:body
 {:
 
 :}
+
+| T_USE:s use_traits:list use_traits_body:body
+{:
+	RESULT = new UseTraitStatement(sleft, bodyright, list, body);
+:}
+;
+
+use_traits ::=
+use_traits:list T_COMMA use_trait:useDecl
+{:
+	list.add(useDecl);
+	RESULT = list;
+:}
+
+| use_trait:useDecl
+{:
+	List list = new LinkedList();
+	list.add(useDecl);
+	RESULT = list;
+:}
+;
+
+use_trait ::=
+namespace_name:list
+{:
+	RESULT = new UseTraitStatementPart(listleft, listright, new NamespaceName(listleft, listright, list, false, false));
+:}
+
+| T_NS_SEPARATOR namespace_name:list
+{:
+	RESULT = new UseTraitStatementPart(listleft, listright, new NamespaceName(listleft, listright, list, true, false));
+:}
+;
+
+use_traits_body ::=
+T_SEMICOLON:e
+{:
+    RESULT = null;
+:}
+
+| T_CURLY_OPEN:start use_traits_body_statement_list:statementList T_CURLY_CLOSE:end
+{:
+	Block block = new Block(startleft, endright, statementList);
+	RESULT = block;
+:}
+;
+
+use_traits_body_statement_list ::=
+use_traits_body_statement_list:statementList use_traits_body_statement:statement
+{:
+	// Ignore null statements
+	if(statement != null) {
+		statementList.add(statement);
+	}
+	RESULT = statementList;
+:}
+
+| /* empty */
+{:
+	RESULT = new LinkedList();
+:}
+;
+
+use_traits_body_statement ::=
+trait_conflict_resolution_declaration:statement
+{:
+    RESULT = statement;
+:}
+
+| trait_method_alias_declaration:statement
+{:
+    RESULT = statement;
+:}
+;
+
+trait_conflict_resolution_declaration ::=
+class_name:preferredTraitName T_PAAMAYIM_NEKUDOTAYIM string_st:methodName T_INSTEADOF class_name:suppressedTraitName T_SEMICOLON:end
+{:
+    Identifier methodId = new Identifier(methodNameleft, methodNameright, methodName);
+    RESULT = new TraitConflictResolutionDeclaration(preferredTraitNameleft, endright, preferredTraitName, methodId, suppressedTraitName);
+:}
+;
+
+trait_method_alias_declaration ::=
+class_name:traitName T_PAAMAYIM_NEKUDOTAYIM string_st:oldMethodName T_AS traits_alias_modifier:modifier string_st:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(traitNameleft, endright, oldMethodId, newMethodId, traitName, modifier);
+:}
+
+| class_name:traitName T_PAAMAYIM_NEKUDOTAYIM string_st:oldMethodName T_AS string_st:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(traitNameleft, endright, oldMethodId, newMethodId, traitName, null);
+:}
+
+| string_st:oldMethodName T_AS traits_alias_modifier:modifier string_st:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(oldMethodNameleft, endright, oldMethodId, newMethodId, null, modifier);
+:}
+
+| string_st:oldMethodName T_AS string_st:newMethodName T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(newMethodNameleft, newMethodNameright, newMethodName);
+    RESULT = new TraitMethodAliasDeclaration(oldMethodNameleft, endright, oldMethodId, newMethodId, null, null);
+:}
+;
+
+traits_alias_modifier ::=
+T_PUBLIC
+{:
+	RESULT = TraitMethodAliasDeclaration.Modifier.PUBLIC;
+:}
+
+| T_PROTECTED
+{:
+	RESULT = TraitMethodAliasDeclaration.Modifier.PROTECTED;
+:}
+
+| T_PRIVATE
+{:
+	RESULT = TraitMethodAliasDeclaration.Modifier.PRIVATE;
+:}
 ;
 
 method_body ::=
@@ -1510,14 +1740,30 @@ T_SEMICOLON /* abstract method */
 ;
 
 variable_modifiers ::=
-non_empty_member_modifiers:list
+ppp_modifiers:modifier
 {:
-	int result = 0;
-	for (Iterator it = list.iterator(); it.hasNext() ; ) {
-		Integer modifier = (Integer)it.next();
-		result |= modifier.intValue();
-	}
-	RESULT = new Integer(result);
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:modifier
+{:
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:fModifier ppp_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+    result |= sModifier.intValue();
+    RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier static_modifier:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+    result |= sModifier.intValue();
+    RESULT = new Integer(result);
 :}
 
 | T_VAR
@@ -1532,33 +1778,132 @@ method_modifiers ::=
 	RESULT = null;
 :}
 
-| non_empty_member_modifiers:list
+| af_modifiers:modifier
 {:
-	int result = 0;
-	for (Iterator it = list.iterator(); it.hasNext() ; ) {
-		Integer modifier = (Integer)it.next();
-		result |= modifier.intValue();
-	}
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:modifier
+{:
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| ppp_modifiers:modifier
+{:
+    RESULT = new Integer(modifier.intValue());
+:}
+
+| static_modifier:fModifier ppp_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| static_modifier:fModifier af_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier static_modifier:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier af_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier static_modifier:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier ppp_modifiers:sModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| static_modifier:fModifier ppp_modifiers:sModifier af_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| static_modifier:fModifier af_modifiers:sModifier ppp_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier static_modifier:sModifier af_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| ppp_modifiers:fModifier af_modifiers:sModifier static_modifier:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier static_modifier:sModifier ppp_modifiers:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
+	RESULT = new Integer(result);
+:}
+
+| af_modifiers:fModifier ppp_modifiers:sModifier static_modifier:tModifier
+{:
+    int result = 0;
+    result |= fModifier.intValue();
+	result |= sModifier.intValue();
+    result |= tModifier.intValue();
 	RESULT = new Integer(result);
 :}
 ;
 
-non_empty_member_modifiers ::=
-member_modifier:modifier
+static_modifier ::=
+T_STATIC
 {:
-	List list = new LinkedList();
-	list.add(modifier);
-	RESULT = list;
-:}
-
-| non_empty_member_modifiers:list member_modifier:modifier
-{:
-	list.add(modifier);
-	RESULT = list;
+    RESULT = ASTPHP5Parser.STATIC;
 :}
 ;
 
-member_modifier ::=
+ppp_modifiers ::=
 T_PUBLIC
 {:
 	RESULT = ASTPHP5Parser.PUBLIC;
@@ -1573,13 +1918,10 @@ T_PUBLIC
 {:
 	RESULT = ASTPHP5Parser.PRIVATE;
 :}
+;
 
-| T_STATIC
-{:
-	RESULT = ASTPHP5Parser.STATIC;
-:}
-
-| T_ABSTRACT
+af_modifiers ::=
+T_ABSTRACT
 {:
 	RESULT = ASTPHP5Parser.ABSTRACT;
 :}
@@ -2023,6 +2365,12 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = expr;
 :}
 
+| T_OPEN_RECT:start array_pair_list:list T_CLOSE_RECT:end
+{:
+    Expression expr = new ArrayCreation(startleft, endright, list);
+	RESULT = expr;
+:}
+
 | T_BACKQUATE:start encaps_list:list T_BACKQUATE:end
 {:
 	BackTickExpression backTickExpression = new BackTickExpression(startleft, endright, /*parser.ast,*/ list);
@@ -2113,7 +2461,7 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 			new NamespaceName(sleft, listright, list, true, false)), parameters);
 :}
 
-| class_name:className T_PAAMAYIM_NEKUDOTAYIM T_STRING:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
+| class_name:className T_PAAMAYIM_NEKUDOTAYIM string_st:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
 {:
 	RESULT = new StaticMethodInvocation(classNameleft, eright, className,
 		new FunctionInvocation(fnleft, eright,
@@ -2128,7 +2476,7 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 			new FunctionName(reflectionNameleft, reflectionNameright, reflectionName), parameters));
 :}
 
-| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM T_STRING:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
+| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM string_st:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
 {:
 	RESULT = new StaticMethodInvocation(classNameleft, eright, className,
 		new FunctionInvocation(fnleft, eright,
@@ -2393,6 +2741,11 @@ common_scalar:scalar
 {:
 	RESULT = classConstant;
 :}
+
+| heredoc:doc
+{:
+	RESULT = doc;
+:}
 ;
 
 static_class_constant ::=
@@ -2444,10 +2797,17 @@ T_STRING_VARNAME:scalar
 	RESULT = quote;
 :}
 
-| T_START_HEREDOC:start encaps_list:list T_END_HEREDOC:end
+| heredoc:doc
 {:
-	Quote hereDoc = new Quote(startleft, endright, /*parser.ast,*/ list, Quote.Type.HEREDOC);
-	RESULT = hereDoc;
+	RESULT = doc;
+:}
+;
+
+heredoc ::=
+T_START_HEREDOC:start encaps_list:list T_END_HEREDOC:end
+{:
+    Quote hereDoc = new Quote(startleft, endright, list, Quote.Type.HEREDOC);
+    RESULT = hereDoc;
 :}
 ;
 
