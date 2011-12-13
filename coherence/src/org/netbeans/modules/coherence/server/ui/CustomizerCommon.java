@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
 public class CustomizerCommon extends javax.swing.JPanel implements ChangeListener {
 
     private DefaultListModel listModel;
-    private InstanceProperties instanceProperties;
+    private CoherenceProperties coherenceProperties;
     private JFileChooser fileChooser = new JFileChooser();
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
@@ -84,11 +84,11 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     /**
      * Creates new {@code CustomizerCommon} panel.
      *
-     * @param instanceProperties properties for which will be form initialized
+     * @param coherenceProperties properties for which will be form initialized
      */
-    public CustomizerCommon(InstanceProperties instanceProperties) {
+    public CustomizerCommon(CoherenceProperties coherenceProperties) {
         initComponents();
-        this.instanceProperties = instanceProperties;
+        this.coherenceProperties = coherenceProperties;
 
         init();
     }
@@ -97,12 +97,12 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * Initialization of the panel values.
      */
     private void init() {
-        coherenceLocationTextField.setText(instanceProperties.getString(CoherenceModuleProperties.PROP_LOCATION, ""));
-        javaFlagsTextField.setText(instanceProperties.getString(CoherenceModuleProperties.PROP_JAVA_FLAGS, ""));
-        customPropertiesTextField.setText(instanceProperties.getString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, ""));
+        coherenceLocationTextField.setText(coherenceProperties.getServerRoot());
+        javaFlagsTextField.setText(coherenceProperties.getJavaFlags());
+        customPropertiesTextField.setText(coherenceProperties.getCustomJavaProps());
 
         listModel = new DefaultListModel();
-        for (String cp : ClasspathPropertyUtils.classpathFromStringToArray(instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""))) {
+        for (String cp : ClasspathPropertyUtils.classpathFromStringToArray(coherenceProperties.getClasspath())) {
             if (!ClasspathPropertyUtils.isCoherenceServerJar(cp, true)) {
                 listModel.addElement(cp);
             }
@@ -154,22 +154,19 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * Storing values from this panel into {@link InstanceProperties}.
      */
     private void savePanel() {
-        instanceProperties.putString(CoherenceModuleProperties.PROP_JAVA_FLAGS, javaFlagsTextField.getText());
-        instanceProperties.putString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, customPropertiesTextField.getText());
+        coherenceProperties.setJavaFlags(javaFlagsTextField.getText());
+        coherenceProperties.setCustomJavaProps(customPropertiesTextField.getText());
 
         // update classpath property
         List<String> cpEntries = new ArrayList<String>();
         for (int i = 0; i < classpathList.getModel().getSize(); i++) {
             cpEntries.add((String) classpathList.getModel().getElementAt(i));
         }
-        ClasspathPropertyUtils.updateClasspathProperty(
-                instanceProperties,
+        String cp = ClasspathPropertyUtils.getUpdatedClasspath(
+                coherenceProperties.getClasspath(),
                 cpEntries.toArray(new String[cpEntries.size()]),
                 null);
-    }
-
-    private void setEnabledRemoveButton(boolean setEnabled) {
-        removeClasspathButton.setEnabled(setEnabled);
+        coherenceProperties.setClasspath(cp);
     }
 
     private void addElementToClasspathList(String element) {
@@ -365,13 +362,12 @@ private void classpathListValueChanged(javax.swing.event.ListSelectionEvent evt)
 
     private void createLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createLibraryButtonActionPerformed
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(CustomizerCommon.class, "MSG_ConfirmationForLibraryCreation", //NOI18N
-                        instanceProperties.getString(CoherenceModuleProperties.PROP_DISPLAY_NAME, "")), //NOI18N
+                NbBundle.getMessage(CustomizerCommon.class, "MSG_ConfirmationForLibraryCreation", coherenceProperties.getDisplayName()), //NOI18N
                 NbBundle.getMessage(CustomizerCommon.class, "TIT_LibraryCreationDialog"), //NOI18N
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE);
         if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
-            File location = new File(instanceProperties.getString(CoherenceModuleProperties.PROP_LOCATION, ""));
+            File location = new File(coherenceProperties.getServerRoot());
             LibraryUtils.createCoherenceLibrary(location);
         }
     }//GEN-LAST:event_createLibraryButtonActionPerformed
