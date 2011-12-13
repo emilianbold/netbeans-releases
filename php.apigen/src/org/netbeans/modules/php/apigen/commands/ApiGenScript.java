@@ -139,7 +139,7 @@ public final class ApiGenScript extends PhpProgram {
         }
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .inputOutput(output)
-                .frontWindow(false)
+                .frontWindow(true)
                 .optionsPath(ApiGenOptionsPanelController.getOptionsPath());
 
         try {
