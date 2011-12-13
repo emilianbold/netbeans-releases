@@ -55,7 +55,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -345,8 +344,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 }//GEN-LAST:event_preview
 
     private void helpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpActionPerformed
-        Help _help = (Help) Lookup.getDefault().lookup(Help.class);
-        _help.showHelp(getHelpCtx());
+        HelpCtx ctx = getHelpCtx();
+        if (ctx != null) {
+            ctx.display();
+        }
     }//GEN-LAST:event_helpActionPerformed
     
     private void backActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backActionPerformed

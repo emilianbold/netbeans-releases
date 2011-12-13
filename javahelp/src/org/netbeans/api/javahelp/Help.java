@@ -69,6 +69,8 @@ public abstract class Help {
     public abstract Boolean isValidID(String id, boolean force);
     
     /** Shows help.
+     * <p>Note that for basic usage it may suffice to call {@link HelpCtx#display},
+     * avoiding any direct dependency on this module.
      * @param ctx help context
      */
     public void showHelp(HelpCtx ctx) {
