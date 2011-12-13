@@ -337,7 +337,7 @@ public class MavenProjectSupport {
             serverID = readServerID(project);
         }
         // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
-        if (serverID != null && serverID.contains("WebLogic")) {
+        if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
             createDD(project);
         }
     }
@@ -450,14 +450,14 @@ public class MavenProjectSupport {
         private Project prj;
         private AddServerAction(Project project) {
             prj = project;
-            putValue(Action.NAME, NbBundle.getMessage(MavenProjectSupport.class, "TXT_Add_Server"));
+            putValue(Action.NAME, NbBundle.getMessage(MavenProjectSupport.class, "TXT_Add_Server")); //NOI18N
         }
         
         @Override
         public void actionPerformed(ActionEvent e) {
             final String newOne = ServerManager.showAddServerInstanceWizard();
             final String serverType = newOne != null ? obtainServerID(newOne) : null;
-            Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() {
+            Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() { //NOI18N
                 @Override public void performOperation(POMModel model) {
                     if (newOne != null) {
                         Properties props = model.getProject().getProperties();
@@ -482,7 +482,7 @@ public class MavenProjectSupport {
 
         private Project project;
         public ServerLibraryAction(Project project) {
-            putValue(NAME, NbBundle.getMessage(MavenProjectSupport.class, "LBL_LibProblem_ActionName"));
+            putValue(NAME, NbBundle.getMessage(MavenProjectSupport.class, "LBL_LibProblem_ActionName")); //NOI18N
             this.project = project;
         }
 
