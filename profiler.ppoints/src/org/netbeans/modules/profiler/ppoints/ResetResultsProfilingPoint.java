@@ -74,6 +74,20 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ResetResultsProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
+    "ResetResultsProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
+    "ResetResultsProfilingPoint_NoResultsString=No results available",
+    "ResetResultsProfilingPoint_ReportAccessDescr=Report of {0}",
+    "ResetResultsProfilingPoint_NoHitsString=no hits",
+    "ResetResultsProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
+    "ResetResultsProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
+    "ResetResultsProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
+    "ResetResultsProfilingPoint_HeaderLocationString=<b>Location:</b> <a href='#'>{0}, line {1}</a>",
+    "ResetResultsProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
+    "ResetResultsProfilingPoint_HitSuccessString=<b>{0}.</b> hit at <b>{1}</b>",
+    "ResetResultsProfilingPoint_DataString=Data:"
+})
 public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -146,7 +160,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
 
             synchronized(resultsSync) {
                 if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.ResetResultsProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
@@ -162,7 +176,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
         void refreshProperties() {
             setName(ResetResultsProfilingPoint.this.getName());
             setIcon(((ImageIcon) ResetResultsProfilingPoint.this.getFactory().getIcon()).getImage());
-            getAccessibleContext().setAccessibleDescription(MessageFormat.format(REPORT_ACCESS_DESCR, new Object[] { getName() }));
+            getAccessibleContext().setAccessibleDescription(Bundle.ResetResultsProfilingPoint_ReportAccessDescr(getName()));
         }
 
         private String getDataResultItem(int index) {
@@ -174,18 +188,17 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
                 //String threadClassName = Utils.getThreadClassName(result.getThreadID());
                 //String threadInformation = (threadName == null ? "&lt;unknown thread&gt;" : (threadClassName == null ? threadName : threadName + " (" + threadClassName + ")"));
                 //return "<b>" + (index + 1) + ".</b> hit at <b>" + Utils.formatProfilingPointTimeHiRes(result.getTimestamp()) + "</b> by " + threadInformation;
-                return MessageFormat.format(HIT_STRING,
-                                            new Object[] { (index + 1), Utils.formatProfilingPointTimeHiRes(result.getTimestamp()) });
+                return Bundle.ResetResultsProfilingPoint_HitSuccessString((index + 1), Utils.formatProfilingPointTimeHiRes(result.getTimestamp()));
             }
         }
 
         private String getHeaderEnabled() {
-            return MessageFormat.format(HEADER_ENABLED_STRING, new Object[] { ResetResultsProfilingPoint.this.isEnabled() });
+            return Bundle.ResetResultsProfilingPoint_HeaderEnabledString(ResetResultsProfilingPoint.this.isEnabled());
         }
 
         private String getHeaderHitsCount() {
             synchronized(resultsSync) {
-                return MessageFormat.format(HEADER_HITS_STRING, new Object[] { results.size() });
+                return Bundle.ResetResultsProfilingPoint_HeaderHitsString(results.size());
             }
         }
 
@@ -194,7 +207,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
             String shortFileName = new File(location.getFile()).getName();
             int lineNumber = location.getLine();
 
-            return MessageFormat.format(HEADER_LOCATION_STRING, new Object[] { shortFileName, lineNumber });
+            return Bundle.ResetResultsProfilingPoint_HeaderLocationString(shortFileName, lineNumber);
         }
 
         private String getHeaderName() {
@@ -202,15 +215,13 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
         }
 
         private String getHeaderProject() {
-            return MessageFormat.format(HEADER_PROJECT_STRING,
-                                        new Object[] {
-                                            ProjectUtilities.getDisplayName(ResetResultsProfilingPoint.this.getProject())
-                                        });
+            return Bundle.ResetResultsProfilingPoint_HeaderProjectString(
+                        ProjectUtilities.getDisplayName(ResetResultsProfilingPoint.this.getProject()));
         }
 
         private String getHeaderType() {
-            return MessageFormat.format(HEADER_TYPE_STRING,
-                                        new Object[] { ResetResultsProfilingPoint.this.getFactory().getType() });
+            return Bundle.ResetResultsProfilingPoint_HeaderTypeString(
+                        ResetResultsProfilingPoint.this.getFactory().getType());
         }
 
         private void initComponents() {
@@ -237,7 +248,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
 
             JScrollPane dataAreaScrollPane = new JScrollPane(dataArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            TitledBorder tb = new TitledBorder(DATA_STRING);
+            TitledBorder tb = new TitledBorder(Bundle.ResetResultsProfilingPoint_DataString());
             tb.setTitleFont(Utils.getTitledBorderFont(tb).deriveFont(Font.BOLD));
             tb.setTitleColor(javax.swing.UIManager.getColor("Label.foreground")); // NOI18N
             dataAreaScrollPane.setBorder(tb);
@@ -279,34 +290,6 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ONE_HIT_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                     "ResetResultsProfilingPoint_OneHitString"); // NOI18N
-    private static final String N_HITS_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                    "ResetResultsProfilingPoint_NHitsString"); // NOI18N
-    private static final String NO_RESULTS_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                        "ResetResultsProfilingPoint_NoResultsString"); // NOI18N
-    private static final String REPORT_ACCESS_DESCR = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                          "ResetResultsProfilingPoint_ReportAccessDescr"); // NOI18N
-    private static final String NO_HITS_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                     "ResetResultsProfilingPoint_NoHitsString"); // NOI18N
-    private static final String HEADER_TYPE_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                         "ResetResultsProfilingPoint_HeaderTypeString"); // NOI18N
-    private static final String HEADER_ENABLED_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                            "ResetResultsProfilingPoint_HeaderEnabledString"); // NOI18N
-    private static final String HEADER_PROJECT_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                            "ResetResultsProfilingPoint_HeaderProjectString"); // NOI18N
-    private static final String HEADER_LOCATION_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                             "ResetResultsProfilingPoint_HeaderLocationString"); // NOI18N
-    private static final String HEADER_HITS_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                         "ResetResultsProfilingPoint_HeaderHitsString"); // NOI18N
-    private static final String HIT_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                 "ResetResultsProfilingPoint_HitSuccessString"); // NOI18N
-    private static final String DATA_STRING = NbBundle.getMessage(ResetResultsProfilingPoint.class,
-                                                                  "ResetResultsProfilingPoint_DataString"); // NOI18N
-                                                                                                            // -----
 
     // --- Implementation --------------------------------------------------------
     private static final String ANNOTATION_ENABLED = "resetResultsProfilingPoint"; // NOI18N
@@ -371,17 +354,13 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
         synchronized(resultsSync) {
             if (hasResults()) {
                 return (results.size() == 1)
-                       ? MessageFormat.format(ONE_HIT_STRING,
-                                              new Object[] {
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              })
-                       : MessageFormat.format(N_HITS_STRING,
-                                              new Object[] {
-                                                  results.size(),
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              });
+                       ? Bundle.ResetResultsProfilingPoint_OneHitString(
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
+                       : Bundle.ResetResultsProfilingPoint_NHitsString(
+                            results.size(),
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
             } else {
-                return NO_RESULTS_STRING;
+                return Bundle.LoadGenProfilingPoint_NoResultsString();
             }
         }
     }

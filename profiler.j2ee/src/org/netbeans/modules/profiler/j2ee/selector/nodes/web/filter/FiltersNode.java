@@ -62,18 +62,12 @@ import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
  * @author Jaroslav Bachorik
  */
 public class FiltersNode extends AbstractWebContainerNode {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String FILTERS_STRING = NbBundle.getMessage(FiltersNode.class, "FiltersNode_FiltersString"); // NOI18N
-                                                                                                                      // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of ServletsNode */
+    @NbBundle.Messages("FiltersNode_FiltersString=Filters")
     public FiltersNode(ContainerNode parent) {
-        super(FILTERS_STRING, parent);
+        super(Bundle.FiltersNode_FiltersString(), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

@@ -75,6 +75,28 @@ import org.openide.util.Lookup;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "StopwatchProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
+    "StopwatchProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
+    "StopwatchProfilingPoint_NoResultsString=No results available",
+    "StopwatchProfilingPoint_ReportAccessDescr=Report of {0}",
+    "StopwatchProfilingPoint_NoHitsString=no hits",
+    "StopwatchProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
+    "StopwatchProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
+    "StopwatchProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
+    "StopwatchProfilingPoint_HeaderLocationString=<b>Location:</b> {0}, line {1}",
+    "StopwatchProfilingPoint_HeaderStartLocationString=<b>Start location:</b> {0}, line {1}",
+    "StopwatchProfilingPoint_HeaderEndLocationString=<b>End location:</b> {0}, line {1}",
+    "StopwatchProfilingPoint_HeaderMeasureDurationString=<b>Measure:</b> Timestamp and duration",
+    "StopwatchProfilingPoint_HeaderMeasureTimestampString=<b>Measure:</b> Timestamp",
+    "StopwatchProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
+    "StopwatchProfilingPoint_HitString=<b>{0}.</b> hit at <b>{1}</b>",
+    "StopwatchProfilingPoint_HitDurationPendingString=<b>{0}.</b> hit at <b>{1}</b>, duration pending...",
+    "StopwatchProfilingPoint_HitDurationKnownString=<b>{0}.</b> hit at <b>{1}</b>, duration <b>{2} &micro;s</b>",
+    "StopwatchProfilingPoint_DataString=Data:",
+    "StopwatchProfilingPoint_AnnotationStartString={0} (start)",
+    "StopwatchProfilingPoint_AnnotationEndString={0} (end)"
+})
 public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -103,8 +125,8 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
                 return getName();
             }
 
-            return isStartAnnotation ? MessageFormat.format(ANNOTATION_START_STRING, new Object[] { getName() })
-                                     : MessageFormat.format(ANNOTATION_END_STRING, new Object[] { getName() });
+            return isStartAnnotation ? Bundle.StopwatchProfilingPoint_AnnotationStartString(getName())
+                                     : Bundle.StopwatchProfilingPoint_AnnotationEndString(getName());
         }
 
         @Override
@@ -178,7 +200,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
 
             synchronized(resultsSync) {
                 if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.StopwatchProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
@@ -194,7 +216,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         void refreshProperties() {
             setName(StopwatchProfilingPoint.this.getName());
             setIcon(((ImageIcon) StopwatchProfilingPoint.this.getFactory().getIcon()).getImage());
-            getAccessibleContext().setAccessibleDescription(MessageFormat.format(REPORT_ACCESS_DESCR, new Object[] { getName() }));
+            getAccessibleContext().setAccessibleDescription(Bundle.StopwatchProfilingPoint_ReportAccessDescr(getName()));
         }
 
         private String getDataResultItem(int index) {
@@ -209,24 +231,23 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
 
                 if (!StopwatchProfilingPoint.this.usesEndLocation()) {
                     //return "<b>" + (index + 1) + ".</b> hit at <b>" + hitTime + "</b> by " + threadInformation;
-                    return MessageFormat.format(HIT_STRING, new Object[] { (index + 1), hitTime });
+                    return Bundle.StopwatchProfilingPoint_HitString((index + 1), hitTime);
                 } else if (result.getEndTimestamp() == -1) {
                     //return "<b>" + (index + 1) + ".</b> hit at <b>" + hitTime + "</b>, duration pending..., thread " + threadInformation;
-                    return MessageFormat.format(HIT_DURATION_PENDING_STRING, new Object[] { (index + 1), hitTime });
+                    return Bundle.StopwatchProfilingPoint_HitDurationPendingString((index + 1), hitTime);
                 } else {
                     //return "<b>" + (index + 1) + ".</b> hit at <b>" + hitTime + "</b>, duration <b>" + Utils.getDurationInMicroSec(result.getTimestamp(),result.getEndTimestamp()) + " &micro;s</b>, thread " + threadInformation;
-                    return MessageFormat.format(HIT_DURATION_KNOWN_STRING,
-                                                new Object[] {
-                                                    (index + 1), hitTime,
-                                                    Utils.getDurationInMicroSec(result.getTimestamp(),
-                                                                                result.getEndTimestamp() - result.getTimeAdjustment())
-                                                });
+                    return Bundle.StopwatchProfilingPoint_HitDurationKnownString(
+                                (index + 1), 
+                                hitTime,
+                                Utils.getDurationInMicroSec(result.getTimestamp(),
+                                    result.getEndTimestamp() - result.getTimeAdjustment()));
                 }
             }
         }
 
         private String getHeaderEnabled() {
-            return MessageFormat.format(HEADER_ENABLED_STRING, new Object[] { StopwatchProfilingPoint.this.isEnabled() });
+            return Bundle.StopwatchProfilingPoint_HeaderEnabledString(StopwatchProfilingPoint.this.isEnabled());
         }
 
         private String getHeaderEndLocation() {
@@ -236,18 +257,20 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
             int lineNumber = location.getLine();
             String locationUrl = "<a href='" + END_LOCATION_URLMASK + "'>"; // NOI18N
 
-            return MessageFormat.format(HEADER_END_LOCATION_STRING, new Object[] { locationUrl + shortFileName, lineNumber })
+            return Bundle.StopwatchProfilingPoint_HeaderEndLocationString(locationUrl + shortFileName, lineNumber)
                    + "</a>"; // NOI18N
         }
 
         private String getHeaderHitsCount() {
             synchronized(resultsSync) {
-                return MessageFormat.format(HEADER_HITS_STRING, new Object[] { results.size() });
+                return Bundle.StopwatchProfilingPoint_HeaderHitsString(results.size());
             }
         }
 
         private String getHeaderMeasureLocation() {
-            return StopwatchProfilingPoint.this.usesEndLocation() ? HEADER_MEASURE_DURATION_STRING : HEADER_MEASURE_TIMESTAMP_STRING;
+            return StopwatchProfilingPoint.this.usesEndLocation() ?
+                        Bundle.StopwatchProfilingPoint_HeaderMeasureDurationString() : 
+                        Bundle.StopwatchProfilingPoint_HeaderMeasureTimestampString();
         }
 
         private String getHeaderName() {
@@ -255,10 +278,8 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         }
 
         private String getHeaderProject() {
-            return MessageFormat.format(HEADER_PROJECT_STRING,
-                                        new Object[] {
-                                            ProjectUtilities.getDisplayName(StopwatchProfilingPoint.this.getProject())
-                                        });
+            return Bundle.StopwatchProfilingPoint_HeaderProjectString(
+                        ProjectUtilities.getDisplayName(StopwatchProfilingPoint.this.getProject()));
         }
 
         private String getHeaderStartLocation() {
@@ -269,14 +290,14 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
             String locationUrl = "<a href='" + START_LOCATION_URLMASK + "'>"; // NOI18N
 
             return StopwatchProfilingPoint.this.usesEndLocation()
-                   ? (MessageFormat.format(HEADER_START_LOCATION_STRING, new Object[] { locationUrl + shortFileName, lineNumber })
+                   ? (Bundle.StopwatchProfilingPoint_HeaderStartLocationString(locationUrl + shortFileName, lineNumber)
                    + "</a>")
-                   : (MessageFormat.format(HEADER_LOCATION_STRING, new Object[] { locationUrl + shortFileName, lineNumber })
+                   : (Bundle.StopwatchProfilingPoint_HeaderLocationString(locationUrl + shortFileName, lineNumber)
                    + "</a>"); // NOI18N
         }
 
         private String getHeaderType() {
-            return MessageFormat.format(HEADER_TYPE_STRING, new Object[] { StopwatchProfilingPoint.this.getFactory().getType() });
+            return Bundle.StopwatchProfilingPoint_HeaderTypeString(StopwatchProfilingPoint.this.getFactory().getType());
         }
 
         private void initComponents() {
@@ -309,7 +330,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
 
             JScrollPane dataAreaScrollPane = new JScrollPane(dataArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            TitledBorder tb = new TitledBorder(DATA_STRING);
+            TitledBorder tb = new TitledBorder(Bundle.StopwatchProfilingPoint_DataString());
             tb.setTitleFont(Utils.getTitledBorderFont(tb).deriveFont(Font.BOLD));
             tb.setTitleColor(javax.swing.UIManager.getColor("Label.foreground")); // NOI18N
             dataAreaScrollPane.setBorder(tb);
@@ -369,50 +390,6 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ONE_HIT_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                     "StopwatchProfilingPoint_OneHitString"); // NOI18N
-    private static final String N_HITS_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                    "StopwatchProfilingPoint_NHitsString"); // NOI18N
-    private static final String NO_RESULTS_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                        "StopwatchProfilingPoint_NoResultsString"); // NOI18N
-    private static final String REPORT_ACCESS_DESCR = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                          "StopwatchProfilingPoint_ReportAccessDescr"); // NOI18N
-    private static final String NO_HITS_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                     "StopwatchProfilingPoint_NoHitsString"); // NOI18N
-    private static final String HEADER_TYPE_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                         "StopwatchProfilingPoint_HeaderTypeString"); // NOI18N
-    private static final String HEADER_ENABLED_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                            "StopwatchProfilingPoint_HeaderEnabledString"); // NOI18N
-    private static final String HEADER_PROJECT_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                            "StopwatchProfilingPoint_HeaderProjectString"); // NOI18N
-    private static final String HEADER_LOCATION_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                             "StopwatchProfilingPoint_HeaderLocationString"); // NOI18N
-    private static final String HEADER_START_LOCATION_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                                   "StopwatchProfilingPoint_HeaderStartLocationString"); // NOI18N
-    private static final String HEADER_END_LOCATION_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                                 "StopwatchProfilingPoint_HeaderEndLocationString"); // NOI18N
-    private static final String HEADER_MEASURE_DURATION_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                                     "StopwatchProfilingPoint_HeaderMeasureDurationString"); // NOI18N
-    private static final String HEADER_MEASURE_TIMESTAMP_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                                      "StopwatchProfilingPoint_HeaderMeasureTimestampString"); // NOI18N
-    private static final String HEADER_HITS_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                         "StopwatchProfilingPoint_HeaderHitsString"); // NOI18N
-    private static final String HIT_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                 "StopwatchProfilingPoint_HitString"); // NOI18N
-    private static final String HIT_DURATION_PENDING_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                                  "StopwatchProfilingPoint_HitDurationPendingString"); // NOI18N
-    private static final String HIT_DURATION_KNOWN_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                                "StopwatchProfilingPoint_HitDurationKnownString"); // NOI18N
-    private static final String DATA_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                  "StopwatchProfilingPoint_DataString"); // NOI18N
-    private static final String ANNOTATION_START_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                              "StopwatchProfilingPoint_AnnotationStartString"); // NOI18N
-    private static final String ANNOTATION_END_STRING = NbBundle.getMessage(StopwatchProfilingPoint.class,
-                                                                            "StopwatchProfilingPoint_AnnotationEndString"); // NOI18N
-                                                                                                                            // -----
 
     // --- Implementation --------------------------------------------------------
     private static final String ANNOTATION_ENABLED = "stopwatchProfilingPoint"; // NOI18N
@@ -480,17 +457,13 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         synchronized(resultsSync) {
             if (hasResults()) {
                 return (results.size() == 1)
-                       ? MessageFormat.format(ONE_HIT_STRING,
-                                              new Object[] {
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              })
-                       : MessageFormat.format(N_HITS_STRING,
-                                              new Object[] {
-                                                  results.size(),
-                                                  Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp())
-                                              });
+                       ? Bundle.StopwatchProfilingPoint_OneHitString(
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
+                       : Bundle.StopwatchProfilingPoint_NHitsString(
+                            results.size(),
+                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
             } else {
-                return NO_RESULTS_STRING;
+                return Bundle.StopwatchProfilingPoint_NoResultsString();
             }
         }
     }

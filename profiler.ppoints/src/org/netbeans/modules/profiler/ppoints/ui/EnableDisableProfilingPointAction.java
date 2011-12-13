@@ -62,13 +62,6 @@ import org.openide.util.actions.SystemAction;
  * @author Tomas Hurka
  */
 public class EnableDisableProfilingPointAction extends SystemAction implements ContextAwareAction {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(EnableDisableProfilingPointAction.class,
-                                                                  "EnableDisableProfilingPointAction_ActionName"); // NOI18N
-                                                                                                                   // -----
     private ContextAwareAction action;
 
     private class ContextAwareAction extends BooleanStateAction {
@@ -117,9 +110,10 @@ public class EnableDisableProfilingPointAction extends SystemAction implements C
         return new HelpCtx(EnableDisableProfilingPointAction.class);
     }
 
+    @NbBundle.Messages("EnableDisableProfilingPointAction_ActionName=Enabled")
     @Override
     public String getName() {
-        return ACTION_NAME;
+        return Bundle.EnableDisableProfilingPointAction_ActionName();
     }
 
     @Override

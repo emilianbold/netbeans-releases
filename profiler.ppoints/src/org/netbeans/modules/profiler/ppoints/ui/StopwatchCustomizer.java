@@ -79,27 +79,19 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "StopwatchCustomizer_NameLabelText=&Name:",
+    "StopwatchCustomizer_SettingsLabelText=Settings",
+    "StopwatchCustomizer_MeasureLabelText=Measure:",
+    "StopwatchCustomizer_TimestampRadioText=&Timestamp",
+    "StopwatchCustomizer_DurationRadioText=Timestamp and &duration",
+    "StopwatchCustomizer_BeginLocationLabelText=Location (begin)",
+    "StopwatchCustomizer_EndLocationLabelText=Location (end)"
+})
 public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentListener, ChangeListener, ValidityListener,
                                                                        HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String NAME_LABEL_TEXT = NbBundle.getMessage(StopwatchCustomizer.class,
-                                                                      "StopwatchCustomizer_NameLabelText"); // NOI18N
-    private static final String SETTINGS_LABEL_TEXT = NbBundle.getMessage(StopwatchCustomizer.class,
-                                                                          "StopwatchCustomizer_SettingsLabelText"); // NOI18N
-    private static final String MEASURE_LABEL_TEXT = NbBundle.getMessage(StopwatchCustomizer.class,
-                                                                         "StopwatchCustomizer_MeasureLabelText"); // NOI18N
-    private static final String TIMESTAMP_RADIO_TEXT = NbBundle.getMessage(StopwatchCustomizer.class,
-                                                                           "StopwatchCustomizer_TimestampRadioText"); // NOI18N
-    private static final String DURATION_RADIO_TEXT = NbBundle.getMessage(StopwatchCustomizer.class,
-                                                                          "StopwatchCustomizer_DurationRadioText"); // NOI18N
-    private static final String BEGIN_LOCATION_LABEL_TEXT = NbBundle.getMessage(StopwatchCustomizer.class,
-                                                                                "StopwatchCustomizer_BeginLocationLabelText"); // NOI18N
-    private static final String END_LOCATION_LABEL_TEXT = NbBundle.getMessage(StopwatchCustomizer.class,
-                                                                              "StopwatchCustomizer_EndLocationLabelText"); // NOI18N
-                                                                                                                           // -----
     private static final String HELP_CTX_KEY = "StopwatchCustomizer.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static int defaultTextComponentHeight = -1;
@@ -217,7 +209,7 @@ public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentL
 
         // nameLabel
         nameLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NAME_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, Bundle.StopwatchCustomizer_NameLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -263,7 +255,7 @@ public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentL
         JPanel settingsHeaderContainer = new JPanel(new GridBagLayout());
 
         // settingsHeaderLabel
-        settingsHeaderLabel = new JLabel(SETTINGS_LABEL_TEXT);
+        settingsHeaderLabel = new JLabel(Bundle.StopwatchCustomizer_SettingsLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -302,7 +294,7 @@ public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentL
         JPanel measureSettingsContainer = new JPanel(new GridBagLayout());
 
         // measureLabel
-        measureLabel = new JLabel(MEASURE_LABEL_TEXT);
+        measureLabel = new JLabel(Bundle.StopwatchCustomizer_MeasureLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -313,7 +305,7 @@ public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentL
 
         // measureTimestampRadio
         measureTimestampRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(measureTimestampRadio, TIMESTAMP_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(measureTimestampRadio, Bundle.StopwatchCustomizer_TimestampRadioText());
         measureRadiosGroup.add(measureTimestampRadio);
         measureTimestampRadio.addChangeListener(this);
         constraints = new GridBagConstraints();
@@ -326,7 +318,7 @@ public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentL
 
         // measureTimestampDurationRadio
         measureTimestampDurationRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(measureTimestampDurationRadio, DURATION_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(measureTimestampDurationRadio, Bundle.StopwatchCustomizer_DurationRadioText());
         measureRadiosGroup.add(measureTimestampDurationRadio);
         measureTimestampDurationRadio.setSelected(true);
         measureTimestampDurationRadio.addChangeListener(this);
@@ -352,7 +344,7 @@ public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentL
         JPanel locationBeginHeaderContainer = new JPanel(new GridBagLayout());
 
         // locationBeginHeaderLabel
-        locationBeginHeaderLabel = new JLabel(BEGIN_LOCATION_LABEL_TEXT);
+        locationBeginHeaderLabel = new JLabel(Bundle.StopwatchCustomizer_BeginLocationLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -404,7 +396,7 @@ public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentL
         JPanel locationEndHeaderContainer = new JPanel(new GridBagLayout());
 
         // locationEndHeaderLabel
-        locationEndHeaderLabel = new JLabel(END_LOCATION_LABEL_TEXT);
+        locationEndHeaderLabel = new JLabel(Bundle.StopwatchCustomizer_EndLocationLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;

@@ -90,30 +90,21 @@ import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
+@NbBundle.Messages({
+    "AntActions_FileTestNotFoundMsg=Test for the file does not exist.",
+    "AntActions_FailedDetermineJavaPlatformMsg=Failed to determine version of Java platform: {0}",
+    "AntActions_FailedDetermineProjectBuildScriptMsg=Cannot determine build script for project {0}",
+    "AntActions_IncorrectJavaSpecVersionDialogCaption=Warning",
+    "AntActions_IncorrectJavaSpecVersionDialogMsg=The specification version of project Java Platform is greater than specification version of the\nplatform that will be used for profiling. You may experience problems unless you set the compiler\nparameter to generate bytecode compatible with the platform that will be used.\n\nDo you want to continue with the current settings?",
+    "AntActions_UnsupportedProjectTypeMsg=Profiling this project type is not supported.",
+    "AntActions_InvalidJavaplatformMsg=Failed to determine overridden platform: {0}",
+    "AntActions_InvalidPlatformProjectMsg=The Java platform defined for the project is invalid. Right-click the project\nand choose a different platform using Properties | Libraries | Java Platform.\n\nInvalid platform: {0}",
+    "AntActions_InvalidPlatformProfilerMsg=The Java platform defined for profiling is invalid. Choose a different platform\nin Tools | Options | Miscellaneous | Profiler | Profiler Java Platform.\n\nInvalid platform: {0}",
+    "AntActions_LazyEnablementFailure=<html><b>Unable to start profiling.</b><br><br>Please, make sure the project type is supported</p><p>and/or the selected file can be executed.",
+    "AntActions_LazyEnablementProgressMessage=Validating profiler action"
+})
 public final class AntActions {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String FILE_TEST_NOT_FOUND_MSG = NbBundle.getMessage(AntActions.class, "AntActions_FileTestNotFoundMsg"); // NOI18N
-    private static final String FAILED_DETERMINE_JAVA_PLATFORM_MSG = NbBundle.getMessage(AntActions.class,
-                                                                                         "AntActions_FailedDetermineJavaPlatformMsg"); // NOI18N
-    private static final String FAILED_DETERMINE_PROJECT_BUILDSCRIPT_MSG = NbBundle.getMessage(AntActions.class,
-                                                                                               "AntActions_FailedDetermineProjectBuildScriptMsg"); // NOI18N
-    private static final String INCORRECT_JAVA_SPECVERSION_DIALOG_CAPTION = NbBundle.getMessage(AntActions.class,
-                                                                                                "AntActions_IncorrectJavaSpecVersionDialogCaption"); // NOI18N
-    private static final String INCORRECT_JAVA_SPECVERSION_DIALOG_MSG = NbBundle.getMessage(AntActions.class,
-                                                                                            "AntActions_IncorrectJavaSpecVersionDialogMsg"); // NOI18N
     private static final String LINUX_THREAD_TIMER_KEY = "-XX:+UseLinuxPosixThreadCPUClocks"; // NOI18N
-    private static final String UNSUPPORTED_PROJECT_TYPE_MSG = NbBundle.getMessage(AntActions.class,
-                                                                                   "AntActions_UnsupportedProjectTypeMsg"); // NOI18N                                                                                                                            
-    private static final String INVALID_JAVAPLATFORM_MSG = NbBundle.getMessage(AntActions.class,
-                                                                                   "AntActions_InvalidJavaplatformMsg"); // NOI18N
-    private static final String INVALID_PLATFORM_PROJECT_MSG = NbBundle.getMessage(AntActions.class,
-                                                                                   "AntActions_InvalidPlatformProjectMsg"); // NOI18N
-    private static final String INVALID_PLATFORM_PROFILER_MSG = NbBundle.getMessage(AntActions.class,
-                                                                                    "AntActions_InvalidPlatformProfilerMsg"); // NOI18N
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Default constructor to avoid creating instances */
@@ -151,7 +142,7 @@ public final class AntActions {
                     if (org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities.isProjectTypeSupported(project)) {
                         doProfileProject(project, null, NbBundle.getMessage(AntActions.class, "LBL_ProfileProject"));
                     } else {
-                        ProfilerDialogs.displayError(UNSUPPORTED_PROJECT_TYPE_MSG);
+                        ProfilerDialogs.displayError(Bundle.AntActions_UnsupportedProjectTypeMsg());
                     }
                 }
             }, NbBundle.getMessage(AntActions.class, "LBL_ProfileMainProjectAction"), // NOI18N
@@ -396,7 +387,7 @@ public final class AntActions {
                     final FileObject fo = ProjectUtilities.findTestForFile(fos[0]);
 
                     if (fo == null) {
-                        throw new IllegalStateException(FILE_TEST_NOT_FOUND_MSG);
+                        throw new IllegalStateException(Bundle.AntActions_FileTestNotFoundMsg());
                     }
 
                     if (!ProjectProfilingSupport.get(project).isFileObjectSupported(fo)) {
@@ -530,7 +521,7 @@ public final class AntActions {
             public void run() {
                 try {
                     // 1. if there is profiling in progress, ask the user and possibly cancel
-                    if (ProfilingSupport.checkProfilingInProgress()) {
+                    if (ProfilingSupport.getDefault().checkProfilingInProgress()) {
                         return;
                     }
 
@@ -569,12 +560,10 @@ public final class AntActions {
                         if (javaFile == null) {
                             if (ProfilerIDESettings.getInstance().getJavaPlatformForProfiling() == null) {
                                 // used platform defined for project
-                                ProfilerDialogs.displayError(MessageFormat.format(INVALID_PLATFORM_PROJECT_MSG,
-                                                                           new Object[] { platform.getDisplayName() }));
+                                ProfilerDialogs.displayError(Bundle.AntActions_InvalidPlatformProjectMsg(platform.getDisplayName()));
                             } else {
                                 // used platform defined in Options / Profiler
-                                ProfilerDialogs.displayError(MessageFormat.format(INVALID_PLATFORM_PROFILER_MSG,
-                                                                           new Object[] { platform.getDisplayName() }));
+                                ProfilerDialogs.displayError(Bundle.AntActions_InvalidPlatformProfilerMsg(platform.getDisplayName()));
                             }
                             return;
                         }
@@ -582,8 +571,7 @@ public final class AntActions {
                         final String javaVersion = platform.getPlatformJDKVersion();
 
                         if (javaVersion == null) {
-                            ProfilerDialogs.displayError(MessageFormat.format(FAILED_DETERMINE_JAVA_PLATFORM_MSG,
-                                                                       new Object[] { platform.getDisplayName() }));
+                            ProfilerDialogs.displayError(Bundle.AntActions_FailedDetermineJavaPlatformMsg(platform.getDisplayName()));
 
                             return;
                         }
@@ -643,7 +631,7 @@ public final class AntActions {
 
                                 if (jp == null) {
                                     // selected platform does not exist, use 
-                                    String text = MessageFormat.format(INVALID_JAVAPLATFORM_MSG,new Object[] {javaPlatformName});
+                                    String text = Bundle.AntActions_InvalidJavaplatformMsg(javaPlatformName);
                                     ProfilerDialogs.displayWarning(text);
                                     jp = platform;
                                 }
@@ -710,10 +698,7 @@ public final class AntActions {
                             final FileObject buildScriptFO = antSupport.getProjectBuildScript();
 
                             if (buildScriptFO == null) {
-                                ProfilerDialogs.displayError(MessageFormat.format(FAILED_DETERMINE_PROJECT_BUILDSCRIPT_MSG,
-                                                                           new Object[] {
-                                                                               ProjectUtils.getInformation(project).getName()
-                                                                           }));
+                                ProfilerDialogs.displayError(Bundle.AntActions_FailedDetermineProjectBuildScriptMsg(ProjectUtils.getInformation(project).getName()));
 
                                 return;
                             }
@@ -789,8 +774,8 @@ public final class AntActions {
             while (true) {
                 if (projectPlatform.getVersion().compareTo(platform.getVersion()) > 0) {
                     Boolean ret = ProfilerDialogs.displayCancellableConfirmation(
-                            INCORRECT_JAVA_SPECVERSION_DIALOG_MSG,
-                            INCORRECT_JAVA_SPECVERSION_DIALOG_CAPTION);
+                            Bundle.AntActions_IncorrectJavaSpecVersionDialogMsg(),
+                            Bundle.AntActions_IncorrectJavaSpecVersionDialogCaption());
 
                     if (Boolean.TRUE.equals(ret)) {
                         break;
