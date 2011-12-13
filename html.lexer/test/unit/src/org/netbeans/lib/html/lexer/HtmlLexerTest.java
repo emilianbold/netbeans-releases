@@ -244,6 +244,34 @@ public class HtmlLexerTest extends NbTestCase {
                 "'value'/>|TEXT");
 
     }
+    
+    public void testCurlyBracesInTag() {
+        //error in ws
+        checkTokens("<div {a} align=center>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a}|ERROR", 
+                " |WS", "align|ARGUMENT", "=|OPERATOR", "center|VALUE", ">|TAG_CLOSE_SYMBOL");
+        
+        //error before attribute
+        checkTokens("<div {a}align=center>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a}align=center|ERROR", ">|TAG_CLOSE_SYMBOL");
+        
+        //end line in error
+        checkTokens("<div {a}align=center\n <div>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a}align=center|ERROR", 
+                "\n |WS", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", ">|TAG_CLOSE_SYMBOL");
+        
+        // tag close symbol in error
+        checkTokens("<div {a> xxx",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a|ERROR", ">|TAG_CLOSE_SYMBOL", " xxx|TEXT");
+        
+        checkTokens("<div {a/> xxx",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a|ERROR", "/>|TAG_CLOSE_SYMBOL", " xxx|TEXT");
+        
+        //eof in error
+        checkTokens("<div {a",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a|ERROR");
+                
+    }
 
     private void checkTokens(String text, String... descriptions) {
         TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
