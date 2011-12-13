@@ -153,7 +153,7 @@ public class FormatVisitor extends DefaultVisitor {
             for (int i = 0; i < indexBeforeLastComment; i++) {
                 formatTokens.add(beforeTokens.get(i));
             }
-            if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration) {
+            if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration || node instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
                 includeWSBeforePHPDoc = false;
             } else if (node instanceof FunctionDeclaration || node instanceof MethodDeclaration) {
@@ -301,7 +301,7 @@ public class FormatVisitor extends DefaultVisitor {
         ASTNode parent = path.get(1);
 
         if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
-            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
@@ -344,7 +344,7 @@ public class FormatVisitor extends DefaultVisitor {
                 formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
             }
 
-            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS_LEFT_BRACE, ts.offset()));
             } else {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OTHER_LEFT_BRACE, ts.offset()));
@@ -392,7 +392,7 @@ public class FormatVisitor extends DefaultVisitor {
 
 //		    boolean inludeSpaceBefore = (ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) ? true : false;
 //		    ts.moveNext();
-                    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+                    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                         if (includeWSBeforePHPDoc) {
                             formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_RIGHT_BRACE, ts.offset()));
                         }
