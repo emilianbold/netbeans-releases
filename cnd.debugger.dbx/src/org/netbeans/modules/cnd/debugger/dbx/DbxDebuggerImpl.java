@@ -3443,7 +3443,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (postedKillEngine) {
             return;
         }
-        if (!isConnected()) {
+        if (!isConnected() || !state().isProcess) {
             return;
         }
         if (rw == null) {
@@ -3695,7 +3695,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             System.out.printf("DbxDebuggerImpl.requestMems() ready %s\n", // NOI18N
                     isConnected());
         }
-        if (!isConnected()) {
+        if (!isConnected() || !state().isProcess) {
             return;
         }
         dbx.mem_format(start, length, format.getOption());
