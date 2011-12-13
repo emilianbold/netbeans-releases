@@ -60,7 +60,6 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.server.properties.InstanceProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -77,7 +76,7 @@ public class CoherenceServer {
 
     private static final Logger LOGGER = Logger.getLogger(CoherenceServer.class.getCanonicalName());
 
-    private final InstanceProperties instanceProperties;
+    private final CoherenceProperties coherenceProperties;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /** GuardedBy("this") */
@@ -113,10 +112,10 @@ public class CoherenceServer {
 
     /**
      * Creates instance of new Coherence server.
-     * @param instanceProperties properties for the Coherence server
+     * @param coherenceProperties properties for the Coherence server
      */
-    public CoherenceServer(InstanceProperties instanceProperties) {
-        this.instanceProperties = instanceProperties;
+    public CoherenceServer(CoherenceProperties coherenceProperties) {
+        this.coherenceProperties = coherenceProperties;
     }
 
     /**
@@ -175,15 +174,15 @@ public class CoherenceServer {
     }
 
     /**
-     * Gets {@link InstanceProperties} of this Coherence server.
-     * @return instance properties
+     * Gets Coherence instance properties.
+     * @return Coherence instance properties
      */
-    public InstanceProperties getInstanceProperties() {
-        return instanceProperties;
+    public CoherenceProperties getCoherenceProperties() {
+        return coherenceProperties;
     }
 
     private String getServerDisplayName() {
-        return instanceProperties.getString(CoherenceModuleProperties.PROP_DISPLAY_NAME, ""); //NOI18N
+        return coherenceProperties.getDisplayName();
     }
 
     private synchronized void switchFromStartingToRunningState() {
@@ -223,7 +222,7 @@ public class CoherenceServer {
             File file = FileUtil.toFile(folder);
             if (file != null) {
                 javaBinary = file.getAbsolutePath() + File.separator
-                        + "bin" + File.separator
+                        + "bin" + File.separator //NOI18N
                         + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
             }
         }
@@ -231,10 +230,9 @@ public class CoherenceServer {
     }
 
     private ExternalProcessBuilder appendClassPathItems(ExternalProcessBuilder builder) {
-        String coherenceCP = instanceProperties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
         StringBuilder sbClasspath = new StringBuilder();
-        if (coherenceCP != null) {
-            for (String cp : coherenceCP.split(CoherenceModuleProperties.CLASSPATH_SEPARATOR)) {
+        if (!coherenceProperties.getClasspath().isEmpty()) {
+            for (String cp : coherenceProperties.getClasspath().split(CoherenceModuleProperties.CLASSPATH_SEPARATOR)) {
                 sbClasspath.append(cp).append(File.pathSeparator);
             }
         }
@@ -245,8 +243,8 @@ public class CoherenceServer {
     }
 
     private ExternalProcessBuilder appendCustomProperties(String propertyName, ExternalProcessBuilder builder) {
-        String propertyValue = instanceProperties.getString(propertyName, ""); //NOI18N
-        if (propertyValue != null && propertyValue.trim().length() > 0) {
+        String propertyValue = coherenceProperties.getProperty(propertyName); //NOI18N
+        if (!propertyValue.trim().isEmpty()) {
             StringTokenizer st = new StringTokenizer(propertyValue, " \t;:\n"); //NOI18N
             String val;
             while (st.hasMoreTokens()) {
@@ -264,8 +262,8 @@ public class CoherenceServer {
         StringBuilder serverProperties = new StringBuilder("Appened server properties: \n"); //NOI18N
         for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
             if (property.getPropertyName().startsWith("tangosol.")) { //NOI18N
-                String propValue = instanceProperties.getString(property.getPropertyName(), ""); //NOI18N
-                if (propValue != null && propValue.trim().length() > 0) {
+                String propValue = coherenceProperties.getProperty(property.getPropertyName()); //NOI18N
+                if (!propValue.trim().isEmpty()) {
                     serverProperties.append(
                             MessageFormat.format("{0} = {1} \n", property.getPropertyName(), propValue)); //NOI18N
                     builder = builder.addArgument("-D" + property.getPropertyName() + "=" + propValue); //NOI18N

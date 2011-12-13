@@ -44,24 +44,40 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class NamedQueryImpl implements NamedQuery {
+    private final TypeElement element;
+    private String name;
+    private String query;
+    
+    /**
+     * 
+     * @param element - entity or mapped superclass element
+     * @param name
+     * @param query 
+     */
+    public NamedQueryImpl(TypeElement element, String name, String query){
+        this.element = element;
+        this.name = name;
+        this.query = query;
+    }
 
     public void setName(String value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        name = value; // NOI18N
     }
 
     public String getName() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return name; // NOI18N
     }
 
     public void setQuery(String value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        query = value; // NOI18N
     }
 
     public String getQuery() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return query; // NOI18N
     }
 
     public void setHint(int index, QueryHint value) {

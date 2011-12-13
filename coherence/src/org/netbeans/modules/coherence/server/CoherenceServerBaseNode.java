@@ -77,7 +77,7 @@ public class CoherenceServerBaseNode extends AbstractNode implements ChangeListe
     private CoherenceServerBaseNode(CoherenceInstance coherenceInstance, InstanceContent instanceContent) {
         super(Children.LEAF, new AbstractLookup(instanceContent));
         this.coherenceInstance = coherenceInstance;
-        this.coherenceServer = new CoherenceServer(coherenceInstance.getProperties());
+        this.coherenceServer = new CoherenceServer(coherenceInstance.getCoherenceProperties());
         instanceContent.add(coherenceServer);
         instanceContent.add(coherenceInstance);
 

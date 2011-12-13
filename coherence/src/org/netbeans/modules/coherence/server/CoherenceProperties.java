@@ -53,15 +53,15 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.server.util.Version;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Holds basic Coherence and Coherence plugin properties.
+ * Holds basic Coherence and Coherence plugin properties and makes it easier to get to them.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -83,6 +83,7 @@ public class CoherenceProperties {
     public static final List<CoherenceServerProperty> SERVER_PROPERTIES = new ArrayList<CoherenceServerProperty>();
 
     private static final Logger LOGGER = Logger.getLogger(CoherenceProperties.class.getName());
+    private final InstanceProperties properties;
 
     static {
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.cacheconfig", "Cache configuration descriptor filename", String.class)); //NOI18N
@@ -127,6 +128,111 @@ public class CoherenceProperties {
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.coherence.wka.port", "Well known IP port", Long.class)); //NOI18N
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.enabled", "Enable POF Serialization", Boolean.class, "false")); //NOI18N
         SERVER_PROPERTIES.add(new CoherenceServerProperty("tangosol.pof.config", "Configuration file containing POF Serialization class information", String.class)); //NOI18N
+    }
+
+    /**
+     * Creates basic Coherence properties class for accessing server properties.
+     */
+    public CoherenceProperties(InstanceProperties properties) {
+        this.properties = properties;
+    }
+
+    /**
+     * Gets display name of the Coherence server.
+     * @return display name
+     */
+    public String getDisplayName() {
+        return properties.getString(CoherenceModuleProperties.PROP_DISPLAY_NAME,
+                CoherenceModuleProperties.PROP_DISPLAY_NAME); //NOI18N
+    }
+
+    /**
+     * Gets server root (location) of the Coherence server.
+     * @return server root directory
+     */
+    public String getServerRoot() {
+        return properties.getString(CoherenceModuleProperties.PROP_LOCATION, ""); //NOI18N
+    }
+
+    /**
+     * Gets unique id of the Coherence server.
+     * @return id of the server
+     */
+    public int getServerId() {
+        return properties.getInt(CoherenceModuleProperties.PROP_ID, 0);
+    }
+
+    /**
+     * Gets classpath property of the Coherence server.
+     * @return classpath property
+     */
+    public String getClasspath() {
+        return properties.getString(CoherenceModuleProperties.PROP_CLASSPATH, ""); //NOI18N
+    }
+
+    /**
+     * Sets classpath property of the Coherence server.
+     * @param cp classpath to set
+     */
+    public void setClasspath(String cp) {
+        properties.putString(CoherenceModuleProperties.PROP_CLASSPATH, cp); //NOI18N
+    }
+
+    /**
+     * Gets java flags of the Coherence server.
+     * @return java flags
+     */
+    public String getJavaFlags() {
+        return properties.getString(CoherenceModuleProperties.PROP_JAVA_FLAGS, ""); //NOI18N
+    }
+
+    /**
+     * Sets java flags of the Coherence server.
+     * @param javaFlags java flags to set
+     */
+    public void setJavaFlags(String javaFlags) {
+        properties.putString(CoherenceModuleProperties.PROP_JAVA_FLAGS, javaFlags); //NOI18N
+    }
+
+    /**
+     * Gets custom java properties of the Coherence server.
+     * @return custom java properties
+     */
+    public String getCustomJavaProps() {
+        return properties.getString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, ""); //NOI18N
+    }
+
+    /**
+     * Sets custom java properties of the Coherence server.
+     * @param javaProperties custom java properties to set
+     */
+    public void setCustomJavaProps(String javaProperties) {
+        properties.putString(CoherenceModuleProperties.PROP_CUSTOM_PROPERTIES, javaProperties); //NOI18N
+    }
+
+    /**
+     * Gets one of server properties.
+     * @param propertyName name of accessed property
+     * @return server property value
+     */
+    public String getProperty(String propertyKey) {
+        return properties.getString(propertyKey, ""); //NOI18N
+    }
+
+    /**
+     * Resets server property of given key. Property will be deleted from instance properties.
+     * @param propertyName to be reset
+     */
+    public void resetProperty(String propertyKey) {
+        properties.removeKey(propertyKey);
+    }
+
+    /**
+     * Gets instance properties of the Coherence server. Should be needed very rarely!
+     * @return Coherence instance properties
+     */
+    public InstanceProperties getInstanceProperties() {
+        return properties;
     }
 
     /**

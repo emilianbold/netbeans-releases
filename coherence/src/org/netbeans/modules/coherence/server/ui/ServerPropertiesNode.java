@@ -62,11 +62,11 @@ public class ServerPropertiesNode extends AbstractNode {
 
     private static final Logger LOGGER = Logger.getLogger(ServerPropertiesNode.class.getName());
 
-    public InstanceProperties instanceProperties;
+    private InstanceProperties instanceProperties;
 
-    public ServerPropertiesNode(InstanceProperties instanceProperties) {
+    public ServerPropertiesNode(CoherenceProperties coherenceProperties) {
         super(Children.LEAF);
-        this.instanceProperties = instanceProperties;
+        instanceProperties = coherenceProperties.getInstanceProperties();
     }
 
     @Override

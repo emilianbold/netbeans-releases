@@ -49,18 +49,19 @@ import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 
 /**
  *
  * @author sp153251
  */
 abstract public class ManagedType implements IManagedType {
-    private final Element element;
+    private final PersistentObject element;
     private final IManagedTypeProvider provider;
     private Map<String, IMapping> mappings;
     private IType type;
 
-    public ManagedType(Element element, IManagedTypeProvider provider){
+    public ManagedType(PersistentObject element, IManagedTypeProvider provider){
         this.element = element;
         this.provider = provider;
     }
@@ -80,7 +81,7 @@ abstract public class ManagedType implements IManagedType {
     @Override
     public IType getType() {
         if (type == null) {
-                type = provider.getTypeRepository().getType(element.getSimpleName().toString());
+                type = provider.getTypeRepository().getType(element.getTypeElement().getSimpleName().toString());
         }
         return type;
     }
@@ -94,6 +95,10 @@ abstract public class ManagedType implements IManagedType {
     @Override
     public int compareTo(IManagedType o) {
         return getType().getName().compareTo(o.getType().getName());
+    }
+    
+    PersistentObject getPersistentObject(){
+        return element;
     }
     
     private void initMappings(){

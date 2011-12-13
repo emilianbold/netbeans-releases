@@ -47,6 +47,7 @@ import java.util.Collections;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.FileProxyI;
 import org.netbeans.modules.remote.impl.fileoperations.MockupFilesystemInterceptorProvider.FilesystemInterceptorImpl;
@@ -100,15 +101,16 @@ public class InterceptorTestCase extends RemoteFileTestBase {
         FileObject remoteDirFO = rootFO.getFileObject(remoteDir);
         FileObject fo = remoteDirFO.createData("checkme.txt");
         FileProxyI file = MockupFilesystemInterceptorProvider.toFileProxy(fs, fo.getPath());
-        fo.canWrite();
+        boolean canWrite1 = fo.canWrite();
+        assertTrue(canWrite1);
         assertTrue(interceptor.getBeforeCreateFiles().contains(file));
         //assertTrue(interceptor.getDoCreateFiles().contains(file));
         assertTrue(interceptor.getCreatedFiles().contains(file));
         assertFalse(interceptor.getIsMutableFiles().contains(file));
-        
-        //file.setReadOnly();
-        //fo.canWrite();
-        //assertTrue(inteceptor.getIsMutableFiles().contains(VCSFileProxy.createFileProxy(file)));
+        ExitStatus execute = ProcessUtils.execute(execEnv, "chmod", "oag-w", file.getPath());
+        boolean canWrite2 = fo.canWrite();
+        assertFalse(canWrite2);
+        assertTrue(interceptor.getIsMutableFiles().contains(file));
     }
 
     @ForAllEnvironments
