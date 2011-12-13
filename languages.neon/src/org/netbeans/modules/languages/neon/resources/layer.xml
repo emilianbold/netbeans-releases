@@ -68,6 +68,7 @@
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.languages.neon.NeonDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-neon"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
             </folder>
@@ -76,8 +77,8 @@
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="NeonResolver.xml" url="NeonResolver.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.languages.neon.Bundle#Services/MIMEResolver/NeonResolver.xml"/>
-                <attr name="position" intvalue="137"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.languages.neon.resources.Bundle#Services/MIMEResolver/NeonResolver.xml"/>
+                <attr name="position" intvalue="135"/>
             </file>
         </folder>
     </folder>
