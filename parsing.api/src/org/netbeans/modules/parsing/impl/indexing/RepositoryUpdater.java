@@ -3809,7 +3809,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final boolean upToDate;
                 final long currentLastModified;
                 if (file != null) {
-                    final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file);
+                    final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file.getURL());
                     final boolean indexersUpToDate = checkBinaryIndexers(lastState, contexts);
                     currentLastModified = file.lastModified().getTime();
                     upToDate = indexersUpToDate && lastState.first ==  currentLastModified;
@@ -3829,7 +3829,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 } finally {
                     binaryScanFinished(binaryIndexers, contexts);
                     if (success && file != null && !upToDate) {
-                        ArchiveTimeStamps.setLastModified(file, createBinaryIndexersTimeStamp(currentLastModified,contexts));
+                        ArchiveTimeStamps.setLastModified(file.getURL(), createBinaryIndexersTimeStamp(currentLastModified,contexts));
                     }
                 }
             } catch (IOException ioe) {
