@@ -747,6 +747,25 @@ public class CndPathUtilitities {
         return newName;
     }
 
+    public static String createUniqueFileName(FileObject folder, String name, String ext) {
+        if (folder == null || name == null || name.length() == 0) {
+            assert false;
+            return null;
+        }
+
+        String newName = name;
+        for (int i = 0;; i++) {
+            if (i > 0) {
+                newName = name + "_" + i; // NOI18N
+            }
+            FileObject fileObject = folder.getFileObject(newName, ext);
+            if (fileObject == null || !fileObject.isValid()) {
+                break;
+            }
+        }
+        return newName;
+    }
+
     public static String expandMacro(String string, String macro, String value) {
         // Substitute macro
         int i = string.indexOf((macro));
