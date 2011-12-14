@@ -35,20 +35,16 @@
             </ide-actions>
             <view>
                 <items>
+                    <source-folder style="packages">
+                        <label>src</label>
+                        <location>src</location>
+                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
                     <source-file>
                         <location>build.properties</location>
                     </source-file>
-                    <source-folder style="packages">
-                        <label>src</label>
-                        <location>src</location>
-                    </source-folder>
-                    <source-folder style="packages">
-                        <label>customcode/src</label>
-                        <location>customcode/src</location>
-                    </source-folder>
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
@@ -62,17 +58,13 @@
                     </action>
                 </context-menu>
             </view>
-            <subprojects>
-                <project>../libbean</project>
-                <project>../libutil14</project>
-                <project>../libutil15</project>
-            </subprojects>
+            <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/3">
             <compilation-unit>
                 <package-root>src</package-root>
                 <classpath mode="compile">${compile.classpath}</classpath>
-                <source-level>1.4</source-level>
+                <source-level>1.6</source-level>
             </compilation-unit>
         </java-data>
     </configuration>
