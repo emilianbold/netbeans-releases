@@ -49,7 +49,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.ItemSelectable;
-import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -61,6 +60,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -92,13 +92,16 @@ import org.openidex.search.SearchPattern;
  */
 final class BasicSearchForm extends JPanel implements ChangeListener,
                                                       ItemListener {
+    public static final String HTML_LINK_PREFIX =
+            "<html><u><a href=\"#\">";                                  //NOI18N
+    public static final String HTML_LINK_SUFFIX = "</a></u></html>";    //NOI18N
     
     private final BasicSearchCriteria searchCriteria;
     private final Map<SearchScope, Boolean> searchScopes;
     private final String preferredSearchScopeType;
     private SearchScope selectedSearchScope;
     private ChangeListener usabilityChangeListener;
-        
+
     /** Creates new form BasicSearchForm */
     BasicSearchForm(Map<SearchScope, Boolean> searchScopes,
                     String preferredSearchScopeType,
@@ -111,7 +114,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         this.searchScopes = searchScopes;
         this.preferredSearchScopeType = preferredSearchScopeType;
         initComponents(searchAndReplace);
-        setMnemonics(searchAndReplace);
         initAccessibility(searchAndReplace);
         initHistory();
         initInteraction(searchAndReplace);
@@ -202,7 +204,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         cboxScope = new JComboBox();
         cboxScope.setEditable(false);
         lblScope.setLabelFor(cboxScope);
-        btnBrowse = new JButton();
 
         lblFileNamePattern = new JLabel();
         cboxFileNamePattern = new JComboBox();
@@ -227,6 +228,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkUseIgnoreList = new JCheckBox();
         btnEditIgnoreList = new JButton();
 
+        setMnemonics(searchAndReplace);
         initIgnoreListControlComponents();
         initFormPanel(searchAndReplace);
         this.add(formPanel);
@@ -250,15 +252,14 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     protected void initFormPanel(boolean searchAndReplace) {
 
         formPanel = new SearchFormPanel();
-        formPanel.addRow(lblTextToFind, cboxTextToFind, btnTestTextToFind);
+        formPanel.addRow(lblTextToFind, cboxTextToFind);
         initContainingTextOptionsRow(searchAndReplace);
         if (searchAndReplace) {
-            formPanel.addRow(lblReplacement, cboxReplacement, new JLabel());
+            formPanel.addRow(lblReplacement, cboxReplacement);
         }
         initScopeRow();
-        formPanel.addRow(lblScope, cboxScope, btnBrowse);
-        formPanel.addRow(lblFileNamePattern, cboxFileNamePattern,
-                btnTestFileNamePattern);
+        formPanel.addRow(lblScope, cboxScope);
+        formPanel.addRow(lblFileNamePattern, cboxFileNamePattern);
         initScopeOptionsRow(searchAndReplace);
     }
 
@@ -266,34 +267,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * Initialize ignoreListOptionPanel and related control components.
      */
     private void initIgnoreListControlComponents() {
-
-        ignoreListOptionPanel = new JPanel();
-        ignoreListOptionPanel.setLayout(new FlowLayout(
-                FlowLayout.LEADING, 0, 0));
-        ignoreListOptionPanel.add(chkUseIgnoreList);
-        btnEditIgnoreList.setBorderPainted(false);
-        btnEditIgnoreList.setContentAreaFilled(false);
-        btnEditIgnoreList.setBorder(new EmptyBorder(0, 0, 0, 0));        
-        btnEditIgnoreList.setCursor(Cursor.getPredefinedCursor(
-                Cursor.HAND_CURSOR));
-        ignoreListOptionPanel.add(btnEditIgnoreList);
-        ignoreListOptionPanel.setMaximumSize(
-                ignoreListOptionPanel.getMinimumSize());
-        btnEditIgnoreList.addMouseListener(new MouseAdapter() {
-
-            private Color origColor = SystemColor.textText;
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                origColor = btnEditIgnoreList.getForeground();
-                btnEditIgnoreList.setForeground(SystemColor.textHighlight);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                btnEditIgnoreList.setForeground(origColor);
-            }
-        });
+        ignoreListOptionPanel = new CheckBoxWithButtonPanel(chkUseIgnoreList,
+                btnEditIgnoreList);
     }
 
     /**
@@ -328,7 +303,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 stateChanged(null);
             }
         });
-        btnBrowse.setEnabled(false);
     }
 
     /**
@@ -343,17 +317,18 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     FormLayoutHelper.DEFAULT_COLUMN,
                     FormLayoutHelper.DEFAULT_COLUMN);
             flh.addRow(chkCaseSensitive, chkPreserveCase);
-            flh.addRow(chkWholeWords, chkRegexp);
+            flh.addRow(chkWholeWords,
+                    new CheckBoxWithButtonPanel(chkRegexp, btnTestTextToFind));
             jp.setMaximumSize(jp.getMinimumSize());
 
-            formPanel.addRow(new JLabel(), jp, new JLabel());
+            formPanel.addRow(new JLabel(), jp);
         } else {
             jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
             jp.add(chkCaseSensitive);
             jp.add(chkWholeWords);
-            jp.add(chkRegexp);
+            jp.add(new CheckBoxWithButtonPanel(chkRegexp, btnTestTextToFind));
             jp.setMaximumSize(jp.getPreferredSize());
-            formPanel.addRow(new JLabel(), jp, new JLabel());
+            formPanel.addRow(new JLabel(), jp);
         }
     }
 
@@ -374,10 +349,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     FormLayoutHelper.DEFAULT_COLUMN,
                     FormLayoutHelper.DEFAULT_COLUMN);
             flh.addRow(chkArchives, chkGenerated);
-            flh.addRow(ignoreListOptionPanel, chkFileNameRegex);
+            flh.addRow(ignoreListOptionPanel,
+                    new CheckBoxWithButtonPanel(
+                    chkFileNameRegex, btnTestFileNamePattern));
             jp.setMaximumSize(jp.getMinimumSize());
         }
-        formPanel.addRow(new JLabel(), jp, new JLabel());
+        formPanel.addRow(new JLabel(), jp);
     }
 
     /**
@@ -510,11 +487,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         PatternSandbox.openDialog(new PatternSandbox.PathPatternSandbox(
                 cboxFileNamePattern.getSelectedItem() == null
-                ? "" : (String) cboxFileNamePattern.getSelectedItem(), //NOI18N
-                chkFileNameRegex.isSelected()) {
+                ? "" : (String) cboxFileNamePattern.getSelectedItem()){ //NOI18N
 
             @Override
-            protected void onApply(String pattern, boolean regexp) {
+            protected void onApply(String pattern) {
                 if (pattern.isEmpty()) {
                     if (!fileNamePatternWatcher.infoDisplayed) {
                         cboxFileNamePattern.setSelectedItem(pattern);
@@ -526,29 +502,23 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     }
                     cboxFileNamePattern.setSelectedItem(pattern);
                 }
-                chkFileNameRegex.setSelected(regexp);
             }
         }, btnTestFileNamePattern);
     }
 
     private void openTextPatternSandbox() {
 
-        SearchPattern sp = SearchPattern.create(
-                cboxTextToFind.getSelectedItem() == null ? "" // NOI18N
-                : cboxTextToFind.getSelectedItem().toString(),
-                chkWholeWords.isSelected(),
-                chkCaseSensitive.isSelected(),
-                chkRegexp.isSelected());
+        String expr = cboxTextToFind.getSelectedItem() == null ? "" // NOI18N
+                : cboxTextToFind.getSelectedItem().toString();
+        boolean matchCase = chkCaseSensitive.isSelected();
 
         PatternSandbox.openDialog(new PatternSandbox.TextPatternSandbox(
-                sp) {
+                expr, matchCase) {
 
             @Override
-            protected void onApply(SearchPattern sp) {
-                cboxTextToFind.setSelectedItem(sp.getSearchExpression());
-                chkCaseSensitive.setSelected(sp.isMatchCase());
-                chkWholeWords.setSelected(sp.isWholeWords());
-                chkRegexp.setSelected(sp.isRegExp());
+            protected void onApply(String newExpr, boolean newMatchCase) {
+                cboxTextToFind.setSelectedItem(newExpr);
+                chkCaseSensitive.setSelected(newMatchCase);
             }
         }, btnTestTextToFind);
     }
@@ -893,13 +863,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lclz(chkCaseSensitive, "BasicSearchForm.chkCaseSensitive.text");//NOI18N
         lclz(chkRegexp, "BasicSearchForm.chkRegexp.text");              //NOI18N
         lclz(chkFileNameRegex, "BasicSearchForm.chkFileNameRegex.text");//NOI18N
-        lclz(btnTestTextToFind,
-                "BasicSearchForm.btnTestTextToFind.text");              //NOI18N
-        lclz(btnTestFileNamePattern,
-                "BasicSearchForm.btnTestFileNamePattern.text");         //NOI18N
-        lclz(btnBrowse, "BasicSearchForm.btnBrowse.text");              //NOI18N
-        lclz(btnEditIgnoreList,
-                "BasicSearchForm.btnEditIgnoreList.text");              //NOI18N
+        btnTestTextToFind.setText(getHtmlLink(
+                "BasicSearchForm.btnTestTextToFind.text"));             //NOI18N
+        btnTestFileNamePattern.setText(getHtmlLink(
+                "BasicSearchForm.btnTestFileNamePattern.text"));        //NOI18N
+        btnEditIgnoreList.setText(
+                getHtmlLink("BasicSearchForm.btnEditIgnoreList.text")); //NOI18N
         lclz(chkUseIgnoreList, "BasicSearchForm.chkUseIgnoreList.text");//NOI18N
 
         if (searchAndReplace) {
@@ -1080,7 +1049,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private String getText(String bundleKey) {
         return NbBundle.getMessage(getClass(), bundleKey);
     }
-    
+
+    private String getHtmlLink(String key) {
+        return HTML_LINK_PREFIX + getText(key) + HTML_LINK_SUFFIX;
+    }
+
     private JComboBox cboxTextToFind;
     private JComboBox cboxReplacement;
     private JComboBox cboxFileNamePattern;
@@ -1100,7 +1073,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private JButton btnTestFileNamePattern;
     private JLabel lblTextToFind;
     private JComboBox cboxScope;
-    private JButton btnBrowse;
     private JLabel lblFileNamePattern;
     private JCheckBox chkArchives;
     private JCheckBox chkGenerated;
@@ -1132,15 +1104,149 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             super();
             this.flh = new FormLayoutHelper(this,
                     FormLayoutHelper.DEFAULT_COLUMN,
-                    FormLayoutHelper.DEFAULT_COLUMN,
-                    FormLayoutHelper.EXPANDING_COLUMN);
+                    FormLayoutHelper.DEFAULT_COLUMN);
             flh.setAllGaps(true);
         }
 
-        public void addRow(JComponent label, JComponent component,
-                JComponent button) {
+        public void addRow(JComponent label, JComponent component) {
 
-            flh.addRow(label, component, button);
+            flh.addRow(label, component);
+        }
+    }
+
+    /**
+     * Panel for a checkbox and a button that is enbled if and only if the
+     * checkbox is selected.
+     */
+    private class CheckBoxWithButtonPanel extends JPanel
+            implements ItemListener {
+
+        private JCheckBox checkbox;
+        private JButton button;
+        private JLabel leftParenthesis;
+        private JLabel rightParenthesis;
+        private String enabledText;
+        private String disabledText;
+
+        /**
+         * Constructor.
+         *
+         *  * The text of the button must be already set.
+         *
+         * @param checkbox
+         * @param button
+         */
+        public CheckBoxWithButtonPanel(JCheckBox checkbox, JButton button) {
+            this.checkbox = checkbox;
+            this.button = button;
+            initTexts();
+            init();
+        }
+
+        /**
+         * Init panel and helper elements.
+         */
+        private void init() {
+            this.setLayout(new FlowLayout(
+                    FlowLayout.LEADING, 0, 0));
+            this.add(checkbox);
+            setLinkLikeButton(button);
+            leftParenthesis = new JLabel("(");                         // NOI18N
+            rightParenthesis = new JLabel(")");                         //NOI18N
+            add(leftParenthesis);
+            add(button);
+            add(rightParenthesis);
+            MouseListener ml = createLabelMouseListener();
+            leftParenthesis.addMouseListener(ml);
+            rightParenthesis.addMouseListener(ml);
+            button.setEnabled(false);
+
+            this.setMaximumSize(
+                    this.getMinimumSize());
+            checkbox.addItemListener(this);
+            if (checkbox.isSelected()) {
+                enableButton();
+            } else {
+                disableButton();
+            }
+        }
+
+        /**
+         * Init values of enabled and disabled button texts.
+         */
+        private void initTexts() {
+            enabledText = button.getText();
+            if (enabledText.startsWith(HTML_LINK_PREFIX)
+                    && enabledText.endsWith(HTML_LINK_SUFFIX)) {
+                disabledText = enabledText.substring(HTML_LINK_PREFIX.length(),
+                        enabledText.length() - HTML_LINK_SUFFIX.length());
+            } else {
+                disabledText = enabledText;
+            }
+        }
+
+        /**
+         * Create listener that delegates mouse clicks on parenthesis to the
+         * button.
+         */
+        private MouseListener createLabelMouseListener() {
+            return new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (button.isEnabled()) {
+                        for (ActionListener al : button.getActionListeners()) {
+                            al.actionPerformed(null);
+                        }
+                    }
+                }
+            };
+        }
+
+        /**
+         * Set button border and background to look like a label with link.
+         */
+        private void setLinkLikeButton(JButton button) {
+            button.setBorderPainted(false);
+            button.setContentAreaFilled(false);
+            button.setBorder(new EmptyBorder(0, 0, 0, 0));
+            button.setCursor(Cursor.getPredefinedCursor(
+                    Cursor.HAND_CURSOR));
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (checkbox.isSelected()) {
+                enableButton();
+            } else {
+                disableButton();
+            }
+        }
+
+        /**
+         * Enable button and parentheses around it.
+         */
+        private void enableButton() {
+            button.setText(enabledText);
+            button.setEnabled(true);
+            leftParenthesis.setCursor(
+                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            rightParenthesis.setCursor(
+                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            leftParenthesis.setEnabled(true);
+            rightParenthesis.setEnabled(true);
+        }
+
+        /**
+         * Disable button and parentheses around it.
+         */
+        private void disableButton() {
+            button.setText(disabledText);
+            button.setEnabled(false);
+            leftParenthesis.setCursor(Cursor.getDefaultCursor());
+            rightParenthesis.setCursor(Cursor.getDefaultCursor());
+            leftParenthesis.setEnabled(false);
+            rightParenthesis.setEnabled(false);
         }
     }
 

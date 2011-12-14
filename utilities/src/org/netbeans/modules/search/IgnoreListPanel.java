@@ -26,7 +26,6 @@ final class IgnoreListPanel extends javax.swing.JPanel {
     static final String SIMPLE_PREFIX = "s: ";                          //NOI18N
     static final String REGEXP_PREFIX = "x: ";                          //NOI18N
     static final String FILE_PREFIX = "f: ";                            //NOI18N
-
     private IgnoredListModel ignoreListModel;
     private JFileChooser jFileChooser;
 
@@ -189,7 +188,7 @@ final class IgnoreListPanel extends javax.swing.JPanel {
 
     private void btnPatternActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPatternActionPerformed
 
-        PatternSandbox.openDialog(new PatternSandbox.PathPatternSandbox(
+        PatternSandbox.openDialog(new PatternSandbox.PathPatternComposer(
                 "", false) {                                            //NOI18N
 
             @Override
@@ -202,7 +201,7 @@ final class IgnoreListPanel extends javax.swing.JPanel {
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
         final String val = list.getSelectedValue().toString();
         boolean regex = val.startsWith(REGEXP_PREFIX);
-        PatternSandbox.openDialog(new PatternSandbox.PathPatternSandbox(
+        PatternSandbox.openDialog(new PatternSandbox.PathPatternComposer(
                 val.substring(REGEXP_PREFIX.length()), regex) {
 
             @Override
