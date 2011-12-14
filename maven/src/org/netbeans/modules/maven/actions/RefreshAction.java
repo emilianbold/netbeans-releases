@@ -59,7 +59,7 @@ import org.openide.util.NbBundle.Messages;
 
 @SuppressWarnings(value = "serial")
 @ActionID(id = "org.netbeans.modules.maven.refresh", category = "Project")
-@ActionRegistration(displayName = "#ACT_Reload_Project")
+@ActionRegistration(displayName = "#ACT_Reload_Project", lazy=false)
 @ActionReference(position = 1700, path = "Projects/org-netbeans-modules-maven/Actions")
 @Messages("ACT_Reload_Project=Reload POM")
 public class RefreshAction extends AbstractAction implements ContextAwareAction {

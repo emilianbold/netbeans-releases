@@ -60,7 +60,7 @@ import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 
 @ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.PersistInstanceAction")
-@ActionRegistration(displayName="#LBL_Persist_Instance", iconInMenu=false)
+@ActionRegistration(displayName="#LBL_Persist_Instance", iconInMenu=false, lazy=false)
 @ActionReference(path=HudsonInstance.ACTION_PATH, position=700)
 @Messages("LBL_Persist_Instance=&Persist")
 // XXX cannot just use List<HudsonInstanceImpl> ctor: must be disabled when context menu created, so must be eager

@@ -107,7 +107,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     
     
     @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReload", category = "Project")
-    @ActionRegistration(displayName = "#ACT_NBM_Reload")
+    @ActionRegistration(displayName = "#ACT_NBM_Reload", lazy=false)
     @ActionReference(position = 1250, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_NBM_Reload=Install/Reload in Development IDE")
     public static ContextAwareAction createReloadAction() {
@@ -117,7 +117,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReloadTarget", category = "Project")
-    @ActionRegistration(displayName = "#ACT_NBM_Reload_Target")
+    @ActionRegistration(displayName = "#ACT_NBM_Reload_Target", lazy=false)
     @ActionReference(position = 1225, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_NBM_Reload_Target=Reload in Target Platform")
     public static ContextAwareAction createReloadTargetAction() {

@@ -74,7 +74,7 @@ import static org.netbeans.modules.project.ui.actions.Bundle.*;
  * @author Jesse Glick
  */
 @ActionID(id = "org.netbeans.modules.project.ui.actions.OpenProjectFolderAction", category = "Project")
-@ActionRegistration(displayName = "#OpenProjectFolderAction.LBL_action")
+@ActionRegistration(displayName = "#OpenProjectFolderAction.LBL_action", lazy=false)
 @ActionReference(path = "Loaders/folder/any/Actions", position = 100)
 @Messages("OpenProjectFolderAction.LBL_action=Open Project of Folder")
 public final class OpenProjectFolderAction extends AbstractAction implements ContextAwareAction {

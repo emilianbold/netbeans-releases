@@ -39,11 +39,14 @@
 
 package org.openide.awt;
 
+import java.awt.event.ActionListener;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import javax.swing.Action;
 import javax.swing.ActionMap;
+import org.openide.util.ContextAwareAction;
 
 /** Registers an action under associated identifier specified by separate
  * {@link ActionID} annotation on the same element. Here is few usage examples:
@@ -108,4 +111,40 @@ public @interface ActionRegistration {
     /** Shall the action work on last selection when it was enabled?
      */
     boolean surviveFocusChange() default false;
+
+    /**
+     * Whether a lazy factory registration from {@link Actions} should be used.
+     * <p>Most actions can be registered using a lazy factory (see class Javadoc for list),
+     * which permits the application to avoid loading the action class unless and until it
+     * is actually run. Before then, queries on the name, icon, etc. are serviced using
+     * static metadata, which minimizes startup overhead.
+     * <p>In limited cases, using this sort of lazy delegate is impossible or undesirable:
+     * the action needs to export some special key from {@link Action#getValue};
+     * it presents multiple menu items according to dynamic conditions; or for UI reasons
+     * it is preferred to visually disable the action under certain conditions (rather than
+     * leaving it enabled and showing a message if selected under those conditions).
+     * <p>For these special cases,
+     * you may specify {@code lazy=false} to force the action registration to use the
+     * traditional direct registration of an instance of the action, without any lazy factory.
+     * That allows the action to supply arbitrary customized behavior even before it is ever run,
+     * at the expense of overhead when the registration is first encountered (such as when the
+     * main menu bar is populated, or a context menu of a certain kind is first shown).
+     * <p>It is an error to specify {@code lazy=false} on an element which is not assignable
+     * to {@link Action} (e.g. an {@link ActionListener}, or a {@code String} field);
+     * or which requires a context parameter in its constructor (or factory method).
+     * <p>For compatibility, registrations which do not <em>explicitly</em> specify this
+     * attribute but which are on elements assignable to any of the following types
+     * will be registered as if {@code lazy=false}, despite the default value of the attribute
+     * (but a warning will be issued and the attribute should be made explicit):
+     * <ul>
+     * <li>{@link org.openide.util.actions.Presenter.Menu}
+     * <li>{@link org.openide.util.actions.Presenter.Toolbar}
+     * <li>{@link org.openide.util.actions.Presenter.Popup}
+     * <li>{@link ContextAwareAction}
+     * <li>{@link DynamicMenuContent}
+     * </ul>
+     * @since 7.41
+     */
+    boolean lazy() default true;
+
 }
