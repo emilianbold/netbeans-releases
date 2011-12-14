@@ -459,7 +459,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private CsmVisibility curentVisibility;
 
         public ClassAstRenderer(CsmFile containingFile, CsmVisibility curentVisibility, boolean renderingLocalContext) {
-            super((FileImpl) containingFile);
+            super((FileImpl) containingFile, null);
             this.renderingLocalContext = renderingLocalContext;
             this.curentVisibility = curentVisibility;
         }
