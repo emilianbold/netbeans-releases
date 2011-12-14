@@ -179,6 +179,9 @@ public class LongHashMap<K> //extends AbstractMap<K>
      * rehash).  This field is used to make iterators on Collection-views of
      * the LongHashMap fail-fast.  (See ConcurrentModificationException).
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value={"VO_VOLATILE_INCREMENT"}
+        /*,justification="Only change is required, no need to have correct value"*/)
     transient volatile int modCount;
 
     /**
@@ -664,6 +667,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("RC_REF_COMPARISON")
         public boolean equals(Object o) {
             if (!(o instanceof Map.Entry)) {
                 return false;

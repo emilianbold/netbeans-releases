@@ -66,6 +66,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -184,7 +185,7 @@ public class RefactoringTestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         TREEUTILITIESLOGGER.setLevel(Level.SEVERE);
-        Util.allMimeTypes = new HashSet<String>();
+        MimeTypes.setAllMimeTypes(new HashSet<String>());
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
             "org/netbeans/modules/java/source/resources/layer.xml",
             "org/netbeans/modules/java/editor/resources/layer.xml",
@@ -307,7 +308,7 @@ public class RefactoringTestBase extends NbTestCase {
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         prepareTest();
         org.netbeans.api.project.ui.OpenProjects.getDefault().open(new Project[] {prj = ProjectManager.getDefault().findProject(src.getParent())}, false);
-        Util.allMimeTypes = Collections.singleton("text/x-java");
+        MimeTypes.setAllMimeTypes(Collections.singleton("text/x-java"));
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {ClassPathSupport.createClassPath(src),
                                                                                     ClassPathSupport.createClassPath(test)});
         RepositoryUpdater.getDefault().start(true);
