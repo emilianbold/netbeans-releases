@@ -131,9 +131,8 @@ public class CNDValidation extends JellyTestCase {
         NewCNDProjectNameLocationStepOperator npnlso = new NewCNDProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
+        npnlso.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 120000);
         npnlso.finish();
-        npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
-        npnlso.waitClosed();
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
     }
