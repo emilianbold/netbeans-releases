@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.coherence.wizards;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
@@ -59,6 +60,7 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.HelpCtx;
 
 /**
  * Iterator for creation of all Coherence related templates.
@@ -153,6 +155,8 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
                 sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             }
             SimpleTargetChooserBuilder simpleTargetChooser = Templates.buildSimpleTargetChooser(project, sourceGroups);
+            WizardDescriptor.Panel bottomPanel = new BottomWizardDescriptorPanel();
+            simpleTargetChooser.bottomPanel(bottomPanel);
             WizardDescriptor.Panel generalPanel = simpleTargetChooser.create();
             panels = new Panel[]{generalPanel};
 
@@ -162,5 +166,44 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
             }
         }
         return panels;
+    }
+
+    private class BottomWizardDescriptorPanel implements WizardDescriptor.Panel {
+
+        private BottomWizardPanel panel;
+
+        @Override
+        public Component getComponent() {
+            if (panel == null) {
+                panel = new BottomWizardPanel(wizard);
+            }
+            return panel;
+        }
+
+        @Override
+        public HelpCtx getHelp() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        @Override
+        public void readSettings(Object settings) {
+        }
+
+        @Override
+        public void storeSettings(Object settings) {
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+        }
+
+        @Override
+        public boolean isValid() {
+            return getComponent().isValid();
+        }
     }
 }

@@ -45,17 +45,16 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.coherence.library.LibraryUtils;
 
 /**
  * Contains helper methods related to Coherence project or potential Coherence project.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class ProjectUtils {
+public final class CoherenceProjectUtils {
 
-    public static final String COHERENCE_CLASS_NAME = "com.tangosol.net.DefaultCacheServer"; //NOI18N
-
-    private ProjectUtils() {
+    private CoherenceProjectUtils() {
     }
 
     /**
@@ -74,7 +73,7 @@ public final class ProjectUtils {
         for (SourceGroup javaSource : javaSources) {
             ClassPath compileCp = ClassPath.getClassPath(javaSource.getRootFolder(), ClassPath.COMPILE);
             if (compileCp != null) {
-                String classRelativePath = COHERENCE_CLASS_NAME.replace('.', '/') + ".class"; //NOI18N
+                String classRelativePath = LibraryUtils.COHERENCE_CLASS_NAME.replace('.', '/') + ".class"; //NOI18N
                 if (compileCp.findResource(classRelativePath) != null) {
                     return true;
                 }
