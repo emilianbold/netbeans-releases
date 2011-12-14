@@ -471,31 +471,18 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 throw new IOException("No connection: Can not rename in " + p.getPath()); //NOI18N
             }
-            boolean isRenamed = false;
-            if (USE_VCS) {
-                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
-                if (interceptor != null) {
-                    IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(this), newNameExt);
-                    if (renameHandler != null) {
-                        renameHandler.handle();
-                        isRenamed = true;
-                    }
-                }
-            }
-            if (!isRenamed) {
-                try {
-                    p.renameChild(lock, this, newNameExt);
-                } catch (ConnectException ex) {
-                    throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
-                } catch (InterruptedException ex) {
-                    InterruptedIOException outEx = new InterruptedIOException("interrupted: Can not rename in " + p.getPath()); //NOI18N
-                    outEx.initCause(ex);
-                    throw outEx;
-                } catch (CancellationException ex) {
-                    throw new IOException("cancelled: Can not rename in " + p.getPath(), ex); //NOI18N
-                } catch (ExecutionException ex) {
-                    throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
-                }
+            try {
+                p.renameChild(lock, this, newNameExt);
+            } catch (ConnectException ex) {
+                throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
+            } catch (InterruptedException ex) {
+                InterruptedIOException outEx = new InterruptedIOException("interrupted: Can not rename in " + p.getPath()); //NOI18N
+                outEx.initCause(ex);
+                throw outEx;
+            } catch (CancellationException ex) {
+                throw new IOException("cancelled: Can not rename in " + p.getPath(), ex); //NOI18N
+            } catch (ExecutionException ex) {
+                throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
             }
         }
     }
