@@ -171,7 +171,7 @@ public class VariableProvider {
                     // use cached TS
                     TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1"), APTLanguageSupport.GNU_CPP); // NOI18N
                     if (buildTokenStream != null) {
-                        CPPParserEx parser = CPPParserEx.getInstance(decl.getContainingFile().getName().toString(), buildTokenStream, flags);
+                        CPPParserEx parser = CPPParserEx.getInstance(decl.getContainingFile(), buildTokenStream, flags);
                         parser.type_name();
                         AST ast = parser.getAST();
                 

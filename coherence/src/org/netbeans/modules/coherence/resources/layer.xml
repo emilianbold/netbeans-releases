@@ -309,7 +309,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/AggregatorDesc.html"/>
-                <!--Use this line only if your template makes use of the FreeMarker template language:-->
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.coherence.wizards.NewCoherenceFileIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="10"/>
             </file>
@@ -319,7 +319,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/EntryProcessorDesc.html"/>
-                <!--Use this line only if your template makes use of the FreeMarker template language:-->
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.coherence.wizards.NewCoherenceFileIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="20"/>
             </file>
@@ -329,7 +329,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/PofSerializerDesc.html"/>
-                <!--Use this line only if your template makes use of the FreeMarker template language:-->
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.coherence.wizards.NewCoherenceFileIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="30"/>
             </file>
@@ -339,16 +339,15 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/icons/icon.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/PortableObjectDesc.html"/>
-                <!--Use this line only if your template makes use of the FreeMarker template language:-->
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.coherence.wizards.NewCoherenceFileIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="40"/>
             </file>
-        <!--/folder>
-        <folder name="Other"-->
             <file name="CacheConfigTemplate.xml" url="templates/CacheConfigTemplate.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.resources.Bundle#Templates/Coherence/CacheConfigTemplate.xml"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/coherence/resources/icons/cache.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/CacheConfigTemplateDesc.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.coherence.wizards.NewCoherenceFileIterator"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="50"/>
@@ -357,6 +356,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.resources.Bundle#Templates/Coherence/CoherenceConfigTemplate.xml"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/coherence/resources/icons/coherence.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/CoherenceConfigTemplateDesc.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.coherence.wizards.NewCoherenceFileIterator"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="60"/>
@@ -365,6 +365,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.resources.Bundle#Templates/Coherence/PofConfigTemplate.xml"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/coherence/resources/icons/pof.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/PofConfigTemplateDesc.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.coherence.wizards.NewCoherenceFileIterator"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="70"/>

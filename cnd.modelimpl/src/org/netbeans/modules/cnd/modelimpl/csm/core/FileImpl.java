@@ -1122,7 +1122,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // use cached TS
             TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
             if (tokenStream != null) {
-                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFileObject().getNameExt(), tokenStream, flags);
+                CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
                 parser.translation_unit();
