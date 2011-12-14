@@ -606,7 +606,6 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             lexerState = ISA_ARG_UNDERSCORE;
                             break;
                         default:
-                            tag = null;
                             lexerState = ISP_TAG_X_ERROR;
                             break;
                     }
@@ -1299,6 +1298,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() */
     private static boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
+        assert text1 != null : "text1 arg is null";
+        assert text2 != null : "text2 arg is null";
         if (text1.length() != text2.length()) {
             return false;
         } else {

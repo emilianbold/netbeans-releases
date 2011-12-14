@@ -272,6 +272,36 @@ public class HtmlLexerTest extends NbTestCase {
                 "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a|ERROR");
                 
     }
+    
+    public void testCurlyBracesInTagWithClassAttr() {
+        //error in ws
+        checkTokens("<div {a} class=my>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a}|ERROR", " |WS", "class|ARGUMENT", "=|OPERATOR", "my|VALUE_CSS", ">|TAG_CLOSE_SYMBOL");
+        
+        //error before attribute
+        checkTokens("<div {a}class=my>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "{a}class=my|ERROR", ">|TAG_CLOSE_SYMBOL");
+        
+        //after class in tag
+        checkTokens("<div class=my {a} >",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT", 
+                "=|OPERATOR", "my|VALUE_CSS", " |WS", "{a}|ERROR", " |WS", ">|TAG_CLOSE_SYMBOL" );
+
+        //after class in tag
+        checkTokens("<div class=my {a} id=your>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT", 
+                "=|OPERATOR", "my|VALUE_CSS", " |WS", "{a}|ERROR", " |WS", 
+                "id|ARGUMENT", "=|OPERATOR", "your|VALUE_CSS", ">|TAG_CLOSE_SYMBOL");
+
+        //after class in tag
+        checkTokens("<div class=\"my\" {a} id=\"your\">",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT", 
+                "=|OPERATOR", "\"my\"|VALUE_CSS", " |WS", "{a}|ERROR", " |WS", 
+                "id|ARGUMENT", "=|OPERATOR", "\"your\"|VALUE_CSS", ">|TAG_CLOSE_SYMBOL");
+        
+        
+                
+    }
 
     private void checkTokens(String text, String... descriptions) {
         TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
