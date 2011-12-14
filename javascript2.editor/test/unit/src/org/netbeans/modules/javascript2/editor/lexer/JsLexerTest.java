@@ -292,6 +292,22 @@ public class JsLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.UNKNOWN, text);
     }
 
+    @SuppressWarnings("unchecked")
+    public void testComments6() {
+        String text = "/** This is \n";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.UNKNOWN, text);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testComments7() {
+        String text = "/** This is my\ndoc comment */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, text);
+    }
+
     public void testStrings() {
         String[] strings =
             new String[] {

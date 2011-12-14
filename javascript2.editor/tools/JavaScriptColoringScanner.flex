@@ -135,6 +135,8 @@ WhiteSpace = [ \t\f]+
 /* comments */
 TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment = "//" {InputCharacter}*
+DocumentationComment = "/**" {CommentContent} "*"+ "/"
+CommentContent       = ( [^*] | \*+ [^/*] )*
 
 /* identifiers */
 IdentifierPart = [:jletterdigit:]
@@ -328,6 +330,9 @@ RegexpFirstCharacter  = [^\r\n/\\\*\[]
   {FloatLiteral}                 |
   {DoubleLiteral}                |
   {DoubleLiteral}[dD]            { return JsTokenId.NUMBER; }
+
+  /* comments */
+  {DocumentationComment}         { return JsTokenId.BLOCK_COMMENT; }
 
   /* comments */
   {TraditionalComment}           { return JsTokenId.BLOCK_COMMENT; }
