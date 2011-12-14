@@ -388,6 +388,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
         return validated[0];
     }
 
+    @NbBundle.Messages("TXT_Question=Question")
     private static StyledDocument getDocument(EditorCookie ec) throws IOException {
         StyledDocument doc = null;
         try {
@@ -395,7 +396,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
         } catch (UserQuestionException uqe) {
             final Object value = DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
-                    NbBundle.getMessage(ProjectEditorSupportImpl.class, "TXT_Question"),
+                    Bundle.TXT_Question(),
                     NotifyDescriptor.YES_NO_OPTION));
             if (value != NotifyDescriptor.YES_OPTION) {
                 return null;

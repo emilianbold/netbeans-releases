@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -39,7 +39,7 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jPanel1" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="platformSelector" pref="153" max="32767" attributes="0"/>
+              <Component id="platformSelector" pref="161" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -51,7 +51,7 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
             <TitledBorder title="Select JVM Platform">
-              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationPanelUI.border.platformSelector.title" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationPanelUI.border.platformSelector.title" replaceFormat="Bundle.JBossIntegrationPanelUI_border_platformSelector_title()"/>
               <Connection PropertyName="font" code="UIManager.getFont(&quot;TitledBorder.font&quot;).deriveFont(Font.BOLD)" type="code"/>
             </TitledBorder>
           </Border>
@@ -69,7 +69,7 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
             <TitledBorder title="Provide information required for automatic integration">
-              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="InformationIntegrationLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString PropertyName="titleX" bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="InformationIntegrationLabel" replaceFormat="Bundle.InformationIntegrationLabel()"/>
             </TitledBorder>
           </Border>
         </Property>
@@ -107,20 +107,20 @@
               <ComponentRef name="directoryJboss"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationProvider_JbossInstallLabelText" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationProvider_JbossInstallLabelText" replaceFormat="Bundle.JBossIntegrationProvider_JbossInstallLabelText()"/>
             </Property>
           </Properties>
         </Component>
         <Component class="org.netbeans.modules.profiler.attach.panels.components.DirectorySelector" name="directoryJboss">
           <Properties>
             <Property name="hint" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationPanelUI.directoryJboss.hint" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationPanelUI.directoryJboss.hint" replaceFormat="Bundle.JBossIntegrationPanelUI_directoryJboss_hint()"/>
             </Property>
             <Property name="hintForeground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="bf" green="4f" red="59" type="rgb"/>
             </Property>
             <Property name="path" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationPanelUI.directoryJboss.path" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/profiler/j2ee/jboss/Bundle.properties" key="JBossIntegrationPanelUI.directoryJboss.path" replaceFormat="Bundle.JBossIntegrationPanelUI_directoryJboss_path()"/>
             </Property>
           </Properties>
           <Events>
@@ -139,7 +139,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="1" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="10" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>

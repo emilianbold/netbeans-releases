@@ -73,7 +73,7 @@ public class MethodNode extends SelectorNode {
 
     /** Creates a new instance of MethodNode */
     public MethodNode(SourceMethodInfo method, MethodsNode parent) {
-        super(method != null ? method.getName() : NbBundle.getMessage(MethodNode.class, "LBL_Unknown"), method != null ? method.getName() : NbBundle.getMessage(MethodNode.class, "LBL_Unknown"), null, SelectorChildren.LEAF, parent); // NOI18N
+        super(method != null ? method.getName() : Bundle.LBL_Unknown(), method != null ? method.getName() : Bundle.LBL_Unknown(), null, SelectorChildren.LEAF, parent); // NOI18N
         
         this.method = method;
 
