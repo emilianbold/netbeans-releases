@@ -24,30 +24,12 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="jScrollField" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jButtonSelectSetters" linkSize="1" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectNone" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectAll" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectGetters" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
-                      </Group>
-                  </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLblAccessVis" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jComboAccess" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="jLblFieldVis" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLblInsertPoint" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLblSort" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLblJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLblTitle" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
                               <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
@@ -55,31 +37,40 @@
                                       <Component id="vetoableCheckBox" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="boundCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jCheckAccess" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="136" pref="136" max="-2" attributes="0"/>
-                              <Component id="jComboField" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="136" pref="136" max="-2" attributes="0"/>
-                              <Component id="jComboJavadoc" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="136" pref="136" max="-2" attributes="0"/>
-                              <Component id="jComboSort" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="136" pref="136" max="-2" attributes="0"/>
-                              <Component id="jComboInsertPoint" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                              <Component id="jCheckAccess" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="jLblTitle" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jLblAccessVis" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLblFieldVis" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLblInsertPoint" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLblSort" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="jLblJavadoc" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="jComboField" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jComboJavadoc" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jComboSort" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="jComboAccess" max="32767" attributes="0"/>
+                                  <Component id="jComboInsertPoint" alignment="0" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="jScrollField" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jButtonSelectSetters" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectNone" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectAll" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectGetters" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -300,11 +291,6 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboField">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new javax.swing.DefaultComboBoxModel(modifierNames)" type="code"/>
-        </Property>
-      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="ACSD_fieldModifiers" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -325,11 +311,6 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboAccess">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new javax.swing.DefaultComboBoxModel(modifierNames)" type="code"/>
-        </Property>
-      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="ACSD_methodAcc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
