@@ -482,9 +482,8 @@ public class TemplateWizard extends WizardDescriptor {
         // bugfix #40876, set null as initial value before show wizard
         setValue (null);
 
-        final java.awt.Dialog d = DialogDisplayer.getDefault().createDialog(this);
-        d.setVisible(true);
-        if (getValue() == CLOSED_OPTION || getValue() == CANCEL_OPTION) {
+        Object result = DialogDisplayer.getDefault().notify(this);
+        if (result == CLOSED_OPTION || result == CANCEL_OPTION) {
             return null;
         }
         // here can return newObjects because instantiateNewObjects() was called
