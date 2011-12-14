@@ -322,7 +322,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 //            fireOpenedIconChange();
     }
 
-    static final class ViewItemTransferable extends ExTransferable.Single {
+    private static final class ViewItemTransferable extends ExTransferable.Single {
 
         private ViewItemNode node;
 
