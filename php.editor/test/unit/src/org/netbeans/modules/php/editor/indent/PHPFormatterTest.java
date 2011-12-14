@@ -155,12 +155,24 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/shortArrays1.php");
     }
 
+    public void testShortArrays2() throws Exception {
+        reformatFileContents("testfiles/formatting/shortArrays2.php");
+    }
+
+    public void testShortArrays4() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.itemsInArrayDeclarationIndentSize, 6);
+        reformatFileContents("testfiles/formatting/shortArrays4.php", options);
+    }
+
     public void testFragment1() throws Exception {
         reformatFileContents("testfiles/formatting/format_fragment1.php");
     }
 
     public void testNestedArrays1() throws Exception {
-        reformatFileContents("testfiles/formatting/nested_array1.php");
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/nested_array1.php", options);
     }
 
     public void testSubsequentQuotes() throws Exception {
