@@ -600,9 +600,22 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
             if (trace) {trace("renaming");} // NOI18N
-            ProcessUtils.ExitStatus ret = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "mv", nameExt2Rename, newNameExt);// NOI18N
-            if (!ret.isOK()) {
-                throw new IOException(ret.error);
+            boolean isRenamed = false;
+            if (USE_VCS) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+                if (interceptor != null) {
+                    FilesystemInterceptorProvider.IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(directChild2Rename), newNameExt);
+                    if (renameHandler != null) {
+                        renameHandler.handle();
+                        isRenamed = true;
+                    }
+                }
+            }
+            if (!isRenamed) {
+                ProcessUtils.ExitStatus ret = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "mv", nameExt2Rename, newNameExt);// NOI18N
+                if (!ret.isOK()) {
+                    throw new IOException(ret.error);
+                }
             }
             
             if (trace) {trace("synchronizing");} // NOI18N

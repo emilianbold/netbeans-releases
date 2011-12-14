@@ -137,7 +137,7 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
 
                 @Override
                 public boolean delete(FileProxyI file) {
-                    Future<Integer> rmFile = CommonTasksSupport.rmFile(env, file.getPath(), null);
+                    Future<Integer> rmFile = CommonTasksSupport.rmDir(env, file.getPath(), true, null);
                     try {
                         doDeleteFiles.add(file);
                         return rmFile.get() == 0;
@@ -217,7 +217,7 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
                 public void handle() throws IOException {
                     doCopyFiles.add(from);
                     doCopyFiles.add(to);
-                    ExitStatus execute = ProcessUtils.execute(env, "cp", from.getPath(), to.getPath());
+                    ExitStatus execute = ProcessUtils.execute(env, "cp", "-r", from.getPath(), to.getPath());
                     if (!execute.isOK()) {
                         throw new IOException();
                     }
