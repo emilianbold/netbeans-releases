@@ -92,4 +92,12 @@ public class PHP54FeaturesTest extends PHPLexerTestBase {
     public void testShortArrays_02() throws Exception {
         performTest("shortArrays_02");
     }
+
+    public void testShortArraysStaticScalar_01() throws Exception {
+        performTest("shortArraysStaticScalar_01");
+    }
+
+    public void testShortArraysStaticScalar_02() throws Exception {
+        performTest("shortArraysStaticScalar_02");
+    }
 }

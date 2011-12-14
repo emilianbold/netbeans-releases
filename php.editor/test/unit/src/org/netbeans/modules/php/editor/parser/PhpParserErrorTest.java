@@ -139,4 +139,12 @@ public class PhpParserErrorTest extends CslTestBase {
     public void testShortArray_02() throws Exception {
         checkErrors("testfiles/parser/shortArrays_02.php");
     }
+
+    public void testShortArraysStaticScalar_01() throws Exception {
+        checkErrors("testfiles/parser/shortArraysStaticScalar_01.php");
+    }
+
+    public void testShortArraysStaticScalar_02() throws Exception {
+        checkErrors("testfiles/parser/shortArraysStaticScalar_02.php");
+    }
 }

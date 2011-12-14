@@ -2737,6 +2737,12 @@ common_scalar:scalar
 	RESULT = array;
 :}
 
+| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
+{:
+	ArrayCreation array = new ArrayCreation(startleft, endright, /*parser.ast,*/ list);
+	RESULT = array;
+:}
+
 | static_class_constant:classConstant
 {:
 	RESULT = classConstant;
