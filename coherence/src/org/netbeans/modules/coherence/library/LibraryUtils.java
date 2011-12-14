@@ -44,18 +44,29 @@ package org.netbeans.modules.coherence.library;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.util.Version;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -64,7 +75,9 @@ import org.openide.util.NbBundle;
 public class LibraryUtils {
 
     private static final Logger LOGGER = Logger.getLogger(LibraryUtils.class.getName());
+
     public static final String LIBRARY_BASE_NAME = "Coherence"; //NOI18N
+    public static final String COHERENCE_CLASS_NAME = "com.tangosol.net.DefaultCacheServer"; //NOI18N
 
     /**
      * Suggests Coherence library name.
@@ -142,10 +155,135 @@ public class LibraryUtils {
     }
 
     /**
-     * Gets library name for library display name
+     * Says whether the given library is Coherence one or not.
+     * @param libraryContent content of library
+     * @return {@code true} if the library is Coherence library, {@code false} otherwise
+     */
+    public static boolean isCoherenceLibrary(List<URL> libraryContent) {
+        try {
+            if (!containsClass(libraryContent, COHERENCE_CLASS_NAME)) {
+                return false;
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Gets all Coherence libraries registered in the NetBeans IDE.
+     * @return {@code List} of all registered Coherence libraries
+     */
+    public static List<Library> getRegisteredCoherenceLibraries() {
+        List<Library> coherenceLibraries = new ArrayList<Library>();
+        Library[] libraries = LibraryManager.getDefault().getLibraries();
+        for (Library library : libraries) {
+            if (!"j2se".equals(library.getType())) { //NOI18N
+                continue;
+            }
+            List<URL> content = library.getContent("classpath"); //NOI18N
+            if (LibraryUtils.isCoherenceLibrary(content)) {
+                coherenceLibraries.add(library);
+            }
+        }
+        return coherenceLibraries;
+    }
+
+    /**
+     * Gets library name for library display name.
+     * @param displayName display name processed for getting the name
      * @return library name
      */
     protected static String parseLibraryName(String displayName) {
         return displayName.replace(" ", "-").toLowerCase(); //NOI18N
+    }
+
+    // Copied from j2ee.common module
+    /**
+     * Returns true if the specified classpath contains a class of the given name,
+     * false otherwise.
+     *
+     * @param classpath consists of jar urls and folder urls containing classes
+     * @param className the name of the class
+     *
+     * @return true if the specified classpath contains a class of the given name,
+     *         false otherwise.
+     *
+     * @throws IOException if an I/O error has occurred
+     */
+    private static boolean containsClass(List<URL> classPath, String className) throws IOException {
+        Parameters.notNull("classpath", classPath); //NOI18N
+        Parameters.notNull("className", className); //NOI18N
+
+        List<File> diskFiles = new ArrayList<File>();
+        for (URL url : classPath) {
+            URL archiveURL = FileUtil.getArchiveFile(url);
+
+            if (archiveURL != null) {
+                url = archiveURL;
+            }
+
+            if ("nbinst".equals(url.getProtocol())) { //NOI18N
+                // try to get a file: URL for the nbinst: URL
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                    if (localURL != null) {
+                        url = localURL;
+                    }
+                }
+            }
+
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                File diskFile = FileUtil.toFile(fo);
+                if (diskFile != null) {
+                    diskFiles.add(diskFile);
+                }
+            }
+        }
+
+        return containsClass(diskFiles, className);
+    }
+
+    // Copied from j2ee.common module
+    /**
+     * Returns true if the specified classpath contains a class of the given name,
+     * false otherwise.
+     *
+     * @param classpath consists of jar files and folders containing classes
+     * @param className the name of the class
+     *
+     * @return true if the specified classpath contains a class of the given name,
+     *         false otherwise.
+     *
+     * @throws IOException if an I/O error has occurred
+     */
+    public static boolean containsClass(Collection<File> classpath, String className) throws IOException {
+        Parameters.notNull("classpath", classpath); //NOI18N
+        Parameters.notNull("driverClassName", className); //NOI18N
+        String classFilePath = className.replace('.', '/') + ".class"; //NOI18N
+        for (File file : classpath) {
+            if (file.isFile()) {
+                JarFile jf = new JarFile(file);
+                try {
+                    Enumeration entries = jf.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = (JarEntry) entries.nextElement();
+                        if (classFilePath.equals(entry.getName())) {
+                            return true;
+                        }
+                    }
+                } finally {
+                    jf.close();
+                }
+            } else {
+                if (new File(file, classFilePath).exists()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
