@@ -71,6 +71,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
 
     private final QualifiedName superClass;
     private Collection<QualifiedName> possibleFQSuperClassNames;
+    private Collection<QualifiedName> usedTraits;
 
     private ClassElementImpl(
             final QualifiedName qualifiedName,
@@ -80,11 +81,13 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             final Set<QualifiedName> ifaceNames,
             final Collection<QualifiedName> fqSuperInterfaces,
             final int flags,
+            final Collection<QualifiedName> usedTraits,
             final String fileUrl,
             final ElementQuery elementQuery) {
         super(qualifiedName, offset, ifaceNames, fqSuperInterfaces, flags, fileUrl, elementQuery);
         this.superClass = superClsName;
         this.possibleFQSuperClassNames = possibleFQSuperClassNames;
+        this.usedTraits = usedTraits;
     }
 
     public static Set<ClassElement> fromSignature(final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
@@ -115,7 +118,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             retval = new ClassElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
                     signParser.getSuperClassName(), signParser.getPossibleFQSuperClassName(),
                     signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(), signParser.getFlags(),
-                    indexResult.getUrl().toString(), indexScopeQuery);
+                    signParser.getUsedTraits(), indexResult.getUrl().toString(), indexScopeQuery);
         }
         return retval;
     }
@@ -128,7 +131,8 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new ClassElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
-                info.getSuperClassName(), Collections.<QualifiedName>emptySet(), info.getInterfaceNames(), Collections.<QualifiedName>emptySet(), info.getAccessModifiers().toFlags(),
+                info.getSuperClassName(), Collections.<QualifiedName>emptySet(), info.getInterfaceNames(),
+                Collections.<QualifiedName>emptySet(), info.getAccessModifiers().toFlags(), info.getUsedTraits(),
                 fileQuery.getURL().toExternalForm(), fileQuery);
     }
 
@@ -136,7 +140,8 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         Parameters.notNull("clz", clz);
         Parameters.notNull("elementQuery", clz);
         ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(clz.getFullyQualifiedName()),
-                clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, null, elementQuery);
+                clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(),
+                Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, Collections.<QualifiedName>emptySet(), null, elementQuery);
         retval.fileObject = clz.getFile();
         return retval;
     }
@@ -195,6 +200,17 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         sb.append(ifaceSb);
         sb.append(SEPARATOR.SEMICOLON);//NOI18N
         sb.append(getPhpModifiers().toFlags()).append(SEPARATOR.SEMICOLON);
+        if (!usedTraits.isEmpty()) {
+            StringBuilder traitSb = new StringBuilder();
+            for (QualifiedName usedTrait : usedTraits) {
+                if (traitSb.length() > 0) {
+                    traitSb.append(","); //NOI18N
+                }
+                traitSb.append(usedTrait.toString());
+            }
+            sb.append(traitSb);
+        }
+        sb.append(";"); //NOI18N
 
         checkClassSignature(sb);
         return sb.toString();
@@ -255,6 +271,11 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     @Override
     public boolean isAbstract() {
         return getPhpModifiers().isAbstract();
+    }
+
+    @Override
+    public Collection<QualifiedName> getUsedTraits() {
+        return usedTraits;
     }
 
     private static class ClassSignatureParser {
@@ -330,6 +351,16 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
 
         int getFlags() {
             return signature.integer(6);
+        }
+
+        public Collection<QualifiedName> getUsedTraits() {
+            Collection<QualifiedName> retval = new HashSet<QualifiedName>();
+            String traits = signature.string(7);
+            final String[] traitNames = traits.split(SEPARATOR.COMMA.toString());
+            for (String trait : traitNames) {
+                retval.add(QualifiedName.create(trait));
+            }
+            return retval;
         }
     }
 }
