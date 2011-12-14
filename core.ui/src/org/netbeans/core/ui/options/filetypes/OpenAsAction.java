@@ -67,7 +67,7 @@ import org.openide.util.actions.NodeAction;
  * @author Jiri Skrivanek
  */
 @ActionID(id = "org.netbeans.core.ui.options.filetypes.OpenAsAction", category = "Edit")
-@ActionRegistration(displayName = "#OpenAsAction.name")
+@ActionRegistration(displayName = "#OpenAsAction.name", /* XXX might work to be context action on DataObject */ lazy=false)
 @ActionReference(path = "Loaders/content/unknown/Actions", position = 150)
 public final class OpenAsAction extends NodeAction {
     

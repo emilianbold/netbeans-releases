@@ -228,7 +228,11 @@ abstract class PatternSandbox extends JPanel
                 FormLayoutHelper.EAGER_COLUMN);
         formHelper.setInlineGaps(true);
         formHelper.addRow(lblPattern, cboxPattern);
-        formHelper.addRow(new JLabel(), lblHint);
+        if (lblHint.getText() != null
+                && !"".equals(lblHint.getText())) {                     //NOI18N
+            formHelper.addRow(new JLabel(), lblHint);
+        }
+
         formHelper.addRow(lblOptions, pnlOptions);
         return form;
     }
@@ -446,13 +450,12 @@ abstract class PatternSandbox extends JPanel
             implements ItemListener {
 
         private JCheckBox chkMatchCase;
-        private JCheckBox chkWholeWords;
-        private JCheckBox chkRegexp;
-        SearchPattern searchPattern = null;
-        BasicSearchForm.TextPatternCheckBoxGroup textPatternCheckBoxGroup;
+        private String regexp;
+        private boolean matchCase;
 
-        public TextPatternSandbox(SearchPattern searchPattern) {
-            this.searchPattern = searchPattern;
+        public TextPatternSandbox(String regexp, boolean matchCase) {
+            this.regexp = regexp;
+            this.matchCase = matchCase;
             initComponents();
         }
 
@@ -460,27 +463,11 @@ abstract class PatternSandbox extends JPanel
         protected void initSpecificComponents() {
 
             chkMatchCase = new JCheckBox();
-            chkWholeWords = new JCheckBox();
-            chkRegexp = new JCheckBox();
-
             chkMatchCase.addItemListener(this);
-            chkWholeWords.addItemListener(this);
-            chkRegexp.addItemListener(this);
-            chkRegexp.addItemListener(new RegexpModeListener());
-
-            BasicSearchForm.TextPatternCheckBoxGroup.bind(
-                    chkMatchCase, chkWholeWords, chkRegexp, null);
             setSpecificMnemonics();
+            chkMatchCase.setSelected(matchCase);
 
-            chkMatchCase.setSelected(searchPattern.isMatchCase());
-            chkWholeWords.setSelected(searchPattern.isWholeWords());
-            chkRegexp.setSelected(searchPattern.isRegExp());
-
-            searchCriteria.setCaseSensitive(searchPattern.isMatchCase());
-            searchCriteria.setWholeWords(searchPattern.isWholeWords());
-            searchCriteria.setRegexp(searchPattern.isRegExp());
-
-            cboxPattern.setSelectedItem(searchPattern.getSearchExpression());
+            cboxPattern.setSelectedItem(regexp);
             SearchHistory history = SearchHistory.getDefault();
             for (SearchPattern sp : history.getSearchPatterns()) {
                 cboxPattern.addItem(sp.getSearchExpression());
@@ -490,10 +477,6 @@ abstract class PatternSandbox extends JPanel
         private void setSpecificMnemonics() {
             Mnemonics.setLocalizedText(chkMatchCase,
                     getText("BasicSearchForm.chkCaseSensitive.text"));  //NOI18N
-            Mnemonics.setLocalizedText(chkWholeWords,
-                    getText("BasicSearchForm.chkWholeWords.text"));     //NOI18N
-            Mnemonics.setLocalizedText(chkRegexp,
-                    getText("BasicSearchForm.chkRegexp.text"));         //NOI18N
         }
 
         @Override
@@ -503,32 +486,20 @@ abstract class PatternSandbox extends JPanel
         }
 
         @Override
-        protected String getHintLabelText() {
-            return getText(
-                    "BasicSearchForm.cboxTextToFind.tooltip");          //NOI18N
-        }
-
-        @Override
         protected JPanel createOptionsPanel() {
             JPanel p = new JPanel();
             p.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
             p.add(chkMatchCase);
-            p.add(chkWholeWords);
-            p.add(chkRegexp);
             return p;
         }
 
         @Override
         protected final void apply() {
-            SearchPattern sp = SearchPattern.create(
-                    getSelectedItemAsString(cboxPattern),
-                    chkWholeWords.isSelected(),
-                    chkMatchCase.isSelected(),
-                    chkRegexp.isSelected());
-            onApply(sp);
+            onApply(getSelectedItemAsString(cboxPattern),
+                    chkMatchCase.isSelected());
         }
 
-        protected void onApply(SearchPattern searchPattern) {
+        protected void onApply(String regexpExpr, boolean matchCase) {
         }
 
         @Override
@@ -548,10 +519,6 @@ abstract class PatternSandbox extends JPanel
             ItemSelectable is = e.getItemSelectable();
             if (is == chkMatchCase) {
                 searchCriteria.setCaseSensitive(chkMatchCase.isSelected());
-            } else if (is == chkWholeWords) {
-                searchCriteria.setWholeWords(chkWholeWords.isSelected());
-            } else if (is == chkRegexp) {
-                searchCriteria.setRegexp(chkRegexp.isSelected());
             }
             highlightMatchesLater();
         }
@@ -581,36 +548,27 @@ abstract class PatternSandbox extends JPanel
 
         @Override
         protected String getTitle() {
-            return getText("TextPatternSandbox.title");
+            return getText("TextPatternSandbox.title");                 //NOI18N
+        }
+
+        @Override
+        protected String getHintLabelText() {
+            return "";                                                  //NOI18N
         }
     }
 
-    /**
-     * Sandbox for file path pattern.
-     *
-     */
-    static class PathPatternSandbox extends PatternSandbox
-            implements ItemListener {
+    public static class PathPatternSandbox extends PatternSandbox {
 
-        private JCheckBox chkFileRegexp;
-        private boolean pathRegexp;
-        private String value;
+        protected boolean pathRegexp;
+        protected String value;
 
-        public PathPatternSandbox(String value, boolean pathRegexp) {
-            this.pathRegexp = pathRegexp;
+        public PathPatternSandbox(String value) {
             this.value = value;
             initComponents();
         }
 
         @Override
         protected void initSpecificComponents() {
-            chkFileRegexp = new JCheckBox();
-            chkFileRegexp.addItemListener(this);
-            chkFileRegexp.addItemListener(new RegexpModeListener());
-            chkFileRegexp.setSelected(pathRegexp);
-
-            Mnemonics.setLocalizedText(chkFileRegexp,
-                    getText("BasicSearchForm.chkFileNameRegex.text"));  //NOI18N
 
             cboxPattern.setSelectedItem(value);
 
@@ -618,8 +576,6 @@ abstract class PatternSandbox extends JPanel
             for (String s : reverse(memory.getFileNamePatterns())) {
                 cboxPattern.addItem(s);
             }
-
-            searchCriteria.setFileNameRegexp(pathRegexp);
         }
 
         @Override
@@ -630,26 +586,20 @@ abstract class PatternSandbox extends JPanel
 
         @Override
         protected String getHintLabelText() {
-            return getText(
-                    "BasicSearchForm.cboxFileNamePattern.tooltip");     //NOI18N
+            return "";                                                  //NOI18N
         }
 
         @Override
         protected JPanel createOptionsPanel() {
-            JPanel jp = new JPanel();
-            jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
-            jp.setLayout(new BoxLayout(jp, BoxLayout.LINE_AXIS));
-            jp.add(chkFileRegexp);
-            return jp;
+            return new JPanel();
         }
 
         @Override
-        protected final void apply() {
-            onApply(getSelectedItemAsString(cboxPattern),
-                    chkFileRegexp.isSelected());
+        protected void apply() {
+            onApply(getSelectedItemAsString(cboxPattern));
         }
 
-        protected void onApply(String pattern, boolean regexp) {
+        protected void onApply(String regexp) {
         }
 
         @Override
@@ -662,15 +612,6 @@ abstract class PatternSandbox extends JPanel
         protected void saveTextPaneContent() {
             String c = textPane.getText();
             FindDialogMemory.getDefault().setPathSandboxContent(c);
-        }
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            ItemSelectable is = e.getItemSelectable();
-            if (is == chkFileRegexp) {
-                searchCriteria.setFileNameRegexp(chkFileRegexp.isSelected());
-                highlightMatchesLater();
-            }
         }
 
         @Override
@@ -740,7 +681,7 @@ abstract class PatternSandbox extends JPanel
             final JButton b = new JButton();
             jp.add(b);
             Mnemonics.setLocalizedText(b,
-                    getText("PathPatternSandbox.browseButton.text"));
+                    getText("PathPatternSandbox.browseButton.text"));   //NOI18N
             b.addActionListener(new ActionListener() {
 
                 @Override
@@ -763,7 +704,70 @@ abstract class PatternSandbox extends JPanel
 
         @Override
         protected String getTitle() {
-            return getText("PathPatternSandbox.title");
+            return getText("PathPatternSandbox.title");                 //NOI18N
+        }
+    }
+
+    /**
+     * Sandbox for file path pattern.
+     *
+     */
+    static class PathPatternComposer extends PathPatternSandbox
+            implements ItemListener {
+
+        private JCheckBox chkFileRegexp;
+
+        public PathPatternComposer(String value, boolean pathRegexp) {
+            super(value);
+            this.pathRegexp = pathRegexp;
+            initComponents();
+        }
+
+        @Override
+        protected void initSpecificComponents() {
+            super.initSpecificComponents();
+            chkFileRegexp = new JCheckBox();
+            chkFileRegexp.addItemListener(this);
+            chkFileRegexp.addItemListener(new RegexpModeListener());
+            chkFileRegexp.setSelected(pathRegexp);
+
+            Mnemonics.setLocalizedText(chkFileRegexp,
+                    getText("BasicSearchForm.chkFileNameRegex.text"));  //NOI18N
+
+            searchCriteria.setFileNameRegexp(pathRegexp);
+        }
+
+        @Override
+        protected JPanel createOptionsPanel() {
+            JPanel jp = new JPanel();
+            jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+            jp.setLayout(new BoxLayout(jp, BoxLayout.LINE_AXIS));
+            jp.add(chkFileRegexp);
+            return jp;
+        }
+
+        @Override
+        protected final void apply() {
+            onApply(getSelectedItemAsString(cboxPattern),
+                    chkFileRegexp.isSelected());
+        }
+
+        protected void onApply(String pattern, boolean regexp) {
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            ItemSelectable is = e.getItemSelectable();
+            if (is == chkFileRegexp) {
+                searchCriteria.setFileNameRegexp(chkFileRegexp.isSelected());
+                highlightMatchesLater();
+            }
+        }
+
+        @Override
+        protected String getHintLabelText() {
+            return getText(
+                    "BasicSearchForm.cboxFileNamePattern.tooltip");     //NOI18N
         }
     }
 

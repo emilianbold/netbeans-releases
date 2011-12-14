@@ -83,7 +83,7 @@ import org.openide.util.RequestProcessor;
  * @author S. Aubrecht
  */
 @ActionID(id = "org.netbeans.modules.maven.apisupport.OpenBrandingEditorAction", category = "Project")
-@ActionRegistration(displayName = "#LBL_OpenBrandingEditor")
+@ActionRegistration(displayName = "#LBL_OpenBrandingEditor", lazy=false)
 @ActionReference(position = 3150, path = "Projects/org-netbeans-modules-maven/Actions")
 @Messages("LBL_OpenBrandingEditor=Branding...")
 public class OpenBrandingEditorAction extends AbstractAction implements ContextAwareAction {

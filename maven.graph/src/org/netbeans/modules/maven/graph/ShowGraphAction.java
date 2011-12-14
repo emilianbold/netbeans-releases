@@ -62,7 +62,7 @@ import org.openide.util.Lookup;
  * @author mkleint
  */
 @ActionID(id = "org.netbeans.modules.maven.graph.ShowGraphAction", category = "Project")
-@ActionRegistration(displayName = "#ACT_Show_Graph")
+@ActionRegistration(displayName = "#ACT_Show_Graph", lazy=false)
 @ActionReferences({
     @ActionReference(position = 1650, path = "Projects/org-netbeans-modules-maven/Actions", separatorAfter=1655),
     @ActionReference(position = 113, path = "Editors/text/x-maven-pom+xml/Popup", separatorAfter=213)

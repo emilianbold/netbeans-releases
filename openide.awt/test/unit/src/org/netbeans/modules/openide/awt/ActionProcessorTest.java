@@ -625,6 +625,19 @@ public class ActionProcessorTest extends NbTestCase {
             return null;
         }
     }
+    @ActionID(category="eager", id="direct.seven")
+    @ActionRegistration(displayName="Direct Action", lazy=false)
+    public static class Direct7 extends AbstractAction {
+        @Override public void actionPerformed(ActionEvent e) {}
+    }
+    @ActionID(category="eager", id="direct.eight")
+    @ActionRegistration(displayName="Direct Action", lazy=true)
+    public static class Direct8 extends AbstractAction implements ContextAwareAction {
+        @Override public void actionPerformed(ActionEvent e) {}
+        @Override public Action createContextAwareInstance(Lookup actionContext) {
+            return this;
+        }
+    }
     
     @ActionID(category="menutext", id="namedaction")
     @ActionRegistration(displayName="This is an Action", menuText="This is a Menu Action", popupText="This is a Popup Action")
@@ -691,6 +704,20 @@ public class ActionProcessorTest extends NbTestCase {
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Action created", obj);
         assertEquals("Direct class is created", Direct6.class, obj.getClass());
+    }
+    public void testDirectInstanceIfRequested() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-seven.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct7.class, obj.getClass());
+    }
+    public void testIndirectInstanceIfRequested() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-eight.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertNotSame("Direct class is not created", Direct8.class, obj.getClass());
     }
     
     public void testNoKeyForDirects() throws IOException {

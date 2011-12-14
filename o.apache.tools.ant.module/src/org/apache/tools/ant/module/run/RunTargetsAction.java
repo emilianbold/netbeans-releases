@@ -81,7 +81,7 @@ import org.openide.util.actions.SystemAction;
  * undocumented targets.
  */
 @ActionID(id = "org.apache.tools.ant.module.nodes.RunTargetsAction", category = "Build")
-@ActionRegistration(displayName = "#LBL_run_targets_action")
+@ActionRegistration(displayName = "#LBL_run_targets_action", lazy=false)
 @ActionReferences(value = {
     @ActionReference(position = 900, path = "Editors/text/x-ant+xml/Popup"),
     @ActionReference(position = 200, path = "Loaders/text/x-ant+xml/Actions")})

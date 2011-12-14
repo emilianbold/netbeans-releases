@@ -110,7 +110,7 @@ import org.openide.util.actions.Presenter;
  * @author Greg Crawley, Adam Sotona, Jesse Glick
  */
 @ActionID(id="org.netbeans.modules.project.ui.actions.ActiveConfigAction", category="Project")
-@ActionRegistration(displayName="#ActiveConfigAction.label")
+@ActionRegistration(displayName="#ActiveConfigAction.label", lazy=false)
 @ActionReferences({
     @ActionReference(path="Menu/BuildProject", position=300),
     @ActionReference(path="Toolbars/Build", position=80)

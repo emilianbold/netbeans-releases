@@ -86,7 +86,7 @@ import org.openide.util.actions.Presenter;
  * undocumented targets.
  */
 @ActionID(id = "org.netbeans.modules.ant.debugger.RunTargetsAction", category = "Build")
-@ActionRegistration(displayName = "#LBL_run_targets_action")
+@ActionRegistration(displayName = "#LBL_run_targets_action", lazy=false)
 @ActionReference(path = "Loaders/text/x-ant+xml/Actions", position = 300)
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
