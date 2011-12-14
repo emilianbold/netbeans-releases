@@ -2210,6 +2210,7 @@ jarsigner.storepass=${jarsigner.storepass}
              value="${nb.bundles.output.dir}/jdk"/>
 
         <mkdir dir="${jdk.output.dir}"/>
+        <property name="engine.dist.file.name" value="nbi-engine.jar"/>
         <antcall target="build-netbeans-engine">
 		<param name="netbeans.engine.branding.kit" value="jdk"/>
 	</antcall>
