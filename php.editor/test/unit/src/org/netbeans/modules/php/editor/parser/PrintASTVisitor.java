@@ -392,7 +392,7 @@ public class PrintASTVisitor implements Visitor {
         XMLPrintNode printNode = new XMLPrintNode(node, "FieldsDeclaration",
                 new String[]{"modifier", node.getModifierString() });
         printNode.addChildrenGroup("VariableNames", node.getVariableNames());
-        printNode.addChildrenGroup("InitialValues", node.getVariableNames());
+        printNode.addChildrenGroup("InitialValues", node.getInitialValues());
         printNode.print(this);
     }
 

@@ -84,9 +84,16 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='36' end='40' isDollared='true'>
-                                <Identifier start='37' end='40' name='arr'/>
-                            </Variable>
+                            <ArrayCreation start='43' end='55'>
+                                <ArrayElement start='44' end='54'>
+                                    <Key>
+                                        <Scalar start='44' end='45' type='INT' value='1'/>
+                                    </Key>
+                                    <Value>
+                                        <Scalar start='49' end='54' type='STRING' value='"foo"'/>
+                                    </Value>
+                                </ArrayElement>
+                            </ArrayCreation>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='61' end='91' modifiers='public'>

@@ -112,9 +112,11 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='95' end='97' isDollared='true'>
-                                <Identifier start='96' end='97' name='e'/>
-                            </Variable>
+                            <Quote start='100' end='171' type='HEREDOC'>
+                                <Expressions>
+                                    <Scalar start='120' end='170' type='STRING' value='If you see this, everything is ok.\n'/>
+                                </Expressions>
+                            </Quote>
                         </InitialValues>
                     </FieldsDeclaration>
                 </Block>
