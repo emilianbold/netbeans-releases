@@ -41,15 +41,23 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
+import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.net.URL;
 import java.util.*;
-import java.util.prefs.Preferences;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbPreferences;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -57,29 +65,41 @@ import org.openide.util.Parameters;
  */
 final class ArchiveTimeStamps {
 
+    /*test*/ static final int SAVE_DELAY = 2500;
+    private static final String ARCHIVE_TIME_STAMPS = "archives.properties";   //NOI18N
     private static final String PROP_BINARY_INDEXER_STATE = "ArchiveTimeStamps.indexerState";   //NOI18N
     private static final Pair<Long,Map<Pair<String,Integer>,Integer>> FORCE_RESCAN =
             Pair.<Long,Map<Pair<String,Integer>,Integer>>of(0L,Collections.<Pair<String,Integer>,Integer>emptyMap());
     private static final String SEPARATOR = ":";  //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ArchiveTimeStamps.class.getName(), 1, false, false);
+    private static final Saver saver = new Saver();
+    private static final RequestProcessor.Task saverTask = RP.create(saver);
+    private static final Logger LOG = Logger.getLogger(ArchiveTimeStamps.class.getName());
     //@GuardedBy("ArchiveTimeStamps.class")
-    private static Preferences prefs;
+    private static Reference<? extends Store> cachedStore;
 
     private ArchiveTimeStamps() {}
 
     @NonNull
-    static Pair<Long,Map<Pair<String,Integer>,Integer>> getLastModified(@NonNull final FileObject archiveFile) throws IOException {
+    static Pair<Long,Map<Pair<String,Integer>,Integer>> getLastModified(
+        @NonNull final URL archiveFile) throws IOException {
         Parameters.notNull("archiveFile", archiveFile); //NOI18N
-        return parse(getPreferences().get(archiveFile.getURL().toExternalForm(), null));
+        final Store store = getStore();
+        assert store != null;
+        return parse(store.get(archiveFile.toExternalForm()));
 
     }
 
     static void setLastModified(
-        @NonNull final FileObject archiveFile,
+        @NonNull final URL archiveFile,
         @NonNull final Pair<Long,Map<Pair<String,Integer>,Integer>> timeStamp) throws IOException {
         Parameters.notNull("archiveFile", archiveFile); //NOI18N
         Parameters.notNull("timeStamp", timeStamp); //NOI18N
-        final Preferences p = getPreferences();
-        p.put(archiveFile.getURL().toExternalForm(), generate(timeStamp));
+        final Store store = getStore();
+        assert store != null;
+        store.put(archiveFile.toExternalForm(), generate(timeStamp));
+        saver.getAndSetPropertiesToSave(store);
+        saverTask.schedule(SAVE_DELAY);
     }
 
     static int getIndexerState(
@@ -94,6 +114,7 @@ final class ArchiveTimeStamps {
         SPIAccessor.getInstance().putProperty(ctx, PROP_BINARY_INDEXER_STATE, state);
     }
 
+    @NonNull
     private static Pair<Long,Map<Pair<String,Integer>,Integer>> parse(@NullAllowed final String record) {
         if (record == null) {
             return FORCE_RESCAN;
@@ -134,6 +155,7 @@ final class ArchiveTimeStamps {
         return Pair.<Long,Map<Pair<String,Integer>,Integer>>of(timeStamp,indexers);
     }
 
+    @NonNull
     private static String generate(Pair<Long,Map<Pair<String,Integer>,Integer>> data) {
         final StringBuilder sb = new StringBuilder();
         for (Map.Entry<Pair<String,Integer>,Integer> r : data.second.entrySet()) {
@@ -150,11 +172,115 @@ final class ArchiveTimeStamps {
         return sb.toString();
     }
 
-    private static synchronized Preferences getPreferences () {
-        if (prefs == null) {
-            final Preferences root = NbPreferences.forModule(ProxyBinaryIndexerFactory.class);
-            prefs = root.node(ArchiveTimeStamps.class.getSimpleName());
+    /**
+     * Returns possibly cached  {@link EditableProperties}.
+     * @return the {@link EditableProperties}
+     * @throws IOException when properties cannot be loaded.
+     */
+    @NonNull
+    private static synchronized Store getStore () throws IOException {
+        Store store = cachedStore == null ? null : cachedStore.get();
+        if (store == null) {
+            store = new Store();
+            final FileObject file = getArchiveTimeStampsFile(false);
+            if (file != null) {
+                final InputStream in = new BufferedInputStream(file.getInputStream());
+                try {
+                    store.load(in);
+                } finally {
+                    in.close();
+                }
+            }
+            cachedStore = new SoftReference<Store>(store);
         }
-        return prefs;
+        return store;
+    }
+
+    @CheckForNull
+    private static FileObject getArchiveTimeStampsFile(final boolean create) throws IOException {
+        final FileObject cacheFolder = CacheFolder.getCacheFolder();
+        return create ?
+            FileUtil.createData(cacheFolder, ARCHIVE_TIME_STAMPS):
+            cacheFolder.getFileObject(ARCHIVE_TIME_STAMPS);
+    }
+
+    private static class Saver implements Runnable {
+
+        //@GuardedBy("this")
+        private Store toSave;
+
+        @Override
+        public void run() {
+            final Store store = getAndSetPropertiesToSave(null);
+            assert store != null;
+            try {
+                LOG.fine("STORING");             //NOI18N
+                final FileObject file = getArchiveTimeStampsFile(true);
+                final FileLock lock = file.lock();
+                try {
+                    final OutputStream out = new BufferedOutputStream(file.getOutputStream(lock));
+                    try {
+                        store.store(out);
+                    } finally {
+                        out.close();
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+                LOG.fine("STORED");             //NOI18N
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+
+        @CheckForNull
+        public synchronized Store getAndSetPropertiesToSave(@NullAllowed final Store store) {
+            assert store == null || toSave == null || store == toSave;
+            final Store old = toSave;
+            toSave = store;
+            return old;
+        }
+    }
+
+    private static final class Store {
+
+        private final Object lock;
+        //@GuardedBy("lock")
+        private final EditableProperties properties;
+
+        public Store() {
+            lock = new Object();
+            properties = new EditableProperties(true);
+        }
+
+        public void put(
+            @NonNull final String key,
+            @NonNull final String value) {
+            synchronized (lock) {
+                properties.put(key, value);
+            }
+        }
+
+        @CheckForNull
+        public String get(
+            @NonNull final String key) {
+            synchronized (lock) {
+                return properties.get(key);
+            }
+        }
+
+        public void load(
+            @NonNull final InputStream in) throws IOException {
+            synchronized (lock) {
+                properties.load(in);
+            }
+        }
+
+        public void store(
+            @NonNull final OutputStream out) throws IOException {
+            synchronized (lock) {
+                properties.store(out);
+            }
+        }
     }
 }
