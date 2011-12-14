@@ -39,6 +39,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -83,7 +84,10 @@ public class JsLanguage extends DefaultLanguageConfig {
     public Parser getParser() {
         return new JsParser();
     }
-    
-    
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new JsStructureScanner();
+    }
     
 }

@@ -42,6 +42,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -52,6 +54,7 @@ public class JsParserResult extends ParserResult {
 
     private FunctionNode root;
     private List<Error> errors;
+    private Model model;
     
     public JsParserResult(Snapshot snapshot, FunctionNode root) {
         super(snapshot);
@@ -77,4 +80,12 @@ public class JsParserResult extends ParserResult {
         this.errors = errors;
     }
     
+    public Model getModel() {
+        synchronized(this) {
+            if (model == null) {
+                model = ModelFactory.getModel(this);
+            }
+        }
+        return model;
+    }
 }
