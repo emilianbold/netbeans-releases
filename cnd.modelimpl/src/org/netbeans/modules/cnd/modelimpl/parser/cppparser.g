@@ -269,6 +269,8 @@ tokens {
 }
 
 {
+    public static CppParserAction action;
+
     // Defines for flags passed to init methods
     public static final int CPP_STATEMENT_TRACE		= 0x1;
     public static final int CPP_STATEMENT_TRACE_VERBOSE = 0x2;
@@ -960,13 +962,16 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             )*
             LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? (LCURLY)
         ) =>
+        {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
             |   tq = cv_qualifier
             |   LITERAL_typedef
         )*
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
-        enum_specifier (init_declarator_list[declOther])? SEMICOLON! //{end_of_stmt();}
+        enum_specifier (init_declarator_list[declOther])? 
+        {action.end_enum_declaration(LT(1));}
+        SEMICOLON! //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
 	|
 		// Destructor DEFINITION (templated or non-templated)
@@ -1146,10 +1151,12 @@ decl_namespace
 			//	 }	// Used for diagnostic trigger
 			//}
 			(options {greedy=true;} : namespace_attribute_specification)?
+                        {action.namespace_body(LT(1));}
 			LCURLY!
 			//{enterNewLocalScope();}
 			((external_declaration)*)
 			{/*exitLocalScope();*/{ #decl_namespace = #(#[CSM_NAMESPACE_DECLARATION, name], #decl_namespace); }}
+                        {action.end_namespace_body(LT(1));}
 			RCURLY
 			// The following should be implemented to match the optional
 			// statement above
@@ -1775,7 +1782,8 @@ qualified_type
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
 		s = scope_override
-		id:ID
+                id:ID
+                {if(s.isEmpty()) {action.id(id);} }
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
 		)?
@@ -1796,23 +1804,27 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                     enclosingClass = id;
                 }
                 (base_clause)?
+                {action.class_body(LT(1));}
                 LCURLY
                 // This stores class name in dictionary
                 {beginClassDefinition(ts, id);}
                 class_members
         		{endClassDefinition();}
                 {enclosingClass = saveClass;}
+                {action.end_class_body(LT(1));}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                 | RCURLY )
             |
                 {classForwardDeclaration(ts, ds, id);}
             )
         |
+            {action.class_body(LT(1));}
             LCURLY
             {saveClass = enclosingClass; enclosingClass = (String ) "__anonymous";}
             {beginClassDefinition(ts, "anonymous");}
             (member_declaration)*
             {endClassDefinition();}
+            {action.end_class_body(LT(1));}
             ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
             | RCURLY )
             {enclosingClass = saveClass;}
@@ -1848,10 +1860,14 @@ enum_specifier
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
     |   id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
-                  // elaborated_type_specifier        
+        {action.enum_name(id);}
+
+                     // elaborated_type_specifier        
         {beginEnumDefinition(id.getText());}
         (   (COLON ts = builtin_cv_type_specifier[ts])?
+            {action.enum_body(LT(1));}
             LCURLY enumerator_list 
+            {action.end_enum_body(LT(1));}
             ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
             | RCURLY )
         )
@@ -3035,14 +3051,16 @@ compound_statement
             {#compound_statement = #(#[CSM_COMPOUND_STATEMENT_LAZY, "CSM_COMPOUND_STATEMENT_LAZY"], #compound_statement);}
         |   {!isLazyCompound()}?
             (
+                {action.compound_statement(LT(1));}
                 LCURLY
 		/*{
 		    //end_of_stmt();
 		    //enterNewLocalScope();
 		}*/
 		(statement_list)?
+                {action.end_compound_statement(LT(1));}
 		( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | RCURLY )
+                | RCURLY )
 		//{exitLocalScope();}
 		{#compound_statement = #(#[CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_statement);}
             )                      
@@ -3395,7 +3413,6 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   MOD
             |   DOTMBR 
             |   POINTERTOMBR
-            |   SCOPE
             |   PLUSPLUS
             |   MINUSMINUS
             |   DOT
@@ -3454,7 +3471,8 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
                 balanceLessthanGreaterthanInExpression
             |   {(!inTemplateParams && !searchingGreaterthen)}? (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
             |   {(inTemplateParams && !searchingGreaterthen)}? (ID balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => ID balanceLessthanGreaterthanInExpression
-            |   ID
+            |   SCOPE
+            |   id:ID {action.id(id);}
             )
         )+
 
@@ -3673,26 +3691,27 @@ scope_override returns [String s = ""]
             SCOPE { sitem.append("::");} 
             (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         )?
-        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part)?
+        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[0])?
         {
             sitem.append(sp);
             s = sitem.toString();
         }
     ;
 
-scope_override_part returns [String s = ""]
+scope_override_part[int level] returns [String s = ""]
     { 
         StringBuilder sitem = new StringBuilder(); 
         String sp = "";
     }
     :
         id:ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
+        {if(level == 0) {action.id(id);} }
         (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         {
             sitem.append(id.getText());
             sitem.append("::");
         }
-        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
+        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[level+1])?            
         {
             sitem.append(sp);
             s = sitem.toString();
