@@ -458,11 +458,6 @@ public class TemplateWizard extends WizardDescriptor {
         showTargetChooser |= targetFolder == null;
         targetChooser = null;
 
-        // Bugfix #16161
-        // Message which cancelled the previous attempt to instantiate the 
-        // template
-        Throwable   thrownMessage = null;
-        
         // Bugfix #15458: Target folder should be set before readSettings of 
         // template wizard first panel is called.
         if (targetFolder != null) {
@@ -483,37 +478,12 @@ public class TemplateWizard extends WizardDescriptor {
             iterator.first();
         }
 
-        try {
-            updateState();
-            // bugfix #40876, set null as initial value before show wizard
-            setValue (null);
+        updateState();
+        // bugfix #40876, set null as initial value before show wizard
+        setValue (null);
 
-            final java.awt.Dialog d = DialogDisplayer.getDefault().createDialog(this);
-            // Bugfix #16161: if there was a message to the user, notify it
-            // after the dialog has been shown on screen:
-            if (thrownMessage != null) {
-                final Throwable t = thrownMessage;
-                thrownMessage = null;
-                d.addComponentListener(new java.awt.event.ComponentAdapter() {
-                                       @Override
-                                           public void componentShown(java.awt.event.ComponentEvent e) {
-                                               if (t.getMessage() != null) {
-                                                   // this is only for backward compatitility (plus bugfix #15618, using errMan to log stack trace)
-                                                   DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(t));
-                                               } else {
-                                                   // this should be used (it checks for exception
-                                                   // annotations and severity)
-                                                   Exceptions.printStackTrace(t);
-                                               }
-                                               d.removeComponentListener(this);
-                                           }
-                                       });
-            }
-            d.setVisible(true);
-        } catch (IllegalStateException ise) {
-            thrownMessage = ise;
-        }
-        if (getValue() == CLOSED_OPTION || getValue() == CANCEL_OPTION) {
+        Object result = DialogDisplayer.getDefault().notify(this);
+        if (result == CLOSED_OPTION || result == CANCEL_OPTION) {
             return null;
         }
         // here can return newObjects because instantiateNewObjects() was called
