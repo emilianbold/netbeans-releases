@@ -163,7 +163,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 File f = getDelegate().getTopmostManagedAncestor(file.toFile());
                 if(f != null) {
                     return VCSFileProxy.createFileProxy(f);
-                }
+            } 
             } 
             if(hasMetadata(file)) {
                 LOG.log(
@@ -175,13 +175,13 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 File f = getDelegate().getTopmostManagedAncestor(file.toFile());
                 if(f != null) {
                     return VCSFileProxy.createFileProxy(f);
-                }
+            }
             }
         } else {
             File f = getDelegate().getTopmostManagedAncestor(file.toFile());
             if(f != null) {
                 return VCSFileProxy.createFileProxy(f);
-            }
+        }
         }
         return null;
     }
@@ -274,7 +274,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             interceptor = new VCSInterceptor() {
 
                 @Override
-                public boolean isMutable(VCSFileProxy file) {
+                public Boolean isMutable(VCSFileProxy file) {
                     return getDelegate().getVCSInterceptor().isMutable(file.toFile());
                 }
 

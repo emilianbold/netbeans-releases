@@ -74,8 +74,8 @@ public abstract class VCSInterceptor {
      * @param file a file to query
      * @return true if the file is mutable (writable, deletable and movable), false otherwise
      */
-    public boolean isMutable(VCSFileProxy file) {
-        return file.canWrite();
+    public Boolean isMutable(VCSFileProxy file) {
+        return null;
     }
 
     /**

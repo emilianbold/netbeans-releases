@@ -124,14 +124,8 @@ public final class VCSFilesystemInterceptor {
      * @param file
      * @return 
      */
-    public static boolean canWrite(VCSFileProxy file) {
+    public static Boolean canWrite(VCSFileProxy file) {
         LOG.log(Level.FINE, "canWrite {0}", file);
-        if (Utils.canWrite(file)) {
-            return true;
-        }
-        if (!Utils.exists(file)) {
-            return false;
-        }
         // can be optimized by taking out local history from the search
         return getInterceptor(file, false, "isMutable").isMutable(file); // NOI18N
     }
@@ -464,8 +458,8 @@ public final class VCSFilesystemInterceptor {
     private final static VCSInterceptor nullInterceptor = new VCSInterceptor() {
 
         @Override
-        public boolean isMutable(VCSFileProxy file) {
-            return true;
+        public Boolean isMutable(VCSFileProxy file) {
+            return null;
         }
 
         @Override

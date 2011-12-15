@@ -94,9 +94,30 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     // QUERIES
     // ==================================================================================================
 
+    /**
+     * Provide a way for VCS systems to eventually override the fact that a file 
+     * is read-only - e.g. when a file is VCS locked and we still want be able to edit and 
+     * do a silent unlock in the background.
+     * The contract with masterfs is that the proper value is determined no matter 
+     * if the file is managed by a VCS or not.
+     * 
+     * @param file
+     * @return 
+     */
     @Override
     public boolean canWrite(File file) {
-        return VCSFilesystemInterceptor.canWrite(VCSFileProxy.createFileProxy(file));
+        if(file.canWrite()) {
+            // In case it isn't read-only we can directly return and avoid 
+            // potential (and unnecessary) io caused in VCS by determining the files ownership.
+            return true;
+        }
+        if (!file.exists()) {
+            // In case it doesn't even exist we can directly return and avoid 
+            // potential (and unnecessary) io caused in VCS by determining the files ownership.
+            return false;
+        }        
+        Boolean canWrite = VCSFilesystemInterceptor.canWrite(VCSFileProxy.createFileProxy(file));
+        return canWrite == null ? file.canWrite() : canWrite;
     }
 
     @Override
