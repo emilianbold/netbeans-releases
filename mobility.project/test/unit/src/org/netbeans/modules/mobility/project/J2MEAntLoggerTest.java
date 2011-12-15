@@ -348,6 +348,10 @@ public class J2MEAntLoggerTest extends NbTestCase {
         public int getVerbosity() {
             return verbosity;
         }
+
+        @Override public Map<String,String> getProperties() {
+            return Collections.emptyMap();
+        }
         
         public String[] getOriginatingTargets() {
             return new String[] {"mock-target"};
