@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.versioning;
 
-import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -56,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -211,7 +211,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     lastEvent = System.currentTimeMillis();
-                    VersioningAnnotationProvider provider = VersioningAnnotationProvider.getDefault();
+                    org.netbeans.modules.versioning.core.VersioningAnnotationProvider provider = org.netbeans.modules.versioning.core.VersioningAnnotationProvider.getDefault();
                     long time = System.currentTimeMillis();
                     for (FileObject fo : files) {
                         String name = fo.getNameExt();
