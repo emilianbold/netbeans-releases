@@ -381,6 +381,9 @@ public class LuceneIndex implements Index.Transactional {
                     out.deleteDocuments(queryConvertor.convert(td));
                 }
             }            
+            if (data.isEmpty()) {
+                return;
+            }
             if (debugIndexMerging) {
                 out.setInfoStream (System.err);
             }                

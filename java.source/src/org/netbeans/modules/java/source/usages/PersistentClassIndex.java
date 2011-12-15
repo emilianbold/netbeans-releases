@@ -444,6 +444,18 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             resetPkgCache();
             index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(true), false);
         }
+
+        @Override
+        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+            resetPkgCache();
+            if (index instanceof Index.Transactional) {
+                ((Index.Transactional)index).txStore(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor());
+            } else {
+                // fallback to the old behaviour
+                deleteAndStore(refs, toDelete);
+            }
+        }
+        
         @Override
         public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();

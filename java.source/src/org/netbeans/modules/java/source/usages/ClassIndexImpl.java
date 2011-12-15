@@ -228,6 +228,15 @@ public abstract class ClassIndexImpl {
         void clear() throws IOException;
         void deleteEnclosedAndStore (final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> topLevels) throws IOException;
         void deleteAndStore(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+        /**
+         * Different from deleteAndStore in that the data is NOT committed, but just flushed. Make sure, deleteAndStore is called from the
+         * indexer's finish!
+         * 
+         * @param refs
+         * @param toDelete
+         * @throws IOException 
+         */
+        void deleteAndFlush(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
     }
     
     private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {
