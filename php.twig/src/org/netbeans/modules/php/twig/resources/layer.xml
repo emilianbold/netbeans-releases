@@ -26,7 +26,7 @@ License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
-Contributor(s):
+Contributor(s): Sebastian Hörl
 
   The Original Software is NetBeans. The Initial Developer of the Original
   Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
@@ -61,16 +61,16 @@ made subject to such option by the copyright holder.
                 </file>
 
                 <file name="org-netbeans-modules-php-twig-editor-embedding-TwigEmbeddingProvider$Factory.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory" />
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
 
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.resources.Bundle"/>
 
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="highlighting.xml" url="highlighting.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.Bundle"/>
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.resources.Bundle"/>
                             </file>
                         </folder>
                     </folder>
@@ -284,7 +284,10 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="mime.xml" url="mime.xml" />
+            <file name="TwigResolver.xml" url="TwigResolver.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.twig.resources.Bundle#Services/MIMEResolver/TwigResolver.xml"/>
+                <attr name="position" intvalue="125"/>
+            </file>
         </folder>
     </folder>
     <folder name="OptionsDialog">
@@ -299,7 +302,7 @@ made subject to such option by the copyright holder.
             <file name="TwigTemplate.html.twig" url="TwigTemplate.html.twig">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/php/twig/resources/icon.png"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
             </file>
