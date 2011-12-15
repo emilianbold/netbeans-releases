@@ -81,8 +81,7 @@ public abstract class NeonTestBase extends CslTestBase {
             // if doesn't exist, create it
             FileObject goldenFO = touch(goldenFolder, filename + ".pass");
             copyStringToFileObject(goldenFO, result);
-        }
-        else {
+        } else {
             // if exist, compare it.
             goldenFile = getGoldenFile(filename + ".pass");
             FileObject resultFO = touch(getWorkDir(), filename + ".result");

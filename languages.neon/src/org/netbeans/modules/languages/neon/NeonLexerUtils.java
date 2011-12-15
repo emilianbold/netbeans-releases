@@ -61,7 +61,7 @@ public class NeonLexerUtils {
         return hi.tokenSequence(language);
     }
 
-    public static String getFileContent (File file) throws Exception{
+    public static String getFileContent(File file) throws Exception{
         StringBuilder sb = new StringBuilder();
         String lineSep = "\n";//NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); //NOI18N

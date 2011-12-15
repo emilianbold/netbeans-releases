@@ -119,7 +119,7 @@ public class NeonLexerTest extends NeonTestBase {
     }
 
     private String createResult(TokenSequence<?> ts) throws Exception {
-        StringBuilder result = new StringBuilder ();
+        StringBuilder result = new StringBuilder();
         while (ts.moveNext()) {
             TokenId tokenId = ts.token().id();
             CharSequence text = ts.token().text();
