@@ -46,6 +46,7 @@ package org.apache.tools.ant.module.run;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
 import java.util.Set;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
@@ -99,6 +100,7 @@ public final class LoggerTrampoline {
         String getDisplayName();
         OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2);
         InputOutput getIO();
+        Map<String,String> getProperties();
     }
     
     public interface AntEventImpl {
