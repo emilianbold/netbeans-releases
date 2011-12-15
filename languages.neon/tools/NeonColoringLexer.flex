@@ -165,7 +165,7 @@ FLOAT_3=[0-9]+\.{EXPONENT}?
 FLOAT_4=[0-9]+{EXPONENT}
 FLOAT={FLOAT_1} | {FLOAT_2} | {FLOAT_3} | {FLOAT_4}
 NUMBER={ZERO} | {DECIMAL} | {OCTAL} | {HEXADECIMAL} | {FLOAT}
-LITERAL=([^#%\"',=\[\]\{\}\(\)\<\>\t\n\r ]|"::")+
+LITERAL=([^#%\"',=\[\]\{\}\(\)\<\>\t\n\r ])+
 ARRAY_CLOSE_DELIM = ("]" | "}" | ")")
 ARRAY_MINUS_DELIM="-"
 ARRAY_ITEM_DELIM=","
