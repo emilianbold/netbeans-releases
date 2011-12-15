@@ -1314,6 +1314,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
+    /*test*/ void runAsWork(@NonNull final Runnable r) {
+        assert r != null;
+        final Work work = new Work(false, false, false, true, null) {
+            @Override
+            protected boolean getDone() {
+                r.run();
+                return true;
+            }
+        };
+        getWorker().schedule(work, false);
+    }
+
     private Task getWorker () {
         Task t = this.worker;
         if (t == null) {
