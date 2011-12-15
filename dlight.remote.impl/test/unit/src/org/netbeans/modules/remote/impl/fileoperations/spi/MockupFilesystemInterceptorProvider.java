@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fileoperations;
+package org.netbeans.modules.remote.impl.fileoperations.spi;
 
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
-import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileOperations;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileOperations;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
 

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fileoperations;
+package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -49,8 +49,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.FileProxyI;
-import org.netbeans.modules.remote.impl.fileoperations.MockupFilesystemInterceptorProvider.FilesystemInterceptorImpl;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FileProxyI;
+import org.netbeans.modules.remote.impl.fileoperations.spi.MockupFilesystemInterceptorProvider.FilesystemInterceptorImpl;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -94,6 +94,17 @@ public class InterceptorTestCase extends RemoteFileTestBase {
         if (execEnv != null) {
             removeRemoteDirIfNotNull(remoteDir);
         }
+    }
+
+    @ForAllEnvironments
+    public void testEquals() throws IOException {
+        FileObject remoteDirFO = rootFO.getFileObject(remoteDir);
+        FileObject fo = remoteDirFO.createData("checkme.txt");
+        FileProxyI file1 = MockupFilesystemInterceptorProvider.toFileProxy(fs, fo.getPath());
+        FileProxyI file2 = MockupFilesystemInterceptorProvider.toFileProxy(fs, fo.getPath());
+        assertEquals(file1, file2);
+        MockupFilesystemInterceptorProvider.FilesystemInterceptorImpl interceptor2 = (FilesystemInterceptorImpl) FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fs);
+        assertEquals(interceptor, interceptor2);
     }
 
     @ForAllEnvironments
