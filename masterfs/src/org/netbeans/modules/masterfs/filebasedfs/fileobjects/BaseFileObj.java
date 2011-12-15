@@ -434,8 +434,9 @@ public abstract class BaseFileObj extends FileObject {
                     obj.updateFileName(allRenamed[i], oldFileName, allRenamed[0]);
                     toRename.add(obj);
                 }
-                FolderObj par = (allRenamed[i].getParent() != null) ? (FolderObj) fs.getCachedOnly(affected.getParentFile(), false) : null;
-                if (par != null) {
+                FileObject tmpPar = allRenamed[i].getParent() != null ? fs.getCachedOnly(affected.getParentFile(), false) : null;
+                if (tmpPar instanceof FolderObj) {
+                    FolderObj par = (FolderObj)tmpPar;
                     ChildrenCache childrenCache = par.getChildrenCache();
                     final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
                     if (mutexPrivileged != null) {
