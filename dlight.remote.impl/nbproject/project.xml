@@ -153,7 +153,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.remotefs.versioning</friend>
+                <package>org.netbeans.modules.remote.impl.fileoperations.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

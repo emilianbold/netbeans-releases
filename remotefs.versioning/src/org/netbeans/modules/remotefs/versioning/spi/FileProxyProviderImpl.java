@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.extexecution.ProcessBuilder;
-import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.openide.filesystems.FileObject;
@@ -54,10 +56,19 @@ import org.openide.filesystems.FileSystem;
  */
 @org.openide.util.lookup.ServiceProvider(service=FileOperationsProvider.class, position = 1000)
 public class FileProxyProviderImpl extends FileOperationsProvider {
-    
+    private final Map<FileSystem, FileOperations> map = new HashMap<FileSystem, FileOperations>();
+
     @Override
-    public FileOperations getFileOperations(FileSystem fs) {
-        return new FileOperationsImpl(fs);
+    public synchronized FileOperations getFileOperations(FileSystem fs) {
+        FileOperations fileOperations;
+        synchronized(map) {
+            fileOperations = map.get(fs);
+            if (fileOperations == null) {
+                fileOperations = new FileOperationsImpl(fs);
+                map.put(fs, fileOperations);
+            }
+        }
+        return fileOperations;
     }
     
     private static final class FileOperationsImpl extends FileOperations implements VCSFileProxyOperations {
@@ -95,6 +106,9 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
             VCSFileProxy res = VCSFileProxy.createFileProxy(root);
             String[] split = parent.split("/"); // NOI18N
             for (int i = 0; i < split.length; i++) {
+                if (split[i].isEmpty() || ".".equals(split[i])) { // NOI18N
+                    continue;
+                }
                 res = VCSFileProxy.createFileProxy(res, split[i]);
             }
             return res;
@@ -121,6 +135,9 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
             VCSFileProxy res = VCSFileProxy.createFileProxy(root);
             String[] split = path.split("/"); // NOI18N
             for (int i = 0; i < split.length; i++) {
+                if (split[i].isEmpty() || ".".equals(split[i])) { // NOI18N
+                    continue;
+                }
                 res = VCSFileProxy.createFileProxy(res, split[i]);
             }
             return res;
@@ -151,17 +168,46 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
     }
 
     private static FileProxyO toFileProxy(final VCSFileProxy file) {
-        return new FileProxyO() {
+        return new FileProxyOImpl(file);
+    }
 
-            @Override
-            public String getPath() {
-                return file.getPath();
-            }
+    private static final class FileProxyOImpl implements FileProxyO {
 
-            @Override
-            public String toString() {
-                return file.getPath();
+        private final VCSFileProxy file;
+
+        public FileProxyOImpl(VCSFileProxy file) {
+            this.file = file;
+        }
+
+        @Override
+        public String getPath() {
+            return file.getPath();
+        }
+
+        @Override
+        public String toString() {
+            return file.getPath();
+        }
+
+        @Override
+        public int hashCode() {
+            return file.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
             }
-        };
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileProxyOImpl other = (FileProxyOImpl) obj;
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }
