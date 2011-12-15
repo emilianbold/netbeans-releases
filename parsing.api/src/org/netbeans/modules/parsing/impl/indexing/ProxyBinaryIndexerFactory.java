@@ -107,6 +107,9 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part. Already verified by PathRegistry and RepositoryUpdater."*/)
     public void rootsRemoved(Iterable<? extends URL> removedRoots) {
         final Set<URL> filtered = new HashSet<URL>();
         for (URL removedRoot : removedRoots) {
@@ -122,6 +125,9 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part. Already verified by PathRegistry and RepositoryUpdater."*/)
     public boolean scanStarted (final Context context) {
         if (supports(context) != null) {
             return SPIAccessor.getInstance().scanStarted(getDelegate(),context);
@@ -235,6 +241,9 @@ public final class ProxyBinaryIndexerFactory extends BinaryIndexerFactory {
     private final class Indexer extends BinaryIndexer {
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part. Already verified by PathRegistry and RepositoryUpdater."*/)
         protected void index(@NonNull final Context context) {
             final Map<String,? extends Iterable<? extends FileObject>> matchedFiles = supports(context);
             if (matchedFiles != null) {
