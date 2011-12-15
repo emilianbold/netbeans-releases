@@ -304,6 +304,13 @@ public final class VCSFilesystemInterceptor {
     // HANDLERS
     // ==================================================================================================
     
+    /** Handle to perform an I/O operation. Its presence indicates that
+     * the system is capable to handle given I/O operation (like
+     * {@link #getMoveHandler(org.netbeans.modules.versioning.core.api.VCSFileProxy, org.netbeans.modules.versioning.core.api.VCSFileProxy)}
+     * or 
+     * {@link #getRenameHandler(org.netbeans.modules.versioning.core.api.VCSFileProxy, java.lang.String)}, etc.).
+     * 
+     */
     public interface IOHandler {
         /**
          * @throws java.io.IOException if handled operation isn't successful
