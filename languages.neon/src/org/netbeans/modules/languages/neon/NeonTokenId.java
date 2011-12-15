@@ -62,6 +62,7 @@ public enum NeonTokenId implements TokenId {
     NEON_LITERAL("literal"), //NOI18N
     NEON_VARIABLE("variable"), //NOI18N
     NEON_NUMBER("number"), //NOI18N
+    NEON_REFERENCE("reference"), //NOI18N
     NEON_WHITESPACE("whitespace"); //NOI18N
 
     private final String name;
