@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.impl.indexing;
 
-package org.netbeans.modules.parsing.impl.indexing.friendapi;
-
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author vita
+ * @author Tomas Zezula
  */
-public abstract class IndexingController {
+public class MimeTypes {
 
-    public static synchronized IndexingController getDefault() {
-        return RepositoryUpdater.getDefault().getController();
+    private MimeTypes() {}
+
+    public static void setAllMimeTypes(@NonNull final Set<String> allMimeTypes) {
+        Parameters.notNull("allMimeTypes", allMimeTypes);   //NOI18N
+        Util.allMimeTypes = allMimeTypes;
     }
 
-    public abstract void enterProtectedMode();
-
-    public abstract void exitProtectedMode(Runnable followUpTask);
-
-    public abstract boolean isInProtectedMode();
-
-    @org.netbeans.api.annotations.common.SuppressWarnings(
-    value="DMI_COLLECTION_OF_URLS"
-    /*,justification="URLs have never host part"*/)
-    public abstract Map<URL, List<URL>> getRootDependencies();
-
-    @org.netbeans.api.annotations.common.SuppressWarnings(
-    value="DMI_COLLECTION_OF_URLS"
-    /*,justification="URLs have never host part"*/)
-    public abstract Map<URL, List<URL>> getBinaryRootDependencies();
-
-    @org.netbeans.api.annotations.common.SuppressWarnings(
-    value="DMI_COLLECTION_OF_URLS"
-    /*,justification="URLs have never host part"*/)
-    public abstract Map<URL, List<URL>> getRootPeers();
-
-    public abstract int getFileLocksDelay();
-
-    protected IndexingController() {
+    @CheckForNull
+    public static Set<String> getAllMimeTypes() {
+        return Util.allMimeTypes;
     }
-
 }

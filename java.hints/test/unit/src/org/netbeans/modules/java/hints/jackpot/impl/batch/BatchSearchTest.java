@@ -73,6 +73,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -113,7 +114,7 @@ public class BatchSearchTest extends NbTestCase {
         Main.initializeURLFactory();
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         prepareTest();
-        Util.allMimeTypes = Collections.singleton("text/x-java");
+        MimeTypes.setAllMimeTypes(Collections.singleton("text/x-java"));
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {ClassPathSupport.createClassPath(src1, src2)});
         RepositoryUpdater.getDefault().start(true);
         super.setUp();
