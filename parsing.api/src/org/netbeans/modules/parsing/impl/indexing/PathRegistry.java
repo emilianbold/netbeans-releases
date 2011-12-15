@@ -95,8 +95,17 @@ public final class PathRegistry implements Runnable {
     private final List<PathRegistryEvent.Change> changes = new LinkedList<PathRegistryEvent.Change>();
 
     private Set<ClassPath> activeCps;
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<URL, SourceForBinaryQuery.Result2> sourceResults;
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<URL, URL[]> translatedRoots;
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<URL, WeakValue> unknownRoots;
     private long timeStamp;             //Lamport event ordering
     private volatile Runnable debugCallBack;
@@ -104,7 +113,13 @@ public final class PathRegistry implements Runnable {
     private Collection<URL> libraryPath;
     private Collection<URL> binaryLibraryPath;
     private Collection<URL> unknownSourcePath;
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<URL, PathIds> rootPathIds;
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<String, Set<URL>> pathIdToRoots;
 
     private final Listener listener;
@@ -148,7 +163,11 @@ public final class PathRegistry implements Runnable {
         this.listeners.remove(listener);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     public URL[] sourceForBinaryQuery (final URL binaryRoot, final ClassPath definingClassPath, final boolean fire) {
+        assert binaryRoot.getHost() == null || binaryRoot.getHost().isEmpty();
         URL[] result = this.translatedRoots.get(binaryRoot);
         if (result != null) {
             if (result.length > 0) {
@@ -396,42 +415,30 @@ public final class PathRegistry implements Runnable {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     public Set<String> getSourceIdsFor(URL root) {
+        assert root.getHost() == null || root.getHost().isEmpty();
         PathIds pathIds = getRootPathIds().get(root);
         return pathIds != null ? pathIds.getSids() : null;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     public Set<String> getLibraryIdsFor(URL root) {
+        assert root.getHost() == null || root.getHost().isEmpty();
         PathIds pathIds = getRootPathIds().get(root);
         return pathIds != null ? pathIds.getLids() : null;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     public Set<URL> getRootsMarkedAs(String... pathIds) {
-        Map<String, Set<URL>> rootsByPathIds = getPathIdToRoots();
-
-//        if (LOGGER.isLoggable(Level.FINE)) {
-//            LOGGER.fine("Dumping rootsByPathIds map:"); //NOI18N
-//            for(String id : new TreeSet<String>(rootsByPathIds.keySet())) {
-//                LOGGER.fine(id + ":"); //NOI18N
-//                for(URL root : rootsByPathIds.get(id)) {
-//                    LOGGER.fine("  " + root); //NOI18N
-//                }
-//            }
-//            LOGGER.fine("-----------------------------"); //NOI18N
-//
-//            Map<URL, PathIds> _rootPathIds = getRootPathIds();
-//            LOGGER.fine("Dumping rootPathIds map:"); //NOI18N
-//            for(URL root : _rootPathIds.keySet()) {
-//                LOGGER.fine(root + ": "); //NOI18N
-//                for(String id : new TreeSet<String>(_rootPathIds.get(root).getAll())) {
-//                    LOGGER.fine("  " + id); //NOI18N
-//                }
-//            }
-//            LOGGER.fine("------------------------"); //NOI18N
-//        }
-
-
-        Set<URL> roots = new HashSet<URL>();
+        final Map<String, Set<URL>> rootsByPathIds = getPathIdToRoots();
+        final Set<URL> roots = new HashSet<URL>();
         for(String id : pathIds) {
             Set<URL> idRoots = rootsByPathIds.get(id);
             if (idRoots != null) {
@@ -441,7 +448,11 @@ public final class PathRegistry implements Runnable {
         return roots;
     }
 
-    public Set<String> getMimeTypesFor(URL root) {
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
+    public Set<String> getMimeTypesFor(final URL root) {
+        assert root.getHost() == null || root.getHost().isEmpty();
         PathIds pathIds = getRootPathIds().get(root);
         return pathIds != null ? pathIds.getMimeTypes() : null;
     }
@@ -476,6 +487,9 @@ public final class PathRegistry implements Runnable {
         LOGGER.log(Level.FINE, "resetCacheAndFire, firing done"); // NOI18N
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<URL, PathIds> getRootPathIds () {
         Request request;
         synchronized (this) {
@@ -520,6 +534,9 @@ public final class PathRegistry implements Runnable {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<String, Set<URL>> getPathIdToRoots () {
         Request request;
         synchronized (this) {
@@ -564,6 +581,9 @@ public final class PathRegistry implements Runnable {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private static Result createResources (final Request request) {
         assert request != null;
         final Set<URL> sourceResult = new HashSet<URL> ();
@@ -581,6 +601,7 @@ public final class PathRegistry implements Runnable {
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
+                assert root.getHost() == null || root.getHost().isEmpty();
                 sourceResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
@@ -595,6 +616,7 @@ public final class PathRegistry implements Runnable {
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
+                assert root.getHost() == null || root.getHost().isEmpty();
                 libraryResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
@@ -609,6 +631,7 @@ public final class PathRegistry implements Runnable {
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
                 URL binRoot = entry.getURL();
+                assert binRoot.getHost() == null || binRoot.getHost().isEmpty();
                 if (!translatedRoots.containsKey(binRoot)) {
                     updatePathIds(binRoot, tcp, pathIdsResult, pathIdToRootsResult);
                     
@@ -661,6 +684,9 @@ public final class PathRegistry implements Runnable {
                 newCps, newSR, translatedRoots, request.unknownRoots, pathIdsResult, pathIdToRootsResult);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private static Collection <? extends URL> getSources (final SourceForBinaryQuery.Result2 sr, final Collection<? super URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
         assert sr != null;
         if (sr.preferSources()) {
@@ -670,6 +696,7 @@ public final class PathRegistry implements Runnable {
             for (int i=0; i<roots.length; i++) {
                 try {
                     final URL url = roots[i].getURL();
+                    assert url.getHost() == null || url.getHost().isEmpty();
                     if (cacheDirs != null) {
                         cacheDirs.add (url);
                     }
@@ -689,6 +716,9 @@ public final class PathRegistry implements Runnable {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private static void updatePathIds(URL root, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
         PathIds pathIds = pathIdsResult.get(root);
         if (pathIds == null) {
@@ -709,6 +739,9 @@ public final class PathRegistry implements Runnable {
         LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private static void updateTranslatedPathIds(Collection<? extends URL> roots, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
         Set<String> sids = new HashSet<String>();
         Set<String> mimeTypes = new HashSet<String>();
@@ -863,12 +896,21 @@ public final class PathRegistry implements Runnable {
         final Collection<TaggedClassPath> libraryCps;
         final Collection<TaggedClassPath> binaryLibraryCps;
         final Set<ClassPath> oldCps;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         final Map <URL, SourceForBinaryQuery.Result2> oldSR;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         final Map<URL, WeakValue> unknownRoots;
         final PropertyChangeListener propertyListener;
         final ChangeListener changeListener;
 
-        public Request (final long timeStamp, 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
+        public Request (final long timeStamp,
             final Collection<TaggedClassPath> sourceCps, final Collection<TaggedClassPath> libraryCps, final Collection<TaggedClassPath> binaryLibraryCps,
             final Set<ClassPath> oldCps, final Map <URL, SourceForBinaryQuery.Result2> oldSR, final Map<URL, WeakValue> unknownRoots,
             final PropertyChangeListener propertyListener, final ChangeListener changeListener
@@ -902,12 +944,30 @@ public final class PathRegistry implements Runnable {
         final Collection<URL> binaryLibraryPath;
         final Collection<URL> unknownSourcePath;
         final Set<ClassPath> newCps;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         final Map<URL, SourceForBinaryQuery.Result2> newSR;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         final Map<URL, URL[]> translatedRoots;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         final Map<URL, WeakValue> unknownRoots;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         final Map<URL, PathIds> rootPathIds;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         final Map<String, Set<URL>> pathIdToRoots;
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public Result (final long timeStamp,
             final Collection<URL> sourcePath,
             final Collection<URL> libraryPath,

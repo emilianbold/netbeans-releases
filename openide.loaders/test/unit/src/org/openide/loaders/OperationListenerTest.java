@@ -48,16 +48,10 @@ import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
-import junit.framework.AssertionFailedError;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import java.beans.*;
 import java.io.IOException;
 import java.util.*;
-import junit.textui.TestRunner;
-import org.netbeans.junit.*;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /*
@@ -77,6 +71,10 @@ implements OperationListener {
     /** Creates the test */
     public OperationListenerTest(String name) {
         super(name);
+    }
+
+    @Override protected Level logLevel() {
+        return Level.INFO;
     }
     
     // For each test setup a FileSystem and DataObjects

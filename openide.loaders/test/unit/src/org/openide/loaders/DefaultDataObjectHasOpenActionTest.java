@@ -47,13 +47,10 @@ package org.openide.loaders;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /** DefaultDataObject is supposed to have open operation that shows the text
  * editor or invokes a dialog with questions.
@@ -68,12 +65,7 @@ public final class DefaultDataObjectHasOpenActionTest extends NbTestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        // initialize modules
-        Lookup.getDefault().lookup(ModuleInfo.class);
-
+    @Override protected void setUp() throws Exception {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         FileObject fo = fs.getRoot().createData("x.test");
         obj = DataObject.find(fo);
