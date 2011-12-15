@@ -165,7 +165,7 @@ FLOAT_3=[0-9]+\.{EXPONENT}?
 FLOAT_4=[0-9]+{EXPONENT}
 FLOAT={FLOAT_1} | {FLOAT_2} | {FLOAT_3} | {FLOAT_4}
 NUMBER={ZERO} | {DECIMAL} | {OCTAL} | {HEXADECIMAL} | {FLOAT}
-LITERAL=([^#%\"',=\[\]\{\}\(\)\<\>\t\n\r ]|"::")+
+LITERAL=([^#%\"',=\[\]\{\}\(\)\<\>\t\n\r@ ])+
 ARRAY_CLOSE_DELIM = ("]" | "}" | ")")
 ARRAY_MINUS_DELIM="-"
 ARRAY_ITEM_DELIM=","
@@ -173,11 +173,12 @@ D_STRING="\""([^("\r"|"\n"|"\r\n"|"\"")]|"\\\"")*"\""
 S_STRING="'"([^("\r"|"\n"|"\r\n"|"'")]|"\\'")*"'"
 STRING = {D_STRING} | {S_STRING}
 VARIABLE="%"{LITERAL}"%"?
-ARRAY_KEY=({LITERAL} | {STRING} | {NUMBER}){WHITESPACE}*(":"|"=")
-ARRAY_VALUE={WHITESPACE}*({LITERAL} | {STRING} | {NUMBER} | {VARIABLE} | {KEYWORD}){WHITESPACE}*
+ARRAY_KEY=({REFERENCE} | {LITERAL} | {STRING} | {NUMBER}){WHITESPACE}*(":"|"=")
+ARRAY_VALUE={WHITESPACE}*({REFERENCE} | {LITERAL} | {STRING} | {NUMBER} | {VARIABLE} | {KEYWORD}){WHITESPACE}*
 BLOCK_HEADER={IDENTIFIER}({WHITESPACE}*"<"{WHITESPACE}*{IDENTIFIER})?{WHITESPACE}*":"{WHITESPACE}*({NEWLINE} | {COMMENT})
 COMMENT="#"[^("\r"|"\n"|"\r\n")]*
 BLOCK_ARRAY_SEPARATOR=":" | "="
+REFERENCE="@"{IDENTIFIER}
 
 %state ST_IN_BLOCK
 %state ST_BLOCK_HEADER
@@ -270,6 +271,9 @@ BLOCK_ARRAY_SEPARATOR=":" | "="
     }
 }
 <ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE> {
+    {REFERENCE} {
+        return NeonTokenId.NEON_REFERENCE;
+    }
     {KEYWORD} {
         return NeonTokenId.NEON_KEYWORD;
     }
@@ -344,6 +348,9 @@ BLOCK_ARRAY_SEPARATOR=":" | "="
 }
 
 <ST_IN_ARRAY_KEY> {
+    {REFERENCE} {
+        return NeonTokenId.NEON_REFERENCE;
+    }
     {NUMBER} {
         return NeonTokenId.NEON_NUMBER;
     }
