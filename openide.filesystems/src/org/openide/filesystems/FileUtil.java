@@ -136,7 +136,9 @@ public final class FileUtil extends Object {
     private static FileSystem diskFileSystem;
 
     private static boolean assertNormalized(File path) {
-        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        if (path != null) {
+            assert path.equals(FileUtil.normalizeFileCached(path)) : "Need to normalize " + path + "!";  //NOI18N
+        }
         return true;
     }
 
@@ -1729,6 +1731,12 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static File normalizeFile(final File file) {
+        File ret = normalizeFileCached(file);
+        assert assertNormalized(ret);
+        return ret;
+    }
+    
+    private static File normalizeFileCached(final File file) {
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
         String unnormalized = file.getPath();
         String normalized = normalizedPaths.get(unnormalized);
@@ -1748,7 +1756,6 @@ public final class FileUtil extends Object {
         } else {
             ret = new File(normalized);
         }
-        assert assertNormalized(ret);
         return ret;
     }
 

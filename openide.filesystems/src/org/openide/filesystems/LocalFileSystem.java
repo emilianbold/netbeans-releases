@@ -730,8 +730,7 @@ public class LocalFileSystem extends AbstractFileSystem {
         @Override
         public Object readAttribute(String name, String attrName) {
             if (attrName.equals("java.io.File")) { // NOI18N
-
-                return lfs.getFile(name);
+                return FileUtil.normalizeFile(lfs.getFile(name));
             }
 
             return super.readAttribute(name, attrName);
