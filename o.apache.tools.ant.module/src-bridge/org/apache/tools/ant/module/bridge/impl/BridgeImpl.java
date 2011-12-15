@@ -189,7 +189,7 @@ public class BridgeImpl implements BridgeInterface {
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
-        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback, handle, io);
+        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, properties, interestingOutputCallback, handle, io);
         Vector<String> targs;
         try {
             project = new Project();
