@@ -152,36 +152,24 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
 
     @Override
-    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
+    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy proxy) {
         if(!isAlive()) {
-            if(getMetadataFolderNames().contains(file.getName()) && file.isDirectory()) {
+            if(getMetadataFolderNames().contains(proxy.getName()) && proxy.isDirectory()) {
                 LOG.log(
                         Level.FINE, 
                         "will awake VCS {0} because of metadata folder {1}",// NOI18N 
-                        new Object[]{displayName, file}); 
-
-                File f = getDelegate().getTopmostManagedAncestor(file.toFile());
-                if(f != null) {
-                    return VCSFileProxy.createFileProxy(f);
+                        new Object[]{displayName, proxy}); 
+                return getTopmostManagedAncestorImpl(proxy);
             } 
-            } 
-            if(hasMetadata(file)) {
+            if(hasMetadata(proxy)) {
                 LOG.log(
                         Level.FINE, 
                         "will awake VCS {0} because {1} contains matadata",     // NOI18N
-                        new Object[]{displayName, file});
-                
-                
-                File f = getDelegate().getTopmostManagedAncestor(file.toFile());
-                if(f != null) {
-                    return VCSFileProxy.createFileProxy(f);
-            }
+                        new Object[]{displayName, proxy});
+                return getTopmostManagedAncestorImpl(proxy);
             }
         } else {
-            File f = getDelegate().getTopmostManagedAncestor(file.toFile());
-            if(f != null) {
-                return VCSFileProxy.createFileProxy(f);
-        }
+            return getTopmostManagedAncestorImpl(proxy);
         }
         return null;
     }
@@ -516,6 +504,18 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 return System.getenv(cmd[2]) == null ? cmd[0] : null;
             }
         }
+    }
+
+    private VCSFileProxy getTopmostManagedAncestorImpl(VCSFileProxy proxy) {
+        File file = proxy.toFile();
+        if(file == null) {
+            return null;
+        }                
+        File f = getDelegate().getTopmostManagedAncestor(file);
+        if(f != null) {
+            return VCSFileProxy.createFileProxy(f);
+        }
+        return null;
     }
 
 }
