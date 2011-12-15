@@ -169,14 +169,14 @@ LITERAL=([^#%\"',=\[\]\{\}\(\)\<\>\t\n\r@ ])+
 ARRAY_CLOSE_DELIM = ("]" | "}" | ")")
 ARRAY_MINUS_DELIM="-"
 ARRAY_ITEM_DELIM=","
-D_STRING="\""([^("\r"|"\n"|"\r\n"|"\"")]|"\\\"")*"\""
-S_STRING="'"([^("\r"|"\n"|"\r\n"|"'")]|"\\'")*"'"
+D_STRING="\""([^"\r""\n""\r\n""\""]|"\\\"")*"\""
+S_STRING="'"([^"\r""\n""\r\n""'"]|"\\'")*"'"
 STRING = {D_STRING} | {S_STRING}
 VARIABLE="%"{LITERAL}"%"?
 ARRAY_KEY=({REFERENCE} | {LITERAL} | {STRING} | {NUMBER}){WHITESPACE}*(":"|"=")
 ARRAY_VALUE={WHITESPACE}*({REFERENCE} | {LITERAL} | {STRING} | {NUMBER} | {VARIABLE} | {KEYWORD}){WHITESPACE}*
 BLOCK_HEADER={IDENTIFIER}({WHITESPACE}*"<"{WHITESPACE}*{IDENTIFIER})?{WHITESPACE}*":"{WHITESPACE}*({NEWLINE} | {COMMENT})
-COMMENT="#"[^("\r"|"\n"|"\r\n")]*
+COMMENT="#"[^"\r""\n""\r\n")]*
 BLOCK_ARRAY_SEPARATOR=":" | "="
 REFERENCE="@"{IDENTIFIER}
 
