@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fileoperations;
+package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -265,6 +265,49 @@ abstract public class FileOperationsProvider {
         public String toString() {
             return env.getDisplayName();
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + (this.env != null ? this.env.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileOperations other = (FileOperations) obj;
+            if (this.env != other.env && (this.env == null || !this.env.equals(other.env))) {
+                return false;
+            }
+            return true;
+        }
+        
+    }
+
+    public static FileProxyO toFileProxy(final String path) {
+        return new FileProxyOImpl(path);
+    }
+
+    /**
+     * Static method to obtain the provider.
+     *
+     * @return the provider
+     */
+    public static FileOperationsProvider getDefault() {
+        /*
+         * no need for sync synchronized access
+         */
+        if (defaultProvider != null) {
+            return defaultProvider;
+        }
+        defaultProvider = Lookup.getDefault().lookup(FileOperationsProvider.class);
+        return defaultProvider;
     }
 
     private static final class ProcessBuilderImplementationImpl implements ProcessBuilderImplementation {
@@ -298,35 +341,39 @@ abstract public class FileOperationsProvider {
         String getPath();
     }
 
-    public static FileProxyO toFileProxy(final String path) {
-        return new FileProxyO() {
-
-            @Override
-            public String getPath() {
-                return path;
-            }
-
-            @Override
-            public String toString() {
-                return path;
-            }
-            
-        };
-    }
-
-    /**
-     * Static method to obtain the provider.
-     *
-     * @return the provider
-     */
-    public static FileOperationsProvider getDefault() {
-        /*
-         * no need for sync synchronized access
-         */
-        if (defaultProvider != null) {
-            return defaultProvider;
+    private static final class FileProxyOImpl implements FileProxyO {
+        private final String path;
+        private FileProxyOImpl(String path) {
+            this.path = path;
         }
-        defaultProvider = Lookup.getDefault().lookup(FileOperationsProvider.class);
-        return defaultProvider;
-    }
+        @Override
+        public String getPath() {
+            return path;
+        }
+
+        @Override
+        public String toString() {
+            return path;
+        }
+
+        @Override
+        public int hashCode() {
+            return path.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileProxyOImpl other = (FileProxyOImpl) obj;
+            if ((this.path == null) ? (other.path != null) : !this.path.equals(other.path)) {
+                return false;
+            }
+            return true;
+        }
+    }   
 }

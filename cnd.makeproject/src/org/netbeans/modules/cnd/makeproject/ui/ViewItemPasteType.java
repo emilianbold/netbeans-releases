@@ -132,7 +132,7 @@ final class ViewItemPasteType extends PasteType {
                     }
                 } else {
                     if (toFolder.getConfigurationDescriptor().getBaseDirFileSystem().equals(itemFO.getFileSystem()) &&
-                        (CndPathUtilitities.isPathAbsolute(item.getPath()) || item.getPath().startsWith(".."))) {
+                        (CndPathUtilitities.isPathAbsolute(item.getPath()) || item.getPath().startsWith(".."))) { // NOI18N
                         if (CndPathUtilitities.isPathAbsolute(item.getPath())) {
                             if (viewItemNode.getFolder().removeItem(item)) {
                                 toFolder.addItem(item);
@@ -206,7 +206,7 @@ final class ViewItemPasteType extends PasteType {
                     fo.copy(toFolderFO, newName, ext);
                 } else {
                     if (toFolder.getConfigurationDescriptor().getBaseDirFileSystem().equals(fo.getFileSystem()) &&
-                        (CndPathUtilitities.isPathAbsolute(item.getPath()) || item.getPath().startsWith(".."))) {
+                        (CndPathUtilitities.isPathAbsolute(item.getPath()) || item.getPath().startsWith(".."))) { // NOI18N
                         if (CndPathUtilitities.isPathAbsolute(item.getPath())) {
                             toFolder.addItem(Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), item.getPath()));
                         } else {
