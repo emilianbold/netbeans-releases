@@ -1,4 +1,4 @@
-token #0 T_INLINE_HTML --TEST--\nHeredocs can NOT be used as static scalars.\n--FILE--\n
+token #0 T_INLINE_HTML --TEST--\nHeredocs can be used as static scalars.\n--FILE--\n
 token #1 PHP_OPENTAG <?php
 token #2 WHITESPACE \n\n
 token #3 PHP_REQUIRE_ONCE require_once
@@ -11,16 +11,16 @@ token #9 WHITESPACE
 token #10 PHP_STRING e
 token #11 WHITESPACE  
 token #12 PHP_CURLY_OPEN {
-token #13 WHITESPACE \n    \n    
+token #13 WHITESPACE \n\n    
 token #14 PHP_CONST const
 token #15 WHITESPACE  
 token #16 PHP_STRING E
 token #17 WHITESPACE  
 token #18 PHP_TOKEN =
 token #19 WHITESPACE  
-token #20 PHP_HEREDOC_TAG <<<THISMUSTERROR\n
-token #21 PHP_CONSTANT_ENCAPSED_STRING If you see this, something's wrong.\n
-token #22 PHP_HEREDOC_TAG THISMUSTERROR
+token #20 PHP_HEREDOC_TAG <<<THISMUSTNOTERROR\n
+token #21 PHP_CONSTANT_ENCAPSED_STRING If you see this, everything is ok.\n
+token #22 PHP_HEREDOC_TAG THISMUSTNOTERROR
 token #23 PHP_SEMICOLON ;
 token #24 WHITESPACE \n\n
 token #25 PHP_CURLY_CLOSE }
@@ -38,4 +38,4 @@ token #36 PHP_CONSTANT_ENCAPSED_STRING "\n"
 token #37 PHP_SEMICOLON ;
 token #38 WHITESPACE \n\n
 token #39 PHP_CLOSETAG ?>
-token #40 T_INLINE_HTML \n--EXPECTF--\nParse error: syntax error, unexpected T_START_HEREDOC in %sheredoc_011.php on line 8\n
+token #40 T_INLINE_HTML \n--EXPECT--\nIf you see this, everything is ok.\n
