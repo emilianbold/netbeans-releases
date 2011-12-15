@@ -58,7 +58,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitVCS;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
