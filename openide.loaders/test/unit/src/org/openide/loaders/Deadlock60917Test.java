@@ -53,6 +53,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
 import javax.swing.text.Document;
 import org.netbeans.junit.*;
 import org.openide.cookies.OpenCookie;
@@ -60,6 +61,7 @@ import org.openide.cookies.OpenCookie;
 /** Simulates the deadlock from issue 60917
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class Deadlock60917Test extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
@@ -68,8 +70,11 @@ public class Deadlock60917Test extends NbTestCase {
     public Deadlock60917Test(String name) {
         super(name);
     }
+
+    @Override protected Level logLevel() {
+        return Level.INFO;
+    }
     
-	
     protected void setUp() throws Exception {
         System.setProperty("org.openide.util.Lookup", Deadlock60917Test.class.getName() + "$Lkp");
         
@@ -83,8 +88,6 @@ public class Deadlock60917Test extends NbTestCase {
         clearWorkDir();
     }
     
-
-    @RandomlyFails
     public void testWhatHappensWhenALoaderBecomesInvalidAndFileIsOpened() throws Exception {
         final ForgetableLoader l = DataLoader.getLoader(ForgetableLoader.class);
 		FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), new String[] {
@@ -168,7 +171,6 @@ public class Deadlock60917Test extends NbTestCase {
 		assertEquals("Still remains the same old object: ", our, awt.arr[0]);
     }
 
-    @RandomlyFails
     public void testWhatHappenUnderLock () throws Exception {
         org.openide.nodes.Children.MUTEX.readAccess (new org.openide.util.Mutex.ExceptionAction () {
             public Object run () throws Exception {
@@ -260,22 +262,18 @@ public class Deadlock60917Test extends NbTestCase {
     /** Our own dialog displayer.
      */
     private static final class DD extends org.openide.DialogDisplayer {
-        public static Object[] options;
         
         public java.awt.Dialog createDialog(org.openide.DialogDescriptor descriptor) {
             throw new IllegalStateException ("Not implemented");
         }
         
         public Object notify(org.openide.NotifyDescriptor descriptor) {
-			options = descriptor.getOptions();
 			try {
 				// we need to get into EQ - as the regular DialogDescriptor does
 				waitEQ();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-			
-			assertNull (options);
 			return NotifyDescriptor.CLOSED_OPTION;
         }
         
