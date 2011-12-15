@@ -228,7 +228,7 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
             res = VCSFileProxy.createFileProxy(fileSystem.getRoot());
             String[] split = proxy.getPath().split("/"); // NOI18N
             for(int i = 0; i < split.length; i++) {
-                if (split[i].isEmpty() || ".".equals(split[i])) {
+                if (split[i].isEmpty() || ".".equals(split[i])) { // NOI18N
                     continue;
                 }
                 res = VCSFileProxy.createFileProxy(res, split[i]);

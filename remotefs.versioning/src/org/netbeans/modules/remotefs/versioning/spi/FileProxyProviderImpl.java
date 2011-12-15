@@ -106,7 +106,7 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
             VCSFileProxy res = VCSFileProxy.createFileProxy(root);
             String[] split = parent.split("/"); // NOI18N
             for (int i = 0; i < split.length; i++) {
-                if (split[i].isEmpty() || ".".equals(split[i])) {
+                if (split[i].isEmpty() || ".".equals(split[i])) { // NOI18N
                     continue;
                 }
                 res = VCSFileProxy.createFileProxy(res, split[i]);
@@ -135,7 +135,7 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
             VCSFileProxy res = VCSFileProxy.createFileProxy(root);
             String[] split = path.split("/"); // NOI18N
             for (int i = 0; i < split.length; i++) {
-                if (split[i].isEmpty() || ".".equals(split[i])) {
+                if (split[i].isEmpty() || ".".equals(split[i])) { // NOI18N
                     continue;
                 }
                 res = VCSFileProxy.createFileProxy(res, split[i]);
