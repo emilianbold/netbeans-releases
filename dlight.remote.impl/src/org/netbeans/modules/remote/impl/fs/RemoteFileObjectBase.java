@@ -64,11 +64,11 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.DeleteHandler;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.FileProxyI;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.FilesystemInterceptor;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider.IOHandler;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.DeleteHandler;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FileProxyI;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.IOHandler;
 import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 

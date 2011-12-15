@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fileoperations;
+package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.awt.Image;
 import java.util.ArrayList;

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fileoperations;
+package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -62,8 +62,8 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileOperations;
-import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileProxyO;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileOperations;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileProxyO;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -185,110 +185,119 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         assertEquals("Error running local script", 0, rc);
     }
 
-    @ForAllEnvironments
-    public void testFileOperations() throws Exception {
-        DirectoryReaderSftp directoryReader = new DirectoryReaderSftp(execEnv, remoteDir);
-        directoryReader.readDirectory();
-        List<DirEntry> entries = directoryReader.getEntries();
-        for(DirEntry entry : entries) {
-            String name = entry.getName();
-            String path = remoteDir+"/"+name;
-            FileProxyO file = FileOperationsProvider.toFileProxy(path);
-            assertTrue(fileOperations.exists(file));
-            assertEquals(entry.canWrite(execEnv), fileOperations.canWrite(file));
-            assertEquals(remoteDir, fileOperations.getDir(file));
-            assertEquals(name, fileOperations.getName(file));
-            assertEquals(path, fileOperations.getPath(file));
-            assertEquals(fs.getRoot(), fileOperations.getRoot());
-            if (!entry.isLink()) {
-                assertEquals(entry.isPlainFile(), fileOperations.isFile(file));
-                assertEquals(entry.isDirectory(), fileOperations.isDirectory(file));
-            }
-            File ioFile = new File(localDir+"/"+name);
-            fileEquals(ioFile, file, false);
-        }
-    }
-    
-    @ForAllEnvironments
-    public void testUnexisting() throws Exception {
-        // test unexisting file
-        String name = "unexisting";
-        String path = remoteDir+"/"+name;
-        FileProxyO file = FileOperationsProvider.toFileProxy(path);
-        File ioFile = new File(localDir+"/"+name);
-        fileEquals(ioFile, file, false);
-    }
+//    @ForAllEnvironments
+//    public void testFileOperations() throws Exception {
+//        DirectoryReaderSftp directoryReader = new DirectoryReaderSftp(execEnv, remoteDir);
+//        directoryReader.readDirectory();
+//        List<DirEntry> entries = directoryReader.getEntries();
+//        for(DirEntry entry : entries) {
+//            String name = entry.getName();
+//            String path = remoteDir+"/"+name;
+//            FileProxyO file = FileOperationsProvider.toFileProxy(path);
+//            assertTrue(fileOperations.exists(file));
+//            assertEquals(entry.canWrite(execEnv), fileOperations.canWrite(file));
+//            assertEquals(remoteDir, fileOperations.getDir(file));
+//            assertEquals(name, fileOperations.getName(file));
+//            assertEquals(path, fileOperations.getPath(file));
+//            assertEquals(fs.getRoot(), fileOperations.getRoot());
+//            if (!entry.isLink()) {
+//                assertEquals(entry.isPlainFile(), fileOperations.isFile(file));
+//                assertEquals(entry.isDirectory(), fileOperations.isDirectory(file));
+//            }
+//            File ioFile = new File(localDir+"/"+name);
+//            fileEquals(ioFile, file, false);
+//        }
+//    }
+//    
+//    @ForAllEnvironments
+//    public void testUnexisting() throws Exception {
+//        // test unexisting file
+//        String name = "unexisting";
+//        String path = remoteDir+"/"+name;
+//        FileProxyO file = FileOperationsProvider.toFileProxy(path);
+//        File ioFile = new File(localDir+"/"+name);
+//        fileEquals(ioFile, file, false);
+//    }
+//
+//    @ForAllEnvironments
+//    public void testReadOnlyFile() throws Exception {
+//        // test unexisting file
+//        String name = "just_a_file";
+//        String path = remoteDir+"/"+name;
+//        FileProxyO file = FileOperationsProvider.toFileProxy(path);
+//        makeReadOnly(file, name);
+//        File ioFile = new File(localDir+"/"+name);
+//        ioFile.setReadOnly();
+//        fileEquals(ioFile, file, false);
+//    }
+//
+//    @ForAllEnvironments
+//    public void testReadOnlyDir() throws Exception {
+//        // test unexisting file
+//        String path = remoteDir;
+//        FileProxyO file = FileOperationsProvider.toFileProxy(path);
+//        makeReadOnly(file, path);
+//        File ioFile = new File(localDir);
+//        ioFile.setReadOnly();
+//        fileEquals(ioFile, file, true);
+//    }
+//        
+//    @ForAllEnvironments
+//    public void testSelfDir() throws Exception {
+//        // test of self dir
+//        FileProxyO file = FileOperationsProvider.toFileProxy(remoteDir);
+//        File ioFile = new File(localDir);
+//        fileEquals(ioFile, file, true);
+//    }
+//    
+//    @ForAllEnvironments
+//    public void testRecursiveLink() throws Exception {
+//        // test of recursive link
+//        FileProxyO file = FileOperationsProvider.toFileProxy(remoteDir+"/"+"dir_1/recursive_link");
+//        File ioFile = new File(localDir+"/"+"dir_1/recursive_link");
+//        fileEquals(ioFile, file, false);
+//    }
+//        
+//    @ForAllEnvironments
+//    public void testProcessBuilder() throws Exception {
+//        // test of process builder
+//        FileProxyO file = FileOperationsProvider.toFileProxy(remoteDir);
+//        ProcessBuilder pb = fileOperations.createProcessBuilder(file);
+//        pb.setExecutable("ls");
+//        pb.setWorkingDirectory(remoteDir);
+//        final Process process = pb.call();
+//        Future<String> error = NativeTaskExecutorService.submit(new Callable<String>() {
+//                @Override
+//                public String call() throws Exception {
+//                    return ProcessUtils.readProcessErrorLine(process);
+//                }
+//            }, "e"); // NOI18N
+//        Future<String> output = NativeTaskExecutorService.submit(new Callable<String>() {
+//            @Override
+//            public String call() throws Exception {
+//                return ProcessUtils.readProcessOutputLine(process);
+//            }
+//        }, "o"); // NOI18N
+//        fileOperations.list(file);
+//        listEquals(message(file, "list"), output.get().split("\n"), fileOperations.list(file));
+//    }
+//
+//    @ForAllEnvironments
+//    public void testNormalizeUnixPath() throws Exception {
+//        if (!Utilities.isWindows()) {
+//            assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/..")));
+//            assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../.")));
+//            assertEquals("/tmp", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../../tmp")));
+//        }
+//    }
 
     @ForAllEnvironments
-    public void testReadOnlyFile() throws Exception {
-        // test unexisting file
-        String name = "just_a_file";
-        String path = remoteDir+"/"+name;
-        FileProxyO file = FileOperationsProvider.toFileProxy(path);
-        makeReadOnly(file, name);
-        File ioFile = new File(localDir+"/"+name);
-        ioFile.setReadOnly();
-        fileEquals(ioFile, file, false);
-    }
-
-    @ForAllEnvironments
-    public void testReadOnlyDir() throws Exception {
-        // test unexisting file
-        String path = remoteDir;
-        FileProxyO file = FileOperationsProvider.toFileProxy(path);
-        makeReadOnly(file, path);
-        File ioFile = new File(localDir);
-        ioFile.setReadOnly();
-        fileEquals(ioFile, file, true);
-    }
-        
-    @ForAllEnvironments
-    public void testSelfDir() throws Exception {
-        // test of self dir
-        FileProxyO file = FileOperationsProvider.toFileProxy(remoteDir);
-        File ioFile = new File(localDir);
-        fileEquals(ioFile, file, true);
-    }
-    
-    @ForAllEnvironments
-    public void testRecursiveLink() throws Exception {
-        // test of recursive link
-        FileProxyO file = FileOperationsProvider.toFileProxy(remoteDir+"/"+"dir_1/recursive_link");
-        File ioFile = new File(localDir+"/"+"dir_1/recursive_link");
-        fileEquals(ioFile, file, false);
-    }
-        
-    @ForAllEnvironments
-    public void testProcessBuilder() throws Exception {
-        // test of process builder
-        FileProxyO file = FileOperationsProvider.toFileProxy(remoteDir);
-        ProcessBuilder pb = fileOperations.createProcessBuilder(file);
-        pb.setExecutable("ls");
-        pb.setWorkingDirectory(remoteDir);
-        final Process process = pb.call();
-        Future<String> error = NativeTaskExecutorService.submit(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return ProcessUtils.readProcessErrorLine(process);
-                }
-            }, "e"); // NOI18N
-        Future<String> output = NativeTaskExecutorService.submit(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return ProcessUtils.readProcessOutputLine(process);
-            }
-        }, "o"); // NOI18N
-        fileOperations.list(file);
-        listEquals(message(file, "list"), output.get().split("\n"), fileOperations.list(file));
-    }
-
-    @ForAllEnvironments
-    public void testNormalizeUnixPath() throws Exception {
-        if (!Utilities.isWindows()) {
-            assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/..")));
-            assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../.")));
-            assertEquals("/tmp", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../../tmp")));
-        }
+    public void testEquals() throws Exception {
+        FileProxyO file1 = FileOperationsProvider.toFileProxy(remoteDir);
+        FileProxyO file2 = FileOperationsProvider.toFileProxy(remoteDir);
+        assertEquals(file1, file2);
+        FileOperations fileOperations1 = FileOperationsProvider.getDefault().getFileOperations(fs);
+        assertEquals(fileOperations, fileOperations1);
     }
 
     private void makeReadOnly(FileProxyO file, String name) throws IOException, InterruptedException, ExecutionException {

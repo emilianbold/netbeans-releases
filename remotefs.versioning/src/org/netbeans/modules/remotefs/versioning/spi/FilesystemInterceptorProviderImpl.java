@@ -47,8 +47,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileOperations;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.openide.filesystems.FileObject;
@@ -60,14 +61,17 @@ import org.openide.filesystems.FileSystem;
  */
 @org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 1000)
 public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProvider {
-    private Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
+    private final Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
 
     @Override
     public synchronized FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {
-        FilesystemInterceptor interceptor = map.get(fs);
-        if (interceptor == null) {
-            interceptor = new FilesystemInterceptorImpl(fs);
-            map.put(fs, interceptor);
+        FilesystemInterceptor interceptor;
+        synchronized (map) {
+            interceptor = map.get(fs);
+            if (interceptor == null) {
+                interceptor = new FilesystemInterceptorImpl(fs);
+                map.put(fs, interceptor);
+            }
         }
         return interceptor;
     }
@@ -219,11 +223,12 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
     public static VCSFileProxy toVCSFileProxy(FileProxyI proxy) {
         FileSystem fileSystem = proxy.getFileSystem();
         VCSFileProxy res;
-        if (fileSystem instanceof RemoteFileSystem) {
+        FileOperations fileOperations = (FileOperations) fileSystem.getRoot().getAttribute(FileOperationsProvider.ATTRIBUTE);
+        if (fileOperations != null) {
             res = VCSFileProxy.createFileProxy(fileSystem.getRoot());
             String[] split = proxy.getPath().split("/"); // NOI18N
             for(int i = 0; i < split.length; i++) {
-                if (split[i].isEmpty()) {
+                if (split[i].isEmpty() || ".".equals(split[i])) {
                     continue;
                 }
                 res = VCSFileProxy.createFileProxy(res, split[i]);
