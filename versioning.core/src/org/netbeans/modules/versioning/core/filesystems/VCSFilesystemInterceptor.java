@@ -244,7 +244,7 @@ public final class VCSFilesystemInterceptor {
 
     public static IOHandler getRenameHandler(VCSFileProxy from, String newName) {
         LOG.log(Level.FINE, "getRenameHandler {0}, {1}", new Object[] {from, newName});
-        return getMoveHandlerIntern(from, VCSFileProxy.createFileProxy(from, newName));
+        return getMoveHandlerIntern(from, VCSFileProxy.createFileProxy(from.getParentFile(), newName));
     }
 
     private static IOHandler getMoveHandlerIntern(VCSFileProxy from, VCSFileProxy to) {
