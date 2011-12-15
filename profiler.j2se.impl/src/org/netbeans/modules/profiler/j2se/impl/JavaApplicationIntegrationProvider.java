@@ -59,22 +59,19 @@ import org.openide.util.NbBundle;
  * @author Tomas Hurka
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "JavaApplicationIntegrationProvider_Title=Java Application",
+    "JavaApplicationIntegrationProvider_ManualRemoteStep3Message=Run the application using {0}. When starting the application, provide the extra startup option to the <code>java</code> command:<br><code>{1}</code><br>The {2}.",
+    "JavaApplicationIntegrationProvider_ManualRemoteStep4Message=The JVM will start, but will not proceed with application execution until you connect the profiler.",
+    "JavaApplicationIntegrationProvider_ManualRemoteHintMessage=You can use <code>{0}</code> command instead of <code>java</code> command to run your application in profiling mode. Check the script for any additional modifications according to your system configuration.",
+    "JavaApplicationIntegrationProvider_ManualDirectStep1Message=Run the application using {0}. When starting the application, provide the extra startup option to the <code>java</code> command:<br><code>{1}</code>",
+    "JavaApplicationIntegrationProvider_ManualDirectStep2Message=The JVM will start, but will not proceed with application execution until you connect the profiler.",
+    "JavaApplicationIntegrationProvider_DynamicWarningMessage=Make sure your IDE is using {0}.",
+    "JavaApplicationIntegrationProvider_ManualDynamicStep1Message=Start the Application using {0}.",
+    "JavaApplicationIntegrationProvider_ManualDynamicStep2Message=When the application is running, click Attach to select the application process to attach to."
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvider {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String MANUAL_REMOTE_STEP3_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualRemoteStep4Message"); // NOI18N
-    private static final String MANUAL_REMOTE_HINT_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualRemoteHintMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP1_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDirectStep1Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDirectStep2Message"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP1_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDynamicStep1Message"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDynamicStep2Message"); // NOI18N  
-    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-    private static final String APPLICATION_TITLE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_Title");
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     // -----
@@ -109,7 +106,7 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
     }
 
     public String getTitle() {
-        return APPLICATION_TITLE;
+        return Bundle.JavaApplicationIntegrationProvider_Title();
     }
 
     public void categorize(IntegrationCategorizer categorizer) {
@@ -144,16 +141,16 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        hints.addStep(MessageFormat.format(MANUAL_DIRECT_STEP1_MESSAGE,
-                                           new Object[] {
-                                               IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                               IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                attachSettings.isRemote(),
-                                                                                                attachSettings.getPort())
-                                           }));
+        hints.addStep(Bundle.JavaApplicationIntegrationProvider_ManualDirectStep1Message(
+                        IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                        IntegrationUtils.getProfilerAgentCommandLineArgs(
+                            targetOS, 
+                            getTargetJava(),
+                            attachSettings.isRemote(),
+                            attachSettings.getPort())));
 
         // Step 2
-        hints.addStep(MANUAL_DIRECT_STEP2_MESSAGE);
+        hints.addStep(Bundle.JavaApplicationIntegrationProvider_ManualDirectStep2Message());
 
         // Note about spaces in path when starting Profiler agent
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
@@ -171,10 +168,10 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
         IntegrationProvider.IntegrationHints hints = new IntegrationProvider.IntegrationHints();
 
         // Step 1
-        hints.addStep(MessageFormat.format(MANUAL_DYNAMIC_STEP1_MESSAGE,
-                                           new Object[] { IntegrationUtils.getJavaPlatformName(getTargetJava()) }));
+        hints.addStep(Bundle.JavaApplicationIntegrationProvider_ManualDynamicStep1Message(
+                        IntegrationUtils.getJavaPlatformName(getTargetJava())));
         // Step 2
-        hints.addStep(MANUAL_DYNAMIC_STEP2_MESSAGE);
+        hints.addStep(Bundle.JavaApplicationIntegrationProvider_ManualDynamicStep2Message());
 
         // Note about spaces in path when starting Profiler agent
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
@@ -185,13 +182,8 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
         hints.addHint(REDUCE_OVERHEAD_MSG);
 
         // Put here a warning that the IDE must be run under JDK6/7
-        hints.addWarning(MessageFormat.format(DYNAMIC_WARNING_MESSAGE,
-                                              new Object[] {
-                                                  IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                                  IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                   attachSettings.isRemote(),
-                                                                                                   attachSettings.getPort())
-                                              }));
+        hints.addWarning(Bundle.JavaApplicationIntegrationProvider_DynamicWarningMessage(
+                            IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
         return hints;
     }
@@ -209,17 +201,17 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
         hints.addStep(getManualRemoteStep2(targetOS));
 
         // Step 3
-        hints.addStep(MessageFormat.format(MANUAL_REMOTE_STEP3_MESSAGE,
-                                           new Object[] {
-                                               IntegrationUtils.getJavaPlatformName(getTargetJava()),
-                                               IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, getTargetJava(),
-                                                                                                attachSettings.isRemote(),
-                                                                                                attachSettings.getPort()),
-                                               REMOTE_ABSOLUTE_PATH_HINT
-                                           }));
+        hints.addStep(Bundle.JavaApplicationIntegrationProvider_ManualRemoteStep3Message(
+                        IntegrationUtils.getJavaPlatformName(getTargetJava()),
+                        IntegrationUtils.getProfilerAgentCommandLineArgs(
+                            targetOS, 
+                            getTargetJava(),
+                            attachSettings.isRemote(),
+                            attachSettings.getPort()),
+                        REMOTE_ABSOLUTE_PATH_HINT));
 
         // Step 4
-        hints.addStep(MANUAL_REMOTE_STEP4_MESSAGE);
+        hints.addStep(Bundle.JavaApplicationIntegrationProvider_ManualRemoteStep4Message());
 
         // Note about spaces in path when starting Profiler agent
         if (IntegrationUtils.isWindowsPlatform(targetOS)) {
@@ -227,8 +219,8 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
         }
 
         // Note about export vs. setenv on UNIXes
-        hints.addHint(MessageFormat.format(MANUAL_REMOTE_HINT_MESSAGE,
-                                           new Object[] { IntegrationUtils.getRemoteProfileCommandString(targetOS, getTargetJava()) }));
+        hints.addHint(Bundle.JavaApplicationIntegrationProvider_ManualRemoteHintMessage(
+                        IntegrationUtils.getRemoteProfileCommandString(targetOS, getTargetJava())));
 
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
