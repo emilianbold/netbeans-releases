@@ -889,7 +889,11 @@ public class TemplateWizard extends WizardDescriptor {
 
             // run default action (hopefully should be here)
             final Node node = obj.getNodeDelegate ();
-            final Action a = node.getPreferredAction();
+            Action _a = node.getPreferredAction();
+            if (_a instanceof ContextAwareAction) {
+                _a = ((ContextAwareAction) _a).createContextAwareInstance(node.getLookup());
+            }
+            final Action a = _a;
             if (a != null) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
