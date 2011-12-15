@@ -559,7 +559,7 @@ public final class VCSFilesystemInterceptor {
             this.isDirectory = isDirectory;
         }
 
-        public boolean isMutable(VCSFileProxy file) {
+        public Boolean isMutable(VCSFileProxy file) {
             return interceptor.isMutable(file);
         }
 
