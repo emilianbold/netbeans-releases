@@ -241,6 +241,85 @@ public class FolderObjTest extends NbTestCase {
             lck.releaseLock();
         }        
     }
+    
+    public void testFolderToFile() throws Exception {
+        File f = new File(getWorkDir(), "classes");
+        f.createNewFile();
+        assertTrue("File created", f.isFile());
+        
+        FileObject fo = FileUtil.toFileObject(f);
+        assertTrue("Is data", fo.isData());
+        
+        f.delete();
+        f.mkdirs();
+        assertTrue("Is dir", f.isDirectory());
+        
+        fo.refresh();
+        
+        assertFalse("No longer valid", fo.isValid());
+        FileObject folder = FileUtil.toFileObject(f);
+        assertNotNull("Folder found", folder);
+        if (fo == folder) {
+            fail("Should not be the same: " + folder);
+        }
+        assertTrue("Is folder", folder.isFolder());
+    }
+    
+    public void testFolderToFileWithParent() throws Exception {
+        File f = new File(getWorkDir(), "classes");
+        f.createNewFile();
+        assertTrue("File created", f.isFile());
+        
+        FileObject fo = FileUtil.toFileObject(f);
+        assertTrue("Is data", fo.isData());
+        FileObject parent = fo.getParent();
+        List<FileObject> arr = Arrays.asList(parent.getChildren());
+        
+        assertTrue("Contains " + fo + ": " +arr, arr.contains(fo));
+        
+        f.delete();
+        f.mkdirs();
+        assertTrue("Is dir", f.isDirectory());
+        
+        
+        fo.refresh();
+        
+        assertFalse("No longer valid", fo.isValid());
+        FileObject folder = FileUtil.toFileObject(f);
+       
+        if (fo == folder) {
+            fail("Should not be the same: " + folder);
+        }
+        assertTrue("Is folder", folder.isFolder());
+    }
+
+    public void testFolderToFileWithParentRefresh() throws Exception {
+        File f = new File(getWorkDir(), "classes");
+        f.createNewFile();
+        assertTrue("File created", f.isFile());
+        
+        FileObject fo = FileUtil.toFileObject(f);
+        assertTrue("Is data", fo.isData());
+        FileObject parent = fo.getParent();
+        List<FileObject> arr = Arrays.asList(parent.getChildren());
+        
+        assertTrue("Contains " + fo + ": " +arr, arr.contains(fo));
+        
+        f.delete();
+        f.mkdirs();
+        assertTrue("Is dir", f.isDirectory());
+        
+        
+        parent.refresh();
+        
+        assertFalse("No longer valid", fo.isValid());
+        FileObject folder = FileUtil.toFileObject(f);
+       
+        if (fo == folder) {
+            fail("Should not be the same: " + folder);
+        }
+        assertTrue("Is folder", folder.isFolder());
+    }
             
     public void testRefresh109490() throws Exception {
         final File wDir = getWorkDir();

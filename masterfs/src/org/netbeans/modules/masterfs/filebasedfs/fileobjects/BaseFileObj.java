@@ -805,7 +805,14 @@ public abstract class BaseFileObj extends FileObject {
         try {   
             if (isValid()) {
                 refreshImpl(expected, fire);
-                if (isData()) {
+                if (isValid()) {
+                    final File file = getFileName().getFile();
+                    final boolean isDir = file.isDirectory();
+                    final boolean isFile = file.isFile();
+                    if (isDir == isFile || isFolder() != isDir || isData() != isFile) {
+                        invalidateFO(fire, expected);
+                    }
+                } else if (isData()) {
                     refreshExistingParent(expected, fire);
                 }
             }
@@ -817,28 +824,33 @@ public abstract class BaseFileObj extends FileObject {
     void refreshExistingParent(final boolean expected, boolean fire) {
         boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
-            //fileobject is invalidated
-            FolderObj parent = getExistingParent();
-            if (parent != null) {
-                ChildrenCache childrenCache = parent.getChildrenCache();
-                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                if (mutexPrivileged != null) {
-                    mutexPrivileged.enterWriteAccess();
-                }
-                try {
-                    childrenCache.getChild(getFileName().getFile().getName(), true);
-                } finally {
-                    if (mutexPrivileged != null) {
-                        mutexPrivileged.exitWriteAccess();
-                    }
-                }
-            }
-            setValid(false);
-            if (fire) {
-                getProvidedExtensions().deletedExternally(this);
-                fireFileDeletedEvent(expected);
-            }
+            invalidateFO(fire, expected);
         } 
+    }
+
+    private void invalidateFO(boolean fire, final boolean expected) {
+        //fileobject is invalidated
+        FolderObj parent = getExistingParent();
+        if (parent != null) {
+            ChildrenCache childrenCache = parent.getChildrenCache();
+            final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+            if (mutexPrivileged != null) {
+                mutexPrivileged.enterWriteAccess();
+            }
+            try {
+                childrenCache.getChild(getFileName().getFile().getName(), true);
+            } finally {
+                if (mutexPrivileged != null) {
+                    mutexPrivileged.exitWriteAccess();
+                }
+            }
+        }
+        setValid(false);
+        FileNaming newFN = NamingFactory.fromFile(getFileName().getParent(), getFileName().getFile(), true);
+        if (fire) {
+            getProvidedExtensions().deletedExternally(this);
+            fireFileDeletedEvent(expected);
+        }
     }
 
     private void updateFileName(FileNaming oldName, FileNaming oldRoot, FileNaming newRoot) {
