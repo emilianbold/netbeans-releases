@@ -58,4 +58,5 @@ made subject to such option by the copyright holder.
     <fontcolor name="interpunction" default="separator" foreColor="red" />
 	<fontcolor name="number" default="number" foreColor="B20000" />
 	<fontcolor name="error" default="error" />
+    <fontcolor name="reference" default="identifier" foreColor="6d3206" />
 </fontscolors>

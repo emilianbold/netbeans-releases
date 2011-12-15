@@ -110,10 +110,6 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             ProcessUtils.execute(execEnv, "umask", "0002");
             script = getScript(remoteDir);
             localDir = mkTemp(ExecutionEnvironmentFactory.getLocal(), true);
-            if (localDir.endsWith("/")) {
-                // Mac specific
-                localDir = localDir.substring(0, localDir.length()-1);
-            }
             localScript = getScript(localDir);
         } else {
             user = "user_1563";
