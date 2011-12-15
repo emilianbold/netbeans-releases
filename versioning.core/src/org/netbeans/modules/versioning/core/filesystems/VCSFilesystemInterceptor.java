@@ -327,7 +327,7 @@ public final class VCSFilesystemInterceptor {
     // private methods
     
 
-    private boolean needsLH(String... methodNames) {
+    private static boolean needsLH(String... methodNames) {
         for (String methodName : methodNames) {
             if(master.needsLocalHistory(methodName)) {
                 return true;
@@ -415,7 +415,7 @@ public final class VCSFilesystemInterceptor {
         VersioningSystem vs = master.getOwner(file, isFile);
         VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
 
-        VersioningSystem lhvs = null; // XXX: needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
+        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
         VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, file, null, isDirectory);
@@ -427,7 +427,7 @@ public final class VCSFilesystemInterceptor {
         VersioningSystem vs = master.getOwner(from);
         VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
 
-        VersioningSystem lhvs = null; // XXX: needsLH(forMethods) ? master.getLocalHistory(from) : null;
+        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(from) : null;
         VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, from, to, false);

@@ -470,7 +470,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
      * @param file the file to examine
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
-    VersioningSystem getLocalHistory(VCSFileProxy file) {
+    public VersioningSystem getLocalHistory(VCSFileProxy file) {
         return getLocalHistory(file, null);
     }
     
@@ -482,7 +482,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
      *        whether the given file is a file or directory.
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
-    VersioningSystem getLocalHistory(VCSFileProxy file, Boolean isFile) {
+    public VersioningSystem getLocalHistory(VCSFileProxy file, Boolean isFile) {
                 
         VersioningSystem lh = localHistory;
         if (lh == null) return null;
