@@ -114,6 +114,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     final OutputWriter err;
     final InputOutput io;
     private final int verbosity;
+    private final Map<String,String> properties;
     private final String displayName;
     private final Runnable interestingOutputCallback;
     private final ProgressHandle handle;
@@ -175,7 +176,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
     
     @SuppressWarnings("LeakingThisInConstructor")
-    public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName,
+    NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName, Map<String,String> properties,
             Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
         thisSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(this);
         this.origScript = origScript;
@@ -183,6 +184,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.err = err;
         this.io = io;
         this.verbosity = verbosity;
+        this.properties = properties;
         this.displayName = displayName;
         this.interestingOutputCallback = interestingOutputCallback;
         this.handle = handle;
@@ -718,6 +720,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     public @Override int getVerbosity() {
         verifyRunning();
         return verbosity;
+    }
+
+    @Override public Map<String, String> getProperties() {
+        return Collections.unmodifiableMap(properties);
     }
     
     String getDisplayNameNoLock() {
