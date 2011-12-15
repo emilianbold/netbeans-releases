@@ -265,6 +265,29 @@ abstract public class FileOperationsProvider {
         public String toString() {
             return env.getDisplayName();
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + (this.env != null ? this.env.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileOperations other = (FileOperations) obj;
+            if (this.env != other.env && (this.env == null || !this.env.equals(other.env))) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 
     private static final class ProcessBuilderImplementationImpl implements ProcessBuilderImplementation {
