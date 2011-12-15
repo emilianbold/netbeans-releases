@@ -230,7 +230,7 @@ final class NetigsoModule extends Module {
 
     @Override
     final int getStartLevelImpl() {
-        return startLevel == -1 ? Lookup.getDefault().lookup(NetigsoFramework.class).defaultStartLevel() : startLevel;
+        return startLevel;
     }
 
     final void setStartLevel(int startLevel) {

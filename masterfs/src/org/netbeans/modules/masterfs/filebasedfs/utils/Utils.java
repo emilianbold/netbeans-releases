@@ -72,7 +72,7 @@ public class Utils {
     }
     
     public static String getRelativePath(final File dir, final File file) {
-        Stack stack = new Stack();
+        Stack<String> stack = new Stack<String>();
         File tempFile = file;
         while (tempFile != null && !equals(tempFile, dir)) {
             stack.push(tempFile.getName());
@@ -83,7 +83,7 @@ public class Utils {
         }
         StringBuilder retval = new StringBuilder();
         while (!stack.isEmpty()) {
-            retval.append((String) stack.pop());
+            retval.append(stack.pop());
             if (!stack.isEmpty()) {
                 retval.append("/");//NOI18N
             }
