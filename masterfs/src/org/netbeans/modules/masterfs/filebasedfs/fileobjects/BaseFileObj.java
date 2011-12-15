@@ -108,6 +108,7 @@ public abstract class BaseFileObj extends FileObject {
     }
     
     protected BaseFileObj(final File file, final FileNaming name) {
+        assert name != null;
         this.fileName = name;
     }
        
@@ -421,6 +422,7 @@ public abstract class BaseFileObj extends FileObject {
                 String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
                 FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
             }
+            assert allRenamed[0] != null;
             fileName = allRenamed[0];
             Set<BaseFileObj> toRename = new HashSet<BaseFileObj>(allRenamed.length * 2);
             toRename.add(this);
@@ -851,7 +853,7 @@ public abstract class BaseFileObj extends FileObject {
             String n = names.pop();
             newRoot = NamingFactory.fromFile(newRoot, prev = new File(prev, n), true);
         }
-
+        assert newRoot != null;
         fileName = newRoot;
     }
     
