@@ -1123,7 +1123,7 @@ public class JavaSourceTest extends NbTestCase {
         IndexingManager.getDefault().refreshIndexAndWait(src1.getURL(), null);
 
         final ClassPath bootPath = createBootPath();
-        final ClassPath compilePath = CacheClassPath.forSourcePath(ClassPathSupport.createClassPath(new FileObject[] {src1}));
+        final ClassPath compilePath = CacheClassPath.forSourcePath(ClassPathSupport.createClassPath(new FileObject[] {src1}),false);
         final ClassPath srcPath = ClassPathSupport.createClassPath(src2);
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         final JavaSource js = JavaSource.create(cpInfo, test2, test);
