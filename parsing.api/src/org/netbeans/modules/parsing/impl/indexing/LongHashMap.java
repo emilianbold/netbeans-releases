@@ -667,7 +667,10 @@ public class LongHashMap<K> //extends AbstractMap<K>
         }
 
         @Override
-        @org.netbeans.api.annotations.common.SuppressWarnings("RC_REF_COMPARISON")
+        @org.netbeans.api.annotations.common.SuppressWarnings({
+            "RC_REF_COMPARISON",
+            "EQ_CHECK_FOR_OPERAND_NOT_COMPATIBLE_WITH_THIS"
+        })
         public boolean equals(Object o) {
             if (!(o instanceof Map.Entry)) {
                 return false;

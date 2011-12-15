@@ -1146,6 +1146,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
     private IndexingController controller;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DM_STRING_CTOR")
     private final String lastOwningSourceRootCacheLock = new String("lastOwningSourceRootCacheLock"); //NOI18N
 
     private boolean ignoreIndexerCacheEvents = false;
@@ -1904,7 +1905,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final boolean checkEditor,
                 final String progressTitle,
                 final boolean steady,
-                @NonNull LogContext logCtx) {
+                @NullAllowed LogContext logCtx) {
             this.followUpJob = followUpJob;
             this.checkEditor = checkEditor;
             this.progressTitle = progressTitle;
@@ -3818,19 +3819,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     addedOrChangedEntries.put(key, newMap.get(key));
                 }
             }
-        }
-
-        private static <T> void diff (final List<T> oldList, final List<T> newList, final Collection<? super  T> added, final Collection<? super T> removed) {
-            final Set<T> oldCopy = new HashSet<T>(oldList);
-            final Set<T> newCopy = new HashSet<T>(newList);
-            for (Iterator<T> oldIt = oldCopy.iterator(); oldIt.hasNext();) {
-                T e = oldIt.next();
-                oldIt.remove();
-                if (!newCopy.remove(e)) {
-                    removed.add(e);
-                }
-            }
-            added.addAll(newCopy);
         }
 
     } // End of RootsScanningWork class
