@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fileoperations;
+package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -62,8 +62,8 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileOperations;
-import org.netbeans.modules.remote.impl.fileoperations.FileOperationsProvider.FileProxyO;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileOperations;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileProxyO;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -289,6 +289,15 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../.")));
             assertEquals("/tmp", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../../tmp")));
         }
+    }
+
+    @ForAllEnvironments
+    public void testEquals() throws Exception {
+        FileProxyO file1 = FileOperationsProvider.toFileProxy(remoteDir);
+        FileProxyO file2 = FileOperationsProvider.toFileProxy(remoteDir);
+        assertEquals(file1, file2);
+        FileOperations fileOperations1 = FileOperationsProvider.getDefault().getFileOperations(fs);
+        assertEquals(fileOperations, fileOperations1);
     }
 
     private void makeReadOnly(FileProxyO file, String name) throws IOException, InterruptedException, ExecutionException {

@@ -57,7 +57,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fileoperations.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;

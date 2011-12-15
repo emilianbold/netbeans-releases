@@ -44,7 +44,7 @@ package org.netbeans.modules.remotefs.versioning.spi;
 import java.awt.Image;
 import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.modules.remote.impl.fileoperations.AnnotationProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusListener;
