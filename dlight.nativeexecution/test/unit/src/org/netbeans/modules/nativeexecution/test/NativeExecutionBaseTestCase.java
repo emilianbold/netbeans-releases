@@ -517,7 +517,25 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }        
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
         assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
-        return res.output;
+        String path = res.output;
+        // strip witespace chars at the end of name + remove last path separator
+        while(true) {
+            if (path.length()>0) {
+                char c = path.charAt(path.length()-1);
+                switch (c) {
+                    case '\t':
+                    case '\n':
+                    case '\r':
+                    case ' ':
+                    case '/':
+                    case '\\':
+                        path = path.substring(0,path.length()-1);
+                        continue;
+                }
+            }
+            break;
+        }
+        return path;
     }
     
     
