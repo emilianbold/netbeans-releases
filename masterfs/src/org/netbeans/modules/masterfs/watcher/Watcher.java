@@ -39,11 +39,11 @@
 
 package org.netbeans.modules.masterfs.watcher;
 
+import org.netbeans.modules.masterfs.providers.Notifier;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +57,9 @@ import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.netbeans.modules.masterfs.watcher.Notifier.KeyRef;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -75,8 +74,7 @@ import org.openide.util.lookup.ServiceProviders;
 public final class Watcher extends AnnotationProvider {
     static final Logger LOG = Logger.getLogger(Watcher.class.getName());
     private static final Map<FileObject,int[]> MODIFIED = new WeakHashMap<FileObject, int[]>();
-    
-    private Ext<?> ext;
+    private final Ext<?> ext;
     
     public Watcher() {
         // Watcher disabled manually or for some tests
@@ -84,12 +82,7 @@ public final class Watcher extends AnnotationProvider {
             ext = null;
             return;
         }
-        
         ext = make(getNotifierForPlatform());
-    }
-    
-    final void installNotifier(Notifier<?> n) {
-        ext = make(n);
     }
     
     private static Ext<?> ext() {
@@ -182,7 +175,7 @@ public final class Watcher extends AnnotationProvider {
         private final ReferenceQueue<FileObject> REF = new ReferenceQueue<FileObject>();
         private final Notifier<KEY> impl;
         private final Object LOCK = new Object();
-        private final Set<KeyRef> references = new HashSet<KeyRef>();
+        private final Set<NotifierKeyRef> references = new HashSet<NotifierKeyRef>();
         private final Thread watcher;
         private volatile boolean shutdown;
 
@@ -221,7 +214,7 @@ public final class Watcher extends AnnotationProvider {
                 LOG.log(Level.INFO, "Exception while clearing the queue", ex);
             }
             synchronized (LOCK) {
-                KeyRef kr = impl.new KeyRef(fo, null, null);
+                NotifierKeyRef<KEY> kr = new NotifierKeyRef<KEY>(fo, null, null, impl);
                 return getReferences().contains(kr);
             }
         }
@@ -236,13 +229,13 @@ public final class Watcher extends AnnotationProvider {
                 LOG.log(Level.INFO, "Exception while clearing the queue", ex);
             }
             synchronized (LOCK) {
-                KeyRef kr = impl.new KeyRef(fo, null, null);
+                NotifierKeyRef<KEY> kr = new NotifierKeyRef<KEY>(fo, null, null, impl);
                 if (getReferences().contains(kr)) {
                     return;
                 }
 
                 try {
-                    getReferences().add(impl.new KeyRef(fo, impl.addWatch(fo.getPath()), REF));
+                    getReferences().add(new NotifierKeyRef<KEY>(fo, NotifierAccessor.getDefault().addWatch(impl, fo.getPath()), REF, impl));
                 } catch (IOException ex) {
                     // XXX: handle resource overflow gracefully
                     LOG.log(Level.WARNING, "Cannot add filesystem watch for {0}: {1}", new Object[] {fo.getPath(), ex});
@@ -254,12 +247,12 @@ public final class Watcher extends AnnotationProvider {
         final void unregister(FileObject fo) {
             assert fo.isFolder() : "Should be a folder: " + fo;
             synchronized (LOCK) {
-                final KeyRef[] equalOne = new KeyRef[1];
-                KeyRef kr = impl.new KeyRef(fo, null, null) {
+                final NotifierKeyRef[] equalOne = new NotifierKeyRef[1];
+                NotifierKeyRef<KEY> kr = new NotifierKeyRef<KEY>(fo, null, null, impl) {
                     @Override
                     public boolean equals(Object obj) {
                         if (super.equals(obj)) {
-                            equalOne[0] = (KeyRef)obj;
+                            equalOne[0] = (NotifierKeyRef)obj;
                             return true;
                         } else {
                             return false;
@@ -287,7 +280,7 @@ public final class Watcher extends AnnotationProvider {
         
         final void clearQueue() throws IOException {
             for (;;) {
-                KeyRef kr = (KeyRef)REF.poll();
+                NotifierKeyRef kr = (NotifierKeyRef)REF.poll();
                 if (kr == null) {
                     break;
                 }
@@ -302,12 +295,12 @@ public final class Watcher extends AnnotationProvider {
             while (!shutdown) {
                 try {
                     clearQueue();
-                    String path = impl.nextEvent();
+                    String path = NotifierAccessor.getDefault().nextEvent(impl);
                     LOG.log(Level.FINEST, "nextEvent: {0}", path); 
                     if (path == null) { // all dirty
                         Set<FileObject> set = new HashSet<FileObject>();
                         synchronized (LOCK) {
-                            for (KeyRef kr : getReferences()) {
+                            for (NotifierKeyRef kr : getReferences()) {
                                 final FileObject ref = kr.get();
                                 if (ref != null) {
                                     set.add(ref);
@@ -325,7 +318,7 @@ public final class Watcher extends AnnotationProvider {
                         }
                         if (fo != null) {
                             synchronized (LOCK) {
-                                KeyRef kr = impl.new KeyRef(fo, null, null);
+                                NotifierKeyRef<KEY> kr = new NotifierKeyRef<KEY>(fo, null, null, impl);
                                 if (getReferences().contains(kr)) {
                                     enqueue(fo);
                                 }
@@ -347,11 +340,11 @@ public final class Watcher extends AnnotationProvider {
         final void shutdown() throws IOException, InterruptedException {
             shutdown = true;
             watcher.interrupt();
-            impl.stop();
+            NotifierAccessor.getDefault().stop(impl);
             watcher.join(1000);
         }
 
-        private Set<KeyRef> getReferences() {
+        private Set<NotifierKeyRef> getReferences() {
             assert Thread.holdsLock(LOCK);
             return references;
         }
@@ -416,33 +409,19 @@ public final class Watcher extends AnnotationProvider {
      * @return a suitable {@link Notifier} implementation or <code>null</code>.
      */
     private static Notifier<?> getNotifierForPlatform() {
-        try {
-            if (Utilities.isWindows()) {
-                return new WindowsNotifier();
+        for (Item<Notifier> item : Lookup.getDefault().lookupResult(Notifier.class).allItems()) {
+            try {
+                final Notifier notifier = item.getInstance();
+                NotifierAccessor.getDefault().start(notifier);
+                return notifier;
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Notifier {0} refused to be initialized", item.getType()); // NOI18N
+                LOG.log(Level.FINE, null, ex);
+            } catch (Exception ex) {
+                LOG.log(Level.INFO, "Exception while instantiating " + item, ex);
+            } catch (LinkageError ex) {
+                LOG.log(Level.INFO, "Linkage error for " + item, ex);
             }
-            if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-                return new LinuxNotifier();
-            }
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                try {
-                    final OSXNotifier notifier = new OSXNotifier();
-                    notifier.start();
-                    return notifier;
-                } catch (IOException ioe) {
-                    LOG.log(Level.INFO, null, ioe);
-                }
-            }
-            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                try {
-                    return new FAMNotifier();
-                } catch (Exception e) {
-                    LOG.log(Level.INFO, null, e);
-                } catch (LinkageError x) {
-                    //this is normal not to have fam in the system, do not report
-                }
-            }
-        } catch (LinkageError x) {
-            LOG.warning(x.toString());
         }
         return null;
     }
