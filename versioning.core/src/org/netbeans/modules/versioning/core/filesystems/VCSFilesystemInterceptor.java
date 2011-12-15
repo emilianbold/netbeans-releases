@@ -174,7 +174,7 @@ public final class VCSFilesystemInterceptor {
         }
     }
 
-    public static DeleteHandler getDeleteHandler(VCSFileProxy file) {
+    public static IOHandler getDeleteHandler(VCSFileProxy file) {
         LOG.log(Level.FINE, "getDeleteHandler {0}", file);
         removeFromDeletedFiles(file);
         DelegatingInterceptor dic = getInterceptor(file, (Boolean) null, "beforeDelete", "doDelete"); // NOI18N
@@ -310,19 +310,6 @@ public final class VCSFilesystemInterceptor {
          */
         void handle() throws IOException;
     }
-    
-    public interface DeleteHandler {
-        /**
-         * Deletes the file or directory denoted by this abstract pathname.  If
-         * this pathname denotes a directory, then the directory must be empty in
-         * order to be deleted.
-         *
-         * @return  <code>true</code> if and only if the file or directory is
-         *          successfully deleted; <code>false</code> otherwise
-         */
-        boolean delete(VCSFileProxy file); // XXX IOException ?
-    }    
-
     
     // private methods
     
@@ -526,7 +513,7 @@ public final class VCSFilesystemInterceptor {
         }
     };
 
-    private static class DelegatingInterceptor implements DeleteHandler {
+    private static class DelegatingInterceptor implements IOHandler {
         final Collection<VCSInterceptor> interceptors;
         final VCSInterceptor interceptor;
         final VCSInterceptor lhInterceptor;
@@ -688,40 +675,35 @@ public final class VCSFilesystemInterceptor {
          * @return true if the file was successfully deleted (event virtually
          * deleted), false otherwise
          */
-        public boolean delete(VCSFileProxy file) {
+        @Override
+        public void handle() throws IOException {
             VCSFileProxy[] children = file.listFiles();
             if (children != null) {
                 synchronized (deletedFiles) {
                     for (VCSFileProxy child : children) {
                         if (!deletedFiles.contains(child)) {
-                            return false;
+                            throw new IOException();
                         }
                     }
                 }
             }
-            try {
-                lhInterceptor.doDelete(file);
-                interceptor.doDelete(file);
-                synchronized (deletedFiles) {
-                    if (file.isDirectory()) {
-                        // the directory was virtually deleted, we can forget about its children
-                        for (Iterator<VCSFileProxy> i = deletedFiles.iterator(); i.hasNext();) {
-                            VCSFileProxy fakedFile = i.next();
-                            if (file.equals(fakedFile.getParentFile())) {
-                                i.remove();
-                            }
+            lhInterceptor.doDelete(file);
+            interceptor.doDelete(file);
+            synchronized (deletedFiles) {
+                if (file.isDirectory()) {
+                    // the directory was virtually deleted, we can forget about its children
+                    for (Iterator<VCSFileProxy> i = deletedFiles.iterator(); i.hasNext();) {
+                        VCSFileProxy fakedFile = i.next();
+                        if (file.equals(fakedFile.getParentFile())) {
+                            i.remove();
                         }
                     }
-                    if (file.exists()) {
-                        deletedFiles.add(file);
-                    } else {
-                        deletedFiles.remove(file);
-                    }
                 }
-                return true;
-            } catch (IOException e) {
-                // the interceptor failed to delete the file
-                return false;
+                if (file.exists()) {
+                    deletedFiles.add(file);
+                } else {
+                    deletedFiles.remove(file);
+                }
             }
         }
         public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {

@@ -156,17 +156,24 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
 
     @Override
-    public DeleteHandler getDeleteHandler(File file) {
+    public DeleteHandler getDeleteHandler(final File file) {
         final VCSFileProxy p = VCSFileProxy.createFileProxy(file);
-        final VCSFilesystemInterceptor.DeleteHandler h = VCSFilesystemInterceptor.getDeleteHandler(p);
+        final VCSFilesystemInterceptor.IOHandler h = VCSFilesystemInterceptor.getDeleteHandler(p);
         if (h == null) {
             return null;
         }
         return new DeleteHandler() {
 
             @Override
-            public boolean delete(File file) {
-                return h.delete(VCSFileProxy.createFileProxy(file));
+            public boolean delete(File dummy) {
+                assert dummy.equals(file);
+                try {
+                    h.handle();
+                    return true;
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                    return false;
+                }
             }
             
         };
