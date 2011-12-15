@@ -110,12 +110,27 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
                 return;
             }
             checkAlternatives(element , result );
+            if ( cancel.get() ){
+                return;
+            }
+            checkSpecializes( element , result );
         }
         if ( isDecorator ){
             if ( cancel.get() ){
                 return;
             }
             checkDelegateInjectionPoint(element , result);
+        }
+    }
+
+    private void checkSpecializes( TypeElement element, CdiAnalysisResult result )
+    {
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
+                result.getInfo()) )
+        {
+            result.addNotification(Severity.WARNING, element, NbBundle.getMessage(
+                    AnnotationsAnalyzer.class,  
+                    "WARN_SpecializesInterceptorDecorator")); // NOI18N
         }
     }
 
