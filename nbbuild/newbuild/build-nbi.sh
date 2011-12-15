@@ -142,7 +142,7 @@ fi
 #
 ###################################################################
 
-if [ -z DONT_SIGN_INSTALLER ]; then
+if [ -z $DONT_SIGN_INSTALLER ]; then
 
     if [ -z $SIGN_CLIENT ]; then
         echo "ERROR: SIGN_CLIENT not defined - Signing failed"
