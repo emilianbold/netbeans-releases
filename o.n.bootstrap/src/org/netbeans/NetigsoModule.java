@@ -224,7 +224,7 @@ final class NetigsoModule extends Module {
 
     @Override
     final int getStartLevelImpl() {
-        return startLevel == -1 ? NetigsoFramework.getDefault().defaultStartLevel() : startLevel;
+        return startLevel;
     }
 
     final void setStartLevel(int startLevel) {
