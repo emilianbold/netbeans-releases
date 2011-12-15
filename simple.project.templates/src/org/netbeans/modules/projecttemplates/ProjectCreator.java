@@ -256,7 +256,7 @@ public final class ProjectCreator {
         if (!projectProps[0].isEmpty()) {
             entries.add (new ProjectPropertiesEntry(projectProps[0]));
         }
-        if (!projectProps[0].isEmpty()) {
+        if (!projectProps[1].isEmpty()) {
             entries.add (new ProjectPropertiesEntry(AntProjectHelper.PRIVATE_PROPERTIES_PATH,
                     projectProps[1]));
         }
