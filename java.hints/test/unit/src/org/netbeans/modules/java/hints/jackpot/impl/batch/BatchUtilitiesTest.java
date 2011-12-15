@@ -86,6 +86,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.java.hints.jackpot.impl.batch.TestUtils.writeFilesAndWaitForScan;
 import static org.netbeans.modules.java.hints.jackpot.impl.batch.TestUtils.prepareHints;
+import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 
 /**
  *
@@ -104,7 +105,7 @@ public class BatchUtilitiesTest extends NbTestCase {
         Main.initializeURLFactory();
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         prepareTest();
-        Util.allMimeTypes = Collections.singleton("text/x-java");
+        MimeTypes.setAllMimeTypes(Collections.singleton("text/x-java"));
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {ClassPathSupport.createClassPath(src1, src2)});
         RepositoryUpdater.getDefault().start(true);
         super.setUp();

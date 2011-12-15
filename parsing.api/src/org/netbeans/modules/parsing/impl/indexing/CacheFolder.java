@@ -68,17 +68,26 @@ import org.openide.modules.Places;
 public final class CacheFolder {
 
     private static final Logger LOG = Logger.getLogger(CacheFolder.class.getName());
-    
+
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
     private static final String SLICE_PREFIX = "s";              //NOI18N
-    
+
+    //@GuardedBy("CacheFolder.class")
     private static FileObject cacheFolder;
+    //@GuardedBy("CacheFolder.class")
     private static Properties segments;
+    //@GuardedBy("CacheFolder.class")
     private static Map<String, String> invertedSegments;
+    //@GuardedBy("CacheFolder.class")
     private static int index = 0;
 
 
+    //@NotThreadSafe
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="LI_LAZY_INIT_UPDATE_STATIC"
+        /*,justification="Caller already holds a monitor"*/)
     private static void loadSegments(FileObject folder) throws IOException {
+        assert Thread.holdsLock(CacheFolder.class);
         if (segments == null) {
             assert folder != null;
             segments = new Properties ();
@@ -107,6 +116,7 @@ public final class CacheFolder {
 
 
     private static void storeSegments(FileObject folder) throws IOException {
+        assert Thread.holdsLock(CacheFolder.class);
         assert folder != null;
         //It's safer to use FileUtil.createData(File) than FileUtil.createData(FileObject, String)
         //see issue #173094

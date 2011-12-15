@@ -59,6 +59,9 @@ public final class DocumentBasedIndexManager {
 
     private static DocumentBasedIndexManager instance;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_COLLECTION_OF_URLS"
+    /*,justification="URLs have never host part"*/)
     private final Map<URL, DocumentIndex> indexes = new HashMap<URL, DocumentIndex> ();
 
     private DocumentBasedIndexManager() {}
@@ -78,8 +81,12 @@ public final class DocumentBasedIndexManager {
         return instance;
     }
 
+   @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_COLLECTION_OF_URLS"
+    /*,justification="URLs have never host part"*/)
     public synchronized DocumentIndex getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
+        assert root.getHost() == null || root.getHost().isEmpty();
         DocumentIndex li = indexes.get(root);
         if (li == null) {
             try {

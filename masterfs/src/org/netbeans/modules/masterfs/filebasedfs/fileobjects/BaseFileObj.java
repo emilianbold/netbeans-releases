@@ -108,6 +108,7 @@ public abstract class BaseFileObj extends FileObject {
     }
     
     protected BaseFileObj(final File file, final FileNaming name) {
+        assert name != null;
         this.fileName = name;
     }
        
@@ -421,6 +422,7 @@ public abstract class BaseFileObj extends FileObject {
                 String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
                 FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
             }
+            assert allRenamed[0] != null;
             fileName = allRenamed[0];
             Set<BaseFileObj> toRename = new HashSet<BaseFileObj>(allRenamed.length * 2);
             toRename.add(this);
@@ -432,8 +434,9 @@ public abstract class BaseFileObj extends FileObject {
                     obj.updateFileName(allRenamed[i], oldFileName, allRenamed[0]);
                     toRename.add(obj);
                 }
-                FolderObj par = (allRenamed[i].getParent() != null) ? (FolderObj) fs.getCachedOnly(affected.getParentFile(), false) : null;
-                if (par != null) {
+                FileObject tmpPar = allRenamed[i].getParent() != null ? fs.getCachedOnly(affected.getParentFile(), false) : null;
+                if (tmpPar instanceof FolderObj) {
+                    FolderObj par = (FolderObj)tmpPar;
                     ChildrenCache childrenCache = par.getChildrenCache();
                     final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
                     if (mutexPrivileged != null) {
@@ -802,7 +805,14 @@ public abstract class BaseFileObj extends FileObject {
         try {   
             if (isValid()) {
                 refreshImpl(expected, fire);
-                if (isData()) {
+                if (isValid()) {
+                    final File file = getFileName().getFile();
+                    final boolean isDir = file.isDirectory();
+                    final boolean isFile = file.isFile();
+                    if (isDir == isFile || isFolder() != isDir || isData() != isFile) {
+                        invalidateFO(fire, expected);
+                    }
+                } else if (isData()) {
                     refreshExistingParent(expected, fire);
                 }
             }
@@ -814,28 +824,33 @@ public abstract class BaseFileObj extends FileObject {
     void refreshExistingParent(final boolean expected, boolean fire) {
         boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
-            //fileobject is invalidated
-            FolderObj parent = getExistingParent();
-            if (parent != null) {
-                ChildrenCache childrenCache = parent.getChildrenCache();
-                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                if (mutexPrivileged != null) {
-                    mutexPrivileged.enterWriteAccess();
-                }
-                try {
-                    childrenCache.getChild(getFileName().getFile().getName(), true);
-                } finally {
-                    if (mutexPrivileged != null) {
-                        mutexPrivileged.exitWriteAccess();
-                    }
-                }
-            }
-            setValid(false);
-            if (fire) {
-                getProvidedExtensions().deletedExternally(this);
-                fireFileDeletedEvent(expected);
-            }
+            invalidateFO(fire, expected);
         } 
+    }
+
+    private void invalidateFO(boolean fire, final boolean expected) {
+        //fileobject is invalidated
+        FolderObj parent = getExistingParent();
+        if (parent != null) {
+            ChildrenCache childrenCache = parent.getChildrenCache();
+            final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+            if (mutexPrivileged != null) {
+                mutexPrivileged.enterWriteAccess();
+            }
+            try {
+                childrenCache.getChild(getFileName().getFile().getName(), true);
+            } finally {
+                if (mutexPrivileged != null) {
+                    mutexPrivileged.exitWriteAccess();
+                }
+            }
+        }
+        setValid(false);
+        FileNaming newFN = NamingFactory.fromFile(getFileName().getParent(), getFileName().getFile(), true);
+        if (fire) {
+            getProvidedExtensions().deletedExternally(this);
+            fireFileDeletedEvent(expected);
+        }
     }
 
     private void updateFileName(FileNaming oldName, FileNaming oldRoot, FileNaming newRoot) {
@@ -851,7 +866,7 @@ public abstract class BaseFileObj extends FileObject {
             String n = names.pop();
             newRoot = NamingFactory.fromFile(newRoot, prev = new File(prev, n), true);
         }
-
+        assert newRoot != null;
         fileName = newRoot;
     }
     

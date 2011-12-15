@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,60 +34,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.masterfs.filebasedfs.utils;
+package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.File;
-import java.util.Locale;
-import java.util.Stack;
-import org.openide.util.Utilities;
+import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author rmatous
+ * @author Tomas Zezula
  */
-public class Utils {
-    public static boolean equals(File f1, File f2) {
-        if (f1 == null) {
-            return f2 == null;
-        }
-        if (f2 == null) {
-            return f1 == null;
-        }
-        if (Utilities.isMac()) {
-            return f1.getPath().compareToIgnoreCase(f2.getPath()) == 0;
-        }
-        return f1.equals(f2);
+public class MimeTypes {
+
+    private MimeTypes() {}
+
+    public static void setAllMimeTypes(@NonNull final Set<String> allMimeTypes) {
+        Parameters.notNull("allMimeTypes", allMimeTypes);   //NOI18N
+        Util.allMimeTypes = allMimeTypes;
     }
-    public static int hashCode(final File file) {
-        if (Utilities.isMac()) {
-            // same as in Win32FileSystem
-            return file.getPath().toLowerCase(Locale.ENGLISH).hashCode() ^ 1234321;
-        }
-        return file.hashCode();
-    }
-    
-    public static String getRelativePath(final File dir, final File file) {
-        Stack<String> stack = new Stack<String>();
-        File tempFile = file;
-        while (tempFile != null && !equals(tempFile, dir)) {
-            stack.push(tempFile.getName());
-            tempFile = tempFile.getParentFile();
-        }
-        if (tempFile == null) {
-            return null;
-        }
-        StringBuilder retval = new StringBuilder();
-        while (!stack.isEmpty()) {
-            retval.append(stack.pop());
-            if (!stack.isEmpty()) {
-                retval.append("/");//NOI18N
-            }
-        }
-        return retval.toString();
+
+    @CheckForNull
+    public static Set<String> getAllMimeTypes() {
+        return Util.allMimeTypes;
     }
 }
