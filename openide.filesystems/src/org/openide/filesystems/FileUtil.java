@@ -135,6 +135,11 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
+    private static boolean assertNormalized(File path) {
+        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        return true;
+    }
+
     private static FileSystem getDiskFileSystemFor(File... files) {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {
@@ -271,7 +276,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void addFileChangeListener(FileChangeListener listener, File path) {
-        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        assert assertNormalized(path);
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
             if (f2H == null) {
@@ -983,6 +988,7 @@ public final class FileUtil extends Object {
                 retVal = normalizeFile(retVal);
             }
         }
+        assert assertNormalized(retVal);
         return retVal;
     }
 
@@ -1742,6 +1748,7 @@ public final class FileUtil extends Object {
         } else {
             ret = new File(normalized);
         }
+        assert assertNormalized(ret);
         return ret;
     }
 
