@@ -164,7 +164,7 @@ public class TwigStructureItem implements StructureItem {
 
         @Override
         public String getMimeType() {
-            return "text/twig";
+            return TwigLanguage.TWIG_MIME_TYPE;
         }
 
         @Override

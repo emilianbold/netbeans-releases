@@ -55,8 +55,10 @@ import org.netbeans.modules.php.twig.editor.format.TwigFormatter;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.parsing.TwigParser;
 
-@LanguageRegistration(mimeType="text/twig", useCustomEditorKit=true) //NOI18N
+@LanguageRegistration(mimeType=TwigLanguage.TWIG_MIME_TYPE, useCustomEditorKit=true)
 public class TwigLanguage extends DefaultLanguageConfig {
+
+    public static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
 
     public TwigLanguage() {}
 

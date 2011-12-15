@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -111,7 +112,7 @@ public enum TwigTokenId implements TokenId {
 
                 @Override
                 protected String mimeType() {
-                    return "text/twig-markup";
+                    return TwigLanguage.TWIG_MIME_TYPE + "-markup"; // NOI18N
                 }
 
                 @Override

@@ -47,6 +47,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -65,7 +66,7 @@ public class TwigEditorKit extends NbEditorKit {
 
     @Override
     public String getContentType() {
-        return "text/twig";
+        return TwigLanguage.TWIG_MIME_TYPE;
     }
 
 }

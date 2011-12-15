@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <folder name="twig">
+            <folder name="x-twig">
 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.twig.editor.TwigEditorKit"/>
@@ -196,7 +196,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="CslPlugins">
         <folder name="text">
-            <folder name="twig">
+            <folder name="x-twig">
                 <attr name="useCustomEditorKit" boolvalue="true"/>
                 <file name="language.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.twig.editor.gsf.TwigLanguage"/>
@@ -209,7 +209,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Loaders">
         <folder name="text">
-            <folder name="twig">
+            <folder name="x-twig">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/php/twig/resources/icon.png"/>
                 <folder name="Actions">
@@ -274,7 +274,7 @@ made subject to such option by the copyright holder.
                     <file name="TwigDataLoader.instance">
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.php.twig.editor.TwigDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
-                        <attr name="mimeType" stringvalue="text/twig"/>
+                        <attr name="mimeType" stringvalue="text/x-twig"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/php/twig/resources/icon.png"/>
                     </file>
@@ -285,7 +285,6 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="TwigResolver.xml" url="TwigResolver.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.php.twig.resources.Bundle#Services/MIMEResolver/TwigResolver.xml"/>
                 <attr name="position" intvalue="125"/>
             </file>
         </folder>
@@ -293,7 +292,7 @@ made subject to such option by the copyright holder.
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="twig" url="example.html.twig"/>
+                <file name="x-twig" url="example.html.twig"/>
             </folder>
         </folder>
     </folder>

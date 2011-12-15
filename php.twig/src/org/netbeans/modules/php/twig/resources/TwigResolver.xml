@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
 <MIME-resolver>
     <file>
         <ext name="twig"/>
-        <resolver mime="text/twig" />
+        <resolver mime="text/x-twig" />
     </file>
 </MIME-resolver>
