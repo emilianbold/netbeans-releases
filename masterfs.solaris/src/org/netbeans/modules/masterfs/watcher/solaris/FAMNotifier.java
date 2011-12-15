@@ -40,8 +40,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs.watcher;
+package org.netbeans.modules.masterfs.watcher.solaris;
 
+import org.netbeans.modules.masterfs.providers.Notifier;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -57,13 +58,15 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Notifier implementation using fam library
  *
  * @author Egor Ushakov
  */
-public class FAMNotifier extends Notifier<Integer> {
+@ServiceProvider(service=Notifier.class, position=1000)
+public final class FAMNotifier extends Notifier<Integer> {
     private final FAMLibrary.FAMConnection conn;
     private final FAMLibrary lib;
     private final Map<Integer, String> map = Collections.synchronizedMap(new HashMap<Integer, String>());
@@ -89,9 +92,6 @@ public class FAMNotifier extends Notifier<Integer> {
         }
         this.lib = library;
         this.conn = new FAMLibrary.FAMConnection();
-        if (lib.FAMOpen(conn) != 0) {
-            throw new IllegalStateException();
-        }
         eventReader = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -119,7 +119,6 @@ public class FAMNotifier extends Notifier<Integer> {
                 }
             }
         }, "FAM events reader"); //NOI18N
-        eventReader.start();
     }
 
     @Override
@@ -160,6 +159,14 @@ public class FAMNotifier extends Notifier<Integer> {
         map.remove(key);
     }
 
+    @Override
+    protected void start() throws IOException {
+        if (lib.FAMOpen(conn) != 0) {
+            throw new IOException();
+        }
+        eventReader.start();
+    }
+    
     @Override
     protected void stop() throws IOException {
         stopped = true;
