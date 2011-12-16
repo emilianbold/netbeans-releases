@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,43 +35,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s):
+ * Contributor(s): Sebastian Hörl
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.annotations;
+package org.netbeans.modules.php.twig.editor.lexer;
 
-import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.php.api.doc.PhpDocs;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.filesystems.annotations.LayerGeneratingProcessor;
-import org.openide.filesystems.annotations.LayerGenerationException;
-import org.openide.util.lookup.ServiceProvider;
+public class TwigTopLexerState {
 
-/**
- * @author Tomas Mysik
- */
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.doc.PhpDocProvider.Registration")
-@ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpDocRegistrationProcessor extends LayerGeneratingProcessor {
+    public enum Main {
+        INIT,
+        HTML,
+
+        OPEN,
+        TWIG,
+        CLOSE,
+
+        CLOSE_RAW,
+        RAW
+    };
+
+    public enum Type {
+        NONE, INSTRUCTION, VARIABLE, COMMENT
+    };
+
+    Main main;
+    Type type;
+
+    public TwigTopLexerState() {
+        main = Main.INIT;
+        type = type.NONE;
+    }
+
+    public TwigTopLexerState( TwigTopLexerState copy ) {
+        main = copy.main;
+        type = copy.type;
+    }
+
+    public TwigTopLexerState( Main main, Type type ) {
+        this.main = main;
+        this.type = type;
+    }
 
     @Override
-    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocProvider.Registration.class)) {
-            layer(element)
-                    .instanceFile(PhpDocs.DOCS_PATH, null, PhpDocProvider.class)
-                    .intvalue("position", element.getAnnotation(PhpDocProvider.Registration.class).position()) // NOI18N
-                    .write();
-        }
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.main != null ? this.main.hashCode() : 0);
+        hash = 97 * hash + (this.type != null ? this.type.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals( Object object ) {
+        if ( object == null ) return false;
+        if ( getClass() != object.getClass() ) return false;
+        TwigTopLexerState compare = (TwigTopLexerState) object;
+        if ( main != compare.main ) return false;
+        if ( type != compare.type ) return false;
         return true;
     }
 

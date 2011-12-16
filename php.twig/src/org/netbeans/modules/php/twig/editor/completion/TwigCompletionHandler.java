@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,44 +35,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s):
+ * Contributor(s): Sebastian Hörl
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.annotations;
+package org.netbeans.modules.php.twig.editor.completion;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.php.api.doc.PhpDocs;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.filesystems.annotations.LayerGeneratingProcessor;
-import org.openide.filesystems.annotations.LayerGenerationException;
-import org.openide.util.lookup.ServiceProvider;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 
-/**
- * @author Tomas Mysik
- */
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.doc.PhpDocProvider.Registration")
-@ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpDocRegistrationProcessor extends LayerGeneratingProcessor {
+public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
-    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocProvider.Registration.class)) {
-            layer(element)
-                    .instanceFile(PhpDocs.DOCS_PATH, null, PhpDocProvider.class)
-                    .intvalue("position", element.getAnnotation(PhpDocProvider.Registration.class).position()) // NOI18N
-                    .write();
-        }
-        return true;
+    public CodeCompletionResult complete( CodeCompletionContext ccc ) {
+        return CodeCompletionResult.NONE;
+    }
+
+    @Override
+    public String document(ParserResult pr, ElementHandle eh) {
+        return "";
+    }
+
+    @Override
+    public ElementHandle resolveLink(String string, ElementHandle eh) {
+        return null;
+    }
+
+    @Override
+    public String getPrefix( ParserResult info, int offset, boolean upToOffset ) {
+        return "";
+    }
+
+    @Override
+    public QueryType getAutoQuery( JTextComponent jtc, String string ) {
+        return QueryType.ALL_COMPLETION;
+    }
+
+    @Override
+    public String resolveTemplateVariable(String string, ParserResult pr, int i, String string1, Map map) {
+        return null;
+    }
+
+    @Override
+    public Set<String> getApplicableTemplates(Document dcmnt, int i, int i1) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public ParameterInfo parameters(ParserResult pr, int i, CompletionProposal cp) {
+        return new ParameterInfo( new ArrayList<String>(), 0, 0 );
     }
 
 }
