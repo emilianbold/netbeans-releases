@@ -166,7 +166,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
             @Override
             public boolean delete(File dummy) {
-                assert dummy.equals(file);
+//                assert dummy.equals(file);
                 try {
                     h.handle();
                     return true;

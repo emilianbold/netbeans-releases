@@ -684,16 +684,16 @@ public final class VCSFilesystemInterceptor {
          */
         @Override
         public void handle() throws IOException {
-            VCSFileProxy[] children = file.listFiles();
-            if (children != null) {
-                synchronized (deletedFiles) {
-                    for (VCSFileProxy child : children) {
-                        if (!deletedFiles.contains(child)) {
-                            throw new IOException();
-                        }
-                    }
-                }
-            }
+//            VCSFileProxy[] children = file.listFiles();
+//            if (children != null) {
+//                synchronized (deletedFiles) {
+//                    for (VCSFileProxy child : children) {
+//                        if (!deletedFiles.contains(child)) {
+//                            throw new IOException();
+//                        }
+//                    }
+//                }
+//            }
             lhInterceptor.doDelete(file);
             interceptor.doDelete(file);
             synchronized (deletedFiles) {
