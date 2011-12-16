@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 
@@ -86,7 +87,7 @@ public final class DocumentBasedIndexManager {
     /*,justification="URLs have never host part"*/)
     public synchronized DocumentIndex getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
-        assert root.getHost() == null || root.getHost().isEmpty();
+        assert PathRegistry.noHostPart(root) : root;
         DocumentIndex li = indexes.get(root);
         if (li == null) {
             try {

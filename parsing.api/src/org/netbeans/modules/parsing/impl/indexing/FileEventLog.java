@@ -81,7 +81,7 @@ class FileEventLog implements Runnable {
     public void record (final FileOp operation, final URL root, String relativePath, FileEvent event, final Work work) {
         assert operation != null;
         assert root != null;
-        assert root.getHost() == null || root.getHost().isEmpty();
+        assert PathRegistry.noHostPart(root) : root;
         if (relativePath == null) {
             relativePath = "";  //NOI18N
         }

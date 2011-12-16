@@ -167,7 +167,7 @@ public final class PathRegistry implements Runnable {
         value="DMI_COLLECTION_OF_URLS"
         /*,justification="URLs have never host part"*/)
     public URL[] sourceForBinaryQuery (final URL binaryRoot, final ClassPath definingClassPath, final boolean fire) {
-        assert binaryRoot.getHost() == null || binaryRoot.getHost().isEmpty();
+        assert noHostPart(binaryRoot) : binaryRoot;
         URL[] result = this.translatedRoots.get(binaryRoot);
         if (result != null) {
             if (result.length > 0) {
@@ -419,7 +419,7 @@ public final class PathRegistry implements Runnable {
         value="DMI_COLLECTION_OF_URLS"
         /*,justification="URLs have never host part"*/)
     public Set<String> getSourceIdsFor(URL root) {
-        assert root.getHost() == null || root.getHost().isEmpty();
+        assert noHostPart(root) : root;
         PathIds pathIds = getRootPathIds().get(root);
         return pathIds != null ? pathIds.getSids() : null;
     }
@@ -428,7 +428,7 @@ public final class PathRegistry implements Runnable {
         value="DMI_COLLECTION_OF_URLS"
         /*,justification="URLs have never host part"*/)
     public Set<String> getLibraryIdsFor(URL root) {
-        assert root.getHost() == null || root.getHost().isEmpty();
+        assert noHostPart(root) : root;
         PathIds pathIds = getRootPathIds().get(root);
         return pathIds != null ? pathIds.getLids() : null;
     }
@@ -452,7 +452,7 @@ public final class PathRegistry implements Runnable {
         value="DMI_COLLECTION_OF_URLS"
         /*,justification="URLs have never host part"*/)
     public Set<String> getMimeTypesFor(final URL root) {
-        assert root.getHost() == null || root.getHost().isEmpty();
+        assert noHostPart(root) : root;
         PathIds pathIds = getRootPathIds().get(root);
         return pathIds != null ? pathIds.getMimeTypes() : null;
     }
@@ -485,6 +485,10 @@ public final class PathRegistry implements Runnable {
         }
         fire(ch);
         LOGGER.log(Level.FINE, "resetCacheAndFire, firing done"); // NOI18N
+    }
+
+    public static boolean noHostPart(@NonNull final URL url) {
+        return url.getHost() == null || url.getHost().isEmpty();
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -601,7 +605,7 @@ public final class PathRegistry implements Runnable {
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
-                assert root.getHost() == null || root.getHost().isEmpty();
+                assert noHostPart(root) : root;
                 sourceResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
@@ -616,7 +620,7 @@ public final class PathRegistry implements Runnable {
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
-                assert root.getHost() == null || root.getHost().isEmpty();
+                assert noHostPart(root) : root;
                 libraryResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
@@ -631,7 +635,7 @@ public final class PathRegistry implements Runnable {
             boolean isNew = !request.oldCps.remove(cp);
             for (ClassPath.Entry entry : cp.entries()) {
                 URL binRoot = entry.getURL();
-                assert binRoot.getHost() == null || binRoot.getHost().isEmpty();
+                assert noHostPart(binRoot) : binRoot;
                 if (!translatedRoots.containsKey(binRoot)) {
                     updatePathIds(binRoot, tcp, pathIdsResult, pathIdToRootsResult);
                     
@@ -696,7 +700,7 @@ public final class PathRegistry implements Runnable {
             for (int i=0; i<roots.length; i++) {
                 try {
                     final URL url = roots[i].getURL();
-                    assert url.getHost() == null || url.getHost().isEmpty();
+                    assert noHostPart(url) : url;
                     if (cacheDirs != null) {
                         cacheDirs.add (url);
                     }
