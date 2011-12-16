@@ -127,7 +127,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doDelete(VCSFileProxy file) throws IOException {
         doDeleteFiles.add(file);
         if (file.getName().endsWith("do-not-delete")) return;
-        file.toFile().delete();
+        deleteRecursively(file.toFile());
     }
 
     public void afterDelete(VCSFileProxy file) {
@@ -258,5 +258,16 @@ public class TestVCSInterceptor extends VCSInterceptor {
         beforeChangeFiles.clear();
         afterChangeFiles.clear();
         isMutableFiles.clear();
+    }
+
+    private void deleteRecursively(File file) {
+        if(file.isFile()) file.delete();
+        File[] files = file.listFiles();
+        if(files != null) {
+            for (File f : files) {
+                deleteRecursively(f);
+            }
+        } 
+        file.delete();
     }
 }

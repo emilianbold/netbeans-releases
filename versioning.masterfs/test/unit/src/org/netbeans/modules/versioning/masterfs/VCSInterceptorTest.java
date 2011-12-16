@@ -231,6 +231,26 @@ public class VCSInterceptorTest extends NbTestCase {
         assertTrue(inteceptor.getAfterCopyFiles().contains(VCSFileProxy.createFileProxy(FileUtil.toFile(fo))));
     }
 
+    public void testDeleteRecursively() throws IOException {
+        File deleteFolder = new File(dataRootDir, "workdir/root-test-versioned/deletefolder");
+        File deepestFolder= new File(deleteFolder, "folder1/folder2/folder3");
+        deepestFolder.mkdirs();
+        File f = new File(deepestFolder, "file");
+        f.createNewFile();
+        f = new File(deepestFolder.getParentFile(), "file");
+        f.createNewFile();
+        f = new File(deepestFolder.getParentFile().getParentFile(), "file");
+        f.createNewFile();
+        f = new File(deepestFolder.getParentFile().getParentFile().getParentFile(), "file");
+        f.createNewFile();
+        
+        FileObject fo = FileUtil.toFileObject(deleteFolder);
+        fo.delete();
+        
+        assertTrue(inteceptor.getDeletedFiles().contains(VCSFileProxy.createFileProxy(deleteFolder)));
+        assertFalse(deleteFolder.exists());
+    }
+    
     private void deleteRecursively(File f) {
         if(f.isFile()) {
             f.delete();
