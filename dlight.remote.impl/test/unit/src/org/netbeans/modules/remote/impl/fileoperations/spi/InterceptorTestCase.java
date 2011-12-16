@@ -119,6 +119,7 @@ public class InterceptorTestCase extends RemoteFileTestBase {
         assertTrue(interceptor.getCreatedFiles().contains(file));
         assertFalse(interceptor.getIsMutableFiles().contains(file));
         ExitStatus execute = ProcessUtils.execute(execEnv, "chmod", "oag-w", file.getPath());
+        fo.getParent().refresh(true);
         boolean canWrite2 = fo.canWrite();
         assertFalse(canWrite2);
         assertTrue(interceptor.getIsMutableFiles().contains(file));

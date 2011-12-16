@@ -41,12 +41,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.profiler.selector.ui;
+package org.netbeans.modules.profiler.api;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
-
 
 /**
  *
@@ -58,24 +57,37 @@ public interface ProgressDisplayer {
     public static interface ProgressController extends Cancellable {
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------------------------------------
 
+    public boolean isOpened();
+
+    public void close();
+
+    public ProgressDisplayer showProgress(String message);
+
+    public ProgressDisplayer showProgress(String message, ProgressController controller);
+
+    public ProgressDisplayer showProgress(String caption, String message, ProgressController controller);
+    
     public static final ProgressDisplayer DEFAULT = new ProgressDisplayer() {
         ProgressHandle ph = null;
 
-        public synchronized void showProgress(String message) {
+        public synchronized ProgressDisplayer showProgress(String message) {
             ph = ProgressHandleFactory.createHandle(message);
             ph.start();
+            return DEFAULT;
         }
 
-        public synchronized void showProgress(String message, ProgressController controller) {
+        public synchronized ProgressDisplayer showProgress(String message, ProgressController controller) {
             ph = ProgressHandleFactory.createHandle(message, controller);
             ph.start();
+            return DEFAULT;
         }
 
-        public synchronized void showProgress(String caption, String message, ProgressController controller) {
+        public synchronized ProgressDisplayer showProgress(String caption, String message, ProgressController controller) {
             ph = ProgressHandleFactory.createHandle(message, controller);
             ph.start();
+            return DEFAULT;
         }
 
         public synchronized boolean isOpened() {
@@ -90,16 +102,4 @@ public interface ProgressDisplayer {
         }
     };
 
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public boolean isOpened();
-
-    public void close();
-
-    public void showProgress(String message);
-
-    public void showProgress(String message, ProgressController controller);
-
-    public void showProgress(String caption, String message, ProgressController controller);
 }

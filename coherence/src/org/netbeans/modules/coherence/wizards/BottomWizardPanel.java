@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.coherence.wizards;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,10 +54,14 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.coherence.library.LibraryUtils;
 import org.netbeans.modules.coherence.project.CoherenceProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -92,6 +98,7 @@ public class BottomWizardPanel extends javax.swing.JPanel {
         librariesComboBox = new javax.swing.JComboBox();
         classPathWarningLabel = new javax.swing.JLabel();
         addToProjectButton = new javax.swing.JButton();
+        registerCoherenceLabel = new javax.swing.JLabel();
 
         librariesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Loading libraries..." }));
 
@@ -106,28 +113,40 @@ public class BottomWizardPanel extends javax.swing.JPanel {
             }
         });
 
+        registerCoherenceLabel.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
+        registerCoherenceLabel.setForeground(new java.awt.Color(204, 102, 0));
+        registerCoherenceLabel.setText(org.openide.util.NbBundle.getMessage(BottomWizardPanel.class, "BottomWizardPanel.registerCoherenceLabel.text")); // NOI18N
+        registerCoherenceLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        registerCoherenceLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                registerCoherenceLabelMousePressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout libraryPanelLayout = new javax.swing.GroupLayout(libraryPanel);
         libraryPanel.setLayout(libraryPanelLayout);
         libraryPanelLayout.setHorizontalGroup(
             libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(libraryPanelLayout.createSequentialGroup()
                 .addGroup(libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(classPathWarningLabel)
                     .addGroup(libraryPanelLayout.createSequentialGroup()
                         .addComponent(librariesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(addToProjectButton))
-                    .addComponent(classPathWarningLabel))
+                    .addComponent(registerCoherenceLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         libraryPanelLayout.setVerticalGroup(
             libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, libraryPanelLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(classPathWarningLabel)
+                .addComponent(classPathWarningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addToProjectButton)))
+                    .addComponent(addToProjectButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(registerCoherenceLabel))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -142,7 +161,7 @@ public class BottomWizardPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 253, Short.MAX_VALUE)
+                .addGap(0, 233, Short.MAX_VALUE)
                 .addComponent(libraryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -169,12 +188,49 @@ public class BottomWizardPanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_addToProjectButtonActionPerformed
+
+    private void registerCoherenceLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registerCoherenceLabelMousePressed
+        registerCoherence();
+    }//GEN-LAST:event_registerCoherenceLabelMousePressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addToProjectButton;
     private javax.swing.JLabel classPathWarningLabel;
     private javax.swing.JComboBox librariesComboBox;
     private javax.swing.JPanel libraryPanel;
+    private javax.swing.JLabel registerCoherenceLabel;
     // End of variables declaration//GEN-END:variables
+
+    @NbBundle.Messages(
+        "title.register.coherence.dialog=Register New Coherence"
+    )
+    private void registerCoherence() {
+        final ServerOrLibraryPanel panel = new ServerOrLibraryPanel();
+        DialogDescriptor desc = new DialogDescriptor(
+                panel,
+                Bundle.title_register_coherence_dialog(),
+                true,
+                DialogDescriptor.DEFAULT_OPTION,
+                DialogDescriptor.OK_OPTION,
+                null);
+        Object ret = DialogDisplayer.getDefault().notify(desc);
+        if (ret == DialogDescriptor.OK_OPTION) {
+            if (panel.getLibraryChecked()) {
+                Library library = LibrariesCustomizer.showCreateNewLibraryCustomizer(LibraryManager.getDefault());
+                if (library != null) {
+                    cleanInitialized();
+                    initLibrariesPanel();
+                }
+            } else {
+                // waiting for new API for new server creation
+            }
+        }
+    }
+
+    private void cleanInitialized() {
+        initialized = false;
+        coherenceLibraries.clear();
+    }
 
     private void initLibrariesPanel() {
         if (CoherenceProjectUtils.isCoherenceProject(Templates.getProject(wizard))) {

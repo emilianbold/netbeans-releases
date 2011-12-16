@@ -50,6 +50,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
+import org.netbeans.modules.web.beans.analysis.analyzer.annotation.InterceptorBindingMembersAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.QualifierAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeAnalyzer;
 
@@ -89,6 +90,7 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
     static {
         ANALYZERS.add( new ScopeAnalyzer() );
         ANALYZERS.add( new QualifierAnalyzer() );
+        ANALYZERS.add( new InterceptorBindingMembersAnalyzer() );
     }
 
 }

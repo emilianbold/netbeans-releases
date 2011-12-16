@@ -66,15 +66,12 @@ import org.netbeans.modules.profiler.api.icons.Icons;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "DrillDownWindow_DrillDownCaption=DrillDown",
+    "DrillDownWindow_DrillDownAccessDescr=High-level category view of where application spends time"
+})
 public final class DrillDownWindow extends TopComponent {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String DRILLDOWN_CAPTION = NbBundle.getMessage(DrillDownWindow.class, "DrillDownWindow_DrillDownCaption"); // NOI18N
-    private static final String DRILLDOWN_ACCESS_DESCR = NbBundle.getMessage(DrillDownWindow.class,
-                                                                             "DrillDownWindow_DrillDownAccessDescr"); // NOI18N
-                                                                                                                      // -----
     private static final String HELP_CTX_KEY = "DrillDownWindow.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static final String PREFERRED_ID = "DrillDownWindow"; // NOI18N // for winsys persistence
@@ -90,8 +87,8 @@ public final class DrillDownWindow extends TopComponent {
 
     // --- Private implementation ------------------------------------------------
     public DrillDownWindow() {
-        setName(DRILLDOWN_CAPTION);
-        getAccessibleContext().setAccessibleDescription(DRILLDOWN_ACCESS_DESCR);
+        setName(Bundle.DrillDownWindow_DrillDownCaption());
+        getAccessibleContext().setAccessibleDescription(Bundle.DrillDownWindow_DrillDownAccessDescr());
         setIcon(pieIcon);
         setFocusable(true);
         setRequestFocusEnabled(true);

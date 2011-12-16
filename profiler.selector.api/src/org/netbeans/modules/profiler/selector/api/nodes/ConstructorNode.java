@@ -65,7 +65,7 @@ public class ConstructorNode extends SelectorNode {
     
     /** Creates a new instance of ConstructorNode */
     public ConstructorNode(SourceMethodInfo mi, ConstructorsNode parent) {
-        super((mi != null ? mi.getName() : NbBundle.getMessage(ConstructorNode.class, "LBL_Unknown")), (mi != null ? mi.getName() : NbBundle.getMessage(ConstructorNode.class, "LBL_Unknown")), null, SelectorChildren.LEAF, parent); // NOI18N
+        super((mi != null ? mi.getName() : Bundle.LBL_Unknown()), (mi != null ? mi.getName() : Bundle.LBL_Unknown()), null, SelectorChildren.LEAF, parent); // NOI18N
         this.method = mi;
 
         if (method != null) {

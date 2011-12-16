@@ -56,14 +56,6 @@ import org.netbeans.modules.profiler.api.icons.Icons;
  * @author Maros Sandor
  */
 public class OpenProfilingPointsWindowAction extends SystemAction {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(OpenProfilingPointsWindowAction.class,
-                                                                  "OpenProfilingPointsWindowAction_ActionName"); // NOI18N
-                                                                                                                 // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public OpenProfilingPointsWindowAction() {
@@ -77,8 +69,9 @@ public class OpenProfilingPointsWindowAction extends SystemAction {
         return new HelpCtx(OpenProfilingPointsWindowAction.class);
     }
 
+    @NbBundle.Messages("OpenProfilingPointsWindowAction_ActionName=&Profiling Points")
     public String getName() {
-        return ACTION_NAME;
+        return Bundle.OpenProfilingPointsWindowAction_ActionName();
     }
 
     public void actionPerformed(ActionEvent e) {

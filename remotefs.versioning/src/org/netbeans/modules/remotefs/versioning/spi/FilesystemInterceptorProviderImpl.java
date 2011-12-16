@@ -84,8 +84,12 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
-        public boolean canWrite(FileProxyI file) {
-            return VCSFilesystemInterceptor.canWrite(toVCSFileProxy(file));
+        public boolean canWriteReadonlyFile(FileProxyI file) {
+            final Boolean canWrite = VCSFilesystemInterceptor.canWrite(toVCSFileProxy(file));
+            if (canWrite != null) {
+                return canWrite;
+            }
+            return false;
         }
 
         @Override
@@ -104,13 +108,13 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
-        public DeleteHandler getDeleteHandler(FileProxyI file) {
-            final VCSFilesystemInterceptor.DeleteHandler deleteHandler = VCSFilesystemInterceptor.getDeleteHandler(toVCSFileProxy(file));
-            return new DeleteHandler() {
+        public IOHandler getDeleteHandler(FileProxyI file) {
+            final VCSFilesystemInterceptor.IOHandler deleteHandler = VCSFilesystemInterceptor.getDeleteHandler(toVCSFileProxy(file));
+            return new IOHandler() {
 
                 @Override
-                public boolean delete(FileProxyI file) {
-                    return deleteHandler.delete(toVCSFileProxy(file));
+                public void handle() throws IOException {
+                    deleteHandler.handle();
                 }
             };
         }
