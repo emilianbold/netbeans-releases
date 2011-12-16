@@ -608,8 +608,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
 
     /** Indicates whether the <code>Env</code> is read only. */
-    @Override
-    boolean isEnvReadOnly() {
+    private boolean isEnvReadOnly() {
         CloneableEditorSupport.Env myEnv = desEnv();
         return myEnv instanceof Env && !((Env) myEnv).getFileImpl().canWrite();
     }

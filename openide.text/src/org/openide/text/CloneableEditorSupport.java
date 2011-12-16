@@ -2068,13 +2068,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         closeDocument();
     }
 
-    // XXX #25762 [PENDING] Needed protected method to allow subclasses to alter it.
-
-    /** Indicates whether the <code>Env</code> is read only. */
-    boolean isEnvReadOnly() {
-        return false;
-    }
-
     /** Allows access to the document without any checking.
     */
     final StyledDocument getDocumentHack() {
