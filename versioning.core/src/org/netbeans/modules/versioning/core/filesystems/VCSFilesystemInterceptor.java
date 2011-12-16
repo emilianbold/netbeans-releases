@@ -120,11 +120,15 @@ public final class VCSFilesystemInterceptor {
     // ==================================================================================================
 
     /**
-     * Determines if the given file is writable
+     * Determines if the given file should be considered writable by the IDE even if it isn't in 
+     * means of the relevant filesystem. Useful in cases when a file is locked by VCS but can be
+     * unlocked on write demand - e.g. by refactoring or editor access.
+     * 
      * @param file
-     * @return 
+     * @return true if a relevant VCS system considers that the file should be handled as 
+     * writable by the IDE, otherwise false.
      */
-    public static Boolean canWrite(VCSFileProxy file) {
+    public static boolean canWriteReadonlyFile(VCSFileProxy file) {
         LOG.log(Level.FINE, "canWrite {0}", file);
         // can be optimized by taking out local history from the search
         return getInterceptor(file, false, "isMutable").isMutable(file); // NOI18N
@@ -452,8 +456,8 @@ public final class VCSFilesystemInterceptor {
     private final static VCSInterceptor nullInterceptor = new VCSInterceptor() {
 
         @Override
-        public Boolean isMutable(VCSFileProxy file) {
-            return null;
+        public boolean isMutable(VCSFileProxy file) {
+            return true;
         }
 
         @Override
@@ -553,7 +557,7 @@ public final class VCSFilesystemInterceptor {
             this.isDirectory = isDirectory;
         }
 
-        public Boolean isMutable(VCSFileProxy file) {
+        public boolean isMutable(VCSFileProxy file) {
             return interceptor.isMutable(file);
         }
 

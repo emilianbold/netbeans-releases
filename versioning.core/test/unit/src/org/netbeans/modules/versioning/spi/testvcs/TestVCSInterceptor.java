@@ -75,7 +75,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public TestVCSInterceptor() {
     }
 
-    public Boolean isMutable(VCSFileProxy file) {
+    public boolean isMutable(VCSFileProxy file) {
         isMutableFiles.add(file);
         return super.isMutable(file);
     }

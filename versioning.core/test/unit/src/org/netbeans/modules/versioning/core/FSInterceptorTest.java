@@ -215,7 +215,7 @@ public class FSInterceptorTest extends NbTestCase {
         }
 
         @Override
-        public Boolean isMutable(VCSFileProxy file) {
+        public boolean isMutable(VCSFileProxy file) {
             storeMethodName();
             return super.isMutable(file);
         }

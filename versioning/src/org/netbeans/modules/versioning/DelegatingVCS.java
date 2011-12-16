@@ -262,7 +262,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             interceptor = new VCSInterceptor() {
 
                 @Override
-                public Boolean isMutable(VCSFileProxy file) {
+                public boolean isMutable(VCSFileProxy file) {
                     return getDelegate().getVCSInterceptor().isMutable(file.toFile());
                 }
 

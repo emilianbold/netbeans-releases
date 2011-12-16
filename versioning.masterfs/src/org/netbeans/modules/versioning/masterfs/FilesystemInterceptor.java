@@ -116,8 +116,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             // potential (and unnecessary) io caused in VCS by determining the files ownership.
             return false;
         }        
-        Boolean canWrite = VCSFilesystemInterceptor.canWrite(VCSFileProxy.createFileProxy(file));
-        return canWrite == null ? file.canWrite() : canWrite;
+        return VCSFilesystemInterceptor.canWriteReadonlyFile(VCSFileProxy.createFileProxy(file));
     }
 
     @Override
