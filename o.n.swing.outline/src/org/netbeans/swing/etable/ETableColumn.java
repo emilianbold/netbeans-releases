@@ -540,9 +540,17 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
             // check nested comparator
             if (getNestedComparator () != null) {
                 return getNestedComparator ().compare (obj1, obj2);
-            } else if ((obj1 instanceof Comparable) && (obj1.getClass().isAssignableFrom(obj2.getClass()))){
-                Comparable c1 = (Comparable) obj1;
-                return c1.compareTo(obj2);
+            } else {
+                Class cl1 = obj1.getClass();
+                Class cl2 = obj2.getClass();
+                if ((obj1 instanceof Comparable) && cl1.isAssignableFrom(cl2)) {
+                    Comparable c1 = (Comparable) obj1;
+                    return c1.compareTo(obj2);
+                }
+                if ((obj2 instanceof Comparable) && cl2.isAssignableFrom(cl1)) {
+                    Comparable c2 = (Comparable) obj2;
+                    return -c2.compareTo(obj1);
+                }
             }
             return obj1.toString().compareTo(obj2.toString());
         }
