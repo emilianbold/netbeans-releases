@@ -45,6 +45,7 @@ import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
 import org.eclipse.persistence.jpa.jpql.spi.IMappedSuperclass;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 
 /**
  *
@@ -61,6 +62,11 @@ public class MappedSuperclass extends ManagedType implements IMappedSuperclass{
     public void accept(IManagedTypeVisitor imtv) {
         imtv.visit(this);
     }
-    
+
+    @Override
+    Attributes getAttributes() {
+        org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass ms = (org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass) getPersistentObject();
+        return ms.getAttributes();
+    }
     
 }

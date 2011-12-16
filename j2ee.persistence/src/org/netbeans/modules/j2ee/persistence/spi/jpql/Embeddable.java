@@ -45,6 +45,7 @@ import org.eclipse.persistence.jpa.jpql.spi.IEmbeddable;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 
 /**
  *
@@ -56,20 +57,26 @@ public class Embeddable extends ManagedType implements IEmbeddable{
         super((PersistentObject)element, provider);     
     }
 
-	/**
-	 * {@inheritDoc}
-	 */
-        @Override
-	public void accept(IManagedTypeVisitor visitor) {
-		visitor.visit(this);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void accept(IManagedTypeVisitor visitor) {
+            visitor.visit(this);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return getType().getName();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+            return getType().getName();
+    }
+
+    @Override
+    Attributes getAttributes() {
+        org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable em = (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable) getPersistentObject();
+        return null;//TODO embeddable attributes?
+    }
 
 }
