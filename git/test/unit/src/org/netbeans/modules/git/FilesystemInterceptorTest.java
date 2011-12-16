@@ -57,7 +57,7 @@ import java.util.logging.LogRecord;
 import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
