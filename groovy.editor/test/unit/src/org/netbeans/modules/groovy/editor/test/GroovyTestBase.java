@@ -48,10 +48,15 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import org.codehaus.groovy.ant.Groovyc;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.BaseDocument;
@@ -81,6 +86,11 @@ public class GroovyTestBase extends CslTestBase {
     public GroovyTestBase(String testName) {
         super(testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
     
     @Override
     protected void setUp() throws Exception {
@@ -92,7 +102,6 @@ public class GroovyTestBase extends CslTestBase {
         
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("Test.groovy");
-        //FileUtil.setMIMEType("groovy", GroovyTokenId.GROOVY_MIME_TYPE);
     }
 
     @Override
@@ -148,9 +157,8 @@ public class GroovyTestBase extends CslTestBase {
         Map<String, ClassPath> map = new HashMap<String, ClassPath>();
         map.put(ClassPath.BOOT, createBootClassPath());
         map.put(ClassPath.COMPILE, createCompilePath());
-        if (getClass().getName().startsWith("org.netbeans.modules.groovy.editor.api.completion")) {
-            map.put(ClassPath.SOURCE, createSourcePath());
-        }
+        map.put(ClassPath.SOURCE, createSourcePath());
+
         return map;
     }
 
@@ -176,18 +184,45 @@ public class GroovyTestBase extends CslTestBase {
         }
         return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
-    
-    private ClassPath createSourcePath() {
-        File srcDir = getDataFile("/testfiles/completion");
-        File srcDir2 = getDataFile("/testfiles/completion/types");
-        return ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(srcDir), FileUtil.toFileObject(srcDir2)
-        });
-    }
 
     private static ClassPath createCompilePath() {
         URL url = Groovyc.class.getProtectionDomain().getCodeSource().getLocation();
         return ClassPathSupport.createClassPath(FileUtil.getArchiveRoot(url));
     }
 
+    private ClassPath createSourcePath() {
+        List<FileObject> classPathSources = new ArrayList<FileObject>();
+        classPathSources.addAll(additionalSources());
+
+        return ClassPathSupport.createClassPath(classPathSources.toArray(new FileObject[0]));
+    }
+
+    private Set<FileObject> additionalSources() {
+        Set<FileObject> sourceClassPath = new HashSet<FileObject>();
+
+        for (String sourcePath : additionalSourceClassPath()) {
+            sourceClassPath.add(getFO(sourcePath));
+        }
+        return sourceClassPath;
+    }
+
+    /**
+     * This method should be override by tests which needs to modify default source ClassPath settings.
+     *
+     * @return set of <code>String</code> whose need to be added into the ClassPath
+     */
+    protected Set<String> additionalSourceClassPath() {
+        return Collections.emptySet();
+    }
+
+    private FileObject getFO(String path) {
+        return FileUtil.toFileObject(FileUtil.normalizeFile(getDataFile(path)));
+    }
+
+    protected Set<String> newHashSet(String... strings) {
+        Set<String> set = new HashSet<String>();
+        set.addAll(Arrays.asList(strings));
+        
+        return set;
+    }
 }
