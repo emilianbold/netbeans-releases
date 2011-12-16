@@ -64,7 +64,7 @@ import org.netbeans.spi.editor.hints.Severity;
  * @author ads
  *
  */
-public class QualifierAnalyzer implements AnnotationAnalyzer {
+public class QualifierAnalyzer extends InterceptorBindingMembersAnalyzer {
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
@@ -92,38 +92,12 @@ public class QualifierAnalyzer implements AnnotationAnalyzer {
             if ( cancel.get() ){
                 return;
             }
-            checkMembers( element, result );
+            checkMembers( element, result , NbBundle.getMessage(
+                    QualifierAnalyzer.class,  
+                        "WARN_ArrayAnnotationValuedQualifierMember"));  // NOI18N
         }
     }
     
-    private void checkMembers( TypeElement element, CdiAnalysisResult result ) {
-        List<ExecutableElement> methods = ElementFilter.methodsIn(
-                element.getEnclosedElements());
-        for (ExecutableElement executableElement : methods) {
-            TypeMirror returnType = executableElement.getReturnType();
-            boolean warning = false;
-            if ( returnType.getKind() == TypeKind.ARRAY ){
-                warning = true;
-            }
-            else if ( returnType.getKind() == TypeKind.DECLARED){
-                Element returnElement = result.getInfo().getTypes().asElement( 
-                        returnType );
-                warning = returnElement.getKind() == ElementKind.ANNOTATION_TYPE;
-            }
-            if ( !warning ){
-                continue;
-            }
-            if (AnnotationUtil.hasAnnotation(executableElement, 
-                    AnnotationUtil.NON_BINDING,  result.getInfo()) )
-            {
-                continue;
-            }
-            result.addNotification(Severity.WARNING, element, NbBundle.getMessage(
-                    QualifierAnalyzer.class,  
-                    "WARN_ArrayAnnotationValuedQualifierMember")); // NOI18N
-        }
-    }
-
     private static class QualifierTargetAnalyzer extends CdiAnnotationAnalyzer{
 
         QualifierTargetAnalyzer( TypeElement element, CdiAnalysisResult result)
