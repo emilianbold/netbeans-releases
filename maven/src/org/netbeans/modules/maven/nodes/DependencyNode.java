@@ -265,6 +265,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         "DESC_Dep3=Version:",
         "DESC_Dep4=Type:",
         "DESC_Dep5=Classifier:",
+        "DESC_scope=Scope:",
         "DESC_via=Via:"
     })
     @Override public String getShortDescription() {
@@ -276,6 +277,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         if (art.getClassifier() != null) {
             buf.append("<i>").append(DESC_Dep5()).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
         }
+        buf.append("<i>").append(DESC_scope()).append("</i><b> ").append(art.getScope()).append("</b><br>");
         List<String> trail = art.getDependencyTrail();
         for (int i = trail.size() - 2; i > 0 && /* just to be safe */ i < trail.size(); i--) {
             String[] id = trail.get(i).split(":"); // g:a:t[:c]:v
@@ -325,11 +327,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     @Override
     public String getHtmlDisplayName() {
-        String version = ""; //NOI18N
+        StringBuilder n = new StringBuilder("<html>");
+        n.append(getDisplayName());
         if (ArtifactUtils.isSnapshot(art.getVersion()) && art.getVersion().indexOf("SNAPSHOT") < 0) { //NOI18N
-            version = " <b>[" + art.getVersion() + "]</b>"; //NOI18N
+            n.append(" <b>[").append(art.getVersion()).append("]</b>");
         }
-        return "<html>" + getDisplayName() + version + ("compile".equalsIgnoreCase(art.getScope()) ? "" : "  <i>[" + art.getScope() + "]</i>") + "</html>"; // - not sure if shall ne translated..
+        if (!art.getArtifactHandler().isAddedToClasspath() && !Artifact.SCOPE_COMPILE.equals(art.getScope())) {
+            n.append("  <i>[").append(art.getScope()).append("]</i>");
+        }
+        n.append("</html>");
+        return n.toString();
     }
 
     private String createName() {
@@ -352,7 +359,6 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
 //        acts.add(new EditAction());
 //        acts.add(RemoveDepAction.get(RemoveDepAction.class));
-//        acts.add(new DownloadJavadocAndSourcesAction());
         if (!hasJavadocInRepository()) {
             acts.add(new DownloadJavadocSrcAction(true));
             if (isAddedToCP()) {
