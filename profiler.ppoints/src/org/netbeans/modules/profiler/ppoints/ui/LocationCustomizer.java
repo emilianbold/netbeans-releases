@@ -87,6 +87,17 @@ import javax.swing.filechooser.FileFilter;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "LocationCustomizer_FileLabelText=F&ile:",
+    "LocationCustomizer_BrowseButtonText=Bro&wse...",
+    "LocationCustomizer_CurrentLineButtonText=&Current\nLine",
+    "LocationCustomizer_LineLabelText=&Line:",
+    "LocationCustomizer_BeginRadioText=Be&gin",
+    "LocationCustomizer_EndRadioText=&End",
+    "LocationCustomizer_OffsetRadioText=&Offset:",
+    "LocationCustomizer_ChooseFileDialogCaption=Choose Java Source File",
+    "LocationCustomizer_FileDialogFilterName=Java Sources (*.java)"
+})
 public class LocationCustomizer extends ValidityAwarePanel implements ActionListener, ChangeListener, DocumentListener,
                                                                       HierarchyListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
@@ -108,27 +119,6 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
             getAccessibleContext().setAccessibleName(value);
         }
     }
-
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String FILE_LABEL_TEXT = NbBundle.getMessage(LocationCustomizer.class, "LocationCustomizer_FileLabelText"); // NOI18N
-    private static final String BROWSE_BUTTON_TEXT = NbBundle.getMessage(LocationCustomizer.class,
-                                                                         "LocationCustomizer_BrowseButtonText"); // NOI18N
-    private static final String CURRENT_LINE_BUTTON_TEXT = NbBundle.getMessage(LocationCustomizer.class,
-                                                                               "LocationCustomizer_CurrentLineButtonText"); // NOI18N
-    private static final String LINE_LABEL_TEXT = NbBundle.getMessage(LocationCustomizer.class, "LocationCustomizer_LineLabelText"); // NOI18N
-    private static final String BEGIN_RADIO_TEXT = NbBundle.getMessage(LocationCustomizer.class,
-                                                                       "LocationCustomizer_BeginRadioText"); // NOI18N
-    private static final String END_RADIO_TEXT = NbBundle.getMessage(LocationCustomizer.class, "LocationCustomizer_EndRadioText"); // NOI18N
-    private static final String OFFSET_RADIO_TEXT = NbBundle.getMessage(LocationCustomizer.class,
-                                                                        "LocationCustomizer_OffsetRadioText"); // NOI18N
-    private static final String CHOOSE_FILE_DIALOG_CAPTION = NbBundle.getMessage(LocationCustomizer.class,
-                                                                                 "LocationCustomizer_ChooseFileDialogCaption"); // NOI18N
-    private static final String FILE_DIALOG_FILTER_NAME = NbBundle.getMessage(LocationCustomizer.class,
-                                                                              "LocationCustomizer_FileDialogFilterName"); // NOI18N
-                                                                                                                          // -----
 
     // --- Implementation --------------------------------------------------------
     private static int defaultTextComponentHeight = -1;
@@ -319,14 +309,14 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
             chooser.setMultiSelectionEnabled(false);
             chooser.setAcceptAllFileFilterUsed(false);
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(CHOOSE_FILE_DIALOG_CAPTION);
+            chooser.setDialogTitle(Bundle.LocationCustomizer_ChooseFileDialogCaption());
             chooser.setFileFilter(new FileFilter() {
                     public boolean accept(File f) {
                         return f.isDirectory() || f.getName().toLowerCase().endsWith(".java");
                     } // NOI18N
 
                     public String getDescription() {
-                        return FILE_DIALOG_FILTER_NAME;
+                        return Bundle.LocationCustomizer_FileDialogFilterName();
                     }
                 });
             fileChooser = chooser;
@@ -357,7 +347,7 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
 
         // fileLabel
         fileLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, FILE_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, Bundle.LocationCustomizer_FileLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -398,7 +388,7 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
 
         // fileButton
         fileButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(fileButton, BROWSE_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(fileButton, Bundle.LocationCustomizer_BrowseButtonText());
         fileButton.addActionListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 3;
@@ -425,7 +415,7 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
 
         // fromEditorButton
         fromEditorButton = new HTMLButton();
-        org.openide.awt.Mnemonics.setLocalizedText(fromEditorButton, CURRENT_LINE_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(fromEditorButton, Bundle.LocationCustomizer_CurrentLineButtonText());
         fromEditorButton.addActionListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 5;
@@ -441,7 +431,7 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
 
         // lineLabel
         lineLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(lineLabel, LINE_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(lineLabel, Bundle.LocationCustomizer_LineLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -483,8 +473,8 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
 
         // lineBeginRadio
         lineBeginRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(lineBeginRadio, BEGIN_RADIO_TEXT);
-        lineBeginRadio.getAccessibleContext().setAccessibleDescription(LINE_LABEL_TEXT + BEGIN_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(lineBeginRadio, Bundle.LocationCustomizer_BeginRadioText());
+        lineBeginRadio.getAccessibleContext().setAccessibleDescription(Bundle.LocationCustomizer_LineLabelText() + Bundle.LocationCustomizer_BeginRadioText());
         lineRadiosGroup.add(lineBeginRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -496,8 +486,8 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
 
         // lineEndRadio
         lineEndRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(lineEndRadio, END_RADIO_TEXT);
-        lineEndRadio.getAccessibleContext().setAccessibleDescription(LINE_LABEL_TEXT + END_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(lineEndRadio, Bundle.LocationCustomizer_EndRadioText());
+        lineEndRadio.getAccessibleContext().setAccessibleDescription(Bundle.LocationCustomizer_LineLabelText() + Bundle.LocationCustomizer_EndRadioText());
         lineRadiosGroup.add(lineEndRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -509,8 +499,8 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
 
         // lineOffsetRadio
         lineOffsetRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(lineOffsetRadio, OFFSET_RADIO_TEXT);
-        lineOffsetRadio.getAccessibleContext().setAccessibleDescription(LINE_LABEL_TEXT + OFFSET_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(lineOffsetRadio, Bundle.LocationCustomizer_OffsetRadioText());
+        lineOffsetRadio.getAccessibleContext().setAccessibleDescription(Bundle.LocationCustomizer_LineLabelText() + Bundle.LocationCustomizer_OffsetRadioText());
         lineRadiosGroup.add(lineOffsetRadio);
         lineOffsetRadio.addChangeListener(this);
         constraints = new GridBagConstraints();

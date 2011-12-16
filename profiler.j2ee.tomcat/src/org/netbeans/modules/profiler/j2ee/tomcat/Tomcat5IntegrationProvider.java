@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.MessageFormat;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.attach.providers.ValidationResult;
@@ -59,18 +58,11 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "TomcatIntegrationProvider_Tomcat50String=Tomcat 5.0"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvider {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final String INTEGR_REVIEW_STEP1_WINEXE_MSG = NbBundle.getMessage(this.getClass(),
-                                                                              "TomcatIntegrationProvider_IntegrReviewStep1WinExeMsg"); // NOI18N
-    private final String MANUAL_WINEXE_HINT_MSG = NbBundle.getMessage(this.getClass(),
-                                                                      "TomcatIntegrationProvider_ManualWinExeHint"); // NOI18N
-    private final String PATH_TO_CATALINA_BASE_MSG = NbBundle.getMessage(this.getClass(),
-                                                                         "TomcatIntegrationProvider_Catalina_Base_Hint"); // NOI18N
-    private final String TOMCAT_50_TITLE = NbBundle.getMessage(this.getClass(), "TomcatIntegrationProvider_Tomcat50String"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public IntegrationProvider.IntegrationHints getIntegrationReview(AttachSettings attachSettings) {
@@ -79,11 +71,16 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
 
         if (isTomcatExeUsed(targetOS, this.getInstallationPath())) {
             retValue = new IntegrationProvider.IntegrationHints();
-            retValue.addStep(MessageFormat.format(INTEGR_REVIEW_STEP1_WINEXE_MSG,
-                                                  new Object[] { getModifiedScriptPath(targetOS, true) }));
-            retValue.addStep(MessageFormat.format(INTEGR_REVIEW_STEP2_MSG,
-                                                  new Object[] { getChangedLines(targetOS, attachSettings, getCatalinaBase(),
-                                                                                 false) }));
+            retValue.addStep(Bundle.TomcatIntegrationProvider_IntegrReviewStep1WinExeMsg(
+                                getModifiedScriptPath(
+                                    targetOS, 
+                                    true)));
+            retValue.addStep(Bundle.TomcatIntegrationProvider_IntegrReviewStep2Msg(
+                                getChangedLines(
+                                    targetOS, 
+                                    attachSettings, 
+                                    getCatalinaBase(),
+                                    false)));
         } else {
             retValue = super.getIntegrationReview(attachSettings);
         }
@@ -92,7 +89,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
     }
 
     public String getTitle() {
-        return TOMCAT_50_TITLE;
+        return Bundle.TomcatIntegrationProvider_Tomcat50String();
     }
 
     public void modify(AttachSettings attachSettings) throws ModificationException {
@@ -238,11 +235,10 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
     private void addWinExeHint(final IntegrationProvider.IntegrationHints hints, final String targetOS,
                                final AttachSettings attachSettings) {
         if (isTomcatExeUsed(targetOS, this.getInstallationPath())) {
-            hints.addHint(MessageFormat.format(MANUAL_WINEXE_HINT_MSG,
-                                               new Object[] {
-                                                   getScriptPath(targetOS, true), getModifiedScriptPath(targetOS, true),
-                                                   getChangedLines(targetOS, attachSettings, PATH_TO_CATALINA_BASE_MSG, true)
-                                               }));
+            hints.addHint(Bundle.TomcatIntegrationProvider_ManualWinExeHint(
+                            getScriptPath(targetOS, true), 
+                            getModifiedScriptPath(targetOS, true),
+                            getChangedLines(targetOS, attachSettings, Bundle.TomcatIntegrationProvider_Catalina_Base_Hint(), true)));
         }
     }
 

@@ -77,8 +77,9 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
             return settingsPanel;
         }
 
+        @NbBundle.Messages("ProfilerOptionsCategory_Help=ProfilerOptions.Help")
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(NbBundle.getMessage(ProfilerOptionsCategory.class, "ProfilerOptionsCategory_Help")); // NOI18N
+            return new HelpCtx(Bundle.ProfilerOptionsCategory_Help());
         }
 
         public boolean isValid() {

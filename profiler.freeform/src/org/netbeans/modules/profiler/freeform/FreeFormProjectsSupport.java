@@ -69,17 +69,13 @@ import org.w3c.dom.NodeList;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "FreeFormProjectTypeProfiler_ErrorParsingBuildFileMsg=Error parsing the build.xml for project {0}",
+    "FreeFormProjectTypeProfiler_OkButtonName=OK",
+    "FreeFormProjectTypeProfiler_SelectProfilingTaskDialogCaption=Select Task for Profiling",
+    "FreeFormProjectTypeProfiler_NoProfilerTaskMsg=The selected target does not appear to be using the nbprofiledirect task.\nDo you still want to use the target for profiling?"
+})
 public final class FreeFormProjectsSupport {
-    
-    private static final String ERROR_PARSING_BUILDFILE_MSG = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_ErrorParsingBuildFileMsg"); // NOI18N
-    private static final String OK_BUTTON_NAME = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_OkButtonName"); // NOI18N
-    private static final String SELECT_PROFILING_TASK_DIALOG_CAPTION = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_SelectProfilingTaskDialogCaption"); // NOI18N
-    private static final String NO_PROFILER_TASK_MSG = NbBundle.getMessage(FreeFormProjectProfilingSupportProvider.class,
-            "FreeFormProjectTypeProfiler_NoProfilerTaskMsg"); // NOI18N
-    
     public static final String PROFILE_TARGET_ATTRIBUTE = "profile-target"; // NOI18N
     public static final String PROFILE_SINGLE_TARGET_ATTRIBUTE = "profile-file-target"; // NOI18N
     public static final String PROFILE_VERSION_ATTRIBUTE = "version"; // NOI18N
@@ -132,8 +128,7 @@ public final class FreeFormProjectsSupport {
         try {
             l = AntScriptUtils.getCallableTargetNames(buildScript);
         } catch (IOException x) {
-            ProfilerDialogs.displayError(MessageFormat.format(ERROR_PARSING_BUILDFILE_MSG,
-                    new Object[]{ ProjectUtils.getInformation(project).getName() }));
+            ProfilerDialogs.displayError(Bundle.FreeFormProjectTypeProfiler_ErrorParsingBuildFileMsg(ProjectUtils.getInformation(project).getName()));
 
             return null;
         }
@@ -144,11 +139,11 @@ public final class FreeFormProjectsSupport {
             return currentTarget;
         }
 
-        final JButton okButton = new JButton(OK_BUTTON_NAME);
+        final JButton okButton = new JButton(Bundle.FreeFormProjectTypeProfiler_OkButtonName());
         final AntTaskSelectPanel atsp = new AntTaskSelectPanel(l, type, okButton);
 
         while (true) {
-            final DialogDescriptor dd = new DialogDescriptor(atsp, SELECT_PROFILING_TASK_DIALOG_CAPTION, true,
+            final DialogDescriptor dd = new DialogDescriptor(atsp, Bundle.FreeFormProjectTypeProfiler_SelectProfilingTaskDialogCaption(), true,
                     new Object[]{okButton, DialogDescriptor.CANCEL_OPTION                    }, okButton,
                     DialogDescriptor.BOTTOM_ALIGN, null, null);
             final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
@@ -163,7 +158,7 @@ public final class FreeFormProjectsSupport {
                     if (t.getName().equals(targetName)) {
                         if (checkTarget(t.getElement())) {
                             return targetName;
-                        } else if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(NO_PROFILER_TASK_MSG,
+                        } else if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(Bundle.FreeFormProjectTypeProfiler_NoProfilerTaskMsg(),
                                 NotifyDescriptor.OK_CANCEL_OPTION,
                                 NotifyDescriptor.WARNING_MESSAGE)) == NotifyDescriptor.OK_OPTION) {
                             return targetName;
