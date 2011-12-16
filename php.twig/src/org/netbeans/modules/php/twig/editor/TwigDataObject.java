@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,44 +35,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s):
+ * Contributor(s): Sebastian Hörl
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.annotations;
+package org.netbeans.modules.php.twig.editor;
 
-import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.php.api.doc.PhpDocs;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.filesystems.annotations.LayerGeneratingProcessor;
-import org.openide.filesystems.annotations.LayerGenerationException;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.util.Lookup;
+import org.openide.text.DataEditorSupport;
 
-/**
- * @author Tomas Mysik
- */
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.doc.PhpDocProvider.Registration")
-@ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpDocRegistrationProcessor extends LayerGeneratingProcessor {
+public class TwigDataObject extends MultiDataObject {
 
-    @Override
-    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocProvider.Registration.class)) {
-            layer(element)
-                    .instanceFile(PhpDocs.DOCS_PATH, null, PhpDocProvider.class)
-                    .intvalue("position", element.getAnnotation(PhpDocProvider.Registration.class).position()) // NOI18N
-                    .write();
-        }
-        return true;
+    public TwigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
+        CookieSet cookies = getCookieSet();
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
 
+    @Override
+    protected Node createNodeDelegate() {
+        return new DataNode(this, Children.LEAF, getLookup());
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 }

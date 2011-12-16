@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,44 +35,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s):
+ * Contributor(s): Sebastian Hörl
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.annotations;
+package org.netbeans.modules.php.twig.editor;
 
-import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.php.api.doc.PhpDocs;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.filesystems.annotations.LayerGeneratingProcessor;
-import org.openide.filesystems.annotations.LayerGenerationException;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.IOException;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
+import org.netbeans.spi.editor.fold.FoldManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 
-/**
- * @author Tomas Mysik
- */
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.doc.PhpDocProvider.Registration")
-@ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpDocRegistrationProcessor extends LayerGeneratingProcessor {
+public class TwigEditorKit extends NbEditorKit {
 
     @Override
-    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocProvider.Registration.class)) {
-            layer(element)
-                    .instanceFile(PhpDocs.DOCS_PATH, null, PhpDocProvider.class)
-                    .intvalue("position", element.getAnnotation(PhpDocProvider.Registration.class).position()) // NOI18N
-                    .write();
-        }
-        return true;
+    public Document createDefaultDocument() {
+
+        return super.createDefaultDocument();
+
+    }
+
+    @Override
+    public String getContentType() {
+        return TwigLanguage.TWIG_MIME_TYPE;
     }
 
 }
