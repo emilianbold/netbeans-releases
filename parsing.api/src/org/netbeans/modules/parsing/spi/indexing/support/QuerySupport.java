@@ -468,7 +468,7 @@ public final class QuerySupport {
                 List<Pair<URL, DocumentIndex>> indices = new LinkedList<Pair<URL, DocumentIndex>>();
 
                 for(URL r : roots) {
-                    assert r.getHost() == null || r.getHost().isEmpty();
+                    assert PathRegistry.noHostPart(r) : r;
                     Reference<DocumentIndex> indexRef = root2index.get(r);
                     DocumentIndex index = indexRef != null ? indexRef.get() : null;
                     if (index == null) {

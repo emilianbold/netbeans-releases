@@ -309,7 +309,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         boolean steady,
         @NonNull final LogContext logCtx) {
         assert rootUrl != null;
-        assert rootUrl.getHost() == null || rootUrl.getHost().isEmpty();
+        assert PathRegistry.noHostPart(rootUrl) : rootUrl;
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("addIndexingJob: rootUrl=" + rootUrl + ", fileUrls=" + fileUrls //NOI18N
                 + ", followUpJob=" + followUpJob + ", checkEditor=" + checkEditor + ", wait=" + wait); //NOI18N
@@ -1591,7 +1591,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 return false;
                             }
                             final URL sourceRoot = entry.getURL();
-                            assert sourceRoot.getHost() == null || sourceRoot.getHost().isEmpty();
+                            assert PathRegistry.noHostPart(sourceRoot) : sourceRoot;
                             if (!rootURL.equals(sourceRoot)) {
                                 peers.add(entry.getURL());
                             }
@@ -1619,7 +1619,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 //                                    LOGGER.log(Level.FINEST, "#1- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
 //                                        rootURL, sourceRoot, cp, id
 //                                    });
-                                assert sourceRoot.getHost() == null || sourceRoot.getHost().isEmpty();
+                                assert PathRegistry.noHostPart(sourceRoot) : sourceRoot;
                                 if (!findDependencies(sourceRoot, ctx, sourceIds, libraryIds, binaryLibraryIds, cancelRequest)) {
                                     return false;
                                 }
