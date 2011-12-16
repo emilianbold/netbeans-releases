@@ -53,8 +53,10 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import java.util.Set;
 import java.util.EnumSet;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -132,16 +134,13 @@ public class FixImportsHelper {
             return result;
         }
 
-        Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> typeNames;
+        Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
+                missingClass, NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
 
-        typeNames = pathInfo.getClassIndex().getDeclaredTypes(missingClass, NameKind.SIMPLE_NAME,
-                EnumSet.allOf(ClassIndex.SearchScope.class));
+        for (ElementHandle<TypeElement> typeName : typeNames) {
+            ElementKind ek = typeName.getKind();
 
-        for (org.netbeans.api.java.source.ElementHandle<TypeElement> typeName : typeNames) {
-            javax.lang.model.element.ElementKind ek = typeName.getKind();
-
-            if (ek == javax.lang.model.element.ElementKind.CLASS ||
-                    ek == javax.lang.model.element.ElementKind.INTERFACE) {
+            if (ek == ElementKind.CLASS || ek == ElementKind.INTERFACE) {
                 String fqnName = typeName.getQualifiedName();
                 LOG.log(Level.FINEST, "Found     : " + fqnName);
 
@@ -222,6 +221,8 @@ public class FixImportsHelper {
             return -1;
         }
 
+        int lineOffset = 0;
+        
         // nothing set:
         if (importEnd == -1 && packageOffset == -1) {
             // place imports in the first line
@@ -233,6 +234,7 @@ public class FixImportsHelper {
             // place imports behind package statement
             LOG.log(Level.FINEST, "importEnd == -1 && packageOffset != -1");
             useOffset = packageOffset;
+            lineOffset++; // we want to have first import two lines behind package statement
         } // only imports set:
         else if (importEnd != -1 && packageOffset == -1) {
             // place imports after the last import statement
@@ -246,10 +248,8 @@ public class FixImportsHelper {
 
         }
 
-        int lineOffset = 0;
-
         try {
-            lineOffset = Utilities.getLineOffset(doc, useOffset);
+            lineOffset = lineOffset + Utilities.getLineOffset(doc, useOffset);
         } catch (BadLocationException ex) {
             LOG.log(Level.FINEST, "BadLocationException for offset : {0}", useOffset);
             LOG.log(Level.FINEST, "BadLocationException : {0}", ex.getMessage());

@@ -46,159 +46,128 @@ package org.netbeans.modules.groovy.editor.api.completion;
  *
  * @author schmidtm
  */
-import java.util.Map;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.junit.Ignore;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
-/**
- *
- * @author schmidtm
- */
-public class MethodCompletionTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/method/";
+public class MethodCompletionTest extends GroovyCCTestBase {
 
     public MethodCompletionTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    @Override
+    protected String getTestType() {
+        return "method"; //NOI18N
     }
 
-    protected @Override Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
-        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/method")) }));
-        return map;
+    public void testMethods1_1() throws Exception {
+        checkCompletion(BASE + "Methods1.groovy", "        new URL(\"http://google.com\").getPr^", false);
     }
 
-    public void testMethods1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").getPr^", false);
+    public void testMethods1_2() throws Exception {
+        checkCompletion(BASE + "Methods1.groovy", "        new URL(\"http://google.com\").getP^r", false);
     }
 
-    public void testMethods2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").getP^r", false);
+    public void testMethods1_3() throws Exception {
+        checkCompletion(BASE + "Methods1.groovy", "        new URL(\"http://google.com\").get^Pr", false);
     }
 
-    public void testMethods3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").get^Pr", false);
+    public void testMethods1_4() throws Exception {
+        checkCompletion(BASE + "Methods1.groovy", "        new URL(\"http://google.com\").^getPr", false);
     }
 
-    public void testMethods4() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").^getPr", false);
+    public void testMethods2_1() throws Exception {
+        checkCompletion(BASE + "Methods2.groovy", "        new Byte().^", false);
     }
 
-    public void testMethods5() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods2.groovy", "        new Byte().^", false);
+    public void testCompletionInMethodCall1_1() throws Exception {
+        checkCompletion(BASE + "CompletionInMethodCall1.groovy", "        new File(\"something\").ea^", false);
     }
 
-    public void testCompletionInMethodCall1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods4.groovy", "        new File(\"something\").ea^", false);
+    public void testCompletionInMethodCall2_1() throws Exception {
+        checkCompletion(BASE + "CompletionInMethodCall2.groovy", "        new File(\"something\").c^", false);
     }
 
-    public void testCompletionInMethodCall2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods5.groovy", "        new File(\"something\").c^", false);
+    public void testCompletionInMethodCall3_1() throws Exception {
+        checkCompletion(BASE + "CompletionInMethodCall3.groovy", "if (new File(\"/\").is^) {", false);
     }
 
-    public void testCompletionInMethodCall3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods6.groovy", "if (new File(\"/\").is^) {", false);
+    public void testCompletionInArgument1_1() throws Exception {
+        checkCompletion(BASE + "CompletionInArgument1.groovy", "println new URL(\"http://google.com\").getT^", false);
     }
 
-    public void testCompletionInArgument1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods7.groovy", "println new URL(\"http://google.com\").getT^", false);
+    public void testCompletionForLiteral1_1() throws Exception {
+        checkCompletion(BASE + "CompletionForLiteral1.groovy", "1.d^", false);
     }
 
-    public void testCompletionForLiteral1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods8.groovy", "1.d^", false);
+    public void testCompletionForLiteral1_2() throws Exception {
+        checkCompletion(BASE + "CompletionForLiteral1.groovy", "1.0.d^", false);
     }
 
-    public void testCompletionForLiteral2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods8.groovy", "1.0.d^", false);
-    }
-
-    public void testCompletionForLiteral3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods8.groovy", "\"\".c^", false);
+    public void testCompletionForLiteral1_3() throws Exception {
+        checkCompletion(BASE + "CompletionForLiteral1.groovy", "\"\".c^", false);
     }
 
     public void testCompletionInsideConstructor1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "new File(\"/\").equals(new Date().a^", false);
+        checkCompletion(BASE + "CompletionInsideConstructor1.groovy", "new File(\"/\").equals(new Date().a^", false);
     }
 
-    public void testCompletionInsideConstructor2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "new File(new Date().get^", false);
+    public void testCompletionInsideConstructor1_2() throws Exception {
+        checkCompletion(BASE + "CompletionInsideConstructor1.groovy", "new File(new Date().get^", false);
     }
 
-    public void testCompletionInsideConstructor3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "if (new File(new Date().get^", false);
+    public void testCompletionInsideConstructor1_3() throws Exception {
+        checkCompletion(BASE + "CompletionInsideConstructor1.groovy", "if (new File(new Date().get^", false);
     }
 
-    public void testCompletionInsideFor1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for(new Date().get^", false);
+    public void testCompletionInsideFor1_1() throws Exception {
+        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for(new Date().get^", false);
+    }
+
+    public void testCompletionInsideFor1_2() throws Exception {
+        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
+    }
+
+    public void testCompletionGeneratedAccessors1_1() throws Exception {
+        checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().get^", false);
+    }
+
+    public void testCompletionGeneratedAccessors1_2() throws Exception {
+        checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().set^", false);
+    }
+
+    public void testCompletionGroovyClass1_1() throws Exception {
+        checkCompletion(BASE + "CompletionGroovyClass1.groovy", "        new Test1().^", false);
+    }
+
+    public void testCompletionGroovyThis1_1() throws Exception {
+        checkCompletion(BASE + "CompletionGroovyThis1.groovy", "        this.get^", false);
+    }
+
+    public void testCompletionGroovySuper1_1() throws Exception {
+        checkCompletion(BASE + "CompletionGroovySuper1.groovy", "        super.^", false);
+    }
+
+    public void testCompletionNoDot1_1() throws Exception {
+        checkCompletion(BASE + "CompletionNoDot1.groovy", "        no^", false);
+    }
+
+    public void testCompletionNoDot1_2() throws Exception {
+        checkCompletion(BASE + "CompletionNoDot1.groovy", "        x^", false);
+    }
+
+    public void testCompletionNoDot1_3() throws Exception {
+        checkCompletion(BASE + "CompletionNoDot1.groovy", "        n^", false);
     }
 
     // For some reason there is a StringBuilder as a return type for leftShift method
     // This should be fixed, but it's not a top priority - see issue #205951
+
     /*
-    @Ignore
     public void testCompletionNoPrefixString1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods10.groovy", "println \"Hello $name!\".^", false);
+        checkCompletion(getTestFolderPath() + "CompletionNoPrefixString1.groovy", "println \"Hello $name!\".^", false);
     }
 
-    @Ignore
     public void testCompletionNoPrefixString2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods11.groovy", "def name='Petr'.^", false);
+        checkCompletion(getTestFolderPath() + "CompletionNoPrefixString2.groovy", "def name='Petr'.^", false);
     }
     */
-
-    // FIXME randomly fails
-//    @RandomlyFails
-//    public void testCompletionInsideFor2() throws Exception {
-//        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
-//    }
-
-    public void testCompletionGeneratedAccessors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods12.groovy", "        new Test().get^", false);
-    }
-
-    public void testCompletionGeneratedAccessors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods12.groovy", "        new Test().set^", false);
-    }
-
-    public void testCompletionGroovyClass1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods13.groovy", "        new Test1().^", false);
-    }
-
-    public void testCompletionGroovyThis1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods14.groovy", "        this.get^", false);
-    }
-
-    public void testCompletionGroovySuper1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods15.groovy", "        super.^", false);
-    }
-
-    public void testCompletionNoDot1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        no^", false);
-    }
-
-    public void testCompletionNoDot2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        x^", false);
-    }
-
-    public void testCompletionNoDot3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods16.groovy", "        n^", false);
-    }
 }
 
