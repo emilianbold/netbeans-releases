@@ -63,6 +63,9 @@ import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -81,6 +84,8 @@ public class JPQLValidation extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+        Object modEl = ctx.getModelElement();
+        Entity entity = (Entity) (modEl instanceof Entity ? modEl : null);
         List<AnnotationMirror> first = Utilities.findAnnotations(subject, JPAAnnotations.NAMED_QUERY);
         ArrayList<String> values = new ArrayList<String>();
         if(first == null || first.size()==0){
@@ -107,8 +112,14 @@ public class JPQLValidation extends JPAClassRule {
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
         List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
         for(String value:values){
-            helper.setQuery(new Query(null, value, new ManagedTypeProvider(project)));
-            List<JPQLQueryProblem> tmp = helper.validateGrammar();
+            NamedQuery nq = null;
+            if(entity != null) {
+                nq = entity.newNamedQuery();
+                nq.setQuery(value);
+            }
+            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project)));
+            helper.getParsedJPQLQuery();
+            List<JPQLQueryProblem> tmp = helper.validate();
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
         }
         if (problems != null && problems.size()>0){
