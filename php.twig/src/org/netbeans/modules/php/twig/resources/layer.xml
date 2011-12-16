@@ -211,7 +211,6 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-twig">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/php/twig/resources/icon.png"/>
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
@@ -276,7 +275,6 @@ made subject to such option by the copyright holder.
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-twig"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/twig/resources/icon.png"/>
                     </file>
                 </folder>
             </folder>
@@ -297,13 +295,13 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Templates">
-        <folder name="Other">
+        <folder name="Scripting">
             <file name="TwigTemplate.html.twig" url="TwigTemplate.html.twig">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/php/twig/resources/icon.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.twig.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="500"/>
             </file>
         </folder>
     </folder>
