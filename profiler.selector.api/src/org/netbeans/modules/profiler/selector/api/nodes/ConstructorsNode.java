@@ -63,8 +63,9 @@ abstract public class ConstructorsNode extends ContainerNode {
     }
 
     /** Creates a new instance of ConstructorsNode */
+    @NbBundle.Messages("Constructors_DisplayName=Constructors")
     public ConstructorsNode(ClassNode parent) {
-        super(NbBundle.getMessage(ConstructorsNode.class, "Constructors_DisplayName"), Icons.getIcon(LanguageIcons.CONSTRUCTORS), parent); // NOI18N
+        super(Bundle.Constructors_DisplayName(), Icons.getIcon(LanguageIcons.CONSTRUCTORS), parent); // NOI18N
     }
 
     final protected SelectorChildren getChildren() {

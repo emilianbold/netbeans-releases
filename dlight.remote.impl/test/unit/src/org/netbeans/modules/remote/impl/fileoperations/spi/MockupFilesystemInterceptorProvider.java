@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
-import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,9 +106,9 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
         }
 
         @Override
-        public boolean canWrite(FileProxyI file) {
+        public boolean canWriteReadonlyFile(FileProxyI file) {
             FileOperations fileOperations = FileOperationsProvider.getDefault().getFileOperations(fs);
-            final boolean canWrite = fileOperations.canWrite(FileOperationsProvider.toFileProxy(file.getPath()));
+            boolean canWrite = fileOperations.canWrite(FileOperationsProvider.toFileProxy(file.getPath()));
             if (canWrite) {
                 return canWrite;
             }
@@ -133,17 +132,19 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
         }
 
         @Override
-        public DeleteHandler getDeleteHandler(FileProxyI file) {
-            return new DeleteHandler() {
+        public IOHandler getDeleteHandler(final FileProxyI file) {
+            return new IOHandler() {
 
                 @Override
-                public boolean delete(FileProxyI file) {
+                public void handle() throws IOException {
                     Future<Integer> rmFile = CommonTasksSupport.rmDir(env, file.getPath(), true, null);
                     try {
                         doDeleteFiles.add(file);
-                        return rmFile.get() == 0;
+                        if (rmFile.get() != 0) {
+                            throw new IOException("Cannot delete "+file.getPath()+" at "+env.getDisplayName());
+                        }
                     } catch (Exception ex) {
-                        return false;
+                        throw new IOException("Cannot delete "+file.getPath()+" at "+env.getDisplayName(), ex);
                     }
                 }
             };
