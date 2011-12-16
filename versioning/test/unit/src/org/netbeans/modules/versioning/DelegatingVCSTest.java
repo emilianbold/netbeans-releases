@@ -54,8 +54,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
 import org.openide.nodes.Node;
@@ -106,22 +105,22 @@ public class DelegatingVCSTest extends NbTestCase {
      
     public void testDelegatingVCS() {
         DelegatingVCS delegate = getDelegatingVCS();
-        final VCSContext ctx = VCSContext.forNodes(new Node[0]);
+        final org.netbeans.modules.versioning.core.spi.VCSContext ctx = org.netbeans.modules.versioning.core.spi.VCSContext.forNodes(new Node[0]);
         
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        assertEquals("TestVCSDisplay", delegate.getProperty(VersioningSystem.PROP_DISPLAY_NAME));
+        assertEquals("TestVCSDisplay", delegate.getDisplayName());
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        assertEquals("TestVCSMenu", delegate.getProperty(VersioningSystem.PROP_MENU_LABEL));
+        assertEquals("TestVCSMenu", delegate.getMenuLabel());
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        Action[] actions = delegate.getGlobalActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+        Action[] actions = delegate.getGlobalActions(ctx);
         assertNotNull(actions);
         assertEquals(1, actions.length); 
         assertNull(TestAnnotatedVCS.INSTANCE);
         
-        actions = delegate.getInitActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+        actions = delegate.getInitActions(ctx);
         assertNotNull(actions);
         assertEquals(1, actions.length); 
         assertNull(TestAnnotatedVCS.INSTANCE);
@@ -150,8 +149,8 @@ public class DelegatingVCSTest extends NbTestCase {
             }
         };
         
-        delegate.addPropertyChangeListener(l1);
-        delegate.addPropertyChangeListener(l2);
+        delegate.addPropertyCL(l1);
+        delegate.addPropertyCL(l2);
         
         delegate.getDelegate(); // forces delegate creation
         assertNotNull(TestAnnotatedVCS.INSTANCE);        
@@ -202,16 +201,16 @@ public class DelegatingVCSTest extends NbTestCase {
         DelegatingVCS delegate = getDelegatingVCS();
         assertNotNull(delegate);
         
-        assertTrue(delegate.isMetadataFile(new File(TestAnnotatedVCS.TEST_VCS_METADATA)));
-        assertTrue(delegate.isMetadataFile(new File("null")));
-        assertTrue(delegate.isMetadataFile(new File("set")));
-        assertFalse(delegate.isMetadataFile(new File("notset")));
+        assertTrue(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File(TestAnnotatedVCS.TEST_VCS_METADATA))));
+        assertTrue(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File("null"))));
+        assertTrue(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File("set"))));
+        assertFalse(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File("notset"))));
     }
     
     private DelegatingVCS getDelegatingVCS() {
-        Collection<? extends VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class)).allInstances();
-        for(VersioningSystem s : systems) {
-            if(s instanceof DelegatingVCS && "TestVCSDisplay".equals((String)((DelegatingVCS) s).getProperty(VersioningSystem.PROP_DISPLAY_NAME))) {
+        Collection<? extends org.netbeans.modules.versioning.core.spi.VersioningSystem> systems = Lookup.getDefault().lookup(new Lookup.Template<org.netbeans.modules.versioning.core.spi.VersioningSystem>(org.netbeans.modules.versioning.core.spi.VersioningSystem.class)).allInstances();
+        for(org.netbeans.modules.versioning.core.spi.VersioningSystem s : systems) {
+            if(s instanceof DelegatingVCS && "TestVCSDisplay".equals((String)((DelegatingVCS) s).getDisplayName())) {
                 return (DelegatingVCS) s;
             }
         }
