@@ -159,11 +159,20 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/shortArrays2.php");
     }
 
+    public void testShortArrays3() throws Exception {
+        reformatFileContents("testfiles/formatting/shortArrays3.php");
+    }
+
     public void testShortArrays4() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.initialIndent, 4);
         options.put(FmtOptions.itemsInArrayDeclarationIndentSize, 6);
         reformatFileContents("testfiles/formatting/shortArrays4.php", options);
+    }
+
+    public void testShortArrays05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/shortArrays5.php", options);
     }
 
     public void testFragment1() throws Exception {
@@ -173,6 +182,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testNestedArrays1() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/nested_array1.php", options);
+    }
+
+    public void testNestedShortArrays1() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/nested_short_array1.php", options);
     }
 
     public void testSubsequentQuotes() throws Exception {

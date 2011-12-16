@@ -210,8 +210,9 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ArrayCreation node) {
         int delta = options.indentArrayItems - options.continualIndentSize;
-        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index()) { // it's possible that the expression starts with array
-            while (ts.moveNext() && (ts.token().id() != PHPTokenId.PHP_ARRAY && (ts.token().id() != PHPTokenId.PHP_TOKEN && !ts.token().text().toString().equals("["))) && lastIndex < ts.index()) {
+        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
+                && !ts.token().text().toString().equals("[")) {  //NOI18N
+            while (ts.moveNext() && (ts.token().id() != PHPTokenId.PHP_ARRAY && !ts.token().text().toString().equals("[")) && lastIndex < ts.index()) { //NOI18N
                 addFormatToken(formatTokens);
             }
             if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
@@ -233,7 +234,7 @@ public class FormatVisitor extends DefaultVisitor {
                     delta = options.indentArrayItems;
                 }
             }
-            if (ts.token().text().toString().equals("[")) {
+            if (ts.token().text().toString().equals("[")) { //NOI18N
                 formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
             } else {
                 addFormatToken(formatTokens); // add array keyword
