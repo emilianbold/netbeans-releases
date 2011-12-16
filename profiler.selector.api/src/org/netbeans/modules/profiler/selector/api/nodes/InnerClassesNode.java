@@ -67,8 +67,9 @@ abstract public class InnerClassesNode extends ContainerNode {
     }
 
     /** Creates a new instance of ConstructorsNode */
+    @NbBundle.Messages("InnerClasses_DisplayName=Inner Classes")
     public InnerClassesNode(final ClassNode parent) {
-        super(NbBundle.getMessage(InnerClassesNode.class, "InnerClasses_DisplayName"), Icons.getIcon(LanguageIcons.CLASS), parent); // NOI18N
+        super(Bundle.InnerClasses_DisplayName(), Icons.getIcon(LanguageIcons.CLASS), parent); // NOI18N
     }
 
     protected SelectorChildren getChildren() {
