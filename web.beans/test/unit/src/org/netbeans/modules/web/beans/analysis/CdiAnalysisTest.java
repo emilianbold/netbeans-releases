@@ -297,7 +297,7 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
     }
     
     /*
-     * AnnotationsAnalyzer(ClassAnalyzer) checkNamed , checkAlternatives
+     * AnnotationsAnalyzer(ClassAnalyzer) checkNamed , checkAlternatives, checkSpecializes
      */
     public void testInterceptorAlternativeNamed() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
@@ -316,6 +316,15 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
                 "@Alternative "+
                 "@Interceptor "+
                 " public class Clazz1 { "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                "import javax.enterprise.inject.Specializes; "+
+                "@Interceptor "+
+                "@Specializes "+
+                " public class Clazz2 { "+
                 "}");
         ResultProcessor processor = new ResultProcessor (){
 
@@ -339,6 +348,16 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         };
         runAnalysis(errorFile1 , processor);
         
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result.getWarings(), "foo.Clazz2");
+                assertEquals( 0, result.getErrors().size());
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
     }
     
     /*
@@ -721,63 +740,56 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
     /*
      * AnnotationsAnalyzer: checkAbstractMethod
      */
-  public void testAbstractMethod() throws IOException {
-      /*
-       * Create a good one class file
-       */
-      FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO,
-          "foo/Clazz.java", "package foo; "
-                  + "import javax.inject.Inject; "
-                  + "import javax.enterprise.inject.Produces; "
-                  +" import javax.enterprise.inject.Disposes; "
-                  + " public class Clazz { "
-                  + " @Produces String production(){return null; } ; "
-                  + " void disposer( @Disposes int arg ){} "
-                  + "}");
-  
-      
-      FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO,
-              "foo/Clazz1.java", 
-              "package foo; "
-              + "import javax.inject.Inject; "
-              + "import javax.enterprise.inject.Produces; "
-              + " public class Clazz1 { "
-              + " @Produces  abstract int badProduction( int arg ); "+
-              " void  method(){}  "
-              + "}");
-      
-      FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO,
-              "foo/Clazz2.java", 
-              "package foo; "
-              +" import javax.enterprise.inject.Disposes; "
-              + " public class Clazz2 { "
-              + " abstract int badDisposer( @Disposes String arg);"+
-              " void  method(){}  "
-              + "}");
-    
-      
-      ResultProcessor processor = new ResultProcessor() {
-    
-          @Override
-          public void process( TestProblems result ) {
-              checkMethodElement(result, "foo.Clazz1", "badProduction");
-          }
-    
-      };
-      runAnalysis(errorFile, processor);
-      
-      processor = new ResultProcessor() {
+    public void testAbstractMethod() throws IOException {
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz.java", "package foo; "
+                        + "import javax.inject.Inject; "
+                        + "import javax.enterprise.inject.Produces; "
+                        + " import javax.enterprise.inject.Disposes; "
+                        + " public class Clazz { "
+                        + " @Produces String production(){return null; } ; "
+                        + " void disposer( @Disposes int arg ){} " + "}");
 
-          @Override
-          public void process( TestProblems result ) {
-              checkMethodElement(result, "foo.Clazz2", "badDisposer");
-          }
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz1.java", "package foo; "
+                        + "import javax.inject.Inject; "
+                        + "import javax.enterprise.inject.Produces; "
+                        + " public class Clazz1 { "
+                        + " @Produces  abstract int badProduction( int arg ); "
+                        + " void  method(){}  " + "}");
 
-      };
-      runAnalysis(errorFile1, processor);
-  
-      runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
-  }
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz2.java", "package foo; "
+                        + " import javax.enterprise.inject.Disposes; "
+                        + " public class Clazz2 { "
+                        + " abstract int badDisposer( @Disposes String arg);"
+                        + " void  method(){}  " + "}");
+
+        ResultProcessor processor = new ResultProcessor() {
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz1", "badProduction");
+            }
+
+        };
+        runAnalysis(errorFile, processor);
+
+        processor = new ResultProcessor() {
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz2", "badDisposer");
+            }
+
+        };
+        runAnalysis(errorFile1, processor);
+
+        runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+    }
     
   /*
    * AnnotationsAnalyzer: checkBusinessMethod
@@ -1258,7 +1270,7 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
     }
     
     /*
-     * QualifierAnalyzer
+     * QualifierAnalyzer 
      */
     public void testQualifier() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier1.java",
@@ -1362,5 +1374,170 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
         runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
     }
+    
+   /*
+   * QualifierAnalyzer checkMembers()
+   */
+  public void testQualifierMembers() throws IOException{
+      FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier1.java",
+              "package foo; " +
+              " import javax.inject.Qualifier; "+
+              " import java.lang.annotation.Retention; "+
+              " import java.lang.annotation.RetentionPolicy; "+
+              " import java.lang.annotation.Target; " +
+              " import java.lang.annotation.ElementType; "+
+              " @Retention(RetentionPolicy.RUNTIME) "+
+              " @Target({ElementType.METHOD,ElementType.FIELD, " +
+                "ElementType.PARAMETER, ElementType.TYPE}) "+
+              " @Qualifier "+
+              " public @interface Qualifier1 { "+
+              " String value(); "+
+              " String[] comments(); "+
+              "}");
+      
+      FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier2.java",
+              "package foo; " +
+              " import javax.inject.Qualifier; "+
+              " import java.lang.annotation.Retention; "+
+              " import java.lang.annotation.RetentionPolicy; "+
+              " import java.lang.annotation.Target; " +
+              " import java.lang.annotation.ElementType; "+
+              " @Retention(RetentionPolicy.RUNTIME) "+
+              " @Target({ElementType.METHOD,ElementType.FIELD, " +
+                "ElementType.PARAMETER, ElementType.TYPE}) "+
+              " @Qualifier "+
+              " public @interface Qualifier2 { "+
+              " String value(); "+
+              " Qualifier1 qualifier(); "+
+              "}");
+      
+      FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Qualifier3.java",
+              "package foo; " +
+              " import javax.inject.Qualifier; "+
+              " import java.lang.annotation.Retention; "+
+              " import java.lang.annotation.RetentionPolicy; "+
+              " import java.lang.annotation.Target; " +
+              " import java.lang.annotation.ElementType; "+
+              " import javax.enterprise.util.Nonbinding; "+
+              " @Retention(RetentionPolicy.RUNTIME) "+
+              " @Target({ElementType.METHOD,ElementType.FIELD, " +
+                "ElementType.PARAMETER, ElementType.TYPE}) "+
+              " @Qualifier "+
+              " public @interface Qualifier3 { "+
+              " String value(); "+
+              " @Nonbinding "+
+              " Qualifier1 qualifier(); "+
+              " @Nonbinding "+
+              " String[] comments(); "+
+              "}");
+      
+      ResultProcessor processor = new ResultProcessor (){
+
+          @Override
+          public void process( TestProblems result ) {
+              checkTypeElement(result.getWarings(), "foo.Qualifier1");
+              assertEquals( 0 , result.getErrors().size());
+          }
+          
+      };
+      runAnalysis(errorFile , processor);
+      
+      processor = new ResultProcessor (){
+
+          @Override
+          public void process( TestProblems result ) {
+              checkTypeElement(result.getWarings(), "foo.Qualifier2");
+              assertEquals( 0 , result.getErrors().size());
+          }
+          
+      };
+      runAnalysis(errorFile1 , processor);
+      
+      runAnalysis( goodFile, NO_ERRORS_PROCESSOR);
+  }
+  
+  /*
+   * InterceptorBindingMembersAnalyzer checkMembers()
+   */
+  public void testIBindingMembers() throws IOException{
+      FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding1.java",
+              "package foo; " +
+              " import javax.inject.Qualifier; "+
+              " import java.lang.annotation.Retention; "+
+              " import java.lang.annotation.RetentionPolicy; "+
+              " import java.lang.annotation.Target; " +
+              " import java.lang.annotation.ElementType; "+
+              " import javax.interceptor.*; "+
+              " @Retention(RetentionPolicy.RUNTIME) "+
+              " @Target({ElementType.METHOD,ElementType.FIELD, " +
+                "ElementType.PARAMETER, ElementType.TYPE}) "+
+              "@InterceptorBinding " +
+              " public @interface IBinding1 { "+
+              " String value(); "+
+              " String[] comments(); "+
+              "}");
+      
+      FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding2.java",
+              "package foo; " +
+              " import javax.inject.Qualifier; "+
+              " import java.lang.annotation.Retention; "+
+              " import java.lang.annotation.RetentionPolicy; "+
+              " import java.lang.annotation.Target; " +
+              " import java.lang.annotation.ElementType; "+
+              " import javax.interceptor.*; "+
+              " @Retention(RetentionPolicy.RUNTIME) "+
+              " @Target({ElementType.METHOD,ElementType.FIELD, " +
+                "ElementType.PARAMETER, ElementType.TYPE}) "+
+              "@InterceptorBinding " +
+              " public @interface IBinding2 { "+
+              " String value(); "+
+              " IBinding1 qualifier(); "+
+              "}");
+      
+      FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding3.java",
+              "package foo; " +
+              " import javax.inject.Qualifier; "+
+              " import java.lang.annotation.Retention; "+
+              " import java.lang.annotation.RetentionPolicy; "+
+              " import java.lang.annotation.Target; " +
+              " import java.lang.annotation.ElementType; "+
+              " import javax.enterprise.util.Nonbinding; "+
+              " import javax.interceptor.*; "+
+              " @Retention(RetentionPolicy.RUNTIME) "+
+              " @Target({ElementType.METHOD,ElementType.FIELD, " +
+                "ElementType.PARAMETER, ElementType.TYPE}) "+
+              "@InterceptorBinding " +
+              " public @interface IBinding3 { "+
+              " String value(); "+
+              " @Nonbinding "+
+              " Qualifier1 qualifier(); "+
+              " @Nonbinding "+
+              " String[] comments(); "+
+              "}");
+      
+      ResultProcessor processor = new ResultProcessor (){
+
+          @Override
+          public void process( TestProblems result ) {
+              checkTypeElement(result.getWarings(), "foo.IBinding1");
+              assertEquals( 0 , result.getErrors().size());
+          }
+          
+      };
+      runAnalysis(errorFile , processor);
+      
+      processor = new ResultProcessor (){
+
+          @Override
+          public void process( TestProblems result ) {
+              checkTypeElement(result.getWarings(), "foo.IBinding2");
+              assertEquals( 0 , result.getErrors().size());
+          }
+          
+      };
+      runAnalysis(errorFile1 , processor);
+      
+      runAnalysis( goodFile, NO_ERRORS_PROCESSOR);
+  }
     
 }

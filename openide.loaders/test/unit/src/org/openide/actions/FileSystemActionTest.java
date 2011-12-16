@@ -107,14 +107,14 @@ public class FileSystemActionTest extends NbTestCase {
         assertTrue(item.length > 0);
 }
     
-    private class TestFS extends LocalFileSystem {
+    private static class TestFS extends LocalFileSystem {
         @Override
         public SystemAction[] getActions() {
             return new SystemAction[] {
-                new testFSAction()
+                SystemAction.get(TestFSAction.class),
             }; 
         }
-        private class testFSAction extends SystemAction implements Presenter.Menu, Presenter.Popup {
+        public static class TestFSAction extends SystemAction implements Presenter.Menu, Presenter.Popup {
             @Override public String getName() { return ""; }
             @Override public HelpCtx getHelpCtx() { return null; }
             @Override public void actionPerformed(ActionEvent ev) { }

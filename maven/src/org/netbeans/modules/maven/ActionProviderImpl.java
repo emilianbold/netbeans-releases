@@ -407,7 +407,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.customPopup", category = "Project")
-    @ActionRegistration(displayName = "#LBL_Custom_Run")
+    @ActionRegistration(displayName = "#LBL_Custom_Run", lazy=false)
     @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("LBL_Custom_Run=Custom")
     public static ContextAwareAction customPopupActions() {
@@ -472,7 +472,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.closeSubprojects", category = "Project")
-    @ActionRegistration(displayName = "#ACT_CloseRequired")
+    @ActionRegistration(displayName = "#ACT_CloseRequired", lazy=false)
     @ActionReference(position = 2000, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_CloseRequired=Close Required Projects")
     public static ContextAwareAction closeSubprojectsAction() {
@@ -502,7 +502,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.showProblems", category = "Project")
-    @ActionRegistration(displayName = "#ACT_ShowProblems")
+    @ActionRegistration(displayName = "#ACT_ShowProblems", lazy=false)
     @ActionReference(position = 3100, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_ShowProblems=Show and Resolve Problems...")
     public static ContextAwareAction showProblemsAction() {
@@ -539,7 +539,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.buildWithDependencies", category = "Project")
-    @ActionRegistration(displayName = "#ACT_Build_Deps")
+    @ActionRegistration(displayName = "#ACT_Build_Deps", lazy=false)
     @ActionReference(position = 500, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_Build_Deps=Build with Dependencies")
     public static ContextAwareAction buildWithDependenciesAction() {

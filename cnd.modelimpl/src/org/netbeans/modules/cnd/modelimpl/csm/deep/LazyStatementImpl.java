@@ -136,9 +136,9 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
         }
     }
 
-    public void renderStatements(AST ast, List<CsmStatement> list) {
+    public void renderStatements(AST ast, List<CsmStatement> list, Map<Integer, CsmObject> objects) {
         for (ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling()) {
-            CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile(), this);
+            CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile(), this, objects);
             if (stmt != null) {
                 list.add(stmt);
             }

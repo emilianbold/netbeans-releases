@@ -74,7 +74,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
     
-    private void init(CsmScope scope, AST ast, final CsmFile file, boolean register) {
+    public void init(CsmScope scope, AST ast, final CsmFile file, boolean register) {
 	initScope(scope);
         temporaryRepositoryRegistration(register, this);
         initEnumeratorList(ast, file, register);
@@ -159,6 +159,44 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         Collection<CsmEnumerator> enumers = getEnumerators();
         Utils.disposeAll(enumers);
         RepositoryUtils.remove(enumerators);
+    }
+    
+    public static class EnumBuilder {
+        
+        private String name;
+        private CsmFile file;
+        private int startOffset;
+        private int endOffset;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+        
+        public EnumImpl create() {
+            if(name != null) {
+                NameHolder nameHolder = NameHolder.createName(name);
+                EnumImpl impl = new EnumImpl(name, name, file, startOffset, endOffset);
+
+    //            impl.init(scope, ast, file, register);
+
+                nameHolder.addReference(file, impl);
+                return impl;
+            }
+            return null;
+        }
+    
     }
     
 ////////////////////////////////////////////////////////////////////////////

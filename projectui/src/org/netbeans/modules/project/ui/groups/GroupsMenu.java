@@ -75,7 +75,7 @@ import static org.netbeans.modules.project.ui.groups.Bundle.*;
  * @author Jesse Glick
  */
 @ActionID(id = "org.netbeans.modules.project.ui.groups.GroupsMenu", category = "Project")
-@ActionRegistration(displayName = "#GroupsMenu.label")
+@ActionRegistration(displayName = "#GroupsMenu.label", lazy=false)
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 1100),
     @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 600, separatorAfter = 700)

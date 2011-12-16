@@ -46,6 +46,7 @@ package org.apache.tools.ant.module.spi;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Map;
 import org.apache.tools.ant.module.run.LoggerTrampoline;
 import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
@@ -197,6 +198,16 @@ public final class AntSession {
      */
     public int getVerbosity() {
         return impl.getVerbosity();
+    }
+
+    /**
+     * Gets a set of user properties defined for this session.
+     * These might be a mixture of global default definitions and per-session properties.
+     * @return an immutable property map
+     * @since 3.52
+     */
+    public Map<String,String> getProperties() {
+        return impl.getProperties();
     }
     
     /**

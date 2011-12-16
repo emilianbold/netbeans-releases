@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -329,7 +329,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Processor">
-                <Property name="tabTitle" type="java.lang.String" value="Processor"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_Processor" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -339,7 +341,7 @@
             <Component class="javax.swing.JLabel" name="librariesJLabel5">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_LibrariesP_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_LibrariesP_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -370,7 +372,7 @@
             <Component class="javax.swing.JButton" name="jButtonAddArtifactP">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddProject_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddProject_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -385,7 +387,7 @@
             <Component class="javax.swing.JButton" name="jButtonAddLibraryP">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddLibary_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddLibary_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -400,7 +402,7 @@
             <Component class="javax.swing.JButton" name="jButtonAddJarP">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddJar_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_AddJar_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -415,7 +417,7 @@
             <Component class="javax.swing.JButton" name="jButtonEditP">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_Edit_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_Edit_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -430,7 +432,7 @@
             <Component class="javax.swing.JButton" name="jButtonRemoveP">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_Remove_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_Remove_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -445,7 +447,7 @@
             <Component class="javax.swing.JButton" name="jButtonMoveUpP">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_MoveUp_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_MoveUp_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -460,7 +462,7 @@
             <Component class="javax.swing.JButton" name="jButtonMoveDownP">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/j2ee/ejbjarproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_MoveDown_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/customizer/Bundle.properties" key="LBL_CustomizeLibraries_MoveDown_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>

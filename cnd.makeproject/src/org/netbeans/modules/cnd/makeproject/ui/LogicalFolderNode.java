@@ -45,7 +45,10 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -85,6 +88,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -94,6 +98,7 @@ import org.openide.util.lookup.Lookups;
  */
 final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
+    private static final MessageFormat FOLDER_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd-folder; class=org.netbeans.modules.cnd.makeproject.ui.LogicalFolderNode; mask={0}"); // NOI18N
     private final Folder folder;
     private final MakeLogicalViewProvider provider;
     private final String pathPostfix;
@@ -293,12 +298,26 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public boolean canCut() {
-        return false; // FIXUP
+        return getFolder().isDiskFolder();
     }
 
     @Override
     public boolean canCopy() {
-        return false; // FIXUP
+        return getFolder().isDiskFolder();
+    }
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        return addViewFolderTransferable(super.clipboardCopy(), DnDConstants.ACTION_COPY);
+    }
+
+    @Override
+    public Transferable clipboardCut() throws IOException {
+        return addViewFolderTransferable(super.clipboardCut(), DnDConstants.ACTION_MOVE);
+    }
+
+    @Override
+    public Transferable drag() throws IOException {
+        return addViewFolderTransferable(super.drag(), DnDConstants.ACTION_NONE);
     }
 
     @Override
@@ -314,12 +333,14 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         folderFileObject.delete();
         super.destroy();
     }
-
+    
     @Override
     public PasteType getDropType(Transferable transferable, int action, int index) {
         DataFlavor[] flavors = transferable.getTransferDataFlavors();
         for (int i = 0; i < flavors.length; i++) {
             if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE)) {
+                return super.getDropType(transferable, action, index);
+            } else if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE_FOLDER)) {
                 return super.getDropType(transferable, action, index);
             }
         }
@@ -341,9 +362,27 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                     list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
                 } catch (Exception e) {
                 }
+            } else if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE_FOLDER)) {
+                try {
+                    LogicalFolderNode viewFolderNode = (LogicalFolderNode) transferable.getTransferData(flavors[i]);
+                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();
+                    list.add(new ViewFolderPasteType(folder, viewFolderNode, type, provider));
+                } catch (Exception e) {
+                }
             }
         }
         super.createPasteTypes(transferable, list);
+    }
+    
+    private ExTransferable addViewFolderTransferable(Transferable t, int operation) {
+        try {
+            ExTransferable extT = ExTransferable.create(t);
+            ViewFolderTransferable viewItem = new ViewFolderTransferable(this, operation);
+            extT.put(viewItem);
+            return extT;
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
     }
 
     public void newLogicalFolder() {
@@ -431,5 +470,20 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         result = NodeActionFactory.insertAfter(result, actionsForMakeProject.toArray(new Action[actionsForMakeProject.size()]), RenameNodeAction.class);
         result = NodeActionFactory.insertSyncActions(result, RenameNodeAction.class);
         return result;
+    }
+    
+    private static final class ViewFolderTransferable extends ExTransferable.Single {
+
+        private LogicalFolderNode node;
+
+        public ViewFolderTransferable(LogicalFolderNode node, int operation) throws ClassNotFoundException {
+            super(new DataFlavor(FOLDER_VIEW_FLAVOR.format(new Object[]{Integer.valueOf(operation)}), null, MakeLogicalViewProvider.class.getClassLoader()));
+            this.node = node;
+        }
+
+        @Override
+        protected Object getData() throws IOException, UnsupportedFlavorException {
+            return this.node;
+        }
     }
 }

@@ -171,6 +171,27 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         performTest(SOURCE, 140, 35);
     }
     
+    public void test206416_1() throws Exception {
+        // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
+        performTest(SOURCE, 148, 14);
+        clearWorkDir();
+        performTest(SOURCE, 152, 10);
+    }
+    
+    public void test206416_2() throws Exception {
+        // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
+        performTest(SOURCE, 149, 19);
+        clearWorkDir();
+        performTest(SOURCE, 150, 20);
+    }
+    
+    public void test206416_3() throws Exception {
+        // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
+        performTest(SOURCE, 155, 14);
+        clearWorkDir();
+        performTest(SOURCE, 156, 10);
+    }
+    
     @Override
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         BaseDocument doc;

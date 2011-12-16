@@ -205,6 +205,7 @@ public class TaskCache {
 
     private <T> void dumpErrors(TransactionContext c, URL root, Indexable i, Iterable<? extends T> errors, Convertor<T> convertor) throws IOException {
         //TODO: check to canRead() on "Indexable" was done here
+        assert root.getHost() == null || root.getHost().isEmpty();
         File[] output = computePersistentFile(root, i);
         
         List<T> trueErrors = new LinkedList<T>();
@@ -506,7 +507,13 @@ public class TaskCache {
 
     private static final class TransactionContext {
         private int depth;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         private Set<URL> toRefresh = new HashSet<URL>();
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         private Set<URL> rootsToRefresh = new HashSet<URL>();
     }
 }

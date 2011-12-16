@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.SynchronizeAction")
-@ActionRegistration(displayName="#LBL_SynchronizeAction", iconInMenu=false)
+@ActionRegistration(displayName="#LBL_SynchronizeAction", iconInMenu=false, lazy=false)
 @ActionReference(path=HudsonInstance.ACTION_PATH, position=500)
 @Messages("LBL_SynchronizeAction=&Synchronize")
 public class SynchronizeAction extends AbstractAction implements ContextAwareAction {
