@@ -413,7 +413,16 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             if (file.length() <= localDir.length()) {
                 return;
             }
-            file = remoteDir+file.substring(localDir.length());
+            String fileName = file.substring(localDir.length());
+            if (fileName.startsWith("/")) {
+                file = remoteDir+fileName;
+            } else {
+                System.err.println("File:     >"+file+"<");
+                System.err.println("File base:>"+localDir+"<");
+                System.err.println("FO:       >"+fo+"<");
+                System.err.println("FO   base:>"+remoteDir+"<");
+                file = remoteDir+"/"+fileName;
+            }
             assertEquals(file, fo);
         }
     }
