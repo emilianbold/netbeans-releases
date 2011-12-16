@@ -117,7 +117,7 @@ public class JPQLValidation extends JPAClassRule {
                 nq = entity.newNamedQuery();
                 nq.setQuery(value);
             }
-            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project)));
+            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData())));
             helper.getProvider();
             helper.getParsedJPQLQuery();
             List<JPQLQueryProblem> tmp = helper.validate();
