@@ -53,7 +53,9 @@ import org.eclipse.persistence.jpa.jpql.spi.IPlatform;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.wizard.EntityClosure;
 
 /**
  *
@@ -125,6 +127,23 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
         if(managedTypes==null){
             managedTypes = new HashMap<String, IManagedType>();
             //TODO fill
-        }
+            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+        
+            EntityClosure entityClosure = EntityClosure.create(entityClassScope, project);
+
+            //TODO: not only entities but mapped superclasses and embeddable?
+		for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : entityClosure.getAvailableEntityInstances()) {
+
+			if (persistentType != null) {
+				String name = persistentType.getName();
+
+				if (managedTypes.containsKey(name)) {
+					continue;
+				}
+
+				managedTypes.put(name, new Entity(persistentType, this));
+			}
+		}
+       }
     }
 }
