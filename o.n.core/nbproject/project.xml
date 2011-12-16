@@ -264,6 +264,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.core.browser.djnsswt</friend>
                 <friend>org.netbeans.core.browser.webpane</friend>
                 <friend>org.netbeans.core.browser.xulrunner</friend>
                 <friend>org.netbeans.core.execution</friend>
