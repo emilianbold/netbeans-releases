@@ -70,7 +70,7 @@ public class TokenFormatter {
 
     protected static String TEMPLATE_HANDLER_PROPERTY = "code-template-insert-handler";
     private static String EMPTY_STRING = "";
-    
+
     private static final Logger LOGGER = Logger.getLogger(TokenFormatter.class.getName());
 
     // it's for testing
@@ -79,7 +79,7 @@ public class TokenFormatter {
 //    private final Context context;
 
     public TokenFormatter() {
-	
+
     }
 
     protected static class DocumentOptions {
@@ -353,7 +353,7 @@ public class TokenFormatter {
         final BaseDocument doc = (BaseDocument) context.document();
         final PHPParseResult phpParseResult = ((PHPParseResult) info);
         final DocumentOptions docOptions = new DocumentOptions(doc);
-        
+
 	doc.runAtomic(new Runnable() {
 
 	    @Override
@@ -1005,12 +1005,12 @@ public class TokenFormatter {
                                                     : new Integer(0);
                                                 if (suggestedIndent == null) {
                                                     // XXX this is a hack
-                                                    //sometimes the html formatter doesn't catch the first line. 
+                                                    //sometimes the html formatter doesn't catch the first line.
                                                     suggestedIndent = suggestedLineIndents.get(lineNumber + 1) != null
                                                             ? suggestedLineIndents.get(lineNumber + 1)
                                                             : new Integer(0);
                                                 }
-                                                
+
                                                 int lineOffset = Utilities.getRowStart(doc, offset);
                                                 int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
                                                 if (firstNW == offset) {
@@ -1024,7 +1024,7 @@ public class TokenFormatter {
                                                     // initial indent. There should be better
                                                     // recognition of this.
                                                     countSpaces = lastPHPIndent == 0 ? htmlIndent : indent;
-                                                    
+
                                                     // try to find, whether there is no indend tag after open tag
                                                     int indentIndex = index;
                                                     int helpSpaces = 0;
@@ -1085,7 +1085,7 @@ public class TokenFormatter {
                                                     countSpaces = docOptions.spaceAfterShortTag ? 1 : 0;
                                                 }
                                             }
-                                            
+
                                         }
                                         break;
                                     case WHITESPACE_BEFORE_CLOSE_PHP_TAG:
@@ -1140,7 +1140,7 @@ public class TokenFormatter {
                                                 countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
                                             }
                                         }
-                                        
+
                                         break;
                                     case WHITESPACE_AFTER_CLOSE_PHP_TAG:
     //				    if (index < formatTokens.size() -1
@@ -1180,7 +1180,7 @@ public class TokenFormatter {
                                     if ((!indentRule || newLines == -1) && indentLine) {
                                         boolean handlingSpecialCases = false;
                                         if (FormatToken.Kind.TEXT == formatToken.getId()
-                                                && ")".equals(formatToken.getOldText())) {
+                                                && (")".equals(formatToken.getOldText()) || "]".equals(formatToken.getOldText()))) {
                                             // tryin find out and handling cases when )) folows.
                                             int hIndex = index + 1;
                                             int hindent = indent;
@@ -1198,7 +1198,7 @@ public class TokenFormatter {
                                                         && token.getId() != FormatToken.Kind.WHITESPACE
                                                         && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT));
                                                 if (FormatToken.Kind.TEXT == token.getId()
-                                                        && (")".equals(token.getOldText()) || ";".equals(token.getOldText()))) {
+                                                        && (")".equals(token.getOldText()) || ";".equals(token.getOldText()) || "]".equals(formatToken.getOldText()))) {
                                                     countSpaces = hindent;
                                                     handlingSpecialCases = true;
                                                 }
@@ -1272,7 +1272,7 @@ public class TokenFormatter {
 //                                }
                                 newText = createWhitespace(docOptions, newLines, countSpaces);
                                 if (wsBetweenBraces) {
-                                    newText = createWhitespace(docOptions, 1, 
+                                    newText = createWhitespace(docOptions, 1,
                                             indent + docOptions.indentSize)
                                             + createWhitespace(docOptions, 1,
                                             lastBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent);
@@ -1283,7 +1283,7 @@ public class TokenFormatter {
                                     && realOffset <= formatContext.endOffset() + 1) {
 
                                     int caretPosition = caretOffset + delta;
-                                    if (caretPosition == formatContext.endOffset() && oldText.length() > 0 && newText.length() > 0 
+                                    if (caretPosition == formatContext.endOffset() && oldText.length() > 0 && newText.length() > 0
                                             && oldText.charAt(0) == ' ' && newText.charAt(0) != ' ' && 0 != countOfNewLines(oldText)) {
 //                                        int positionOldText = caretPosition - realOffset - 1;
 //                                        if (positionOldText > -1 && positionOldText < oldText.length()
@@ -1292,7 +1292,7 @@ public class TokenFormatter {
                                             newText = ' ' + newText;   // templates like public, return ...
 //                                        }
                                         caretInTemplateSolved = true;
-                                    } 
+                                    }
                                 }
                                 if (formatToken.getId() == FormatToken.Kind.TEXT
                                         && "{".equals(formatToken.getOldText())      //NOI18N
@@ -1305,7 +1305,7 @@ public class TokenFormatter {
                                     }
                                     if (hIndex > 0 && formatTokens.get(hIndex).getId() == FormatToken.Kind.TEXT
                                             && (")".equals(formatTokens.get(hIndex).getOldText())   // NOI18N
-                                            || "else".equals(formatTokens.get(hIndex).getOldText()))) { // NOI18N
+                                            || "else".equals(formatTokens.get(hIndex).getOldText()) || "]".equals(formatToken.getOldText()))) { // NOI18N
                                         delta = replaceString(doc, formatTokens.get(hIndex).getOffset() + formatTokens.get(hIndex).getOldText().length() - (delta - deltaForLastMoveBeforeLineComment), hIndex + 1, "", newText + "{", delta, templateEdit); // NOI18N
                                         delta = replaceString(doc, changeOffset, index, oldText, "", delta, templateEdit);
                                         delta = replaceString(doc, formatToken.getOffset(), index, formatToken.getOldText(), "", delta, templateEdit);
@@ -1378,7 +1378,7 @@ public class TokenFormatter {
                                     break;
                                 case TEXT:
                                     if (")".equals(formatToken.getOldText())                    // NOI18N
-                                            || "else".equals(formatToken.getOldText())) {       // NOI18N
+                                            || "else".equals(formatToken.getOldText()) || "]".equals(formatToken.getOldText())) {       // NOI18N
                                         // remember the delta for last paren or else keyword due to
                                         // possible moving { before line comment
                                         deltaForLastMoveBeforeLineComment = delta;
@@ -1491,7 +1491,7 @@ public class TokenFormatter {
                         && formatTokens.get(currentIndex).getId() != FormatToken.Kind.WHITESPACE_INDENT) {
 		    currentIndex++;
 		}
-                
+
                 if (formatTokens.get(currentIndex).getId() == FormatToken.Kind.WHITESPACE_INDENT) {
                     lines = countOfNewLines(formatTokens.get(currentIndex).getOldText());
                 }
@@ -1598,7 +1598,7 @@ public class TokenFormatter {
                     firstLine = false;
 		}
 		boolean lastAdded = false; // was the last part added to coment . does it have a non whitespace character?
-                
+
 		for (StringTokenizer st = new StringTokenizer(comment, "\n", true); st.hasMoreTokens();) { //NOI18N
 		    String part = st.nextToken();
                     String trimPart = part.trim();
@@ -1696,7 +1696,7 @@ public class TokenFormatter {
             private int endOffset = -1;
             // prviousIndentDelta keeps information, when a template is inserted and
             // the code is not formatted according setted rules. Like initial indentation, etc.
-            // Basically it contain difference between number of spaces in document and 
+            // Basically it contain difference between number of spaces in document and
             // the position if the document will be formatted according our rules.
             private int previousIndentDelta = 0;
             private String previousOldIndentText = "";
@@ -1714,7 +1714,7 @@ public class TokenFormatter {
                 }
                 if (startOffset > 0 && (startOffset - oldText.length()) > offset
                         && newText != null && newText.indexOf('\n') > -1) {
-                    // will be formatted new line that the first one has to be special 
+                    // will be formatted new line that the first one has to be special
                     previousNewIndentText = newText;
                     previousOldIndentText = oldText;
                 }
@@ -1793,14 +1793,14 @@ public class TokenFormatter {
                                     if (!replaceOld.equals(replaceNew)
                                             && ((indexOldText + replaceOld.length()) <= oldText.length()
                                             || indexNewText == indexNewTextLine)) {
-                                        
+
                                         if (newText.trim().length() == 0) {
                                             delta = replaceSimpleString(document, realOffset + indexOldText,
                                                     replaceOld, replaceNew, delta);
                                         } else {
                                             // in template we can move only with whitespaces
                                             // if we will touch a parameter of the template
-                                            // then the processing of the template is stopped. 
+                                            // then the processing of the template is stopped.
                                             // see issue #197906
                                             int indexOldChar = 0;
                                             int indexNewChar = 0;
@@ -1819,7 +1819,7 @@ public class TokenFormatter {
                                                             indexOldChar++;
                                                        }
                                                     }
-                                                    
+
                                                 } else {
                                                     indexNewChar++;
                                                     indexOldChar++;
@@ -1932,7 +1932,7 @@ public class TokenFormatter {
                     token = formatTokens.get(index);
                     index++;
                 }
-                
+
                 value = index < formatTokens.size() && ";".equals(token.getOldText());
                 return value;
             }
@@ -1949,7 +1949,7 @@ public class TokenFormatter {
 	}
 
     }
-    
+
     /**
      *
      * @param tokens
@@ -1996,7 +1996,7 @@ public class TokenFormatter {
 	}
 	return token.getId() == FormatToken.Kind.LINE_COMMENT;
     }
-    
+
     private boolean isBeforePHPDoc(List<FormatToken> tokens, int index) {
 	FormatToken token = tokens.get(index);
 	while (index > 0 && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT
@@ -2021,7 +2021,7 @@ public class TokenFormatter {
             return EMPTY_STRING;
         }
 	StringBuilder sb = new StringBuilder();
-        
+
         for (int i = 0; i < lines; i++) {
             sb.append('\n');
         }
@@ -2029,7 +2029,7 @@ public class TokenFormatter {
             // should be called IndentUtils from editor api, when issue #192289 will be fixed
             sb.append(IndentUtils.cachedOrCreatedIndentString(spaces, docOptions.expandTabsToSpaces, docOptions.tabSize));
         }
-        
+
 	return sb.toString();
     }
 }
