@@ -69,35 +69,22 @@ import javax.swing.UIManager;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TriggerCustomizer_HeapUsgRelKey=used heap",
+    "TriggerCustomizer_HeapUsgRelUnit=% available memory",
+    "TriggerCustomizer_HeapSizeAbsKey=allocated heap",
+    "TriggerCustomizer_HeapSizeAbsUnit=MB",
+    "TriggerCustomizer_SurvgenCountKey=surviving generations",
+    "TriggerCustomizer_SurvgenCountUnit=generations",
+    "TriggerCustomizer_LdClassCountKey=loaded classes",
+    "TriggerCustomizer_LdClassCountUnit=classes",
+    "TriggerCustomizer_TakeWhenLabelText=Take &when",
+    "TriggerCustomizer_ExceedsLabelText=e&xceeds",
+    "TriggerCustomizer_TakeOnceRadioText=Take &once",
+    "TriggerCustomizer_TakeAlwaysRadioText=Take &every time"
+})
 public class TriggerCustomizer extends ValidityAwarePanel implements ActionListener {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String HEAP_USG_REL_KEY = NbBundle.getMessage(TriggerCustomizer.class, "TriggerCustomizer_HeapUsgRelKey"); // NOI18N
-    private static final String HEAP_USG_REL_UNIT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                        "TriggerCustomizer_HeapUsgRelUnit"); // NOI18N
-    private static final String HEAP_SIZE_ABS_KEY = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                        "TriggerCustomizer_HeapSizeAbsKey"); // NOI18N
-    private static final String HEAP_SIZE_ABS_UNIT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                         "TriggerCustomizer_HeapSizeAbsUnit"); // NOI18N
-    private static final String SURVGEN_COUNT_KEY = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                        "TriggerCustomizer_SurvgenCountKey"); // NOI18N
-    private static final String SURVGEN_COUNT_UNIT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                         "TriggerCustomizer_SurvgenCountUnit"); // NOI18N
-    private static final String LDCLASS_COUNT_KEY = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                        "TriggerCustomizer_LdClassCountKey"); // NOI18N
-    private static final String LDCLASS_COUNT_UNIT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                         "TriggerCustomizer_LdClassCountUnit"); // NOI18N
-    private static final String TAKE_WHEN_LABEL_TEXT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                           "TriggerCustomizer_TakeWhenLabelText"); // NOI18N
-    private static final String EXCEEDS_LABEL_TEXT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                         "TriggerCustomizer_ExceedsLabelText"); // NOI18N
-    private static final String TAKE_ONCE_RADIO_TEXT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                           "TriggerCustomizer_TakeOnceRadioText"); // NOI18N
-    private static final String TAKE_ALWAYS_RADIO_TEXT = NbBundle.getMessage(TriggerCustomizer.class,
-                                                                             "TriggerCustomizer_TakeAlwaysRadioText"); // NOI18N
-                                                                                                                       // -----
     private static int defaultTextComponentHeight = -1;
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
@@ -130,22 +117,22 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
     public void setTriggerCondition(TriggeredGlobalProfilingPoint.TriggerCondition condition) {
         switch (condition.getMetric()) {
             case TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_HEAPUSG:
-                triggerWhenCombo.setSelectedItem(HEAP_USG_REL_KEY);
+                triggerWhenCombo.setSelectedItem(Bundle.TriggerCustomizer_HeapUsgRelKey());
                 triggerValueSpinner.setValue((int) condition.getValue());
 
                 break;
             case TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_HEAPSIZ:
-                triggerWhenCombo.setSelectedItem(HEAP_SIZE_ABS_KEY);
+                triggerWhenCombo.setSelectedItem(Bundle.TriggerCustomizer_HeapSizeAbsKey());
                 triggerValueSpinner.setValue((int) (condition.getValue() / (1024 * 1024)));
 
                 break;
             case TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_SURVGEN:
-                triggerWhenCombo.setSelectedItem(SURVGEN_COUNT_KEY);
+                triggerWhenCombo.setSelectedItem(Bundle.TriggerCustomizer_SurvgenCountKey());
                 triggerValueSpinner.setValue((int) condition.getValue());
 
                 break;
             case TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_LDCLASS:
-                triggerWhenCombo.setSelectedItem(LDCLASS_COUNT_KEY);
+                triggerWhenCombo.setSelectedItem(Bundle.TriggerCustomizer_LdClassCountKey());
                 triggerValueSpinner.setValue((int) condition.getValue());
 
                 break;
@@ -162,16 +149,16 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
 
         Object key = triggerWhenCombo.getSelectedItem();
 
-        if (key == HEAP_USG_REL_KEY) {
+        if (key == Bundle.TriggerCustomizer_HeapUsgRelKey()) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_HEAPUSG);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
-        } else if (key == HEAP_SIZE_ABS_KEY) {
+        } else if (key == Bundle.TriggerCustomizer_HeapSizeAbsKey()) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_HEAPSIZ);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue() * (1024L * 1024L));
-        } else if (key == SURVGEN_COUNT_KEY) {
+        } else if (key == Bundle.TriggerCustomizer_SurvgenCountKey()) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_SURVGEN);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
-        } else if (key == LDCLASS_COUNT_KEY) {
+        } else if (key == Bundle.TriggerCustomizer_LdClassCountKey()) {
             condition.setMetric(TriggeredGlobalProfilingPoint.TriggerCondition.METRIC_LDCLASS);
             condition.setValue(((Integer) triggerValueSpinner.getValue()).intValue());
         }
@@ -185,17 +172,17 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
         if (e.getSource() == triggerWhenCombo) {
             Object key = triggerWhenCombo.getSelectedItem();
 
-            if (key == HEAP_USG_REL_KEY) {
-                triggerGenerationsLabel.setText(HEAP_USG_REL_UNIT);
+            if (key == Bundle.TriggerCustomizer_HeapUsgRelKey()) {
+                triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_HeapUsgRelUnit());
                 triggerValueSpinner.setModel(percentsModel);
-            } else if (key == HEAP_SIZE_ABS_KEY) {
-                triggerGenerationsLabel.setText(HEAP_SIZE_ABS_UNIT);
+            } else if (key == Bundle.TriggerCustomizer_HeapSizeAbsKey()) {
+                triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_HeapSizeAbsUnit());
                 triggerValueSpinner.setModel(unitsModel);
-            } else if (key == SURVGEN_COUNT_KEY) {
-                triggerGenerationsLabel.setText(SURVGEN_COUNT_UNIT);
+            } else if (key == Bundle.TriggerCustomizer_SurvgenCountKey()) {
+                triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_SurvgenCountUnit());
                 triggerValueSpinner.setModel(unitsModel);
-            } else if (key == LDCLASS_COUNT_KEY) {
-                triggerGenerationsLabel.setText(LDCLASS_COUNT_UNIT);
+            } else if (key == Bundle.TriggerCustomizer_LdClassCountKey()) {
+                triggerGenerationsLabel.setText(Bundle.TriggerCustomizer_LdClassCountUnit());
                 triggerValueSpinner.setModel(unitsModel);
             }
         }
@@ -244,7 +231,7 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
 
         // triggerWhenLabel
         triggerWhenLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(triggerWhenLabel, TAKE_WHEN_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(triggerWhenLabel, Bundle.TriggerCustomizer_TakeWhenLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -254,7 +241,11 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
         triggerSettingsContainer.add(triggerWhenLabel, constraints);
 
         // triggerWhenCombo
-        triggerWhenCombo = new JComboBox(new Object[] { HEAP_USG_REL_KEY, HEAP_SIZE_ABS_KEY, SURVGEN_COUNT_KEY, LDCLASS_COUNT_KEY }) {
+        triggerWhenCombo = new JComboBox(new Object[] { 
+            Bundle.TriggerCustomizer_HeapUsgRelKey(), 
+            Bundle.TriggerCustomizer_HeapSizeAbsKey(), 
+            Bundle.TriggerCustomizer_SurvgenCountKey(), 
+            Bundle.TriggerCustomizer_LdClassCountKey() }) {
                 public Dimension getPreferredSize() {
                     return new Dimension(Math.min(super.getPreferredSize().width, 200), super.getPreferredSize().height);
                 }
@@ -275,7 +266,7 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
 
         // triggerExceedsLabel
         triggerExceedsLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(triggerExceedsLabel, EXCEEDS_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(triggerExceedsLabel, Bundle.TriggerCustomizer_ExceedsLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
         constraints.gridy = 0;
@@ -305,7 +296,7 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
         triggerSettingsContainer.add(triggerValueSpinner, constraints);
 
         // triggerGenerationsLabel
-        triggerGenerationsLabel = new JLabel(HEAP_USG_REL_UNIT);
+        triggerGenerationsLabel = new JLabel(Bundle.TriggerCustomizer_HeapUsgRelKey());
         constraints = new GridBagConstraints();
         constraints.gridx = 4;
         constraints.gridy = 0;
@@ -340,7 +331,7 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
 
         // triggerOnceRadio
         triggerOnceRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(triggerOnceRadio, TAKE_ONCE_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(triggerOnceRadio, Bundle.TriggerCustomizer_TakeOnceRadioText());
         triggerRadiosGroup.add(triggerOnceRadio);
         triggerOnceRadio.setSelected(true);
         constraints = new GridBagConstraints();
@@ -353,7 +344,7 @@ public class TriggerCustomizer extends ValidityAwarePanel implements ActionListe
 
         // triggerAlwaysRadio
         triggerAlwaysRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(triggerAlwaysRadio, TAKE_ALWAYS_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(triggerAlwaysRadio, Bundle.TriggerCustomizer_TakeAlwaysRadioText());
         triggerRadiosGroup.add(triggerAlwaysRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;

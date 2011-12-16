@@ -67,8 +67,7 @@ public abstract class ProfilingPointsUIHelper {
 
         @Override
         public String getAllProjectsString() {
-            return NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                    "ProfilingPointsWindowUI_AllProjectsString"); // NOI18N;
+            return Bundle.ProfilingPointsWindowUI_AllProjectsString();
         }
         
     }
