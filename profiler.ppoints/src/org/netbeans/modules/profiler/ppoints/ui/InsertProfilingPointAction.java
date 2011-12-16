@@ -65,19 +65,12 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "InsertProfilingPointAction_ActionName=&Insert Profiling Point...",
+    "InsertProfilingPointAction_ProfilingInProgressMsg=Cannot create new Profiling Point during profiling session.",
+    "InsertProfilingPointAction_NoProjectMsg=Cannot create new Profiling Point because no project is open."
+})
 public class InsertProfilingPointAction extends NodeAction {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(InsertProfilingPointAction.class,
-                                                                  "InsertProfilingPointAction_ActionName"); // NOI18N
-    private static final String PROFILING_IN_PROGRESS_MSG = NbBundle.getMessage(InsertProfilingPointAction.class,
-                                                                                "InsertProfilingPointAction_ProfilingInProgressMsg"); // NOI18N
-    private static final String NO_PROJECT_MSG = NbBundle.getMessage(InsertProfilingPointAction.class,
-                                                                     "InsertProfilingPointAction_NoProjectMsg"); // NOI18N
-                                                                                                                 // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public InsertProfilingPointAction() {
@@ -91,13 +84,13 @@ public class InsertProfilingPointAction extends NodeAction {
     }
 
     public String getName() {
-        return ACTION_NAME;
+        return Bundle.InsertProfilingPointAction_ActionName();
     }
 
     public void performAction(Lookup.Provider project) {
         if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    PROFILING_IN_PROGRESS_MSG,
+                                    Bundle.InsertProfilingPointAction_ProfilingInProgressMsg(),
                                     NotifyDescriptor.WARNING_MESSAGE));
 
             return;
@@ -105,7 +98,7 @@ public class InsertProfilingPointAction extends NodeAction {
 
         if (ProjectUtilities.getOpenedProjects().length == 0) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    NO_PROJECT_MSG,
+                                    Bundle.InsertProfilingPointAction_NoProjectMsg(),
                                     NotifyDescriptor.WARNING_MESSAGE));
 
             return;

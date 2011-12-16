@@ -60,28 +60,22 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "StopwatchProfilingPointFactory_PpType=Stopwatch",
+    "StopwatchProfilingPointFactory_PpDescr=You may use this profiling point to obtain a timestamp instead of calling System.currentTimeMillis(). You can also measure the time between start and end locations to obtain the execution time of a method fragment.",
+    "StopwatchProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String PP_TYPE = NbBundle.getMessage(StopwatchProfilingPointFactory.class,
-                                                              "StopwatchProfilingPointFactory_PpType"); // NOI18N
-    private static final String PP_DESCR = NbBundle.getMessage(StopwatchProfilingPointFactory.class,
-                                                               "StopwatchProfilingPointFactory_PpDescr"); // NOI18N
-    private static final String PP_DEFAULT_NAME = NbBundle.getMessage(StopwatchProfilingPointFactory.class,
-                                                                      "StopwatchProfilingPointFactory_PpDefaultName"); // NOI18N
-                                                                                                                       // -----
-    public static final String RESET_RESULTS_PP_TYPE = PP_TYPE;
-    public static final String RESET_RESULTS_PP_DESCR = PP_DESCR;
     private static final String START_LOCATION_PREFIX = "start_"; // NOI18N
     private static final String END_LOCATION_PREFIX = "end_"; // NOI18N
     
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getDescription() {
-        return RESET_RESULTS_PP_DESCR;
+        return Bundle.StopwatchProfilingPointFactory_PpDescr();
     }
 
     public Icon getIcon() {
@@ -97,7 +91,7 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
     }
 
     public String getType() {
-        return RESET_RESULTS_PP_TYPE;
+        return Bundle.StopwatchProfilingPointFactory_PpType();
     }
 
     public ProfilingPoint create(Lookup.Provider project) {
@@ -119,8 +113,7 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
                 File file = FileUtil.normalizeFile(new File(location.getFile()));
                 String filename = FileUtil.toFileObject(file).getName();
                 String name = Utils.getUniqueName(getType(),
-                                                  MessageFormat.format(PP_DEFAULT_NAME,
-                                                                       new Object[] { "", filename, location.getLine() }), project); // NOI18N
+                                                  Bundle.StopwatchProfilingPointFactory_PpDefaultName("", filename, location.getLine()), project); // NOI18N
 
                 return new StopwatchProfilingPoint(name, location, null, project, this);
             }
@@ -130,9 +123,7 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
             File file = FileUtil.normalizeFile(new File(startLocation.getFile()));
             String filename = FileUtil.toFileObject(file).getName();
             String name = Utils.getUniqueName(getType(),
-                                              MessageFormat.format(PP_DEFAULT_NAME,
-                                                                   new Object[] { "", filename, startLocation.getLine() }),
-                                              project); // NOI18N
+                                              Bundle.StopwatchProfilingPointFactory_PpDefaultName("", filename, startLocation.getLine()), project); // NOI18N
 
             return new StopwatchProfilingPoint(name, startLocation, endLocation, project, this);
         }

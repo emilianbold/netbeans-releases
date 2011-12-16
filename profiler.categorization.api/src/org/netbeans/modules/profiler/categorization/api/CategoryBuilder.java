@@ -54,7 +54,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -84,7 +83,7 @@ public class CategoryBuilder {
 
     final public synchronized Category getRootCategory() {
         if (rootCategory == null) {
-            rootCategory = new CategoryContainer("ROOT", NbBundle.getMessage(CategoryBuilder.class, "ROOT_CATEGORY_NAME"), Mark.DEFAULT); // NOI18N
+            rootCategory = new CategoryContainer("ROOT", Bundle.ROOT_CATEGORY_NAME(), Mark.DEFAULT); // NOI18N
 
             FileObject aoi = FileUtil.getConfigFile("Projects/" + projectType + "/NBProfiler/Categories"); //NOI18N
             if (aoi != null) {

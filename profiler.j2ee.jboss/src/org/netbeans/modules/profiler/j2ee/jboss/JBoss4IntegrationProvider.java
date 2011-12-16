@@ -52,19 +52,17 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "JBossIntegrationProvider_Jboss4xString=JBoss 4+"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class JBoss4IntegrationProvider extends AbstractJBossIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // <editor-fold defaultstate="collapsed" desc="Resource strings">
-    private static final String JBOSS_4x_STRING = NbBundle.getMessage(AbstractJBossIntegrationProvider.class,
-                                                                      "JBossIntegrationProvider_Jboss4xString"); // NOI18N
-                                                                                                                 // </editor-fold>
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return JBOSS_4x_STRING;
+        return Bundle.JBossIntegrationProvider_Jboss4xString();
     }
 
     protected int getAttachWizardPriority() {

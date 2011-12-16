@@ -62,14 +62,6 @@ import org.openide.util.actions.SystemAction;
  * @author Tomas Hurka
  */
 public class DeleteProfilingPointAction extends SystemAction implements ContextAwareAction {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(DeleteProfilingPointAction.class,
-                                                                  "DeleteProfilingPointAction_ActionName"); // NOI18N
-                                                                                                            // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public DeleteProfilingPointAction() {
@@ -85,9 +77,10 @@ public class DeleteProfilingPointAction extends SystemAction implements ContextA
         return new HelpCtx(DeleteProfilingPointAction.class);
     }
 
+    @NbBundle.Messages("DeleteProfilingPointAction_ActionName=Delete")
     @Override
     public String getName() {
-        return ACTION_NAME;
+        return Bundle.DeleteProfilingPointAction_ActionName();
     }
 
     @Override

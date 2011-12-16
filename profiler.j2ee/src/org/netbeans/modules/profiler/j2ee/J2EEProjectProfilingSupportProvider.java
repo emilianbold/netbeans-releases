@@ -87,6 +87,12 @@ import org.openide.DialogDisplayer;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "J2EEProjectTypeProfiler_ProfilingNotSupportedMsg=Target server does not support profiling.\nTo profile project running on current server, use Attach Profiler and select main project in the dropdown.\nTo change server for this project, right-click the project and select Properties | Run | Server.\n",
+    "J2EEProjectTypeProfiler_SkipButtonName=Skip",
+    "J2EEProjectTypeProfiler_NoServerFoundMsg=<html><b>Failed to obtain server information.</b><br>Check if the server for the profiled project has been set correctly.</html>",
+    "TTL_setServletExecutionUri=Provide Servlet Request Parameters"
+})
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider.class, 
                         projectTypes={
                             @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), 
@@ -149,16 +155,7 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants                                                                                     "J2EEProjectTypeProfiler_ModifyBuildScriptManuallyMsg"); // NOI18N
-    private static final String PROFILING_NOT_SUPPORTED_MSG = NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
-                                                                                  "J2EEProjectTypeProfiler_ProfilingNotSupportedMsg"); // NOI18N
-    private static final String SKIP_BUTTON_NAME = NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
-                                                                       "J2EEProjectTypeProfiler_SkipButtonName"); // NOI18N
-    private static final String NO_SERVER_FOUND_MSG = NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
-                                                                          "J2EEProjectTypeProfiler_NoServerFoundMsg"); // NOI18N                                                                                                                       // -----
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.profiler.j2ee"); // NOI18N
-
     // not very clean, consider implementing differently!
     // stores last generated agent ID
     private static int lastAgentID = -1;
@@ -231,14 +228,14 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
         J2eePlatform j2eePlatform = getJ2eePlatform(getProject());
 
         if (j2eePlatform == null) {
-            ProfilerDialogs.displayError(NO_SERVER_FOUND_MSG);
+            ProfilerDialogs.displayError(Bundle.J2EEProjectTypeProfiler_NoServerFoundMsg());
 
             return false;
         }
 
         if (!j2eePlatform.supportsProfiling()) {
             // Server doesn't support profiling
-            ProfilerDialogs.displayWarning(PROFILING_NOT_SUPPORTED_MSG);
+            ProfilerDialogs.displayWarning(Bundle.J2EEProjectTypeProfiler_ProfilingNotSupportedMsg());
 
             return false;
         }
@@ -333,13 +330,11 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
 
             if (servletAddress != null) {
                 ServletUriPanel uriPanel = new ServletUriPanel(servletAddress);
-                DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                                             org.openide.util.NbBundle.getMessage(J2EEProjectProfilingSupportProvider.class,
-                                                                                                  "TTL_setServletExecutionUri"),
+                DialogDescriptor desc = new DialogDescriptor(uriPanel, Bundle.TTL_setServletExecutionUri(),
                                                              true, // NOI18N
                                                              new Object[] {
                                                                  DialogDescriptor.OK_OPTION,
-                                                                 new javax.swing.JButton(SKIP_BUTTON_NAME) {
+                                                                 new javax.swing.JButton(Bundle.J2EEProjectTypeProfiler_SkipButtonName()) {
                         public java.awt.Dimension getPreferredSize() {
                             return new java.awt.Dimension(super.getPreferredSize().width + 16, super.getPreferredSize().height);
                         }
@@ -510,7 +505,7 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
                             }
                         } catch (IOException e) {
                             err.notify(ErrorManager.INFORMATIONAL, e);
-                        }
+                        } 
                     }
 
                     if (projectPropsFile != null) {
