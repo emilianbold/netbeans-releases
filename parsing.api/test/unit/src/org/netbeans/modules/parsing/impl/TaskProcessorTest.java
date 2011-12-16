@@ -88,6 +88,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -461,33 +462,20 @@ public class TaskProcessorTest extends NbTestCase {
             }
         };
         Utilities.setIndexingStatus(is);
-        Utilities.scheduleSpecialTask(new ParserResultTask() {
-            @Override
-            public int getPriority() {
-                return 0;
-            }
-
-            @Override
-            public Class<? extends Scheduler> getSchedulerClass() {
-                return null;
-            }
-
-            @Override
-            public void cancel() {
-            }
-
-            @Override
-            public void run(Result result, SchedulerEvent event) {
-                indexing.set(EnumSet.of(RepositoryUpdater.IndexingState.WORKING));
-                try {
-                    ruRunning.countDown();
-                    rwsfCalled.await();
-                } catch (InterruptedException ie) {
-                } finally {
-                    indexing.set(EnumSet.noneOf(RepositoryUpdater.IndexingState.class));
-                }
-            }
-        });
+        RepositoryUpdaterTestSupport.runAsWork(
+                new Runnable(){
+                    @Override
+                    public void run() {
+                        indexing.set(EnumSet.of(RepositoryUpdater.IndexingState.WORKING));
+                        try {
+                            ruRunning.countDown();
+                            rwsfCalled.await();
+                        } catch (InterruptedException ie) {
+                        } finally {
+                            indexing.set(EnumSet.noneOf(RepositoryUpdater.IndexingState.class));
+                        }
+                    }
+                });
         ruRunning.await();
         doc.putProperty("completion-active", Boolean.TRUE);
         try {
