@@ -511,6 +511,6 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         lines.add("jButton1.setBorder(javax.swing.BorderFactory.");
         findInCode(lines, designer);
 
-        removeFile(dialogName);
+        //removeFile(dialogName);
     }
 }

@@ -80,7 +80,7 @@ public class CutAndPasteTest extends ExtJellyTestCase {
     /** Cut and paste test. */
     public void testCutAndPaste() throws IOException, InterruptedException {
         openDataProjects(_testProjectName);
-        String frameName = createJFrameFile();
+        String frameName = createJFrameFile()+".java";
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         designer.source();
         designer.design();
@@ -134,7 +134,7 @@ public class CutAndPasteTest extends ExtJellyTestCase {
 
 
         findInCode("javax.swing.JButton jButton1", designer); // NOI18N
-
+        frameName=frameName.replace(".java", "");
         removeFile(frameName);
     }
 }
