@@ -50,7 +50,6 @@ import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
@@ -58,48 +57,42 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * Componentes declaration test
  *
  * @author Jiri Vagner
- *
- * <b>Adam Senk</b> 26 APRIL 2011 WORKS
+ * 
+ * <b>Adam Senk</b>
+ * 26 APRIL 2011 WORKS
  */
 public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
 
-    /**
-     * Constructor required by JUnit
-     */
+    /** Constructor required by JUnit */
     public GeneratedComponentsDestionationTest(String testName) {
         super(testName);
     }
 
-    /**
-     * Creates suite from particular test cases.
-     */
+    /** Creates suite from particular test cases. */
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(GeneratedComponentsDestionationTest.class).addTest(
                 "testGeneratedComponentsDestionationLocal",
                 "testGeneratedComponentsDestionationClassField").clusters(".*").enableModules(".*").gui(true));
     }
 
-    /**
-     * Tests generation component declaration code with properties
-     * LocalVariables=true Test for issue 95518
+    /** Tests generation component declaration code with properties LocalVariables=true
+     * Test for issue 95518
      */
     public void testGeneratedComponentsDestionationLocal() {
         testGeneratedComponentsDestionation(true);
     }
 
     /**
-     * Tests generation component declaration code with properties
-     * LocalVariables=false
+     * Tests generation component declaration code with properties LocalVariables=false
      */
     public void testGeneratedComponentsDestionationClassField() {
         testGeneratedComponentsDestionation(false);
     }
 
     /**
-     * Tests generation component declaration code with properties
-     * LocalVariables=false
-     *
-     * @param local "Local Variables" settings
+     * Tests generation component declaration code with properties LocalVariables=false
+     * 
+     * @param local "Local Variables" settings 
      */
     private void testGeneratedComponentsDestionation(Boolean local) {
         OptionsOperator.invoke();
@@ -115,20 +108,35 @@ public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
         if (local) {
             options.selectMiscellaneous(); // NOI18N
             //add timeout
-            JTabbedPaneOperator jtbpo = new JTabbedPaneOperator(options, 0);
-            jtbpo.selectPage("GUI Builder");
-
+            waitNoEvent(2000);
+            options.pushKey(KeyEvent.VK_TAB);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_TAB);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_TAB);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_TAB);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_TAB);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_LEFT);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_LEFT);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_LEFT);
+            waitNoEvent(500);
+            options.pushKey(KeyEvent.VK_SPACE);
         }
         waitNoEvent(500);
-
-        JRadioButtonOperator jrbo = new JRadioButtonOperator(options, "Local Variables in initComponents() Method");
+        
+        JRadioButtonOperator jrbo = new JRadioButtonOperator(options,"Local Variables in initComponents() Method" );
         //int i = 0;
         if (!local) {
-            // i = 1;
-            jrbo = new JRadioButtonOperator(options, "Fields in the Form Class");
+           // i = 1;
+            jrbo = new JRadioButtonOperator(options,"Fields in the Form Class");
         }
-
-        //new JRadioButtonOperator(options, i);
+        
+                //new JRadioButtonOperator(options, i);
         jrbo.setSelected(true);
 
         waitNoEvent(1000);

@@ -68,7 +68,7 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  */
 public class BaseTest extends ExtJellyTestCase {
 
-    public String FILE_NAME = "clear_JFrame.java";
+    public String FILE_NAME = "clear_JFrame";
     public String PACKAGE_NAME = "data";
     public String DATA_PROJECT_NAME = "SampleProject";
     public String FRAME_ROOT = "[JFrame]";
