@@ -72,7 +72,7 @@ abstract public class FilesystemInterceptorProvider {
     }
 
     public interface QueryOperations {
-        boolean canWrite(FileProxyI file);
+        boolean canWriteReadonlyFile(FileProxyI file);
         Object getAttribute(FileProxyI file, String attrName);
     }
 
@@ -82,7 +82,7 @@ abstract public class FilesystemInterceptorProvider {
     }
 
     public interface DeleteOperations {
-        DeleteHandler getDeleteHandler(FileProxyI file);
+        IOHandler getDeleteHandler(FileProxyI file);
         void deleteSuccess(FileProxyI file);
         void deletedExternally(FileProxyI file);
     }
@@ -117,18 +117,6 @@ abstract public class FilesystemInterceptorProvider {
         */
         void handle() throws IOException;
     }
-    
-    public interface DeleteHandler {
-        /**
-         * Deletes the file or directory denoted by this abstract pathname.  If
-         * this pathname denotes a directory, then the directory must be empty in
-         * order to be deleted.
-         *
-         * @return  <code>true</code> if and only if the file or directory is
-         *          successfully deleted; <code>false</code> otherwise
-         */
-        boolean delete(FileProxyI file); // XXX IOException ?
-    }    
     
     public static FileProxyI toFileProxy(FileObject file, String name, String ext) {
         return new FileObjectFileProxyI(file, name, ext);

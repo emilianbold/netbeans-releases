@@ -50,17 +50,17 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "JBossIntegrationProvider_Jboss3xString=JBoss 3.2.5+"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class JBoss3IntegrationProvider extends AbstractJBossIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    private static final String JBOSS_3x_STRING = NbBundle.getMessage(AbstractJBossIntegrationProvider.class,
-                                                                      "JBossIntegrationProvider_Jboss3xString"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return JBOSS_3x_STRING;
+        return Bundle.JBossIntegrationProvider_Jboss3xString();
     }
 
     protected int getAttachWizardPriority() {

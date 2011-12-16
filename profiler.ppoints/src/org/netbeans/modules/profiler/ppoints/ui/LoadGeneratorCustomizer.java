@@ -89,35 +89,22 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "LoadGeneratorCustomizer_NameLabelText=&Name:",
+    "LoadGeneratorCustomizer_SettingsLabelText=Settings",
+    "LoadGeneratorCustomizer_ScriptLabelText=&Script:",
+    "LoadGeneratorCustomizer_BrowseButtonText=Br&owse...",
+    "LoadGeneratorCustomizer_StopLabelText=Stop:",
+    "LoadGeneratorCustomizer_DefineRadioText=&Define",
+    "LoadGeneratorCustomizer_StopRadioText=W&hen profiling stops",
+    "LoadGeneratorCustomizer_LocationBeginLabelText=Location (begin)",
+    "LoadGeneratorCustomizer_LocationEndLabelText=Location (end)",
+    "LoadGeneratorCustomizer_ChooseScriptDialogCaption=Choose Load Generator Script",
+    "LoadGeneratorCustomizer_ScriptFieldAccessDescr=Script to be executed in Load Generator",
+    "LoadGeneratorCustomizer_SupportedFiles=Load Generator Scripts"
+})
 public class LoadGeneratorCustomizer extends ValidityAwarePanel implements ActionListener, ChangeListener, DocumentListener,
                                                                            ValidityListener, HelpCtx.Provider {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String NAME_LABEL_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                      "LoadGeneratorCustomizer_NameLabelText"); // NOI18N
-    private static final String SETTINGS_LABEL_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                          "LoadGeneratorCustomizer_SettingsLabelText"); // NOI18N
-    private static final String SCRIPT_LABEL_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                        "LoadGeneratorCustomizer_ScriptLabelText"); // NOI18N
-    private static final String BROWSE_BUTTON_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                         "LoadGeneratorCustomizer_BrowseButtonText"); // NOI18N
-    private static final String STOP_LABEL_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                      "LoadGeneratorCustomizer_StopLabelText"); // NOI18N
-    private static final String DEFINE_RADIO_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                        "LoadGeneratorCustomizer_DefineRadioText"); // NOI18N
-    private static final String STOP_RADIO_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                      "LoadGeneratorCustomizer_StopRadioText"); // NOI18N
-    private static final String LOCATION_BEGIN_LABEL_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                                "LoadGeneratorCustomizer_LocationBeginLabelText"); // NOI18N
-    private static final String LOCATION_END_LABEL_TEXT = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                              "LoadGeneratorCustomizer_LocationEndLabelText"); // NOI18N
-    private static final String CHOOSE_SCRIPT_DIALOG_CAPTION = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                                   "LoadGeneratorCustomizer_ChooseScriptDialogCaption"); // NOI18N
-    private static final String SCRIPT_FIELD_ACCESS_DESCR = NbBundle.getMessage(LoadGeneratorCustomizer.class,
-                                                                                "LoadGeneratorCustomizer_ScriptFieldAccessDescr"); // NOI18N
-                                                                                                                                   // -----
     private static final String HELP_CTX_KEY = "LoadGeneratorCustomizer.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static int defaultTextComponentHeight = -1;
@@ -274,7 +261,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
 
         // nameLabel
         nameLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NAME_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, Bundle.LoadGeneratorCustomizer_NameLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -320,7 +307,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
         JPanel settingsHeaderContainer = new JPanel(new GridBagLayout());
 
         // settingsHeaderLabel
-        settingsHeaderLabel = new JLabel(SETTINGS_LABEL_TEXT);
+        settingsHeaderLabel = new JLabel(Bundle.LoadGeneratorCustomizer_SettingsLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -359,7 +346,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
 
         // scriptLabel
         scriptLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(scriptLabel, SCRIPT_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(scriptLabel, Bundle.LoadGeneratorCustomizer_ScriptLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -388,7 +375,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
                 }
             };
         scriptLabel.setLabelFor(scriptTextField);
-        scriptTextField.getAccessibleContext().setAccessibleDescription(SCRIPT_FIELD_ACCESS_DESCR);
+        scriptTextField.getAccessibleContext().setAccessibleDescription(Bundle.LoadGeneratorCustomizer_ScriptFieldAccessDescr());
         scriptTextField.getDocument().addDocumentListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -401,7 +388,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
 
         // scriptButton
         scriptButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(scriptButton, BROWSE_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(scriptButton, Bundle.LoadGeneratorCustomizer_BrowseButtonText());
         scriptButton.addActionListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 3;
@@ -426,7 +413,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
         JPanel stopSettingsContainer = new JPanel(new GridBagLayout());
 
         // stopLabel
-        stopLabel = new JLabel(STOP_LABEL_TEXT);
+        stopLabel = new JLabel(Bundle.LoadGeneratorCustomizer_StopLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -446,7 +433,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
 
         // stopDefineRadio
         stopDefineRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(stopDefineRadio, DEFINE_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(stopDefineRadio, Bundle.LoadGeneratorCustomizer_DefineRadioText());
         stopRadiosGroup.add(stopDefineRadio);
         stopDefineRadio.addChangeListener(this);
         constraints = new GridBagConstraints();
@@ -459,7 +446,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
 
         // stopOnStopRadio
         stopOnStopRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(stopOnStopRadio, STOP_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(stopOnStopRadio, Bundle.LoadGeneratorCustomizer_StopRadioText());
         stopOnStopRadio.addChangeListener(this);
         stopRadiosGroup.add(stopOnStopRadio);
         constraints = new GridBagConstraints();
@@ -484,7 +471,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
         JPanel locationBeginHeaderContainer = new JPanel(new GridBagLayout());
 
         // locationBeginHeaderLabel
-        locationBeginHeaderLabel = new JLabel(LOCATION_BEGIN_LABEL_TEXT);
+        locationBeginHeaderLabel = new JLabel(Bundle.LoadGeneratorCustomizer_LocationBeginLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -536,7 +523,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
         JPanel locationEndHeaderContainer = new JPanel(new GridBagLayout());
 
         // locationEndHeaderLabel
-        locationEndHeaderLabel = new JLabel(LOCATION_END_LABEL_TEXT);
+        locationEndHeaderLabel = new JLabel(Bundle.LoadGeneratorCustomizer_LocationEndLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -673,7 +660,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             chooser.setMultiSelectionEnabled(false);
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(CHOOSE_SCRIPT_DIALOG_CAPTION);
+            chooser.setDialogTitle(Bundle.LoadGeneratorCustomizer_ChooseScriptDialogCaption());
     
             chooser.setFileFilter(new FileFilter() {
                     private Set<String> extensions = new HashSet<String>();
@@ -688,7 +675,7 @@ public class LoadGeneratorCustomizer extends ValidityAwarePanel implements Actio
                     }
 
                     public String getDescription() {
-                        return NbBundle.getMessage(LoadGeneratorCustomizer.class, "LoadGeneratorCustomizer_SupportedFiles"); // NOI18N
+                        return Bundle.LoadGeneratorCustomizer_SupportedFiles();
                     }
                 });
 

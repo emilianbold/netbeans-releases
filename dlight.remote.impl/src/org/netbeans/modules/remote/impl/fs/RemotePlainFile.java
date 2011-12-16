@@ -181,11 +181,10 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
-                FilesystemInterceptorProvider.FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
-                if (!interceptor.canWrite(fileProxy)) {
+                if (!canWrite()) {
                     throw new IOException("Cannot lock "+this); // NOI18N
                 }
-                interceptor.fileLocked(fileProxy);
+                interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(this));
             }
         }
         return super.lock();

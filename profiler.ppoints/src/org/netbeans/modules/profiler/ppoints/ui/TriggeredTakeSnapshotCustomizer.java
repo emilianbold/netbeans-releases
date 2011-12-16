@@ -74,19 +74,15 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TriggeredTakeSnapshotCustomizer_NameLabelText=&Name:",
+    "TriggeredTakeSnapshotCustomizer_SettingsLabelText=Settings",
+    "TriggeredTakeSnapshotCustomizer_TriggerLabelText=Trigger"
+})
 public class TriggeredTakeSnapshotCustomizer extends ValidityAwarePanel implements DocumentListener, ValidityListener,
                                                                                    HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String NAME_LABEL_TEXT = NbBundle.getMessage(TriggeredTakeSnapshotCustomizer.class,
-                                                                      "TriggeredTakeSnapshotCustomizer_NameLabelText"); // NOI18N
-    private static final String SETTINGS_LABEL_TEXT = NbBundle.getMessage(TriggeredTakeSnapshotCustomizer.class,
-                                                                          "TriggeredTakeSnapshotCustomizer_SettingsLabelText"); // NOI18N
-    private static final String TRIGGER_LABEL_TEXT = NbBundle.getMessage(TriggeredTakeSnapshotCustomizer.class,
-                                                                         "TriggeredTakeSnapshotCustomizer_TriggerLabelText"); // NOI18N
-                                                                                                                              // -----
     private static final String HELP_CTX_KEY = "TriggeredTakeSnapshotCustomizer.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static int defaultTextComponentHeight = -1;
@@ -217,7 +213,7 @@ public class TriggeredTakeSnapshotCustomizer extends ValidityAwarePanel implemen
 
         // nameLabel
         nameLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NAME_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, Bundle.TriggeredTakeSnapshotCustomizer_NameLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 1;
@@ -255,7 +251,7 @@ public class TriggeredTakeSnapshotCustomizer extends ValidityAwarePanel implemen
         JPanel settingsHeaderContainer = new JPanel(new GridBagLayout());
 
         // settingsHeaderLabel
-        settingsHeaderLabel = new JLabel(SETTINGS_LABEL_TEXT);
+        settingsHeaderLabel = new JLabel(Bundle.TriggeredTakeSnapshotCustomizer_SettingsLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -307,7 +303,7 @@ public class TriggeredTakeSnapshotCustomizer extends ValidityAwarePanel implemen
         JPanel triggerHeaderContainer = new JPanel(new GridBagLayout());
 
         // triggerHeaderLabel
-        triggerHeaderLabel = new JLabel(TRIGGER_LABEL_TEXT);
+        triggerHeaderLabel = new JLabel(Bundle.TriggeredTakeSnapshotCustomizer_TriggerLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;

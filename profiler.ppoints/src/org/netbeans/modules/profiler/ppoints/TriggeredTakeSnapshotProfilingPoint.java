@@ -89,6 +89,33 @@ import org.openide.ErrorManager;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TriggeredTakeSnapshotProfilingPoint_NoDataAvailableMsg=no data available",
+    "TriggeredTakeSnapshotProfilingPoint_NoDataRemoteMsg=no data available: not supported for remote profiling",
+    "TriggeredTakeSnapshotProfilingPoint_NoDataJdkMsg=no data available: JDK 1.6, 1.7 or 1.5.0_12 is required",
+    "TriggeredTakeSnapshotProfilingPoint_OneHitString=<b>1 hit</b> at {0}, <a href='#'>report</a>",
+    "TriggeredTakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
+    "TriggeredTakeSnapshotProfilingPoint_NoResultsString=No results available",
+    "TriggeredTakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
+    "TriggeredTakeSnapshotProfilingPoint_NoHitsString=no hits",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderModeDataString=<b>Snapshot type:</b> profiling data",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderModeDumpString=<b>Snapshot type:</b> heap dump",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderTargetProjectString=<b>Save to:</b> project",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderTargetCustomString=<b>Save to:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderResetResultsString=<b>Reset results:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
+    "TriggeredTakeSnapshotProfilingPoint_OpenSnapshotString=open snapshot",
+    "TriggeredTakeSnapshotProfilingPoint_UsedHeapResultString=(hit for {0}MB used heap)",
+    "TriggeredTakeSnapshotProfilingPoint_HeapUsageResultString=(hit for {0}% heap usage)",
+    "TriggeredTakeSnapshotProfilingPoint_SurvGenResultString=(hit for {0} surviving generations)",
+    "TriggeredTakeSnapshotProfilingPoint_LoadedClassesResultString=(hit for {0} loaded classes)",
+    "TriggeredTakeSnapshotProfilingPoint_HitString=<b>{0}.</b> hit at <b>{1}</b>, {2} {3}",
+    "TriggeredTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg=Saved snapshot is no longer available.",
+    "TriggeredTakeSnapshotProfilingPoint_DataString=Data:"
+})
 public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalProfilingPoint implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -148,7 +175,7 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
 
             synchronized(resultsSync) {
                 if (!hasResults()) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(NO_HITS_STRING).append("&gt;"); // NOI18N
+                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.TriggeredTakeSnapshotProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
@@ -164,7 +191,7 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         void refreshProperties() {
             setName(TriggeredTakeSnapshotProfilingPoint.this.getName());
             setIcon(((ImageIcon) TriggeredTakeSnapshotProfilingPoint.this.getFactory().getIcon()).getImage());
-            getAccessibleContext().setAccessibleDescription(MessageFormat.format(REPORT_ACCESS_DESCR, new Object[] { getName() }));
+            getAccessibleContext().setAccessibleDescription(Bundle.TriggeredTakeSnapshotProfilingPoint_ReportAccessDescr(getName()));
         }
 
         private String getDataResultItem(int index) {
@@ -172,42 +199,40 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
                 Result result = results.get(index);
                 String resultString = result.getResultString();
                 String snapshotInformation = resultString.startsWith(SNAPSHOT_LOCATION_URLMASK)
-                                             ? ("<a href='" + resultString + "'>" + OPEN_SNAPSHOT_STRING + "</a>") : resultString; // NOI18N
+                                             ? ("<a href='" + resultString + "'>" + Bundle.TriggeredTakeSnapshotProfilingPoint_OpenSnapshotString() + "</a>") : resultString; // NOI18N
                 String hitValueInformation = ""; // NOI18N
 
                 if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_HEAPSIZ) {
-                    hitValueInformation = MessageFormat.format(USED_HEAP_RESULT_STRING,
-                                                               new Object[] { (result.getHitValue() / (1024f * 1024f)) });
+                    hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_UsedHeapResultString(
+                                            (result.getHitValue() / (1024f * 1024f)));
                 } else if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_HEAPUSG) {
-                    hitValueInformation = MessageFormat.format(HEAP_USAGE_RESULT_STRING, new Object[] { result.getHitValue() });
+                    hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_HeapUsageResultString(result.getHitValue());
                 } else if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_SURVGEN) {
-                    hitValueInformation = MessageFormat.format(SURVGEN_RESULT_STRING, new Object[] { result.getHitValue() });
+                    hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_SurvGenResultString(result.getHitValue());
                 } else if (getCondition().getMetric() == TriggeredTakeSnapshotProfilingPoint.TriggerCondition.METRIC_LDCLASS) {
-                    hitValueInformation = MessageFormat.format(LOADED_CLASSES_RESULT_STRING, new Object[] { result.getHitValue() });
+                    hitValueInformation = Bundle.TriggeredTakeSnapshotProfilingPoint_LoadedClassesResultString(result.getHitValue());
                 }
 
-                return MessageFormat.format(HIT_STRING,
-                                            new Object[] {
-                                                (index + 1), Utils.formatLocalProfilingPointTime(result.getTimestamp()),
-                                                snapshotInformation, hitValueInformation
-                                            });
+                return Bundle.TriggeredTakeSnapshotProfilingPoint_HitString(
+                            (index + 1), Utils.formatLocalProfilingPointTime(result.getTimestamp()),
+                            snapshotInformation, hitValueInformation);
             }
         }
 
         private String getHeaderEnabled() {
-            return MessageFormat.format(HEADER_ENABLED_STRING,
-                                        new Object[] { TriggeredTakeSnapshotProfilingPoint.this.isEnabled() });
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderEnabledString(TriggeredTakeSnapshotProfilingPoint.this.isEnabled());
         }
 
         private String getHeaderHitsCount() {
             synchronized(resultsSync) {
-                return MessageFormat.format(HEADER_HITS_STRING, new Object[] { results.size() });
+                return Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderHitsString(results.size());
             }
         }
 
         private String getHeaderMode() {
-            return TriggeredTakeSnapshotProfilingPoint.this.getSnapshotType().equals(TYPE_PROFDATA_KEY) ? HEADER_MODE_DATA_STRING
-                                                                                                        : HEADER_MODE_DUMP_STRING;
+            return TriggeredTakeSnapshotProfilingPoint.this.getSnapshotType().equals(TYPE_PROFDATA_KEY) ? 
+                    Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderModeDataString()
+                    : Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderModeDumpString();
         }
 
         private String getHeaderName() {
@@ -215,27 +240,25 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         }
 
         private String getHeaderProject() {
-            return MessageFormat.format(HEADER_PROJECT_STRING,
-                                        new Object[] {
-                                            ProjectUtilities.getDisplayName(TriggeredTakeSnapshotProfilingPoint.this.getProject())
-                                        });
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderProjectString(
+                        ProjectUtilities.getDisplayName(TriggeredTakeSnapshotProfilingPoint.this.getProject()));
         }
 
         private String getHeaderResetResults() {
-            return MessageFormat.format(HEADER_RESET_RESULTS_STRING,
-                                        new Object[] { TriggeredTakeSnapshotProfilingPoint.this.getResetResults() });
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderResetResultsString(
+                        TriggeredTakeSnapshotProfilingPoint.this.getResetResults());
         }
 
         private String getHeaderTarget() {
             return TriggeredTakeSnapshotProfilingPoint.this.getSnapshotTarget().equals(TARGET_PROJECT_KEY)
-                   ? HEADER_TARGET_PROJECT_STRING
-                   : MessageFormat.format(HEADER_TARGET_PROJECT_STRING,
-                                          new Object[] { TriggeredTakeSnapshotProfilingPoint.this.getSnapshotFile() });
+                   ? Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderTargetProjectString()
+                   : Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderTargetCustomString(
+                        TriggeredTakeSnapshotProfilingPoint.this.getSnapshotFile());
         }
 
         private String getHeaderType() {
-            return MessageFormat.format(HEADER_TYPE_STRING,
-                                        new Object[] { TriggeredTakeSnapshotProfilingPoint.this.getFactory().getType() });
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_HeaderTypeString(
+                        TriggeredTakeSnapshotProfilingPoint.this.getFactory().getType());
         }
 
         private void initComponents() {
@@ -273,14 +296,14 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
                             }
                         } else {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    SNAPSHOT_NOT_AVAILABLE_MSG, NotifyDescriptor.WARNING_MESSAGE));
+                                    Bundle.TriggeredTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg(), NotifyDescriptor.WARNING_MESSAGE));
                         }
                     }
                 };
 
             JScrollPane dataAreaScrollPane = new JScrollPane(dataArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                              JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            TitledBorder tb = new TitledBorder(DATA_STRING);
+            TitledBorder tb = new TitledBorder(Bundle.TriggeredTakeSnapshotProfilingPoint_DataString());
             tb.setTitleFont(Utils.getTitledBorderFont(tb).deriveFont(Font.BOLD));
             tb.setTitleColor(javax.swing.UIManager.getColor("Label.foreground")); // NOI18N
             dataAreaScrollPane.setBorder(tb);
@@ -329,59 +352,6 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String NO_DATA_AVAILABLE_MSG = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                            "TriggeredTakeSnapshotProfilingPoint_NoDataAvailableMsg"); // NOI18N
-    private static final String NO_DATA_REMOTE_MSG = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                         "TriggeredTakeSnapshotProfilingPoint_NoDataRemoteMsg"); // NOI18N
-    private static final String NO_DATA_JDK_MSG = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                      "TriggeredTakeSnapshotProfilingPoint_NoDataJdkMsg"); // NOI18N
-    private static final String ONE_HIT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                     "TriggeredTakeSnapshotProfilingPoint_OneHitString"); // NOI18N
-    private static final String N_HITS_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                    "TriggeredTakeSnapshotProfilingPoint_NHitsString"); // NOI18N
-    private static final String NO_RESULTS_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                        "TriggeredTakeSnapshotProfilingPoint_NoResultsString"); // NOI18N
-    private static final String REPORT_ACCESS_DESCR = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                          "TriggeredTakeSnapshotProfilingPoint_ReportAccessDescr"); // NOI18N
-    private static final String NO_HITS_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                     "TriggeredTakeSnapshotProfilingPoint_NoHitsString"); // NOI18N
-    private static final String HEADER_TYPE_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                         "TriggeredTakeSnapshotProfilingPoint_HeaderTypeString"); // NOI18N
-    private static final String HEADER_ENABLED_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                            "TriggeredTakeSnapshotProfilingPoint_HeaderEnabledString"); // NOI18N
-    private static final String HEADER_PROJECT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                            "TriggeredTakeSnapshotProfilingPoint_HeaderProjectString"); // NOI18N
-    private static final String HEADER_MODE_DATA_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                              "TriggeredTakeSnapshotProfilingPoint_HeaderModeDataString"); // NOI18N
-    private static final String HEADER_MODE_DUMP_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                              "TriggeredTakeSnapshotProfilingPoint_HeaderModeDumpString"); // NOI18N
-    private static final String HEADER_TARGET_PROJECT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                                   "TriggeredTakeSnapshotProfilingPoint_HeaderTargetProjectString"); // NOI18N
-    private static final String HEADER_TARGET_CUSTOM_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                                  "TriggeredTakeSnapshotProfilingPoint_HeaderTargetCustomString"); // NOI18N
-    private static final String HEADER_RESET_RESULTS_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                                  "TriggeredTakeSnapshotProfilingPoint_HeaderResetResultsString"); // NOI18N
-    private static final String HEADER_HITS_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                         "TriggeredTakeSnapshotProfilingPoint_HeaderHitsString"); // NOI18N
-    private static final String OPEN_SNAPSHOT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                           "TriggeredTakeSnapshotProfilingPoint_OpenSnapshotString"); // NOI18N
-    private static final String USED_HEAP_RESULT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                              "TriggeredTakeSnapshotProfilingPoint_UsedHeapResultString"); // NOI18N
-    private static final String HEAP_USAGE_RESULT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                               "TriggeredTakeSnapshotProfilingPoint_HeapUsageResultString"); // NOI18N
-    private static final String SURVGEN_RESULT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                            "TriggeredTakeSnapshotProfilingPoint_SurvGenResultString"); // NOI18N
-    private static final String LOADED_CLASSES_RESULT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                                   "TriggeredTakeSnapshotProfilingPoint_LoadedClassesResultString"); // NOI18N
-    private static final String HIT_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                 "TriggeredTakeSnapshotProfilingPoint_HitString"); // NOI18N
-    private static final String SNAPSHOT_NOT_AVAILABLE_MSG = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                                 "TriggeredTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg"); // NOI18N
-    private static final String DATA_STRING = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPoint.class,
-                                                                  "TriggeredTakeSnapshotProfilingPoint_DataString"); // NOI18N
-                                                                                                                     // -----
     public static final String TAKEN_HEAPDUMP_PREFIX = "heapdump-"; // NOI18N // should differ from generated OOME heapdumps not to be detected as OOME
     static final String PROPERTY_TYPE = "p_snapshot"; // NOI18N
     public static final String TYPE_PROFDATA_KEY = "profdata"; // NOI18N
@@ -518,14 +488,12 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
                 int size = results.size();
 
                 return (size == 1)
-                       ? MessageFormat.format(ONE_HIT_STRING,
-                                              new Object[] { Utils.formatLocalProfilingPointTime(results.get(size - 1).getTimestamp()) })
-                       : MessageFormat.format(N_HITS_STRING,
-                                              new Object[] {
-                                                  size, Utils.formatLocalProfilingPointTime(results.get(size - 1).getTimestamp())
-                                              });
+                       ? Bundle.TriggeredTakeSnapshotProfilingPoint_OneHitString(
+                            Utils.formatLocalProfilingPointTime(results.get(size - 1).getTimestamp()))
+                       : Bundle.TriggeredTakeSnapshotProfilingPoint_NHitsString(
+                            size, Utils.formatLocalProfilingPointTime(results.get(size - 1).getTimestamp()));
             } else {
-                return NO_RESULTS_STRING;
+                return Bundle.TriggeredTakeSnapshotProfilingPoint_NoResultsString();
             }
         }
     }
@@ -636,17 +604,17 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         TargetAppRunner runner = Profiler.getDefault().getTargetAppRunner();
 
         if (runner.getProfilingSessionStatus().remoteProfiling) {
-            return NO_DATA_REMOTE_MSG;
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_NoDataRemoteMsg();
         }
 
         if (!runner.hasSupportedJDKForHeapDump()) {
-            return NO_DATA_JDK_MSG;
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_NoDataJdkMsg();
         }
 
         String dumpFileName = getCurrentHeapDumpFilename();
 
         if (dumpFileName == null) {
-            return NO_DATA_AVAILABLE_MSG;
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_NoDataAvailableMsg();
         }
 
         boolean heapdumpTaken = false;
@@ -665,10 +633,10 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
             } catch (MalformedURLException ex) {
                 ProfilerLogger.log(ex);
 
-                return NO_DATA_AVAILABLE_MSG;
+                return Bundle.TriggeredTakeSnapshotProfilingPoint_NoDataAvailableMsg();
             }
         } else {
-            return NO_DATA_AVAILABLE_MSG;
+            return Bundle.TriggeredTakeSnapshotProfilingPoint_NoDataAvailableMsg();
         }
     }
 
@@ -694,6 +662,6 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
             }
         }
 
-        return (snapshotFilename == null) ? NO_DATA_AVAILABLE_MSG : snapshotFilename;
+        return (snapshotFilename == null) ? Bundle.TriggeredTakeSnapshotProfilingPoint_NoDataAvailableMsg() : snapshotFilename;
     }
 }

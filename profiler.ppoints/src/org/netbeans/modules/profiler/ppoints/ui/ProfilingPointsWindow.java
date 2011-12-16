@@ -57,16 +57,13 @@ import org.netbeans.modules.profiler.api.icons.Icons;
  *
  * @author Maros Sandor
  */
+@NbBundle.Messages({
+    "ProfilingPointsWindow_ComponentName=Profiling Points",
+    "ProfilingPointsWindow_ComponentAccessDescr=List of defined profiling points"
+})
 public class ProfilingPointsWindow extends TopComponent {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String COMPONENT_NAME = NbBundle.getMessage(ProfilingPointsWindow.class,
-                                                                     "ProfilingPointsWindow_ComponentName"); // NOI18N
-    private static final String COMPONENT_ACCESS_DESCR = NbBundle.getMessage(ProfilingPointsWindow.class,
-                                                                             "ProfilingPointsWindow_ComponentAccessDescr"); // NOI18N
-                                                                                                                            // -----
     private static final String HELP_CTX_KEY = "ProfilingPointsWindow.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static final long serialVersionUID = 1L;
@@ -80,10 +77,10 @@ public class ProfilingPointsWindow extends TopComponent {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProfilingPointsWindow() {
-        setName(COMPONENT_NAME);
+        setName(Bundle.ProfilingPointsWindow_ComponentName());
         setIcon(Icons.getImage(ProfilingPointsIcons.PPOINT));
         setLayout(new BorderLayout());
-        getAccessibleContext().setAccessibleDescription(COMPONENT_ACCESS_DESCR);
+        getAccessibleContext().setAccessibleDescription(Bundle.ProfilingPointsWindow_ComponentAccessDescr());
         windowUI = new ProfilingPointsWindowUI();
         add(windowUI, BorderLayout.CENTER);
         setFocusable(true);

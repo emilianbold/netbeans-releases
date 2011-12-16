@@ -65,7 +65,6 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.F
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
-import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.DeleteHandler;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FileProxyI;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.IOHandler;
@@ -209,10 +208,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
         if (interceptor != null) {
             FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
-            DeleteHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
+            IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
             boolean result;
             if (deleteHandler != null) {
-                result = deleteHandler.delete(FilesystemInterceptorProvider.toFileProxy(this));
+                deleteHandler.handle();
+                result = true;
             } else {
                 result = deleteImpl(lock);
             }
@@ -301,7 +301,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                return !interceptor.canWrite(FilesystemInterceptorProvider.toFileProxy(this)) && isValid();
+                return !canWrite() && isValid();
             }
         }
         return !canRead();
@@ -348,12 +348,6 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     @Override
     public boolean canWrite() {
-        if (USE_VCS) {
-            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
-            if (interceptor != null) {
-                return interceptor.canWrite(FilesystemInterceptorProvider.toFileProxy(this));
-            }
-        }
         setFlag(CHECK_CAN_WRITE, true);
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addReadOnlyConnectNotification(this);
@@ -365,6 +359,12 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                 return false;
             } else {
                 boolean result = canonicalParent.canWrite(getNameExt());
+                if (!result && USE_VCS) {
+                    FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                    if (interceptor != null) {
+                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(this));
+                    }
+                }
                 if (!result) {
                     setFlag(CHECK_CAN_WRITE, false); // even if we get disconnected, r/o status won't change
                 }
