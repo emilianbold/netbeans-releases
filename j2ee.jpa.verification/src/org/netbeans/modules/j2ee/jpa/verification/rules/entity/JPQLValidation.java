@@ -98,7 +98,7 @@ public class JPQLValidation extends JPAClassRule {
                         if(val instanceof AnnotationMirror){
                             AnnotationMirror am = (AnnotationMirror) val;
                             if(JPAAnnotations.NAMED_QUERY.equals(am.getAnnotationType().toString())){
-                                values.add(Utilities.getAnnotationAttrValue(am, "query").toString());
+                                values.add(Utilities.getAnnotationAttrValue(am, "query").getValue().toString());
                             }
                         }
                     }
@@ -106,7 +106,7 @@ public class JPQLValidation extends JPAClassRule {
             }
         }
         else {
-            for(AnnotationMirror mr:first)values.add(Utilities.getAnnotationAttrValue(mr, "query").toString());
+            for(AnnotationMirror mr:first)values.add(Utilities.getAnnotationAttrValue(mr, "query").getValue().toString());
         }
         JPQLQueryHelper helper = new JPQLQueryHelper();
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
@@ -117,7 +117,8 @@ public class JPQLValidation extends JPAClassRule {
                 nq = entity.newNamedQuery();
                 nq.setQuery(value);
             }
-            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project)));
+            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData())));
+            helper.getProvider();
             helper.getParsedJPQLQuery();
             List<JPQLQueryProblem> tmp = helper.validate();
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);

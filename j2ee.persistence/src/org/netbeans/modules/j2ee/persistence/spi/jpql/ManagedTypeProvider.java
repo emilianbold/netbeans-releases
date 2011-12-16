@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IJPAVersion;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
@@ -53,9 +56,14 @@ import org.eclipse.persistence.jpa.jpql.spi.IPlatform;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.EntityClosure;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -66,28 +74,36 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     private final Project project;
     private Map<String, IManagedType> managedTypes;
     private ITypeRepository typeRepository;
+    private EntityMappingsMetadata metaData;
 
-    public ManagedTypeProvider(Project project){
+    public ManagedTypeProvider(Project project) {
         this.project = project;
     }
-    
+
+    public ManagedTypeProvider(Project project, EntityMappingsMetadata metaData) {
+        this.project = project;
+        this.metaData = metaData;
+    }
+
     @Override
     public Iterable<IEntity> abstractSchemaTypes() {
         initializeManagedTypes();
-	Collection<IEntity> abstractSchemaTypes = null;
+        Collection<IEntity> abstractSchemaTypes = null;
         ManagedTypeVisitor visitor = new ManagedTypeVisitor();
         for (IManagedType managedType : managedTypes.values()) {
-                managedType.accept(visitor);
+            managedType.accept(visitor);
         }
         abstractSchemaTypes = visitor.getEntities();
-        return Collections.unmodifiableCollection(abstractSchemaTypes);    
+        return Collections.unmodifiableCollection(abstractSchemaTypes);
     }
 
     @Override
     public IManagedType getManagedType(IType itype) {
         initializeManagedTypes();
-        for(IManagedType mt:managedTypes.values()){
-            if(mt.getType().equals(itype))return mt;
+        for (IManagedType mt : managedTypes.values()) {
+            if (mt.getType().equals(itype)) {
+                return mt;
+            }
         }
         return null;
     }
@@ -106,7 +122,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public ITypeRepository getTypeRepository() {
         if (typeRepository == null) {
-                typeRepository = new TypeRepository(project);
+            typeRepository = new TypeRepository(project);
         }
         return typeRepository;
     }
@@ -122,28 +138,40 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
         initializeManagedTypes();
         return Collections.unmodifiableCollection(managedTypes.values());
     }
-    
-    private void initializeManagedTypes(){
-        if(managedTypes==null){
+
+    private void initializeManagedTypes() {
+        if (managedTypes == null) {
             managedTypes = new HashMap<String, IManagedType>();
             //TODO fill
-            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
-        
-            EntityClosure entityClosure = EntityClosure.create(entityClassScope, project);
+//            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+//            MetadataModel<EntityMappingsMetadata> model = entityClassScope.getEntityMappingsModel(true);
+//            MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper = MetadataModelReadHelper.create(model, new MetadataModelAction<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>>() {
+//
+//                @Override
+//                public List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> run(EntityMappingsMetadata metadata) {
+//                    return Arrays.asList(metadata.getRoot().getEntity());
+//                }
+//            });
+//            List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity> entities = null;
+//            try {
+//                entities = readHelper.getResult();
+//            } catch (ExecutionException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
 
             //TODO: not only entities but mapped superclasses and embeddable?
-		for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : entityClosure.getAvailableEntityInstances()) {
+            for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : metaData.getRoot().getEntity()) {
 
-			if (persistentType != null) {
-				String name = persistentType.getName();
+                if (persistentType != null) {
+                    String name = persistentType.getName();
 
-				if (managedTypes.containsKey(name)) {
-					continue;
-				}
+                    if (managedTypes.containsKey(name)) {
+                        continue;
+                    }
 
-				managedTypes.put(name, new Entity(persistentType, this));
-			}
-		}
-       }
+                    managedTypes.put(name, new Entity(persistentType, this));
+                }
+            }
+        }
     }
 }

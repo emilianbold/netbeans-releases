@@ -42,100 +42,88 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-/**
- *
- * @author Petr Hejl
- */
-import java.util.Map;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.Set;
 
 /**
  *
  * @author Petr Hejl
  */
-public class VariablesCompletionTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/variables/";
+public class VariablesCompletionTest extends GroovyCCTestBase {
 
     public VariablesCompletionTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    @Override
+    protected String getTestType() {
+        return "variables";
     }
 
-    protected @Override Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
-        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/variables")) }));
-        return map;
+    @Override
+    protected Set<String> additionalSourceClassPath() {
+        Set<String> sources = super.additionalSourceClassPath();
+
+        // Because we have to have also Variables1.groovy and Variables2.groovy
+        // on classpath for variables3 test cases
+        if (getName().contains("Variables3")) {
+            sources.add(getBasicSourcePath());
+        }
+        return sources;
     }
 
-    public void testVariables1() throws Exception {
-        checkCompletion(TEST_BASE + "Variables1.groovy", "            i^", true);
+    public void testVariables1_1() throws Exception {
+        checkCompletion(BASE + "Variables1.groovy", "            i^", true);
     }
 
-    public void testVariables2() throws Exception {
-        checkCompletion(TEST_BASE + "Variables1.groovy", "        it^", true);
+    public void testVariables1_2() throws Exception {
+        checkCompletion(BASE + "Variables1.groovy", "        it^", true);
     }
 
-    public void testVariables3() throws Exception {
-        checkCompletion(TEST_BASE + "Variables1.groovy", "            a^", true);
+    public void testVariables1_3() throws Exception {
+        checkCompletion(BASE + "Variables1.groovy", "            a^", true);
     }
 
-    public void testVariables4() throws Exception {
-        checkCompletion(TEST_BASE + "Variables1.groovy", "            e^", true);
+    public void testVariables1_4() throws Exception {
+        checkCompletion(BASE + "Variables1.groovy", "            e^", true);
     }
 
-    public void testVariables5() throws Exception {
-        checkCompletion(TEST_BASE + "Variables1.groovy", "        es^", true);
+    public void testVariables1_5() throws Exception {
+        checkCompletion(BASE + "Variables1.groovy", "        es^", true);
     }
 
-    public void testVariables6() throws Exception {
-        checkCompletion(TEST_BASE + "Variables1.groovy", "        pa^", true);
+    public void testVariables1_6() throws Exception {
+        checkCompletion(BASE + "Variables1.groovy", "        pa^", true);
     }
 
-    public void testVariables7() throws Exception {
-        checkCompletion(TEST_BASE + "Variables2.groovy", "                it^", true);
+    public void testVariables2_1() throws Exception {
+        checkCompletion(BASE + "Variables2.groovy", "                it^", true);
     }
 
-    public void testVariables8() throws Exception {
-        checkCompletion(TEST_BASE + "Variables2.groovy", "                ind^", true);
+    public void testVariables2_2() throws Exception {
+        checkCompletion(BASE + "Variables2.groovy", "                ind^", true);
     }
 
-    public void testVariables9() throws Exception {
-        checkCompletion(TEST_BASE + "Variables2.groovy", "                par^", true);
+    public void testVariables2_3() throws Exception {
+        checkCompletion(BASE + "Variables2.groovy", "                par^", true);
     }
 
-    public void testVariables10() throws Exception {
-        checkCompletion(TEST_BASE + "Variables2.groovy", "                inde^", true);
+    public void testVariables2_4() throws Exception {
+        checkCompletion(BASE + "Variables2.groovy", "                inde^", true);
     }
 
-    public void testVariables11() throws Exception {
-        checkCompletion(TEST_BASE + "Variables2.groovy", "            pa^", true);
+    public void testVariables2_5() throws Exception {
+        checkCompletion(BASE + "Variables2.groovy", "            pa^", true);
     }
 
-    public void testVariables12() throws Exception {
-        checkCompletion(TEST_BASE + "Variables3.groovy", "println \"Hello $name!\" ^", true);
+    public void testVariables3_1() throws Exception {
+        checkCompletion(BASE + "Variables3.groovy", "println \"Hello $name!\" ^", true);
     }
 
-    public void testVariables13() throws Exception {
-        checkCompletion(TEST_BASE + "Variables3.groovy", "    x ^", true);
+    public void testVariables3_2() throws Exception {
+        checkCompletion(BASE + "Variables3.groovy", "    x ^", true);
     }
 
-    public void testVariables14() throws Exception {
-        checkCompletion(TEST_BASE + "Variables3.groovy", "    def x ^", true);
+    public void testVariables3_3() throws Exception {
+        checkCompletion(BASE + "Variables3.groovy", "    def x ^", true);
     }
 }
