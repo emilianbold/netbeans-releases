@@ -43,7 +43,6 @@
 package org.netbeans.modules.javacard;
 
 import java.io.BufferedOutputStream;
-import org.netbeans.modules.javacard.common.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,16 +51,14 @@ import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
 import org.netbeans.modules.javacard.common.JCConstants;
+import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -70,7 +67,13 @@ import org.openide.util.Parameters;
  * @author Tim Boudreau
  */
 public final class JCUtil {
+    private static final SpecificationVersion VERSION_PREPROCESSOR_SUPPORTS_FROM = new SpecificationVersion("3.0.4"); // NOI18N
+
     private JCUtil(){}
+    
+    public static boolean useCompilationPreprocessor(SpecificationVersion javacardVersion) {
+        return javacardVersion.compareTo(VERSION_PREPROCESSOR_SUPPORTS_FROM) >= 0;
+    }
 
     public static DataObject createFakeJavacardPlatform(String name) {
         FileSystem fs = FileUtil.createMemoryFileSystem();
@@ -78,14 +81,14 @@ public final class JCUtil {
         try {
             mfs = new MultiFileSystem(new FileSystem[]{fs, FileUtil.getConfigRoot().getFileSystem()});
             FileObject fo = FileUtil.createData(fs.getRoot(),
-                    CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER + '/' +
-                    name + '.' + JCConstants.JAVACARD_PLATFORM_FILE_EXTENSION);
+                    CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER + '/' + // NOI18N
+                    name + '.' + JCConstants.JAVACARD_PLATFORM_FILE_EXTENSION); // NOI18N
             Properties props = new Properties();
             props.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, name);
             props.setProperty(JavacardPlatformKeyNames.PLATFORM_DISPLAYNAME, name);
             OutputStream out = new BufferedOutputStream(fo.getOutputStream());
             try {
-                props.store(out, "Dummy Platform");
+                props.store(out, "Dummy Platform"); // NOI18N
             } catch (IOException ioe) {
                 //do nothing
             } finally {

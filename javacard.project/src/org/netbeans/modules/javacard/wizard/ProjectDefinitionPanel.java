@@ -70,6 +70,8 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
@@ -603,11 +605,8 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             d.putProperty("activeplatform", platform.getSystemName()); //NOI18N //XXX constant?
 
             // #200688
-            String propJavaCardVersion = platform.getProperties().get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION);
-            SpecificationVersion javaCardVersion = new SpecificationVersion(propJavaCardVersion);
-            //3.0.4 and later
-            boolean usePreprocessor = true; // TODO
-//            d.putProperty(ProjectPropertyNames.PROJECT_PROP_USE_PREPROCESSOR, usePreprocessor);
+            boolean usePreprocessor = JCUtil.useCompilationPreprocessor(platform.getJavacardVersion());
+            d.putProperty(ProjectPropertyNames.PROJECT_PROP_USE_PREPROCESSOR, String.valueOf(usePreprocessor));
         } else {
             invalidPlatform = true;
             d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME);

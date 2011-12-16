@@ -91,6 +91,7 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
         this.whereUsedQuery = whereUsedQuery;
     }
     
+    @Override
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
         Set<FileObject> relevantFiles = getRelevantFiles();
         for (final FileObject fo : relevantFiles) {
@@ -118,6 +119,7 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
         return null;
     }
 
+    @Override
     public Problem preCheck() {
         return null;
     }
@@ -139,26 +141,32 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
             this.doc = doc;
         }
 
+        @Override
         public String getText() {
             return element.getName() + " -";
         }
 
+        @Override
         public String getDisplayText() {
             Line line = Utils.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
             return line.getText().trim();
         }
 
+        @Override
         public void performChange() {
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return element.getFileObject();
         }
 
+        @Override
         public PositionBounds getPosition() {
 
             OffsetRange range = AstUtilities.getRange(element.getNode(), doc);
@@ -178,11 +186,12 @@ public class GroovyWhereUsed extends ProgressProviderAdapter implements GroovyRe
 
         private final ModuleNode moduleNode;
         private final String fqn;
-        private final Set<ASTNode> usages = new HashSet<ASTNode>();
+        private final Set<ASTNode> usages;
 
         public UsagesVisitor(ModuleNode moduleNode, String fqn) {
             this.moduleNode = moduleNode;
             this.fqn = fqn;
+            this.usages = new HashSet<ASTNode>();
         }
 
         public Set<ASTNode> findUsages() {

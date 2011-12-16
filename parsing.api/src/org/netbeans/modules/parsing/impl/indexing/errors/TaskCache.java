@@ -69,6 +69,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -205,7 +206,7 @@ public class TaskCache {
 
     private <T> void dumpErrors(TransactionContext c, URL root, Indexable i, Iterable<? extends T> errors, Convertor<T> convertor) throws IOException {
         //TODO: check to canRead() on "Indexable" was done here
-        assert root.getHost() == null || root.getHost().isEmpty();
+        assert PathRegistry.noHostPart(root) : root;
         File[] output = computePersistentFile(root, i);
         
         List<T> trueErrors = new LinkedList<T>();

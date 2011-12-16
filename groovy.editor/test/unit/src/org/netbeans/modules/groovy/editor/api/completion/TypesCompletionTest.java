@@ -42,108 +42,84 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author schmidtm
  */
-public class TypesCompletionTest extends GroovyTestBase {
-
-    String TYPES_BASE = "testfiles/completion/types/";
+public class TypesCompletionTest extends GroovyCCTestBase {
 
     public TypesCompletionTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    @Override
+    protected String getTestType() {
+        return "types";
     }
-
-    // Type completion
-
-
+    
     // we don't get proper AST for this mini-class, disable it for now.
 //    public void testTypeCompletion1() throws Exception {
-//        checkCompletion(TYPES_BASE + "" + "TypeCompletion1.groovy", "class Bar { ^}", false);
+//        checkCompletion(getTestFolderPath() + "" + "TypeCompletion1.groovy", "class Bar { ^}", false);
 //        // assertTrue(false);
 //    }
 
     public void testTypeCompletion2() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "TypeCompletion2.groovy", "class Pre { Cl^ }", false);
-        // assertTrue(false);
+        checkCompletion(BASE + "TypeCompletion2.groovy", "class Pre { Cl^ }", false);
     }
 
     public void testTypeCompletion3() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "TypeCompletion3.groovy", "    Cl^ }", false);
-        // assertTrue(false);
+        checkCompletion(BASE + "TypeCompletion3.groovy", "    Cl^ }", false);
     }
 
     public void testTypeCompletion4() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "TypeCompletion4.groovy", "class Pre { Cl^", false);
-        // assertTrue(false);
+        checkCompletion(BASE + "TypeCompletion4.groovy", "class Pre { Cl^", false);
     }
 
     public void testTypeCompletion5() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "TypeCompletion5.groovy", "    No^", false);
-        // assertTrue(false);
+        checkCompletion(BASE + "TypeCompletion5.groovy", "    No^", false);
     }
 
-    // test manually imported Types
-
     public void testManualImport1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "ManualImport1.groovy", "println Sign^", false);
+        checkCompletion(BASE + "ManualImport1.groovy", "println Sign^", false);
     }  
 
     public void testManualImport2() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "ManualImport2.groovy", "println Can^", false);
+        checkCompletion(BASE + "ManualImport2.groovy", "println Can^", false);
     }
 
-    // testing the various default imports
-
-    public void testDefaultImport1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "FileRea^", false);
+    public void testDefaultImport1_1() throws Exception {
+        checkCompletion(BASE + "DefaultImport1.groovy", "FileRea^", false);
     }
 
-    public void testDefaultImport2() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "ClassCastExc^", false);
+    public void testDefaultImport1_2() throws Exception {
+        checkCompletion(BASE + "DefaultImport1.groovy", "ClassCastExc^", false);
     }
 
-    public void testDefaultImport3() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "BigDec^", false);
+    public void testDefaultImport1_3() throws Exception {
+        checkCompletion(BASE + "DefaultImport1.groovy", "BigDec^", false);
     }
 
-    public void testDefaultImport4() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "BigInte^", false);
+    public void testDefaultImport1_4() throws Exception {
+        checkCompletion(BASE + "DefaultImport1.groovy", "BigInte^", false);
     }
 
-    public void testDefaultImport5() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "HttpU^", false);
+    public void testDefaultImport1_5() throws Exception {
+        checkCompletion(BASE + "DefaultImport1.groovy", "HttpU^", false);
     }
 
-    public void testDefaultImport6() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "Scan^", false);
+    public void testDefaultImport1_6() throws Exception {
+        checkCompletion(BASE + "DefaultImport1.groovy", "Scan^", false);
     }
 
     // make sure, we don't complete in comments.
-
     // not in block comments.
-
-    public void testNotInComments1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "Groovy def^", false);
+    public void testNotInComments1_1() throws Exception {
+        checkCompletion(BASE + "NotInComments1.groovy", "Groovy def^", false);
     }
 
     // ... and also not in line comments.
-
-    public void testNotInComments2() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "java.lang.ClassCastException^", false);
+    public void testNotInComments1_2() throws Exception {
+        checkCompletion(BASE + "NotInComments1.groovy", "java.lang.ClassCastException^", false);
     }
 
 
@@ -151,39 +127,39 @@ public class TypesCompletionTest extends GroovyTestBase {
     // testing wildcard-imports
 
 //    public void testWildCardImport1() throws Exception {
-//        checkCompletion(TYPES_BASE + "" + "WildCardImport1.groovy", "new Mark^", false);
+//        checkCompletion(getTestFolderPath() + "" + "WildCardImport1.groovy", "new Mark^", false);
 //    }
 
 
     // test for types defined in the very same file
 
     public void testSamePackage1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "SamePackage1.groovy", "println TestSamePack^", false);
+        checkCompletion(BASE + "SamePackage1.groovy", "println TestSamePack^", false);
     }
 
     // test if interfaces and only interfaces are proposed:
     
-    public void testInterfaceCompletion1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements ^Runnable, Serializable {", false);
+    public void testInterfaceCompletion1_1() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements ^Runnable, Serializable {", false);
     }
 
-    public void testInterfaceCompletion2() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements R^unnable, Serializable {", false);
+    public void testInterfaceCompletion1_2() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements R^unnable, Serializable {", false);
     }
 
-    public void testInterfaceCompletion3() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runn^able, Serializable {", false);
+    public void testInterfaceCompletion1_3() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runn^able, Serializable {", false);
     }
 
-    public void testInterfaceCompletion4() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Ser^ializable {", false);
+    public void testInterfaceCompletion1_4() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Ser^ializable {", false);
     }
 
-    public void testInterfaceCompletion5() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Se^rializable {", false);
+    public void testInterfaceCompletion1_5() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Se^rializable {", false);
     }
 
     public void testFqnTypeCompletion1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "FqnTypeCompletion1.groovy", "groovy.xml.^", false);
+        checkCompletion(BASE + "FqnTypeCompletion1.groovy", "groovy.xml.^", false);
     }
 }
