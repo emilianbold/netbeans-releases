@@ -58,6 +58,7 @@ import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -83,57 +84,33 @@ public class OutputFileManager extends CachingFileManager {
 
     private ClassPath scp;
     private ClassPath apt;
-    private final Set<File> filteredFiles = new HashSet<File>();
-    private boolean filtered;
     private String outputRoot;
     private final SiblingProvider siblings;
+    private final FileManagerTransaction tx;
 
     /** Creates a new instance of CachingFileManager */
-    public OutputFileManager(final CachingArchiveProvider provider,
-            final @NonNull ClassPath outputClassPath,
-            final @NonNull ClassPath sourcePath,
-            final ClassPath aptPath,
-            final @NonNull SiblingProvider siblings) {
+    public OutputFileManager(
+            @NonNull final CachingArchiveProvider provider,
+            @NonNull final ClassPath outputClassPath,
+            @NonNull final ClassPath sourcePath,
+            @NullAllowed final ClassPath aptPath,
+            @NonNull final SiblingProvider siblings,
+            @NonNull final FileManagerTransaction tx) {
         super (provider, outputClassPath, false, true);
         assert outputClassPath != null;
         assert sourcePath != null;
         assert siblings != null;
+        assert tx != null;
 	this.scp = sourcePath;
         this.apt = aptPath == null ? EMPTY_PATH : aptPath;
         this.siblings = siblings;
-    }
-
-    public final boolean isFiltered () {
-        return this.filtered;
-    }
-
-    public final synchronized void setFilteredFiles (final Set<File> files) {
-        assert files != null;
-        this.filteredFiles.clear();
-        this.filteredFiles.addAll(files);
-        this.filtered = true;
-    }
-
-    public final synchronized void clearFilteredFiles () {
-        this.filteredFiles.clear();
-        this.filtered = false;
+        this.tx = tx;
     }
 
     @Override
     public Iterable<JavaFileObject> list(Location l, String packageName, Set<Kind> kinds, boolean recursive) {
-        Iterable sr =  super.list(l, packageName, kinds, recursive);
-        if (this.filteredFiles.isEmpty()) {
-            return sr;
-        }
-        else {
-            Iterable<JavaFileObject> res = Iterators.filter (sr,new Comparable<JavaFileObject>() {
-                public int compareTo(JavaFileObject o) {
-                    File f = ((FileObjects.FileBase)o).f;
-                    return filteredFiles.contains(f) ? 0 : -1;
-                }
-            });
-            return res;
-        }
+        final Iterable<JavaFileObject> sr =  super.list(l, packageName, kinds, recursive);
+        return tx.filter(sr);
     }
 
     public @Override JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 

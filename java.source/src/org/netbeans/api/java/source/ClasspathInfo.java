@@ -83,13 +83,8 @@ import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.classpath.AptSourcePath;
 import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
-import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.GeneratedFileMarker;
-import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
-import org.netbeans.modules.java.source.parsing.MemoryFileManager;
-import org.netbeans.modules.java.source.parsing.SiblingSource;
-import org.netbeans.modules.java.source.parsing.SiblingSupport;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.java.source.parsing.*;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -136,9 +131,10 @@ public final class ClasspathInfo {
     private final boolean backgroundCompilation;
     private final boolean useModifiedFiles;
     private final boolean ignoreExcludes;
-    private final JavaFileFilterImplementation filter;    
+    private final JavaFileFilterImplementation filter;
     private final MemoryFileManager memoryFileManager;
     private final ChangeSupport listenerList;
+    private final FileManagerTransaction fmTx;
 
     //@GuardedBy("this")
     private JavaFileManager fileManager;
@@ -159,7 +155,7 @@ public final class ClasspathInfo {
         assert bootCp != null;
         assert compileCp != null;
         this.cpListener = new ClassPathListener ();
-        this.archiveProvider = archiveProvider;        
+        this.archiveProvider = archiveProvider;
         this.bootClassPath = bootCp;
         this.compileClassPath = compileCp;
         this.listenerList = new ChangeSupport(this);
@@ -169,7 +165,7 @@ public final class ClasspathInfo {
 	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         if (srcCp == null) {
             this.cachedSrcClassPath = this.srcClassPath = EMPTY_PATH;
-            this.cachedAptSrcClassPath = null;            
+            this.cachedAptSrcClassPath = null;
             this.outputClassPath = EMPTY_PATH;
         } else {
             this.srcClassPath = srcCp;
@@ -188,11 +184,19 @@ public final class ClasspathInfo {
             if (srcCp == null) {
                 throw new IllegalStateException ();
             }
-            this.memoryFileManager = new MemoryFileManager();            
-        }
-        else {
+            this.memoryFileManager = new MemoryFileManager();
+        } else {
             this.memoryFileManager = null;
         }
+        if (backgroundCompilation) {
+            final TransactionContext txCtx = TransactionContext.get();
+            assert txCtx != null : "No transaction context associated with current thread"; //NOI18N
+            fmTx = TransactionContext.get().get(FileManagerTransaction.class);
+        } else {
+            //No real transaction, read-only mode.
+            fmTx = FileManagerTransaction.read();
+        }
+        assert fmTx != null : "No file manager transaction.";   //NOI18N
     }
 
     @Override
@@ -403,7 +407,7 @@ public final class ClasspathInfo {
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
                 cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
-                hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
+                hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider(), fmTx) : null,
                 this.memoryFileManager,
                 marker,
                 siblings);

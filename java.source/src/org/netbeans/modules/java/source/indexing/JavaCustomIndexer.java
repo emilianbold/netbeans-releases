@@ -84,6 +84,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
@@ -778,6 +779,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             ClassIndexManager.beginTrans();
+            TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.writeThrough());
             boolean vote = true;
             try {
                 boolean classIndexConsistent = IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
@@ -850,7 +852,15 @@ public class JavaCustomIndexer extends CustomIndexer {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-                ClassIndexManager.endTrans();
+                final TransactionContext txCtx = TransactionContext.get();
+                assert txCtx != null;
+                try {
+                    txCtx.commit();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                } finally {
+                    ClassIndexManager.endTrans();
+                }
             }
         }
         
