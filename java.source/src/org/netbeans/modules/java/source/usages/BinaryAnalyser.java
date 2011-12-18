@@ -239,7 +239,7 @@ public class BinaryAnalyser {
             if ("file".equals(innerURL.getProtocol())) {  //NOI18N
                 //Fast way
                 final File archive = new File (URI.create(innerURL.toExternalForm()));
-                if (archive.exists() && archive.canRead()) {
+                if (archive.canRead()) {
                     if (!isUpToDate(ROOT,archive.lastModified())) {
                         writer.clear();
                         try {
@@ -276,11 +276,9 @@ public class BinaryAnalyser {
                     path = path + File.separatorChar;
                 }
                 LinkedList<File> todo = new LinkedList<File> ();
-                if (rootFile.isDirectory() && rootFile.canRead()) {
-                    File[] children = rootFile.listFiles();
-                    if (children != null) {
-                        todo.addAll(Arrays.asList(children));
-                    }
+                File[] children = rootFile.listFiles();
+                if (children != null) {
+                    todo.addAll(Arrays.asList(children));
                 }
                 cont = new FolderContinuation (todo, path, ctx);
                 return cont.execute();
@@ -907,13 +905,12 @@ public class BinaryAnalyser {
         public Result doExecute () throws IOException {
             while (!todo.isEmpty()) {
                 File file = todo.removeFirst();
-                if (file.isDirectory() && file.canRead()) {
+                if (file.isDirectory()) {
                     File[] c = file.listFiles();
                     if (c!= null) {
                         todo.addAll(Arrays.asList (c));
                     }
-                }
-                else if (accepts(file.getName())) {
+                } else if (accepts(file.getName())) {
                     String filePath = file.getAbsolutePath();
                     long fileMTime = file.lastModified();
                     int dotIndex = filePath.lastIndexOf('.');
