@@ -265,9 +265,8 @@ implements PropertyChangeListener {
         }
 
         final int[] result = new int[] {lineNumber};
-        final Future<Void> scanFinished;
         try {
-            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -348,20 +347,6 @@ implements PropertyChangeListener {
                     }
                 }
             }, true);
-            if (!scanFinished.isDone()) {
-                if (java.awt.EventQueue.isDispatchThread()) {
-                    return lineNumber;
-                } else {
-                    try {
-                        scanFinished.get();
-                    } catch (InterruptedException iex) {
-                        return lineNumber;
-                    } catch (java.util.concurrent.ExecutionException eex) {
-                        ErrorManager.getDefault().notify(eex);
-                        return lineNumber;
-                    }
-                }
-            }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return lineNumber;
