@@ -1117,9 +1117,6 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                             for (FileObject srcRoot : res.getRoots()) {
                                 FileObject src = srcRoot.getFileObject(rel + "java"); //NOI18N
                                 if (src == null) {
-                                    src = srcRoot.getFileObject(rel + "scala"); //NOI18N
-                                }
-                                if (src == null) {
                                     src = srcRoot.getFileObject(rel + "groovy"); //NOI18N
                                 }
                                 if (src != null) {

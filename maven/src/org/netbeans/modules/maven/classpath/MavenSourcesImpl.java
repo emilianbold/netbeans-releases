@@ -95,12 +95,9 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String TYPE_TEST_OTHER = "TestResources"; //NOI18N
     public static final String TYPE_GEN_SOURCES = "GeneratedSources"; //NOI18N
     public static final String TYPE_GROOVY = "groovy"; //NOI18N
-    public static final String TYPE_SCALA = "scala"; //NOI18N
 
     public static final String NAME_GROOVYSOURCE = "81GroovySourceRoot"; //NOI18N
     public static final String NAME_GROOVYTESTSOURCE = "82GroovyTestSourceRoot"; //NOI18N
-    public static final String NAME_SCALASOURCE = "91ScalaSourceRoot"; //NOI18N
-    public static final String NAME_SCALATESTSOURCE = "92ScalaTestSourceRoot"; //NOI18N
     public static final String NAME_PROJECTROOT = "ProjectRoot"; //NOI18N
     public static final String NAME_XDOCS = "XDocs"; //NOI18N
     public static final String NAME_SOURCE = "1SourceRoot"; //NOI18N
@@ -123,7 +120,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private Map<File, OtherGroup> otherMainGroups;
     private Map<File, OtherGroup> otherTestGroups;
     private Map<String, SourceGroup> groovyGroup;
-    private Map<String, SourceGroup> scalaGroup;
 
     
     private final Object lock = new Object();
@@ -135,7 +131,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         otherMainGroups = new TreeMap<File, OtherGroup>();
         otherTestGroups = new TreeMap<File, OtherGroup>();
         groovyGroup = new TreeMap<String, SourceGroup>();
-        scalaGroup = new TreeMap<String, SourceGroup>();
     }
     
     private NbMavenProjectImpl project() {
@@ -146,9 +141,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         "SG_Sources=Source Packages",
         "SG_Test_Sources=Test Packages",
         "SG_GroovySources=Groovy Packages",
-        "SG_Test_GroovySources=Groovy Test Packages",
-        "SG_ScalaSources=Scala Packages",
-        "SG_Test_ScalaSources=Scala Test Packages"
+        "SG_Test_GroovySources=Groovy Test Packages"
     })
     private void checkChanges(boolean fireChanges, boolean checkAlsoNonJavaStuff) {
         boolean changed = false;
@@ -165,11 +158,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             changed = changed | checkSourceGroupCache(folder, NAME_GROOVYSOURCE, SG_GroovySources(), groovyGroup);
             folder = FileUtilities.convertURItoFileObject(project.getGroovyDirectory(true));
             changed = changed | checkSourceGroupCache(folder, NAME_GROOVYTESTSOURCE, SG_Test_GroovySources(), groovyGroup);
-            //scala
-            folder = FileUtilities.convertURItoFileObject(project.getScalaDirectory(false));
-            changed = changed | checkSourceGroupCache(folder, NAME_SCALASOURCE, SG_ScalaSources(), scalaGroup);
-            folder = FileUtilities.convertURItoFileObject(project.getScalaDirectory(true));
-            changed = changed | checkSourceGroupCache(folder, NAME_SCALATESTSOURCE, SG_Test_ScalaSources(), scalaGroup);
 
             if (checkAlsoNonJavaStuff) {
                 changed = changed | checkOtherGroupsCache(project.getOtherRoots(false), false);
@@ -247,17 +235,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 // don't fire event synchronously..
                 checkChanges(false, false);
                 toReturn.addAll(groovyGroup.values());
-            }
-            SourceGroup[] grp = new SourceGroup[toReturn.size()];
-            grp = toReturn.toArray(grp);
-            return grp;
-        }
-        if (TYPE_SCALA.equals(str)) {
-            List<SourceGroup> toReturn = new ArrayList<SourceGroup>();
-            synchronized (lock) {
-                // don't fire event synchronously..
-                checkChanges(false, false);
-                toReturn.addAll(scalaGroup.values());
             }
             SourceGroup[] grp = new SourceGroup[toReturn.size()];
             grp = toReturn.toArray(grp);
@@ -464,14 +441,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 folder = new File(project().getGroovyDirectory(true));
             }
         }
-        if (TYPE_SCALA.equals(type)) {
-            if (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint)) {
-                folder = new File(project().getScalaDirectory(false));
-            }
-            if (JavaProjectConstants.SOURCES_HINT_TEST.equals(hint)) {
-                folder = new File(project().getScalaDirectory(true));
-            }
-        }
         if (folder != null) {
             if (!folder.exists() && !folder.mkdirs()) {
                 // XXX not allowed to throw IOException
@@ -496,8 +465,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public @Override boolean canCreateSourceGroup(String type, String hint) {
         return   (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(type) ||
                   JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type) ||
-                  TYPE_GROOVY.equals(type) ||
-                  TYPE_SCALA.equals(type))
+                  TYPE_GROOVY.equals(type))
               && (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint) ||
                   JavaProjectConstants.SOURCES_HINT_TEST.equals(hint));
     }
