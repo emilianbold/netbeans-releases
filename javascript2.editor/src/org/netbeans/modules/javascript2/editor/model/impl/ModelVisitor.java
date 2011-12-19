@@ -41,45 +41,107 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.FunctionNode.Kind;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.NodeVisitor;
-import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.*;
 import com.oracle.nashorn.parser.Token;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
+import org.netbeans.modules.javascript2.editor.model.Scope;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ModelVisitor extends NodeVisitor {
+public class ModelVisitor extends PathNodeVisitor {
 
     private JsParserResult parserResult;
     private final FileScopeImpl fileScope;
     private final ModelBuilder modelBuilder;
-    
+    private final List<FunctionNode> unvisitedFn;
+    /**
+     * Keeps the name of the visited properties
+     */
+    private final List<String> visitedProperties;
+    private final List<List<FunctionNode>> functionStack;
+
     public ModelVisitor(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.fileScope = new FileScopeImpl(parserResult);
         this.modelBuilder = new ModelBuilder(this.fileScope);
+        this.unvisitedFn = new ArrayList<FunctionNode>();
+        this.visitedProperties = new ArrayList<String>();
+        this.functionStack = new ArrayList<List<FunctionNode>>();
     }
-    
+
     @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
-        if (functionNode.getKind() != Kind.SCRIPT) {
-            if (onset) {
-                System.out.println("FunctionNode: " + functionNode.getName());
-                System.out.println("    indnetNode: " + functionNode.getIdent());
-                System.out.println("    varNode: " + functionNode.getVarArgsSymbol());
-                System.out.println("    offsetRange: " + functionNode.getStart() + ", " + (Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken())));
-                ScopeImpl scope = modelBuilder.getCurrentScope();
-                FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, modelBuilder);
+        IdentNode ident = functionNode.getIdent();
+        System.out.println("FunctionNode: " + functionNode.getName() + " , path: " + getPath().size() + " , onset: " + onset);
 
+        if (onset) {
+            addToPath(functionNode);
+            List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions().size());
+            for (FunctionNode fn : functionNode.getFunctions()) {
+                functions.add(fn);
+            }
+
+            for (FunctionNode fn : functions) {
+                if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
+                    fn.accept(this);
+                }
+            }
+
+            String name = functionNode.getIdent().getName();
+
+            int pathSize = getPath().size();
+            if (pathSize > 1 && getPath().get(pathSize - 2) instanceof ReferenceNode) {
+                List<FunctionNode> siblings = functionStack.get(functionStack.size() - 1);
+                if (siblings.remove(functionNode)) {
+                    System.out.println("   funkce smazana ze seznam ve stacku");
+                } else {
+                    System.out.println("    !! funkce nenalezena v seznamu ve stacku");
+                }
+
+                if (pathSize > 3) {
+                    Node node = getPath().get(pathSize - 3);
+                    if (node instanceof PropertyNode) {
+                        name = getName((PropertyNode)node);
+                    } else if (node instanceof BinaryNode) {
+                        name = getName((BinaryNode)node);
+                    }
+                }
+            }
+
+            functionStack.add(functions);
+
+            // todo parameters;
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+                ScopeImpl scope = modelBuilder.getCurrentScope();
+                FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
                 modelBuilder.setCurrentScope(scope = fncScope);
-            } else {
+            }
+
+            for (Node node : functionNode.getStatements()) {
+                node.accept(this);
+            }
+
+
+            for (FunctionNode fn : functions) {
+                if (fn.getIdent().getStart() >= fn.getIdent().getFinish()) {
+                    System.out.println("   jeste nutno navstivit dalsi funkci:");
+                    fn.accept(this);
+                }
+            }
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 modelBuilder.reset();
             }
+            functionStack.remove(functionStack.size() - 1);
+            removeFromPathTheLast();
+            return null;
+
         }
         return super.visit(functionNode, onset);
     }
@@ -101,7 +163,46 @@ public class ModelVisitor extends NodeVisitor {
 
         return super.visit(functionNode, onset);
     }
+
+    @Override
+    public Node visit(PropertyNode propertyNode, boolean onset) {
+        return super.visit(propertyNode, onset);
+    }
+
+    @Override
+    public Node visit(ReferenceNode referenceNode, boolean onset) {
+        if (referenceNode.getReference() instanceof FunctionNode) {
+            if (onset) {
+                addToPath(referenceNode);
+                ((FunctionNode) referenceNode.getReference()).accept(this);
+                removeFromPathTheLast();
+                return null;
+            }
+        }
+        return super.visit(referenceNode, onset);
+    }
     
+    private String getName(PropertyNode propertyNode) {
+        String name = null;
+        if (propertyNode.getKey() instanceof IdentNode) {
+            name = ((IdentNode) propertyNode.getKey()).getName();
+        }
+        return name;
+    }
     
-    
+    private String getName(BinaryNode binaryNode) {
+        String name = null;
+        Node lhs = binaryNode.lhs();
+        if (lhs instanceof AccessNode) {
+            String baseName = "";
+
+            AccessNode aNode = (AccessNode) lhs;
+            name = ((AccessNode) lhs).getProperty().getName();
+            while (aNode.getBase() instanceof AccessNode) {
+                aNode =(AccessNode)aNode.getBase();
+                baseName += aNode.getProperty().getName();
+            }
+        }
+        return name;
+    }
 }

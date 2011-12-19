@@ -48,5 +48,5 @@ import org.netbeans.modules.csl.api.ElementHandle;
  * @author Petr Pisl
  */
 public interface JsElement extends ElementHandle {
-    
+    int getOffset();
 }

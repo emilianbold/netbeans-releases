@@ -57,8 +57,12 @@ import org.netbeans.modules.javascript2.editor.model.Scope;
 public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScope {
 
     public FunctionScopeImpl(Scope inScope, FunctionNode node) {
+        this(inScope, node.getName(), node);
+    }
+    
+    public FunctionScopeImpl(Scope inScope, String name, FunctionNode node) {
         super(inScope, ElementKind.METHOD, inScope.getFileObject(), 
-                node.getName(), 
+                name, 
                 new OffsetRange(node.getStart(), 
                 // TODO bug in parser. The end position is not returned correctly now
                 Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken())), 
