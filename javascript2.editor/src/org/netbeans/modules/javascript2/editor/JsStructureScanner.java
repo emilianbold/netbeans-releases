@@ -42,17 +42,11 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.*;
-import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureScanner;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.model.FileScope;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ModelElement;
-import org.netbeans.modules.javascript2.editor.model.Scope;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.parsing.api.Source;
 
 /**
  *
@@ -66,9 +60,41 @@ public class JsStructureScanner implements StructureScanner {
     
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
-        return Collections.EMPTY_LIST;
+        final List<StructureItem> items = new ArrayList<StructureItem>();        
+        JsParserResult result = (JsParserResult) info;
+        final Model model = result.getModel();
+        FileScope fileScope = model.getFileScope();
+        
+        getEmbededItems(fileScope, items);
+        
+        return items;
+    }
+    
+     private List<StructureItem>  getEmbededItems(Scope scope, List<StructureItem> collectedItems) {
+        
+        List<? extends ModelElement> elements = scope.getElements();
+        for (ModelElement element : elements) {
+            if (element instanceof FunctionScope) {
+                List<StructureItem> children = new ArrayList<StructureItem>();
+                children = getEmbededItems((Scope) element, children);
+                collectedItems.add(new JsFunctionStructureItem((FunctionScope)element, children));
+            } else  if (element instanceof ObjectScope) {
+                List<StructureItem> children = new ArrayList<StructureItem>();
+                children = getEmbededItems((Scope) element, children);
+                collectedItems.add(new JsObjectStructureItem((ObjectScope)element, children));
+            }
+        }
+        return collectedItems;
     }
 
+    private JsFunctionStructureItem createItem(FunctionScope scope, List<StructureItem> children) {
+        return new JsFunctionStructureItem(scope, children);
+    }
+    
+    private JsObjectStructureItem createItem(ObjectScope scope, List<StructureItem> children) {
+        return new JsObjectStructureItem(scope, children);
+    }
+     
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
@@ -126,6 +152,157 @@ public class JsStructureScanner implements StructureScanner {
     public Configuration getConfiguration() {
         // TODO return a configuration to alow filter items. 
         return null;
+    }
+    
+    private abstract class JsStructureItem implements StructureItem {
+
+        private ModelElement modelElement;
+        
+        final private List<? extends StructureItem> children;
+        final private String sortPrefix;
+
+        public JsStructureItem(ModelElement elementHandle, List<? extends StructureItem> children, String sortPrefix) {
+            this.modelElement = elementHandle;
+            this.sortPrefix = sortPrefix;
+            if (children != null) {
+                this.children = children;
+            } else {
+                this.children = Collections.emptyList();
+            }
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            boolean thesame = false;
+            if (obj instanceof JsStructureItem) {
+                JsStructureItem item = (JsStructureItem) obj;
+                if (item.getName() != null && this.getName() != null) {
+                    thesame = item.modelElement.getName().equals(modelElement.getName()) 
+                            && item.modelElement.getOffsetRange(null) == modelElement.getOffsetRange(null);
+                }
+            }
+            return thesame;
+        }
+        
+        @Override
+        public int hashCode() {
+            int hashCode = 11;
+            if (getName() != null) {
+                hashCode = 31 * getName().hashCode() + hashCode;
+            }
+            hashCode = (int) (31 * getPosition() + hashCode);
+            return hashCode;
+        }
+        
+        @Override
+        public String getName() {
+            return modelElement.getName();
+        }
+
+        @Override
+        public String getSortText() {
+            return sortPrefix + modelElement.getName();
+        }
+
+        @Override
+        public ElementHandle getElementHandle() {
+            return modelElement;
+        }
+
+        @Override
+        public ElementKind getKind() {
+              return modelElement.getKind();
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return modelElement.getModifiers();
+        }
+
+        @Override
+        public boolean isLeaf() {
+            return children.isEmpty();
+        }
+
+        @Override
+        public List<? extends StructureItem> getNestedItems() {
+            return children;
+        }
+
+        @Override
+        public long getPosition() {
+            return modelElement.getOffset();
+        }
+
+        @Override
+        public long getEndPosition() {
+            return modelElement.getOffsetRange(null).getEnd();
+        }
+
+        @Override
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
+     
+        public ModelElement getModelElement() {
+            return modelElement;
+        }
+        
+    }
+    
+    private class JsFunctionStructureItem extends JsStructureItem {
+
+        public JsFunctionStructureItem(FunctionScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "fn"); //NOI18N
+        }
+
+        public FunctionScope getFunctionScope() {
+            return (FunctionScope) getModelElement();
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+                formatter.reset();
+                appendFunctionDescription(getFunctionScope(), formatter);
+                return formatter.getText();
+        }
+        
+        protected void appendFunctionDescription(FunctionScope function, HtmlFormatter formatter) {
+            formatter.reset();
+            if (function == null) {
+                return;
+            }
+            formatter.appendText(function.getName());
+            formatter.appendText("()");   //NOI18N
+        }
+
+    }
+    
+    private class JsObjectStructureItem extends JsStructureItem {
+
+        public JsObjectStructureItem(ObjectScope elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "ob"); //NOI18N
+        }
+
+        public ObjectScope getObjectScope() {
+            return (ObjectScope) getModelElement();
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+                formatter.reset();
+                appendObjectDescription(getObjectScope(), formatter);
+                return formatter.getText();
+        }
+        
+        protected void appendObjectDescription(ObjectScope object, HtmlFormatter formatter) {
+            formatter.reset();
+            if (object == null) {
+                return;
+            }
+            formatter.appendText(object.getName());
+        }
+
     }
     
 }

@@ -104,6 +104,11 @@ public abstract class JsElementImpl implements JsElement {
     public OffsetRange getOffsetRange(ParserResult result) {
         return offsetRange;
     }
+
+    @Override
+    public int getOffset() {
+        return offsetRange.getStart();
+    }
     
     @Override
     public Set<Modifier> getModifiers() {

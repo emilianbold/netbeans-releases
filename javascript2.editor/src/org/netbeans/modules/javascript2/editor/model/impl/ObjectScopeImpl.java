@@ -58,7 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.Scope;
 public class ObjectScopeImpl extends ScopeImpl implements ObjectScope {
 
     public ObjectScopeImpl(Scope inScope, ObjectNode node) {
-        super(inScope, ElementKind.METHOD, inScope.getFileObject(), 
+        super(inScope, ElementKind.CLASS, inScope.getFileObject(), 
                 "object", 
                 new OffsetRange(node.getStart(), node.getFinish()),
                 // TODO bug in parser. The end position is not returned correctly now

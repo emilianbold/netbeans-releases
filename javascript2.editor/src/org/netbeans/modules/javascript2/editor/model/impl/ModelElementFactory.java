@@ -62,6 +62,12 @@ public final class ModelElementFactory {
         return result;
     }
     
+    static FunctionScopeImpl create(final FunctionNode function, String name, final ModelBuilder context) {
+        final Scope currentScope = context.getCurrentScope();
+        FunctionScopeImpl result = new FunctionScopeImpl(currentScope, name, function);
+        return result;
+    }
+    
     
     static ObjectScopeImpl create(final ObjectNode object, final ModelBuilder context) {
         final Scope currentScope = context.getCurrentScope();
