@@ -62,6 +62,7 @@ public class BackupFacilityTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), "test");
@@ -70,6 +71,7 @@ public class BackupFacilityTest extends NbTestCase {
         outputStream.close();
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }

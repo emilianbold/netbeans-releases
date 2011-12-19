@@ -46,20 +46,12 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
-import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
-import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
-import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
-import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
-import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
-import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
-import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
-import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
-import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.*;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
-import org.netbeans.modules.refactoring.spi.*;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -74,6 +66,7 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=100)
 public class JavaRefactoringsFactory implements RefactoringPluginFactory {
    
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         Lookup look = refactoring.getRefactoringSource();
         FileObject file = look.lookup(FileObject.class);
@@ -84,13 +77,13 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new JavaWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
-            if (handle!=null || ((file!=null) && RetoucheUtils.isJavaFile(file))) {
+            if (handle!=null || ((file!=null) && RefactoringUtils.isJavaFile(file))) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (file!=null && RetoucheUtils.isOnSourceClasspath(file) && file.isFolder()) {
+            } else if (file!=null && JavaRefactoringUtils.isOnSourceClasspath(file) && file.isFolder()) {
                 //rename folder
                 return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (folder!=null && RetoucheUtils.isOnSourceClasspath(folder.getFolder())) {
+            } else if (folder!=null && JavaRefactoringUtils.isOnSourceClasspath(folder.getFolder())) {
                 //rename package
                 return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
             }
@@ -100,8 +93,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new SafeDeleteRefactoringPlugin((SafeDeleteRefactoring)refactoring);
             }
         } else if (refactoring instanceof MoveRefactoring) {
-            if (checkMove(refactoring.getRefactoringSource())) {
+            if (checkMoveFile(refactoring.getRefactoringSource())) {
                 return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
+            } else if (checkMoveMembers(refactoring.getContext())) {
+                return new MoveMembersRefactoringPlugin((MoveRefactoring) refactoring);
             }
         } else if (refactoring instanceof SingleCopyRefactoring) {
             if (checkCopy(refactoring.getRefactoringSource())) {
@@ -135,9 +130,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         return null;
     }
 
-    private boolean checkMove(Lookup refactoringSource) {
+    private boolean checkMoveFile(Lookup refactoringSource) {
         for (FileObject f:refactoringSource.lookupAll(FileObject.class)) {
-            if (RetoucheUtils.isJavaFile(f)) {
+            if (RefactoringUtils.isJavaFile(f)) {
                 return true;
             }
             if (f.isFolder()) {
@@ -159,7 +154,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             if (!f.isValid()) {
                 return false;
             }
-            if (!RetoucheUtils.isJavaFile(f) && !isPackage(f)) {
+            if (!RefactoringUtils.isJavaFile(f) && !isPackage(f)) {
                 return false;
             }
         }
@@ -171,7 +166,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
     
     private boolean checkCopy(Lookup object) {
         FileObject f=object.lookup(FileObject.class);
-        if (f!=null && RetoucheUtils.isJavaFile(f))
+        if (f!=null && RefactoringUtils.isJavaFile(f))
             return true;
         return false;
     }
@@ -186,12 +181,15 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             return false;
         }
         if ((dataObject instanceof DataFolder) && 
-                RetoucheUtils.isFileInOpenProject(fileObject) && 
-                RetoucheUtils.isOnSourceClasspath(fileObject) &&
-                !RetoucheUtils.isClasspathRoot(fileObject)){
+                RefactoringUtils.isFileInOpenProject(fileObject) && 
+                JavaRefactoringUtils.isOnSourceClasspath(fileObject) &&
+                !RefactoringUtils.isClasspathRoot(fileObject)){
             return true;
         }
         return false;
     }
 
+    private boolean checkMoveMembers(Context context) {
+        return context.lookup(JavaMoveMembersProperties.class) != null;
+    }
 }

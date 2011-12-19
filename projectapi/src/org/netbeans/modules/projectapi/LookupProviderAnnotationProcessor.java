@@ -211,6 +211,9 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
     private String[] findPSPDefinition(Element e, List<TypeMirror> services, ProjectServiceProvider psp) throws LayerGenerationException {
         if (e.getKind() == ElementKind.CLASS) {
             TypeElement clazz = (TypeElement) e;
+            if (clazz.getNestingKind().isNested() && !clazz.getModifiers().contains(Modifier.STATIC)) {
+                throw new LayerGenerationException("An inner class cannot be constructed as a service", e, processingEnv, psp);
+            }
             for (TypeMirror service : services) {
                 if (!processingEnv.getTypeUtils().isAssignable(clazz.asType(), service)) {
                     throw new LayerGenerationException("Not assignable to " + service, e, processingEnv, psp);

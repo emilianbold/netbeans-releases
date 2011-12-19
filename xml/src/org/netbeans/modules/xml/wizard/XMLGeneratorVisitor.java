@@ -46,8 +46,13 @@ package org.netbeans.modules.xml.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
 import org.netbeans.modules.xml.axi.AXIModel;
@@ -72,6 +77,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             
+    private static final Logger LOG = Logger.getLogger(XMLGeneratorVisitor.class.getName());
     /**
      * Creates a new instance of PrintAXITreeVisitor
      */
@@ -88,6 +94,20 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     private int counter = 1;
     private static final String PREFIX = "ns"; // NOI18N
     private boolean qualifiedElem;
+    /**
+     * Stack of elements on the path to the root. Prevents (in)direct recursion.
+     */
+    private Stack<String> nestingStack = new Stack<String>();
+    
+    /**
+     * Set of elements this machine has decided to include, although minOccurs allowed to skip it.
+     */
+    private Set<String> machineIncluded = new HashSet<String>();
+    
+    /**
+     * True, if parent compositor can be skipped. Evaluated at compositors, set to true whenever XML is printed
+     */
+    private boolean parentSkippable;
     
     public XMLGeneratorVisitor(String schemaFileName, XMLContentAttributes attr, StringBuffer writer) {
         super();
@@ -152,28 +172,46 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
 
     @Override
     public void visit(Element element) { 
-       int occurs = getOccurence(element.getMinOccurs(), element.getMaxOccurs());
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.finest("Processing: " + getTab() + element);
+        }
+       int occurs = getOccurence(element, element.getMinOccurs(), element.getMaxOccurs());
        
         //do we need to generate optional elements
        if( !contentAttr.generateOptionalElements() ) {
            if(isElementOptional(element))
                return;
        }
-        for(int i=0; i < occurs ; i++) {
-            visitChildren(element);
+        String elementId = getElementId(element);
+        nestingStack.add(elementId);
+        try {
+            for(int i=0; i < occurs ; i++) {
+                visitChildren(element);
+            }
+        } finally {
+            nestingStack.remove(elementId);
         }
     }
     
+    private boolean blockExpansion;
+    
     @Override
     protected void visitChildren(AXIComponent component) {
-        try {            
-           printModel(component);        
-           depth++;
-           this.visitChildrenForXML(component);
-           this.postVisitChildren(component);
-           depth--;
-        } catch (Exception e){
+       boolean saveBlockExpansion = blockExpansion;
+       boolean saveSkippable = parentSkippable;
+        try {
+            // will print an element, content is not skippable for children
+            parentSkippable = false;
+            printModel(component);
+            depth++;
+            this.visitChildrenForXML(component);
+            this.postVisitChildren(component);
+        } catch (Exception e) {
             //need to figure out how to handle this exception
+        } finally {
+            parentSkippable = saveSkippable;
+            blockExpansion = saveBlockExpansion;
+            depth--;
         }
     }
 
@@ -278,11 +316,40 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
             return;
                 
         if(component instanceof Compositor) {
+            
+           // save the current minoccurs
            Compositor.CompositorType type =((Compositor)component).getType();
+           String minOccurs = ((Compositor)component).getMinOccurs();
+           boolean canSkip = parentSkippable;
+           boolean saveSkippable = parentSkippable;
+           if (minOccurs != null) {
+               canSkip = parentSkippable || Integer.parseInt(minOccurs) == 0;
+           }
            if(type.equals(Compositor.CompositorType.CHOICE) ){
                List<AXIComponent> children = component.getChildren();
-               if(children != null && children.size() > 0 ) {
-                   component.getChildren().get(0).accept(this);
+               if (children != null) {
+                   for (AXIComponent axiCo : children) {
+                       String id = getElementId(axiCo);
+                       if (id == null || (!nestingStack.contains(id) && !machineIncluded.contains(id))) {
+                           if (canSkip) {
+                               // can skip the item, but we deliberately include it -> record machine decision
+                               machineIncluded.add(id);
+                           }
+                           this.parentSkippable = canSkip;
+                           try {
+                                axiCo.accept(this);
+                           } finally {
+                               parentSkippable = saveSkippable;
+                           }
+                           break;
+                       }
+                       // the axiCo element should not printed - it's a parent of the
+                       // current element, or already included by min/max/choice decision, no need
+                       // to repeat it.
+                       if (canSkip) {
+                           break;
+                       }
+                   }
                }
                return;
            }           
@@ -294,15 +361,47 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         
     }
     
-    private int getOccurence(String minOccurs, String maxOccurs) {
-        if(maxOccurs.equals("unbounded"))
-            return contentAttr.getPreferredOccurences();
-        
+    private String getElementId(AXIComponent co) {
+        if (!(co instanceof Element)) {
+            return null;
+        }
+        Element e = (Element)co;
+        String ns = e.getTargetNamespace();
+        if (ns == null) {
+            return e.getName();
+        } else {
+            return ns + ":" + e.getName();
+        }
+    }
+    
+    private int getOccurence(Element el, String minOccurs, String maxOccurs) {
         int min = Integer.parseInt(minOccurs);
+        String elementId = getElementId(el);
+        boolean nestedIn = nestingStack.contains(elementId);
+        boolean alreadyIncluded = machineIncluded.contains(elementId);
+        
+        boolean minimize = (nestedIn || alreadyIncluded || blockExpansion);
+        if (minimize && min == 0) {
+            return 0;
+        }
+        if(maxOccurs.equals("unbounded")) {
+            if (minimize) {
+                return min;
+            } else {
+                // exception, we choose a # of elements, record as machine decision
+                machineIncluded.add(getElementId(el));
+                return contentAttr.getPreferredOccurences();
+            }
+        }
         int max = Integer.parseInt(maxOccurs);
         
-        if(contentAttr.getPreferredOccurences() > min && contentAttr.getPreferredOccurences() <max)
+        if(contentAttr.getPreferredOccurences() > min && contentAttr.getPreferredOccurences() <max) {
+            blockExpansion = true;
+            if (min == 0) {
+                machineIncluded.add(getElementId(el));
+            }
             return contentAttr.getPreferredOccurences();
+        }
         
         if(contentAttr.getPreferredOccurences() > max)
             return max;

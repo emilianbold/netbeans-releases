@@ -56,7 +56,7 @@ import org.openide.util.actions.CallableSystemAction;
  * @author  Jan Becicka
  */
 @ActionID(id = "org.netbeans.modules.quicksearch.QuickSearchAction", category = "Edit")
-@ActionRegistration(displayName = "#CTL_QuickSearchAction")
+@ActionRegistration(displayName = "#CTL_QuickSearchAction", lazy=false)
 @ActionReference(name = "D-I", path = "Shortcuts")
 public final class QuickSearchAction extends CallableSystemAction {
 

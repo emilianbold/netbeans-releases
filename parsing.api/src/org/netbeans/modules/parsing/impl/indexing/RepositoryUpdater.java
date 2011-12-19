@@ -45,13 +45,7 @@ package org.netbeans.modules.parsing.impl.indexing;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -302,6 +296,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
      *   being reindexed due to ordinary change events (eg. when classpath roots are
      *   added/removed, file is modified, editor tabs are switched, etc).
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     public void addIndexingJob(
         @NonNull final URL rootUrl,
         Collection<? extends URL> fileUrls,
@@ -312,7 +309,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         boolean steady,
         @NonNull final LogContext logCtx) {
         assert rootUrl != null;
-
+        assert PathRegistry.noHostPart(rootUrl) : rootUrl;
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("addIndexingJob: rootUrl=" + rootUrl + ", fileUrls=" + fileUrls //NOI18N
                 + ", followUpJob=" + followUpJob + ", checkEditor=" + checkEditor + ", wait=" + wait); //NOI18N
@@ -432,6 +429,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     // PathRegistryListener implementation
     // -----------------------------------------------------------------------
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part. Already verified by PathRegistry"*/)
     @Override
     public void pathsChanged(PathRegistryEvent event) {
         assert event != null;
@@ -1117,11 +1117,25 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
     /* test */ volatile static Source unitTestActiveSource;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private final Map<URL, List<URL>>scannedRoots2Dependencies = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private final Map<URL, List<URL>>scannedBinaries2InvDependencies = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private final Map<URL, List<URL>>scannedRoots2Peers = Collections.synchronizedMap(new TreeMap<URL, List<URL>>(new LexicographicComparator(true)));
-
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private final Set<URL>scannedUnknown = Collections.synchronizedSet(new HashSet<URL>());
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private final Set<URL>sourcesForBinaryRoots = Collections.synchronizedSet(new HashSet<URL>());
 
     private volatile State state = State.CREATED;
@@ -1132,6 +1146,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private Lookup.Result<? extends IndexingActivityInterceptor> indexingActivityInterceptors = null;
     private IndexingController controller;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DM_STRING_CTOR")
     private final String lastOwningSourceRootCacheLock = new String("lastOwningSourceRootCacheLock"); //NOI18N
 
     private boolean ignoreIndexerCacheEvents = false;
@@ -1422,6 +1437,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         return null;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_BLOCKING_METHODS_ON_URL"
+    /*,justification="URLs have never host part"*/)
     private static ClassPath.Entry getClassPathEntry (final FileObject root) {
         try {
             if (root != null) {
@@ -1475,6 +1493,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value={"DMI_COLLECTION_OF_URLS","DMI_BLOCKING_METHODS_ON_URL"}
+        /*,justification="URLs have never host part"*/)
     private static boolean findDependencies(
             final URL rootURL,
             final DependenciesContext ctx,
@@ -1569,7 +1590,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             if (cancelRequest.isRaised()) {
                                 return false;
                             }
-                            if (!rootURL.equals(entry.getURL())) {
+                            final URL sourceRoot = entry.getURL();
+                            assert PathRegistry.noHostPart(sourceRoot) : sourceRoot;
+                            if (!rootURL.equals(sourceRoot)) {
                                 peers.add(entry.getURL());
                             }
                         }
@@ -1596,6 +1619,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 //                                    LOGGER.log(Level.FINEST, "#1- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
 //                                        rootURL, sourceRoot, cp, id
 //                                    });
+                                assert PathRegistry.noHostPart(sourceRoot) : sourceRoot;
                                 if (!findDependencies(sourceRoot, ctx, sourceIds, libraryIds, binaryLibraryIds, cancelRequest)) {
                                     return false;
                                 }
@@ -1745,6 +1769,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private static void printMap(Map<URL, List<URL>> deps, Level level) {
         Set<URL> sortedRoots = new TreeSet<URL>(C);
         sortedRoots.addAll(deps.keySet());
@@ -1756,6 +1783,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private static StringBuilder printMap(Map<URL, List<URL>> deps, StringBuilder sb) {
         Set<URL> sortedRoots = new TreeSet<URL>(C);
         sortedRoots.addAll(deps.keySet());
@@ -1875,7 +1905,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final boolean checkEditor,
                 final String progressTitle,
                 final boolean steady,
-                @NonNull LogContext logCtx) {
+                @NullAllowed LogContext logCtx) {
             this.followUpJob = followUpJob;
             this.checkEditor = checkEditor;
             this.progressTitle = progressTitle;
@@ -2242,15 +2272,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             LOGGER.fine("InvalidateSources took: " + (et-st));  //NOI18N
         }
 
-        protected final void binaryScanStarted(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Context> contexts, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
-            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-            for(BinaryIndexerFactory bif : indexers.bifs) {
-                final Context ctx = SPIAccessor.getInstance().createContext(
-                    cacheRoot, root, bif.getIndexerName(), bif.getIndexVersion(), null, false, false,
-                    false, getShuttdownRequest());
-                contexts.put(bif, ctx);
+        protected final void binaryScanStarted(
+                @NonNull final URL root,
+                final boolean upToDate,
+                @NonNull final Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+            for(Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
+                final Context ctx = e.getValue();
+                final BinaryIndexerFactory bif = e.getKey();
+                SPIAccessor.getInstance().setAllFilesJob(ctx, !upToDate);
                 boolean vote = bif.scanStarted(ctx);
-                votes.put(bif, vote);
+                if (!vote) {
+                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
+                }
             }
         }
 
@@ -2269,18 +2302,70 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        protected final boolean indexBinary(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
+        protected final void createBinaryContexts(
+                @NonNull final URL root,
+                @NonNull final BinaryIndexers indexers,
+                @NonNull final Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            for(BinaryIndexerFactory bif : indexers.bifs) {
+                final Context ctx = SPIAccessor.getInstance().createContext(
+                    cacheRoot, root, bif.getIndexerName(), bif.getIndexVersion(), null, false, false,
+                    false, getShuttdownRequest());
+                contexts.put(bif, ctx);
+            }
+        }
+
+        protected final  boolean checkBinaryIndexers(
+                @NullAllowed Pair<Long,Map<Pair<String,Integer>,Integer>> lastState,
+                @NonNull Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+            if (lastState == null || lastState.first == 0L) {
+                //Nothing known about the last state
+                return false;
+            }
+            if (contexts.size() != lastState.second.size()) {
+                //Factories changed
+                return false;
+            }
+            final Map<Pair<String,Integer>,Integer> copy = new HashMap<Pair<String,Integer>,Integer>(lastState.second);
+            for (Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
+                final BinaryIndexerFactory bif = e.getKey();
+                final Integer state = copy.remove(Pair.<String,Integer>of(bif.getIndexerName(),bif.getIndexVersion()));
+                if (state == null) {
+                    //Factories changed
+                    return false;
+                }
+                ArchiveTimeStamps.setIndexerState(e.getValue(),state);
+            }
+            return copy.isEmpty();
+        }
+
+        protected final Pair<Long,Map<Pair<String,Integer>,Integer>> createBinaryIndexersTimeStamp (
+                final long currentTimeStamp,
+                @NonNull final Map<BinaryIndexerFactory, Context> contexts) {
+            final Map<Pair<String,Integer>,Integer> pairs = new HashMap<Pair<String, Integer>,Integer>();
+            for (Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
+                final BinaryIndexerFactory bf = e.getKey();
+                final Context ctx = e.getValue();
+                pairs.put(
+                        Pair.<String,Integer>of(bf.getIndexerName(),bf.getIndexVersion()),
+                        ArchiveTimeStamps.getIndexerState(ctx));
+            }
+            return Pair.<Long,Map<Pair<String,Integer>,Integer>>of(currentTimeStamp,pairs);
+        }
+
+        protected final boolean indexBinary(
+                final URL root,
+                final BinaryIndexers indexers,
+                final Map<BinaryIndexerFactory,Context> contexts) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
             if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false)) {
                 return false;
             }
-            
+
             FileObjectCrawler crawler = null;
 
-            List<Context> transactionContexts = new LinkedList<Context>();
             try {
-                final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.fine("Using BinaryIndexerFactories: " + indexers.bifs); //NOI18N
                 }
@@ -2289,11 +2374,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     if (getShuttdownRequest().isRaised()) {
                         break;
                     }
-                    final Context ctx = SPIAccessor.getInstance().createContext(
-                            cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
-                            false, getShuttdownRequest());
-                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
-                    transactionContexts.add(ctx);
+                    final Context ctx = contexts.get(f);
+                    assert ctx != null;
 
                     final BinaryIndexer indexer = f.createIndexer();
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -2317,12 +2399,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
                 if (crawler != null && crawler.isFinished()) {
                     crawler.storeTimestamps();
-                }
-                for(Context ctx : transactionContexts) {
-                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
-                    if (index != null) {
-                        storeChanges(index, isSteady(), null);
-                    }
                 }
             }
         }
@@ -2673,6 +2749,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final boolean sourceForBinaryRoot;
         private final Map<URL, List<URL>> scannedRoots2Depencencies;
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public FileListWork (
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 URL root, boolean followUpJob,
@@ -2690,6 +2769,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         @SuppressWarnings("LeakingThisInConstructor")
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public FileListWork (
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 URL root,
@@ -2747,7 +2829,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return true;
         }
 
-        public @Override boolean absorb(Work newWork) {
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_BLOCKING_METHODS_ON_URL"
+        /*,justification="URLs have never host part"*/)
+        public boolean absorb(Work newWork) {
             if (newWork instanceof FileListWork) {
                 FileListWork nflw = (FileListWork) newWork;
                 if (nflw.root.equals(root)
@@ -2808,6 +2894,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_BLOCKING_METHODS_ON_URL"
+        /*,justification="URLs have never host part"*/)
         public boolean absorb(Work newWork) {
             if (newWork instanceof BinaryWork) {
                 return root.equals(((BinaryWork) newWork).root);
@@ -2855,7 +2944,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return true;
         }
 
-        public @Override boolean absorb(Work newWork) {
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_BLOCKING_METHODS_ON_URL"
+        /*,justification="URLs have never host part"*/)
+        public boolean absorb(Work newWork) {
             if (newWork instanceof DeleteWork) {
                 DeleteWork ndw = (DeleteWork) newWork;
                 if (ndw.root.equals(root)) {
@@ -2877,6 +2970,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
         private final Set<URL> sourcesForBinaryRoots;
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public RefreshCifIndices(
                 Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos,
                 Map<URL, List<URL>> scannedRoots2Depencencies,
@@ -2908,7 +3004,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return b;
         }
 
-        protected @Override boolean getDone() {
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
+        protected boolean getDone() {
             switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
                 if (getShuttdownRequest().isRaised()) {
@@ -3014,6 +3114,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
         private final Set<URL> sourcesForBinaryRoots;
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public RefreshEifIndices(
                 Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos,
                 Map<URL, List<URL>> scannedRoots2Depencencies,
@@ -3045,7 +3148,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        protected @Override boolean getDone() {
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
+        protected boolean getDone() {
             switchProgressToDeterminate(scannedRoots2Dependencies.size());
             for(URL root : scannedRoots2Dependencies.keySet()) {
                 if (getShuttdownRequest().isRaised()) {
@@ -3162,6 +3269,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private Map<URL, Set<FileObject>> fullRescanFiles;
         private Map<URL, Set<FileObject>> checkTimestampFiles;
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public RefreshWork(
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 Map<URL, List<URL>> scannedBinaries2InvDependencies,
@@ -3192,6 +3302,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             this.interceptor = interceptor;
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         protected @Override boolean getDone() {
             if (depCtx == null) {
                 depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, false);
@@ -3208,7 +3321,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     Collections.reverse(depCtx.newRootsToScan);
                 } else {
                     Set<Pair<FileObject, Boolean>> suspects = new HashSet<Pair<FileObject, Boolean>>();
-                    
+
                     for(Pair<Object, Boolean> fileOrFileObject : suspectFilesOrFileObjects) {
                         Pair<FileObject, Boolean> fileObject = null;
 
@@ -3227,7 +3340,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             suspects.add(fileObject);
                         }
                     }
-                    
+
                     { // <editor-fold defaultstate="collapsed" desc="process binary roots">
                         for(Pair<FileObject, Boolean> f : suspects) {
                             for(URL root : scannedBinaries2InvDependencies.keySet()) {
@@ -3318,7 +3431,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     // </editor-fold>
                     }
                 }
-                
+
                 // refresh filesystems
                 FileSystem.AtomicAction aa = new FileSystem.AtomicAction() {
                     public @Override void run() throws IOException {
@@ -3326,7 +3439,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                 };
 // XXX: nested FS.AA don't seem to work, so just ignore evrything
-//      interceptor.setActiveAtomicAction(aa);                
+//      interceptor.setActiveAtomicAction(aa);
 //      Probably not needed, the aa calls refreshFor which behaves correctly
 //      regarding AtomicAction unlike FU.refreshAll
                 interceptor.setIgnoreFsEvents(true);
@@ -3395,6 +3508,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         private boolean scanRootFiles(Map<URL, Set<FileObject>> files) {
             if (files != null && files.size() > 0) { // #174887
                 for(Iterator<Map.Entry<URL, Set<FileObject>>> it = files.entrySet().iterator(); it.hasNext(); ) {
@@ -3426,6 +3542,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private DependenciesContext depCtx;
         protected SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public RootsWork(
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 Map<URL,List<URL>> scannedBinaries2InvDependencies,
@@ -3445,7 +3564,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return super.toString() + ", useInitialState=" + useInitialState; //NOI18N
         }
 
-        public @Override boolean getDone() {
+        @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
+        public boolean getDone() {
             TEST_LOGGER.log(Level.FINEST, "RootsWork-started");       //NOI18N
             if (isCancelled()) {
                 return false;
@@ -3652,6 +3775,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         private void notifyRootsRemoved (final Set<URL> binaries, final Set<URL> sources) {
             if (!binaries.isEmpty()) {
                 final Collection<? extends BinaryIndexerFactory> binFactories = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
@@ -3693,19 +3819,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     addedOrChangedEntries.put(key, newMap.get(key));
                 }
             }
-        }
-
-        private static <T> void diff (final List<T> oldList, final List<T> newList, final Collection<? super  T> added, final Collection<? super T> removed) {
-            final Set<T> oldCopy = new HashSet<T>(oldList);
-            final Set<T> newCopy = new HashSet<T>(newList);
-            for (Iterator<T> oldIt = oldCopy.iterator(); oldIt.hasNext();) {
-                T e = oldIt.next();
-                oldIt.remove();
-                if (!newCopy.remove(e)) {
-                    removed.add(e);
-                }
-            }
-            added.addAll(newCopy);
         }
 
     } // End of RootsScanningWork class
@@ -3762,17 +3875,35 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, long [] scannedRootsCnt, long [] completeTime) {
             final long tmStart = System.currentTimeMillis();
             final Map<BinaryIndexerFactory, Context> contexts = new HashMap<BinaryIndexerFactory, Context>();
-            final Map<BinaryIndexerFactory, Boolean> votes = new HashMap<BinaryIndexerFactory, Boolean>();
             try {
-                binaryScanStarted(root, binaryIndexers, contexts, votes);
+                createBinaryContexts(root, binaryIndexers, contexts);
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                final FileObject file = rootFo == null ? null : FileUtil.getArchiveFile(rootFo);
+                final boolean upToDate;
+                final long currentLastModified;
+                if (file != null) {
+                    final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file.getURL());
+                    final boolean indexersUpToDate = checkBinaryIndexers(lastState, contexts);
+                    currentLastModified = file.lastModified().getTime();
+                    upToDate = indexersUpToDate && lastState.first ==  currentLastModified;
+                } else {
+                    currentLastModified = 0L;
+                    upToDate = false;
+                }
+                boolean success = false;
+                binaryScanStarted(root, upToDate, contexts);
                 try {
                     updateProgress(root, true);
-                    indexBinary(root, binaryIndexers, votes);
+                    indexBinary(root, binaryIndexers, contexts);
+                    success = true;
                     return true;
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
                     binaryScanFinished(binaryIndexers, contexts);
+                    if (success && file != null && !upToDate) {
+                        ArchiveTimeStamps.setLastModified(file.getURL(), createBinaryIndexersTimeStamp(currentLastModified,contexts));
+                    }
                 }
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
@@ -3792,6 +3923,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return false;
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         protected final boolean scanSources(DependenciesContext ctx, SourceIndexers indexers, Map<URL, List<URL>> preregisterIn) {
             assert ctx != null;
             long scannedRootsCnt = 0;
@@ -3847,8 +3981,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     totalRecursiveListenersTime += recursiveListenersTime[0];
                     reportRootScan(source, time);
                     if (LOGGER.isLoggable(Level.INFO)) {
+                        File f = FileUtil.archiveOrDirForURL(source);
+                        Object shown = f != null ? f : source;
                         LOGGER.info(String.format("Indexing of: %s took: %d ms (New or modified files: %d, Deleted files: %d) [Adding listeners took: %d ms]", //NOI18N
-                                source.toExternalForm(), time, outOfDateFiles[0], deletedFiles[0], recursiveListenersTime[0]));
+                                shown, time, outOfDateFiles[0], deletedFiles[0], recursiveListenersTime[0]));
                     }
                 }
             }
@@ -4118,6 +4254,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         private final boolean waitForProjects;
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public InitialRootsWork(
                 Map<URL, List<URL>> scannedRoots2Depencencies,
                 Map<URL,List<URL>>  scannedBinaries2InvDependencies,
@@ -4547,7 +4686,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
             }
         }
-        
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         private Work getWork () {
             synchronized (todo) {
                 Work w;
@@ -4627,6 +4768,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final Stack<URL> cycleDetector;
         private final boolean useInitialState;
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public DependenciesContext (
                 final Map<URL, List<URL>> scannedRoots2Deps,
                 final Map<URL,List<URL>>  scannedBinaries2InvDependencies,
@@ -4761,16 +4905,25 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public synchronized Map<URL, List<URL>> getRootDependencies() {
             return roots2Dependencies;
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public synchronized Map<URL, List<URL>> getBinaryRootDependencies() {
             return binRoots2Dependencies;
         }
         
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public Map<URL, List<URL>> getRootPeers() {
             return roots2Peers;
         }
@@ -4791,6 +4944,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return instance;
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value={"DMI_COLLECTION_OF_URLS","DMI_BLOCKING_METHODS_ON_URL"}
+        /*,justification="URLs have never host part"*/)
         public FileObject findFileObject(URL url) {
             FileObject f = null;
             synchronized (cache) {
@@ -4940,6 +5096,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public synchronized boolean add(final URL root, final boolean sourceRoot) {
             if (sourceRoot) {
                 if (sourcesListener != null) {
@@ -4983,6 +5142,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             return sourcesListener != null && binariesListener != null;
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public synchronized void remove(final Iterable<? extends URL> roots, final boolean sourceRoot) {
             for (URL root : roots) {
                 if (sourceRoot) {
@@ -5128,21 +5290,33 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     }
 
     //Unit test method
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     /* test */ Set<URL> getScannedBinaries () {
         return this.scannedBinaries2InvDependencies.keySet();
     }
 
     //Unit test method
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     /* test */ Set<URL> getScannedSources () {
         return this.scannedRoots2Dependencies.keySet();
     }
 
     //Unit test method
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     /* test */ Map<URL,List<URL>> getScannedRoots2Dependencies() {
         return this.scannedRoots2Dependencies;
     }
 
     //Unit test method
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     /* test */ Set<URL> getScannedUnknowns () {
         return this.scannedUnknown;
     }

@@ -809,6 +809,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 for (MethodTree method : methods) {
                     newClassTree = make.addClassMember(newClassTree, method);
                 }
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Rewrite entity tree with name: {0}", entityClass.getTableName()); //NOI18N
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Rewrite entity tree with annotations: length = {0}, annotations = {1}", new Object[]{newClassTree.getModifiers().getAnnotations().size(),  newClassTree.getModifiers().getAnnotations()}); //NOI18N
                 copy.rewrite(originalClassTree, newClassTree);
             }
 

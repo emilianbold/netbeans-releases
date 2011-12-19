@@ -71,10 +71,6 @@ public class SetMainProjectTest extends NbTestCase {
         clearWorkDir ();
     }
     
-    public boolean runInEQ () {
-        return true;
-    }
-    
     public void testAcceleratorsPropagated() {
         ProjectActionTest.doTestAcceleratorsPropagated(new ActionCreator() {
             public ProjectAction create(Lookup l) {

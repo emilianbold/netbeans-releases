@@ -163,6 +163,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_GRAPH_CONTAINER_KEY;
         } else if (object instanceof ClassifierContainerKey) {
             aHandle = KEY_CLASSIFIER_CONTAINER_KEY;
+        } else if (object instanceof ReferencesIndexKey) {
+            aHandle = KEY_MODEL_INDEX_KEY;
         } else {
             throw new IllegalArgumentException("The Key is an instance of the unknown final class " + object.getClass().getName());  // NOI18N
         }
@@ -236,8 +238,11 @@ public class KeyObjectFactory extends KeyFactory {
                 break;
             case KEY_CLASSIFIER_CONTAINER_KEY:
                 aKey = new ClassifierContainerKey(aStream);
-            break;
-                default:
+                break;
+            case KEY_MODEL_INDEX_KEY:
+                aKey = new ReferencesIndexKey(aStream);
+                break;
+            default:
                 throw new IllegalArgumentException("Unknown hander was provided: " + handler);  // NOI18N
         }
         if (share) {
@@ -277,7 +282,8 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_NS_DECLARATION_CONTAINER_KEY = KEY_GRAPH_CONTAINER_KEY + 1;
     public static final int KEY_CLASSIFIER_CONTAINER_KEY = KEY_NS_DECLARATION_CONTAINER_KEY + 1;
     
+    public static final int KEY_MODEL_INDEX_KEY = KEY_CLASSIFIER_CONTAINER_KEY + 1;
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX    
-    public static final int LAST_INDEX          = KEY_CLASSIFIER_CONTAINER_KEY;
+    public static final int LAST_INDEX          = KEY_MODEL_INDEX_KEY;
 }

@@ -75,7 +75,8 @@ public class UndeployModuleAction extends NodeAction {
 
             if(uCookie != null) {
                 final Future<OperationState> result = uCookie.undeploy();
-                final Node pNode = node.getParentNode().getParentNode();
+                Node pNode = node.getParentNode();
+                final Node gpNode = null != pNode ? pNode.getParentNode() : null;
                 final Node fnode = node;
 
                 undeployer.post(new Runnable() {
@@ -90,8 +91,8 @@ public class UndeployModuleAction extends NodeAction {
                         }catch(Exception ex) {
                             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                         }
-                        if(pNode != null) {
-                            Node[] nodes = pNode.getChildren().getNodes();
+                        if(gpNode != null) {
+                            Node[] nodes = gpNode.getChildren().getNodes();
                             for(Node node : nodes) {
                                 RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
                                 if(cookie != null) {

@@ -66,7 +66,7 @@ public class CoherenceServerBaseNode extends AbstractNode implements ChangeListe
     // Icon status badges
     private static final String WAITING_BADGE_ICON = "org/netbeans/modules/coherence/resources/icons/server_waiting.png"; // NOI18N
     private static final String RUNNING_BADGE_ICON = "org/netbeans/modules/coherence/resources/icons/server_running.png"; // NOI18N
-    
+
     protected final CoherenceInstance coherenceInstance;
     protected final CoherenceServer coherenceServer;
 
@@ -77,8 +77,9 @@ public class CoherenceServerBaseNode extends AbstractNode implements ChangeListe
     private CoherenceServerBaseNode(CoherenceInstance coherenceInstance, InstanceContent instanceContent) {
         super(Children.LEAF, new AbstractLookup(instanceContent));
         this.coherenceInstance = coherenceInstance;
-        this.coherenceServer = new CoherenceServer(coherenceInstance.getProperties());
+        this.coherenceServer = new CoherenceServer(coherenceInstance.getCoherenceProperties());
         instanceContent.add(coherenceServer);
+        instanceContent.add(coherenceInstance);
 
         coherenceServer.addChangeListener(WeakListeners.change(this, coherenceServer));
 
@@ -101,6 +102,8 @@ public class CoherenceServerBaseNode extends AbstractNode implements ChangeListe
         Image badge = null;
         if (coherenceServer.isRunning()) {
             badge = ImageUtilities.loadImage(RUNNING_BADGE_ICON);
+        } else if (coherenceServer.isStarting()) {
+            badge = ImageUtilities.loadImage(WAITING_BADGE_ICON);
         }
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }

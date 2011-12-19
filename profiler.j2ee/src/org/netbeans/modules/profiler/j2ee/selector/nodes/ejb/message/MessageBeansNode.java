@@ -111,21 +111,14 @@ public class MessageBeansNode extends ContainerNode {
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String MESSAGE_BEANS_STRING = NbBundle.getMessage(MessageBeansNode.class,
-                                                                           "MessageDrivenBeansNode_MessageDrivenBeansString"); // NOI18N
-                                                                                                                               // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /**
      * Creates a new instance of MessageBeansNode
      */
+    @NbBundle.Messages("MessageDrivenBeansNode_MessageDrivenBeansString=Message Driven Beans")
     public MessageBeansNode(final ContainerNode parent) {
-        super(MESSAGE_BEANS_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
+        super(Bundle.MessageDrivenBeansNode_MessageDrivenBeansString(), Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

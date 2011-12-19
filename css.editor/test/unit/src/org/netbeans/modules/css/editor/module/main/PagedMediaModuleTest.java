@@ -107,12 +107,12 @@ public class PagedMediaModuleTest extends CssModuleTestBase {
         
         PropertyModel p = CssModuleSupport.getPropertyModel("size");
         assertNotNull(p);
-        assertTrue(new PropertyValue(p, "auto").success());
-        assertTrue(new PropertyValue(p, "portrait").success());
+        assertTrue(new PropertyValue(p, "auto").isResolved());
+        assertTrue(new PropertyValue(p, "portrait").isResolved());
         
         p = CssModuleSupport.getPropertyModel("orphans");
         assertNotNull(p);
-        assertTrue(new PropertyValue(p, "2").success());
+        assertTrue(new PropertyValue(p, "2").isResolved());
         
 //        p = CssModuleSupport.getPropertyModel("fit-position");
 //        assertNotNull(p);

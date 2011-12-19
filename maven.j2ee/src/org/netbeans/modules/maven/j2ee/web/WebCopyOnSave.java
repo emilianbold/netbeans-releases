@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -62,24 +63,24 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
-/**
- *
- */
+@ProjectServiceProvider(service = CopyOnSave.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
 public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener {
 
+    private static final RequestProcessor COS_PROCESSOR = new RequestProcessor("Maven Copy on Save", 5);
+    private FileChangeListener listener = new FileListenerImpl();
     private FileObject docBase = null;
-    boolean active = false;
-    private static final RequestProcessor COS_PROCESSOR =
-        new RequestProcessor("Maven Copy on Save", 5);
-    FileChangeListener listener = new FileListenerImpl();
+    private boolean active = false;
 
-    /** Creates a new instance of CopyOnSaveSupport */
-    WebCopyOnSave(Project prj, WebModuleProviderImpl prov) {
-        super(prj, prov);
+
+    public WebCopyOnSave(Project project) {
+        super(project);
     }
 
     private WebModule getWebModule() {
-        return ((WebModuleProviderImpl)getJ2eeModuleProvider()).findWebModule(getProject().getProjectDirectory());
+        if (getJ2eeModuleProvider() instanceof WebModuleProviderImpl) {
+            return ((WebModuleProviderImpl) getJ2eeModuleProvider()).findWebModule(getProject().getProjectDirectory());
+        }
+        return null;
     }
 
     private boolean isInPlace() throws IOException {
@@ -87,6 +88,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
         return fo != null && fo.equals(getWebModule().getDocumentBase());
     }
 
+    @Override
     public void initialize() throws FileStateInvalidException {
         if (!active) {
             smallinitialize();
@@ -95,6 +97,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
         }
     }
 
+    @Override
     public void cleanup() throws FileStateInvalidException {
         if (active) {
             smallcleanup();
@@ -104,9 +107,13 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private void smallinitialize() throws FileStateInvalidException {
-        docBase = getWebModule().getDocumentBase();
-        if (docBase != null) {
-            docBase.getFileSystem().addFileChangeListener(listener);
+        WebModule webModule = getWebModule();
+        
+        if (webModule != null) {
+            docBase = webModule.getDocumentBase();
+            if (docBase != null) {
+                docBase.getFileSystem().addFileChangeListener(listener);
+            }
         }
     }
 

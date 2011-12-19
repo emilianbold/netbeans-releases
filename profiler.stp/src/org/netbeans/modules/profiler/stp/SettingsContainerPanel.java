@@ -77,6 +77,13 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "SettingsContainerPanel_AdvancedCaptionText={0} (Advanced)",
+    "SettingsContainerPanel_BasicSettingsString=Basic settings",
+    "SettingsContainerPanel_AdvancedSettingsString=Advanced settings",
+    "SettingsContainerPanel_ReadOnlySettingsMsg=<b>Advanced settings of default configurations\nare read-only.</b>\n\nTo customize advanced settings, create a new custom\nconfiguration or a duplicate of this configuration.\n",
+    "SettingsContainerPanel_OverheadLabelText=Overhead:"
+})
 public class SettingsContainerPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
 
@@ -100,20 +107,6 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ADVANCED_CAPTION_TEXT = NbBundle.getMessage(SettingsContainerPanel.class,
-                                                                            "SettingsContainerPanel_AdvancedCaptionText"); // NOI18N
-    private static final String BASIC_SETTINGS_STRING = NbBundle.getMessage(SettingsContainerPanel.class,
-                                                                            "SettingsContainerPanel_BasicSettingsString"); // NOI18N
-    private static final String ADVANCED_SETTINGS_STRING = NbBundle.getMessage(SettingsContainerPanel.class,
-                                                                               "SettingsContainerPanel_AdvancedSettingsString"); // NOI18N
-    private static final String READONLY_SETTINGS_MSG = NbBundle.getMessage(SettingsContainerPanel.class,
-                                                                            "SettingsContainerPanel_ReadOnlySettingsMsg"); // NOI18N
-    private static final String OVERHEAD_LABEL_TEXT = NbBundle.getMessage(SettingsContainerPanel.class,
-                                                                          "SettingsContainerPanel_OverheadLabelText"); // NOI18N
-                                                                                                                       // -----
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -213,6 +206,9 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         setLayout(new GridBagLayout());
         setOpaque(true);
         setBackground(SelectProfilingTask.BACKGROUND_COLOR);
+        
+        final int[] commonHeight = new int[1];
+        commonHeight[0] = -1;
 
         GridBagConstraints constraints;
 
@@ -263,7 +259,13 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         constraints.insets = new Insets(0, 20, 0, 20);
         add(separator2, constraints);
 
-        JLabel overheadLabel = new JLabel(OVERHEAD_LABEL_TEXT);
+        JLabel overheadLabel = new JLabel(Bundle.SettingsContainerPanel_OverheadLabelText()) {
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                if (commonHeight[0] != -1) dim.height = commonHeight[0];
+                return dim;
+            }
+        };
         overheadLabel.setFont(overheadLabel.getFont().deriveFont(overheadLabel.getFont().getSize2D() - 1));
         overheadLabel.setForeground(SelectProfilingTask.DARKLINK_COLOR_INACTIVE);
         constraints = new GridBagConstraints();
@@ -297,23 +299,29 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         add(UIUtils.createFillerPanel(), constraints);
 
         // basicAdvancedSettingsSwitchArea
-        basicAdvancedSettingsSwitchArea = new HyperlinkTextArea(ADVANCED_SETTINGS_STRING) {
-                protected Color getHighlightColor() {
-                    return SelectProfilingTask.DARKLINK_COLOR;
-                }
+        basicAdvancedSettingsSwitchArea = new HyperlinkTextArea(Bundle.SettingsContainerPanel_AdvancedSettingsString()) {
+            protected Color getHighlightColor() {
+                return SelectProfilingTask.DARKLINK_COLOR;
+            }
 
-                protected String getHighlightText(String originalText) {
-                    return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
-                }
+            protected String getHighlightText(String originalText) {
+                return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
+            }
 
-                protected Color getNormalColor() {
-                    return SelectProfilingTask.DARKLINK_COLOR_INACTIVE;
-                }
+            protected Color getNormalColor() {
+                return SelectProfilingTask.DARKLINK_COLOR_INACTIVE;
+            }
 
-                protected String getNormalText(String originalText) {
-                    return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
-                }
-            };
+            protected String getNormalText(String originalText) {
+                return "<nobr><u>" + originalText + "</u></nobr>"; // NOI18N
+            }
+
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                if (commonHeight[0] != -1) dim.height = commonHeight[0];
+                return dim;
+            }
+        };
 
         Font font = UIManager.getFont("Label.font"); // NOI18N
         basicAdvancedSettingsSwitchArea.setFont(font.deriveFont(font.getSize2D() - 1));
@@ -328,20 +336,23 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         add(basicAdvancedSettingsSwitchArea, constraints);
 
         basicAdvancedSettingsSwitchArea.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
-                        toggleBasicAdvancedSettingsView();
-                    }
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    toggleBasicAdvancedSettingsView();
                 }
-            });
+            }
+        });
 
         basicAdvancedSettingsSwitchArea.addKeyListener(new KeyAdapter() {
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                        toggleBasicAdvancedSettingsView();
-                    }
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    toggleBasicAdvancedSettingsView();
                 }
-            });
+            }
+        });
+        
+        commonHeight[0] = Math.max(overheadLabel.getPreferredSize().height,
+                basicAdvancedSettingsSwitchArea.getPreferredSize().height);
     }
 
     private void toggleBasicAdvancedSettingsView() {
@@ -351,12 +362,12 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         JPanel contentsPanel;
 
         if (showingAdvancedSettings) {
-            captionLabel.setText(MessageFormat.format(ADVANCED_CAPTION_TEXT, new Object[] { caption }));
-            basicAdvancedSettingsSwitchArea.setText(BASIC_SETTINGS_STRING);
+            captionLabel.setText(Bundle.SettingsContainerPanel_AdvancedCaptionText(caption ));
+            basicAdvancedSettingsSwitchArea.setText(Bundle.SettingsContainerPanel_BasicSettingsString());
             contentsPanel = contents.getAdvancedSettingsPanel();
         } else {
             captionLabel.setText(caption);
-            basicAdvancedSettingsSwitchArea.setText(ADVANCED_SETTINGS_STRING);
+            basicAdvancedSettingsSwitchArea.setText(Bundle.SettingsContainerPanel_AdvancedSettingsString());
             contentsPanel = contents.getBasicSettingsPanel();
         }
         
@@ -367,6 +378,9 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
         // TODO: update cursor according to current mouse position
         SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    basicAdvancedSettingsSwitchArea.setVisible(
+                        contents.getAdvancedSettingsPanel().isVisible());
+                    
                     JScrollBar contentsScrollBar = contentsScroll.getVerticalScrollBar();
 
                     if ((contentsScrollBar == null) || !contentsScrollBar.isVisible()) {
@@ -378,9 +392,9 @@ public class SettingsContainerPanel extends JPanel implements ChangeListener, He
             });
 
         SelectProfilingTask.getDefault().updateHelpCtx();
-
+        
         if (showingPreset && showingAdvancedSettings)
-            ProfilerDialogs.displayInfoDNSA(READONLY_SETTINGS_MSG, null, null,
+            ProfilerDialogs.displayInfoDNSA(Bundle.SettingsContainerPanel_ReadOnlySettingsMsg(), null, null,
                     "SettingsContainerPanel.switchToAdvancedSettings.presetNotification", false); //NOI18N
     }
 }

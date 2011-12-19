@@ -56,7 +56,7 @@ public class JavaRefactoringTestSuite {
             InnerToOutterTest.class,
             ChangeParametersTest.class,
             UseSuperTypeTest.class,
-            MoveClassTest.class,
+            MoveJavaFileTest.class,
             EncapsulateFieldsTest.class,
             PullUpTest.class,
             JavaRefactoringActionsProviderTest.class};

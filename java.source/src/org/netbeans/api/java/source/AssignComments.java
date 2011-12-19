@@ -122,6 +122,9 @@ class AssignComments extends TreeScanner<Void, Void> {
                 super.scan(tree, p);
                 if (commentMapTarget != null) {
                     mapComments2(tree, false);
+                    if (mapComments) {
+                        ((CommentSetImpl) createCommentSet(commentService, tree)).commentsMapped();
+                    }
                 }
                 return null;
             } finally {

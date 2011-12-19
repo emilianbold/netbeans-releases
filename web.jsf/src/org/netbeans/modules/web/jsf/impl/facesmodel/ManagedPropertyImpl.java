@@ -92,20 +92,22 @@ class ManagedPropertyImpl extends IdentifiableDescriptionGroupImpl
         visitor.visit( this );
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty#getPropertyClass()
+    /**
+     * Gets property-class of the faces-config-managed-propertyType.
+     * @return trimmed property-class if any, {@code null} otherwise
      */
     public String getPropertyClass() {
-        return getChildElementText(
-                JSFConfigQNames.PROPERTY_CLASS.getQName(getNamespaceURI()));
+        String propertyClass = getChildElementText(JSFConfigQNames.PROPERTY_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickJavaTypeType(propertyClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty#getPropertyName()
+    /**
+     * Gets property-name of the faces-config-managed-propertyType.
+     * @return trimmed property-name if any, {@code null} otherwise
      */
     public String getPropertyName() {
-        return getChildElementText(
-                JSFConfigQNames.PROPERTY_NAME.getQName(getNamespaceURI()));
+        String propertyName = getChildElementText(JSFConfigQNames.PROPERTY_NAME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(propertyName);
     }
     
     protected List<String> getSortedListOfLocalNames(){

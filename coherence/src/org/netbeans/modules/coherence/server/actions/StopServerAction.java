@@ -82,10 +82,15 @@ public class StopServerAction extends NodeAction {
             for(Node node : activatedNodes) {
                 CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
                 if(coherenceServer != null) {
-                    return coherenceServer.isRunning();
+                    return coherenceServer.isEngaged();
                 }
             }
         }
+        return false;
+    }
+
+    @Override
+    protected boolean asynchronous() {
         return false;
     }
 

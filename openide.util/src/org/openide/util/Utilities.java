@@ -1653,6 +1653,11 @@ widthcheck:  {
             names.put("WINDOWS", 0x20D); // NOI18N
             values.put(0x20D, "WINDOWS"); // NOI18N
         }
+        
+        names.put("MOUSE_WHEEL_UP", 0x290);
+        names.put("MOUSE_WHEEL_DOWN", 0x291);
+        values.put(0x290,"MOUSE_WHEEL_UP");
+        values.put(0x291,"MOUSE_WHEEL_DOWN");
 
         NamesAndValues nav = new NamesAndValues(values, names);
         namesAndValues = new SoftReference<NamesAndValues>(nav);
@@ -2360,7 +2365,7 @@ widthcheck:  {
      * @since 3.30
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=27286">Issue #27286</a>
      */
-    public static <T> List<T> topologicalSort(Collection<T> c, Map<? super T, ? extends Collection<? extends T>> edges)
+    public static <T> List<T> topologicalSort(Collection<? extends T> c, Map<? super T, ? extends Collection<? extends T>> edges)
     throws TopologicalSortException {
         Map<T,Boolean> finished = new HashMap<T,Boolean>();
         List<T> r = new ArrayList<T>(Math.max(c.size(), 1));

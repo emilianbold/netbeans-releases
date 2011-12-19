@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.apisupport;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,6 +83,7 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
         if (nbmp == null) {
             return Collections.emptySet();
         }
+        assert !EventQueue.isDispatchThread() : "should not be called from EQ";
         NbMavenProject app;
         if (nbmp.getPackagingType().equals(NbMavenProject.TYPE_NBM)) {
             Project parent = MavenNbModuleImpl.findAppProject(project);

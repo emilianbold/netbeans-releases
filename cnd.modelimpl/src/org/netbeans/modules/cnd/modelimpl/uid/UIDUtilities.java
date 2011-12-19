@@ -170,7 +170,7 @@ public class UIDUtilities {
         return cachedUid;
     }
 
-    public static int getProjectID(CsmUID<CsmFile> uid) {
+    public static int getProjectID(CsmUID<?> uid) {
         if (uid instanceof KeyBasedUID<?>) {
             return KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid).getKey());
         }

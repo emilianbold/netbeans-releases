@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.profiler.kit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javahelp</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.profiler.drilldown</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>

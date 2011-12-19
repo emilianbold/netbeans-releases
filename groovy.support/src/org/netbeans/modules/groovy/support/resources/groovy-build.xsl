@@ -108,6 +108,14 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="name">gensrcdir</xsl:attribute>
                         <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
+                    </attribute>                    
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>

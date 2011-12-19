@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.jira.JiraTestUtil;
 
 /**
@@ -54,10 +52,6 @@ public class JiraNotSupportedTest extends JiraPluginUCTestCase {
 
     public JiraNotSupportedTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(JiraNotSupportedTest.class, null, null);
     }
         
     @Override

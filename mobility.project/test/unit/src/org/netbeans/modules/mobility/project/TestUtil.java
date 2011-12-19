@@ -54,11 +54,9 @@ import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,11 +78,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.cldcplatform.UEIEmulatorConfiguratorImpl;
 import org.netbeans.modules.mobility.cldcplatform.startup.PostInstallJ2meAction;
-import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ProjectOperations;
@@ -255,10 +251,6 @@ public class TestUtil extends ProxyLookup {
 
     public static InstalledFileLocator testFileLocator() {
         return new IFL();
-    }
-
-    public static ProjectChooserFactory testProjectChooserFactory() {
-        return new TestProjectChooserFactory();
     }
 
 
@@ -498,28 +490,6 @@ public class TestUtil extends ProxyLookup {
         if (!f.delete()) {
             throw new IOException("Delete " + f);
         }
-    }
-
-    private static final class TestProjectChooserFactory implements ProjectChooserFactory {
-
-        File file;
-
-        public javax.swing.JFileChooser createProjectChooser() {
-            return null;
-        }
-
-        public org.openide.WizardDescriptor.Panel createSimpleTargetChooser(Project project, org.netbeans.api.project.SourceGroup[] folders, org.openide.WizardDescriptor.Panel bottomPanel, boolean freeFileExtension) {
-            return null;
-        }
-
-        public File getProjectsFolder() {
-            return file;
-        }
-
-        public void setProjectsFolder(File file) {
-            this.file = file;
-        }
-
     }
 
     /**

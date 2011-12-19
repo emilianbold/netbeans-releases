@@ -46,7 +46,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -81,8 +80,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     
     private static final Logger LOGGER = Logger.getLogger(HelpResolver.class.getName());
     private static final String SPEC_ARCHIVE_NAME = "docs/css3-spec.zip"; //NOI18N
-    private static final AtomicReference<String> SPEC_ARCHIVE_INTERNAL_URL =
-            new AtomicReference<String>();
+    private static String SPEC_ARCHIVE_INTERNAL_URL;
     private static final String W3C_SPEC_URL_PREFIX = "http://www.w3.org/TR/"; //NOI18N
     private static final String MODULE_ARCHIVE_PATH = "www.w3.org/TR/"; //NOI18N
     private static final String INDEX_HTML_FILE_NAME = "index.html"; //NOI18N
@@ -226,9 +224,11 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
         return 500;
     }
 
-    private String getSpecURL() {
-        SPEC_ARCHIVE_INTERNAL_URL.compareAndSet(null, createSpecURL());
-        return SPEC_ARCHIVE_INTERNAL_URL.get();
+    private synchronized String getSpecURL() {
+        if(SPEC_ARCHIVE_INTERNAL_URL == null) {
+            SPEC_ARCHIVE_INTERNAL_URL = createSpecURL();
+        }
+        return SPEC_ARCHIVE_INTERNAL_URL;
     }
 
     private String createSpecURL() {

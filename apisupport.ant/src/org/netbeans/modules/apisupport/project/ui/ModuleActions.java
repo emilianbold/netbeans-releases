@@ -63,6 +63,8 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
@@ -110,6 +112,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG_SINGLE
     ));
+
+    private static final RequestProcessor RP = new RequestProcessor(ModuleActions.class);
 
     @Override
     public Task execute(String... args) throws IOException {
@@ -230,19 +234,19 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             // All other actions require a build script.
             return false;
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
-            return findSources(context) != null || findTestSources(context, false) != null;
+            return findSources(context) != null || findTestSources(context, true) != null;
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
-            return findTestSourcesForSources(context) != null || findTestSources(context, false) != null;
+            return findTestSourcesForSources(context) != null || findTestSources(context, true) != null;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
             TestSources testSources = findTestSourcesForSources(context);
             if (testSources == null)
                     testSources = findTestSources(context, false);
-            return testSources != null && testSources.sources.length == 1;
+            return testSources != null && testSources.isSingle();
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             return findTestSources(context, false) != null;
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             TestSources testSources = findTestSources(context, false);
-            return testSources != null && testSources.sources.length == 1;
+            return testSources != null && testSources.isSingle();
         } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf == null || plaf.getHarnessVersion().compareTo(HarnessVersion.V70) < 0) {
@@ -255,7 +259,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                 return true;
             }
             TestSources testSources = findTestSources(context, false);
-            return testSources != null && testSources.sources.length == 1;
+            return testSources != null && testSources.isSingle();
         } else {
             // other actions are global
             return true;
@@ -277,51 +281,44 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     }
     
     static class TestSources {
-        final FileObject[] sources;
-        final String testType;
-        final FileObject sourceDirectory;
+        private final @NonNull FileObject[] sources;
+        final @NonNull String testType;
+        private final @NonNull FileObject sourceDirectory;
         final @NullAllowed String method;
-        public TestSources(FileObject[] sources, String testType, FileObject sourceDirectory) {
-            this(sources, testType, sourceDirectory, null);
-        }
-        public TestSources(FileObject[] sources, String testType, FileObject sourceDirectory, String method) {
-            assert sources != null;
-            assert sourceDirectory != null;
+        TestSources(@NonNull FileObject[] sources, @NonNull String testType, @NonNull FileObject sourceDirectory, String method) {
             this.sources = sources;
             this.testType = testType;
             this.sourceDirectory = sourceDirectory;
             this.method = method;
         }
+        boolean isSingle() {
+            return sources.length == 1;
+        }
+        @NonNull String includes() {
+            return ActionUtils.antIncludesList(sources, sourceDirectory);
+        }
+        @Override public String toString() {
+            return testType + ":" + includes() + (method != null ? ("#" + method) : "");
+        }
     }
-    private TestSources findTestSources(Lookup context, boolean checkInSrcDir) {
-        for (String testType : project.supportedTestTypes()) {
+    @CheckForNull TestSources findTestSources(@NonNull Lookup context, boolean allowFolders) {
+        TYPE: for (String testType : project.supportedTestTypes()) {
             FileObject testSrcDir = project.getTestSourceDirectory(testType);
             if (testSrcDir != null) {
-                FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, ".java", true); // NOI18N
+                FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, null, true);
                 if (files != null) {
-                    return new TestSources(files, testType, testSrcDir);
-                }
-            }
-        }
-        if (checkInSrcDir) {
-            FileObject srcDir = project.getSourceDirectory();
-            FileObject testSrcDir = project.getTestSourceDirectory("unit"); // NOI18N
-            //System.err.println("  srcDir=" + srcDir);
-            if (srcDir != null && testSrcDir != null) {
-                FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
-                //System.err.println("  files=" + files);
-                if (files != null) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
-                    //System.err.println("  files2=" + files2);
-                    if (files2 != null) {
-                        return new TestSources(files2, "unit", testSrcDir); // NOI18N
+                    for (FileObject file : files) {
+                        if (!(file.hasExt("java") || allowFolders && file.isFolder())) {
+                            break TYPE;
+                        }
                     }
+                    return new TestSources(files, testType, testSrcDir, null);
                 }
             }
         }
         return null;
     }
-    private TestSources findTestMethodSources(Lookup context) {
+    @CheckForNull private TestSources findTestMethodSources(@NonNull Lookup context) {
         SingleMethod meth = context.lookup(SingleMethod.class);
         if (meth != null) {
             FileObject file = meth.getFile();
@@ -367,7 +364,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         FileObject srcDir = project.getSourceDirectory();
         FileObject[] matches = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
         if (matches != null) {
-            return new TestSources(matches, testType,testSrcDir);
+            return new TestSources(matches, testType, testSrcDir, null);
         } else {
             return null;
         }
@@ -409,15 +406,15 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
                         targetNames = new String[]{"compile-single"}; // NOI18N
                     } else {
-                        TestSources testSources = findTestSources(context, false);
-                        p.setProperty("javac.includes", ActionUtils.antIncludesList(testSources.sources, testSources.sourceDirectory)); // NOI18N
+                        TestSources testSources = findTestSources(context, true);
+                        p.setProperty("javac.includes", testSources.includes()); // NOI18N
                         p.setProperty("test.type", testSources.testType);
                         targetNames = new String[]{"compile-test-single"}; // NOI18N
                     }
                 } else if (command.equals(COMMAND_TEST_SINGLE)) {
                     TestSources testSources = findTestSourcesForSources(context);
                     if (testSources == null) {
-                        testSources = findTestSources(context, false);
+                        testSources = findTestSources(context, true);
 
                     }
                     targetNames = setupTestSingle(p, testSources);
@@ -481,9 +478,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                             DialogDisplayer.getDefault().notify(msg);
                             return;
                         }
-                        path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
                         p.setProperty("test.type", testSources.testType);
-                        assert path != null;
+                        path = testSources.includes();
                         assert path.endsWith(".java");
                         targetNames = new String[]{"debug-fix-test-nb"}; // NOI18N
                     }
@@ -515,7 +511,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             }
         };
         if (bkgActions.contains(command)) {
-            RequestProcessor.getDefault().post(runnable);
+            RP.post(runnable);
         } else
             runnable.run();
     }
@@ -579,7 +575,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     }
     
     private String[] setupTestSingle(Properties p, TestSources testSources) {
-        p.setProperty("test.includes", ActionUtils.antIncludesList(testSources.sources, testSources.sourceDirectory)); // NOI18N
+        p.setProperty("test.includes", testSources.includes().replace("**", "**/*Test.java")); // NOI18N
         p.setProperty("test.type", testSources.testType); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }
@@ -597,8 +593,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     }
     
     private String testClassName(TestSources testSources) {
-        String path = FileUtil.getRelativePath(testSources.sourceDirectory, testSources.sources[0]);
-        assert path != null && path.endsWith(".java") : path;
+        String path = testSources.includes();
+        assert path.endsWith(".java") && !path.contains(",") : path;
         // Convert foo/FooTest.java -> foo.FooTest
         return path.substring(0, path.length() - 5).replace('/', '.'); // NOI18N
     }

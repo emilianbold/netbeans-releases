@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.api.archetype;
 
+import org.netbeans.api.annotations.common.NonNull;
+
 /**
  * Simple model class to describe a Maven archetype. To be created by ArchetypeProvider 
  * implementations, consumed by the New Maven Project wizard.
@@ -93,12 +95,12 @@ public final class Archetype {
         this.version = version;
     }
     
-    public String getName() {
-        //#166884
+    public @NonNull String getName() {
+        // #166884
         if ("${project.artifactId}".equals(name)) { //NOI18N
             return artifactId;
         }
-        if (name != null && name.trim().length() == 0) {
+        if (name == null || name.trim().length() == 0) {
             return artifactId;
         }
         return name;
@@ -142,9 +144,6 @@ public final class Archetype {
             return false;
         }
         Archetype ar1 = (Archetype)obj;
-        if (ar1 == null) {
-            return false;
-        }
         boolean gr = ar1.getGroupId().trim().equals(getGroupId().trim());
         if (!gr) {
             return false;
@@ -155,6 +154,10 @@ public final class Archetype {
         }
         boolean ver =  ar1.getVersion().trim().equals(getVersion().trim());
         return ver;
+    }
+
+    @Override public String toString() {
+        return groupId + ":" + artifactId + ":" + version;
     }
 
 }

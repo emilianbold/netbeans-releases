@@ -202,9 +202,9 @@ public final class GrailsPlatform {
             }
 
             File libDir = new File(grailsHome, "lib"); // NOI18N
-            files = libDir.listFiles();
-            if (files != null) {
-                jars.addAll(Arrays.asList(files));
+            List<File> libJars = getJarsRecursively(libDir);
+            if (libJars != null) {
+                jars.addAll(libJars);
             }
 
             List<URL> urls = new ArrayList<URL>(jars.size());
@@ -226,6 +226,20 @@ public final class GrailsPlatform {
             classpath = ClassPathSupport.createClassPath(urls.toArray(new URL[urls.size()]));
             return classpath;
         }
+    }
+    
+    private List<File> getJarsRecursively(File parentDir) {
+        List<File> jars = new ArrayList<File>();
+        for (File file : parentDir.listFiles()) {
+            if (file.isDirectory()) {
+                jars.addAll(getJarsRecursively(file));
+            } else {
+                if (file.getName().toLowerCase().endsWith(".jar")) { // NOI18N
+                    jars.add(file);
+                }
+            }
+        }
+        return jars;
     }
 
     // TODO not public API unless it is really needed

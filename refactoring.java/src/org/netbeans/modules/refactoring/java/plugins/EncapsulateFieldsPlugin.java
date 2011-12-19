@@ -62,7 +62,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
@@ -88,14 +88,17 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
     private final EncapsulateFieldsRefactoring refactoring;
     
     private ProgressListener listener = new ProgressListener() {
+        @Override
         public void start(ProgressEvent event) {
             fireProgressListenerStart(event.getOperationType(),event.getCount());
         }
 
+        @Override
         public void step(ProgressEvent event) {
             fireProgressListenerStep();
         }
 
+        @Override
        public void stop(ProgressEvent event) {
             fireProgressListenerStop();
         }
@@ -122,7 +125,9 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         initRefactorings(fields,
                 refactoring.getMethodModifiers(),
                 refactoring.getFieldModifiers(),
-                refactoring.isAlwaysUseAccessors());
+                refactoring.isAlwaysUseAccessors(),
+                refactoring.isGeneratePropertyChangeSupport(),
+                refactoring.isGenerateVetoableSupport());
         try {
             return validation(1, null);
         } catch (IOException ex) {
@@ -163,7 +168,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             return null;
         }
 
-        TreePath clazz = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+        TreePath clazz = RefactoringUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
         TypeElement clazzElm = (TypeElement) javac.getTrees().getElement(clazz);
         preCheckProblem = JavaPluginUtils.isSourceElement(clazzElm, javac);
         if (preCheckProblem != null) {
@@ -186,6 +191,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "ERR_EncapsulateNoFields", clazzElm.getQualifiedName()));
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         Problem problem = null;
         Set<FileObject> references = new HashSet<FileObject>();
@@ -218,7 +224,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         return prob != null ? prob : problem;
     }
     
-    private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors) {
+    private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors, boolean pcs, boolean vcs) {
         refactorings = new ArrayList<EncapsulateFieldRefactoringPlugin>(refactorFields.size());
         for (EncapsulateFieldInfo info: refactorFields) {
             EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField());
@@ -227,6 +233,8 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             ref.setMethodModifiers(methodModifier);
             ref.setFieldModifiers(fieldModifier);
             ref.setAlwaysUseAccessors(alwaysUseAccessors);
+            ref.setGeneratePropertyChangeSupport(pcs);
+            ref.setGenerateVetoableSupport(vcs);
             refactorings.add(new EncapsulateFieldRefactoringPlugin(ref));
         }
     }

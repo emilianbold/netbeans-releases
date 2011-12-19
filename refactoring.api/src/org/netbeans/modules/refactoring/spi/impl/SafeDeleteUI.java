@@ -86,36 +86,42 @@ public class SafeDeleteUI<T> implements RefactoringUI{
      * @return Returns the result of fastCheckParameters of the
      * underlying refactoring
      */
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         return refactoring.fastCheckParameters();
     }
     
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(SafeDeleteUI.class, "LBL_SafeDel"); // NOI18N
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         
         return new HelpCtx(SafeDeleteUI.class.getName());
     }
     
+    @Override
     public String getName() {
         
         return NbBundle.getMessage(SafeDeleteUI.class, "LBL_SafeDel"); // NOI18N
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
-        //TODO:Do you want to just use Arrays.asList?
         if(panel == null)
             panel = new SafeDeletePanel();
         return panel;
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         
         return refactoring;
     }
     
+    @Override
     public boolean hasParameters() {
         
         return false;
@@ -124,10 +130,12 @@ public class SafeDeleteUI<T> implements RefactoringUI{
      * Returns false, since this refactoring is not a query.
      * @return false
      */
+    @Override
     public boolean isQuery() {
         return false;
     }
     
+    @Override
     public Problem setParameters() {
         return refactoring.checkParameters();
     }

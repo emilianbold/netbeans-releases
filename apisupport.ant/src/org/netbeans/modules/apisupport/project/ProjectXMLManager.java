@@ -330,6 +330,7 @@ public final class ProjectXMLManager {
             }
         }
         project.putPrimaryConfigurationData(_confData);
+        directDeps = null;
     }
 
     /**
@@ -342,6 +343,7 @@ public final class ProjectXMLManager {
             cnbsToDelete.add(dep.getModuleEntry().getCodeNameBase());
         }
         removeDependenciesByCNB(cnbsToDelete);
+        directDeps = null;
     }
 
     /**
@@ -366,6 +368,7 @@ public final class ProjectXMLManager {
                     "Some modules weren't deleted: " + cnbsToDelete); // NOI18N
         }
         project.putPrimaryConfigurationData(_confData);
+        directDeps = null;
     }
 
     public void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
@@ -384,6 +387,7 @@ public final class ProjectXMLManager {
             }
         }
         project.putPrimaryConfigurationData(_confData);
+        directDeps = null;
     }
 
     /**

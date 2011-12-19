@@ -68,18 +68,14 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ProfilingPointsDisplayer_PpActiveMsg=Profiling Points Active in {0}",
+    "ProfilingPointsDisplayer_NoActivePpsString=<No profiling points active for current configuration>",
+    "ProfilingPointsDisplayer_ListAccessName=Active profiling points for the configuration"
+})
 public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String PP_ACTIVE_MSG = NbBundle.getMessage(ProfilingPointsDisplayer.class,
-                                                                    "ProfilingPointsDisplayer_PpActiveMsg"); // NOI18N
-    private static final String NO_ACTIVE_PPS_STRING = NbBundle.getMessage(ProfilingPointsDisplayer.class,
-                                                                           "ProfilingPointsDisplayer_NoActivePpsString"); // NOI18N
-    private static final String LIST_ACCESS_NAME = NbBundle.getMessage(ProfilingPointsDisplayer.class, "ProfilingPointsDisplayer_ListAccessName"); // NOI18N
-                                                                                                                          // -----
-    
     private static final String HELP_CTX_KEY = "ProfilingPointsDisplayer.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     
@@ -107,8 +103,8 @@ public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider
         ppd.setupDisplay(project, settings);
 
         final DialogDescriptor dd = new DialogDescriptor(ppd,
-                                                         MessageFormat.format(PP_ACTIVE_MSG,
-                                                                              new Object[] { settings.getSettingsName() }), true,
+                                                         Bundle.ProfilingPointsDisplayer_PpActiveMsg(settings.getSettingsName()), 
+                                                         true,
                                                          new Object[] { DialogDescriptor.OK_OPTION }, DialogDescriptor.OK_OPTION,
                                                          0, null, null);
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
@@ -136,14 +132,14 @@ public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider
 
         listModel = new DefaultListModel();
         list = new JList(listModel);
-        list.getAccessibleContext().setAccessibleName(LIST_ACCESS_NAME);
+        list.getAccessibleContext().setAccessibleName(Bundle.ProfilingPointsDisplayer_ListAccessName());
         list.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         list.setVisibleRowCount(6);
         list.setCellRenderer(org.netbeans.modules.profiler.ppoints.Utils.getPresenterListRenderer());
 
         JScrollPane listScroll = new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                  JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        listScroll.setPreferredSize(new Dimension(350, listScroll.getPreferredSize().height));
+        listScroll.setPreferredSize(new Dimension(390, listScroll.getPreferredSize().height));
 
         add(listScroll, BorderLayout.CENTER);
     }
@@ -155,7 +151,7 @@ public class ProfilingPointsDisplayer extends JPanel implements HelpCtx.Provider
         listModel.removeAllElements();
 
         if (compatibleProfilingPoints.size() == 0) {
-            listModel.addElement(NO_ACTIVE_PPS_STRING);
+            listModel.addElement(Bundle.ProfilingPointsDisplayer_NoActivePpsString());
         } else {
             for (ProfilingPoint profilingPoint : compatibleProfilingPoints) {
                 listModel.addElement(profilingPoint);

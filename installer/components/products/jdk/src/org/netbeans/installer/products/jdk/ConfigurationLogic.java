@@ -103,8 +103,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             ExecutionResults results = null;
             
             
-            boolean jreInstallation = false;
+            boolean jreInstallationFailed = false;
             boolean javadbInstallation = false;
+            boolean restartIsNeeded = false;
             final CompositeProgress overallProgress = new CompositeProgress();
             overallProgress.synchronizeTo(progress);
             overallProgress.synchronizeDetails(true);
@@ -116,7 +117,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final Progress jdkProgress = new Progress();
                     final Progress jreProgress = new Progress();
                     final Progress javadbProgress = new Progress();
-                    final boolean isFullSilentInstaller = isJDK6U15orLater();
+                    final boolean isFullSilentInstaller = isJDK6U15orLater() && !isJDK7(); //workaround for restart issue in jdk installer #7100937
                     //TODO: JavaDB feature is turned off for 64-bit OS
                     final boolean javadbBundled =
                             getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
@@ -144,14 +145,49 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             }
                         }
                     }
-                    results = runJDKInstallerWindows(location, installer, jdkProgress,
-                            isFullSilentInstaller, jreAlreadyInstalled, javadbBundled);
-                    if(results.getErrorCode()==0) {
-                        getProduct().setProperty(JDK_INSTALLED_WINDOWS_PROPERTY,
-                                "" + true);
+
+                    if(!isFullSilentInstaller) {
+                        //before jdk6u15(isFullSilentInstaller == true) there were separate jre and javadb installers
+                        if(!progress.isCanceled()) {
+                            if(!jreAlreadyInstalled) {                                
+                                final File jreInstaller = findJREWindowsInstaller();
+                                if(jreInstaller!=null) {
+                                    results = runJREInstallerWindows(jreInstaller, jreProgress);
+                                    configureJREProductWindows(results);
+                                }
+                                if(results.getErrorCode() != 0) {
+                                    jreInstallationFailed = true;                                    
+                                }
+                                if(results.getErrorCode() == 3010) {                                    
+                                    jreInstallationFailed = false;
+                                    LogManager.log("The system Restart is required to complete the configuration of JRE");
+                                    getProduct().setProperty(RESTART_IS_REQUIRED_PROPERTY, "" + true);
+                                }
+                            } else {
+                                LogManager.log("... jre " + getProduct().getVersion() +
+                                        " is already installed, skipping its configuration");
+                            }
+                        }
+                        if (!progress.isCanceled() && javadbBundled) {
+                            final File javadbInstaller = findJavaDBWindowsInstaller();
+                            if (javadbInstaller != null) {
+                                javadbInstallation = true;
+                                getProduct().setProperty(JAVADB_INSTALLER_LOCATION_PROPERTY, javadbInstaller.getAbsolutePath());
+                                results = runJavaDBInstallerWindows(javadbInstaller, javadbProgress);
+                                configureJavaDBProductWindows(results);
+                            }
+                        }
                     }
-                    addUninsallationJVM(results, location);
-                    
+
+                    if(!progress.isCanceled()) {
+                        results = runJDKInstallerWindows(location, installer, jdkProgress,
+                                isFullSilentInstaller, jreAlreadyInstalled, javadbBundled);
+                        if(results.getErrorCode()==0) {
+                            getProduct().setProperty(JDK_INSTALLED_WINDOWS_PROPERTY,
+                                    "" + true);
+                        }
+                        addUninsallationJVM(results, location);
+                    }
                     if(isFullSilentInstaller) {
                         if (!jreAlreadyInstalled) {
                             configureJREProductWindows(results);
@@ -161,30 +197,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         }
                         if(javadbBundled) {
                             configureJavaDBProductWindows(results);
-                        }
-                    } else {
-                        //before jdk6u15(isFullSilentInstaller == true) there were separate jre and javadb installers
-                        if(!progress.isCanceled() && results.getErrorCode()==0) {
-                            if(!jreAlreadyInstalled) {
-                                jreInstallation = true;
-                                final File jreInstaller = findJREWindowsInstaller();
-                                if(jreInstaller!=null) {
-                                    results = runJREInstallerWindows(jreInstaller, jreProgress);
-                                    configureJREProductWindows(results);
-                                }
-                            } else {
-                                LogManager.log("... jre " + getProduct().getVersion() +
-                                        " is already installed, skipping its configuration");
-                            }
-                        }
-                        if (!progress.isCanceled() && javadbBundled && results.getErrorCode()==0) {
-                            final File javadbInstaller = findJavaDBWindowsInstaller();
-                            if (javadbInstaller != null) {
-                                javadbInstallation = true;
-                                getProduct().setProperty(JAVADB_INSTALLER_LOCATION_PROPERTY, javadbInstaller.getAbsolutePath());
-                                results = runJavaDBInstallerWindows(javadbInstaller, javadbProgress);
-                                configureJavaDBProductWindows(results);
-                            }
                         }
                     }
                 } else {
@@ -207,9 +219,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if(results.getErrorCode()!=0) {
                 throw new InstallationException(
                         ResourceUtils.getString(ConfigurationLogic.class,
-                        javadbInstallation ? ERROR_JAVADB_INSTALL_SCRIPT_RETURN_NONZERO_KEY : 
-                        ((jreInstallation) ? ERROR_JRE_INSTALL_SCRIPT_RETURN_NONZERO_KEY
-                        : ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY),
+                         ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
+                        StringUtils.EMPTY_STRING + results.getErrorCode()));
+            }
+            if(jreInstallationFailed) {
+                throw new InstallationException(
+                        ResourceUtils.getString(ConfigurationLogic.class,
+                        ERROR_JRE_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
                         StringUtils.EMPTY_STRING + results.getErrorCode()));
             }
         }  finally {
@@ -272,7 +288,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final String loggingOption = (logFile!=null) ?
             "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" ":
             EMPTY_STRING;
-        final String installLocationOption = "/qn INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
+        final String installLocationOption = "/qn /norestart INSTALLDIR=" + BACK_SLASH + QUOTE + location + BACK_SLASH + QUOTE;
         LogManager.log("... JDK installation log file : " + logFile);
         
         String [] commands = new String [] {
@@ -397,8 +413,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     private boolean isJDK6U10orLater() {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_10"));
     }
-    private boolean isJDK6U15orLater() {       
+    private boolean isJDK6U15orLater() {
         return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_15"));
+    }
+    private boolean isJDK7() {
+        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.7.0"));
     }
 
     private void configureJREProductWindows(ExecutionResults results) {
@@ -436,12 +455,25 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 LogManager.log("... JRE installation log file : " + logFile);
             }
         } else {
+           /* final String packageOption = "/i \"" + jreInstaller.getPath() +"\" ";
+            final String loggingOption = (logFile!=null) ?
+                "/log \"" + logFile.getAbsolutePath()  +"\" ":
+                EMPTY_STRING;
+            final String silentOption = "/qn /norestart";
+            String [] commands = new String [] {
+                "CMD",
+                "/C",
+                "msiexec.exe " + packageOption + loggingOption + installLocationOption
+                //"msiexec.exe /i D:\\NBI\\FXSDK_bundle\\test msi\\fx2.0.msi /log \"D:\\NBI\\FXSDK_bundle\\test space\\log.log1\" /qn"
+            };*/
             commands.add(jreInstaller.getPath());
             commands.add("/s");
+            commands.add("/v");
+            commands.add("/qn");
+            commands.add("/norestart");
             final String loggingOption = (logFile!=null) ?
             "/log " + BACK_SLASH + QUOTE  + logFile.getAbsolutePath()  + BACK_SLASH + QUOTE +" " : EMPTY_STRING;
             commands.add(loggingOption);
-
         }
         
         final String [] command = commands.toArray(new String [] {});
@@ -693,18 +725,31 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private File getJREInstallationLocationWindows() {
+        String suffix;
+        if(isJDK7()) {
+            suffix = "7";
+        } else if (isJDK6U10orLater()) {
+            suffix = "6";
+        } else {
+            suffix = getProduct().getVersion().toJdkStyle();
+        }
         return new File(parseString("$E{ProgramFiles}"),
-                "Java\\jre" + (isJDK6U10orLater() ? "6" : getProduct().getVersion().toJdkStyle()));
+                "Java\\jre" + suffix);
     }
     private File getJavaDBInstallationLocationWindows() {
         return new File(parseString(SUN_JAVADB_DEFAULT_LOCATION));
     }
     private long getJREinstallationSize() {
-        return getProduct().getVersion().getMinor()==5 ?
-            70000000L :
-            (getProduct().getVersion().getMinor()==6 ?
-                90000000L :
-                100000000L);
+        long minorVersion = getProduct().getVersion().getMinor();
+        if(minorVersion == 5) {
+            return 70000000L;
+        } else if (minorVersion == 6) {
+            return 90000000L;
+        } else if (minorVersion == 7) {
+            return 100000000L;
+        } else {
+            return 100000000L;
+        }
     }
     private long getJavaDBInstallationSize() {
         return 30000000L;
@@ -733,6 +778,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 size = 178000000L;
             } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_X86)) {
                 size = 170000000L;
+            } else {
+                // who knows...
+                size = 180000000L;
+            }
+        } else if(getProduct().getVersion().getMinor()==7) {
+            if(SystemUtils.isWindows()) {
+                size = 257000000L ;
+            } else if(SystemUtils.isLinux()){
+                size = 235000000L ;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_SPARC)) {
+                size = 244000000L;
+            } else if(SystemUtils.getCurrentPlatform().isCompatibleWith(Platform.SOLARIS_X86)) {
+                size = 245000000L;
             } else {
                 // who knows...
                 size = 180000000L;
@@ -1240,4 +1298,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "$E{ProgramFiles}\\Sun\\JavaDB";
     public static final String NO_REGISTER_JDK_OPTION =
             "-noregister";
+    public static final String RESTART_IS_REQUIRED_PROPERTY =
+            "restart.required";
 }

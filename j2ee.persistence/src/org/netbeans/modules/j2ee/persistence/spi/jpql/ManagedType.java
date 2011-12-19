@@ -44,22 +44,33 @@ package org.netbeans.modules.j2ee.persistence.spi.jpql;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.lang.model.element.Element;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embedded;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EmbeddedId;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToMany;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
+import org.netbeans.modules.j2ee.persistence.spi.jpql.support.JPAAttribute;
 
 /**
  *
  * @author sp153251
  */
 abstract public class ManagedType implements IManagedType {
-    private final Element element;
+    private final PersistentObject element;
     private final IManagedTypeProvider provider;
     private Map<String, IMapping> mappings;
+    private IType type;
 
-    public ManagedType(Element element, IManagedTypeProvider provider){
+    public ManagedType(PersistentObject element, IManagedTypeProvider provider){
         this.element = element;
         this.provider = provider;
     }
@@ -67,7 +78,7 @@ abstract public class ManagedType implements IManagedType {
 
     @Override
     public IMapping getMappingNamed(String val) {
-        initMappings();
+        if(mappings == null) mappings = initMappings();
         return mappings.get(val);
     }
 
@@ -78,12 +89,15 @@ abstract public class ManagedType implements IManagedType {
 
     @Override
     public IType getType() {
-        return new Type(null, null);//TODO create or get type from type repository
+        if (type == null) {
+                type = provider.getTypeRepository().getType(element.getTypeElement().getSimpleName().toString());
+        }
+        return type;
     }
 
     @Override
     public Iterable<IMapping> mappings() {
-        initMappings();
+        if(mappings == null) mappings = initMappings();
         return Collections.unmodifiableCollection(mappings.values());
     }
 
@@ -92,11 +106,62 @@ abstract public class ManagedType implements IManagedType {
         return getType().getName().compareTo(o.getType().getName());
     }
     
-    private void initMappings(){
-        if(mappings == null){
-            mappings = new HashMap<String, IMapping>();
-            //TODO fill
-        }
+    PersistentObject getPersistentObject(){
+        return element;
     }
+    
+    private Map<String, IMapping> initMappings() {
+        mappings = new HashMap<String, IMapping>();
+        Attributes atrs = getAttributes();
+        ManyToMany[] mms = atrs.getManyToMany();
+        if(mms != null){
+            for(ManyToMany mm1:mms){
+                mappings.put(mm1.getName(), new Mapping(this, new JPAAttribute(mm1)));
+            }
+        }
+        ManyToOne[] mos = atrs.getManyToOne();
+        if(mos != null){
+            for(ManyToOne mo1:mos){
+                mappings.put(mo1.getName(), new Mapping(this, new JPAAttribute(mo1)));
+            }
+        }
+        OneToOne[] oos = atrs.getOneToOne();
+        if(oos != null){
+            for(OneToOne oo1:oos){
+                mappings.put(oo1.getName(), new Mapping(this, new JPAAttribute(oo1)));
+            }
+        }
+        OneToMany[] oms = atrs.getOneToMany();
+        if(oms != null){
+            for(OneToMany om1:oms){
+                mappings.put(om1.getName(), new Mapping(this, new JPAAttribute(om1)));
+            }
+        }
+        Basic[] bs = atrs.getBasic();
+        if(bs != null){
+            for(Basic b1:bs){
+                mappings.put(b1.getName(), new Mapping(this, new JPAAttribute(b1)));
+            }
+        }
+        Id[] ids = atrs.getId();
+        if(ids != null){
+            for(Id id1:ids){
+                mappings.put(id1.getName(), new Mapping(this, new JPAAttribute(id1)));
+            }
+        }
+        Embedded[] es = atrs.getEmbedded();
+        if(es != null){
+            for(Embedded e1:es){
+                mappings.put(e1.getName(), new Mapping(this, new JPAAttribute(e1)));
+            }
+        }
+        EmbeddedId eds = atrs.getEmbeddedId();
+        if(eds != null){
+            mappings.put(eds.getName(), new Mapping(this, new JPAAttribute(eds)));
+        }
+        return mappings;
+    }
+    
+    abstract Attributes getAttributes(); 
     
 }

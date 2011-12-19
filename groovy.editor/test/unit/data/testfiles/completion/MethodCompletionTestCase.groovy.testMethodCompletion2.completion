@@ -2,11 +2,17 @@ Code completion result for source line:
 new String().find|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+METHOD     find()                                     Object
+METHOD     find(CharSequence)                         CharSequence
+METHOD     find(CharSequence, Closure)                CharSequence
 METHOD     find(Closure)                              Object
 METHOD     find(Pattern)                              String
 METHOD     find(Pattern, Closure)                     String
 METHOD     find(String)                               String
 METHOD     find(String, Closure)                      String
+METHOD     findAll()                                  Collection
+METHOD     findAll(CharSequence)                      List
+METHOD     findAll(CharSequence, Closure)             List
 METHOD     findAll(Closure)                           Collection
 METHOD     findAll(Pattern)                           List
 METHOD     findAll(Pattern, Closure)                  List
@@ -18,3 +24,5 @@ METHOD     findIndexValues(Closure)                   List
 METHOD     findIndexValues(Number, Closur             List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
+METHOD     findResult(Closure)                        Object
+METHOD     findResult(Object, Closure)                Object

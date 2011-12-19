@@ -88,6 +88,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -683,11 +684,15 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     private String getClassPath() {
-        File weblogicJar = WLPluginProperties.getWeblogicJar(getDeploymentManager());
-        if (weblogicJar != null && weblogicJar.isFile() && weblogicJar.exists()) {
-            return weblogicJar.getAbsolutePath();
+        File[] files = WLPluginProperties.getClassPath(getDeploymentManager());
+        StringBuilder sb = new StringBuilder();
+        for (File file : files) {
+            sb.append(file.getAbsolutePath()).append(File.pathSeparatorChar);
         }
-        return "";
+        if (sb.length() > 0) {
+            sb.setLength(sb.length() - 1);
+        }
+        return sb.toString();
     }
 
     private String getJavaBinary() {
@@ -809,7 +814,9 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         }
 
                         if (modules[i].getWeb() != null) {
-                            childModuleId.setContextURL(serverUrl + modules[i].getWeb().getContextRoot());
+                            String context = modules[i].getWeb().getContextRoot();
+                            String contextUrl = getContextUrl(serverUrl, context);
+                            childModuleId.setContextURL(contextUrl);
                         }
                         moduleId.addChild(childModuleId);
                     }
@@ -841,11 +848,25 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     private static void configureWarModuleId(WLTargetModuleID moduleId, FileObject file, String serverUrl) {
-        String ctx = readWebContext(file);
-        assert ctx.startsWith("/") : "context must start with forward slash - "+ctx; // NOI18N
-        moduleId.setContextURL(serverUrl + ctx);
+        String contextUrl = getContextUrl(serverUrl, readWebContext(file));
+        moduleId.setContextURL(contextUrl);
     }
-    
+
+    private static String getContextUrl(String serverUrl, String context) {
+        StringBuilder builder = new StringBuilder(serverUrl);
+        if (serverUrl.endsWith("/")) {
+            builder.setLength(builder.length() - 1);
+        }
+        if (context != null) {
+            if (!context.startsWith("/")) {
+                LOGGER.log(Level.INFO, "Context path should start with forward slash while it is {0}", context);
+                builder.append('/');
+            }
+            builder.append(context);
+        }
+        return builder.toString();
+    }
+
     public static String readWebContext(FileObject file) {
         if (file.isFolder()) {
             FileObject weblogicXml = file.getFileObject("WEB-INF/weblogic.xml"); // NOI18N
@@ -886,7 +907,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     private static class LastLineProcessor implements LineProcessor {
 
-        private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+at.*$"); // NOI18N
+        private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+((at)|(\\.\\.\\.)).*$"); // NOI18N
 
         private String last = "";
 

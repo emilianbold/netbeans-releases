@@ -1,4 +1,4 @@
-class SafeNafigation1 {
+class SafeNafigation2 {
 
     def case4() {
         ""?.

@@ -30,15 +30,10 @@
  */
 package org.netbeans.modules.cnd.refactoring.support;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
+import javax.swing.text.Position;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -66,20 +61,25 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Provider;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -95,18 +95,15 @@ public final class CsmRefactoringUtils {
     private CsmRefactoringUtils() {
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        if (f == null) {
+    public static boolean isElementInOpenProject(CsmFile csmFile) {
+        if (csmFile == null) {
             return false;
         }
-        Project p = FileOwnerQuery.getOwner(f);
+        Object p = csmFile.getProject().getPlatformProject();
         if (p != null) {
             for (NativeProject prj : NativeProjectRegistry.getDefault().getOpenProjects()) {
-                Provider project = prj.getProject();
-                if (project != null) {
-                    if (p.equals(project) || project.equals(p)) {
-                        return true;
-                    }
+                if (prj.equals(p)) {
+                    return true;
                 }
             }
         }
@@ -223,6 +220,34 @@ public final class CsmRefactoringUtils {
         }
     } 
 
+    private static final Lookup.Result<CsmRefactoringNameProvider> renameProviders = Lookup.getDefault().lookupResult(CsmRefactoringNameProvider.class);
+    
+    public static String getReplaceText(CsmReference ref, String newName, AbstractRefactoring refactoring) {
+        for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
+            String newText = provider.getReplaceText(ref, newName, refactoring);
+            if (newText != null) {
+                newName = newText;
+            }
+        }
+        return newName;
+    }
+    
+    public static String getReplaceDescription(CsmReference ref, AbstractRefactoring refactoring) {
+        for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
+            String descr = provider.getReplaceDescription(ref, refactoring);
+            if (descr != null) {
+                return descr;
+            }
+        }
+        return getReplaceDescription(ref, ref.getText().toString());    
+    }
+
+    private static String getReplaceDescription(CsmReference ref, String targetName) {
+        boolean decl = CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+        String out = NbBundle.getMessage(CsmRefactoringUtils.class, decl ? "UpdateDeclRef" : "UpdateRef", targetName);
+        return out;
+    }
+    
     public static String getSimpleText(CsmObject element) {
         String text = "";
         if (element != null) {
@@ -239,8 +264,24 @@ public final class CsmRefactoringUtils {
             if (text.startsWith("~")) { // NOI18N
                 text = text.substring(1);
             }
+            for (CsmRefactoringNameProvider provider : renameProviders.allInstances()) {
+                String newName = provider.getRefactoredName(element, text);
+                if (newName != null) {
+                    text = newName;
+                }
+            }
         }
         return text;
+    }
+    
+    public static ModificationResult.Difference rename(int startOffset, int endOffset, CloneableEditorSupport ces,
+            String oldName, String newName, String descr) {
+        assert oldName != null;
+        assert newName != null;
+        PositionRef startPos = ces.createPositionRef(startOffset, Position.Bias.Forward);
+        PositionRef endPos = ces.createPositionRef(endOffset, Position.Bias.Backward);
+        ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, startPos, endPos, oldName, newName, descr);
+        return diff;
     }
     
     public static FileObject getFileObject(CsmObject object) {
@@ -494,4 +535,47 @@ public final class CsmRefactoringUtils {
         }
         return containingFile;
     } 
+    
+    @ServiceProvider(service=CsmRefactoringNameProvider.class, position=100)
+    public static final class CsmRefactoringNameProviderImpl implements CsmRefactoringNameProvider {
+
+        @Override
+        public String getRefactoredName(CsmObject object, String current) {
+            return null;
+        }
+
+        @Override
+        public String getReplaceText(CsmReference ref, String newText, AbstractRefactoring refactoring) {
+            String out = null;
+            final CsmObject referencedObject = ref.getReferencedObject();
+            if (CsmKindUtilities.isFile(referencedObject)) {
+                final CsmObject owner = ref.getOwner();
+                assert CsmKindUtilities.isInclude(owner) : "include directive is expected " + owner;
+                FileObject file = CsmUtilities.getFileObject((CsmFile) referencedObject);
+                if (file != null) {
+                    String oldText = ref.getText().toString();
+                    // check if include directive really contains file name and not macro expression
+                    String fileNameExt = file.getNameExt();
+                    final int lastIndexOf = oldText.lastIndexOf(fileNameExt);
+                    if (lastIndexOf > 0) {
+                        String fileName = file.getName();
+                        out = oldText.substring(0, lastIndexOf) + newText + oldText.substring(lastIndexOf + fileName.length());
+                    }
+                }
+            }
+            return out;
+        }
+
+        @Override
+        public String getReplaceDescription(CsmReference ref, AbstractRefactoring refactoring) {
+            String out = null;
+            final CsmObject referencedObject = ref.getReferencedObject();
+            if (CsmKindUtilities.isFile(referencedObject)) {
+                String oldText = ref.getText().toString();
+                return NbBundle.getMessage(CsmRefactoringUtils.class, "UpdateInclude", oldText);                    
+            }
+            return out;
+        }
+        
+    }
 }

@@ -45,21 +45,27 @@ package org.openide.awt;
 import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.EventQueue;
 import java.util.logging.Level;
-import org.junit.Test;
 import org.netbeans.junit.Log;
 import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class AWTTaskTest {
-    @Test
-    public void testRun() throws Exception {
-        System.out.println("run");
+public class AWTTaskTest extends NbTestCase {
 
+    public AWTTaskTest(String name) {
+        super(name);
+    }
+
+    @Override protected Level logLevel() {
+        return Level.INFO; // just do not print the stack trace to stderr
+    }
+
+    public void testRun() throws Exception {
         class R implements Runnable {
-            public void run() {
+            @Override public void run() {
                 throw new IllegalStateException();
             }
         }
@@ -78,7 +84,7 @@ public class AWTTaskTest {
 
     static void waitEQ() throws Exception {
         EventQueue.invokeAndWait(new Runnable() {
-            public void run() {
+            @Override public void run() {
             }
         });
     }

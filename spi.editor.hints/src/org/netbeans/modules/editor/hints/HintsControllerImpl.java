@@ -47,11 +47,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -258,9 +262,11 @@ public final class HintsControllerImpl {
     }
 
     private static final Map<Fix, Iterable<? extends Fix>> fix2Subfixes = new WeakHashMap<Fix, Iterable<? extends Fix>>();
+    private static final Set<Reference<Fix>> cleaningFixes = Collections.newSetFromMap(new IdentityHashMap<Reference<Fix>, Boolean>());
 
     public static void attachSubfixes(Fix fix, Iterable<? extends Fix> subfixes) {
         fix2Subfixes.put(fix, subfixes);
+        cleaningFixes.add(new CleaningReference(fix));
     }
 
     public static Iterable<? extends Fix> getSubfixes(Fix fix) {
@@ -268,7 +274,19 @@ public final class HintsControllerImpl {
 
         return ret != null ? ret : Collections.<Fix>emptyList();
     }
-    
+
+    private static final class CleaningReference extends WeakReference<Fix> implements Runnable {
+
+        public CleaningReference(Fix referent) {
+            super(referent, org.openide.util.Utilities.activeReferenceQueue());
+        }
+
+        @Override
+        public void run() {
+            fix2Subfixes.size();
+        }
+
+    }
     public static class CompoundLazyFixList implements LazyFixList, PropertyChangeListener {
         
         final List<LazyFixList> delegates;

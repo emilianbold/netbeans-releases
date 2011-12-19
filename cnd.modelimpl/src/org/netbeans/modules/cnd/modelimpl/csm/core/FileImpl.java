@@ -1122,7 +1122,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // use cached TS
             TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
             if (tokenStream != null) {
-                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFileObject().getNameExt(), tokenStream, flags);
+                CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
                 parser.translation_unit();
@@ -1698,7 +1698,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         CsmDeclaration.Kind kind = cls.getKind();
                                         CsmVisibility visibility = CsmVisibility.PRIVATE;
                                         if(kind == CsmDeclaration.Kind.CLASS) {
-                                            visibility = CsmVisibility.PRIVATE;
+                                            // FIXUP: it's better to have extra items in completion list
+                                            // for crazy classes, than fail on resolving included
+                                            // public methods
+                                            // IZ#204951 - The c++ parser does not follow/parse #includes which are textually nested within a class definition
+                                            visibility = CsmVisibility.PUBLIC;
                                         } else if( kind == CsmDeclaration.Kind.STRUCT ||
                                                 kind == CsmDeclaration.Kind.UNION) {
                                             visibility = CsmVisibility.PUBLIC;
@@ -2056,6 +2060,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s\n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N 
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
+    }
+
+    public void dumpIndex(PrintWriter printOut) {
+        getFileReferences().dump(printOut);
     }
 
     public void dumpPPStates(PrintWriter printOut) {

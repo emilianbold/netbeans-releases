@@ -71,6 +71,7 @@ import org.openide.windows.TopComponent;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.mercurial.FileStatus;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.text.NbDocument;
@@ -166,9 +167,15 @@ public class AnnotateAction extends ContextAction {
         HgProgressSupport support = new HgProgressSupport() {
             @Override
             public void perform() {
+                File annotatedFile = file;
+                FileStatus st = Mercurial.getInstance().getFileStatusCache().getStatus(file).getStatus(null);
+                if (st != null && st.isCopied() && st.getOriginalFile() != null) {
+                    annotatedFile = st.getOriginalFile();
+                    ab.setReferencedFile(annotatedFile);
+                }
                 if (revision != null) {
                     // showing annotations from past, the referenced file differs from the one being displayed
-                    ab.setReferencedFile(file);
+                    ab.setReferencedFile(annotatedFile);
                 }
                 OutputLogger logger = getLogger();
                 logger.outputInRed(
@@ -177,7 +184,7 @@ public class AnnotateAction extends ContextAction {
                 logger.outputInRed(
                         NbBundle.getMessage(AnnotateAction.class,
                         "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
-                computeAnnotations(repository, file, this, ab, revision);
+                computeAnnotations(repository, annotatedFile, this, ab, revision);
                 logger.output("\t" + file.getAbsolutePath()); // NOI18N
                 logger.outputInRed(
                         NbBundle.getMessage(AnnotateAction.class,
@@ -212,6 +219,7 @@ public class AnnotateAction extends ContextAction {
         }
         if (logs == null) return;
         fillCommitMessages(lines, logs);
+        ab.setAnnotatedRevision(revision);
         ab.setLogs(logs);
         ab.annotationLines(file, Arrays.asList(lines));
     }
@@ -256,11 +264,12 @@ public class AnnotateAction extends ContextAction {
         final int GROUP_AUTHOR = 1;
         final int GROUP_REVISION = 2;
         final int GROUP_FILENAME = 3;
-        final int GROUP_CONTENT = 4;
+        final int GROUP_LINE_NUMBER = 4;
+        final int GROUP_CONTENT = 5;
         
         List<AnnotateLine> lines = new ArrayList<AnnotateLine>();
         int i = 0;
-        Pattern p = Pattern.compile("^\\s*(\\S+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s(.*)$"); //NOI18N
+        Pattern p = Pattern.compile("^\\s*(\\S+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s*(\\d+):\\s(.*)$"); //NOI18N
         for (String line : annotations) {
             i++;
             Matcher m = p.matcher(line);
@@ -273,6 +282,11 @@ public class AnnotateAction extends ContextAction {
                 anLine.setAuthor(m.group(GROUP_AUTHOR));
                 anLine.setRevision(m.group(GROUP_REVISION));
                 anLine.setFileName(m.group(GROUP_FILENAME));
+                try {
+                    anLine.setPrevLineNum(Integer.parseInt(m.group(GROUP_LINE_NUMBER)));
+                } catch (NumberFormatException ex) {
+                    anLine.setPrevLineNum(-1);
+                }
                 anLine.setContent(m.group(GROUP_CONTENT));
             }
             anLine.setLineNum(i);

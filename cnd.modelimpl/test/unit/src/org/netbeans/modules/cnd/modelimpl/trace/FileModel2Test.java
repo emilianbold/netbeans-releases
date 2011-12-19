@@ -74,6 +74,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test205270() throws Exception {
+        // #205270 - R-value references breaks code model parser
+        performTest("iz205270.cc");
+    }
+    
     public void test199899() throws Exception {
         // #199899 - Parser fails on Solaris Studio specific keywords        
         performTest("iz199899.c");
@@ -407,6 +412,11 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testBug204497() throws Exception {
         // Bug 204497 - Inaccuracy tests: latest configured dbx project has parser error
         performTest("bug204497.cpp");
+    }
+    
+    public void testBug205292() throws Exception {
+        // Bug 205292 - parserhg status fails on declspec construction
+        performTest("bug205292.cpp");
     }
     
 }

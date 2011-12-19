@@ -61,6 +61,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -226,6 +228,7 @@ public class WritingQueue {
 
         private void taskFinished(Future<UploadStatus> finishedTask) {
             LOGGER.log(Level.FINEST, "WritingQueue: Task {0} at {1} finished", new Object[]{finishedTask, execEnv});
+            boolean done = false;
             synchronized (lock) {
                 if (currentTask != null && currentTask != finishedTask) {
                     // currentTask can contain either null or the last task
@@ -246,6 +249,7 @@ public class WritingQueue {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} succeeded", fo);
                         failed.remove(fo.getPath()); // paranoia                        
                         fo.getParent().updateStat(fo, uploadStatus.getStatInfo());
+                        done = true;
                     } else {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} failed", fo);
                         failed.add(fo.getPath());
@@ -260,6 +264,12 @@ public class WritingQueue {
                     entries.remove(fo.getPath());
                 }
                 progress.entryDone(entries.size());
+            }
+            if (RemoteFileObjectBase.USE_VCS && done) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fo.getFileSystem());
+                if (interceptor != null) {
+                    interceptor.fileChanged(FilesystemInterceptorProvider.toFileProxy(fo));
+                }
             }
         }
     }

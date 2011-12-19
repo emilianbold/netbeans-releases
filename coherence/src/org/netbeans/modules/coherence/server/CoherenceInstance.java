@@ -43,8 +43,11 @@ package org.netbeans.modules.coherence.server;
 
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.coherence.server.ui.CustomizerClasspath;
 import org.netbeans.modules.coherence.server.ui.CustomizerCommon;
 import org.netbeans.modules.coherence.server.ui.CustomizerServerProperties;
 import org.netbeans.spi.server.ServerInstanceFactory;
@@ -61,11 +64,13 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
 
     private final ServerInstance serverInstance;
     private final InstanceProperties instanceProperties;
+    private final CoherenceProperties coherenceProperties;
     private CoherenceServerFullNode fullNode;
     private CoherenceServerBaseNode baseNode;
 
     private CoherenceInstance(InstanceProperties instanceProperties) {
         this.instanceProperties = instanceProperties;
+        this.coherenceProperties = new CoherenceProperties(instanceProperties);
         serverInstance = ServerInstanceFactory.createServerInstance(this);
     }
 
@@ -75,20 +80,27 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
      * @return unique identifier of Coherence instance
      */
     public int getId() {
-        int id = instanceProperties.getInt(CoherenceProperties.PROP_COHERENCE_ID, 0);
+        int id = coherenceProperties.getServerId();
         assert id != 0;
         return id;
     }
 
+    /**
+     * Gets Coherence instance properties.
+     * @return Coherence instance properties
+     */
+    public CoherenceProperties getCoherenceProperties() {
+        return coherenceProperties;
+    }
+
     @Override
     public String getDisplayName() {
-        return instanceProperties.getString(CoherenceProperties.PROP_DISPLAY_NAME,
-                CoherenceProperties.DISPLAY_NAME_DEFAULT);
+        return coherenceProperties.getDisplayName();
     }
 
     @Override
     public String getServerDisplayName() {
-        return CoherenceProperties.DISPLAY_NAME_DEFAULT;
+        return CoherenceModuleProperties.DISPLAY_NAME_DEFAULT;
     }
 
     @Override
@@ -113,8 +125,18 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
     public JComponent getCustomizer() {
         JTabbedPane tabbedPane = new JTabbedPane();
 
-        tabbedPane.add(new CustomizerCommon(instanceProperties));
-        tabbedPane.add(new CustomizerServerProperties(instanceProperties));
+        final CustomizerClasspath customizerClasspath = new CustomizerClasspath(coherenceProperties);
+        CustomizerCommon customizerGeneral = new CustomizerCommon(coherenceProperties);
+        customizerGeneral.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                customizerClasspath.updateClasspathTextArea();
+            }
+        });
+        tabbedPane.add(customizerGeneral);
+        tabbedPane.add(customizerClasspath);
+        tabbedPane.add(new CustomizerServerProperties(coherenceProperties));
         return tabbedPane;
     }
 
@@ -168,11 +190,11 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
      */
     private static void appendCoherenceID(InstanceProperties properties) {
         int uniqueId = properties.hashCode();
-        while (!CoherenceInstanceProvider.isUniqueAcrossInstances(uniqueId)) {
+        while (!CoherenceInstanceProvider.isUniqueIdAcrossInstances(uniqueId)) {
             uniqueId++;
         }
 
-        properties.putInt(CoherenceProperties.PROP_COHERENCE_ID, uniqueId);
+        properties.putInt(CoherenceModuleProperties.PROP_ID, uniqueId);
     }
 
     /**

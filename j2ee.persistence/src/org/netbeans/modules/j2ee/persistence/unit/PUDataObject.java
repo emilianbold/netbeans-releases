@@ -229,6 +229,10 @@ public class PUDataObject extends XmlMultiViewDataObject {
             } catch (IOException ioe){
                 LOG.log(Level.INFO, null, ioe);
                 return false;
+            } catch (IllegalStateException e) {
+                //issue 134726, sometimes faled to parser document if it's changed during update, just skip, should be parsed with next event
+                LOG.log(Level.INFO, null, e);
+                return false;
             }
         }
         return true;

@@ -71,7 +71,7 @@ import org.openide.util.Utilities;
  * @author Jesse Glick
  */
 @ActionID(id = "org.netbeans.core.ui.sysopen.SystemOpenAction", category = "Edit")
-@ActionRegistration(displayName = "#CTL_SystemOpenAction")
+@ActionRegistration(displayName = "#CTL_SystemOpenAction", lazy=false)
 @ActionReference(path = "Loaders/content/unknown/Actions", position = 200)
 public final class SystemOpenAction extends AbstractAction implements ContextAwareAction {
     

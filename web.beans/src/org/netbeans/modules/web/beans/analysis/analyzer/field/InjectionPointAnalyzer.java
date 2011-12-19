@@ -91,6 +91,7 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
                 result.requireCdiEnabled(element, model);
                 checkInjectionPointMetadata( element, elementType , parent, model , 
                         cancel , result );
+                checkNamed( element, model , cancel, result);
                 if ( cancel.get() ){
                     return;
                 }
@@ -139,6 +140,21 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
         }
     }
     
+    private void checkNamed( VariableElement element, WebBeansModel model,
+            AtomicBoolean cancel, Result result )
+    {
+        if( cancel.get() ){
+            return;
+        }
+        if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.NAMED, 
+                model.getCompilationController()) )
+        {
+            result.addNotification( Severity.WARNING , element, model,  
+                    NbBundle.getMessage(InjectionPointAnalyzer.class, 
+                            "WARN_NamedInjectionPoint"));                       // NOI18N
+        }
+    }
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractDecoratorAnalyzer#addClassError(javax.lang.model.element.VariableElement, java.lang.Object, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result)
      */
@@ -189,7 +205,7 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
         AnnotationHelper helper = new AnnotationHelper(model.getCompilationController());
         Map<String, ? extends AnnotationMirror> qualifiersFqns = helper.
             getAnnotationsByType(qualifiers);
-        boolean hasDefault = model.hasImplicitDefaultQualifier( varElement );
+        boolean hasDefault = model.hasImplicitDefaultQualifier( element );
         if ( !hasDefault && qualifiersFqns.keySet().contains(AnnotationUtil.DEFAULT_FQN)){
             hasDefault = true;
         }

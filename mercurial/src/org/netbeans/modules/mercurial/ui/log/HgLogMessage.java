@@ -282,6 +282,19 @@ public class HgLogMessage {
         return sb.toString();
     }
 
+    public File getOriginalFile (File root, File file) {
+        for (HgLogMessageChangedPath path : paths) {
+            if (file.equals(new File(root, path.getPath()))) {
+                if (path.getCopySrcPath() == null) {
+                    return file;
+                } else {
+                    return new File(root, path.getCopySrcPath());
+                }
+            }
+        }
+        return null;
+    }
+
     private void addAncestorToMap (File file, HgRevision ancestor) {
         ancestors.put(file, ancestor);
     }

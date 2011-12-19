@@ -41,14 +41,13 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
 import org.netbeans.api.project.Project;
@@ -66,16 +65,13 @@ import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -83,16 +79,19 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
-/**
- *
- * @author mkleint
- */
+
+@ProjectServiceProvider(service = {ExecutionResultChecker.class, PrerequisitesChecker.class}, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
+})
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
     private final Project project;
@@ -103,10 +102,12 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
 
 
-    ExecutionChecker(Project prj) {
+    public ExecutionChecker(Project prj) {
         project = prj;
     }
 
+    
+    @Override
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
         boolean depl = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl && resultCode == 0) {
@@ -229,14 +230,13 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     } else {
                         SessionContent sc = project.getLookup().lookup(SessionContent.class);
                         sc.setServerInstanceId(instanceId);
-                        WebModuleProviderImpl prv = project.getLookup().lookup(WebModuleProviderImpl.class);
-                        POHImpl poh = project.getLookup().lookup(POHImpl.class);
-                        poh.hackModuleServerChange(true);
-                        //provider instance not relevant from here
+                        
+                        // We want to initiate context path to default value if there isn't related deployment descriptor yet
+                        MavenProjectSupport.changeServer(project, true);
                         provider = null;
                     }
 
-                    LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { POHImpl.obtainServerName(project) }, "maven"); //NOI18N
+                    LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { MavenProjectSupport.obtainServerName(project) }, "maven"); //NOI18N
 
                     return true;
                 } else {
@@ -336,30 +336,10 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
         project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
-        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-            public void performOperation(POMModel model) {
-                Properties props = model.getProject().getProperties();
-                if (props == null) {
-                    props = model.getFactory().createProperties();
-                    model.getProject().setProperties(props);
-                }
-                props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
-            }
-        };
-        final FileObject projDir = targetPrj.getProjectDirectory();
-        final FileObject fo = projDir.getFileObject("pom.xml"); //NOI18N
-        try {
-            fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        //#109507 workaround
-        POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange(true);
+        MavenProjectSupport.storeSettingsToPom(targetPrj, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
+        
+        // We want to initiate context path to default value if there isn't related deployment descriptor yet
+        MavenProjectSupport.changeServer(project, true);
 
         // refresh all subprojects
         SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);

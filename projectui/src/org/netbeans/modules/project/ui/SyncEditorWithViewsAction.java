@@ -63,7 +63,7 @@ import org.openide.util.actions.SystemAction;
  * @author Milan Kubec
  */
 @ActionID(id = "org.netbeans.modules.project.ui.SyncEditorWithViewsAction", category = "Project")
-@ActionRegistration(displayName = "#CTL_SYNC_EDITOR_WITH_VIEWS")
+@ActionRegistration(displayName = "#CTL_SYNC_EDITOR_WITH_VIEWS", lazy=false)
 @ActionReference(path = "Menu/View", position = 1050)
 public class SyncEditorWithViewsAction extends SystemAction implements DynamicMenuContent {
 

@@ -94,8 +94,8 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
 
     @Override
-    protected void deleteImpl() throws IOException {
-        getDelegate().deleteImpl();
+    protected boolean deleteImpl(FileLock lock) throws IOException {
+        return getDelegate().deleteImpl(lock);
     }
 
     @Override

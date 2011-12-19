@@ -77,7 +77,7 @@ public class ConflictResolvedAction extends ContextAction {
         final Context ctx = getContext(nodes);
         final File[] files = ctx.getFiles();
 
-        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
             public void perform() {
 
                 SvnClient client = null;

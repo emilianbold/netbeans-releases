@@ -71,11 +71,17 @@ public class AstRenderer {
 
     private final FileImpl file;
     private boolean registeredFakeInclude = false;
+    private Map<Integer, CsmObject> objects;
 
-    public AstRenderer(FileImpl fileImpl) {
+    public AstRenderer(FileImpl fileImpl, Map<Integer, CsmObject> objects) {
         this.file = fileImpl;
+        this.objects = objects;
     }
 
+    public AstRenderer(FileImpl fileImpl) {
+        this(fileImpl, null);
+    }
+    
     protected CsmFile getContainingFile() {
         return file;
     }
@@ -118,9 +124,25 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION: {
-                    EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
-                    container.addDeclaration(csmEnum);
-                    renderVariableInClassifier(token, csmEnum, currentNamespace, container);
+                    boolean planB = false;
+                    if(objects != null) {
+                        CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
+                        if(o instanceof EnumImpl) {
+                            EnumImpl csmEnum = (EnumImpl)o;
+                            csmEnum.init(currentNamespace, token, file, !isRenderingLocalContext());
+                            container.addDeclaration(csmEnum);
+                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);
+                        } else {
+                            planB = true;
+                        }
+                    } else {
+                        planB = true;
+                    }                    
+                    if(planB) {
+                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
+                        container.addDeclaration(csmEnum);
+                        renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
+                    }
                     break;
                 }
                 case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
@@ -211,7 +233,7 @@ public class AstRenderer {
                                     // this is a template method specialization declaration (without a definition)
                                     ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
                                     container.addDeclaration(spec);
-                                    MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
+                                    MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, file, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
                                     spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
                                     if (currentNamespace != null && NamespaceImpl.isNamespaceScope(explicitSpecializationDeclaration)) {
                                         currentNamespace.addDeclaration(explicitSpecializationDeclaration);
@@ -1735,7 +1757,7 @@ public class AstRenderer {
         class AstRendererEx extends AstRenderer {
 
             public AstRendererEx() {
-                super((FileImpl) file);
+                super((FileImpl) file, null);
             }
 
             @Override
@@ -1896,6 +1918,10 @@ public class AstRenderer {
     }
 
     public static StatementBase renderStatement(AST ast, CsmFile file, CsmScope scope) {
+        return renderStatement(ast, file, scope, null);
+    }
+    
+    public static StatementBase renderStatement(AST ast, CsmFile file, CsmScope scope, Map<Integer, CsmObject> objects) {
         switch (ast.getType()) {
             case CPPTokenTypes.CSM_LABELED_STATEMENT:
                 return LabelImpl.create(ast, file, scope);
@@ -1909,7 +1935,7 @@ public class AstRenderer {
             case CPPTokenTypes.CSM_ENUM_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                if(new AstRenderer((FileImpl) file).isExpressionLikeDeclaration(ast, scope)) {
+                if(new AstRenderer((FileImpl) file, objects).isExpressionLikeDeclaration(ast, scope)) {
                     return ExpressionStatementImpl.create(ast, file, scope);
                 } else {
                     return DeclarationStatementImpl.create(ast, file, scope);

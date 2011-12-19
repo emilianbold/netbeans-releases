@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.selector.ui;
 
+import org.netbeans.modules.profiler.api.ProgressDisplayer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +51,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -74,6 +77,15 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "RootMethodsAccessMessage=Retrieving Root Methods...",
+    "RootSelectorTree_EmptyString=Empty",
+    "RootSelectorTree_LoadingString=Loading...",
+    "RootSelectorTree_RootString=root",
+    "RootSelectorTree_NoProjectString=No projects selected",
+    "MSG_ApplyingSelection=Applying Selection...",
+    "NodeLoadingMessage=Loading..."
+})
 public class RootSelectorTree extends JCheckTree {
     final private static NodeFilter<SelectorNode> DEFAULT_FILTER_INNER = new NodeFilter<SelectorNode>() {
 
@@ -88,13 +100,8 @@ public class RootSelectorTree extends JCheckTree {
         }
     };
     public static NodeFilter<SelectorNode> DEFAULT_FILTER = DEFAULT_FILTER_INNER;
-    // I18N String constants
-    private static final String EMPTY_STRING = NbBundle.getMessage(RootSelectorTree.class, "RootSelectorTree_EmptyString"); // NOI18N
-    private static final String LOADING_STRING = NbBundle.getMessage(RootSelectorTree.class, "RootSelectorTree_LoadingString"); // NOI18N
-    private static final String ROOT_STRING = NbBundle.getMessage(RootSelectorTree.class, "RootSelectorTree_RootString"); // NOI18N
-    private static final String NO_PROJECT_STRING = NbBundle.getMessage(RootSelectorTree.class, "RootSelectorTree_NoProjectString"); // NOI18N
-    // -----
-    private static final TreeModel DEFAULTMODEL = new DefaultTreeModel(new DefaultMutableTreeNode(EMPTY_STRING));
+    
+    private static final TreeModel DEFAULTMODEL = new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.RootSelectorTree_EmptyString()));
     public static final String SELECTION_TREE_VIEW_LIST_PROPERTY = "SELECTION_TREE_VIEW_LIST"; // NO18N
     private final Set<SourceCodeSelection> currentSelectionSet = new HashSet<SourceCodeSelection>();
     private ProgressDisplayer progress = ProgressDisplayer.DEFAULT;
@@ -128,15 +135,49 @@ public class RootSelectorTree extends JCheckTree {
 
     public void setSelection(final SourceCodeSelection[] selection) {
         new SwingWorker(false) {
-
+            
             protected void doInBackground() {
                 removeSelection(getSelection());
                 applySelection(selection);
             }
 
+            @Override
+            protected void nonResponding() {
+                final CountDownLatch cl = new CountDownLatch(1);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        RootSelectorTree.this.setEnabled(false);
+                        cl.countDown();
+                    }
+                });
+                progress.showProgress(Bundle.MSG_ApplyingSelection());
+                
+                try {
+                    cl.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            
             protected void done() {
+                progress.close();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        RootSelectorTree.this.setEnabled(true);
+                    }
+                });
                 treeDidChange();
             }
+
+            @Override
+            protected int getWarmup() {
+                return 50;
+            }
+            
+            
         }.execute();
     }
 
@@ -354,7 +395,7 @@ public class RootSelectorTree extends JCheckTree {
 
                         @Override
                         protected void nonResponding() {
-                            progress.showProgress(NbBundle.getMessage(this.getClass(), "NodeLoadingMessage")); // NOI18N
+                            progress.showProgress(Bundle.NodeLoadingMessage());
                         }
 
                         @Override
@@ -531,7 +572,7 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     private void refreshTree() {
-        setModel(new DefaultTreeModel(new DefaultMutableTreeNode(LOADING_STRING)));
+        setModel(new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.RootSelectorTree_LoadingString())));
         setRootVisible(true);
         setShowsRootHandles(false);
 
@@ -543,7 +584,7 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     private DefaultMutableTreeNode getTreeRoot() {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(ROOT_STRING);
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(Bundle.RootSelectorTree_RootString());
 
         if (builderType != null) {
             for (SelectionTreeBuilder builder : context.lookupAll(SelectionTreeBuilder.class)) {

@@ -76,6 +76,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel;
 import org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel;
 import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.NbModuleType;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -184,8 +185,6 @@ final class LibrariesNode extends AbstractNode {
     private static final class LibrariesChildren extends Children.Keys<Object/*JDK_PLATFORM_NAME|ModuleDependency*/> implements AntProjectListener {
 
         private static final String JDK_PLATFORM_NAME = "jdkPlatform"; // NOI18N
-        private static final String LIBRARIES_ICON =
-                "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"; // NOI18N
         private final NbModuleProject project;
         private ImageIcon librariesIcon;
 
@@ -336,7 +335,7 @@ final class LibrariesNode extends AbstractNode {
          */
         private Icon getLibrariesIcon() {
             if (librariesIcon == null) {
-                librariesIcon = ImageUtilities.loadImageIcon(LIBRARIES_ICON, true);
+                librariesIcon = ImageUtilities.loadImageIcon(UIUtil.LIBRARIES_ICON, true);
             }
             return librariesIcon;
         }

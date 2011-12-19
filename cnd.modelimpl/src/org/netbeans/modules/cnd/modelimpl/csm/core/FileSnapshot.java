@@ -177,4 +177,8 @@ public class FileSnapshot implements CsmFile {
     public void dumpInfo(PrintWriter printOut) {
         printOut.printf("Snapshot %s\n", this.absPath);// NOI18N 
     }
+
+    public void dumpIndex(PrintWriter printOut) {
+        printOut.printf("Snapshot %s\n", this.absPath);// NOI18N 
+    }
 }

@@ -74,6 +74,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -81,19 +82,23 @@ import org.openide.util.Exceptions;
  *
  * @author Milos Kleint
  */
+@ProjectServiceProvider(service = EnterpriseReferenceContainer.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB})
 public final class EjbEntRefContainerImpl implements EnterpriseReferenceContainer {
 
     private static final String SERVICE_LOCATOR_PROPERTY = "project.serviceLocator.class"; //NOI18N
     private final Project ejbProject;
 
+    
     public EjbEntRefContainerImpl(Project prj) {
         ejbProject = prj;
     }
 
+    @Override
     public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         return addReference(ref, refType, ejbRefName, false, referencingFile, referencingClass);
     }
 
+    @Override
     public String addEjbLocalReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         return addReference(ref, refType, ejbRefName, true, referencingFile, referencingClass);
     }
@@ -195,11 +200,13 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         return resourceName;
     }
 
-  public String getServiceLocatorName() {
+    @Override
+    public String getServiceLocatorName() {
         AuxiliaryProperties props = ejbProject.getLookup().lookup(AuxiliaryProperties.class);
         return props.get(SERVICE_LOCATOR_PROPERTY, true);
     }
 
+    @Override
     public void setServiceLocatorName(String serviceLocator) throws IOException {
         AuxiliaryProperties props = ejbProject.getLookup().lookup(AuxiliaryProperties.class);
         props.put(SERVICE_LOCATOR_PROPERTY, serviceLocator, true);
@@ -223,6 +230,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         }
     }
 
+    @Override
     public String addResourceRef(final ResourceReference ref, FileObject referencingFile, final String referencingClass) throws IOException {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
         MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
@@ -261,6 +269,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         return resourceName;
     }
 
+    @Override
     public String addDestinationRef(final MessageDestinationReference ref, FileObject referencingFile, final String referencingClass) throws IOException {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
         MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();

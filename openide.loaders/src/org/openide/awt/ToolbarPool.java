@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
@@ -76,7 +75,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderInstance;
-import org.openide.util.Exceptions;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
@@ -430,8 +428,6 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * from the given <code>DataFolder</code>.
      */
     private class Folder extends FolderInstance {
-        private WeakHashMap<DataFolder, InstanceCookie> foldersCache = 
-                new WeakHashMap<DataFolder, InstanceCookie> (15);
 
         public Folder (DataFolder f) {
             super (f);
@@ -483,12 +479,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
          */
         @Override
         protected InstanceCookie acceptFolder (DataFolder df) {
-            InstanceCookie ic = foldersCache.get (df);
-            if (ic == null) {
-                ic = (FolderInstance) new Toolbar(df).waitFinished ();
-                foldersCache.put (df, ic);
-            }
-            return ic;
+            return new Toolbar(df).waitFinished();
         }
 
         /**

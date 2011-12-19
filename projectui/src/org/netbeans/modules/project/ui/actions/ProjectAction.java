@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.Action;
@@ -57,6 +56,7 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /** Action sensitive to current project
@@ -141,38 +141,40 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     }
     
     @Override
-    protected void refresh(Lookup context, boolean immediate) {
+    protected void refresh(final Lookup context, final boolean immediate) {
+        Runnable r = new Runnable() {
+            @Override public void run() {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
-        
+        final boolean enable;
         if ( command != null ) {
-            enable( projects.length == 1 );
+            enable = projects.length == 1;
         } else if ( performer != null && projects.length == 1 ) {
-            enable( performer.enable( projects[0] ) );
+            enable = performer.enable(projects[0]);
         } else {
-            enable( false );
+            enable = false;
         }
         
-        String presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
-        putValue("menuText", presenterName); // NOI18N
+        final String presenterName = ActionsUtil.formatProjectSensitiveName( namePattern, projects );
+        final String popupName;
         if (popupPattern != null) {
-            String popupName = ActionsUtil.formatProjectSensitiveName(popupPattern, projects);
-            putValue("popupText", popupName); // NOI18N
-        }
-                        
-        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
-    }
-    
-    // #131674
-    private void enable(final boolean enable) {
-        if (!EventQueue.isDispatchThread()) {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    setEnabled(enable);
-                }
-            });
+            popupName = ActionsUtil.formatProjectSensitiveName(popupPattern, projects);
         } else {
-            setEnabled(enable);
+            popupName = null;
+        }
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override public void run() {
+        setEnabled(enable);
+        putValue("menuText", presenterName); // NOI18N
+        putValue("popupText", popupName); // NOI18N
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
+            }
+        });
+            }
+        };
+        if (immediate) {
+            r.run();
+        } else {
+            RP.post(r);
         }
     }
     

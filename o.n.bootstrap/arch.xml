@@ -595,6 +595,14 @@ made subject to such option by the copyright holder.
                     </p>
                 </api>
             </li>
+            <li>
+                <api type="export" group="systemproperty" name="netbeans.security.nocheck" category="devel">
+                    By default NetBeans prevent certain operations like <code>System.exit</code>. 
+                    One can disable this behavior by providing <code>-Dnetbeans.security.nocheck=true</code>.
+                    Since version 2.47 such property also allows the <code>SecurityManager</code>
+                    to be replaced by another.
+                </api>
+            </li>
         </ul>
         <p>
             There are also some options passed to the launcher (interpreted

@@ -61,11 +61,13 @@ public class DeleteTransformer extends RefactoringVisitor {
         return super.visitMethod(tree, p);
     }
 
+    @Override
     public Tree visitClass(ClassTree tree, Element p) {
         deleteDeclIfMatch(tree, p);
         return super.visitClass(tree, p);
     }
 
+    @Override
     public Tree visitVariable(VariableTree tree, Element p) {
         deleteDeclIfMatch(tree, p);
         return super.visitVariable(tree, p);

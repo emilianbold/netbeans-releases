@@ -821,6 +821,11 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
 	CatalogModel nr = (CatalogModel) 
 	    getModel().getModelSource().getLookup().lookup(CatalogModel.class);
 
+        if(nr == null) {
+            String error = String.format("Cannot resolve file [hint = %s, backup = %s], because no CatalogModel exists in lookup", hint, backup);
+            throw new CatalogModelException(error);
+        }
+        
 	// try hint
 	ModelSource ms = resolveModelSource(hint, getModel().getModelSource(), 
 	    nr);

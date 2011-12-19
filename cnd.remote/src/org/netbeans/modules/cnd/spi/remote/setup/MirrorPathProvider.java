@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.cnd.spi.remote.setup;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 
 /**
  * Allows to redefine places where local->remote and remote->local mirrors are located
@@ -58,7 +61,7 @@ public interface MirrorPathProvider {
      * @return remote mirror absolute path
      * or null in the case this provider can not provide it for the given environment
      */
-    String getRemoteMirror(ExecutionEnvironment executionEnvironment);
+    String getRemoteMirror(ExecutionEnvironment executionEnvironment) throws ConnectException, IOException, ConnectionManager.CancellationException;
 
     /**
      * Gets local mirror absolute path.

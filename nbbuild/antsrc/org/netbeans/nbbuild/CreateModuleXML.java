@@ -62,6 +62,8 @@ public class CreateModuleXML extends Task {
     private final List<FileSet> autoload = new ArrayList<FileSet>(1);
     private final List<FileSet> eager = new ArrayList<FileSet>(1);
     private final List<FileSet> hidden = new ArrayList<FileSet>(1);
+    private Integer level;
+    private boolean checkBundle = true;
 
     /** Add a set of module JARs that should be enabled.
      */
@@ -116,6 +118,17 @@ public class CreateModuleXML extends Task {
      */
     public void setFailOnMissingManifest(boolean fail) {
         failOnMissingManifest = fail;
+    }
+    public void setStartLevel(String level) {
+        if (level.isEmpty()) {
+            this.level = null;
+        } else {
+            this.level = Integer.parseInt(level);
+        }
+    }
+    
+    public void setStrictCheck(boolean check) {
+        this.checkBundle = check;
     }
     
     private List<String> enabledNames = new ArrayList<String>(50);
@@ -325,6 +338,15 @@ public class CreateModuleXML extends Task {
                         }
                         pw.println("    <param name=\"jar\">" + kid.replace(File.separatorChar, '/') + "</param>");
                         pw.println("    <param name=\"reloadable\">false</param>");
+                        OUT: if (level != null) {
+                            if (attr == null || attr.getValue("Bundle-SymbolicName") == null) {
+                                if (!checkBundle) {
+                                    break OUT;
+                                }
+                                throw new BuildException("startlevel specified, but " + module + " is not OSGi bundle!");
+                            }
+                            pw.println("    <param name=\"startlevel\">" + level + "</param>");
+                        }
                         pw.println("</module>");
                         pw.flush();
                         pw.close();

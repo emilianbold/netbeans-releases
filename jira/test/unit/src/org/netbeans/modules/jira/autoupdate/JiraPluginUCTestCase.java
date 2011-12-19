@@ -48,6 +48,7 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.netbeans.modules.jira.JiraTestUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -72,6 +73,7 @@ public class JiraPluginUCTestCase extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         this.clearWorkDir ();
+        JiraTestUtil.initClient(getWorkDir());
         catalogFile = new File(getWorkDir(), "updates.xml");
         if (!catalogFile.exists()) {
             catalogFile.createNewFile();

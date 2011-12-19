@@ -18,6 +18,18 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.php.apigen</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.languages.neon</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.php.dbgp</code-name-base>
                     <run-dependency>
                         <specification-version>1.18</specification-version>
@@ -44,7 +56,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.project</code-name-base>
                     <run-dependency>
-                        <specification-version>2.38</specification-version>
+                        <specification-version>2.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

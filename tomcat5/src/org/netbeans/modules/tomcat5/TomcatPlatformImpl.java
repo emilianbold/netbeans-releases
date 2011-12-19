@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
+import org.netbeans.modules.tomcat5.ide.EjbSupportImpl;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
@@ -497,7 +498,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     }
     
     public Lookup getLookup() {
-        Lookup baseLookup = Lookups.fixed(tp.getCatalinaHome());
+        Lookup baseLookup = Lookups.fixed(tp.getCatalinaHome(), new EjbSupportImpl());
         return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/Tomcat5/Lookup"); //NOI18N
 //        WSStackSPI jaxWsStack = new TomcatJaxWsStack(tp.getCatalinaHome());
 //        return Lookups.fixed(WSStackFactory.createWSStack(jaxWsStack));

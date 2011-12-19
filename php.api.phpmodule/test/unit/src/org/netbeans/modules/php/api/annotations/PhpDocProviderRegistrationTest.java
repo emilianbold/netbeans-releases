@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.php.api.annotations;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
@@ -51,10 +49,13 @@ import org.netbeans.modules.php.api.doc.PhpDocs;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.test.AnnotationProcessorTestUtils;
 import org.openide.util.test.MockLookup;
 
 public class PhpDocProviderRegistrationTest extends NbTestCase {
+
+    private static final String CONSTRUCTOR = "constructor";
+    private static final String FACTORY = "factory";
+
 
     public PhpDocProviderRegistrationTest(String name) {
         super(name);
@@ -66,7 +67,7 @@ public class PhpDocProviderRegistrationTest extends NbTestCase {
         clearWorkDir();
     }
 
-    public void testAnnotations() {
+    public void testRegistration() {
         MyDoc.factoryCalls = 0;
         MockLookup.init();
         assertSame("No factory method should not be used yet", 0, MyDoc.factoryCalls);
@@ -76,203 +77,17 @@ public class PhpDocProviderRegistrationTest extends NbTestCase {
         //assertSame("One factory method should be used", 1, MyDoc.factoryCalls);
 
         Iterator<? extends PhpDocProvider> it = all.iterator();
-        assertEquals("constructor", it.next().getName());
-        assertEquals("factory", it.next().getName());
+        assertSame(CONSTRUCTOR, it.next().getName());
+        assertSame(FACTORY, it.next().getName());
     }
 
-    public void testPublicClass() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "@PhpDocProvider.Registration(position=100)"
-                + "class MyDoc extends PhpDocProvider {"
-                + "  public MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("Class needs to be public"));
-    }
-
-    public void testAbstractClass() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "@PhpDocProvider.Registration(position=100)"
-                + "public abstract class MyDoc extends PhpDocProvider {"
-                + "  public MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("Class cannot be abstract"));
-    }
-
-    public void testExtendsPhpDocProvider() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "@PhpDocProvider.Registration(position=100)"
-                + "public class MyDoc extends Object {"
-                + "  public MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("Class needs to extend PhpDocProvider"));
-    }
-
-    public void testPublicDefaultConstructor1() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "@PhpDocProvider.Registration(position=100)"
-                + "public class MyDoc extends PhpDocProvider {"
-                + "  MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("There needs to be public default constructor"));
-    }
-
-    public void testPublicDefaultConstructor2() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "@PhpDocProvider.Registration(position=100)"
-                + "public class MyDoc extends PhpDocProvider {"
-                + "  private MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("There needs to be public default constructor"));
-    }
-
-    public void testPublicDefaultConstructor3() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "@PhpDocProvider.Registration(position=100)"
-                + "public class MyDoc extends PhpDocProvider {"
-                + "  public MyDoc(String name) {"
-                + "    super(name, name);"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("There needs to be public default constructor"));
-    }
-
-    public void testFactoryMethodinPublicClass() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "class MyDoc extends PhpDocProvider {"
-                + "  private MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + "  @PhpDocProvider.Registration(position=100)"
-                + "  public static MyDoc create() {"
-                + "    return new MyDoc();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("Class needs to be public"));
-    }
-
-    public void testFactoryMethodIsPublic() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "public class MyDoc extends PhpDocProvider {"
-                + "  private MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + "  @PhpDocProvider.Registration(position=100)"
-                + "  static MyDoc create() {"
-                + "    return new MyDoc();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("The method needs to be public, static and without arguments"));
-    }
-
-    public void testFactoryMethodIsStatic() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "public class MyDoc extends PhpDocProvider {"
-                + "  private MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + "  @PhpDocProvider.Registration(position=100)"
-                + "  public MyDoc create() {"
-                + "    return new MyDoc();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("The method needs to be public, static and without arguments"));
-    }
-
-    public void testFactoryMethodIsWithoutParameters() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "public class MyDoc extends PhpDocProvider {"
-                + "  private MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + "  @PhpDocProvider.Registration(position=100)"
-                + "  public static MyDoc create(String name) {"
-                + "    return new MyDoc();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("The method needs to be public, static and without arguments"));
-    }
-
-    public void testFactoryMethodReturnType() throws Exception {
-        String myDoc = ""
-                + getImports()
-                + "public class MyDoc extends PhpDocProvider {"
-                + "  private MyDoc() {"
-                + "    super(\"myDoc\", \"myDoc\");"
-                + "  }"
-                + "  @PhpDocProvider.Registration(position=100)"
-                + "  public static Object create() {"
-                + "    return new MyDoc();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myDoc);
-        assertTrue(output, output.contains("Method needs to return PhpDocProvider"));
-    }
-
-    private String compile(String myDoc) throws IOException {
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.myDoc", myDoc);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, out);
-        assertFalse("Compilation should fail", res);
-        return out.toString();
-    }
+    //~ Inner classes
 
     public static final class MyDocFactory {
         @PhpDocProvider.Registration(position=200)
         public static MyDoc getInstance() {
             MyDoc.factoryCalls++;
-            return new MyDoc("factory");
+            return new MyDoc(FACTORY);
         }
     }
 
@@ -281,7 +96,7 @@ public class PhpDocProviderRegistrationTest extends NbTestCase {
         static int factoryCalls = 0;
 
         public MyDoc() {
-            super("constructor", "display name");
+            super(CONSTRUCTOR, "display name");
         }
 
         MyDoc(String name) {
@@ -294,16 +109,4 @@ public class PhpDocProviderRegistrationTest extends NbTestCase {
         }
     }
 
-    private static String getImports() {
-        return new StringBuilder(200)
-                .append("import org.netbeans.modules.php.api.phpmodule.*;")
-                .append("import org.netbeans.modules.php.spi.doc.*;")
-                .toString();
-    }
-
-    private static String getEmptyBody() {
-        return new StringBuilder(100)
-                .append("public void generateDocumentation(PhpModule phpModule) {}")
-                .toString();
-    }
 }

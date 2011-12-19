@@ -87,7 +87,11 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
      *         be listened to, or null if the binary root is not recognized
      */
     public JavadocForBinaryQuery.Result findJavadoc(URL url) {
-        URL binRoot = url;
+        File stored = SourceJavadocByHash.find(url, true);
+        if (stored != null) {
+            return new DocResult(stored);
+        }
+       URL binRoot = url;
         if ("jar".equals(url.getProtocol())) { //NOI18N
             binRoot = FileUtil.getArchiveFile(url);
         } else {
