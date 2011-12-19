@@ -100,6 +100,13 @@ public class NameHolder {
         return new NameHolder(name);
     }
 
+    public static NameHolder createName(CharSequence name, int startOffset, int endOffset) {
+        NameHolder nameHolder = new NameHolder(name);
+        nameHolder.start = startOffset;
+        nameHolder.end = endOffset;
+        return nameHolder;
+    }
+    
     public static NameHolder createFunctionName(AST ast) {
         return new NameHolder(ast, FUNCTION);
     }
