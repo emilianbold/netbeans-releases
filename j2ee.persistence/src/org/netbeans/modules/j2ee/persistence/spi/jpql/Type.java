@@ -66,6 +66,9 @@ public class Type implements IType{
     private ITypeDeclaration tDeclaration;
 
     public Type(TypeRepository typeRepository, Element element){
+        if(element == null){
+            System.out.println("ATT");
+        }
         this.element = element;
         this.repository = typeRepository;
     }

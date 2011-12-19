@@ -90,7 +90,7 @@ abstract public class ManagedType implements IManagedType {
     @Override
     public IType getType() {
         if (type == null) {
-                type = provider.getTypeRepository().getType(element.getTypeElement().getSimpleName().toString());
+                type = provider.getTypeRepository().getType(element.getTypeElement().getQualifiedName().toString());
         }
         return type;
     }
@@ -149,15 +149,23 @@ abstract public class ManagedType implements IManagedType {
                 mappings.put(id1.getName(), new Mapping(this, new JPAAttribute(id1)));
             }
         }
-        Embedded[] es = atrs.getEmbedded();
-        if(es != null){
-            for(Embedded e1:es){
-                mappings.put(e1.getName(), new Mapping(this, new JPAAttribute(e1)));
+        try {
+            Embedded[] es = atrs.getEmbedded();
+            if(es != null){
+                for(Embedded e1:es){
+                    mappings.put(e1.getName(), new Mapping(this, new JPAAttribute(e1)));
+                }
             }
+        } catch (UnsupportedOperationException ex){
+            //TODO: implements embedded in attributes
         }
-        EmbeddedId eds = atrs.getEmbeddedId();
-        if(eds != null){
-            mappings.put(eds.getName(), new Mapping(this, new JPAAttribute(eds)));
+        try {
+            EmbeddedId eds = atrs.getEmbeddedId();
+            if(eds != null){
+                mappings.put(eds.getName(), new Mapping(this, new JPAAttribute(eds)));
+            }
+        } catch (UnsupportedOperationException ex){
+            //TODO: implements embedded in attributes
         }
         return mappings;
     }
