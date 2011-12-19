@@ -45,17 +45,17 @@ package org.netbeans.test.j2ee.addmethod;
 
 import java.io.IOException;
 import javax.swing.JTextArea;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.*;
 import javax.swing.JTextField;
-import org.netbeans.test.j2ee.EJBValidation;
+import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.test.j2ee.EJBValidation;
 
 /**
  *  Called from EJBValidation test suite.
@@ -126,16 +126,20 @@ public class AddFinderMethodTest extends AddMethodTest {
             //new JTextAreaOperator(dialog).setText(ejbql);
         }
         dialog.ok();
-        if (saveFile) {
-            editor.save();
-        }
         if (toSearchFile != null) {
             Node openFile2 = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.EJB_PROJECT_NAME),
                     "Source Packages|test|" + toSearchFile);
             new OpenAction().performAPI(openFile2);
             final EditorOperator editor2 = EditorWindowOperator.getEditor(toSearchFile);
             editor2.txtEditorPane().waitText(methodName);
+            editor2.waitModified(true);
+            // need to wait because sometimes is save() called sooner than it can take effect
+            new EventTool().waitNoEvent(300);
+            editor2.save();
             editor2.closeDiscard();
+        }
+        if (saveFile) {
+            editor.save();
         }
         compareFiles();
     }

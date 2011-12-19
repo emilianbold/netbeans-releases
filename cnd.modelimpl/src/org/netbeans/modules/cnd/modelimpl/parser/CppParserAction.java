@@ -52,6 +52,7 @@ public interface CppParserAction {
     void enum_declaration(Token token);
     void enum_name(Token token);
     void enum_body(Token token);
+    void enumerator(Token token);
     void end_enum_body(Token token);
     void end_enum_declaration(Token token);
 
