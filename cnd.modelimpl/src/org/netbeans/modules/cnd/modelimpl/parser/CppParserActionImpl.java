@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -48,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -58,6 +61,7 @@ public class CppParserActionImpl implements CppParserAction {
     CsmFile file;
 
     EnumBuilder enumBuilder;
+    
     
     public CppParserActionImpl(CsmFile file, Map<Integer, CsmObject> objects) {
         this.objects = objects;
@@ -80,7 +84,7 @@ public class CppParserActionImpl implements CppParserAction {
         //System.out.println("end_enum_declaration " + ((APTToken)token).getOffset());
 
         if(enumBuilder != null) {
-            EnumImpl e = enumBuilder.create();
+            EnumImpl e = enumBuilder.create(true);
             if(e != null) {
                 objects.put(e.getStartOffset(), e);
             }
@@ -104,12 +108,27 @@ public class CppParserActionImpl implements CppParserAction {
     }
     
     @Override
+    public void enumerator(Token token) {
+        if(enumBuilder != null) {
+            EnumeratorBuilder builder = new EnumeratorBuilder();
+            builder.setName(token.getText());
+            builder.setFile(file);
+            if(token instanceof APTToken) {
+                builder.setStartOffset(((APTToken)token).getOffset());
+                builder.setEndOffset(((APTToken)token).getEndOffset());
+            }
+            enumBuilder.addEnumerator(builder);
+        }
+        
+    }
+    
+    @Override
     public void end_enum_body(Token token) {
         if(enumBuilder != null) {
             if(token instanceof APTToken) {
                 enumBuilder.setEndOffset(((APTToken)token).getEndOffset());
             }
-        }
+        }        
     }
 
     @Override
@@ -139,5 +158,5 @@ public class CppParserActionImpl implements CppParserAction {
     @Override
     public void id(Token token) {
     }
-    
+
 }

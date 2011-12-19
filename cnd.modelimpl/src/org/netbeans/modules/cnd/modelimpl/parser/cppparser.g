@@ -1886,6 +1886,7 @@ enumerator_list
 
 enumerator
 	:	id:ID (ASSIGNEQUAL constant_expression)?
+                {action.enumerator(id);}
 		{enumElement((id.getText()));}
 	;
 
