@@ -131,7 +131,7 @@ public class PatternsTest extends RestTestBase {
      * @param testName name of particular test case
      */
     public PatternsTest(String name) {
-        super(name);
+        super(name, Server.GLASSFISH);
     }
 
     /**
@@ -220,7 +220,7 @@ public class PatternsTest extends RestTestBase {
      */
     public void testCcContainerIDef() {
         String name = "Item1"; //NOI18N
-        Set<File> files = createWsFromPatterns(null, Pattern.CcContainerItem, null);
+        Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, null);
     }
 
     /**
@@ -309,6 +309,7 @@ public class PatternsTest extends RestTestBase {
                 String fTypeLbl = Bundle.getStringTrimmed("org.netbeans.modules.java.source.ui.Bundle", "DLG_FindType");
                 NbDialogOperator nbo = new NbDialogOperator(fTypeLbl);
                 new JTextFieldOperator(nbo, 0).typeText("Level"); //NOI18N
+                nbo.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 30000);
                 nbo.ok();
             }
             if (Pattern.Singleton.equals(pattern)) {
