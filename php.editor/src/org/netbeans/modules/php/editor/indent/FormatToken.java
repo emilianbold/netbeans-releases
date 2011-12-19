@@ -109,7 +109,7 @@ public class FormatToken {
 	WHITESPACE_BEFORE_SWITCH_RIGHT_BACE,
 	WHITESPACE_BEFORE_CATCH_RIGHT_BRACE,
 	WHITESPACE_BEFORE_OTHER_RIGHT_BRACE,
-        
+
         WHITESPACE_BEFORE_USES_PART,
 
 	WHITESPACE_WITHIN_ARRAY_DECL_PARENS,
@@ -157,11 +157,11 @@ public class FormatToken {
 	WHITESPACE_BEFORE_IF_ELSE_STATEMENT,
 	WHITESPACE_IN_FOR,
 	WHITESPACE_IN_TERNARY_OP,
-	
+
 	WHITESPACE_BEFORE_WHILE,
 	WHITESPACE_BEFORE_ELSE,
 	WHITESPACE_BEFORE_CATCH,
-	
+
 	LINE_COMMENT,
 	COMMENT,
         COMMENT_START,
@@ -210,7 +210,7 @@ public class FormatToken {
     }
 
     private boolean isWhitespace (Kind kind) {
-	return kind != Kind.TEXT &&  kind != Kind.ANCHOR 
+	return kind != Kind.TEXT &&  kind != Kind.ANCHOR
 		&& kind != Kind.UNBREAKABLE_SEQUENCE_START
 		&& kind != Kind.UNBREAKABLE_SEQUENCE_END
 		&& kind != Kind.INDENT && kind != Kind.LINE_COMMENT
@@ -267,13 +267,13 @@ public class FormatToken {
 	}
 
     }
-    
+
     /**
      * This class remember length of an identifier that is placed before = or =>
      * to allow group alignment
      */
     public static class AssignmentAnchorToken extends FormatToken {
-        
+
         /**
          * length of the identifier that is before the aligned operator
          */
@@ -283,10 +283,10 @@ public class FormatToken {
          */
         private int maxLength;
         /**
-         * Keeps previous instance in the group. 
+         * Keeps previous instance in the group.
          */
         private AssignmentAnchorToken previous;
-        
+
         public AssignmentAnchorToken(int offset) {
 	    super(Kind.ASSIGNMENT_ANCHOR, offset);
             length = -1;
@@ -317,9 +317,9 @@ public class FormatToken {
         public void setPrevious(AssignmentAnchorToken previous) {
             this.previous = previous;
         }
-        
+
     }
-    
+
     public static class UnbreakableSequenceToken extends FormatToken {
 
 	private AnchorToken anchor;
@@ -332,12 +332,12 @@ public class FormatToken {
 	public AnchorToken getAnchor() {
 	    return anchor;
 	}
-	
+
     }
 
     /**
      * The first tag in the list that contains information for the processing list
-     * of formatting commants. 
+     * of formatting commants.
      */
     public static class InitToken extends FormatToken {
 
@@ -356,5 +356,5 @@ public class FormatToken {
 	    this.hasHTML = hasHTML;
 	}
     }
-    
+
 }
