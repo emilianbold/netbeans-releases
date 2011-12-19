@@ -260,7 +260,7 @@ public class NbBundleProcessor extends AbstractProcessor {
                 }
                 try {
                     Set<String> restored = new TreeSet<String>();
-                    Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*] @see (?:\\w+)\r?\n     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
+                    Matcher m = Pattern.compile("    /[*][*]\r?\n(?:     [*].+\r?\n)+     [*] @see (?:[\\w-]+)\r?\n     [*]/\r?\n    static String (\\w+).+\r?\n        .+\r?\n    [}]\r?\n").matcher(processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, "Bundle.java").getCharContent(false));
                     while (m.find()) {
                         String identifier = m.group(1);
                         if (!methods.containsKey(identifier)) {
