@@ -67,7 +67,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     
     // only one of enumerationRef/enumerationUID must be used (USE_UID_TO_CONTAINER)    
     private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
-    private final CsmUID<CsmEnum> enumerationUID;
+    private /*final*/ CsmUID<CsmEnum> enumerationUID;
 
     private EnumeratorImpl(AST ast, NameHolder name, EnumImpl enumeration) {
         super(enumeration.getContainingFile(), getStartOffset(ast), getEndOffset(ast));
@@ -85,8 +85,8 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         return ei;
     }
 
-    private EnumeratorImpl(EnumImpl enumeration, String name, int startOffset, int endOffset) {
-        super(enumeration.getContainingFile(), startOffset, endOffset);
+    private EnumeratorImpl(EnumImpl enumeration, String name, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
         this.name = NameCache.getManager().getString(name);
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
@@ -94,7 +94,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     }
     
     public static EnumeratorImpl create(EnumImpl enumeration, String name, int startOffset, int endOffset, boolean global) {
-        EnumeratorImpl ei = new EnumeratorImpl(enumeration, name, startOffset, endOffset);
+        EnumeratorImpl ei = new EnumeratorImpl(enumeration, name, enumeration.getContainingFile(), startOffset, endOffset);
         postObjectCreateRegistration(global, ei);
         return ei;
     }
@@ -151,6 +151,48 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
             assert this.enumerationRef != null || this.enumerationUID == null : "no object for UID " + this.enumerationUID;
         }
     }    
+    
+    public static class EnumeratorBuilder {
+        
+        private String name;
+        private CsmFile file;
+        private int startOffset;
+        private int endOffset;
+        private EnumImpl enumeration;
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setEnum(EnumImpl enumeration) {
+            this.enumeration = enumeration;
+        }
+        
+        public EnumeratorImpl create(boolean register) {
+            if(name != null) {
+                NameHolder nameHolder = NameHolder.createName(name, startOffset, endOffset);
+                EnumeratorImpl impl = new EnumeratorImpl(enumeration, name, file, startOffset, endOffset);
+                postObjectCreateRegistration(register, impl);
+                nameHolder.addReference(file, impl);
+                return impl;
+            }
+            return null;
+        }
+    
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 
