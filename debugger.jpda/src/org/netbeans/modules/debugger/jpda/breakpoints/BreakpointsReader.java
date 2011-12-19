@@ -46,7 +46,12 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -58,7 +63,14 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsFromGroup.TestGroupProperties;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -67,6 +79,13 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
  */
 @DebuggerServiceRegistration(types={Properties.Reader.class})
 public class BreakpointsReader implements Properties.Reader, PropertyChangeListener {
+    
+    private static final String BREAKPOINTS_TO_ENABLE = "breakpointsToEnable";
+    private static final String BREAKPOINTS_TO_DISABLE = "breakpointsToDisable";
+    private static final String BP_CUSTOM_GROUP = "CustomGroup";
+    private static final String BP_FILE_GROUP = "FileGroup";
+    private static final String BP_PROJECT_GROUP = "ProjectGroup";
+    private static final String BP_TYPE_GROUP = "TypeGroup";
     
     private Map<JPDABreakpoint, String> cachedClassNames = new WeakHashMap<JPDABreakpoint, String>();
     private Map<JPDABreakpoint, String> cachedSourceRoots = new WeakHashMap<JPDABreakpoint, String>();
@@ -274,7 +293,84 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             b.enable ();
         else
             b.disable ();
+        b.setBreakpointsToEnable(getBreakpointsFromGroup(properties, BREAKPOINTS_TO_ENABLE));
+        b.setBreakpointsToDisable(getBreakpointsFromGroup(properties, BREAKPOINTS_TO_DISABLE));
         return b;
+    }
+    
+    private static Set<Breakpoint> getBreakpointsFromGroup(Properties properties, String base) {
+        String bpGroup = properties.getString(base + BP_CUSTOM_GROUP, null);
+        if (bpGroup != null) {
+            return new BreakpointsFromGroup(bpGroup);
+        }
+        bpGroup = properties.getString(base + BP_FILE_GROUP, null);
+        if (bpGroup != null) {
+            try {
+                URL url = new URL(bpGroup);
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    return new BreakpointsFromGroup(new TestGroupProperties(fo));
+                }
+            } catch (MalformedURLException ex) {
+            }
+        }
+        bpGroup = properties.getString(base + BP_PROJECT_GROUP, null);
+        if (bpGroup != null) {
+            try {
+                URL url = new URL(bpGroup);
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    Project project = ProjectManager.getDefault().findProject(fo);
+                    if (project != null) {
+                        return new BreakpointsFromGroup(new TestGroupProperties(project));
+                    }
+                }
+            } catch (MalformedURLException ex) {
+            } catch (IOException ex) {
+            } catch (IllegalArgumentException ex) {
+            }
+        }
+        bpGroup = properties.getString(base + BP_TYPE_GROUP, null);
+        if (bpGroup != null) {
+            return new BreakpointsFromGroup(new TestGroupProperties(bpGroup));
+        }
+        return Collections.EMPTY_SET;
+    }
+    
+    private static void setBreakpointsFromGroup(Properties properties, String base, Set<Breakpoint> breakpointsFromGroup) {
+        String customGroup = null;
+        String fileURL = null;
+        String projectURL = null;
+        String type = null;
+        if (breakpointsFromGroup instanceof BreakpointsFromGroup) {
+            BreakpointsFromGroup bfg = (BreakpointsFromGroup) breakpointsFromGroup;
+            customGroup = bfg.getGroupName();
+            TestGroupProperties tgp = bfg.getTestGroupProperties();
+            if (tgp != null) {
+                FileObject fo = tgp.getFileObject();
+                if (fo != null) {
+                    try {
+                        URL url = fo.getURL();
+                        fileURL = url.toExternalForm();
+                    } catch (FileStateInvalidException ex) {
+                    }
+                }
+                Project project = tgp.getProject();
+                if (project != null) {
+                    fo = project.getProjectDirectory();
+                    try {
+                        URL url = fo.getURL();
+                        projectURL = url.toExternalForm();
+                    } catch (FileStateInvalidException ex) {
+                    }
+                }
+                type = tgp.getType();
+            }
+        }
+        properties.setString(base + BP_CUSTOM_GROUP, customGroup);
+        properties.setString(base + BP_FILE_GROUP, fileURL);
+        properties.setString(base + BP_PROJECT_GROUP, projectURL);
+        properties.setString(base + BP_TYPE_GROUP, type);
     }
     
     public void write (Object object, Properties properties) {
@@ -292,6 +388,10 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         properties.setInt(JPDABreakpoint.PROP_HIT_COUNT_FILTER, b.getHitCountFilter());
         Breakpoint.HIT_COUNT_FILTERING_STYLE style = b.getHitCountFilteringStyle();
         properties.setInt(JPDABreakpoint.PROP_HIT_COUNT_FILTER+"_style", style != null ? style.ordinal() : 0); // NOI18N
+        Set<Breakpoint> breakpointsToEnable = b.getBreakpointsToEnable();
+        setBreakpointsFromGroup(properties, BREAKPOINTS_TO_ENABLE, breakpointsToEnable);
+        Set<Breakpoint> breakpointsToDisable = b.getBreakpointsToDisable();
+        setBreakpointsFromGroup(properties, BREAKPOINTS_TO_DISABLE, breakpointsToDisable);
         
         if (object instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) object;

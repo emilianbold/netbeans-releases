@@ -251,6 +251,11 @@ public class JPDABreakpoint extends Breakpoint {
     synchronized JPDADebugger getSession() {
         return session;
     }
+
+    @Override
+    public boolean canHaveDependentBreakpoints() {
+        return true;
+    }
     
     /** 
      * Adds a JPDABreakpointListener.

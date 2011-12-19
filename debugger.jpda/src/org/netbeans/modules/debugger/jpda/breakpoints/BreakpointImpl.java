@@ -66,6 +66,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -471,6 +472,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             getBreakpoint (),
             e
         );
+        enableDisableDependentBreakpoints();
         Integer brkpSuspend = (Integer) event.request().getProperty("brkpSuspend");
         if (brkpSuspend == null) {
             brkpSuspend = getBreakpoint().getSuspend();
@@ -491,6 +493,17 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
         //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 
+    }
+    
+    private void enableDisableDependentBreakpoints() {
+        Set<Breakpoint> breakpoints = breakpoint.getBreakpointsToEnable();
+        for (Breakpoint b : breakpoints) {
+            b.enable();
+        }
+        breakpoints = breakpoint.getBreakpointsToDisable();
+        for (Breakpoint b : breakpoints) {
+            b.disable();
+        }
     }
     
     private boolean checkWhetherResumeToFinishStep(ThreadReference thread) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
