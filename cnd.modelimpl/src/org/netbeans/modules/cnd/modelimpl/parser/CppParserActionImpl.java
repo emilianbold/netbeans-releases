@@ -211,7 +211,7 @@ public class CppParserActionImpl implements CppParserAction {
     private void addReference(Token token, final CsmObject definition, final CsmReferenceKind kind) {
         if (definition == null) {
 //            assert false;
-            System.err.println("no definition for " + token + " in " + file);
+//            System.err.println("no definition for " + token + " in " + file);
             return;
         }
         assert token instanceof APTToken : "token is incorrect " + token;
