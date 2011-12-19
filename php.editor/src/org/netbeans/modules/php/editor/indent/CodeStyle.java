@@ -50,12 +50,12 @@ import javax.swing.text.Document;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
 
-/** 
+/**
  *  XXX make sure the getters get the defaults from somewhere
  *  XXX add support for profiles
  *  XXX get the preferences node from somewhere else in odrer to be able not to
  *      use the getters and to be able to write to it.
- * 
+ *
  * @author Dusan Balek
  * @author Petr Pisl
  */
@@ -79,13 +79,13 @@ public final class CodeStyle {
     public static CodeStyle get(Document doc) {
         return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
-    
+
     // General tabs and indents ------------------------------------------------
 
     public boolean expandTabToSpaces () {
         return preferences.getBoolean(expandTabToSpaces,  getDefaultAsBoolean(expandTabToSpaces));
     }
-    
+
     public int getTabSize() {
         return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
     }
@@ -113,7 +113,7 @@ public final class CodeStyle {
     public boolean indentHtml() {
         return preferences.getBoolean(indentHtml, getDefaultAsBoolean(indentHtml));
     }
-    
+
     public int getRightMargin() {
         return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
     }
@@ -197,7 +197,7 @@ public final class CodeStyle {
     public int getBlankLinesBeforeFields() {
         return preferences.getInt(blankLinesBeforeFields, getDefaultAsInt(blankLinesBeforeFields));
     }
-    
+
     public int getBlankLinesBetweenFields() {
         return preferences.getInt(blankLinesBetweenFields, getDefaultAsInt(blankLinesBetweenFields));
     }
@@ -207,13 +207,13 @@ public final class CodeStyle {
     }
 
     /**
-     * 
-     * @return true it the fields will be group without php doc together (no empty line between them) 
+     *
+     * @return true it the fields will be group without php doc together (no empty line between them)
      */
     public boolean getBlankLinesGroupFieldsWithoutDoc() {
 	return preferences.getBoolean(blankLinesGroupFieldsWithoutDoc, getDefaultAsBoolean(blankLinesGroupFieldsWithoutDoc));
     }
-    
+
     public int getBlankLinesBeforeFunction() {
         return preferences.getInt(blankLinesBeforeFunction, getDefaultAsInt(blankLinesBeforeFunction));
     }
@@ -456,7 +456,7 @@ public final class CodeStyle {
     public boolean spaceAfterShortPHPTag() {
         return preferences.getBoolean(spaceAfterShortPHPTag, getDefaultAsBoolean(spaceAfterShortPHPTag));
     }
-    
+
     public boolean spaceBeforeClosePHPTag() {
         return preferences.getBoolean(spaceBeforeClosePHPTag, getDefaultAsBoolean(spaceBeforeClosePHPTag));
     }
@@ -513,11 +513,11 @@ public final class CodeStyle {
     public boolean placeNewLineAfterModifiers() {
         return preferences.getBoolean(placeNewLineAfterModifiers, getDefaultAsBoolean(placeNewLineAfterModifiers));
     }
-    
+
     public boolean groupMulitlineAssignment() {
         return preferences.getBoolean(groupAlignmentAssignment, getDefaultAsBoolean(groupAlignmentAssignment));
     }
-    
+
     public boolean groupMulitlineArrayInit() {
         return preferences.getBoolean(groupAlignmentArrayInit, getDefaultAsBoolean(groupAlignmentArrayInit));
     }
