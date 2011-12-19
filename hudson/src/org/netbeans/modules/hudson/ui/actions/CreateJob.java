@@ -65,6 +65,7 @@ import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.netbeans.modules.hudson.api.Utilities;
+import org.netbeans.modules.hudson.util.UsageLogging;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -73,6 +74,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
 import org.openide.util.RequestProcessor;
@@ -143,7 +145,15 @@ public class CreateJob implements ActionListener {
         dialog.get().setVisible(true);
     }
 
-    @Messages("CreateJob.failure=Could not create job. Please check your server's log for details.")
+    @Messages({
+        "CreateJob.failure=Could not create job. Please check your server's log for details.",
+        "# UI logging of creating new build job",
+        "# {0} project type",
+        "UI_HUDSON_JOB_CREATED=New Hudson build job created [project type: {0}]",
+        "# Usage Logging",
+        "# {0} project type",
+        "USG_HUDSON_JOB_CREATED=New Hudson build job created [project type: {0}]"
+    })
     private void finalizeJob(HudsonInstance instance, ProjectHudsonJobCreator creator, String name, Project project) {
         try {
             Document doc = creator.configure();
@@ -160,6 +170,9 @@ public class CreateJob implements ActionListener {
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
             OpenProjects.getDefault().open(new Project[] {project}, false);
             UI.selectNode(instance.getUrl(), name);
+            // stats
+            UsageLogging.logUI(NbBundle.getBundle(CreateJob.class), "UI_HUDSON_JOB_CREATED", project.getClass().getName()); // NOI18N
+            UsageLogging.logUsage(CreateJob.class, "USG_HUDSON_JOB_CREATED", project.getClass().getName()); // NOI18N
         } catch (IOException x) {
             Exceptions.attachLocalizedMessage(x, CreateJob_failure());
             Logger.getLogger(CreateJob.class.getName()).log(Level.WARNING, null, x);

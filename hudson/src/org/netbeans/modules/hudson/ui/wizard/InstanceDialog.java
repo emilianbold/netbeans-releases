@@ -60,6 +60,7 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.api.Utilities;
+import org.netbeans.modules.hudson.util.UsageLogging;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -99,6 +100,12 @@ public class InstanceDialog extends DialogDescriptor {
         return created;
     }
 
+    @NbBundle.Messages({
+        "# UI logging of adding new server",
+        "UI_HUDSON_SERVER_REGISTERED=Hudson server registered",
+        "# Usage Logging",
+        "USG_HUDSON_SERVER_REGISTERED=Hudson server registered"
+    })
     private void tryToAdd() {
         addButton.setEnabled(false);
         panel.showChecking();
@@ -123,6 +130,9 @@ public class InstanceDialog extends DialogDescriptor {
                         problem(NbBundle.getMessage(InstanceDialog.class, "MSG_incorrect_redirects"));
                         return;
                     }
+                    // stats
+                    UsageLogging.logUI(NbBundle.getBundle(InstanceDialog.class), "UI_HUDSON_SERVER_REGISTERED"); // NOI18N
+                    UsageLogging.logUsage(InstanceDialog.class, "USG_HUDSON_SERVER_REGISTERED"); // NOI18N
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
                     problem(NbBundle.getMessage(InstanceDialog.class, "MSG_FailedToConnect"));
