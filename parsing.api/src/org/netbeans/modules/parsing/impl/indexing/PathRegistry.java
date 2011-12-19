@@ -71,6 +71,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -89,6 +90,7 @@ public final class PathRegistry implements Runnable {
 
     // -J-Dorg.netbeans.modules.parsing.impl.indexing.PathRegistry.level=FINE
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
+    private static final Set<String> FAST_HOST_PROTOCOLS = Collections.singleton("nbfs");   //NOI18N
 
     private final RequestProcessor.Task firerTask;
     private final GlobalPathRegistry regs;
@@ -488,7 +490,12 @@ public final class PathRegistry implements Runnable {
     }
 
     public static boolean noHostPart(@NonNull final URL url) {
-        return url.getHost() == null || url.getHost().isEmpty();
+        return url.getHost() == null || url.getHost().isEmpty() ?
+            true:
+            FAST_HOST_PROTOCOLS.contains(
+                "jar".equals(url.getProtocol()) ?   //NOI18N
+                FileUtil.getArchiveFile(url).getProtocol():
+                url.getProtocol());
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
