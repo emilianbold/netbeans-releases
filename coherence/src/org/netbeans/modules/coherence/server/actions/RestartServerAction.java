@@ -39,61 +39,59 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server;
+package org.netbeans.modules.coherence.server.actions;
 
-import java.io.IOException;
-import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.coherence.server.actions.CloneAction;
-import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.RemoveAction;
-import org.netbeans.modules.coherence.server.actions.RestartServerAction;
-import org.netbeans.modules.coherence.server.actions.StartServerAction;
-import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.coherence.server.CoherenceServer;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
+ * Performs restart of Coherence server.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
+public class RestartServerAction extends NodeAction {
 
-    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
-        super(coherenceInstance);
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(RestartServerAction.class, "ACTION_ServerRestart"); // NOI18N
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    SystemAction.get(StartServerAction.class),
-                    SystemAction.get(RestartServerAction.class),
-                    SystemAction.get(StopServerAction.class),
-                    null,
-                    SystemAction.get(CloneAction.class),
-                    SystemAction.get(RemoveAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
     @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        if (coherenceServer.isEngaged()) {
-            return SystemAction.get(StopServerAction.class);
-        } else {
-            return SystemAction.get(StartServerAction.class);
+    protected void performAction(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            for (Node node : activatedNodes) {
+                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+                if (coherenceServer != null) {
+                    coherenceServer.restart();
+                }
+            }
         }
     }
 
     @Override
-    public void destroy() throws IOException {
-        coherenceInstance.remove();
-        super.destroy();
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            for (Node node : activatedNodes) {
+                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+                if (coherenceServer != null) {
+                    return coherenceServer.isEngaged();
+                }
+            }
+        }
+        return false;
     }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }
