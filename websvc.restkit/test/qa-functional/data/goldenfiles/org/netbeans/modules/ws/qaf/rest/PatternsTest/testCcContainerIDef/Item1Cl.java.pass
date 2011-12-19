@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates and open the template in
- * the editor.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package o.n.m.ws.qaf.rest.patterns;
 
@@ -13,26 +13,30 @@ import javax.ws.rs.DELETE;
 /**
  * REST Web Service
  *
- * @author lukas
+ * @author jskrivanek
  */
-public class ItemResource_1 {
+public class Item1Cl {
 
-    private String name;
+    private String Item1URI;
 
-    /** Creates a new instance of ItemResource_1 */
-    private ItemResource_1(String name) {
-        this.name = name;
-    }
-
-    /** Get instance of the ItemResource_1 */
-    public static ItemResource_1 getInstance(String name) {
-        // The user may use some kind of persistence mechanism
-        // to store and restore instances of ItemResource_1 class.
-        return new ItemResource_1(name);
+    /**
+     * Creates a new instance of Item1Cl
+     */
+    private Item1Cl(String Item1URI) {
+        this.Item1URI = Item1URI;
     }
 
     /**
-     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.ItemResource_1
+     * Get instance of the Item1Cl
+     */
+    public static Item1Cl getInstance(String Item1URI) {
+        // The user may use some kind of persistence mechanism
+        // to store and restore instances of Item1Cl class.
+        return new Item1Cl(Item1URI);
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.Item1Cl
      * @return an instance of java.lang.String
      */
     @GET
@@ -43,7 +47,7 @@ public class ItemResource_1 {
     }
 
     /**
-     * PUT method for updating or creating an instance of ItemResource_1
+     * PUT method for updating or creating an instance of Item1Cl
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
@@ -53,7 +57,7 @@ public class ItemResource_1 {
     }
 
     /**
-     * DELETE method for resource ItemResource_1
+     * DELETE method for resource Item1Cl
      */
     @DELETE
     public void delete() {

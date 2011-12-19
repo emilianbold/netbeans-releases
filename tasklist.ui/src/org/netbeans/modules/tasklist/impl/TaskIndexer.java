@@ -92,6 +92,8 @@ public class TaskIndexer extends CustomIndexer {
         TaskScanningScope scope = tm.getScope();
         ArrayList<FileTaskScanner> scanners = null;
         try {
+            boolean firstScan = true;
+            boolean isInScope = false;
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : files ) {
                 if (context.isCancelled()) {
@@ -118,13 +120,17 @@ public class TaskIndexer extends CustomIndexer {
                     LOG.log(Level.FINE, "Cannot find file [%0] under root [%1]", new Object[] {idx.getRelativePath(), root});
                     continue;
                 }
+                if (firstScan){
+                    isInScope = scope.isInScope(fo);
+                    firstScan = false;
+                }
                 is.removeDocuments(idx);
                 IndexDocument doc = null;
                 for( FileTaskScanner scanner : scanners ) {
                     List<? extends Task> tasks = scanner.scan(fo);
                     if( null == tasks )
                         continue;
-                    if( scope.isInScope(fo) )
+                    if( isInScope )
                         taskList.update(scanner, fo, new ArrayList<Task>(tasks), filter);
                     if( !tasks.isEmpty() ) {
                         if( null == doc ) {

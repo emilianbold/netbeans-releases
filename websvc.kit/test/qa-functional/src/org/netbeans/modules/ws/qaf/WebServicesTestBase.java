@@ -46,7 +46,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
@@ -66,7 +65,6 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.CleanJavaProjectAction;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
@@ -84,10 +82,8 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  * Base class for web services UI tests
@@ -459,24 +455,6 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         super.tearDown();
         project = null;
         projectName = null;
-        //save IDE log in workdir
-        FileObject ud = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
-        FileObject log = ud.getFileObject("var/log/messages.log"); //NOI18N
-        File f = new File(getWorkDir(), "messages.log"); //NOI18N
-        if (f.exists()) {
-            f.delete();
-        }
-        FileObject copy = FileUtil.toFileObject(getWorkDir()).createData("messages", "log"); //NOI18N
-        InputStream is = log.getInputStream();
-        FileLock lock = copy.lock();
-        OutputStream os = copy.getOutputStream(lock);
-        try {
-            FileUtil.copy(is, os);
-        } finally {
-            is.close();
-            os.close();
-            lock.releaseLock();
-        }
     }
 
     /**
