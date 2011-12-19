@@ -104,7 +104,11 @@ public class TypeRepository implements ITypeRepository {
     public IType getType(String fqn) {
         IType ret = types.get(fqn);
         if(ret == null){
-            fillTypeElement(fqn);
+            if(IType.UNRESOLVABLE_TYPE.equals(fqn)){
+                types.put(fqn, new DefaultType(this, fqn));
+            } else {
+                fillTypeElement(fqn);
+            }
             ret = types.get(fqn);
         }
         return ret;
@@ -127,7 +131,7 @@ public class TypeRepository implements ITypeRepository {
                 @Override
                 public void run(WorkingCopy wc) throws Exception {
                     TypeElement te = wc.getElements().getTypeElement(fqn);
-                    types.put(fqn, new Type(TypeRepository.this, te));
+                    if(te != null)types.put(fqn, new Type(TypeRepository.this, te));
                 }
             });
         } catch (IOException ex) {
