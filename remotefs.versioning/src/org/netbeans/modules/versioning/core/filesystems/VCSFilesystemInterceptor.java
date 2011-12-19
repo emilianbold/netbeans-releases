@@ -47,7 +47,12 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+//import org.netbeans.modules.versioning.core.Utils;
+//import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
+//import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+//import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+//import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusListener;
 
@@ -115,14 +120,18 @@ public final class VCSFilesystemInterceptor {
     // ==================================================================================================
 
     /**
-     * Determines if the given file is writable
+     * Determines if the given file should be considered writable by the IDE even if it isn't in 
+     * means of the relevant filesystem. Useful in cases when a file is locked by VCS but can be
+     * unlocked on write demand - e.g. by refactoring or editor access.
+     * 
      * @param file
-     * @return 
+     * @return true if a relevant VCS system considers that the file should be handled as 
+     * writable by the IDE, otherwise false.
      */
-    public static Boolean canWrite(VCSFileProxy file) {
+    public static boolean canWriteReadonlyFile(VCSFileProxy file) {
         LOG.log(Level.FINE, "canWrite {0}", file);
         // can be optimized by taking out local history from the search
-        return null;//getInterceptor(file, false, "isMutable").isMutable(file); // NOI18N
+        return false;//getInterceptor(file, false, "isMutable").isMutable(file); // NOI18N
     }
 
     /**
@@ -248,7 +257,7 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void afterMove(VCSFileProxy from, VCSFileProxy to) {
-        removeFromDeletedFiles(from);
+//        removeFromDeletedFiles(from);
 //        getInterceptor(from, to, "afterMove").afterMove();
     }
 
@@ -281,7 +290,7 @@ public final class VCSFilesystemInterceptor {
      */
     public static void fileLocked(VCSFileProxy fo) {
         LOG.log(Level.FINE, "fileLocked {0}", fo);
- //       getInterceptor(fo, "beforeEdit").beforeEdit();           // NOI18N
+//        getInterceptor(fo, "beforeEdit").beforeEdit();           // NOI18N
     }
 
     public static long listFiles(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
@@ -316,7 +325,7 @@ public final class VCSFilesystemInterceptor {
 //    // private methods
 //    
 //
-//    private boolean needsLH(String... methodNames) {
+//    private static boolean needsLH(String... methodNames) {
 //        for (String methodName : methodNames) {
 //            if(master.needsLocalHistory(methodName)) {
 //                return true;
@@ -356,42 +365,42 @@ public final class VCSFilesystemInterceptor {
 //            return result;
 //        }
 //    }
-
-    /*
-    private DelegatingInterceptor getInterceptor(FileEvent fe, String... forMethods) {
-        if (master == null) return nullDelegatingInterceptor;
-        FileObject fo = fe.getFile();
-        if (fo == null) return nullDelegatingInterceptor;
-        VCSFileProxy file = VCSFileProxy.createFileProxy(fo);
-        if (file == null) return nullDelegatingInterceptor;
-        
-        VersioningSystem lh = null; // XXX: needsLH(forMethods) ? master.getLocalHistory(file, !fo.isFolder()) : null;
-        VersioningSystem vs = master.getOwner(file, !fo.isFolder());
-
-        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : null;
-        VCSInterceptor lhInterceptor = lh != null ? lh.getInterceptor() : null;
-
-        if (vsInterceptor == null && lhInterceptor == null) return nullDelegatingInterceptor;
-
-        if (fe instanceof FileRenameEvent) {
-            FileRenameEvent fre = (FileRenameEvent) fe;
-            VCSFileProxy parent = file.getParentFile();
-            if (parent != null) {
-                String name = fre.getName();
-                String ext = fre.getExt();
-                if (ext != null && ext.length() > 0) {  // NOI18N
-                    name += "." + ext;  // NOI18N
-                }
-                VCSFileProxy from = VCSFileProxy.createFileProxy(parent, name);
-                return new DelegatingInterceptor(vsInterceptor, lhInterceptor, from, file, false);
-            }
-            return nullDelegatingInterceptor;
-        } else {
-            return new DelegatingInterceptor(vsInterceptor, lhInterceptor, file, null, false);
-        }
-    }
-*/
-    
+//
+//    /*
+//    private DelegatingInterceptor getInterceptor(FileEvent fe, String... forMethods) {
+//        if (master == null) return nullDelegatingInterceptor;
+//        FileObject fo = fe.getFile();
+//        if (fo == null) return nullDelegatingInterceptor;
+//        VCSFileProxy file = VCSFileProxy.createFileProxy(fo);
+//        if (file == null) return nullDelegatingInterceptor;
+//        
+//        VersioningSystem lh = null; // XXX: needsLH(forMethods) ? master.getLocalHistory(file, !fo.isFolder()) : null;
+//        VersioningSystem vs = master.getOwner(file, !fo.isFolder());
+//
+//        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : null;
+//        VCSInterceptor lhInterceptor = lh != null ? lh.getInterceptor() : null;
+//
+//        if (vsInterceptor == null && lhInterceptor == null) return nullDelegatingInterceptor;
+//
+//        if (fe instanceof FileRenameEvent) {
+//            FileRenameEvent fre = (FileRenameEvent) fe;
+//            VCSFileProxy parent = file.getParentFile();
+//            if (parent != null) {
+//                String name = fre.getName();
+//                String ext = fre.getExt();
+//                if (ext != null && ext.length() > 0) {  // NOI18N
+//                    name += "." + ext;  // NOI18N
+//                }
+//                VCSFileProxy from = VCSFileProxy.createFileProxy(parent, name);
+//                return new DelegatingInterceptor(vsInterceptor, lhInterceptor, from, file, false);
+//            }
+//            return nullDelegatingInterceptor;
+//        } else {
+//            return new DelegatingInterceptor(vsInterceptor, lhInterceptor, file, null, false);
+//        }
+//    }
+//*/
+//    
 //    private static DelegatingInterceptor getInterceptor(VCSFileProxy file, String... forMethods) {
 //        return getInterceptor(file, file.isDirectory(), forMethods);
 //    }
@@ -404,7 +413,7 @@ public final class VCSFilesystemInterceptor {
 //        VersioningSystem vs = master.getOwner(file, isFile);
 //        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
 //
-//        VersioningSystem lhvs = null; // XXX: needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
+//        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
 //        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
 //
 //        return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, file, null, isDirectory);
@@ -416,7 +425,7 @@ public final class VCSFilesystemInterceptor {
 //        VersioningSystem vs = master.getOwner(from);
 //        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
 //
-//        VersioningSystem lhvs = null; // XXX: needsLH(forMethods) ? master.getLocalHistory(from) : null;
+//        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(from) : null;
 //        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
 //
 //        return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, from, to, false);
@@ -447,8 +456,8 @@ public final class VCSFilesystemInterceptor {
 //    private final static VCSInterceptor nullInterceptor = new VCSInterceptor() {
 //
 //        @Override
-//        public Boolean isMutable(VCSFileProxy file) {
-//            return null;
+//        public boolean isMutable(VCSFileProxy file) {
+//            return true;
 //        }
 //
 //        @Override
@@ -548,7 +557,7 @@ public final class VCSFilesystemInterceptor {
 //            this.isDirectory = isDirectory;
 //        }
 //
-//        public Boolean isMutable(VCSFileProxy file) {
+//        public boolean isMutable(VCSFileProxy file) {
 //            return interceptor.isMutable(file);
 //        }
 //
@@ -679,16 +688,16 @@ public final class VCSFilesystemInterceptor {
 //         */
 //        @Override
 //        public void handle() throws IOException {
-//            VCSFileProxy[] children = file.listFiles();
-//            if (children != null) {
-//                synchronized (deletedFiles) {
-//                    for (VCSFileProxy child : children) {
-//                        if (!deletedFiles.contains(child)) {
-//                            throw new IOException();
-//                        }
-//                    }
-//                }
-//            }
+////            VCSFileProxy[] children = file.listFiles();
+////            if (children != null) {
+////                synchronized (deletedFiles) {
+////                    for (VCSFileProxy child : children) {
+////                        if (!deletedFiles.contains(child)) {
+////                            throw new IOException();
+////                        }
+////                    }
+////                }
+////            }
 //            lhInterceptor.doDelete(file);
 //            interceptor.doDelete(file);
 //            synchronized (deletedFiles) {
@@ -712,5 +721,5 @@ public final class VCSFilesystemInterceptor {
 //            return interceptor.refreshRecursively(dir, lastTimeStamp, children);
 //        }
 //    }
-    
+//    
 }
