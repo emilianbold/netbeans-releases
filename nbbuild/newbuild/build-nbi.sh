@@ -22,11 +22,11 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    fi
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/installer $MAC_PATH/reglib/src
    cd $NB_ALL
-   gtar c installer/mac reglib/src | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
+   tar c installer/mac reglib/src | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
 
    if [ 1 -eq $ML_BUILD ] ; then
        cd $NB_ALL/l10n
-       gtar c src/*/other/installer/mac/* | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x)"
+       tar c src/*/other/installer/mac/* | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x)"
        cd $NB_ALL
    fi
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip/* 
