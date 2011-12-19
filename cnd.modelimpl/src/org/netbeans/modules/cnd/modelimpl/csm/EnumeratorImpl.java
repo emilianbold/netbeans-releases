@@ -85,7 +85,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         return ei;
     }
 
-    private EnumeratorImpl(EnumImpl enumeration, String name, CsmFile file, int startOffset, int endOffset) {
+    private EnumeratorImpl(EnumImpl enumeration, CharSequence name, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.name = NameCache.getManager().getString(name);
         // set parent enum, do it in constructor to have final fields
@@ -154,13 +154,13 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     
     public static class EnumeratorBuilder {
         
-        private String name;
+        private CharSequence name;
         private CsmFile file;
         private int startOffset;
         private int endOffset;
         private EnumImpl enumeration;
 
-        public void setName(String name) {
+        public void setName(CharSequence name) {
             this.name = name;
         }
 
