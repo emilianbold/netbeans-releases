@@ -47,6 +47,7 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,14 +126,18 @@ public class ChooseArchetypePanel extends JPanel {
             if (!showOld.isSelected() && !ids.add(a.getGroupId() + ":" + a.getArtifactId())) {
                 continue;
             }
-            if (!filter.isEmpty() && !a.getGroupId().contains(filter) && !a.getArtifactId().contains(filter) && !a.getVersion().contains(filter) &&
-                    (a.getRepository() == null || !a.getRepository().contains(filter))
-                    && !a.getName().contains(filter) && (a.getDescription() == null || !a.getDescription().contains(filter))) {
+            if (!filter.isEmpty() && !matches(a.getGroupId(), filter) && !matches(a.getArtifactId(), filter) && !matches(a.getVersion(), filter) &&
+                    (a.getRepository() == null || !matches(a.getRepository(), filter))
+                    && !matches(a.getName(), filter) && (a.getDescription() == null || !matches(a.getDescription(), filter))) {
                 continue;
             }
             model.addElement(a);
         }
         listArtifact.setModel(model);
+    }
+
+    private boolean matches(String field, String filter) {
+        return field.toLowerCase(Locale.ENGLISH).contains(filter.toLowerCase(Locale.ENGLISH));
     }
 
     private class ArchetypeRenderer extends DefaultListCellRenderer {

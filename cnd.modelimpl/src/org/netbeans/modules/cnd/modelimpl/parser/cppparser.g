@@ -269,7 +269,7 @@ tokens {
 }
 
 {
-    public static CppParserAction action;
+    public CppParserAction action;
 
     // Defines for flags passed to init methods
     public static final int CPP_STATEMENT_TRACE		= 0x1;
@@ -1886,6 +1886,7 @@ enumerator_list
 
 enumerator
 	:	id:ID (ASSIGNEQUAL constant_expression)?
+                {action.enumerator(id);}
 		{enumElement((id.getText()));}
 	;
 
