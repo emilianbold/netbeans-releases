@@ -18,9 +18,6 @@
                         </Variable>
                     </VariableNames>
                     <InitialValues>
-                        <Variable start='31' end='35' isDollared='true'>
-                            <Identifier start='32' end='35' name='age'/>
-                        </Variable>
                     </InitialValues>
                 </FieldsDeclaration>
                 <FieldsDeclaration start='41' end='51' modifier='public'>
@@ -30,9 +27,6 @@
                         </Variable>
                     </VariableNames>
                     <InitialValues>
-                        <Variable start='45' end='50' isDollared='true'>
-                            <Identifier start='46' end='50' name='name'/>
-                        </Variable>
                     </InitialValues>
                 </FieldsDeclaration>
             </Block>

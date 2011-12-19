@@ -51,7 +51,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 /**
  * @author Radek Matous
  */
-public interface ClassElement extends TypeElement {
+public interface ClassElement extends TraitedElement {
     public final static PhpElementKind KIND = PhpElementKind.CLASS;
     @CheckForNull
     QualifiedName getSuperClassName();

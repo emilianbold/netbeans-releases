@@ -153,7 +153,7 @@ public class FormatVisitor extends DefaultVisitor {
             for (int i = 0; i < indexBeforeLastComment; i++) {
                 formatTokens.add(beforeTokens.get(i));
             }
-            if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration) {
+            if (node instanceof ClassDeclaration || node instanceof InterfaceDeclaration || node instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
                 includeWSBeforePHPDoc = false;
             } else if (node instanceof FunctionDeclaration || node instanceof MethodDeclaration) {
@@ -210,9 +210,9 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ArrayCreation node) {
         int delta = options.indentArrayItems - options.continualIndentSize;
-        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index()) { // it's possible that the expression starts with array
-            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ARRAY
-                    && lastIndex < ts.index()) {
+        if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
+                && !ts.token().text().toString().equals("[")) {  //NOI18N
+            while (ts.moveNext() && (ts.token().id() != PHPTokenId.PHP_ARRAY && !ts.token().text().toString().equals("[")) && lastIndex < ts.index()) { //NOI18N
                 addFormatToken(formatTokens);
             }
             if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
@@ -234,7 +234,11 @@ public class FormatVisitor extends DefaultVisitor {
                     delta = options.indentArrayItems;
                 }
             }
-            addFormatToken(formatTokens); // add array keyword
+            if (ts.token().text().toString().equals("[")) { //NOI18N
+                formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+            } else {
+                addFormatToken(formatTokens); // add array keyword
+            }
         }
         formatTokens.add(new FormatToken.IndentToken(ts.offset(), delta));
         previousGroupToken = null;
@@ -301,7 +305,7 @@ public class FormatVisitor extends DefaultVisitor {
         ASTNode parent = path.get(1);
 
         if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
-            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
@@ -344,7 +348,7 @@ public class FormatVisitor extends DefaultVisitor {
                 formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
             }
 
-            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+            if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS_LEFT_BRACE, ts.offset()));
             } else {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OTHER_LEFT_BRACE, ts.offset()));
@@ -392,7 +396,7 @@ public class FormatVisitor extends DefaultVisitor {
 
 //		    boolean inludeSpaceBefore = (ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) ? true : false;
 //		    ts.moveNext();
-                    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
+                    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                         if (includeWSBeforePHPDoc) {
                             formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_RIGHT_BRACE, ts.offset()));
                         }
@@ -830,7 +834,7 @@ public class FormatVisitor extends DefaultVisitor {
                         || ftoken.getId() == FormatToken.Kind.COMMENT
                         || ftoken.getId() == FormatToken.Kind.COMMENT_START
                         || ftoken.getId() == FormatToken.Kind.COMMENT_END
-                        || (ftoken.getId() == FormatToken.Kind.TEXT && ")".equals(ftoken.getOldText().toString()))) {
+                        || (ftoken.getId() == FormatToken.Kind.TEXT && (")".equals(ftoken.getOldText().toString()) || "]".equals(ftoken.getOldText().toString())))) {
                     formatTokens.remove(formatTokens.size() - 1);
                     removed.add(ftoken);
                     ftoken = formatTokens.get(formatTokens.size() - 1);
@@ -1156,6 +1160,12 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(UseTraitStatement node) {
+        //TODO: maybe it could be formated separately
+        //this.visit((UseStatement) node);
+    }
+
+    @Override
     public void visit(UseStatementPart statementPart) {
         FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
         boolean lastRemoved = false;
@@ -1384,11 +1394,22 @@ public class FormatVisitor extends DefaultVisitor {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
                 } else if ("[".equals(text)) {
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset() + ts.token().length()));
+                    if (parent instanceof ArrayCreation) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset() + ts.token().length()));
+                    } else {
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset() + ts.token().length()));
+                    }
                 } else if ("]".equals(text)) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    if (parent instanceof ArrayCreation) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_DECL_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    }
                 } else if (parent instanceof ConditionalExpression
                         && ("?".equals(text) || ":".equals(text))) {
                     //tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset()));
