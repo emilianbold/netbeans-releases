@@ -71,5 +71,12 @@ public interface JaxRsStackSupportImplementation {
      * @param project project which classpath should be cleared
      */
     void removeJaxRsLibraries( Project project );
+    
+    /**
+     * If custom Jersey library is chosen ( f.e. NB bundled ) then 
+     * some JEE servers require additional project configuration.
+     * Otherwise collision could happen between bundled server Jersey and custom library.
+     */
+    public void configureCustomJersey( Project project );
 
 }
