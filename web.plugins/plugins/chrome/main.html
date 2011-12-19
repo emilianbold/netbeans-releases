@@ -1,0 +1,142 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2011 Sun Microsystems, Inc.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Background page of NetBeans IDE Support Plugin</title>
+    <meta name="author" content="Jan Stola" />
+    <script>
+
+    var socket;
+    var socketReady;
+
+    function cleanup() {
+      socket = null;
+      socketReady = false;
+    }
+
+    function connectIfNeeded() {
+      if (socket === null) {
+        socket = new WebSocket("ws://127.0.0.1:1234");
+        socket.onerror = function(e) {
+          console.log('error');
+          console.log(e);
+          cleanup();
+        }
+        socket.onclose = function(e) {
+          cleanup();
+        }
+        socket.onopen = function(e) {
+          socketReady = true;
+          sendFullTabInfo();
+        }
+        socket.onmessage = function(e) {
+          reloadTab(e.data);
+        }
+      }
+      return socketReady;
+    }
+
+    function reloadTab(tabId) {
+      if (typeof(tabId) === 'string') {
+        tabId = parseInt(tabId);
+      }
+      chrome.tabs.get(tabId, function reload(tab) {
+        chrome.tabs.update(tabId, {url: tab.url});
+      });
+    }
+
+    function value(object, property) {
+      var value = object[property];
+      if (value === undefined) {
+        value = '';
+      } else {
+        value = property + ' ' + value + '\n';
+      }
+      return value;
+    }
+
+    function sendFullTabInfo() {
+      chrome.windows.getAll({populate: true}, sendFullTabInfo0);
+    }
+
+    function sendFullTabInfo0(windows) {
+      for (var i=0; i<windows.length; i++) {
+        var window = windows[i];
+        for (var j=0; j<window.tabs.length; j++) {
+          var tab = window.tabs[j];
+          sendTabInfo(tab);
+        }
+      }
+    }
+
+    function sendTabInfo(tab) {
+      try {
+        var message = value(tab, 'id');
+        message += value(tab, 'url');
+        message += value(tab, 'status');
+        message += value(tab, 'closed');
+        socket.send(message);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    function tabUpdated(tabId, changeInfo, tab) {
+      if (connectIfNeeded()) {
+        sendTabInfo(tab);
+      }
+    }
+
+    function tabRemoved(tabId, removeInfo) {
+      if (connectIfNeeded()) {
+        sendTabInfo({id : tabId, closed : true});
+      }
+    }
+
+    cleanup();
+    chrome.tabs.onUpdated.addListener(tabUpdated);
+    chrome.tabs.onRemoved.addListener(tabRemoved);
+
+    </script>
+  </head>
+</html>
