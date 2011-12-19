@@ -47,6 +47,9 @@ package org.netbeans.api.debugger;
 import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -106,6 +109,26 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         assertEquals("Bad event, unexpected new validity", Breakpoint.VALIDITY.INVALID, propEventPtr[0].getNewValue());
         assertEquals("Unexpected validity", Breakpoint.VALIDITY.INVALID, tb.getValidity());
         assertEquals("Unexpected reason", "Some crazy breakpoint", tb.getValidityMessage());
+    }
+    
+    public void testDependentBreakpoints() throws Exception {
+        Breakpoint noDependentBP = new TestBreakpoint();
+        assertFalse(noDependentBP.canHaveDependentBreakpoints());
+        try {
+            noDependentBP.setBreakpointsToDisable(Collections.singleton(noDependentBP));
+            assert false : "An UnsupportedOperationException was not thrown.";
+        } catch (UnsupportedOperationException uoex) {
+            // O.K.
+        }
+        Breakpoint b1 = new TestDependentBreakpoint();
+        assertTrue(b1.canHaveDependentBreakpoints());
+        Breakpoint b2 = new TestDependentBreakpoint();
+        b1.setBreakpointsToEnable(Collections.singleton(b2));
+        b2.setBreakpointsToDisable(new HashSet<Breakpoint>(Arrays.asList(b1, b2)));
+        assertEquals("BreakpointsToEnable size", 1, b1.getBreakpointsToEnable().size());
+        assertEquals("BreakpointsToEnable is correct", b2, b1.getBreakpointsToEnable().iterator().next());
+        assertEquals("BreakpointsToDisable size", 0, b1.getBreakpointsToDisable().size());
+        assertEquals("BreakpointsToDisable size", 2, b2.getBreakpointsToDisable().size());
     }
 
     private void initBreakpoints(DebuggerManager dm, TestDebuggerManagerListener dml) {
@@ -177,5 +200,29 @@ public class BreakpointsTest extends DebuggerApiTestBase {
             setValidity(validity, reason);
         }
 
+    }
+    
+    private class TestDependentBreakpoint extends Breakpoint {
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public void disable() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void enable() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean canHaveDependentBreakpoints() {
+            return true;
+        }
+        
     }
 }

@@ -46,6 +46,9 @@ package org.netbeans.api.debugger;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
@@ -86,6 +89,8 @@ public abstract class Breakpoint {
     private String                      validityMessage;
     private int                         hitCountFilter;
     private HIT_COUNT_FILTERING_STYLE   hitCountFilteringStyle;
+    private volatile Set<Breakpoint>    breakpointsToEnable = Collections.EMPTY_SET;
+    private volatile Set<Breakpoint>    breakpointsToDisable = Collections.EMPTY_SET;
     
     { pcs = new PropertyChangeSupport (this); }
 
@@ -228,6 +233,93 @@ public abstract class Breakpoint {
      */
     public GroupProperties getGroupProperties() {
         return null;
+    }
+    
+    /**
+     * Determines if the breakpoint supports dependent breakpoints.
+     * If true, get/setBreakpointsToEnable/Disable methods can be used to get
+     * or set dependent breakpoints.
+     * If false, the methods throw an UnsupportedOperationException.
+     * @return <code>true</code> if the dependent breakpoints are supported,
+     * <code>false</code> otherwise.
+     * @since 1.35
+     */
+    public boolean canHaveDependentBreakpoints() {
+        return false;
+    }
+    
+    /**
+     * Get the set of breakpoints that will be enabled after this breakpoint
+     * is hit.
+     * <p>
+     * Not all breakpoint implementations honor dependent breakpoints.
+     * Use {@link #canHaveDependentBreakpoints()} to determine if the operation is supported.
+     * @return The set of breakpoints.
+     * @throws UnsupportedOperationException if the breakpoint does not support
+     * dependent breakpoints - see {@link #canHaveDependentBreakpoints()}.
+     * @since 1.35
+     */
+    @NonNull
+    public Set<Breakpoint> getBreakpointsToEnable() {
+        if (!canHaveDependentBreakpoints()) {
+            throw new UnsupportedOperationException("Cannot have dependent breakpoints."); // NOI18N
+        }
+        return breakpointsToEnable;
+    }
+    
+    /**
+     * Get the set of breakpoints that will be disabled after this breakpoint
+     * is hit.
+     * <p>
+     * Not all breakpoint implementations honor dependent breakpoints.
+     * Use {@link #canHaveDependentBreakpoints()} to determine if the operation is supported.
+     * @throws UnsupportedOperationException if the breakpoint does not support
+     * dependent breakpoints - see {@link #canHaveDependentBreakpoints()}.
+     * @return The set of breakpoints.
+     * @since 1.35
+     */
+    @NonNull
+    public Set<Breakpoint> getBreakpointsToDisable() {
+        if (!canHaveDependentBreakpoints()) {
+            throw new UnsupportedOperationException("Cannot have dependent breakpoints."); // NOI18N
+        }
+        return breakpointsToDisable;
+    }
+    
+    /**
+     * Set the set of breakpoints that will be enabled after this breakpoint
+     * is hit.
+     * <p>
+     * Not all breakpoint implementations honor dependent breakpoints.
+     * Use {@link #canHaveDependentBreakpoints()} to determine if the operation is supported.
+     * @param breakpointsToEnable The set of breakpoints.
+     * @throws UnsupportedOperationException if the breakpoint does not support
+     * dependent breakpoints - see {@link #canHaveDependentBreakpoints()}.
+     * @since 1.35
+     */
+    public void setBreakpointsToEnable(@NonNull Set<Breakpoint> breakpointsToEnable) {
+        if (!canHaveDependentBreakpoints()) {
+            throw new UnsupportedOperationException("Cannot have dependent breakpoints."); // NOI18N
+        }
+        this.breakpointsToEnable = breakpointsToEnable;
+    }
+    
+    /**
+     * Set the set of breakpoints that will be disabled after this breakpoint
+     * is hit.
+     * <p>
+     * Not all breakpoint implementations honor dependent breakpoints.
+     * Use {@link #canHaveDependentBreakpoints()} to determine if the operation is supported.
+     * @param breakpointsToEnable The set of breakpoints.
+     * @throws UnsupportedOperationException if the breakpoint does not support
+     * dependent breakpoints - see {@link #canHaveDependentBreakpoints()}.
+     * @since 1.35
+     */
+    public void setBreakpointsToDisable(@NonNull Set<Breakpoint> breakpointsToDisable) {
+        if (!canHaveDependentBreakpoints()) {
+            throw new UnsupportedOperationException("Cannot have dependent breakpoints."); // NOI18N
+        }
+        this.breakpointsToDisable = breakpointsToDisable;
     }
     
     /** 

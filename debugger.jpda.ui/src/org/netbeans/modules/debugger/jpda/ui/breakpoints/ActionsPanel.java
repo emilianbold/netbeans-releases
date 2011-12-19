@@ -45,10 +45,27 @@
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsFromGroup;
+import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsFromGroup.TestGroupProperties;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointsExpandableGroup.FileItem;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointsExpandableGroup.FilesGroup;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointsExpandableGroup.ProjectItem;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointsExpandableGroup.ProjectsGroup;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointsExpandableGroup.TypeItem;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointsExpandableGroup.TypesGroup;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -64,6 +81,7 @@ public class ActionsPanel extends javax.swing.JPanel {
     private int defaultSuspendAction;
     private int checkedSuspendAction;
     private Preferences preferences = NbPreferences.forModule(JPDABreakpoint.class).node("debugging"); // NOI18N
+    private static final Object NONE_BREAKPOINT_GROUP = new NoneBreakpointGroup();
 
     /** Creates new form LineBreakpointPanel */
     public ActionsPanel (JPDABreakpoint b) {
@@ -105,6 +123,22 @@ public class ActionsPanel extends javax.swing.JPanel {
                 30*tfPrintText.getFontMetrics(tfPrintText.getFont()).charWidth('W'),
                 tfPrintText.getPreferredSize().height));
         tfPrintText.setCaretPosition(0);
+        
+        enableGroupCheckBox.setVisible(false);
+        disableGroupCheckBox.setVisible(false);
+        Object[] groups = getGroups();
+        Set<Breakpoint> breakpointsToEnable = breakpoint.getBreakpointsToEnable();
+        Set<Breakpoint> breakpointsToDisable = breakpoint.getBreakpointsToDisable();
+        BreakpointsFromGroup bfgToEnable = null;
+        BreakpointsFromGroup bfgToDisable = null;
+        if (breakpointsToEnable instanceof BreakpointsFromGroup) {
+            bfgToEnable = (BreakpointsFromGroup) breakpointsToEnable;
+        }
+        if (breakpointsToDisable instanceof BreakpointsFromGroup) {
+            bfgToDisable = (BreakpointsFromGroup) breakpointsToDisable;
+        }
+        fillGroups((OutlineComboBox) enableGroupComboBox, groups, bfgToEnable);
+        fillGroups((OutlineComboBox) disableGroupComboBox, groups, bfgToDisable);
     }
     
     /** This method is called from within the constructor to
@@ -116,27 +150,22 @@ public class ActionsPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        tfPrintText = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         cbSuspend = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
         checkBoxPanel = new javax.swing.JPanel();
         defaultActionCheckBox = new javax.swing.JCheckBox();
+        enableGroupCheckBox = new javax.swing.JCheckBox();
+        enableGroupLabel = new javax.swing.JLabel();
+        enableGroupComboBox = new OutlineComboBox();
+        disableGroupCheckBox = new javax.swing.JCheckBox();
+        disableGroupLabel = new javax.swing.JLabel();
+        disableGroupComboBox = new OutlineComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        tfPrintText = new javax.swing.JTextField();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
         setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Actions_Panel_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
-
-        tfPrintText.setToolTipText(bundle.getString("TTT_TF_Actions_Panel_Print_Text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(tfPrintText, gridBagConstraints);
-        tfPrintText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Actions_Panel_Print_Text")); // NOI18N
 
         jLabel1.setLabelFor(cbSuspend);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("L_Actions_Panel_Suspend")); // NOI18N
@@ -162,16 +191,6 @@ public class ActionsPanel extends javax.swing.JPanel {
         add(cbSuspend, gridBagConstraints);
         cbSuspend.getAccessibleContext().setAccessibleDescription(bundle.getString("ASCD_CB_Actions_Panel_Suspend")); // NOI18N
 
-        jLabel2.setLabelFor(tfPrintText);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("L_Actions_Panel_Print_Text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_PrintText")); // NOI18N
-
         checkBoxPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(defaultActionCheckBox, "jCheckBox1");
@@ -193,6 +212,75 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         add(checkBoxPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(enableGroupCheckBox, org.openide.util.NbBundle.getMessage(ActionsPanel.class, "MSG_EnableGroup")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(enableGroupCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(enableGroupLabel, org.openide.util.NbBundle.getMessage(ActionsPanel.class, "MSG_EnableGroup")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        add(enableGroupLabel, gridBagConstraints);
+
+        enableGroupComboBox.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        add(enableGroupComboBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(disableGroupCheckBox, org.openide.util.NbBundle.getMessage(ActionsPanel.class, "MSG_DisableGroup")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(disableGroupCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(disableGroupLabel, org.openide.util.NbBundle.getMessage(ActionsPanel.class, "MSG_DisableGroup")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        add(disableGroupLabel, gridBagConstraints);
+
+        disableGroupComboBox.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(disableGroupComboBox, gridBagConstraints);
+
+        jLabel2.setLabelFor(tfPrintText);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("L_Actions_Panel_Print_Text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_PrintText")); // NOI18N
+
+        tfPrintText.setToolTipText(bundle.getString("TTT_TF_Actions_Panel_Print_Text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        add(tfPrintText, gridBagConstraints);
+        tfPrintText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Actions_Panel_Print_Text")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_Actions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -236,6 +324,183 @@ private void cbSuspendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (checkedSuspendAction != defaultSuspendAction) {
             preferences.putInt(DEFAULT_SUSPEND_ACTION, checkedSuspendAction);
         }
+        Object breakpointsToEnableGroup = enableGroupComboBox.getSelectedItem();
+        breakpoint.setBreakpointsToEnable(createBreakpointsSet(breakpointsToEnableGroup));
+        Object breakpointsToDisableGroup = disableGroupComboBox.getSelectedItem();
+        breakpoint.setBreakpointsToDisable(createBreakpointsSet(breakpointsToDisableGroup));
+        /*
+        if (breakpointsToDisableGroup == null || breakpointsToDisableGroup == NONE_BREAKPOINT_GROUP) {
+            breakpoint.setBreakpointsToDisable(Collections.EMPTY_SET);
+        } else {
+            TestGroupProperties tgp = createTestProperties(breakpointsToDisableGroup);
+            if (tgp != null) {
+                breakpoint.setBreakpointsToDisable(new BreakpointsFromGroup(tgp));
+            } else {
+                String customGroup = (String) breakpointsToDisableGroup;
+                customGroup = customGroup.trim();
+                if (!customGroup.isEmpty()) {
+                    breakpoint.setBreakpointsToDisable(new BreakpointsFromGroup(customGroup));
+                } else {
+                    breakpoint.setBreakpointsToDisable(Collections.EMPTY_SET);
+                }
+            }
+        }
+         */
+    }
+    
+    private static Set<Breakpoint> createBreakpointsSet(Object selectedGroup) {
+        if (selectedGroup == null || selectedGroup == NONE_BREAKPOINT_GROUP) {
+            return Collections.EMPTY_SET;
+        } else {
+            TestGroupProperties tgp = createTestProperties(selectedGroup);
+            if (tgp != null) {
+                return new BreakpointsFromGroup(tgp);
+            } else {
+                String customGroup = (String) selectedGroup;
+                customGroup = customGroup.trim();
+                if (!customGroup.isEmpty()) {
+                    return new BreakpointsFromGroup(customGroup);
+                } else {
+                    return Collections.EMPTY_SET;
+                }
+            }
+        }
+    }
+    
+    /*
+    private static Object getItem(JComboBox cb, BreakpointsFromGroup bfg) {
+        String groupName = bfg.getGroupName();
+        if (groupName != null) {
+            return groupName;
+        }
+        TestGroupProperties testProperties = bfg.getTestProperties();
+        
+        FileObject fo = testProperties.getFileObject();
+        if (fo != null) {
+            
+        }
+    }
+     */
+    
+    private static TestGroupProperties createTestProperties(Object group) {
+        if (group instanceof FileItem) {
+            return new TestGroupProperties(((FileItem) group).getFileObject());
+        }
+        if (group instanceof ProjectItem) {
+            return new TestGroupProperties(((ProjectItem) group).getProject());
+        }
+        if (group instanceof TypeItem) {
+            return new TestGroupProperties(((TypeItem) group).getType());
+        }
+        return null;
+    }
+    
+    private void fillGroupNames(OutlineComboBox cb, Object[] groupNames) {
+        //DefaultComboBoxModel cbm = new DefaultComboBoxModel(groupNames);
+        cb.setItems(groupNames);
+        cb.setSelectedIndex(0);
+    }
+    
+    private Object[] fillGroups(OutlineComboBox cb, Object[] groups, BreakpointsFromGroup groupToSelect) {
+        int index = groups.length - 3;
+        FilesGroup fg = new FilesGroup();
+        ProjectsGroup pg = new ProjectsGroup();
+        TypesGroup tg = new TypesGroup();
+        groups[index++] = fg;
+        groups[index++] = pg;
+        groups[index++] = tg;
+        cb.setItems(groups);
+        if (groupToSelect == null) {
+            cb.setSelectedIndex(0);
+        } else {
+            String groupName = groupToSelect.getGroupName();
+            if (groupName != null) {
+                cb.setSelectedItem(groupName);
+            } else {
+                TestGroupProperties tgp = groupToSelect.getTestGroupProperties();
+                FileObject fo = tgp.getFileObject();
+                if (fo != null) {
+                    FileItem[] items = fg.getItems();
+                    for (FileItem fi : items) {
+                        if (fo.equals(fi.getFileObject())) {
+                            cb.getModel().setSelectedItem(fg); // To expand it and fill the items
+                            cb.setSelectedItem(fi);
+                            break;
+                        }
+                    }
+                }
+                Project project = tgp.getProject();
+                if (project != null) {
+                    ProjectItem[] items = pg.getItems();
+                    for (ProjectItem pi : items) {
+                        if (project.equals(pi.getProject())) {
+                            cb.getModel().setSelectedItem(pg); // To expand it and fill the items
+                            cb.setSelectedItem(pi);
+                            break;
+                        }
+                    }
+                }
+                String type = tgp.getType();
+                if (type != null) {
+                    TypeItem[] items = tg.getItems();
+                    for (TypeItem ti : items) {
+                        if (type.equals(ti.getType())) {
+                            cb.getModel().setSelectedItem(tg); // To expand it and fill the items
+                            cb.setSelectedItem(ti);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return groups;
+    }
+    
+    private static String[] getGroupNames() {
+        Set<String> groupNamesSorted = new TreeSet<String>();
+        Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
+        for (int i = 0; i < bs.length; i++) {
+            String gn = bs[i].getGroupName();
+            groupNamesSorted.add(gn);
+        }
+        groupNamesSorted.remove(""); // Remove the defalt group
+        List<String> groupNames = new ArrayList<String>(groupNamesSorted);
+        groupNames.add(0, NbBundle.getMessage(ActionsPanel.class, "LBL_NoneBreakpointGroup"));
+        return groupNames.toArray(new String[0]);
+    }
+    
+    private static Object[] getGroups() {
+        Set<String> groupNamesSorted = new TreeSet<String>();
+        Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
+        for (int i = 0; i < bs.length; i++) {
+            String gn = bs[i].getGroupName();
+            groupNamesSorted.add(gn);
+        }
+        groupNamesSorted.remove(""); // Remove the defalt group
+        Object[] groups = new Object[1 + groupNamesSorted.size() + 3]; // 3 expandable groups
+        groups[0] = NONE_BREAKPOINT_GROUP;
+        int i = 1;
+        for (String gn : groupNamesSorted) {
+            groups[i++] = gn;
+        }
+        return groups;
+    }
+    
+    private static final class NoneBreakpointGroup {
+
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(ActionsPanel.class, "LBL_NoneBreakpointGroup");
+        }
+        
+        public static Object valueOf(String newString) {
+            if (newString.isEmpty() || NbBundle.getMessage(ActionsPanel.class, "LBL_NoneBreakpointGroup").equals(newString)) {
+                return NONE_BREAKPOINT_GROUP;
+            } else {
+                return newString;
+            }
+        }
+        
     }
     
     
@@ -243,6 +508,12 @@ private void cbSuspendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JComboBox cbSuspend;
     private javax.swing.JPanel checkBoxPanel;
     private javax.swing.JCheckBox defaultActionCheckBox;
+    private javax.swing.JCheckBox disableGroupCheckBox;
+    private javax.swing.JComboBox disableGroupComboBox;
+    private javax.swing.JLabel disableGroupLabel;
+    private javax.swing.JCheckBox enableGroupCheckBox;
+    private javax.swing.JComboBox enableGroupComboBox;
+    private javax.swing.JLabel enableGroupLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField tfPrintText;
