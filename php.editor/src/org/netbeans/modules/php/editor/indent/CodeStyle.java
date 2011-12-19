@@ -155,6 +155,11 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
+    public BracePlacement getUseTraitBodyBracePlacement() {
+        String placement = preferences.get(useTraitBodyBracePlacement, getDefaultAsString(useTraitBodyBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getOtherBracePlacement() {
         String placement = preferences.get(otherBracePlacement, getDefaultAsString(otherBracePlacement));
         return BracePlacement.valueOf(placement);
@@ -172,6 +177,10 @@ public final class CodeStyle {
 
     public int getBlankLinesBeforeUse() {
         return preferences.getInt(blankLinesBeforeUse, getDefaultAsInt(blankLinesBeforeUse));
+    }
+
+    public int getBlankLinesBeforeUseTrait() {
+        return preferences.getInt(blankLinesBeforeUseTrait, getDefaultAsInt(blankLinesBeforeUseTrait));
     }
 
     public int getBlankLinesAfterUse() {
@@ -350,6 +359,10 @@ public final class CodeStyle {
 
     public boolean spaceBeforeCatchLeftBrace() {
         return preferences.getBoolean(spaceBeforeCatchLeftBrace, getDefaultAsBoolean(spaceBeforeCatchLeftBrace));
+    }
+
+    public boolean spaceBeforeUseTraitBodyLeftBrace() {
+        return preferences.getBoolean(spaceBeforeUseTraitBodyLeftBrace, getDefaultAsBoolean(spaceBeforeUseTraitBodyLeftBrace));
     }
 
 //

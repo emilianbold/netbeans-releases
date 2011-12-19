@@ -98,6 +98,7 @@ public class TokenFormatter {
 	public CodeStyle.BracePlacement forBracePlacement;
 	public CodeStyle.BracePlacement whileBracePlacement;
 	public CodeStyle.BracePlacement switchBracePlacement;
+    public CodeStyle.BracePlacement useTraitBodyBracePlacement;
 	public CodeStyle.BracePlacement catchBracePlacement;
 	public CodeStyle.BracePlacement otherBracePlacement;
 
@@ -111,6 +112,7 @@ public class TokenFormatter {
 	public boolean spaceBeforeSwitchLeftBrace;
 	public boolean spaceBeforeTryLeftBrace;
 	public boolean spaceBeforeCatchLeftBrace;
+	public boolean spaceBeforeUseTraitBodyLeftBrace;
 
 	public boolean spaceBeforeMethodDeclParen;
 	public boolean spaceBeforeMethodCallParen;
@@ -160,6 +162,7 @@ public class TokenFormatter {
 	public int blankLinesBeforeNamespace;
 	public int blankLinesAfterNamespace;
 	public int blankLinesBeforeUse;
+	public int blankLinesBeforeUseTrait;
 	public int blankLinesAfterUse;
 	public int blankLinesBeforeClass;
 	public int blankLinesBeforeClassEnd;
@@ -222,6 +225,7 @@ public class TokenFormatter {
 	    whileBracePlacement = codeStyle.getWhileBracePlacement();
 	    switchBracePlacement = codeStyle.getSwitchBracePlacement();
 	    catchBracePlacement = codeStyle.getCatchBracePlacement();
+        useTraitBodyBracePlacement = codeStyle.getUseTraitBodyBracePlacement();
 	    otherBracePlacement = codeStyle.getOtherBracePlacement();
 
 	    spaceBeforeClassDeclLeftBrace = codeStyle.spaceBeforeClassDeclLeftBrace();
@@ -234,6 +238,7 @@ public class TokenFormatter {
 	    spaceBeforeSwitchLeftBrace = codeStyle.spaceBeforeSwitchLeftBrace();
 	    spaceBeforeTryLeftBrace = codeStyle.spaceBeforeTryLeftBrace();
 	    spaceBeforeCatchLeftBrace = codeStyle.spaceBeforeCatchLeftBrace();
+	    spaceBeforeUseTraitBodyLeftBrace = codeStyle.spaceBeforeUseTraitBodyLeftBrace();
 
 	    spaceBeforeMethodDeclParen = codeStyle.spaceBeforeMethodDeclParen();
 	    spaceBeforeMethodCallParen = codeStyle.spaceBeforeMethodCallParen();
@@ -283,6 +288,7 @@ public class TokenFormatter {
 	    blankLinesBeforeNamespace = codeStyle.getBlankLinesBeforeNamespace();
 	    blankLinesAfterNamespace = codeStyle.getBlankLinesAfterNamespace();
 	    blankLinesBeforeUse = codeStyle.getBlankLinesBeforeUse();
+	    blankLinesBeforeUseTrait = codeStyle.getBlankLinesBeforeUseTrait();
 	    blankLinesAfterUse = codeStyle.getBlankLinesAfterUse();
 	    blankLinesBeforeClass = codeStyle.getBlankLinesBeforeClass();
 	    blankLinesBeforeClassEnd = codeStyle.getBlankLinesBeforeClassEnd();
@@ -500,6 +506,12 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE:
+                                        indentRule = true;
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.useTraitBodyBracePlacement, docOptions.spaceBeforeUseTraitBodyLeftBrace, oldText, indent);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
                                     case WHITESPACE_BEFORE_OTHER_LEFT_BRACE:
                                         indentRule = true;
                                         ws = countWhiteSpaceBeforeLeftBrace(docOptions.otherBracePlacement, docOptions.spaceBeforeTryLeftBrace, oldText, indent);
@@ -547,6 +559,13 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
                                         lastBracePlacement = docOptions.catchBracePlacement;
+                                        break;
+                                    case WHITESPACE_BEFORE_USE_TRAIT_BODY_RIGHT_BRACE:
+                                        indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
+                                        ws = countWhiteSpaceBeforeRightBrace(docOptions.useTraitBodyBracePlacement, newLines, 0, indent, formatTokens, index - 1);
+                                        newLines = ws.lines;
+                                        countSpaces = indentRule ? ws.spaces : 1;
+                                        lastBracePlacement = docOptions.useTraitBodyBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_OTHER_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
@@ -636,6 +655,20 @@ public class TokenFormatter {
                                         newLines = docOptions.blankLinesAfterUse + 1;
                                         break;
                                     case WHITESPACE_BEFORE_USES_PART:
+                                        indentRule = true;
+                                        if (formatTokens.get(index -1 ).getId() == FormatToken.Kind.ANCHOR) {
+                                            newLines = 0;
+                                            countSpaces = 1;
+                                        } else {
+                                            newLines = 1;
+                                            countSpaces = lastAnchor.getAnchorColumn();
+                                        }
+                                        break;
+                                    case WHITESPACE_BEFORE_USE_TRAIT:
+                                        indentRule = true;
+                                        newLines = docOptions.blankLinesBeforeUseTrait + 1;
+                                        break;
+                                    case WHITESPACE_BEFORE_USE_TRAIT_PART:
                                         indentRule = true;
                                         if (formatTokens.get(index -1 ).getId() == FormatToken.Kind.ANCHOR) {
                                             newLines = 0;

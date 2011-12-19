@@ -78,6 +78,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isCurly; // whether the last visited block is curly or standard syntax.
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
+    private boolean isFirstUseTraitStatementPart;
     private FormatToken.AssignmentAnchorToken previousGroupToken = null; //used for assignment alignment
 
     public FormatVisitor(BaseDocument document) {
@@ -329,6 +330,8 @@ public class FormatVisitor extends DefaultVisitor {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_TRY_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof CatchClause) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof UseTraitStatement) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, ts.offset()));
             } else {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_LEFT_BRACE, ts.offset()));
             }
@@ -422,6 +425,9 @@ public class FormatVisitor extends DefaultVisitor {
                         addFormatToken(formatTokens);
                     } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_RIGHT_BRACE, ts.offset()));
+                        addFormatToken(formatTokens);
+                    } else if (parent instanceof UseTraitStatement) {
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE_TRAIT_BODY_RIGHT_BRACE, ts.offset()));
                         addFormatToken(formatTokens);
                     } else {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OTHER_RIGHT_BRACE, ts.offset()));
@@ -1161,8 +1167,12 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(UseTraitStatement node) {
-        //TODO: maybe it could be formated separately
-        //this.visit((UseStatement) node);
+        if (includeWSBeforePHPDoc) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE_TRAIT, ts.offset()));
+        }
+        includeWSBeforePHPDoc = true;
+        isFirstUseTraitStatementPart = true;
+        super.visit(node);
     }
 
     @Override
@@ -1185,6 +1195,29 @@ public class FormatVisitor extends DefaultVisitor {
         }
         super.visit(statementPart);
     }
+
+    @Override
+    public void visit(UseTraitStatementPart node) {
+        if (isFirstUseTraitStatementPart) {
+            formatTokens.add(new FormatToken.AnchorToken(ts.offset()));
+            isFirstUseTraitStatementPart = false;
+        }
+        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE_TRAIT_PART, ts.offset()));
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(TraitMethodAliasDeclaration node) {
+        addRestOfLine();
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(TraitConflictResolutionDeclaration node) {
+        addRestOfLine();
+        super.visit(node);
+    }
+
     private int lastIndex = -1;
 
     private void showAssertionFor188809() {
