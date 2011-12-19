@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates and open the template in
- * the editor.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package o.n.m.ws.qaf.rest.patterns;
 
@@ -14,20 +14,22 @@ import javax.ws.rs.Produces;
 /**
  * REST Web Service
  *
- * @author lukas
+ * @author jskrivanek
  */
-@Path("/Items")
-public class ItemsResource_1 {
+@Path("/Item1ContainerURI")
+public class Item1CClass {
 
     @Context
     private UriInfo context;
 
-    /** Creates a new instance of ItemsResource_1 */
-    public ItemsResource_1() {
+    /**
+     * Creates a new instance of Item1CClass
+     */
+    public Item1CClass() {
     }
 
     /**
-     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.ItemsResource_1
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.Item1CClass
      * @return an instance of java.lang.String
      */
     @GET
@@ -38,10 +40,10 @@ public class ItemsResource_1 {
     }
 
     /**
-     * Sub-resource locator method for {name}
+     * Sub-resource locator method for {Item1URI}
      */
-    @Path("{name}")
-    public ItemResource_1 getItemResource_1(@PathParam("name") String name) {
-        return ItemResource_1.getInstance(name);
+    @Path("{Item1URI}")
+    public Item1Cl getItem1Cl(@PathParam("Item1URI") String Item1URI) {
+        return Item1Cl.getInstance(Item1URI);
     }
 }

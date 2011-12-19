@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates and open the template in
- * the editor.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package o.n.m.ws.qaf.rest.patterns;
 
@@ -13,18 +13,22 @@ import javax.ws.rs.DELETE;
 /**
  * REST Web Service
  *
- * @author lukas
+ * @author jskrivanek
  */
 public class ItemResource {
 
     private String id;
 
-    /** Creates a new instance of ItemResource */
+    /**
+     * Creates a new instance of ItemResource
+     */
     private ItemResource(String id) {
         this.id = id;
     }
 
-    /** Get instance of the ItemResource */
+    /**
+     * Get instance of the ItemResource
+     */
     public static ItemResource getInstance(String id) {
         // The user may use some kind of persistence mechanism
         // to store and restore instances of ItemResource class.
