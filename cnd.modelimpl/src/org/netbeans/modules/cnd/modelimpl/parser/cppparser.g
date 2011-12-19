@@ -269,7 +269,7 @@ tokens {
 }
 
 {
-    public static CppParserAction action;
+    public CppParserAction action;
 
     // Defines for flags passed to init methods
     public static final int CPP_STATEMENT_TRACE		= 0x1;
