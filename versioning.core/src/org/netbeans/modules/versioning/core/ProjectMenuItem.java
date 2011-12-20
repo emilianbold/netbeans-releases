@@ -87,8 +87,8 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     private JComponent [] createItems() {
         List<JComponent> popups = new ArrayList<JComponent>();            
         if(!VersioningManager.isInitialized()) {            
-            popups.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));            
-            popups.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_LocalHistory")));            
+            popups.add(NoVCSMenuItem.createInitializingMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));            
+            popups.add(NoVCSMenuItem.createInitializingMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_LocalHistory")));            
         } else {
             Node [] nodes = getActivatedNodes();
             if (nodes.length > 0) {

@@ -86,9 +86,9 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         List<JComponent> items = new ArrayList<JComponent>(20);
 
         if(!VersioningManager.isInitialized()) {
-            items.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
+            items.add(NoVCSMenuItem.createInitializingMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
             items.add(Utils.createJSeparator());
-            items.add(InitMenuItem.create(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_LocalHistory")));
+            items.add(NoVCSMenuItem.createInitializingMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_LocalHistory")));
         } else {
         
             final VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
@@ -108,10 +108,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 items.add(dummy);
                 items.add(Utils.createJSeparator());
             } else {
-                JMenuItem item = new JMenuItem();
-                Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N                                 
-                item.setEnabled(false);
-                items.add(item);
+                items.add(NoVCSMenuItem.createNoVcsMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
                 return items.toArray(new JComponent[items.size()]);
             }
 

@@ -197,7 +197,7 @@ public class VersioningAnnotationProvider {
         public void actionPerformed(ActionEvent ae) { }
         @Override
         public JMenuItem getPopupPresenter() {
-            return InitMenuItem.create(getName());            
+            return NoVCSMenuItem.createInitializingMenu(getName());            
         }
         @Override
         public String getName() {
@@ -376,7 +376,7 @@ public class VersioningAnnotationProvider {
         @Override
         public void run() {
             
-            // create and fire for all files which have to be refreshed
+            // createInitializingMenu and fire for all files which have to be refreshed
             List<FileStatusEvent> fileEvents = new ArrayList<FileStatusEvent>(); 
             List<FileStatusEvent> folderEvents = new ArrayList<FileStatusEvent>(); 
 
@@ -409,7 +409,7 @@ public class VersioningAnnotationProvider {
             fireFileStatusEvents(fileEvents);
             fireFileStatusEvents(folderEvents);
 
-            // create and fire events for all parent from each file which has to be refreshed
+            // createInitializingMenu and fire events for all parent from each file which has to be refreshed
             List<FileStatusEvent> parentEvents = new ArrayList<FileStatusEvent>(); 
             synchronized(parentsToRefresh) {
                 Set<FileSystem> fileSystems = parentsToRefresh.keySet();

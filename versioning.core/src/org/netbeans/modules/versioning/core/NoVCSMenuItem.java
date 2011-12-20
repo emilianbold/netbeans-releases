@@ -53,19 +53,27 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-class InitMenuItem extends JMenu {
+class NoVCSMenuItem extends JMenu {
 
-    private InitMenuItem() { }
+    private NoVCSMenuItem() { }
 
-    static JMenu create(String name) {
-        final InitMenuItem menu = new InitMenuItem();
+    static JMenu createNoVcsMenu(String name) {
+        return create(name, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));
+    }
+    
+    static JMenu createInitializingMenu(String name) {
+        return create(name, NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_Initializing"));
+    }
+    
+    private static JMenu create(String name, final String itemName) {
+        final NoVCSMenuItem menu = new NoVCSMenuItem();
         Mnemonics.setLocalizedText(menu, name);  // NOI18N         
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
                 if (menu.getItemCount() != 0) return;
                 JMenuItem item = new JMenuItem();
-                Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_Initializing"));  // NOI18N                                 
+                Mnemonics.setLocalizedText(item, itemName);  // NOI18N                                 
                 item.setEnabled(false);
                 menu.add(item);
             }
