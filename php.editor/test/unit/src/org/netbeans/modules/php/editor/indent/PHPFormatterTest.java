@@ -2603,6 +2603,18 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/blankLines/TraitUses02.php", options);
     }
 
+    public void testTraitUsesSpaces_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeUseTraitBodyLeftBrace, true);
+        reformatFileContents("testfiles/formatting/spaces/TraitUses01.php", options);
+    }
+
+    public void testTraitUsesSpaces_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeUseTraitBodyLeftBrace, false);
+        reformatFileContents("testfiles/formatting/spaces/TraitUses02.php", options);
+    }
+
     protected void reformatFileContents(String file, IndentPrefs preferences, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
