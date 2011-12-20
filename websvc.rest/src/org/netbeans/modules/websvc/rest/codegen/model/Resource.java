@@ -98,7 +98,9 @@ public class Resource {
         }
 
         public void addMethod(Method m) {
-            methodList.add(m);
+            if ( m != null ){
+                methodList.add(m);
+            }
         }
         
         public void setDefaultGet(){
