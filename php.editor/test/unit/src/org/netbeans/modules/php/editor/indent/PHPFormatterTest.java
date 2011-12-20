@@ -2615,6 +2615,24 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/TraitUses02.php", options);
     }
 
+    public void testTraitUsesBracePlacement_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/TraitUses01.php", options);
+    }
+
+    public void testTraitUsesBracePlacement_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        reformatFileContents("testfiles/formatting/TraitUses02.php", options);
+    }
+
+    public void testTraitUsesBracePlacement_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        reformatFileContents("testfiles/formatting/TraitUses03.php", options);
+    }
+
     protected void reformatFileContents(String file, IndentPrefs preferences, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
