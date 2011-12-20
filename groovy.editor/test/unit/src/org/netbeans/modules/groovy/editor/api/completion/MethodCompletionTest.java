@@ -105,7 +105,7 @@ public class MethodCompletionTest extends GroovyCCTestBase {
         checkCompletion(BASE + "CompletionForLiteral1.groovy", "\"\".c^", false);
     }
 
-    public void testCompletionInsideConstructor1() throws Exception {
+    public void testCompletionInsideConstructor1_1() throws Exception {
         checkCompletion(BASE + "CompletionInsideConstructor1.groovy", "new File(\"/\").equals(new Date().a^", false);
     }
 

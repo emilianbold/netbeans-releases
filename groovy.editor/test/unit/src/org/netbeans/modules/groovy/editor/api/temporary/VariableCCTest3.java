@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.modules.groovy.editor.api.temporary;
 
 import java.util.Set;
+import org.netbeans.modules.groovy.editor.api.completion.GroovyCCTestBase;
+import org.netbeans.modules.groovy.editor.api.completion.VariablesCompletionTest;
 
 /**
+ * Just temporary test (see README.txt for more details). Original test location is {@link VariablesCompletionTest}
  *
- * @author Petr Hejl
+ * @author Martin Janicek
  */
-public class VariablesCompletionTest extends GroovyCCTestBase {
+public class VariableCCTest3 extends GroovyCCTestBase {
 
-    public VariablesCompletionTest(String testName) {
+    public VariableCCTest3(String testName) {
         super(testName);
     }
 
@@ -62,69 +64,11 @@ public class VariablesCompletionTest extends GroovyCCTestBase {
     @Override
     protected Set<String> additionalSourceClassPath() {
         Set<String> sources = super.additionalSourceClassPath();
-
-        // Because we have to have also Variables1.groovy and Variables2.groovy
-        // on classpath for variables3 test cases
-        if (getName().contains("Variables3")) {
-            sources.add(getBasicSourcePath());
-        }
+        sources.add(getBasicSourcePath());
         return sources;
     }
 
-    public void testVariables1_1() throws Exception {
-        checkCompletion(BASE + "Variables1.groovy", "            i^", true);
-    }
-
-    public void testVariables1_2() throws Exception {
-        checkCompletion(BASE + "Variables1.groovy", "        it^", true);
-    }
-
-    public void testVariables1_3() throws Exception {
-        checkCompletion(BASE + "Variables1.groovy", "            a^", true);
-    }
-
-    public void testVariables1_4() throws Exception {
-        checkCompletion(BASE + "Variables1.groovy", "            e^", true);
-    }
-
-    public void testVariables1_5() throws Exception {
-        checkCompletion(BASE + "Variables1.groovy", "        es^", true);
-    }
-
-    public void testVariables1_6() throws Exception {
-        checkCompletion(BASE + "Variables1.groovy", "        pa^", true);
-    }
-
-    public void testVariables2_1() throws Exception {
-        checkCompletion(BASE + "Variables2.groovy", "                it^", true);
-    }
-
-    public void testVariables2_2() throws Exception {
-        checkCompletion(BASE + "Variables2.groovy", "                ind^", true);
-    }
-
-    public void testVariables2_3() throws Exception {
-        checkCompletion(BASE + "Variables2.groovy", "                par^", true);
-    }
-
-    public void testVariables2_4() throws Exception {
-        checkCompletion(BASE + "Variables2.groovy", "                inde^", true);
-    }
-
-    public void testVariables2_5() throws Exception {
-        checkCompletion(BASE + "Variables2.groovy", "            pa^", true);
-    }
-
-    /*
     public void testVariables3_1() throws Exception {
-        checkCompletion(BASE + "Variables3.groovy", "println \"Hello $name!\" ^", true);
-    }
-
-    public void testVariables3_2() throws Exception {
-        checkCompletion(BASE + "Variables3.groovy", "    x ^", true);
-    }
-
-    public void testVariables3_3() throws Exception {
         checkCompletion(BASE + "Variables3.groovy", "    def x ^", true);
-    }*/
+    }
 }
