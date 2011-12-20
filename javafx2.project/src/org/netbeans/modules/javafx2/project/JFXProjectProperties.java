@@ -108,6 +108,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_BINARY_ENCODE_CSS = "javafx.binarycss"; // NOI18N
     public static final String JAVAFX_DEPLOY_INCLUDEDT = "javafx.deploy.includeDT"; // NOI18N
     public static final String JAVAFX_DEPLOY_EMBEDJNLP = "javafx.deploy.embedJNLP"; // NOI18N
+    public static final String JAVAFX_REBASE_LIBS = "javafx.rebase.libs"; // NOI18N
     
     // FX config properties (Run panel), replicated from ProjectProperties
     public static final String MAIN_CLASS = "javafx.main.class"; // NOI18N

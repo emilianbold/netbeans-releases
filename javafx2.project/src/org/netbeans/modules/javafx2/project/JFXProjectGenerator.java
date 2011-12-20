@@ -325,7 +325,9 @@ public class JFXProjectGenerator {
                     ext.addDependency("-init-check", "-check-javafx"); // NOI18N
                     ext.addDependency("-init-check", "-javafx-check-error"); // NOI18N
                     ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
+                    ext.addDependency("jar", "-rebase-libs"); //NOI18N
                     ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
+                    ext.addDependency("-post-jar", "-rebase-libs"); //NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
                     ext.addDependency("run", "jar"); //NOI18N
                     ext.addDependency("debug", "jar");//NOI18N
@@ -384,6 +386,8 @@ public class JFXProjectGenerator {
         ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "false"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_EMBEDJNLP, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_REBASE_LIBS, "false"); // NOI18N
+        ep.setComment(JFXProjectProperties.JAVAFX_REBASE_LIBS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_rebase_libs")}, false); // NOI18N
         
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N

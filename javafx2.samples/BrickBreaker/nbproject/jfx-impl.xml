@@ -210,6 +210,12 @@
                 <equals arg1="${javafx.binarycss}" arg2="true" trim="true"/>
             </and>
         </condition>
+        <condition property="rebase-lib-jars">
+            <and>
+                <isset property="javafx.rebase.libs"/>
+                <equals arg1="${javafx.rebase.libs}" arg2="true" trim="true"/>
+            </and>
+        </condition>
 
         <echo message="main-class-available = ${main-class-available}" level="verbose"/>
         <echo message="preloader-available = ${preloader-available}" level="verbose"/>
@@ -224,6 +230,7 @@
         <echo message="offline-allowed = ${offline-allowed}" level="verbose"/>
         <echo message="permissions-elevated = ${permissions-elevated}" level="verbose"/>
         <echo message="binary-encode-css = ${binary-encode-css}" level="verbose"/>
+        <echo message="rebase-lib-jars = ${rebase-lib-jars}" level="verbose"/>
     </target>
 
     <target name="-icon-warning" depends="-check-project" if="icon-available">
@@ -253,6 +260,28 @@
         <property name="permissions.elevated" value="false"/>
     </target>
 
+    <target name="-set-binary-css" depends="-check-project" if="binary-encode-css">
+        <property name="css-include-ext" value="bss"/>
+        <property name="css-exclude-ext" value="css"/>
+    </target>
+    <target name="-unset-binary-css" depends="-check-project" unless="binary-encode-css">
+        <property name="css-include-ext" value="css"/>
+        <property name="css-exclude-ext" value="bss"/>
+    </target>
+    <target name="-copy-binary-css" depends="-check-project" if="binary-encode-css">
+        <fileset id="cssfiles" dir="${basedir}${file.separator}${build.classes.dir}">
+            <include name="**${file.separator}*.css"/>
+        </fileset>
+        <property name="cssfileslist" refid="cssfiles"/>
+        <echo message="css files to binary convert: " level="verbose">${cssfileslist}</echo>
+        <fx:csstobin outdir="${basedir}${file.separator}${build.classes.dir}">
+            <fileset refid="cssfiles"/>
+        </fx:csstobin>
+    </target>
+
+
+    <!-- Copy dependent libraries -->
+    
     <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar">
         <pathconvert property="run.classpath.without.build.classes.and.dist.dir">
             <path path="${run.classpath}"/>
@@ -271,23 +300,173 @@
         <copy file="${javafx.preloader.jar.path}" todir="${dist.dir}${file.separator}lib"/>
     </target>
 
-    <target name="-set-binary-css" depends="-check-project" if="binary-encode-css">
-        <property name="css-include-ext" value="bss"/>
-        <property name="css-exclude-ext" value="css"/>
+
+    <!-- Optional classpath re-base of dependent JAR manifests after copy to lib/, required by GlassFish -->
+
+    <macrodef name="rebase-lib">
+        <attribute name="jarfile"/>
+        <sequential>
+            <local name="tmpdir"/>
+            <property name="tmpdir" value="${java.io.tmpdir}${file.separator}${user.name}_${ant.project.name}_rebase" />
+            <echo message="tmpdir = ${tmpdir}" level="verbose"/>
+            <delete dir="${tmpdir}" quiet="true"/>
+            <mkdir dir="${tmpdir}"/>
+            <unzip src="@{jarfile}" dest="${tmpdir}">
+                <patternset>
+                    <include name="META-INF${file.separator}MANIFEST.MF"/>
+                </patternset>
+            </unzip>
+            <local name="manifest.file.temp"/>
+            <property name="manifest.file.temp" value="${tmpdir}${file.separator}META-INF${file.separator}MANIFEST.MF" />
+            <echo message="manifest.file.temp = ${manifest.file.temp}" level="verbose"/>
+            <!-- edited manifest file -->
+            <local name="manifest.file.temp.new"/>
+            <property name="manifest.file.temp.new" value="${manifest.file.temp}_new" />
+            <echo message="manifest.file.temp.new = ${manifest.file.temp.new}" level="verbose"/>
+            <script language="javascript">
+                <![CDATA[
+                    var UTF_8 = "UTF-8";
+                    var ATTR_CLASS_PATH = "Class-Path";
+                    var ATTR_CLASS_PATH_FX = "JavaFX-Class-Path";
+                    function isSigned(manifest) {        
+                        var sections = manifest.getSectionNames();
+                        while(sections.hasMoreElements()) {
+                            var sectionname = sections.nextElement();
+                            var section = manifest.getSection(sectionname);
+                            if(section != null) {
+                                var sectionKeys = section.getAttributeKeys();
+                                while (sectionKeys.hasMoreElements()) {
+                                    var element = sectionKeys.nextElement();
+                                    if (element.endsWith("-Digest") || element.endsWith("-digest")) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        return false;
+                    }
+                    var src = project.getProperty("manifest.file.temp");
+                    var srf = new java.io.File(src);
+                    try {
+                        var fis = new java.io.FileInputStream(srf);
+                        try {
+                            var isr = new java.io.InputStreamReader(fis, UTF_8);
+                            try {
+                                var manifest = new org.apache.tools.ant.taskdefs.Manifest(isr);
+                            } finally {
+                                isr.close();
+                            }
+                        } finally {
+                            fis.close();
+                        }
+                    } catch(e) {
+                        var manifest = null;
+                    }
+                    if(manifest != null) {
+                        if(isSigned(manifest)) {
+                            println("Warning: Signed JAR can not be rebased.");
+                        } else {
+                            var mainSection = manifest.getMainSection();
+                            var classPath = mainSection.getAttributeValue(ATTR_CLASS_PATH);
+                            if (classPath != null) {
+                                var classPathAttr = ATTR_CLASS_PATH;
+                            } else {
+                                classPath = mainSection.getAttributeValue(ATTR_CLASS_PATH_FX);
+                                if(classPath != null) {
+                                    var classPathAttr = ATTR_CLASS_PATH_FX;
+                                }
+                            }
+                            if(classPath != null) {
+                                var result = new java.lang.StringBuilder();
+                                var changed = false;
+                                var pathArray = classPath.split(" ");
+                                for (var i=0; i<pathArray.length; i++) {
+                                    if (result.length() > 0) {
+                                        result.append(' ');
+                                    }
+                                    var index = pathArray[i].lastIndexOf('/');
+                                    if (index >=0 && index < pathArray[i].length()-1) {
+                                        pathArray[i] = pathArray[i].substring(index+1);
+                                        changed = true;
+                                    }
+                                    result.append(pathArray[i]);
+                                }
+                                mainSection.removeAttribute(classPathAttr);
+                                mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(classPathAttr, result.toString()));
+                                var tgt = project.getProperty("manifest.file.temp.new");
+                                var tgf = new java.io.File(tgt);
+                                try {
+                                    var fos = new java.io.FileOutputStream(tgf);
+                                    try {
+                                        var osw = new java.io.OutputStreamWriter(fos, UTF_8);
+                                        try {
+                                            var manifestOut = new java.io.PrintWriter(osw);
+                                            manifest.write(manifestOut);
+                                            manifestOut.close();
+                                        } finally {
+                                            osw.close();
+                                        }
+                                    } finally {
+                                        fos.close();
+                                    }
+                                } catch(e) {
+                                    println("Warning: problem storing rebased manifest file.");
+                                }
+                            }
+                        }
+                    }
+                ]]>
+            </script>
+            <antcall target="-move-new-manifest-if-exists">
+                <param name="move.file.from" value="${manifest.file.temp.new}"/>
+                <param name="move.file.to" value="${manifest.file.temp}"/>
+            </antcall>
+            <zip destfile="@{jarfile}" basedir="${tmpdir}" update="true"/>
+            <delete dir="${tmpdir}" quiet="true"/>
+        </sequential>
+    </macrodef>
+    
+    <target name="-new-temp-mainfest-existence">
+        <condition property="new-temp-manifest-exists">
+            <available file="${move.file.from}"/>
+        </condition>
+        <echo message="new-temp-manifest-exists = ${new-temp-manifest-exists}" level="verbose"/>
     </target>
-    <target name="-unset-binary-css" depends="-check-project" unless="binary-encode-css">
-        <property name="css-include-ext" value="css"/>
-        <property name="css-exclude-ext" value="bss"/>
+    
+    <target name="-move-new-manifest-if-exists" depends="-new-temp-mainfest-existence" if="new-temp-manifest-exists">
+        <move file="${move.file.from}" tofile="${move.file.to}" failonerror="false"/>
     </target>
-    <target name="-copy-binary-css" depends="-check-project" if="binary-encode-css">
-        <fileset id="cssfiles" dir="${basedir}${file.separator}${build.classes.dir}">
-            <include name="**${file.separator}*.css"/>
-        </fileset>
-        <property name="cssfileslist" refid="cssfiles"/>
-        <echo message="css files to binary convert: " level="verbose">${cssfileslist}</echo>
-        <fx:csstobin outdir="${basedir}${file.separator}${build.classes.dir}">
-            <fileset refid="cssfiles"/>
-        </fx:csstobin>
+    
+    <target name="-rebase-libs-macro-call">
+        <echo message="Rebase jarfile = ${jar.file.to.rebase}" level="verbose"/>
+        <rebase-lib jarfile="${jar.file.to.rebase}"/>
+    </target>
+    
+    <target name="-rebase-libs" depends="-check-project, -jfx-copylibs" if="rebase-lib-jars">
+        <property name="pp_rebase_dir" value="${basedir}${file.separator}${dist.dir}${file.separator}lib"/>
+        <property name="pp_rebase_fs" value="*.jar"/>
+        <script language="javascript">
+            <![CDATA[
+                var dir = project.getProperty("pp_rebase_dir");
+                var fDir = new java.io.File(dir);
+                if( fDir.exists() ) {
+                    var callTask = project.createTask("antcall");
+                    callTask.setTarget("-rebase-libs-macro-call");
+                    var param = callTask.createParam();
+                    param.setName("jar.file.to.rebase");
+                    var includes = project.getProperty("pp_rebase_fs");
+                    var fs = project.createDataType("fileset");
+                    fs.setDir( fDir );
+                    fs.setIncludes(includes);
+                    var ds = fs.getDirectoryScanner(project);
+                    var srcFiles = ds.getIncludedFiles();
+                    for (i=0; i<srcFiles.length; i++) {
+                        param.setValue(dir + "${file.separator}" + srcFiles[i]);
+                        callTask.perform();
+                    }
+                }
+            ]]>
+        </script>
     </target>
 
 
