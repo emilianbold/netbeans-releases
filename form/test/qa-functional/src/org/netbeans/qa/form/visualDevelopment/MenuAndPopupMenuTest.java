@@ -88,7 +88,7 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
     public void testMenuCreation() {
         p("testMenuCreation");
 
-        String frameName = createJFrameFile();
+        String frameName = createJFrameFile()+".java";
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode("SampleProject");
         prn.select();
@@ -153,15 +153,16 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
         designer = new FormDesignerOperator(frameName);
 
         findInCode(lines, designer);
-
-        removeFile(frameName);
+        closeOpenedProjects();
+        //removeFile(frameName);
     }
 
-    public void testPopupMenuCreation() {
+    public void testPopupMenuCreation() throws IOException {
+        openDataProjects(_testProjectName);
         p("testPopupMenuCreation");
 
 
-        String frameName = createJFrameFile();
+        String frameName = createJFrameFile()+".java";
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode("SampleProject");
         prn.select();
@@ -221,7 +222,7 @@ public class MenuAndPopupMenuTest extends ExtJellyTestCase {
 
         findInCode(lines, designer);
 
-        removeFile(frameName);
+        //removeFile(frameName);
 
     }
 }
