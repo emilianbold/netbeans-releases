@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.groovy.editor.api.completion;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -82,7 +83,18 @@ public abstract class GroovyCCTestBase extends GroovyTestBase {
     }
 
     private String getExpandedSourcePath() {
-        return getBasicSourcePath() + "/" + firstLetterToLowerCase(getClassName()); //NOI18N
+        String expandedSourcePath = getBasicSourcePath() + "/" + getClassName();
+        String lowerSourcePath = getBasicSourcePath() + "/" + firstLetterToLowerCase(getClassName()); //NOI18N
+
+        if (new File(lowerSourcePath).exists()) {
+
+            // Try to find folder with first lower case letter
+            return lowerSourcePath;
+        } else {
+        
+            // If it doesn't exist try it with first upper case letter
+            return expandedSourcePath;
+        }
     }
 
     private String firstLetterToLowerCase(String className) {
