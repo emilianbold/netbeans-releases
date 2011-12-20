@@ -81,6 +81,7 @@ public final class DefaultProcessor extends OptionProcessor {
         switch (Type.valueOf(type)) {
             case withoutArgument: o = Option.withoutArgument(shortName, longName); break;
             case requiredArgument: o = Option.requiredArgument(shortName, longName); break;
+            case optionalArgument: o = Option.optionalArgument(shortName, longName); break;
             case additionalArguments: o = Option.additionalArguments(shortName, longName); break;
             default: assert false;
         }
@@ -115,7 +116,11 @@ public final class DefaultProcessor extends OptionProcessor {
             if (e.getType() == boolean.class) {
                 map.put(cnt + ".type", "withoutArgument");
             } else if (String.class == e.getType()) {
-                map.put(cnt + ".type", "requiredArgument");
+                if (o.defaultValue().equals("\u0000")) {
+                    map.put(cnt + ".type", "requiredArgument");
+                } else {
+                    map.put(cnt + ".type", "optionalArgument");
+                }
             } else {
                 if (!String[].class.equals(e.getType())) {
                     throw new IllegalStateException("Field type has to be either boolean, String or String[]! " + e);
@@ -183,6 +188,13 @@ public final class DefaultProcessor extends OptionProcessor {
                         f.setBoolean(instance, true); break;
                     case requiredArgument:
                         f.set(instance, entry.getValue()[0]); break;
+                    case optionalArgument:
+                        if (entry.getValue().length == 1) {
+                            f.set(instance, entry.getValue()[0]);
+                        } else {
+                            f.set(instance, f.getAnnotation(Arg.class).defaultValue());
+                        }
+                        break;
                     case additionalArguments:
                         f.set(instance, entry.getValue()); break;
                     case defaultArguments:
@@ -232,14 +244,15 @@ public final class DefaultProcessor extends OptionProcessor {
     }
 
     private static enum Type {
-        withoutArgument, requiredArgument, additionalArguments, defaultArguments;
+        withoutArgument, requiredArgument, optionalArgument, 
+        additionalArguments, defaultArguments;
         
         public static Type valueOf(Option o) {
             OptionImpl impl = OptionImpl.Trampoline.DEFAULT.impl(o);
             switch (impl.argumentType) {
                 case 0: return withoutArgument;
                 case 1: return requiredArgument;
-                case 2: assert false;
+                case 2: return optionalArgument;
                 case 3: return additionalArguments;
                 case 4: return defaultArguments;
             }

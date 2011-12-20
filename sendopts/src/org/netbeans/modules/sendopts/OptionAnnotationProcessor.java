@@ -123,7 +123,11 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
                 if (boolType == e.asType()) {
                     f.stringvalue(cnt + ".type", "withoutArgument");
                 } else if (stringType == e.asType()) {
-                    f.stringvalue(cnt + ".type", "requiredArgument");
+                    if (o.defaultValue().equals("\u0000")) {
+                        f.stringvalue(cnt + ".type", "requiredArgument");
+                    } else {
+                        f.stringvalue(cnt + ".type", "optionalArgument");
+                    }
                 } else {
                     if (!stringArray.equals(e.asType())) {
                         throw new LayerGenerationException("Field type has to be either boolean, String or String[]!", e);

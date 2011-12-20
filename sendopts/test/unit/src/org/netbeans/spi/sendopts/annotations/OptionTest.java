@@ -141,6 +141,16 @@ public class OptionTest extends NbTestCase {
         assertTrue("contains additionalParams:\n" + w, w.toString().contains(("AddOnParams")));
         assertTrue("contains short help:\n" + w, w.toString().contains(("ShortHelp")));
     }
+        public void testDefaultValueNotProvided() throws CommandException {
+            cmd.process("--default");
+            assertNotNull("Options created", methodCalled);
+            assertEquals("Set to empty string", "", methodCalled.defaultValue);
+        }
+        public void testDefaultValueProvided() throws CommandException {
+            cmd.process("--default=value");
+            assertNotNull("Options created", methodCalled);
+            assertEquals("Set to value string", "value", methodCalled.defaultValue);
+        }
 
         @NbBundle.Messages({
             "NAME=AddOnParams", 
@@ -156,6 +166,9 @@ public class OptionTest extends NbTestCase {
         @Description(displayName="#NAME", shortDescription="#SHORT")
         @Arg(shortName='a', longName="additional", implicit=true)
         public String[] additionalParams;
+        
+        @Arg(longName="default", defaultValue="")
+        public String defaultValue;
         
         @Override
         public void process(Env env) {

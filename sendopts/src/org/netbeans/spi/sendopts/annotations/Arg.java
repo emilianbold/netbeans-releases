@@ -93,4 +93,10 @@ public @interface Arg {
      * @return return true, if this option should be implicit
      */
     boolean implicit() default false;
+    
+    /** Some fields may require no argument and still be present. For those
+     * one needs to specify default value which will be assigned to the field,
+     * if the option is present without any argument.
+     */
+    String defaultValue() default "\u0000";
 }
