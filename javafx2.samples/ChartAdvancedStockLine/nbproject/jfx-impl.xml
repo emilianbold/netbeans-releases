@@ -253,19 +253,18 @@
         <property name="permissions.elevated" value="false"/>
     </target>
 
-    <target name="-check-copylibs">
-        <condition property="have.copylibs">
-            <and>
-                <isset property="libs.CopyLibs.classpath"/>
-                <not>
-                    <istrue value="${mkdist.disabled}"/>
-                </not>
-            </and>
-        </condition>
-    </target>
-    <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs,-check-copylibs" if="have.copylibs">
-        <j2seproject1:jar/>
-        <j2seproject3:copylibs/>
+    <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar">
+        <pathconvert property="run.classpath.without.build.classes.and.dist.dir">
+            <path path="${run.classpath}"/>
+            <map from="${basedir}${file.separator}${build.classes.dir}" to=""/>
+            <map from="${basedir}${file.separator}${dist.jar}" to=""/>
+        </pathconvert>
+        <delete dir="${dist.dir}${file.separator}lib" includeEmptyDirs="true" quiet="true"/>
+        <copy todir="${dist.dir}${file.separator}lib" flatten="true" preservelastmodified="true" overwrite="true">
+            <path>
+                <pathelement path="${run.classpath.without.build.classes.and.dist.dir}"/>
+            </path>
+        </copy>
     </target>
     
     <target name="-copy-external-preloader-jar" depends="-check-project" if="app-with-external-preloader-jar">
@@ -374,14 +373,11 @@
 
     <macrodef name="deploy-preprocess">
         <sequential>
-            <delete file="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}" quiet="true"/>
-            <delete file="${jfx.deployment.dir}${file.separator}lib${file.separator}${jfx.deployment.jar}" quiet="true"/>
             <delete includeEmptyDirs="true" quiet="true">
                 <fileset dir="${jfx.deployment.dir}${file.separator}lib">
                     <exclude name="**${file.separator}*.jar"/>
                 </fileset>
             </delete>
-            <delete file="${jfx.deployment.dir}${file.separator}README.TXT" quiet="true"/>
         </sequential>
     </macrodef>
 
@@ -395,7 +391,6 @@
             <property name="pp_jar_dir" value="${jfx.deployment.dir}"/>
             <property name="pp_jar_fs1" value="lib${file.separator}${javafx.preloader.jar.filename}"/>
             <property name="pp_jar_fs2" value="lib${file.separator}*.jar"/>
-            <property name="pp_jar_fs3" value="lib${file.separator}${jfx.deployment.jar}"/>
             <script language="javascript">
                 <![CDATA[
                     var S = java.io.File.separator;
@@ -477,20 +472,18 @@
                         var f1 = res.createFileSet();
                         f1.setProject(project);
                         f1.setDir(new java.io.File(pdir));
-                        var i1 = project.getProperty("pp_deploy_fs1");
+                        var i1 = project.getProperty("pp_jar_fs1");
                         f1.setIncludes(i1);
                         f1.setRequiredFor("preloader");
                         var f2 = res.createFileSet();
                         f2.setProject(project);
                         f2.setDir(new java.io.File(pdir));
                         var i2a = project.getProperty("jfx.deployment.jar");
-                        var i2b = project.getProperty("pp_deploy_fs2");
-                        var e2c = project.getProperty("pp_deploy_fs1");
-                        var e2d = project.getProperty("pp_deploy_fs3");
+                        var i2b = project.getProperty("pp_jar_fs2");
+                        var e2c = project.getProperty("pp_jar_fs1");
                         f2.setIncludes(i2a);
                         f2.setIncludes(i2b);
                         f2.setExcludes(e2c);
-                        f2.setExcludes(e2d);
                         f2.setRequiredFor("startup");
                         var lazyjars = getLazyJars();
                         if(lazyjars != null) {
@@ -505,11 +498,9 @@
                         fn.setProject(project);
                         fn.setDir(new java.io.File(pdir));
                         var ia = project.getProperty("jfx.deployment.jar");
-                        var ib = project.getProperty("pp_deploy_fs2");
-                        var ec = project.getProperty("pp_deploy_fs3");
+                        var ib = project.getProperty("pp_jar_fs2");
                         fn.setIncludes(ia);
                         fn.setIncludes(ib);
-                        fn.setExcludes(ec);
                         fn.setRequiredFor("startup");
                         var lazyjars = getLazyJars();
                         if(lazyjars != null) {
@@ -621,7 +612,6 @@
             <property name="pp_deploy_dir" value="${jfx.deployment.dir}"/>
             <property name="pp_deploy_fs1" value="lib${file.separator}${javafx.preloader.jar.filename}"/>
             <property name="pp_deploy_fs2" value="lib${file.separator}*.jar"/>
-            <property name="pp_deploy_fs3" value="lib${file.separator}${jfx.deployment.jar}"/>
             <script language="javascript">
                 <![CDATA[
                     function isTrue(prop) {
@@ -739,11 +729,9 @@
                         var i2a = project.getProperty("jfx.deployment.jar");
                         var i2b = project.getProperty("pp_deploy_fs2");
                         var e2c = project.getProperty("pp_deploy_fs1");
-                        var e2d = project.getProperty("pp_deploy_fs3");
                         f2.setIncludes(i2a);
                         f2.setIncludes(i2b);
                         f2.setExcludes(e2c);
-                        f2.setExcludes(e2d);
                         f2.setRequiredFor("startup");
                         var lazyjars = getLazyJars();
                         if(lazyjars != null) {
@@ -759,10 +747,8 @@
                         fn.setDir(new java.io.File(deploydir));
                         var ia = project.getProperty("jfx.deployment.jar");
                         var ib = project.getProperty("pp_deploy_fs2");
-                        var ec = project.getProperty("pp_deploy_fs3");
                         fn.setIncludes(ia);
                         fn.setIncludes(ib);
-                        fn.setExcludes(ec);
                         fn.setRequiredFor("startup");
                         var lazyjars = getLazyJars();
                         if(lazyjars != null) {
