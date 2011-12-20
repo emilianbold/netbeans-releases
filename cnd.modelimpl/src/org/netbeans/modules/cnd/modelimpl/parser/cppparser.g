@@ -1304,12 +1304,15 @@ member_declaration
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
+                {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
 				LT(1).getLine());
 		}
-		enum_specifier (member_declarator_list)? SEMICOLON!	//{end_of_stmt();}
+		enum_specifier (member_declarator_list)? 
+                {action.end_enum_declaration(LT(1));}
+                SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|	
                 //enum typedef )))	

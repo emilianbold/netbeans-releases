@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -61,6 +62,7 @@ import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
@@ -118,13 +120,23 @@ public class JPQLValidation extends JPAClassRule {
                 nq.setQuery(value);
             }
             helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData())));
-            helper.getProvider();
-            helper.getParsedJPQLQuery();
-            List<JPQLQueryProblem> tmp = helper.validate();
+            List<JPQLQueryProblem> tmp = null;
+            try{
+                tmp = helper.validate();
+            } catch (UnsupportedOperationException ex) {
+                JPAProblemFinder.LOG.log(Level.INFO, "Unsupported jpql validation case: " + ex.getMessage(), ex);
+            }catch (NullPointerException ex) {
+                JPAProblemFinder.LOG.log(Level.INFO, "NPE in jpql validation: " + ex.getMessage(), ex);
+            }
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
+            helper.dispose();
         }
         if (problems != null && problems.size()>0){
-            return new ErrorDescription[]{createProblem(subject, ctx, "JPQL :" + problems, Severity.WARNING)};
+            ErrorDescription[] ret = new ErrorDescription[problems.size()];
+            for(int i=0;i<ret.length;i++){
+                ret[i] = createProblem(subject, ctx, "JPQL :" + problems.get(i), Severity.WARNING);
+            }
+            return ret;
         }
         return null;
     }
@@ -133,19 +145,5 @@ public class JPQLValidation extends JPAClassRule {
         JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
         
         return (jpaCtx.isEntity() || jpaCtx.isMappedSuperClass());
-    }
-    
-    private AnnotationMirror getFirstAnnotationFromGivenSet(TypeElement subject,
-            Collection<String> annotationClasses){
-        
-        for (String annClass : annotationClasses){
-            AnnotationMirror foundAnn = Utilities.findAnnotation(subject, annClass);
-            
-            if (foundAnn != null){
-                return foundAnn;
-            }
-        }
-        
-        return null;
     }
 }

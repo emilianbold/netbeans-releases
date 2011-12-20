@@ -463,6 +463,31 @@ made subject to such option by the copyright holder.
         <issue number="191394"/>
     </change>
 
+    <change id="DependentBreakpoints">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Added a possibility to enable/disable other breakpoints when one is hit.</summary>
+        <version major="1" minor="35"/>
+        <date day="19" month="12" year="2011"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            Four methods are added to the Breakpoint class, that allow to
+            get or set a set of breakpoints, that are enabled or disabled when
+            the breakpoint is hit. One test method is provided, which determines
+            if the dependent breakpoints are supported by the implementation.
+            <p>
+                Added methods:<br/>
+                <code>Breakpoint.canHaveDependentBreakpoints()</code>,
+                <code>Breakpoint.getBreakpointsToEnable()</code>,
+                <code>Breakpoint.setBreakpointsToEnable()</code>,
+                <code>Breakpoint.getBreakpointsToDisable()</code>,
+                <code>Breakpoint.setBreakpointsToDisable()</code>.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="Breakpoint" />
+        <issue number="197707"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

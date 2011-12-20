@@ -70,7 +70,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
 
-    private EnumImpl(String name, String qName, CsmFile file, int startOffset, int endOffset) {
+    private EnumImpl(CharSequence name, String qName, CsmFile file, int startOffset, int endOffset) {
         super(name, qName, file, startOffset, endOffset);
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
@@ -177,15 +177,18 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     public static class EnumBuilder {
         
-        private String name;
+        private CharSequence name;
+        private String qName;
         private CsmFile file;
         private int startOffset;
         private int endOffset;
 
         List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<EnumeratorBuilder>();
         
-        public void setName(String name) {
+        public void setName(CharSequence name) {
             this.name = name;
+            // for now without scope
+            qName = name.toString();
         }
 
         public void setFile(CsmFile file) {
@@ -207,7 +210,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         public EnumImpl create(boolean register) {
             if(name != null) {
                 NameHolder nameHolder = NameHolder.createName(name);
-                EnumImpl impl = new EnumImpl(name, name, file, startOffset, endOffset);
+                EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
     //            impl.init(scope, ast, file, register);
                 nameHolder.addReference(file, impl);
                 OffsetableDeclarationBase.temporaryRepositoryRegistration(register, impl);
