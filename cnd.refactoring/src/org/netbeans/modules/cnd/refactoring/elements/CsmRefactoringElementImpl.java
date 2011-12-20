@@ -48,18 +48,18 @@ import org.openide.util.lookup.Lookups;
  */
 public class CsmRefactoringElementImpl extends 
                 SimpleRefactoringElementImplementation {
-
+    private static final boolean LAZY = false;
     private final CsmReference elem;
     private final PositionBounds bounds;
     private final FileObject fo;
-    private final String displayText;
+    private String displayText;
     private final Object enclosing;
     public CsmRefactoringElementImpl(PositionBounds bounds, 
             CsmReference elem, FileObject fo, String displayText) {
         this.elem = elem;
         this.bounds = bounds;
         this.fo = fo;
-        assert displayText != null;
+        assert displayText != null || LAZY;
         this.displayText = displayText;
         Object composite = ElementGripFactory.getDefault().putInComposite(fo, elem);
         if (composite==null) {
@@ -68,25 +68,34 @@ public class CsmRefactoringElementImpl extends
         this.enclosing = composite;
     }
         
+    @Override
     public String getText() {
         return elem.getText().toString();
     }
 
+    @Override
     public String getDisplayText() {
+        if (displayText == null && LAZY) {
+            displayText = CsmReferenceSupport.getContextLineHtml(elem, true).toString();
+        }
         return displayText;
     }
 
+    @Override
     public void performChange() {
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookups.fixed(elem, enclosing);
     }
     
+    @Override
     public FileObject getParentFile() {
         return fo;
     }
 
+    @Override
     public PositionBounds getPosition() {
         return bounds;
     }
@@ -100,7 +109,7 @@ public class CsmRefactoringElementImpl extends
         CsmFile csmFile = ref.getContainingFile();
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         PositionBounds bounds = CsmUtilities.createPositionBounds(ref);
-        String displayText = CsmReferenceSupport.getContextLineHtml(ref, nameInBold).toString();
+        String displayText = LAZY ? null : CsmReferenceSupport.getContextLineHtml(ref, nameInBold).toString();
         return new CsmRefactoringElementImpl(bounds, ref, fo, displayText);
     }
 }
