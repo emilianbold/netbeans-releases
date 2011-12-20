@@ -83,7 +83,7 @@ public class ASTNodeInfo<T extends ASTNode> {
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
         VARIABLE, CONSTANT, FUNCTION,PARAMETER,
-        INCLUDE, RETURN_MARKER, GOTO}
+        INCLUDE, RETURN_MARKER, GOTO, TRAIT}
 
     ASTNodeInfo(T node) {
         this.node = node;
@@ -176,10 +176,12 @@ public class ASTNodeInfo<T extends ASTNode> {
                 return PhpElementKind.FUNCTION;
             case USE_STATEMENT:
                 return PhpElementKind.USE_STATEMENT;
+            case TRAIT:
+                return PhpElementKind.TRAIT;
         }
         throw new IllegalStateException();
     }
-    
+
     public OffsetRange getRange() {
         return toOffsetRange(getOriginalNode());
     }

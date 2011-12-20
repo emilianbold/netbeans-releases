@@ -78,6 +78,7 @@ CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      Bar                             [PUBLIC]   issue191666.php
+CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
@@ -212,6 +213,7 @@ CLASS      TestIssue145206                 [PUBLIC]   issue145206.php
 CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
 CLASS      TestMethod                      [PUBLIC]   test202530.php
 CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
+CLASS      TraitedClass                    [PUBLIC]   traits.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
@@ -227,6 +229,7 @@ CLASS      User147427                      [PUBLIC]   issue147427.php
 CLASS      VarAdvancedTest                 [PUBLIC]   varAssignment2.php
 CLASS      VarTypeCommentTest              [PUBLIC]   varTypeComment.php
 CLASS      ViewController                  [PUBLIC]   Brite\Controller
+CLASS      WithMultiUses                   [PUBLIC]   traitsMultiUse.php
 CLASS      XUser                           [PUBLIC]   XUser
 CLASS      XUserAbstract                   [PUBLIC,   XUser
 CLASS      XUserInterface                  [PUBLIC]   XUser

@@ -93,6 +93,7 @@ public enum PHPTokenId implements TokenId {
     PHP_EMPTY(null, "keyword"), //NOI18N
     //	PHP_XOR_EQUAL(null, "php"),
     PHP_CLASS("class", "keyword"), //NOI18N
+    PHP_TRAIT("trait", "keyword"), //NOI18N
     //	PHP_END_HEREDOC(null, "php"),
     PHP_FOR("for", "keyword"), //NOI18N
     PHP_STRING(null, "string"), //NOI18N
@@ -112,6 +113,7 @@ public enum PHPTokenId implements TokenId {
     //	PHP_FUNC_C(null, "php"),
     PHP_EVAL(null, "keyword"), //NOI18N
     PHP_INSTANCEOF("instanceof", "keyword"), //NOI18N
+    PHP_INSTEADOF("insteadof", "keyword"), //NOI18N
     //	PHP_OPEN_RECT(null, "php"),
     //	PHP_NEKUDA(null, "php"),
     //	PHP_SL(null, "php"),
