@@ -132,6 +132,10 @@ public class JavaCustomIndexer extends CustomIndexer {
     @Override
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", context.isAllFilesIndexing() ? context.getRootURI() : files); //NOI18N
+        final TransactionContext txCtx = TransactionContext.get();
+        assert  txCtx != null;
+        final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
+        assert fmTx != null;
         try {
             final FileObject root = context.getRoot();
             if (root == null) {
@@ -183,10 +187,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                     if (tuple != null) {
                         toCompile.add(tuple);
                     }
-                    clear(context, javaContext, i, removedTypes, removedFiles);
+                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
                 }
                 for (CompileTuple tuple : virtualSourceTuples) {
-                    clear(context, javaContext, tuple.indexable, removedTypes, removedFiles);
+                    clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx);
                 }
                 toCompile.addAll(virtualSourceTuples);
                 List<CompileTuple> toCompileRound = toCompile;
@@ -318,6 +322,10 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     private static void clearFiles(final Context context, final Iterable<? extends Indexable> files) {
+        final TransactionContext txCtx =  TransactionContext.get();
+        assert txCtx != null;
+        final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
+        assert fmTx != null;
         try {
             final JavaParsingContext javaContext = new JavaParsingContext(context, true);
             try {
@@ -328,7 +336,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                 final Set<File> removedFiles = new HashSet<File> ();
                 for (Indexable i : files) {
-                    clear(context, javaContext, i, removedTypes, removedFiles);
+                    clear(context, javaContext, i, removedTypes, removedFiles, fmTx);
                     ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
                     javaContext.checkSums.remove(i.getURL());
@@ -351,7 +359,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
     }
 
-    private static void clear(final Context context, final JavaParsingContext javaContext, final Indexable indexable, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
+    private static void clear(final Context context, final JavaParsingContext javaContext, final Indexable indexable, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles, @NonNull final FileManagerTransaction fmTx) throws IOException {
+        assert fmTx != null;
         final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
         final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
@@ -368,13 +377,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
                             sourceRelativeURLPairs.add(Pair.of(fileName,f.toURI().toURL()));
                         }
-                        f.delete();
+                        fmTx.delete(f);
                     }
                 } catch (IOException ioe) {
                     //The signature file is broken, report it but don't stop scanning
                     Exceptions.printStackTrace(ioe);
                 }
-                file.delete();
+                fmTx.delete(file);
             }
         }
         for (Pair<String,URL> relURLPair : sourceRelativeURLPairs) {
@@ -398,7 +407,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 toDelete.add(Pair.<String, String>of(className, relURLPair.first));
                                 removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                                 removedFiles.add(f);
-                                f.delete();
+                                fmTx.delete(f);
                             }
                         } else {
                             cont = !dieIfNoRefFile;
@@ -408,7 +417,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     //The signature file is broken, report it but don't stop scanning
                     Exceptions.printStackTrace(ioe);
                 }
-                file.delete();
+                fmTx.delete(file);
             }
             if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
                 if (javaContext.fqn2Files.remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
@@ -435,7 +444,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             toDelete.add(Pair.<String, String>of(className, null));
                             removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                             removedFiles.add(f);
-                            f.delete();
+                            fmTx.delete(f);
                         }
                     }
                 }
