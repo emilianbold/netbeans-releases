@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
@@ -161,7 +162,7 @@ public class CppParserActionImpl implements CppParserAction {
             }
         }    
         SymTab enumerators = globalSymTab.pop();
-        globalSymTab.appendToLocal(enumerators);
+        globalSymTab.importToLocal(enumerators);
     }
 
     @Override
@@ -205,16 +206,26 @@ public class CppParserActionImpl implements CppParserAction {
     }
 
     private SymTabStack createGlobal() {
-        return SymTabStack.create();
+        SymTabStack out = SymTabStack.create();
+        // TODO: need to push symtab for predefined types
+        
+        // create global level 
+        out.push();
+        return out;
     }
 
+    private static final boolean TRACE = false;
     private void addReference(Token token, final CsmObject definition, final CsmReferenceKind kind) {
         if (definition == null) {
 //            assert false;
-//            System.err.println("no definition for " + token + " in " + file);
+            if (TRACE) System.err.println("no definition for " + token + " in " + file);
             return;
         }
         assert token instanceof APTToken : "token is incorrect " + token;
+        if (APTUtils.isMacroExpandedToken(token)) {
+            if (TRACE) System.err.println("skip registering macro expanded " + token + " in " + file);
+            return;
+        }
         APTToken aToken = (APTToken) token;
         final CharSequence name = aToken.getTextID();
         final int startOffset = aToken.getOffset();
