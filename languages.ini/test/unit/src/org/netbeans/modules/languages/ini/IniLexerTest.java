@@ -90,5 +90,4 @@ public class IniLexerTest extends IniTestBase {
         return result.toString();
     }
 
-
 }
