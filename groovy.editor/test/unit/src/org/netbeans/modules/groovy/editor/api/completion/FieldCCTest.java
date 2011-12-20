@@ -42,19 +42,28 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
+/**
+ *
+ * @author schmidtm
+ */
+import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author schmidtm
  */
-public class ConstructorsTest extends GroovyTestBase {
+public class FieldCCTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/constructors/";
+    String TEST_BASE = "testfiles/completion/field/";
 
-    public ConstructorsTest(String testName) {
+    public FieldCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -67,20 +76,19 @@ public class ConstructorsTest extends GroovyTestBase {
         // as returning Level.FINEST here would log from all loggers
     }
 
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/field")) }));
+        return map;
     }
 
-    public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
+    public void testFields1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "\"User $nom^\"", false);
     }
 
-    public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
+    public void testFields2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "println \"Hi: $ad^\"", false);
     }
+
 }

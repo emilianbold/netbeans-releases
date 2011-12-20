@@ -43,7 +43,6 @@ package org.netbeans.modules.groovy.editor.api.temporary;
 
 import java.util.Set;
 import org.netbeans.modules.groovy.editor.api.completion.GroovyCCTestBase;
-import org.netbeans.modules.groovy.editor.api.completion.VariablesCompletionTest;
 
 /**
  * Just temporary test (see README.txt for more details). Original test location is {@link VariablesCompletionTest}
