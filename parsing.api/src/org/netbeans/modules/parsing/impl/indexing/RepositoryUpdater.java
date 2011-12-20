@@ -1942,7 +1942,19 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                    final SourceIndexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
                                    final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-            for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : indexers.cifInfos) {
+            customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.cifInfos, votes, ctxToFinish);
+            embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.eifInfosMap.values(), votes, ctxToFinish);
+        }
+
+        protected final void customIndexersScanStarted(
+            @NonNull final URL root,
+            @NonNull final FileObject cacheRoot,
+            final boolean sourceForBinaryRoot,
+            final Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> indexers,
+            final Map<SourceIndexerFactory,Boolean> votes,
+            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
+
+            for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : indexers) {
                 final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
                 final Pair<String,Integer> key = Pair.of(factory.getIndexerName(),factory.getIndexVersion());
                 Pair<SourceIndexerFactory,Context> value = ctxToFinish.get(key);
@@ -1955,7 +1967,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 boolean vote = factory.scanStarted(value.second);
                 votes.put(factory,vote);
             }
-            for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
+        }
+
+        protected final void embeddingIndexersScanStarted(
+            @NonNull final URL root,
+            @NonNull final FileObject cacheRoot,
+            final boolean sourceForBinaryRoot,
+            final Collection<Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> indexers,
+            final Map<SourceIndexerFactory,Boolean> votes,
+            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
+
+            for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers) {
                 for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                     EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
                     final Pair<String,Integer> key = Pair.of(eif.getIndexerName(), eif.getIndexVersion());
@@ -2933,56 +2955,73 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
                         if (crawler.isFinished()) {
-                            if (deleted.size() > 0) {
-                                delete(deleted, root);
-                            }
-
-                            final LinkedList<Context> transactionContexts = new LinkedList<Context>();
-                            final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
+                            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String, Integer>, Pair<SourceIndexerFactory, Context>>();
+                            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
+                            customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, cifInfos, votes, transactionContexts);
                             try {
-                                ClusteredIndexables ci = new ClusteredIndexables(resources);
-                                for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
-                                    List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
-                                    for(String mimeType : cifInfo.getMimeTypes()) {
-                                        indexerIndexablesList.add(ci.getIndexablesFor(mimeType));
-                                    }
-                                    ProxyIterable<Indexable> indexables = new ProxyIterable<Indexable>(indexerIndexablesList);
-                                    allIndexblesSentToIndexers.addAll(indexerIndexablesList);
+                                if (deleted.size() > 0) {
+                                    delete(deleted, root);
+                                }
+                                final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
+                                try {
+                                    ClusteredIndexables ci = new ClusteredIndexables(resources);
+                                    for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
+                                        List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
+                                        for(String mimeType : cifInfo.getMimeTypes()) {
+                                            indexerIndexablesList.add(ci.getIndexablesFor(mimeType));
+                                        }
+                                        ProxyIterable<Indexable> indexables = new ProxyIterable<Indexable>(indexerIndexablesList);
+                                        allIndexblesSentToIndexers.addAll(indexerIndexablesList);
 
-                                    if (getShuttdownRequest().isRaised()) {
-                                        return false;
-                                    }
+                                        if (getShuttdownRequest().isRaised()) {
+                                            return false;
+                                        }
 
-                                    final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
-                                    final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, false, false, sourceForBinaryRoot, getShuttdownRequest());
-                                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
-                                    transactionContexts.add(ctx);
-
-                                    final CustomIndexer indexer = factory.createIndexer();
-                                    if (LOGGER.isLoggable(Level.FINE)) {
-                                        StringBuilder sb = printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder());
-                                        LOGGER.fine("Reindexing " + root + " using " + indexer + "; mimeTypes=" + sb.toString()); //NOI18N
+                                        final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
+                                        final Pair<String,Integer> indexerKey = Pair.<String,Integer>of(factory.getIndexerName(),factory.getIndexVersion());
+                                        final Pair<SourceIndexerFactory, Context> ctx = transactionContexts.get(indexerKey);
+                                        if (ctx != null) {
+                                            SPIAccessor.getInstance().setAllFilesJob(ctx.second, true);
+                                            final CustomIndexer indexer = factory.createIndexer();
+                                            if (LOGGER.isLoggable(Level.FINE)) {
+                                                StringBuilder sb = printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder());
+                                                LOGGER.log(
+                                                    Level.FINE,
+                                                    "Reindexing {0} using {1}; mimeTypes={2}",  //NOI18N
+                                                    new Object[]{
+                                                        root,
+                                                        indexer,
+                                                        sb
+                                                    });
+                                            }
+                                            try {
+                                                long st = System.currentTimeMillis();
+                                                SPIAccessor.getInstance().index(indexer, indexables, ctx.second);
+                                                long et = System.currentTimeMillis();
+                                                logIndexerTime(factory.getIndexerName(), (int)(et-st));
+                                            } catch (ThreadDeath td) {
+                                                throw td;
+                                            } catch (Throwable t) {
+                                                LOGGER.log(Level.WARNING, null, t);
+                                            }
+                                        } else {
+                                            LOGGER.log(
+                                                Level.WARNING, "RefreshCifIndices ignored recently added factory: {0}", //NOI18N
+                                                indexerKey);
+                                        }
                                     }
-                                    try {
-                                        long st = System.currentTimeMillis();
-                                        SPIAccessor.getInstance().index(indexer, indexables, ctx);
-                                        long et = System.currentTimeMillis();
-                                        logIndexerTime(factory.getIndexerName(), (int)(et-st));
-                                    } catch (ThreadDeath td) {
-                                        throw td;
-                                    } catch (Throwable t) {
-                                        LOGGER.log(Level.WARNING, null, t);
+                                } finally {
+                                    final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
+                                    for(Pair<SourceIndexerFactory,Context> pair : transactionContexts.values()) {
+                                        DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
+                                        if (index != null) {
+                                            storeChanges(index, isSteady(), proxyIterable);
+                                        }
                                     }
                                 }
                             } finally {
-                                final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
-                                for(Context ctx : transactionContexts) {
-                                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
-                                    if (index != null) {
-                                        storeChanges(index, isSteady(), proxyIterable);
-                                    }
-                                }
+                                scanFinished(transactionContexts.values());
                             }
 
                             crawler.storeTimestamps();
@@ -3071,61 +3110,64 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
                         if (crawler.isFinished()) {
-                            if (deleted.size() > 0) {
-                                delete(deleted, root);
-                            }
-
+                            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                             final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
-                            final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
-                            try {
-                                Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = new HashMap<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>>();
-                                for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
-                                    for (String mimeType : eifInfo.getMimeTypes()) {
-                                        Set<IndexerInfo<EmbeddingIndexerFactory>> infos = eifInfosMap.get(mimeType);
-                                        if (infos == null) {
-                                            infos = new HashSet<IndexerInfo<EmbeddingIndexerFactory>>();
-                                            eifInfosMap.put(mimeType, infos);
-                                        }
-                                        infos.add(eifInfo);
+                            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
+                            final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = new HashMap<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>>();
+                            for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
+                                for (String mimeType : eifInfo.getMimeTypes()) {
+                                    Set<IndexerInfo<EmbeddingIndexerFactory>> infos = eifInfosMap.get(mimeType);
+                                    if (infos == null) {
+                                        infos = new HashSet<IndexerInfo<EmbeddingIndexerFactory>>();
+                                        eifInfosMap.put(mimeType, infos);
                                     }
+                                    infos.add(eifInfo);
                                 }
+                            }
+                            embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, eifInfosMap.values(), votes, transactionContexts);
+                            try {
+                                if (deleted.size() > 0) {
+                                    delete(deleted, root);
+                                }
+                                final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
+                                try {
+                                    ClusteredIndexables ci = new ClusteredIndexables(resources);
+                                    for(String mimeType : Util.getAllMimeTypes()) {
+                                        if (getShuttdownRequest().isRaised()) {
+                                            return false;
+                                        }
 
-                                ClusteredIndexables ci = new ClusteredIndexables(resources);
-                                FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                                for(String mimeType : Util.getAllMimeTypes()) {
-                                    if (getShuttdownRequest().isRaised()) {
-                                        return false;
+                                        if (!Util.canBeParsed(mimeType)) {
+                                            continue;
+                                        }
+
+                                        Iterable<Indexable> indexables = ci.getIndexablesFor(mimeType);
+                                        allIndexblesSentToIndexers.add(indexables);
+
+                                        long tm1 = System.currentTimeMillis();
+                                        boolean f = indexEmbedding(eifInfosMap, cacheRoot, root, indexables, transactionContexts, sourceForBinaryRoot);
+                                        long tm2 = System.currentTimeMillis();
+
+                                        if (!f) {
+                                            return false;
+                                        }
+                                        if (LOGGER.isLoggable(Level.FINE)) {
+                                            LOGGER.fine("Indexing " + mimeType + " embeddables under " + root
+                                                + "; took " + (tm2 - tm1) + "ms"); //NOI18N
+                                        }
                                     }
-
-                                    if (!Util.canBeParsed(mimeType)) {
-                                        continue;
-                                    }
-
-                                    Iterable<Indexable> indexables = ci.getIndexablesFor(mimeType);
-                                    allIndexblesSentToIndexers.add(indexables);
-
-                                    long tm1 = System.currentTimeMillis();
-                                    boolean f = indexEmbedding(eifInfosMap, cacheRoot, root, indexables, transactionContexts, sourceForBinaryRoot);
-                                    long tm2 = System.currentTimeMillis();
-
-                                    if (!f) {
-                                        return false;
-                                    }
-                                    if (LOGGER.isLoggable(Level.FINE)) {
-                                        LOGGER.fine("Indexing " + mimeType + " embeddables under " + root
-                                            + "; took " + (tm2 - tm1) + "ms"); //NOI18N
+                                } finally {
+                                    final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
+                                    for(Pair<SourceIndexerFactory,Context> pair : transactionContexts.values()) {
+                                        DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
+                                        if (index != null) {
+                                            storeChanges(index, isSteady(), proxyIterable);
+                                        }
                                     }
                                 }
                             } finally {
-                                final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
-                                for(Pair<SourceIndexerFactory,Context> pair : transactionContexts.values()) {
-                                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
-                                    if (index != null) {
-                                        storeChanges(index, isSteady(), proxyIterable);
-                                    }
-                                }
+                                scanFinished(transactionContexts.values());
                             }
-
                             crawler.storeTimestamps();
                         }
                     }
@@ -3968,31 +4010,32 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         private boolean nopCustomIndexers(
-                @NonNull final URL root,
-                @NonNull final SourceIndexers indexers,
-                final boolean sourceForBinaryRoot) throws IOException {
-            LinkedList<Context> transactionContexts = new LinkedList<Context>();
+            @NonNull final URL root,
+            @NonNull final SourceIndexers indexers,
+            final boolean sourceForBinaryRoot) throws IOException {
+            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String, Integer>, Pair<SourceIndexerFactory, Context>>();
+            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
+            customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.cifInfos, votes, transactionContexts);
+            try {
                 try {
-                    final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     for (IndexerCache.IndexerInfo<CustomIndexerFactory> info : indexers.cifInfos) {
-                        CustomIndexerFactory factory = info.getIndexerFactory();
-                        final Context ctx = SPIAccessor.getInstance().createContext(
-                                cacheRoot,
-                                root,
-                                factory.getIndexerName(),
-                                factory.getIndexVersion(),
-                                null,
-                                isFollowUpJob(),
-                                hasToCheckEditor(),
-                                sourceForBinaryRoot,
-                                null);
-                        CustomIndexer indexer = factory.createIndexer();
+                        final CustomIndexerFactory factory = info.getIndexerFactory();
+                        final CustomIndexer indexer = factory.createIndexer();
 
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine("Fake indexing: indexer=" + indexer); //NOI18N
                         }
                         try {
-                            SPIAccessor.getInstance().index(indexer, Collections.<Indexable>emptySet(), ctx);
+                            final Pair<String,Integer> indexerKey = Pair.<String,Integer>of(factory.getIndexerName(),factory.getIndexVersion());
+                            final Pair<SourceIndexerFactory,Context> ctx = transactionContexts.get(indexerKey);
+                            if (ctx != null) {
+                                SPIAccessor.getInstance().index(indexer, Collections.<Indexable>emptySet(), ctx.second);
+                            } else {
+                                LOGGER.log(
+                                    Level.WARNING, "RefreshCifIndices ignored recently added factory: {0}", //NOI18N
+                                    indexerKey);
+                            }
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
@@ -4000,14 +4043,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                     }
                 } finally {
-                    for(Context ctx : transactionContexts) {
-                        DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                    for(Pair<SourceIndexerFactory,Context> ctx : transactionContexts.values()) {
+                        DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx.second).getIndex(ctx.second.getIndexFolder());
                         if (index != null) {
                             storeChanges(index, isSteady(), null);
                         }
                     }
                 }
-                return true;
+            } finally {
+                scanFinished(transactionContexts.values());
+            }
+            return true;
         }
 
         private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
