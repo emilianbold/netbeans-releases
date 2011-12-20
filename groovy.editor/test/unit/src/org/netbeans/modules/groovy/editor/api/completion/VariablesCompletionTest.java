@@ -115,6 +115,7 @@ public class VariablesCompletionTest extends GroovyCCTestBase {
         checkCompletion(BASE + "Variables2.groovy", "            pa^", true);
     }
 
+    /*
     public void testVariables3_1() throws Exception {
         checkCompletion(BASE + "Variables3.groovy", "println \"Hello $name!\" ^", true);
     }
@@ -125,5 +126,5 @@ public class VariablesCompletionTest extends GroovyCCTestBase {
 
     public void testVariables3_3() throws Exception {
         checkCompletion(BASE + "Variables3.groovy", "    def x ^", true);
-    }
+    }*/
 }

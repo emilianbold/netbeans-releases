@@ -41,17 +41,22 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
  * @author Vladimir Voskresensky
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class SymTab {
-    private final Map<CharSequence, SymTabEntry> entries = new HashMap<CharSequence, SymTabEntry>();
-    private final Map<CharSequence, SymTabEntry> imported = new HashMap<CharSequence, SymTabEntry>();
+public final class SymTab {
+    private final Map<CharSequence, SymTabEntry> entries = new TreeMap<CharSequence, SymTabEntry>();
+    private final Map<CharSequence, SymTabEntry> imported = new TreeMap<CharSequence, SymTabEntry>();
+    private final int nestingLevel;
+
+    SymTab(int nestingLevel) {
+        this.nestingLevel = nestingLevel;
+    }
 
     SymTabEntry lookup(CharSequence entry) {
         SymTabEntry out = entries.get(entry);
@@ -62,18 +67,22 @@ public class SymTab {
     }
 
     SymTabEntry enter(CharSequence entry) {
-        SymTabEntry newEntry = new SymTabEntry(entry);
+        SymTabEntry newEntry = new SymTabEntry(entry, this);
         entries.put(entry, newEntry);
         return newEntry;
     }
 
-    void append(SymTab symTab) {
+    void importSymTab(SymTab symTab) {
         imported.putAll(symTab.entries);
+    }
+
+    int getNestingLevel() {
+        return nestingLevel;
     }
 
     @Override
     public String toString() {
-        return "SymTab{" + "entries=" + entries + "\nimported=" + imported + '}'; // NOI18N
+        return "SymTab{" + "nestingLevel=" + nestingLevel + "entries=" + entries + "\nimported=" + imported + '}'; // NOI18N
     }
     
     

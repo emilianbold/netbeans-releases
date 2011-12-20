@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,44 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.specs.support.spi;
-
-import org.netbeans.api.project.Project;
-
+package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
- * @author ads
  *
+ * @author Martin Janicek
  */
-public interface JaxRsStackSupportImplementation {
+public class InterfaceCCTest extends GroovyCCTestBase {
 
-    /**
-     * Adds JSR311 API into project's classpath if it supported.
-     * Returns <code>false</code> if jsr311 is  not added ( not supported).
-     * @param project project which classpath should be extended
-     * @return <code>true</code> if project's classpath is extended with jsr311
-     */
-    boolean addJsr311Api( Project project );
+    public InterfaceCCTest(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Extends project's classpath  with Jersey libraries.
-     * @param project project which classpath should be extended
-     * @return  <code>true</code> if project's classpath is extended
-     */
-    boolean extendsJerseyProjectClasspath( Project project );
-
-    /**
-     * Clear project classapth .
-     * @param project project which classpath should be cleared
-     */
-    void removeJaxRsLibraries( Project project );
+    @Override
+    protected String getTestType() {
+        return "interface";
+    }
     
-    /**
-     * If custom Jersey library is chosen ( f.e. NB bundled ) then 
-     * some JEE servers require additional project configuration.
-     * Otherwise collision could happen between bundled server Jersey and custom library.
-     */
-    public void configureCustomJersey( Project project );
+    public void testInterfaceCompletion1_1() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements ^Runnable, Serializable {", false);
+    }
 
+    public void testInterfaceCompletion1_2() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements R^unnable, Serializable {", false);
+    }
+
+    public void testInterfaceCompletion1_3() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runn^able, Serializable {", false);
+    }
+
+    public void testInterfaceCompletion1_4() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Ser^ializable {", false);
+    }
+
+    public void testInterfaceCompletion1_5() throws Exception {
+        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Se^rializable {", false);
+    }
 }
