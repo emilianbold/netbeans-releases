@@ -125,6 +125,16 @@ public class OptionTest extends NbTestCase {
         assertEquals("Param", methodCalled.additionalParams[1]);
         assertNotNull("environment provided", methodEnv);
     }
+    public void testParseImplicit() throws CommandException {
+        cmd.process("no", "Param");
+        assertNotNull("Called", methodCalled);
+        assertFalse("enabled not set", methodCalled.enabled);
+        assertNotNull("additionalParams set", methodCalled.additionalParams);
+        assertEquals("two", 2, methodCalled.additionalParams.length);
+        assertEquals("no", methodCalled.additionalParams[0]);
+        assertEquals("Param", methodCalled.additionalParams[1]);
+        assertNotNull("environment provided", methodEnv);
+    }
     public void testHelp() throws CommandException {
         StringWriter w = new StringWriter();
         cmd.usage(new PrintWriter(w));
@@ -140,11 +150,11 @@ public class OptionTest extends NbTestCase {
         @Arg(longName="enabled")
         public boolean enabled;
 
-        @Arg(shortName='p')
+        @Arg(longName="", shortName='p')
         public String withParam;
 
         @Description(displayName="#NAME", shortDescription="#SHORT")
-        @Arg(shortName='a', longName="additional")
+        @Arg(shortName='a', longName="additional", implicit=true)
         public String[] additionalParams;
         
         @Override
@@ -171,6 +181,23 @@ public class OptionTest extends NbTestCase {
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
         if (!os.toString().contains("static")) {
+            fail(os.toString());
+        }
+    }
+
+    public void testImplicitNeedsToBeOnStringArray() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.netbeans.spi.sendopts.annotations.Arg;\n" +
+            "public class A {\n" +
+            "  @Arg(shortName='a',implicit=true)" +
+            "  public String Static;" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        if (!os.toString().contains("String[]")) {
             fail(os.toString());
         }
     }

@@ -85,13 +85,17 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
         Set<TypeElement> processors = new HashSet<TypeElement>();
         for (Element e : roundEnv.getElementsAnnotatedWith(Arg.class)) {
             if (e.getModifiers().contains(Modifier.STATIC)) {
-                throw new LayerGenerationException("@Option can be applied only to non-static fields", e);
+                throw new LayerGenerationException("@Arg can be applied only to non-static fields", e);
             }
             if (!e.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new LayerGenerationException("@Option can be applied only to public fields", e);
+                throw new LayerGenerationException("@Arg can be applied only to public fields", e);
             }
             if (e.getModifiers().contains(Modifier.FINAL)) {
-                throw new LayerGenerationException("@Option can be applied only to non-final fields", e);
+                throw new LayerGenerationException("@Arg can be applied only to non-final fields", e);
+            }
+            Arg arg = e.getAnnotation(Arg.class);
+            if (arg.implicit() && !e.asType().equals(stringArray)) {
+                throw new LayerGenerationException("implicit @Arg can only be applied to String[] fields", e);
             }
             
             processors.add(TypeElement.class.cast(e.getEnclosingElement()));
@@ -121,11 +125,13 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
                 } else if (stringType == e.asType()) {
                     f.stringvalue(cnt + ".type", "requiredArgument");
                 } else {
-
                     if (!stringArray.equals(e.asType())) {
                         throw new LayerGenerationException("Field type has to be either boolean, String or String[]!", e);
                     }
                     f.stringvalue(cnt + ".type", "additionalArguments");
+                }
+                if (o.implicit()) {
+                    f.boolvalue(cnt + ".implicit", true);
                 }
                 if (d != null) {
                     writeBundle(f, cnt + ".displayName", d.displayName(), e);

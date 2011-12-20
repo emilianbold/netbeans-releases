@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class DefaultProcessor extends OptionProcessor {
+    private static final Option defArgs = Option.defaultArguments();
     private final String clazz;
     private final Set<Option> options;
 
@@ -97,15 +98,18 @@ final class DefaultProcessor extends OptionProcessor {
         String c = (String) map.get("class");
         Set<Option> arr = new LinkedHashSet<Option>();
         for (int cnt = 1; ; cnt++) {
-            Character shortName = (Character) map.get(cnt + ".shortName");
-            String longName = (String) map.get(cnt + ".longName");
+            Character shortName = (Character) map.get(cnt + ".shortName"); // NOI18N
+            String longName = (String) map.get(cnt + ".longName"); // NOI18N
             if (shortName == null && longName == null) {
                 break;
             }
-            String type = (String) map.get(cnt + ".type");
-            String displayName = (String)map.get(cnt + ".displayName");
-            String description = (String)map.get(cnt + ".shortDescription");
+            String type = (String) map.get(cnt + ".type"); // NOI18N
+            String displayName = (String)map.get(cnt + ".displayName"); // NOI18N
+            String description = (String)map.get(cnt + ".shortDescription"); // NOI18N
             arr.add(createOption(type, shortName, longName, displayName, description));
+            if (Boolean.TRUE.equals(map.get(cnt + ".implicit"))) { // NOI18N
+                arr.add(defArgs);
+            }
         }
         return new DefaultProcessor(c, arr);
     }
@@ -133,12 +137,15 @@ final class DefaultProcessor extends OptionProcessor {
                 final Option option = entry.getKey();
                 Type type = Type.valueOf(option);
                 Field f = map.get(option);
+                assert f != null : "No field for option: " + option;
                 switch (type) {
                     case withoutArgument:
                         f.setBoolean(instance, true); break;
                     case requiredArgument:
                         f.set(instance, entry.getValue()[0]); break;
                     case additionalArguments:
+                        f.set(instance, entry.getValue()); break;
+                    case defaultArguments:
                         f.set(instance, entry.getValue()); break;
                 }
             }
@@ -169,6 +176,9 @@ final class DefaultProcessor extends OptionProcessor {
             }
             assert o != null : "No option for field " + f + " options: " + options;
             map.put(o, f);
+            if (arg.implicit()) {
+                map.put(defArgs, f);
+            }
         }
         assert map.size() == options.size() : "Map " + map + " Options " + options;
         return map;
@@ -182,7 +192,7 @@ final class DefaultProcessor extends OptionProcessor {
     }
 
     private static enum Type {
-        withoutArgument, requiredArgument, additionalArguments;
+        withoutArgument, requiredArgument, additionalArguments, defaultArguments;
         
         public static Type valueOf(Option o) {
             OptionImpl impl = OptionImpl.Trampoline.DEFAULT.impl(o);
@@ -191,7 +201,7 @@ final class DefaultProcessor extends OptionProcessor {
                 case 1: return requiredArgument;
                 case 2: assert false;
                 case 3: return additionalArguments;
-                case 4: assert false;
+                case 4: return defaultArguments;
             }
             assert false;
             return null;

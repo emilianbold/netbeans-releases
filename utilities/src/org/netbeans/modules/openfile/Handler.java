@@ -45,7 +45,6 @@
 package org.netbeans.modules.openfile;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +52,9 @@ import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
+import org.netbeans.spi.sendopts.annotations.Arg;
+import org.netbeans.spi.sendopts.annotations.Description;
+import org.netbeans.spi.sendopts.annotations.ProcessArgs;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -61,39 +63,20 @@ import org.openide.util.NbBundle;
  * Processor for command line options.
  * @author Jesse Glick, Jaroslav Tulach
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.sendopts.OptionProcessor.class)
-public class Handler extends OptionProcessor {
-    private Option open;
-    private Option defaultOpen;
+public final class Handler implements ProcessArgs {
+    @Arg(longName="open", implicit=true)
+    @Description(
+        displayName="#MSG_OpenOptionDisplayName", 
+        shortDescription="#MSG_OpenOptionDescription"
+    )
+    public String[] files;
 
     public Handler() {
     }
 
-    protected Set<Option> getOptions() {
-        if (open == null) {
-            defaultOpen = Option.defaultArguments();
-            Option o = Option.additionalArguments(Option.NO_SHORT_NAME, "open"); // NOI18N
-            String bundle = "org.netbeans.modules.openfile.Bundle"; // NOI18N
-            o = Option.shortDescription(o, bundle, "MSG_OpenOptionDescription"); // NOI18N
-            o = Option.displayName(o, bundle, "MSG_OpenOptionDisplayName"); // NOI18N            
-            open = o;
-            
-            assert open != null;
-            assert defaultOpen != null;
-        }
-        
-        HashSet<Option> set = new HashSet<Option>();
-        set.add(open);
-        set.add(defaultOpen);
-        
-        return set;
-    }
-
-    protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
-        String[] argv = optionValues.get(open);
-        if (argv == null) {
-            argv = optionValues.get(defaultOpen);
-        }
+    @Override
+    public void process(Env env) throws CommandException {
+        String[] argv = files;
         if (argv == null || argv.length == 0) {
             throw new CommandException(2, NbBundle.getMessage(Handler.class, "EXC_MissingArgOpen")); 
         }

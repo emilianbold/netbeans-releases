@@ -53,7 +53,7 @@ import java.lang.annotation.Target;
  * public and the class should have public default constructor. Following 
  * line defines an option without any arguments: 
  * <pre>
- * &#064;{@link Arg}(shortName='o') public boolean usedWithO;
+ * {@code @}{@link Arg}(shortName='o') public boolean usedWithO;
  * </pre>
  * if such option is present on a command line, the value of the 
  * <code>usedWithO</code> field is set to <code>true</code>. Otherwise its
@@ -62,14 +62,14 @@ import java.lang.annotation.Target;
  * One can also annotate a {@link String} field which then becomes 
  * an option with a {@link org.netbeans.spi.sendopts.Arg#requiredArgument(char, java.lang.String) required argument}:
  * <pre>
- * &#064;{@link Arg}(shortName='r') public String requiredArg;
+ * {@code @}{@link Arg}(shortName='r') public String requiredArg;
  * </pre>
  * If one annotates a field where an array of {@link String strings} can be 
  * assigned, such option will then contain all 
  * {@link org.netbeans.spi.sendopts.Arg#additionalArguments(char, java.lang.String) additional arguments}
  * made available:
  * <pre>
- * &#064;{@link Arg}(shortName='r') public String[] additionaArgs;
+ * {@code @}{@link Arg}(shortName='r') public String[] additionaArgs;
  * </pre>
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -81,7 +81,16 @@ public @interface Arg {
      when used on command line. */
     char shortName() default org.netbeans.spi.sendopts.Option.NO_SHORT_NAME;
     /** Multi character name. Needs to be prefixed with <em>--</em> on the command
-     * line.
+     * line. Use {@code ""} to assign no long name to the option.
      */
-    String longName() default "";
+    String longName();
+    
+    /** Specifies whether this field should be implicit/{@link org.netbeans.spi.sendopts.Option#defaultArguments() default}.
+     * There may be only one implicit option in the system. If there are 
+     * arguments not consumed by any other option, they are passed to it.
+     * The implicit options may annotate only fields of type <code>String[]</code>.
+     * 
+     * @return return true, if this option should be implicit
+     */
+    boolean implicit() default false;
 }
