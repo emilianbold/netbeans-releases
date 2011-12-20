@@ -78,23 +78,17 @@ public abstract class GroovyCCTestBase extends GroovyTestBase {
     protected Set<String> additionalSourceClassPath() {
         HashSet<String> sourceClassPath = new HashSet<String>();
         sourceClassPath.add(getExpandedSourcePath());
+        sourceClassPath.add(getExpandedSourcePathWithFirstLetterLowerCase());
 
         return sourceClassPath;
     }
 
     private String getExpandedSourcePath() {
-        String expandedSourcePath = getBasicSourcePath() + "/" + getClassName();
-        String lowerSourcePath = getBasicSourcePath() + "/" + firstLetterToLowerCase(getClassName()); //NOI18N
+        return getBasicSourcePath() + "/" + getClassName();
+    }
 
-        if (new File(lowerSourcePath).exists()) {
-
-            // Try to find folder with first lower case letter
-            return lowerSourcePath;
-        } else {
-        
-            // If it doesn't exist try it with first upper case letter
-            return expandedSourcePath;
-        }
+    private String getExpandedSourcePathWithFirstLetterLowerCase() {
+        return getBasicSourcePath() + "/" + firstLetterToLowerCase(getClassName()); //NOI18N
     }
 
     private String firstLetterToLowerCase(String className) {
