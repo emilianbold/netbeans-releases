@@ -84,6 +84,10 @@ public class PHP54CodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/php54/traitsMultiUse.php", "$wmu->^publicFirstField;", false);
     }
 
+    public void testShortArrays() throws Exception {
+        checkCompletion("testfiles/completion/lib/php54/shortArrays.php", "$xxxAr^r;", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
