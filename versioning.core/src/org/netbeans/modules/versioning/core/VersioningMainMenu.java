@@ -107,6 +107,12 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 dummy.setEnabled(false);
                 items.add(dummy);
                 items.add(Utils.createJSeparator());
+            } else {
+                JMenuItem item = new JMenuItem();
+                Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N                                 
+                item.setEnabled(false);
+                items.add(item);
+                return items.toArray(new JComponent[items.size()]);
             }
 
             Collections.sort(systems, new ByDisplayNameComparator());

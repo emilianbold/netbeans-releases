@@ -64,6 +64,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -259,14 +260,24 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                     Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
                     List<? extends VersioningSystem> vcs = new ArrayList(result.allInstances());
                     Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
+                    boolean added = false;
                     for (VersioningSystem vs : vcs) {
                         if (vs.isLocalHistory()) {
                             continue;
                         }
-                        addVersioningSystemItems(vs, nodes, true);
+                        if(addVersioningSystemItems(vs, nodes, true)) {
+                            added = true;
+                        }
                     }
-                    addSeparator();
-                    add(createmenuItem(SystemAction.get(PatchAction.class)));
+                    if(added) {
+                        addSeparator();
+                        add(createmenuItem(SystemAction.get(PatchAction.class)));
+                    } else {
+                        JMenuItem item = new JMenuItem();
+                        Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N                                 
+                        item.setEnabled(false);
+                        add(item);
+                    }
                 } else {
                     // specific versioning system menu
                     addVersioningSystemItems(owner, nodes, false);
@@ -276,13 +287,15 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             return super.getPopupMenu();
         }
 
-        private void addVersioningSystemItems (VersioningSystem owner, Node[] nodes, boolean displayConnectAction) {
+        private boolean addVersioningSystemItems (VersioningSystem owner, Node[] nodes, boolean displayConnectAction) {
             JComponent[] items = createVersioningSystemItems(owner, nodes, displayConnectAction);
-            if (items != null) {
+            if (items != null && items.length > 0) {
                 for (JComponent item : items) {
                     add(item);
                 }
+                return true;
             }
+            return false;
         }
     }
 }

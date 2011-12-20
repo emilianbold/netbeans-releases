@@ -55,6 +55,7 @@ import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
@@ -217,14 +218,19 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             annotator = new VCSAnnotator() {
                 @Override
                 public String annotateName(String name, org.netbeans.modules.versioning.core.spi.VCSContext context) {
+                    assert accept(context);
                     return getDelegate().getVCSAnnotator().annotateName(name, Accessor.IMPL.createVCSContext(context));
                 }
                 @Override
                 public Image annotateIcon(Image icon, org.netbeans.modules.versioning.core.spi.VCSContext context) {
+                    assert accept(context);                    
                     return getDelegate().getVCSAnnotator().annotateIcon(icon, Accessor.IMPL.createVCSContext(context));
                 }
                 @Override
                 public Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext context, ActionDestination destination) {
+                    if(!accept(context)) {
+                        return new Action[0];
+                    }                    
                     org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination ad;
                     switch(destination) {
                         case MainMenu:
@@ -360,6 +366,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return interceptor;
     }
     
+    // package private due unit tests
     boolean isMetadataFile(VCSFileProxy file) {
         return getMetadataFolderNames().contains(file.getName());
     }
@@ -383,7 +390,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return metadataFolderNames;
     }
     
-    Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {
+    private Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {       
         if(map == null || isAlive()) {
             VCSAnnotator tmp = getAnnotator();
             return tmp != null ? tmp.getActions(ctx, actionDestination) : new Action[0];
@@ -406,6 +413,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         }        
     }
     
+    // package private due unit tests
     Action[] getGlobalActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx) {
         assert !isAlive();
         String category = (String) map.get("actionsCategory");              // NOI18N
@@ -421,6 +429,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return ret != null ? ret.toArray(new Action[ret.size()]) : new Action[0];
     }
     
+    // package private due unit tests
     Action[] getInitActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx) {
         String category = (String) map.get("actionsCategory");              // NOI18N
         List<? extends Action> l = Utilities.actionsForPath("Versioning/" + category + "/Actions/Unversioned"); // NOI18N
@@ -435,7 +444,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return ret.toArray(new Action[ret.size()]);
     }
 
-    boolean isAlive() {
+    private boolean isAlive() {
         synchronized(DELEGATE_LOCK) {
             return delegate != null;
         }
@@ -517,5 +526,18 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         }
         return null;
     }
+    
+    private boolean accept(VCSContext ctx) {
+        Set<VCSFileProxy> roots = ctx.getRootFiles();
+        for (VCSFileProxy root : roots) {
+            if(!accept(root)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    private boolean accept(VCSFileProxy root) {
+        return root.toFile() != null;
+    }
 }
