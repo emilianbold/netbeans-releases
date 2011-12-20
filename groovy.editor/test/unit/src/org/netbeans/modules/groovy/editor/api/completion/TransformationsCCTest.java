@@ -44,7 +44,7 @@ package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
 import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
@@ -57,13 +57,13 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class FieldCompletionTest extends GroovyTestBase {
+public class TransformationsCCTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/field/";
+    String TEST_BASE = "testfiles/completion/transformations/";
 
-    public FieldCompletionTest(String testName) {
+    public TransformationsCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -79,16 +79,15 @@ public class FieldCompletionTest extends GroovyTestBase {
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();
         map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/field")) }));
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/transformations")) }));
         return map;
     }
 
-    public void testFields1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "\"User $nom^\"", false);
+    public void testTransformations1() throws Exception {
+        checkCompletion(TEST_BASE + "Transformations1.groovy", "        Transformations1.in^", true);
     }
 
-    public void testFields2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "println \"Hi: $ad^\"", false);
+    public void testTransformations2() throws Exception {
+        checkCompletion(TEST_BASE + "Transformations2.groovy", "        Transformations2.get^", true);
     }
-
 }

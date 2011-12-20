@@ -46,9 +46,9 @@ package org.netbeans.modules.groovy.editor.api.completion;
  *
  * @author schmidtm
  */
-public class MethodCompletionTest extends GroovyCCTestBase {
+public class MethodCCTest extends GroovyCCTestBase {
 
-    public MethodCompletionTest(String testName) {
+    public MethodCCTest(String testName) {
         super(testName);
     }
 

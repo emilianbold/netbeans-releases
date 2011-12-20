@@ -46,9 +46,9 @@ package org.netbeans.modules.groovy.editor.api.completion;
  *
  * @author schmidtm
  */
-public class TypesCompletionTest extends GroovyCCTestBase {
+public class TypesCCTest extends GroovyCCTestBase {
 
-    public TypesCompletionTest(String testName) {
+    public TypesCCTest(String testName) {
         super(testName);
     }
 

@@ -59,11 +59,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hejl
  */
-public class OperatorsCompletionTest extends GroovyTestBase {
+public class OperatorsCCTest extends GroovyTestBase {
 
     String TEST_BASE = "testfiles/completion/operators/";
 
-    public OperatorsCompletionTest(String testName) {
+    public OperatorsCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }

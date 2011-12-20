@@ -42,24 +42,19 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author phejl
+ * @author schmidtm
  */
-public class CompletionAccessTest extends GroovyTestBase {
+public class ConstructorsCCTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/access/";
+    String TEST_BASE = "testfiles/completion/constructors/";
 
-    public CompletionAccessTest(String testName) {
+    public ConstructorsCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -72,16 +67,20 @@ public class CompletionAccessTest extends GroovyTestBase {
         // as returning Level.FINEST here would log from all loggers
     }
 
-    protected @Override Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
-        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/access")) }));
-        return map;
+    // testing proper creation of constructor-call proposals
+
+    //     * groovy.lang.*
+    //     * groovy.util.*
+
+    public void testConstructors1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
     }
 
-    // FIXME this does not provide accurate results, but we need to test
-    // at least basic closure completion
-    public void testBasicAccessLevels1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Access1.groovy", "        this.^", false);
-    }  
+    public void testConstructors2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
+    }
+
+    public void testConstructors3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
+    }
 }
