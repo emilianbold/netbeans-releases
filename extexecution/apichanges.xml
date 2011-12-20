@@ -115,6 +115,20 @@ is the proper place.
 
         <change>
             <api name="extexecution_api"/>
+            <summary>New API method to open IO tab on error</summary>
+            <version major="1" minor="29"/>
+            <date day="20" month="12" year="2011"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                Added configuration method to ExecutionDescriptor to allow
+                opening of output tab on nonzero exit code.
+            </description>
+            <class package="org.netbeans.api.extexecution" name="ExecutionDescriptor"/>
+            <issue number="206254"/>
+        </change>
+        <change>
+            <api name="extexecution_api"/>
             <summary>New API/SPI to abstract process builder</summary>
             <version major="1" minor="28"/>
             <date day="21" month="11" year="2011"/>
