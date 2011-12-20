@@ -283,15 +283,59 @@
     <!-- Copy dependent libraries -->
     
     <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar">
+        <local name="run.classpath.without.build.classes.and.dist.dir"/>
         <pathconvert property="run.classpath.without.build.classes.and.dist.dir">
             <path path="${run.classpath}"/>
             <map from="${basedir}${file.separator}${build.classes.dir}" to=""/>
             <map from="${basedir}${file.separator}${dist.jar}" to=""/>
         </pathconvert>
+        <!-- add possibly missing dependencies at distance 2 (build system logic thus provides transitive closure) -->
+        <local name="run.and.lib.classpath"/>
+        <script language="javascript">
+            <![CDATA[
+                var pathConvert = project.createTask("pathconvert");
+                pathConvert.setProperty("run.and.lib.classpath");
+                var classPath = project.getProperty("run.classpath.without.build.classes.and.dist.dir");
+                var fileSeparator = project.getProperty("file.separator");
+                if(classPath != null) {
+                    var classPathCopy = pathConvert.createPath();
+                    classPathCopy.setPath(classPath);
+                    if(classPath.indexOf(";") != -1) {
+                        var pathArray = classPath.split(";");
+                    } else {
+                        var pathArray = classPath.split(":");
+                    }
+                    var added = "";
+                    for (var i=0; i<pathArray.length; i++) {
+                        var index = pathArray[i].lastIndexOf(fileSeparator);
+                        if (index >=0) {
+                            var onePath = pathArray[i].substr(0,index+1) + "lib";
+                            var oneDir = new java.io.File(onePath);
+                            if(oneDir.exists()) {
+                                var fs = project.createDataType("fileset");
+                                fs.setDir( oneDir );
+                                fs.setIncludes("*.jar");
+                                var ds = fs.getDirectoryScanner(project);
+                                var srcFiles = ds.getIncludedFiles();
+                                for (j=0; j<srcFiles.length; j++) {
+                                    if(classPath.indexOf(srcFiles[j]) == -1 && added.indexOf(srcFiles[j]) == -1) {
+                                        var path = pathConvert.createPath();
+                                        path.setPath(onePath + fileSeparator + srcFiles[j]);
+                                        added += srcFiles[j];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                pathConvert.perform();
+            ]]>
+        </script>
+        <echo message="run.and.lib.classpath = ${run.and.lib.classpath}" level="verbose"/>
         <delete dir="${dist.dir}${file.separator}lib" includeEmptyDirs="true" quiet="true"/>
         <copy todir="${dist.dir}${file.separator}lib" flatten="true" preservelastmodified="true" overwrite="true">
             <path>
-                <pathelement path="${run.classpath.without.build.classes.and.dist.dir}"/>
+                <pathelement path="${run.and.lib.classpath}"/>
             </path>
         </copy>
     </target>
