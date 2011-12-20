@@ -53,6 +53,7 @@ import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
 import org.netbeans.spi.sendopts.annotations.Arg;
+import org.netbeans.spi.sendopts.annotations.Description;
 import org.netbeans.spi.sendopts.annotations.ProcessArgs;
 import org.openide.util.Lookup;
 
@@ -60,7 +61,7 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class DefaultProcessor extends OptionProcessor {
+public final class DefaultProcessor extends OptionProcessor {
     private static final Option defArgs = Option.defaultArguments();
     private final String clazz;
     private final Set<Option> options;
@@ -94,7 +95,46 @@ final class DefaultProcessor extends OptionProcessor {
         return o;
     }
     
-    static DefaultProcessor create(Map<?,?> map) {
+    public static OptionProcessor create(Class<?> clazz) {
+        Map<String,Object> map = new HashMap<String, Object>();
+        map.put("class", clazz.getName());
+        int cnt = 1;
+        for (Field e : clazz.getFields()) {
+            Arg o = e.getAnnotation(Arg.class);
+            if (o == null) {
+                continue;
+            }
+            Description d = e.getAnnotation(Description.class);
+
+            if (o.shortName() != Option.NO_SHORT_NAME) {
+                map.put(cnt + ".shortName", o.shortName());
+            }
+            if (!o.longName().isEmpty()) {
+                map.put(cnt + ".longName", o.longName());
+            }
+            if (e.getType() == boolean.class) {
+                map.put(cnt + ".type", "withoutArgument");
+            } else if (String.class == e.getType()) {
+                map.put(cnt + ".type", "requiredArgument");
+            } else {
+                if (!String[].class.equals(e.getType())) {
+                    throw new IllegalStateException("Field type has to be either boolean, String or String[]! " + e);
+                }
+                map.put(cnt + ".type", "additionalArguments");
+            }
+            if (o.implicit()) {
+                map.put(cnt + ".implicit", true);
+            }
+            if (d != null) {
+                writeBundle(map, cnt + ".displayName", d.displayName(), e);
+                writeBundle(map, cnt + ".shortDescription", d.shortDescription(), e);
+            }
+            cnt++;
+        }
+        return create(map);
+    }
+    
+    static OptionProcessor create(Map<?,?> map) {
         String c = (String) map.get("class");
         Set<Option> arr = new LinkedHashSet<Option>();
         for (int cnt = 1; ; cnt++) {
@@ -206,5 +246,15 @@ final class DefaultProcessor extends OptionProcessor {
             assert false;
             return null;
         }
+    }
+    private static void writeBundle(Map<String,Object> f, String key, String value, Field e) throws IllegalStateException {
+        if (value.isEmpty()) {
+            return;
+        }
+        if (value.startsWith("#")) {
+            Package pkg = e.getDeclaringClass().getPackage();
+            value = pkg.getName() + ".Bundle" + value;
+        }
+        f.put(key, value);
     }
 }
