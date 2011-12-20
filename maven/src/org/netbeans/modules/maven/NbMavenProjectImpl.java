@@ -471,13 +471,12 @@ public final class NbMavenProjectImpl implements Project {
             srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject("src/main/aspect")).getAbsolutePath()); //NOI18N
         }
 
-        URI[] uris = new URI[srcs.size() + 2];
+        URI[] uris = new URI[srcs.size() + 1];
         int count = 0;
         for (String str : srcs) {
             uris[count] = FileUtilities.convertStringToUri(str);
             count = count + 1;
         }
-        uris[uris.length - 2] = getScalaDirectory(test);
         uris[uris.length - 1] = getGroovyDirectory(test);
         return uris;
     }
@@ -544,18 +543,6 @@ public final class NbMavenProjectImpl implements Project {
         return FileUtilities.getDirURI(getProjectDirectory(), prop);
     }
 
-    public URI getScalaDirectory(boolean test) {
-        //TODO hack, should be supported somehow to read this..
-        String prop = PluginPropertyUtils.getPluginProperty(getOriginalMavenProject(), "org.scala.tools",
-                "scala-maven-plugin", //NOI18N
-                "sourceDir", //NOI18N
-                "compile"); //NOI18N
-
-        prop = prop == null ? (test ? "src/test/scala" : "src/main/scala") : prop; //NOI18N
-
-        return FileUtilities.getDirURI(getProjectDirectory(), prop);
-    }
-
     public URI getGroovyDirectory(boolean test) {
         String prop = test ? "src/test/groovy" : "src/main/groovy"; //NOI18N
         return FileUtilities.getDirURI(getProjectDirectory(), prop);
@@ -592,8 +579,7 @@ public final class NbMavenProjectImpl implements Project {
                     //TODO most probably a performance bottleneck of sorts..
                     return !("java".equalsIgnoreCase(name)) && //NOI18N
                             !("webapp".equalsIgnoreCase(name)) && //NOI18N
-                            !("groovy".equalsIgnoreCase(name)) && //NOI18N
-                            !("scala".equalsIgnoreCase(name)) //NOI18N
+                            !("groovy".equalsIgnoreCase(name)) //NOI18N
                             && VisibilityQuery.getDefault().isVisible(new File(dir, name));
                 }
             });

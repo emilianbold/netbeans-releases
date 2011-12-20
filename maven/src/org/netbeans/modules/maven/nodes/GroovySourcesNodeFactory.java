@@ -71,13 +71,9 @@ import org.openide.util.lookup.ProxyLookup;
  * @author mkleint
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=139)
-public class GroovyScalaSourcesNodeFactory implements NodeFactory {
+public class GroovySourcesNodeFactory implements NodeFactory {
 
-    private static final RequestProcessor RP = new RequestProcessor("GroovyScalaNodes"); // NOI18N
-    
-    /** Creates a new instance of SourcesNodeFactory */
-    public GroovyScalaSourcesNodeFactory() {
-    }
+    private static final RequestProcessor RP = new RequestProcessor(GroovySourcesNodeFactory.class);
     
     @Override
     public NodeList createNodes(Project project) {
@@ -107,12 +103,6 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
                     list.add(groovygroup[i]);
                 }
             }
-            SourceGroup[] scalagroup = srcs.getSourceGroups(MavenSourcesImpl.TYPE_SCALA);
-            for (int i = 0; i < scalagroup.length; i++) {
-                if (!javaroots.contains(scalagroup[i].getRootFolder())) {
-                    list.add(scalagroup[i]);
-                }
-            }
             return list;
         }
         
@@ -121,11 +111,6 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
             Node pack = PackageView.createPackageView(group);
 
 
-            if (MavenSourcesImpl.NAME_SCALASOURCE.equals(group.getName()) ||
-                MavenSourcesImpl.NAME_SCALATESTSOURCE.equals(group.getName())) {
-                Lookup lkp = new ProxyLookup(Lookups.singleton(new ScalaPrivs()), pack.getLookup());
-                pack = new FilterNode(pack, new FilterNode.Children(pack), lkp);
-            }
             if (MavenSourcesImpl.NAME_GROOVYSOURCE.equals(group.getName()) ||
                 MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(group.getName())) {
                 Lookup lkp = new ProxyLookup(Lookups.singleton(new GroovyPrivs()), pack.getLookup());
@@ -155,19 +140,6 @@ public class GroovyScalaSourcesNodeFactory implements NodeFactory {
                     fireChange();
                 }
             });
-        }
-    }
-
-    private static class ScalaPrivs implements PrivilegedTemplates {
-
-        @Override
-        public String[] getPrivilegedTemplates() {
-            return new String[] {
-                "Templates/Scala/Class.scala", //NOI18N
-                "Templates/Scala/Object.scala", //NOI18N
-                "Templates/Scala/Trait.scala", //NOI18N
-                "Templates/Other/Folder" //NOI18N
-            };
         }
     }
 

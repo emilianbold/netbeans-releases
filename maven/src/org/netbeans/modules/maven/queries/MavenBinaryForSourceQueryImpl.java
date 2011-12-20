@@ -123,10 +123,6 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
                 return toReturn;
             }
         }
-        toReturn = checkRoot(fil, impl.getScalaDirectory(false), impl.getScalaDirectory(true));
-        if (toReturn != null) {
-            return toReturn;
-        }
         return checkRoot(fil, impl.getGroovyDirectory(false), impl.getGroovyDirectory(true));
     }
 

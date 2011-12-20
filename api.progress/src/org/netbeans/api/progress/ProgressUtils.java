@@ -121,8 +121,7 @@ public final class ProgressUtils {
      * <p/>
      * Unless you are being passed the runnable or progress handle from foreign
      * code (such as in WizardDescriptor.progressInstantiatingIterator), it
-     * is usually simpler to use the version of this method that takes a
-     * <code>ProgressCallable</code>.
+     * is usually simpler to use {@link #showProgressDialogAndRun(ProgressRunnable, String, boolean)}.
      *
      * @param operation A runnable to run in the background
      * @param progress A progress handle to create a progress bar for
