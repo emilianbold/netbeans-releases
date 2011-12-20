@@ -42,10 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-/**
- *
- * @author Petr Hejl
- */
 import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
@@ -57,13 +53,13 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Hejl
+ * @author phejl
  */
-public class TransformationsCompletionTest extends GroovyTestBase {
+public class AccessCCTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/transformations/";
+    String TEST_BASE = "testfiles/completion/access/";
 
-    public TransformationsCompletionTest(String testName) {
+    public AccessCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -79,15 +75,13 @@ public class TransformationsCompletionTest extends GroovyTestBase {
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();
         map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/transformations")) }));
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/access")) }));
         return map;
     }
 
-    public void testTransformations1() throws Exception {
-        checkCompletion(TEST_BASE + "Transformations1.groovy", "        Transformations1.in^", true);
-    }
-
-    public void testTransformations2() throws Exception {
-        checkCompletion(TEST_BASE + "Transformations2.groovy", "        Transformations2.get^", true);
-    }
+    // FIXME this does not provide accurate results, but we need to test
+    // at least basic closure completion
+    public void testBasicAccessLevels1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Access1.groovy", "        this.^", false);
+    }  
 }

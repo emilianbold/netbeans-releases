@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.groovy.editor.api.completion;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;

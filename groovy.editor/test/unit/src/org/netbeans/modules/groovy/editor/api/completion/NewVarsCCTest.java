@@ -42,19 +42,25 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
+import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author schmidtm
  */
-public class CollectionsTest extends GroovyTestBase {
+public class NewVarsCCTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/collections/";
+    String TEST_BASE = "testfiles/completion/";
+    String BASE = TEST_BASE + "newvars/";
 
-    public CollectionsTest(String testName) {
+    public NewVarsCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -67,32 +73,64 @@ public class CollectionsTest extends GroovyTestBase {
         // as returning Level.FINEST here would log from all loggers
     }
 
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testCollections1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
+    protected @Override Map<String, ClassPath> createClassPathsForTest() {
+        Map<String, ClassPath> map = super.createClassPathsForTest();
+        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/newvars")) }));
+        return map;
     }
 
-    public void testCollections2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
+    // test new-var suggestions based on identifiers
+
+    public void testIdentifier1() throws Exception {
+        checkCompletion(BASE + "Identifier1.groovy", "String str^", false);
     }
 
-    public void testCollections3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
+    public void testIdentifier2() throws Exception {
+        checkCompletion(BASE + "Identifier1.groovy", "Long lo^", false);
     }
 
-    public void testCollections4() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    1..10.d^", false);
+    public void testIdentifier3() throws Exception {
+        checkCompletion(BASE + "Identifier2.groovy", "Boolean ^", false);
     }
 
-    public void testCollections5() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).^", false);
+    public void testIdentifier4() throws Exception {
+        checkCompletion(BASE + "Identifier3.groovy", "StringBuffer ^", false);
     }
 
-    public void testCollections6() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].it^", false);
+    // test primitve type suggestions
+
+    public void testPrimitive1() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "boolean ^", false);
     }
+
+    public void testPrimitive2() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "byte ^", false);
+    }
+
+    public void testPrimitive3() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "char ^", false);
+    }
+
+    public void testPrimitive4() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "double ^", false);
+    }
+
+    public void testPrimitive5() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "float ^", false);
+    }
+
+    public void testPrimitive6() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "int ^", false);
+    }
+
+    public void testPrimitive7() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "long ^", false);
+    }
+
+    public void testPrimitive8() throws Exception {
+        checkCompletion(BASE + "Primitive1.groovy", "short ^", false);
+    }
+
+
 }

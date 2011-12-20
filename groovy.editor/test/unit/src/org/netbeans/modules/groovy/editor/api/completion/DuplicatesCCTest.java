@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
+/**
+ *
+ * @author Petr Hejl
+ */
 import java.util.Map;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
@@ -55,12 +59,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author schmidtm
  */
-public class NewVarsTest extends GroovyTestBase {
+public class DuplicatesCCTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/";
-    String BASE = TEST_BASE + "newvars/";
+    String TEST_BASE = "testfiles/completion/duplicates/";
 
-    public NewVarsTest(String testName) {
+    public DuplicatesCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -76,61 +79,20 @@ public class NewVarsTest extends GroovyTestBase {
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();
         map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/newvars")) }));
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/duplicates")) }));
         return map;
     }
 
-    // test new-var suggestions based on identifiers
-
-    public void testIdentifier1() throws Exception {
-        checkCompletion(BASE + "Identifier1.groovy", "String str^", false);
+    public void testDuplicates1() throws Exception {
+        checkCompletion(TEST_BASE + "b/B.groovy", "class B extends A^ {", true);
     }
 
-    public void testIdentifier2() throws Exception {
-        checkCompletion(BASE + "Identifier1.groovy", "Long lo^", false);
+    // TESTFAIL x
+    public void testDuplicates2() throws Exception {
+        checkCompletion(TEST_BASE + "c/C.groovy", "class C extends a.A^ {", true);
     }
 
-    public void testIdentifier3() throws Exception {
-        checkCompletion(BASE + "Identifier2.groovy", "Boolean ^", false);
+    public void testDuplicates3() throws Exception {
+        checkCompletion(TEST_BASE + "d/D.groovy", "class D extends java.util.A^ {", true);
     }
-
-    public void testIdentifier4() throws Exception {
-        checkCompletion(BASE + "Identifier3.groovy", "StringBuffer ^", false);
-    }
-
-    // test primitve type suggestions
-
-    public void testPrimitive1() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "boolean ^", false);
-    }
-
-    public void testPrimitive2() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "byte ^", false);
-    }
-
-    public void testPrimitive3() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "char ^", false);
-    }
-
-    public void testPrimitive4() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "double ^", false);
-    }
-
-    public void testPrimitive5() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "float ^", false);
-    }
-
-    public void testPrimitive6() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "int ^", false);
-    }
-
-    public void testPrimitive7() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "long ^", false);
-    }
-
-    public void testPrimitive8() throws Exception {
-        checkCompletion(BASE + "Primitive1.groovy", "short ^", false);
-    }
-
-
 }

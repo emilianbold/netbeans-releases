@@ -128,7 +128,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             if (CsmKindUtilities.isFile(referencedObject)) {
                 fireProgressListenerStart(ProgressEvent.START, 2);
                 res = processIncludeQuery((CsmFile)referencedObject);
-            } else if (Boolean.getBoolean("cnd.model.index.enabled")) {
+            } else if (Boolean.getBoolean("cnd.model.global.index")) {
                 Collection<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
                 fireProgressListenerStart(ProgressEvent.START, referencedObjects.size() + 2);
                 res = processObjectUsagesQuery(referencedObjects);
@@ -139,6 +139,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 for (CsmObject csmObject : referencedObjects) {
                     files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
                 }
+                LOG.log(Level.INFO, "preparing files took {0}ms", System.currentTimeMillis() - time);
                 fireProgressListenerStart(ProgressEvent.START, files.size() + 2);
                 res = processObjectUsagesQuery(referencedObjects, files);
             }
