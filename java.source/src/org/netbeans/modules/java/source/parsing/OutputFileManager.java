@@ -110,7 +110,7 @@ public class OutputFileManager extends CachingFileManager {
     @Override
     public Iterable<JavaFileObject> list(Location l, String packageName, Set<Kind> kinds, boolean recursive) {
         final Iterable<JavaFileObject> sr =  super.list(l, packageName, kinds, recursive);
-        return tx.filter(sr);
+        return tx.filter(packageName, sr);
     }
 
     public @Override JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
@@ -142,7 +142,7 @@ public class OutputFileManager extends CachingFileManager {
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;            
             final File f = new File (activeRoot, nameStr);
-            return FileObjects.fileFileObject(f, activeRoot, null, null);
+            return tx.createFileObject(f, activeRoot, null, null);
         }
     }
 
@@ -172,7 +172,30 @@ public class OutputFileManager extends CachingFileManager {
         }
         path.append(relativeName);
         final File file = FileUtil.normalizeFile(new File (activeRoot,path.toString()));
-        return FileObjects.fileFileObject(file, activeRoot,null,null);
+        return tx.createFileObject(file, activeRoot,null,null);
+    }
+
+    
+    @Override
+    public javax.tools.FileObject getFileForInput(Location l, String pkgName, String relativeName) {
+        javax.tools.FileObject fo = tx.readFileObject(pkgName, relativeName);
+        if (fo != null) {
+            return fo;
+        }
+        return super.getFileForInput(l, pkgName, relativeName);
+    }
+
+    @Override
+    public JavaFileObject getJavaFileForInput(Location l, String className, Kind kind) {
+        if (kind == JavaFileObject.Kind.CLASS) {
+            int dot = className.lastIndexOf('.');
+            String dir = dot == -1 ? "" : FileObjects.convertPackage2Folder(className.substring(0, dot));
+            javax.tools.FileObject fo = tx.readFileObject(dir, className.substring(dot + 1));
+            if (fo != null) {
+                return (JavaFileObject)fo;
+            }
+        }
+        return super.getJavaFileForInput(l, className, kind);
     }
 
 
