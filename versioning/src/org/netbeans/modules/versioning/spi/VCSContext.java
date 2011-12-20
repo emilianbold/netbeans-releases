@@ -58,7 +58,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author Maros Sandor
  */
 public final class VCSContext {
-    
+
     private org.netbeans.modules.versioning.core.spi.VCSContext delegate;
     
     /**
@@ -77,6 +77,7 @@ public final class VCSContext {
     }
         
     VCSContext(org.netbeans.modules.versioning.core.spi.VCSContext delegate) {
+        assert accept(delegate);
         this.delegate = delegate;
     }
     
@@ -97,7 +98,8 @@ public final class VCSContext {
      * @return VCSContext containing nodes and corresponding files they represent
      */
     public synchronized static VCSContext forNodes(Node[] nodes) {
-        return new VCSContext(org.netbeans.modules.versioning.core.spi.VCSContext.forNodes(nodes));
+        final org.netbeans.modules.versioning.core.spi.VCSContext delegate = org.netbeans.modules.versioning.core.spi.VCSContext.forNodes(nodes);
+        return accept(delegate) ? new VCSContext(delegate) : EMPTY;
     }
         
     /**
@@ -214,4 +216,14 @@ public final class VCSContext {
             return filter.accept(file.toFile());
         }
     }
+    
+    private static boolean accept(org.netbeans.modules.versioning.core.spi.VCSContext delegate) {
+        Set<VCSFileProxy> roots = delegate.getRootFiles();
+        for (VCSFileProxy root : roots) {
+            if(root.toFile() ==  null) {
+                return false;
+            }
+        }
+        return true;
+    }    
 }
