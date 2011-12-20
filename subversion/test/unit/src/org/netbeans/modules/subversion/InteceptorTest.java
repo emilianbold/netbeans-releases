@@ -55,7 +55,7 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.utils.TestUtilities;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;

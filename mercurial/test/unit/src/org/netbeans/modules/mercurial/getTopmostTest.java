@@ -50,7 +50,7 @@ import java.util.Set;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.Utils;
+import org.netbeans.modules.versioning.core.Utils;
 
 /**
  *
