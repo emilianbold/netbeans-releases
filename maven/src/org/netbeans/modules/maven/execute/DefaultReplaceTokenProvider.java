@@ -129,9 +129,6 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
                 tuple = checkSG(srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), replaceMap, fo);
             }
-            if ("text/x-groovy".equals(fo.getMIMEType())) {//NOI18N
-                tuple = checkSG(srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY), replaceMap, fo);
-            }
             if (tuple.relPath == null) {
                 replaceMap.put(CLASSNAME_EXT, "");//NOI18N
                 replaceMap.put(CLASSNAME, "");//NOI18N
@@ -149,9 +146,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 
         if (tuple.group != null &&
                 //TODO not nice, how to figure in a better way? by source classpath?
-                (MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName()) ||
-                 MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(tuple.group.getName())
-                )) {
+                (MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName()))) {
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
             replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N
@@ -272,12 +267,6 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                             }
                         }
                     }
-                }
-                if ("text/x-groovy".equals(fo.getMIMEType())) {
-                    //TODO this only applies to groovy files with main() method.
-                    // we should have a way to execute any groovy script? how?
-                    // running groovy tests is another specialized usecase.
-                    return action + ".main";
                 }
             }
         }
