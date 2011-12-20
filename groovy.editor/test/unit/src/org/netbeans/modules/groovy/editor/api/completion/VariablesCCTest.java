@@ -48,9 +48,9 @@ import java.util.Set;
  *
  * @author Petr Hejl
  */
-public class VariablesCompletionTest extends GroovyCCTestBase {
+public class VariablesCCTest extends GroovyCCTestBase {
 
-    public VariablesCompletionTest(String testName) {
+    public VariablesCCTest(String testName) {
         super(testName);
     }
 

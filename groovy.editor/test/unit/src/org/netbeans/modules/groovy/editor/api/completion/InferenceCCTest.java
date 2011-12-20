@@ -57,13 +57,13 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class DuplicatesCompletionTest extends GroovyTestBase {
+public class InferenceCCTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/duplicates/";
+    String TEST_BASE = "testfiles/completion/inference/";
 
-    public DuplicatesCompletionTest(String testName) {
+    public InferenceCCTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
@@ -79,20 +79,15 @@ public class DuplicatesCompletionTest extends GroovyTestBase {
     protected @Override Map<String, ClassPath> createClassPathsForTest() {
         Map<String, ClassPath> map = super.createClassPathsForTest();
         map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/duplicates")) }));
+            FileUtil.toFileObject(getDataFile("/testfiles/completion/inference")) }));
         return map;
     }
 
-    public void testDuplicates1() throws Exception {
-        checkCompletion(TEST_BASE + "b/B.groovy", "class B extends A^ {", true);
+    public void testInference1() throws Exception {
+        checkCompletion(TEST_BASE + "Inference1.groovy", "        set.a^", true);
     }
 
-    // TESTFAIL x
-    public void testDuplicates2() throws Exception {
-        checkCompletion(TEST_BASE + "c/C.groovy", "class C extends a.A^ {", true);
-    }
-
-    public void testDuplicates3() throws Exception {
-        checkCompletion(TEST_BASE + "d/D.groovy", "class D extends java.util.A^ {", true);
+    public void testInference2() throws Exception {
+        checkCompletion(TEST_BASE + "Inference1.groovy", "        set.t^", true);
     }
 }
