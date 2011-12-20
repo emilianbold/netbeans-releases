@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.csl.api.OffsetRange;
+
 /**
  *
  * @author Petr Pisl
  */
-public interface FunctionScope extends VariableScope {
-    public Identifier getDeclarationName();
+public interface Identifier {
+    public String getName();
+    public OffsetRange getOffsetRange();
 }

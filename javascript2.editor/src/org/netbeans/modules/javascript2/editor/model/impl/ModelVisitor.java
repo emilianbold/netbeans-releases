@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Scope;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -94,7 +96,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
-            String name = functionNode.getIdent().getName();
+            List<Identifier> name = null;
 
             int pathSize = getPath().size();
             if (pathSize > 1 && getPath().get(pathSize - 2) instanceof ReferenceNode) {
@@ -115,12 +117,17 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
+            if (name == null) {
+                name = new ArrayList<Identifier>(1);
+                name.add(new IdentifierImpl(functionNode.getIdent().getName(), 
+                        new OffsetRange(functionNode.getIdent().getStart(), functionNode.getIdent().getFinish())));
+            }
             functionStack.add(functions);
 
             // todo parameters;
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 ScopeImpl scope = modelBuilder.getCurrentScope();
-                FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
+                FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, name.get(0), modelBuilder);
                 modelBuilder.setCurrentScope(scope = fncScope);
             }
 
@@ -182,26 +189,35 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(referenceNode, onset);
     }
     
-    private String getName(PropertyNode propertyNode) {
-        String name = null;
+    private List<Identifier> getName(PropertyNode propertyNode) {
+        List<Identifier> name = new ArrayList(1);
         if (propertyNode.getKey() instanceof IdentNode) {
-            name = ((IdentNode) propertyNode.getKey()).getName();
+            IdentNode ident = (IdentNode) propertyNode.getKey();
+            name.add(new IdentifierImpl(ident.getName(),
+                    new OffsetRange(ident.getStart(), ident.getFinish())));
         }
         return name;
     }
     
-    private String getName(BinaryNode binaryNode) {
-        String name = null;
+    private List<Identifier> getName(BinaryNode binaryNode) {
+        List<Identifier> name = new ArrayList();
         Node lhs = binaryNode.lhs();
         if (lhs instanceof AccessNode) {
-            String baseName = "";
 
             AccessNode aNode = (AccessNode) lhs;
-            name = ((AccessNode) lhs).getProperty().getName();
+            name.add(new IdentifierImpl(aNode.getProperty().getName() ,
+                    new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
             while (aNode.getBase() instanceof AccessNode) {
                 aNode =(AccessNode)aNode.getBase();
-                baseName += aNode.getProperty().getName();
+                name.add(new IdentifierImpl(aNode.getProperty().getName() ,
+                    new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
             }
+            if(name.size() > 1 && aNode.getBase() instanceof IdentNode) {
+                IdentNode ident = (IdentNode)aNode.getBase();
+                name.add(new IdentifierImpl(ident.getName(), 
+                        new OffsetRange(ident.getStart(), ident.getFinish())));
+            }
+
         }
         return name;
     }

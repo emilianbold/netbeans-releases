@@ -47,7 +47,9 @@ import java.util.EnumSet;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.FunctionScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Scope;
 
 /**
@@ -55,20 +57,39 @@ import org.netbeans.modules.javascript2.editor.model.Scope;
  * @author Petr Pisl
  */
 public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScope {
-
+    
+    private Identifier declarationName;
+    
+    /**
+     * This offset range is created to navigator navigate to the name of the function.
+     */
+    private OffsetRange offsetRangeForNavigator = null;
+    
     public FunctionScopeImpl(Scope inScope, FunctionNode node) {
-        this(inScope, node.getName(), node);
+        this(inScope, new IdentifierImpl(node.getIdent().getName(), new OffsetRange(node.getIdent().getStart(), node.getIdent().getFinish())), node);
     }
     
-    public FunctionScopeImpl(Scope inScope, String name, FunctionNode node) {
+    public FunctionScopeImpl(Scope inScope, Identifier declarationName, FunctionNode node) {
         super(inScope, ElementKind.METHOD, inScope.getFileObject(), 
-                name, 
+                declarationName.getName(), 
                 new OffsetRange(node.getStart(), 
                 // TODO bug in parser. The end position is not returned correctly now
                 Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken())), 
                 EnumSet.of(Modifier.PUBLIC));
         ((ScopeImpl)inScope).addElement(this);
+        this.declarationName = declarationName;
     }
 
+    @Override
+    public Identifier getDeclarationName() {
+        return declarationName;
+    }   
     
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        if (offsetRangeForNavigator == null) {
+            offsetRangeForNavigator = new OffsetRange(declarationName.getOffsetRange().getStart(), getBlockRange().getEnd());
+        }
+        return offsetRangeForNavigator;
+    }    
 }

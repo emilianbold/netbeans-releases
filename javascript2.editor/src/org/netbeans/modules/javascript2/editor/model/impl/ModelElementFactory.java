@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.ObjectNode;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Scope;
 
 
@@ -62,7 +63,8 @@ public final class ModelElementFactory {
         return result;
     }
     
-    static FunctionScopeImpl create(final FunctionNode function, String name, final ModelBuilder context) {
+    static FunctionScopeImpl create(final FunctionNode function, Identifier name, final ModelBuilder context) {
+        assert name != null;
         final Scope currentScope = context.getCurrentScope();
         FunctionScopeImpl result = new FunctionScopeImpl(currentScope, name, function);
         return result;

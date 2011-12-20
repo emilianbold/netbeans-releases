@@ -39,12 +39,33 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
+
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface FunctionScope extends VariableScope {
-    public Identifier getDeclarationName();
+public class IdentifierImpl implements Identifier {
+    
+    private String name;
+    private OffsetRange offsetRange;
+
+    public IdentifierImpl(String name, OffsetRange offsetRange) {
+        this.name = name;
+        this.offsetRange = offsetRange;
+    }
+    
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange() {
+        return offsetRange;
+    }   
 }

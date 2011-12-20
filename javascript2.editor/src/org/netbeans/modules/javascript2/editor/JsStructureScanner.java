@@ -276,8 +276,12 @@ public class JsStructureScanner implements StructureScanner {
             formatter.appendText("()");   //NOI18N
         }
 
+        @Override
+        public String getName() {
+            return getFunctionScope().getDeclarationName().getName();
+        }
     }
-    
+
     private class JsObjectStructureItem extends JsStructureItem {
 
         public JsObjectStructureItem(ObjectScope elementHandle, List<? extends StructureItem> children) {
