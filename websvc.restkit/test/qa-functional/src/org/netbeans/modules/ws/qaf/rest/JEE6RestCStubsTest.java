@@ -41,29 +41,8 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.io.File;
-import java.io.IOException;
-import javax.swing.JButton;
-import javax.swing.ListModel;
 import junit.framework.Test;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.project.ui.OpenProjectList;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 
 /**
  * Tests for New REST service client stub wizard
