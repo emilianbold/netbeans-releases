@@ -56,16 +56,17 @@ public final class SymTabStack {
     }
     
     private SymTabStack() {
-        
+       
     }
     
     public SymTab push() {        
-        SymTab symTab = new SymTab();
+        SymTab symTab = new SymTab(stack.size());
         stack.add(symTab);
         return symTab;
     }
     
     public SymTab pop() {
+        assert stack.size() > 1;
         return stack.remove(stack.size() - 1);
     }
     
@@ -74,6 +75,7 @@ public final class SymTabStack {
     }
     
     public SymTabEntry lookup(CharSequence entry) {
+        assert stack.size() > 0;
         SymTabEntry out = null;
         for (int i = stack.size() - 1; i >= 0; i--) {
             out = stack.get(i).lookup(entry);
@@ -88,8 +90,8 @@ public final class SymTabStack {
         return getLocal().enter(entry);
     }
     
-    public void appendToLocal(SymTab symTab) {
-        getLocal().append(symTab);
+    public void importToLocal(SymTab symTab) {
+        getLocal().importSymTab(symTab);
     }
 
     private SymTab getLocal() {
@@ -98,6 +100,6 @@ public final class SymTabStack {
 
     @Override
     public String toString() {
-        return "SymTabStack{" + "stack=" + stack + '}'; // NOI18N
+        return "SymTabStack{" + "nestingLevel=" + stack.size() + ", stack=" + stack + '}'; // NOI18N
     }
 }

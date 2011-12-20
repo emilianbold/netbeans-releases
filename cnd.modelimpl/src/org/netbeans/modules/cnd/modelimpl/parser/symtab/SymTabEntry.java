@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -50,11 +50,13 @@ import java.util.Map;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class SymTabEntry {
-    private final Map<SymTabEntryKey, Object> attributes = new HashMap<SymTabEntryKey, Object>();
+    private final Map<SymTabEntryKey, Object> attributes = new TreeMap<SymTabEntryKey, Object>();
     private final CharSequence name;
+    private final SymTab container;
 
-    SymTabEntry(CharSequence name) {
+    SymTabEntry(CharSequence name, SymTab container) {
         this.name = name;
+        this.container = container;
     }
     
     public Object getAttribute(SymTabEntryKey key) {
@@ -64,9 +66,17 @@ public final class SymTabEntry {
     public void setAttribute(SymTabEntryKey key, Object value) {
         attributes.put(key, value);
     }
+    
+    /**
+     * access to full scope of this entry
+     * @return 
+     */
+    public SymTab getSymTab() {
+        return container;
+    }
 
     @Override
     public String toString() {
-        return "Entry{name=" + name + "\n  attributes=" + attributes + '}'; // NOI18N
+        return "Entry{name=" + name + ", level=" + container.getNestingLevel() + "\n  attributes=" + attributes + '}'; // NOI18N
     }
 }
