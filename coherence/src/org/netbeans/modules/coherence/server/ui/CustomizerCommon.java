@@ -301,6 +301,10 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     /**
      * Shows the fileChooser.
      */
+    @NbBundle.Messages({
+        "jar.chooser.title=Add JAR file",
+        "jar.chooser.filter=JAR file"
+    })
     private void showFileChooser() {
         if (fileChooser == null) {
             fileChooser = new JFileChooser();
@@ -325,9 +329,10 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
             @Override
             public String getDescription() {
-                return NbBundle.getMessage(CustomizerCommon.class, "DESC_AddJarToClasspath"); //NOI18N
+                return Bundle.jar_chooser_filter();
             }
         });
+        fileChooser.setDialogTitle(Bundle.jar_chooser_title());
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
