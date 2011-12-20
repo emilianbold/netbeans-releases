@@ -87,6 +87,8 @@ public final class ExecutionDescriptor {
 
     private final boolean errLineBased;
 
+    private final boolean frontWindowOnError;
+
     private final LineConvertorFactory outConvertorFactory;
 
     private final LineConvertorFactory errConvertorFactory;
@@ -121,6 +123,7 @@ public final class ExecutionDescriptor {
         this.controllable = data.controllable;
         this.outLineBased = data.outLineBased;
         this.errLineBased = data.errLineBased;
+        this.frontWindowOnError = data.frontWindowOnError;
         this.outConvertorFactory = data.outConvertorFactory;
         this.errConvertorFactory = data.errConvertorFactory;
         this.outProcessorFactory = data.outProcessorFactory;
@@ -139,7 +142,7 @@ public final class ExecutionDescriptor {
      * <p>
      * If configured value is not <code>null</code> values configured via
      * methods {@link #controllable(boolean)}, {@link #rerunCondition(RerunCondition)}
-     * and {@link #getOptionsPath()} and are ignored by {@link ExecutionService}.
+     * and {@link #getOptionsPath()} are ignored by {@link ExecutionService}.
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>
@@ -350,6 +353,31 @@ public final class ExecutionDescriptor {
 
     boolean isErrLineBased() {
         return errLineBased;
+    }
+
+    /**
+     * Returns a descriptor with configured front window on error flag. When
+     * configured value is <code>true</code> and the process will return nonzero
+     * exit value the output window will be moved to front on execution finish.
+     * <p>
+     * The default (not configured) value is <code>false</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
+     *
+     * @param frontWindowOnError front window on error flag
+     * @return new descriptor with configured front window on error flag
+     * @since 1.29
+     */
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor frontWindowOnError(boolean frontWindowOnError) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.frontWindowOnError(frontWindowOnError));
+    }
+
+    boolean isFrontWindowOnError() {
+        return frontWindowOnError;
     }
 
     /**
@@ -696,6 +724,8 @@ public final class ExecutionDescriptor {
 
         private boolean errLineBased;
 
+        private boolean frontWindowOnError;
+
         private LineConvertorFactory outConvertorFactory;
 
         private LineConvertorFactory errConvertorFactory;
@@ -726,6 +756,7 @@ public final class ExecutionDescriptor {
             this.controllable = descriptor.controllable;
             this.outLineBased = descriptor.outLineBased;
             this.errLineBased = descriptor.errLineBased;
+            this.frontWindowOnError = descriptor.frontWindowOnError;
             this.outConvertorFactory = descriptor.outConvertorFactory;
             this.errConvertorFactory = descriptor.errConvertorFactory;
             this.outProcessorFactory = descriptor.outProcessorFactory;
@@ -779,6 +810,11 @@ public final class ExecutionDescriptor {
 
         public DescriptorData errLineBased(boolean errLineBased) {
             this.errLineBased = errLineBased;
+            return this;
+        }
+
+        public DescriptorData frontWindowOnError(boolean frontWindowOnError) {
+            this.frontWindowOnError = frontWindowOnError;
             return this;
         }
 
