@@ -82,7 +82,11 @@ public abstract class GroovyCCTestBase extends GroovyTestBase {
     }
 
     private String getExpandedSourcePath() {
-        return getBasicSourcePath() + "/" + getClassName(); //NOI18N
+        return getBasicSourcePath() + "/" + firstLetterToLowerCase(getClassName()); //NOI18N
+    }
+
+    private String firstLetterToLowerCase(String className) {
+        return Character.toLowerCase(className.charAt(0)) + className.substring(1, className.length());
     }
 
     protected String getBasicSourcePath() {

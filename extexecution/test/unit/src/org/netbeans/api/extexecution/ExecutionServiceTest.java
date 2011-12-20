@@ -59,7 +59,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.junit.NbTestCase;
@@ -423,6 +425,115 @@ public class ExecutionServiceTest extends NbTestCase {
         assertTrue(testIO.isReset());
     }
 
+    public void testIOFrontOnError() throws InterruptedException, InvocationTargetException, ExecutionException {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable();
+        callable.addProcess(process);
+
+        InputOutput io = IOProvider.getDefault().getIO("Test", new Action[] {});
+        final TestInputOutput testIO1 = new TestInputOutput(io);
+        ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                .inputOutput(testIO1).frontWindowOnError(true);
+        ExecutionService service = ExecutionService.newService(
+                callable, descriptor, "Test");
+
+        Future<Integer> task = service.run();
+        assertNotNull(task);
+        process.destroy();
+        assertEquals(0, task.get().intValue());
+
+        final CountDownLatch edtLatch1 = new CountDownLatch(1);
+        final AtomicBoolean val1 = new AtomicBoolean();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                val1.set(testIO1.isSelect());
+                edtLatch1.countDown();
+            }
+        });
+        edtLatch1.await();
+        assertFalse(val1.get());
+
+        // now with error exit code
+        process = new TestProcess(-1);
+        callable = new TestCallable();
+        callable.addProcess(process);
+
+        final TestInputOutput testIO2 = new TestInputOutput(io);
+        descriptor = new ExecutionDescriptor()
+                .inputOutput(testIO2).frontWindowOnError(true);
+        service = ExecutionService.newService(callable, descriptor, "Test");
+
+        task = service.run();
+        assertNotNull(task);
+        process.destroy();
+        assertEquals(-1, task.get().intValue());
+
+        final CountDownLatch edtLatch2 = new CountDownLatch(1);
+        final AtomicBoolean val2 = new AtomicBoolean();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                val2.set(testIO2.isSelect());
+                edtLatch2.countDown();
+            }
+        });
+        edtLatch2.await();
+        assertTrue(val2.get());
+    }
+
+    public void testIOFrontOnErrorCancelled() throws InterruptedException {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable();
+        callable.addProcess(process);
+
+        final InputOutput io = IOProvider.getDefault().getIO("Test", new Action[] {});
+        final TestInputOutput testIO = new TestInputOutput(io);
+
+        ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                .inputOutput(testIO).frontWindowOnError(true);
+        final CountDownLatch latch = new CountDownLatch(1);
+        descriptor = descriptor.preExecution(new Runnable() {
+            public void run() {
+                try {
+                    latch.await();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
+
+        ExecutionService service = ExecutionService.newService(
+                callable, descriptor, "Test");
+
+        Future<Integer> task = service.run();
+        assertNotNull(task);
+        assertFalse(process.isFinished());
+
+        task.cancel(true);
+        // guaranteed process was not executed
+        latch.countDown();
+
+        assertTrue(task.isCancelled());
+        assertFalse(process.isStarted());
+        assertFalse(process.isFinished());
+
+        final CountDownLatch edtLatch = new CountDownLatch(1);
+        final AtomicBoolean val = new AtomicBoolean();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                val.set(testIO.isSelect());
+                edtLatch.countDown();
+            }
+        });
+        edtLatch.await();
+        assertFalse(val.get());
+    }
+
     private static InputOutputManager.InputOutputData getInputOutput(String name,
             boolean actions, String optionsPath) {
 
@@ -638,6 +749,8 @@ public class ExecutionServiceTest extends NbTestCase {
 
         private volatile boolean reset;
 
+        private volatile boolean select;
+
         public TestInputOutput(InputOutput io) {
             this.io = io;
         }
@@ -648,6 +761,14 @@ public class ExecutionServiceTest extends NbTestCase {
 
         public void reset() {
             this.reset = true;
+        }
+
+        public boolean isSelect() {
+            return select;
+        }
+
+        public void select() {
+            this.select = true;
         }
 
         public void setOutputVisible(boolean value) {
@@ -668,10 +789,6 @@ public class ExecutionServiceTest extends NbTestCase {
 
         public void setErrSeparated(boolean value) {
             io.setErrSeparated(value);
-        }
-
-        public void select() {
-            io.select();
         }
 
         public boolean isFocusTaken() {
@@ -731,6 +848,5 @@ public class ExecutionServiceTest extends NbTestCase {
         public void println(String s, OutputListener l) throws IOException {
             ow.println(s, l);
         }
-
     }
 }

@@ -56,7 +56,11 @@ public class TypesCompletionTest extends GroovyCCTestBase {
     protected String getTestType() {
         return "types";
     }
-    
+
+    public void testFqnTypeCompletion1() throws Exception {
+        checkCompletion(BASE + "FqnTypeCompletion1.groovy", "groovy.xml.^", false);
+    }
+
     // we don't get proper AST for this mini-class, disable it for now.
 //    public void testTypeCompletion1() throws Exception {
 //        checkCompletion(getTestFolderPath() + "" + "TypeCompletion1.groovy", "class Bar { ^}", false);
@@ -122,44 +126,13 @@ public class TypesCompletionTest extends GroovyCCTestBase {
         checkCompletion(BASE + "NotInComments1.groovy", "java.lang.ClassCastException^", false);
     }
 
-
-
-    // testing wildcard-imports
-
-//    public void testWildCardImport1() throws Exception {
-//        checkCompletion(getTestFolderPath() + "" + "WildCardImport1.groovy", "new Mark^", false);
-//    }
-
-
     // test for types defined in the very same file
-
     public void testSamePackage1() throws Exception {
         checkCompletion(BASE + "SamePackage1.groovy", "println TestSamePack^", false);
     }
 
-    // test if interfaces and only interfaces are proposed:
-    
-    public void testInterfaceCompletion1_1() throws Exception {
-        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements ^Runnable, Serializable {", false);
-    }
-
-    public void testInterfaceCompletion1_2() throws Exception {
-        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements R^unnable, Serializable {", false);
-    }
-
-    public void testInterfaceCompletion1_3() throws Exception {
-        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runn^able, Serializable {", false);
-    }
-
-    public void testInterfaceCompletion1_4() throws Exception {
-        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Ser^ializable {", false);
-    }
-
-    public void testInterfaceCompletion1_5() throws Exception {
-        checkCompletion(BASE + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Se^rializable {", false);
-    }
-
-    public void testFqnTypeCompletion1() throws Exception {
-        checkCompletion(BASE + "FqnTypeCompletion1.groovy", "groovy.xml.^", false);
-    }
+    // testing wildcard-imports
+//    public void testWildCardImport1() throws Exception {
+//        checkCompletion(getTestFolderPath() + "" + "WildCardImport1.groovy", "new Mark^", false);
+//    }
 }
