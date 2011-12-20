@@ -53,5 +53,14 @@ import org.netbeans.spi.sendopts.Env;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public interface ProcessArgs {
+    /** 
+     * Called after all fields annotated with {@code @}{@link Arg}
+     * are filled with appropriate values.
+     * 
+     * @param env environment for the execution - current working directory,
+     *   stdin, stdout, stderr
+     * @throws CommandException if the parameters don't make sense, throw an
+     *   exception
+     */
     public void process(Env env) throws CommandException;
 }
