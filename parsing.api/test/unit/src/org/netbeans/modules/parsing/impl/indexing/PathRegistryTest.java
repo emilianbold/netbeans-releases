@@ -473,7 +473,20 @@ public class PathRegistryTest extends NbTestCase {
         }
         assertEquals(2, l.ids.size());
     }
-    
+
+    public void testURLNoHostPart() throws Exception {
+        URL url = new URL ("file:///tmp/foo/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("jar:file:///tmp/foo.zip!/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("nbfs://nbhost/SystemFileSystem/PHP/RuntimeLibraries/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("jar:nbfs://nbhost/SystemFileSystem/PHP/RuntimeLibraries.zip!/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("http://myhost/foo/");     //NOI18N
+        assertFalse(PathRegistry.noHostPart(url));
+    }
+
     private static Collection<URL> collectResults () {
         final PathRegistry pr = PathRegistry.getDefault();
         final List<URL> result = new LinkedList<URL>();

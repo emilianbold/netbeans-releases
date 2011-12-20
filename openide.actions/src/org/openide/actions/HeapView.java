@@ -709,6 +709,9 @@ class HeapView extends JComponent {
         textImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         dropShadowImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         bgImage = createImage(w, h);
+        if (bgImage == null) {
+            return;
+        }
         Graphics2D imageG = (Graphics2D)bgImage.getGraphics();
         paintBackground(imageG, w, h);
         paintBackgroundTiles(imageG, w, h);

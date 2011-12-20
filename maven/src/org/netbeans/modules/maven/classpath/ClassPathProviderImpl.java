@@ -320,6 +320,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private ClassPath getEndorsedClassPath() {
         ClassPath cp = cache[8];
         if (cp == null) {
+            getBootClassPathImpl();
             cp = ClassPathFactory.createClassPath(getEndorsedClassPathImpl());
             cache[8] = cp;
         }

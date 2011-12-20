@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.output;
+package org.netbeans.modules.groovy.editor.api.temporary;
 
-import junit.framework.*;
-import org.netbeans.modules.maven.api.output.OutputVisitor;
+import java.util.Set;
+import org.netbeans.modules.groovy.editor.api.completion.GroovyCCTestBase;
+import org.netbeans.modules.groovy.editor.api.completion.VariablesCompletionTest;
 
 /**
+ * Just temporary test (see README.txt for more details). Original test location is {@link VariablesCompletionTest}
  *
- * @author  Milos Kleint
+ * @author Martin Janicek
  */
-public class ScalaOutputListenerProviderTest extends TestCase {
-    private ScalaOutputListenerProvider provider;
-    public ScalaOutputListenerProviderTest(java.lang.String testName) {
+public class VariableCCTest3 extends GroovyCCTestBase {
+
+    public VariableCCTest3(String testName) {
         super(testName);
     }
-   
-    protected void setUp() throws java.lang.Exception {
-        provider = new ScalaOutputListenerProvider();
+
+    @Override
+    protected String getTestType() {
+        return "variables";
     }
 
-    public void testRecognizeLine() {
-        OutputVisitor visitor = new OutputVisitor();
-        visitor.resetVisitor();
-        provider.sequenceStart("mojoexecute#scala:compile", visitor);
-        assertNull(visitor.getOutputListener());
-        visitor.resetVisitor();
-        provider.processLine("Compiling 9 source files to /home/mkleint/src/hg-working/nb-maven-generators~mercurial/scalarebel/module1/target/classes", visitor);
-        assertNull(visitor.getOutputListener());
-        visitor.resetVisitor();
-        provider.processLine("[WARNING] /home/mkleint/src/hg-working/nb-maven-generators~mercurial/scalarebel/module1/src/main/scala/org/mkleint/scalarebel/GroovyGenerator.scala:55: error: not found: value x", visitor);
-        assertNotNull(visitor.getOutputListener());
-        visitor.resetVisitor();
+    @Override
+    protected Set<String> additionalSourceClassPath() {
+        Set<String> sources = super.additionalSourceClassPath();
+        sources.add(getBasicSourcePath());
+        return sources;
+    }
 
-        provider.sequenceFail("mojoexecute#scala:compile", visitor);
+    public void testVariables3_1() throws Exception {
+        checkCompletion(BASE + "Variables3.groovy", "    def x ^", true);
     }
 }

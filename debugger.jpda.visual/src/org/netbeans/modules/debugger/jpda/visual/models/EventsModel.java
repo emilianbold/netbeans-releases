@@ -653,7 +653,9 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
             }
             SelectEventsPanel sep = new SelectEventsPanel();
             sep.setData(listData, logging);
-            NotifyDescriptor nd = new DialogDescriptor(sep, "Select Listener", true, null);
+            NotifyDescriptor nd = new DialogDescriptor(sep,
+                    NbBundle.getMessage(EventsModel.class, "TTL_SelectListener"),
+                    true, null);
             Object res = DialogDisplayer.getDefault().notify(nd);
             if (DialogDescriptor.OK_OPTION.equals(res)) {
                 boolean[] loggingData = sep.getLoggingData();
@@ -785,7 +787,9 @@ public class EventsModel implements TreeModel, NodeModel, TableModel, NodeAction
             }
             JList jl = new JList(listData);
             JScrollPane jsp = new JScrollPane(jl);
-            NotifyDescriptor nd = new DialogDescriptor(jsp, "Select Listener", true, null);
+            NotifyDescriptor nd = new DialogDescriptor(jsp,
+                    NbBundle.getMessage(EventsModel.class, "TTL_SelectListener"),
+                    true, null);
             Object res = DialogDisplayer.getDefault().notify(nd);
             if (DialogDescriptor.OK_OPTION.equals(res)) {
                 String clazz = (String) jl.getSelectedValue();

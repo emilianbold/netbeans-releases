@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates and open the template in
- * the editor.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package o.n.m.ws.qaf.rest.patterns;
 
@@ -14,7 +14,7 @@ import javax.ws.rs.Produces;
 /**
  * REST Web Service
  *
- * @author lukas
+ * @author jskrivanek
  */
 @Path("/CcCI3ContainerURI")
 public class CcCI3CClass {
@@ -22,7 +22,9 @@ public class CcCI3CClass {
     @Context
     private UriInfo context;
 
-    /** Creates a new instance of CcCI3CClass */
+    /**
+     * Creates a new instance of CcCI3CClass
+     */
     public CcCI3CClass() {
     }
 

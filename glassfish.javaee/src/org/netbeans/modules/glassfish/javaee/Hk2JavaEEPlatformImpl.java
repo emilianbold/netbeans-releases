@@ -617,6 +617,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             }
         }
         
+        @Override
+        public void configureCustomJersey( Project project ){
+        }
+        
         private List<URL> getJerseyLibraryURLs() {
             String version = getGFVersion();
             String gfRoot = dm.getProperties().getGlassfishRoot();

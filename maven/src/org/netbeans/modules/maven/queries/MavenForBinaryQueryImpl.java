@@ -200,11 +200,6 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 toReturn.add(fo);
             }
         }
-        URI scala = project.getScalaDirectory(false);
-        FileObject scalafo = FileUtilities.convertURItoFileObject(scala);
-        if (scalafo != null) {
-            toReturn.add(scalafo);
-        }
         URI groovy = project.getGroovyDirectory(false);
         FileObject groovyfo = FileUtilities.convertURItoFileObject(groovy);
         if (groovyfo != null) {
@@ -245,11 +240,6 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             if (fo != null) {
                 toReturn.add(fo);
             }
-        }
-        URI scala = project.getScalaDirectory(true);
-        FileObject scalafo = FileUtilities.convertURItoFileObject(scala);
-        if (scalafo != null) {
-            toReturn.add(scalafo);
         }
         URI groovy = project.getGroovyDirectory(true);
         FileObject groovyfo = FileUtilities.convertURItoFileObject(groovy);
