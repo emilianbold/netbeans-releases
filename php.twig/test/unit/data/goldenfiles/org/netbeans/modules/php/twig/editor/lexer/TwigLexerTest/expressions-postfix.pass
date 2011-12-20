@@ -1,0 +1,1 @@
+token #0 T_TWIG_OTHER [\n{% macro foo() %}foo{% endmacro %}\n\n{{ 'a' }}\n{{ 'a'|upper }}\n{{ ('a')|upper }}\n{{ -1|upper }}\n{{ _self.foo() }}\n{{ (_self).foo() }}\n]
