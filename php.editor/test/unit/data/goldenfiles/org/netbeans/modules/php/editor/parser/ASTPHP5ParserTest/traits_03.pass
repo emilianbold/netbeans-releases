@@ -44,20 +44,24 @@
                 </TraitName>
                 <Block start='23' end='55' isCurly='true'>
                     <UseTraitStatement start='29' end='53'>
-                        <UseTraitStatementPart start='33' end='40'>
-                            <Name>
-                                <NamespaceName start='33' end='40' isCurrent='false' isGlobal='false'>
-                                    <Identifier start='33' end='40' name='MyTrait'/>
-                                </NamespaceName>
-                            </Name>
-                        </UseTraitStatementPart>
-                        <UseTraitStatementPart start='42' end='52'>
-                            <Name>
-                                <NamespaceName start='42' end='52' isCurrent='false' isGlobal='false'>
-                                    <Identifier start='42' end='52' name='Mytrait_02'/>
-                                </NamespaceName>
-                            </Name>
-                        </UseTraitStatementPart>
+                        <Parts>
+                            <UseTraitStatementPart start='33' end='40'>
+                                <Name>
+                                    <NamespaceName start='33' end='40' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='33' end='40' name='MyTrait'/>
+                                    </NamespaceName>
+                                </Name>
+                            </UseTraitStatementPart>
+                            <UseTraitStatementPart start='42' end='52'>
+                                <Name>
+                                    <NamespaceName start='42' end='52' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='42' end='52' name='Mytrait_02'/>
+                                    </NamespaceName>
+                                </Name>
+                            </UseTraitStatementPart>
+                        </Parts>
+                        <Body>
+                        </Body>
                     </UseTraitStatement>
                 </Block>
             </TraitDeclaration>

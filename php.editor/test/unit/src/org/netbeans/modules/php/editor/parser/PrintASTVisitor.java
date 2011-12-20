@@ -852,18 +852,27 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(TraitMethodAliasDeclaration traitsAliasStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        XMLPrintNode printNode = new XMLPrintNode(traitsAliasStatement, "TraitMethodAliasDeclaration");
+        printNode.addChild("NewMethodName", traitsAliasStatement.getNewMethodName());
+        printNode.addChild("OldMethodName", traitsAliasStatement.getOldMethodName());
+        printNode.addChild("TraitName", traitsAliasStatement.getTraitName());
+        printNode.print(this);
     }
 
     @Override
     public void visit(TraitConflictResolutionDeclaration traitsInsteadofStatement) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        XMLPrintNode printNode = new XMLPrintNode(traitsInsteadofStatement, "TraitConflictResolutionDeclaration");
+        printNode.addChild("MethodName", traitsInsteadofStatement.getMethodName());
+        printNode.addChild("PreferredTraitName", traitsInsteadofStatement.getPreferredTraitName());
+        printNode.addChild("SuppressedTraitName", traitsInsteadofStatement.getSuppressedTraitName());
+        printNode.print(this);
     }
 
     @Override
     public void visit(UseTraitStatement useTraitsStatement) {
         XMLPrintNode printNode = new XMLPrintNode(useTraitsStatement, "UseTraitStatement");
-        printNode.addChildren(useTraitsStatement.getParts());
+        printNode.addChildrenGroup("Parts", useTraitsStatement.getParts());
+        printNode.addChildrenGroup("Body", new ASTNode[]{useTraitsStatement.getBody()});
         printNode.print(this);
     }
 

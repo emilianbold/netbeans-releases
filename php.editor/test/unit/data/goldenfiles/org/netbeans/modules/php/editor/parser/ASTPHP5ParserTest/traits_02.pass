@@ -38,13 +38,17 @@
                 </TraitName>
                 <Block start='23' end='43' isCurly='true'>
                     <UseTraitStatement start='29' end='41'>
-                        <UseTraitStatementPart start='33' end='40'>
-                            <Name>
-                                <NamespaceName start='33' end='40' isCurrent='false' isGlobal='false'>
-                                    <Identifier start='33' end='40' name='MyTrait'/>
-                                </NamespaceName>
-                            </Name>
-                        </UseTraitStatementPart>
+                        <Parts>
+                            <UseTraitStatementPart start='33' end='40'>
+                                <Name>
+                                    <NamespaceName start='33' end='40' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='33' end='40' name='MyTrait'/>
+                                    </NamespaceName>
+                                </Name>
+                            </UseTraitStatementPart>
+                        </Parts>
+                        <Body>
+                        </Body>
                     </UseTraitStatement>
                 </Block>
             </TraitDeclaration>

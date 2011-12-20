@@ -83,20 +83,54 @@
                 </TraitName>
                 <Block start='23' end='134' isCurly='true'>
                     <UseTraitStatement start='29' end='132'>
-                        <UseTraitStatementPart start='33' end='40'>
-                            <Name>
-                                <NamespaceName start='33' end='40' isCurrent='false' isGlobal='false'>
-                                    <Identifier start='33' end='40' name='MyTrait'/>
-                                </NamespaceName>
-                            </Name>
-                        </UseTraitStatementPart>
-                        <UseTraitStatementPart start='42' end='52'>
-                            <Name>
-                                <NamespaceName start='42' end='52' isCurrent='false' isGlobal='false'>
-                                    <Identifier start='42' end='52' name='Mytrait_02'/>
-                                </NamespaceName>
-                            </Name>
-                        </UseTraitStatementPart>
+                        <Parts>
+                            <UseTraitStatementPart start='33' end='40'>
+                                <Name>
+                                    <NamespaceName start='33' end='40' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='33' end='40' name='MyTrait'/>
+                                    </NamespaceName>
+                                </Name>
+                            </UseTraitStatementPart>
+                            <UseTraitStatementPart start='42' end='52'>
+                                <Name>
+                                    <NamespaceName start='42' end='52' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='42' end='52' name='Mytrait_02'/>
+                                    </NamespaceName>
+                                </Name>
+                            </UseTraitStatementPart>
+                        </Parts>
+                        <Body>
+                            <Block start='53' end='132' isCurly='true'>
+                                <TraitMethodAliasDeclaration start='63' end='83'>
+                                    <NewMethodName>
+                                        <Identifier start='79' end='82' name='bar'/>
+                                    </NewMethodName>
+                                    <OldMethodName>
+                                        <Identifier start='72' end='75' name='foo'/>
+                                    </OldMethodName>
+                                    <TraitName>
+                                        <NamespaceName start='63' end='70' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='63' end='70' name='MyTrait'/>
+                                        </NamespaceName>
+                                    </TraitName>
+                                </TraitMethodAliasDeclaration>
+                                <TraitConflictResolutionDeclaration start='92' end='126'>
+                                    <MethodName>
+                                        <Identifier start='101' end='104' name='foo'/>
+                                    </MethodName>
+                                    <PreferredTraitName>
+                                        <NamespaceName start='92' end='99' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='92' end='99' name='MyTrait'/>
+                                        </NamespaceName>
+                                    </PreferredTraitName>
+                                    <SuppressedTraitName>
+                                        <NamespaceName start='115' end='125' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='115' end='125' name='MyTrait_02'/>
+                                        </NamespaceName>
+                                    </SuppressedTraitName>
+                                </TraitConflictResolutionDeclaration>
+                            </Block>
+                        </Body>
                     </UseTraitStatement>
                 </Block>
             </TraitDeclaration>
