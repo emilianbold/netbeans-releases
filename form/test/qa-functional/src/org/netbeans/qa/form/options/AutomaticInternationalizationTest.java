@@ -55,6 +55,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
@@ -62,41 +63,46 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * Automatic internationalization test
  *
  * @author Jiri Vagner
- * 
- * <b>Adam Senk</b>
- * 26 APRIL 2011 WORKS
+ *
+ * <b>Adam Senk</b> 26 APRIL 2011 WORKS
  */
 public class AutomaticInternationalizationTest extends ExtJellyTestCase {
 
-    String name="";
+    String name = "";
     public String PACKAGE_NAME = "data";
     public String DATA_PROJECT_NAME = "SampleProject";
-    private Runnable r=new Runnable() {
+    private Runnable r = new Runnable() {
 
-            @Override
-            public void run() {
-                ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-                Node node = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
+        @Override
+        public void run() {
+            ComponentInspectorOperator inspector = new ComponentInspectorOperator();
+            Node node = new Node(inspector.treeComponents(), "JFrame"); // NOI18N
 
-                //new Action(null, "Add From Palette|Swing Controls|Button").performPopup(node);
+            //new Action(null, "Add From Palette|Swing Controls|Button").performPopup(node);
 
-                runPopupOverNode("Add From Palette|Swing Controls|Button", node); // NOI18N
+            runPopupOverNode("Add From Palette|Swing Controls|Button", node); // NOI18N
 
-                //String baseName = "[JFrame]"; // NOI18N
-                //Node dialogNode = new Node(inspector.treeComponents(), baseName);
-                //String[] names = dialogNode.getChildren();
+            //String baseName = "[JFrame]"; // NOI18N
+            //Node dialogNode = new Node(inspector.treeComponents(), baseName);
+            //String[] names = dialogNode.getChildren();
 
-                inspector.selectComponent("[JFrame]|jButton1");
-            }
-        };
+            inspector.selectComponent("[JFrame]|jButton1");
+        }
+    };
 
-    /** Constructor required by JUnit */
+    /**
+     * Constructor required by JUnit
+     */
     public AutomaticInternationalizationTest(String testName) {
         super(testName);
     }
 
-    /**Steps which should be done before starting of test */
-    /** Creates suite from particular test cases. */
+    /**
+     * Steps which should be done before starting of test
+     */
+    /**
+     * Creates suite from particular test cases.
+     */
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(AutomaticInternationalizationTest.class).addTest(
                 //"testAutomaticInternationalizationDisabled",
@@ -104,7 +110,8 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
     }
 
     /**
-     *  Tests component code with properties Automatic Internationalization = true
+     * Tests component code with properties Automatic Internationalization =
+     * true
      */
     public void testAutomaticInternationalizationEnabled() {
         //testAutomaticInternationalization(true);
@@ -121,26 +128,10 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
 
         options.selectMiscellaneous(); // NOI18N
         //add timeout
-        waitNoEvent(2000);
-        options.pushKey(KeyEvent.VK_TAB);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_TAB);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_TAB);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_TAB);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_TAB);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_LEFT);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_LEFT);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_LEFT);
-        waitNoEvent(500);
-        options.pushKey(KeyEvent.VK_SPACE);
-        waitNoEvent(500);
-       
+        waitNoEvent(1000);
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);
+        jtpo.selectPage("GUI Builder");
+        waitNoEvent(1000);
         JComboBoxOperator jcbo = new JComboBoxOperator(options, 3);
 
         jcbo.selectItem("On");
@@ -172,7 +163,8 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
     }
 
     /**
-     *  Tests component code with properties Automatic Internationalization = false
+     * Tests component code with properties Automatic Internationalization =
+     * false
      */
     public void testAutomaticInternationalizationDisabled() {
         //testAutomaticInternationalization(false);
@@ -189,7 +181,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         options.selectMiscellaneous(); // NOI18N
         //add timeout
         waitNoEvent(2000);
-        
+
         JComboBoxOperator jcbo = new JComboBoxOperator(options, 4);
 
         jcbo.selectItem("Off");
@@ -200,13 +192,13 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(2000);
         log("AutomaticResource Management was set");
-        
+
         name = createJFrameFile();
-        
+
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
         prn.select();
-        
+
         Node formnode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + name);
         formnode.select();
         log("Form node selected.");
@@ -214,8 +206,8 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
 
-        
-        
+
+
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         inspector.freezeNavigatorAndRun(r);
 
@@ -236,9 +228,10 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
     }
 
     /**
-     * Tests component code with different value of properties Automatic Internationalization
-     * 
-     * @param local "Automatic Internationalization" settings 
+     * Tests component code with different value of properties Automatic
+     * Internationalization
+     *
+     * @param local "Automatic Internationalization" settings
      */
     private void testAutomaticInternationalization(Boolean enabled) {
 
