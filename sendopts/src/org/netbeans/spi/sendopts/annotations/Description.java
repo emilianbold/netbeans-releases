@@ -47,13 +47,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
+/** Adds human readable description to {@code @}{@link Arg} annotation.
+ * Can be attached to public non-static fields of a class that implements
+ * {@link ProcessArgs}.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
+    /** 
+     * Specific display name for the option. If not specified, it is inferred
+     * from the name of the option and the type of its parameters. Specify 
+     * with using of {@link org.openide.util.NbBundle.Messages}. 
+     * @return specific display name
+     */
     String displayName() default "";
+    /** Explanation of the purpose of the option.
+     * Specify by using {@link org.openide.util.NbBundle.Messages}. 
+     * @return explanation of the purpose of the option
+     */
     String shortDescription();
 }
