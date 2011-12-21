@@ -31,7 +31,7 @@ Contributor(s):
 The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
-
+ [^ ]+_[^ ]+ *[0-9]*-?[0-9]* 20
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -43,12 +43,10 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OracleSolarisStudio_12.3beta" display="Oracle Solaris Studio 12.3 beta Compiler Collection" family="SunStudio"/>
-    <platforms stringvalue="sun_intel,linux"/>
+    <toolchain name="OracleSolarisStudio_12.4_linuxCompatGNU" display="Oracle Solaris Studio 12.4 Compiler Collection in GNU compatibility mode" family="SunStudio"/>
+    <platforms stringvalue="linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/oracle/solstudioexyymm/bin"/>
-        <platform os="sun_intel" directory="/opt/solstudioexyymm/bin"/>
+        <platform os="linux" directory="/opt/oracle/solstudio12.4/bin"/>
     </default_locations>
 </toolchaindefinition>

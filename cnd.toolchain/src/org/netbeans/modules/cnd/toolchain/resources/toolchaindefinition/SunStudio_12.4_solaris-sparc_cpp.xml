@@ -45,11 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <fortran>
-        <recognizer pattern=".*(SunStudioExpress|/prod/bin|/sunstudiospica/|/spica/|SUNWspro/bin)" or_exist_folder="../prod"/>
-        <version flags="-V" pattern=".*Sun.*Spica"/>
-        <development_mode>
-           <performance_release flags="-fast -xvector=simd -g"/>
-        </development_mode>
-    </fortran>
+    <cpp>
+        <version flags="-V" pattern=".*Sun C\+\+ 5.13"/>
+    </cpp>
 </toolchaindefinition>

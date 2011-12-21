@@ -28,7 +28,7 @@ your own identifying information:
 
 Contributor(s):
 
-The Original Software is NetBeans. The Initial Developer of the Original
+The Original Software is NetBeans. The I [^ ]+_[^ ]+ *[0-9]*-?[0-9]* 20nitial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
@@ -45,9 +45,10 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OracleSolarisStudioExpressCompatGNU" display="Oracle Solaris Studio Express 6/10 Compiler Collection in GNU compatibility mode" family="SunStudio"/>
-    <platforms stringvalue="linux"/>
-    <default_locations>
-        <platform os="linux" directory="/opt/oracle/solstudioex1006/bin"/>
-    </default_locations>
+    <c>
+        <version flags="-V" pattern=".*Sun C 5.13"/>
+        <development_mode>
+           <performance_release flags="-fast -xipo -xvector=simd -g"/>
+        </development_mode>
+    </c>
 </toolchaindefinition>
