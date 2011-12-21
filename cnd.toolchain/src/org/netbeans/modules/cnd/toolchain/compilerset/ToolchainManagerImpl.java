@@ -247,12 +247,17 @@ public final class ToolchainManagerImpl {
         }
         String baseName = (String) file.getAttribute("extends"); // NOI18N
         if (baseName != null && baseName.length() > 0) {
+            boolean find = false;
             for (FileObject base : files) {
-                if (baseName.equals(base.getName())) {
+                if (baseName.equals(base.getNameExt())) {
                     if (!read(base, files, v, antiloop, cache)) {
                         return false;
                     }
+                    find = true;
                 }
+            }
+            if (!find) {
+                System.err.println("");
             }
         }
         try {
