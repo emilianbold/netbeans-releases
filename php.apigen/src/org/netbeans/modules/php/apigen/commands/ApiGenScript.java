@@ -74,13 +74,39 @@ public final class ApiGenScript extends PhpProgram {
     public static final String SCRIPT_NAME = "apigen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
+    public static final String ACCESS_LEVEL_PUBLIC = "public"; // NOI18N
+    public static final String ACCESS_LEVEL_PROTECTED = "protected"; // NOI18N
+    public static final String ACCESS_LEVEL_PRIVATE = "private"; // NOI18N
+
+    public static final String DEFAULT_CONFIG_NAME = "apigen.neon"; // NOI18N
+    public static final String DEFAULT_ACCESS_LEVELS = ACCESS_LEVEL_PUBLIC + "," + ACCESS_LEVEL_PROTECTED; // NOI18N
+    public static final boolean DEFAULT_INTERNAL = false;
+    public static final boolean DEFAULT_PHP = true;
+    public static final boolean DEFAULT_TREE = true;
+    public static final boolean DEFAULT_DEPRECATED = false;
+    public static final boolean DEFAULT_TODO = false;
+    public static final boolean DEFAULT_DOWNLOAD = false;
+    public static final boolean DEFAULT_SOURCE_CODE = true;
+
     private static final String SOURCE_PARAM = "--source"; // NOI18N
     private static final String DESTINATION_PARAM = "--destination"; // NOI18N
     private static final String TITLE_PARAM = "--title"; // NOI18N
     private static final String CONFIG_PARAM = "--config"; // NOI18N
     private static final String CHARSET_PARAM = "--charset"; // NOI18N
+    private static final String EXCLUDE_PARAM = "--exclude"; // NOI18N
+    private static final String ACCESS_LEVELS_PARAM = "--access-levels"; // NOI18N
+    private static final String INTERNAL_PARAM = "--internal"; // NOI18N
+    private static final String PHP_PARAM = "--php"; // NOI18N
+    private static final String TREE_PARAM = "--tree"; // NOI18N
+    private static final String DEPRECATED_PARAM = "--deprecated"; // NOI18N
+    private static final String TODO_PARAM = "--todo"; // NOI18N
+    private static final String DOWNLOAD_PARAM = "--download"; // NOI18N
+    private static final String SOURCE_CODE_PARAM = "--source-code"; // NOI18N
+    private static final String PROGRESSBAR_PARAM = "--progressbar"; // NOI18N
     private static final String COLORS_PARAM = "--colors"; // NOI18N
     private static final String UPDATE_CHECK_PARAM = "--update-check"; // NOI18N
+
+    private static final String LIST_SEPARATOR = ","; // NOI18N
 
     // check for update just once
     private static boolean updateChecked = false;
@@ -132,7 +158,8 @@ public final class ApiGenScript extends PhpProgram {
         // XXX can be removed once #206254 is fixed
         final String ioTitle = Bundle.ApiGenScript_api_generating(phpModule.getDisplayName());
         final InputOutput output = IOProvider.getDefault().getIO(ioTitle, false);
-        ExternalProcessBuilder processBuilder = getProcessBuilder();
+        ExternalProcessBuilder processBuilder = getProcessBuilder()
+                .workingDirectory(FileUtil.toFile(phpModule.getProjectDirectory()));
         for (String param : getParams(phpModule)) {
             processBuilder = processBuilder
                     .addArgument(param);
@@ -184,7 +211,17 @@ public final class ApiGenScript extends PhpProgram {
         addTitle(phpModule, params);
         addConfig(phpModule, params);
         addCharsets(phpModule, params);
+        addExcludes(phpModule, params);
+        addAccessLevels(phpModule, params);
+        addInternal(phpModule, params);
+        addPhp(phpModule, params);
+        addTree(phpModule, params);
+        addDeprecated(phpModule, params);
+        addTodo(phpModule, params);
+        addDownload(phpModule, params);
+        addSourceCode(phpModule, params);
         addColors(phpModule, params);
+        addProgressBar(phpModule, params);
         addUpdateCheck(phpModule, params);
         return params;
     }
@@ -201,11 +238,11 @@ public final class ApiGenScript extends PhpProgram {
 
     private void addTitle(PhpModule phpModule, List<String> params) {
         params.add(TITLE_PARAM);
-        params.add(ApiGenPreferences.getTitle(phpModule));
+        params.add(ApiGenPreferences.get(phpModule, ApiGenPreferences.TITLE));
     }
 
     private void addConfig(PhpModule phpModule, List<String> params) {
-        String config = ApiGenPreferences.getConfig(phpModule);
+        String config = ApiGenPreferences.get(phpModule, ApiGenPreferences.CONFIG);
         if (StringUtils.hasText(config)) {
             params.add(CONFIG_PARAM);
             params.add(config);
@@ -213,24 +250,72 @@ public final class ApiGenScript extends PhpProgram {
     }
 
     private void addCharsets(PhpModule phpModule, List<String> params) {
-        for (String charset : ApiGenPreferences.getCharsets(phpModule)) {
+        for (String charset : ApiGenPreferences.getMore(phpModule, ApiGenPreferences.CHARSETS)) {
             params.add(CHARSET_PARAM);
             params.add(charset);
         }
     }
 
+    private void addExcludes(PhpModule phpModule, List<String> params) {
+        for (String exclude : ApiGenPreferences.getMore(phpModule, ApiGenPreferences.EXCLUDES)) {
+            params.add(EXCLUDE_PARAM);
+            params.add(exclude);
+        }
+    }
+
+    private void addAccessLevels(PhpModule phpModule, List<String> params) {
+        params.add(ACCESS_LEVELS_PARAM);
+        params.add(StringUtils.implode(ApiGenPreferences.getMore(phpModule, ApiGenPreferences.ACCESS_LEVELS), LIST_SEPARATOR));
+    }
+
+    private void addInternal(PhpModule phpModule, List<String> params) {
+        addBoolean(params, INTERNAL_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.INTERNAL));
+    }
+
+    private void addPhp(PhpModule phpModule, List<String> params) {
+        addBoolean(params, PHP_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.PHP));
+    }
+
+    private void addTree(PhpModule phpModule, List<String> params) {
+        addBoolean(params, TREE_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.TREE));
+    }
+
+    private void addDeprecated(PhpModule phpModule, List<String> params) {
+        addBoolean(params, DEPRECATED_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.DEPRECATED));
+    }
+
+    private void addTodo(PhpModule phpModule, List<String> params) {
+        addBoolean(params, TODO_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.TODO));
+    }
+
+    private void addDownload(PhpModule phpModule, List<String> params) {
+        addBoolean(params, DOWNLOAD_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.DOWNLOAD));
+    }
+
+    private void addSourceCode(PhpModule phpModule, List<String> params) {
+        addBoolean(params, SOURCE_CODE_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.SOURCE_CODE));
+    }
+
+    // disable progress bar (does not work in output window)
+    private void addProgressBar(PhpModule phpModule, List<String> params) {
+        addBoolean(params, PROGRESSBAR_PARAM, false);
+    }
+
     // always set colors since output windows supports ANSI coloring
     private void addColors(PhpModule phpModule, List<String> params) {
-        params.add(COLORS_PARAM);
-        params.add("yes"); // NOI18N
+        addBoolean(params, COLORS_PARAM, true);
     }
 
     private void addUpdateCheck(PhpModule phpModule, List<String> params) {
-        params.add(UPDATE_CHECK_PARAM);
-        params.add(updateChecked ? "no" : "yes"); // NOI18N
+        addBoolean(params, UPDATE_CHECK_PARAM, !updateChecked);
         if (!updateChecked) {
             updateChecked = true;
         }
+    }
+
+    private void addBoolean(List<String> params, String param, boolean value) {
+        params.add(param);
+        params.add(value ? "yes" : "no"); // NOI18N
     }
 
 }
