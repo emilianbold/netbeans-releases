@@ -472,6 +472,7 @@ class VDLParser {
 	boolean delta = false;
 	boolean isopen = false;
 	boolean no_ch = true;
+	boolean has_inherit = false;
 
 	for (aggr = aggr.cdr(); aggr != null; aggr = aggr.cdr()) {
 	    LispVal aitem = aggr.car();
@@ -513,11 +514,13 @@ class VDLParser {
 		// of (:ch <ch>)'s, one per inherited aggregate?
 
 		no_ch = false;
-		acts.startAggregate(name, deref_name, type, atype, stat, delta, isopen);
+		if (!has_inherit)
+		    acts.startAggregate(name, deref_name, type, atype, stat, delta, isopen);
 		parse_ch(aitem.cdr());
 		// CR 6189942, for c++ inherit members
 		// moved out of the for loop
 		//acts.endAggregate();
+		has_inherit = true;
 	    } else {
 		if (Log.VDL.debug) {
 		    error("aggr: Expected :id|:ltype|:qual|:offset|:size|:ch but got " + aitem.car()); // NOI18N
