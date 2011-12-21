@@ -736,7 +736,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL) || JSFUtils.isJSF20(wm)) {    //NOI18N
+        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL) || JSFUtils.isJSF20Plus(wm)) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
             helpCtx = new HelpCtx("persistence_entity_selection_javaee6");  //NOI18N
         } else {

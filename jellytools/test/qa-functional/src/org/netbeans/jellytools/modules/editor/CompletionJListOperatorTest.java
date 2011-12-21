@@ -64,7 +64,7 @@ import org.netbeans.jemmy.operators.Operator.StringComparator;
 public class CompletionJListOperatorTest extends JellyTestCase {
 
     private static String[] tests = new String[]{
-        "testCompletionDot", "testCompletionInvoke", "testCompletionCtrlSpace"
+        "testCompletionCtrlSpace", "testCompletionDot", "testCompletionInvoke"
     };
     private static EditorOperator eo;
 

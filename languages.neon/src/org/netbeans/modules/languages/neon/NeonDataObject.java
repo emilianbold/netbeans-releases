@@ -84,7 +84,7 @@ public class NeonDataObject extends MultiDataObject {
             displayName="#Source",
             iconBase="org/netbeans/modules/languages/neon/resources/neon_file_16.png",
             persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-            mimeType="text/x-neon",
+            mimeType=NeonLanguageProvider.MIME_TYPE,
             preferredID="neon.source",
             position=1
     )
