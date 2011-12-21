@@ -194,6 +194,18 @@ public class MoveClassTest extends RefactoringTestBase {
                       new File("t/A.java", "package t; import u.B; public class A { public void foo() { int d = B.c(); } }"),
                       new File("u/B.java", "package u; public class B { public static int c() { return 5 } }"));
     }
+
+    public void test206440() throws Exception { // #206440 - [71cat] ClassCastException: com.sun.tools.javac.code.Symbol$ClassSymbol cannot be cast to javax.lang.model.element.PackageElement
+        writeFilesAndWaitForScan(test,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("v/A.java", "package v; import u.B.*; public class A { public void foo() { C c = new B().new C(); } }"),
+                                 new File("u/B.java", "package u; public class B { public class C { } }"));
+        performMoveClass(Lookups.singleton(test.getFileObject("u")), new URL(test.getURL(), "t/"));
+        verifyContent(test,
+                      new File("t/package-info.java", "package t;"),
+                      new File("v/A.java", "package v; import t.u.B.*; public class A { public void foo() { C c = new B().new C(); } }"),
+                      new File("t/u/B.java", "package t.u; public class B { public class C { } }"));
+    }
     
     public void test121738() throws Exception { // #121738 - [Move] Fields are not accessible after move class
         writeFilesAndWaitForScan(src,
