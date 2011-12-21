@@ -53,7 +53,7 @@ public class Installer extends ModuleInstall {
     @Override
     public void restored() {
 //        System.setProperty( "nativeswing.webbrowser.xulrunner.home", "C:\\lib\\xulrunner");
-        System.setProperty( "org.eclipse.swt.browser.XULRunnerPath", "C:\\lib\\xulrunner");
+//        System.setProperty( "org.eclipse.swt.browser.XULRunnerPath", "C:\\lib\\xulrunner");
         NativeInterfaceNetBeansHandler.initialize();
     }
 }
