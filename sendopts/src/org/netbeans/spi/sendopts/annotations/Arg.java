@@ -53,25 +53,29 @@ import java.lang.annotation.Target;
  * public and the class should have public default constructor. Following 
  * line defines an option without any arguments: 
  * <pre>
- * {@code @}{@link Arg}(shortName='o') public boolean usedWithO;
+ * {@code @}{@link Arg}(shortName='p', longName="") public boolean usedWithO;
  * </pre>
  * if such option is present on a command line, the value of the 
  * <code>usedWithO</code> field is set to <code>true</code>. Otherwise its
  * value remains unchanged (e.g. <code>false</code>).
  * <p>
  * One can also annotate a {@link String} field which then becomes 
- * an option with a {@link org.netbeans.spi.sendopts.Arg#requiredArgument(char, java.lang.String) required argument}:
+ * an option with a {@link org.netbeans.spi.sendopts.Option#requiredArgument(char, java.lang.String) required argument}:
  * <pre>
- * {@code @}{@link Arg}(shortName='r') public String requiredArg;
+ * {@code @}{@link Arg}(shortName='r', longName="") public String requiredArg;
  * </pre>
  * If one annotates a field where an array of {@link String strings} can be 
  * assigned, such option will then contain all 
- * {@link org.netbeans.spi.sendopts.Arg#additionalArguments(char, java.lang.String) additional arguments}
+ * {@link org.netbeans.spi.sendopts.Option#additionalArguments(char, java.lang.String) additional arguments}
  * made available:
  * <pre>
- * {@code @}{@link Arg}(shortName='r') public String[] additionaArgs;
+ * {@code @}{@link Arg}(longName="additional") public String[] additionaArgs;
  * </pre>
- *
+ * To define an option with {@link org.netbeans.spi.sendopts.Option#optionalArgument(char, java.lang.String) optional argument}
+ * one can annotate string field and provide its default value:
+ * <pre>
+ * {@code @}{@link Arg}(shortName='o', longName="", defaultValue="no-arg-provided") public String optionArg;
+ * </pre>
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.RUNTIME)
