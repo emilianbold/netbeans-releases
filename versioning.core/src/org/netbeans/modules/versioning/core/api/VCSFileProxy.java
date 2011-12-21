@@ -74,7 +74,7 @@ public final class VCSFileProxy {
      * Cache if a file is a directory. We know that in case of an io.File based FileObject 
      * this value is already cached as well so we are able to avoid unnecessary io access.
      */
-    private Boolean isDirectory = null;
+    private Boolean isDirectory = null; // XXX might change for a file!!!
     
     static {
         APIAccessor.IMPL = new APIAccessorImpl();
