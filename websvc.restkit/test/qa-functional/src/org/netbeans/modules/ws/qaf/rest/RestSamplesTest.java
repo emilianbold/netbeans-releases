@@ -68,12 +68,6 @@ public class RestSamplesTest extends RestTestBase {
     }
 
     @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        undeployProject(getProjectName());
-    }
-
-    @Override
     protected String getProjectName() {
         return getName().substring(4);
     }
@@ -121,6 +115,7 @@ public class RestSamplesTest extends RestTestBase {
         createProject(sampleName, getProjectType(), null);
         OutputOperator.invoke();
         deployProject(getProjectName());
+        undeployProject(getProjectName());
     }
 
     /**
@@ -132,6 +127,7 @@ public class RestSamplesTest extends RestTestBase {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/CustomerDBSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
+        undeployProject(getProjectName());
     }
 
     /**
@@ -155,6 +151,7 @@ public class RestSamplesTest extends RestTestBase {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/MessageBoardSample");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
+        undeployProject(getProjectName());
     }
 
     /**
