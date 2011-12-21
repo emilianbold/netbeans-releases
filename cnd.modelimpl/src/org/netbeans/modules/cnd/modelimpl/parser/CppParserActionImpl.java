@@ -56,13 +56,14 @@ import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
+import org.openide.util.CharSequences;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CppParserActionImpl implements CppParserAction {
     private enum CppAttributes implements SymTabEntryKey {
-        SYM_TAB, DEFINITION,
+        SYM_TAB, DEFINITION, TYPE
     }
     
     private final SymTabStack globalSymTab;
@@ -119,6 +120,7 @@ public class CppParserActionImpl implements CppParserAction {
         SymTabEntry enumEntry = globalSymTab.lookupLocal(name);
         if (enumEntry == null) {
             enumEntry = globalSymTab.enterLocal(name);
+            enumEntry.setAttribute(CppAttributes.TYPE, true);
         } else {
             // error
         }
@@ -166,6 +168,19 @@ public class CppParserActionImpl implements CppParserAction {
     }
 
     @Override
+    public void class_name(Token token) {
+        APTToken aToken = (APTToken) token;
+        final CharSequence name = aToken.getTextID();
+        SymTabEntry enumEntry = globalSymTab.lookupLocal(name);
+        if (enumEntry == null) {
+            enumEntry = globalSymTab.enterLocal(name);
+            enumEntry.setAttribute(CppAttributes.TYPE, true);
+        } else {
+            // error
+        }
+    }
+    
+    @Override
     public void class_body(Token token) {
         globalSymTab.push();
     }
@@ -205,6 +220,15 @@ public class CppParserActionImpl implements CppParserAction {
         }
     }
 
+    @Override
+    public boolean isType(String name) {
+        SymTabEntry entry = globalSymTab.lookup(CharSequences.create(name));
+        if (entry != null) {
+            return entry.getAttribute(CppAttributes.TYPE) != null;
+        }
+        return false;
+    }
+    
     private SymTabStack createGlobal() {
         SymTabStack out = SymTabStack.create();
         // TODO: need to push symtab for predefined types
