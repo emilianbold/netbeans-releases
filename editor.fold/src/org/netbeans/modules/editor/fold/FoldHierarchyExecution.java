@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
@@ -556,11 +558,38 @@ public final class FoldHierarchyExecution implements DocumentListener {
 
         fireFoldHierarchyListener(evt);
     }
+    
+    private boolean suspended = false;
+    
+    /**
+     * Suspend reaction to document changes iff the component was removed off screen. 
+     * The component will be typically never added again to the visual hierarchy; but if it 
+     * will, rebuild() must be called to reinitialize all the folding.
+     * 
+     * This method MUST be invoked in EDT.
+     */
+    private void suspendDocumentChanges() {
+        if (!suspended) {
+            rebuild(true);
+            suspended = true;
+        }
+    }
+    
+    private void resumeDocumentChanges() {
+        if (suspended) {
+            rebuild(false);
+            suspended = false;
+        }
+    }
 
     /**
      * Rebuild the fold hierarchy - the fold managers will be recreated.
      */
     public void rebuild() {
+        rebuild(false);
+    }
+    
+    public void rebuild(boolean doRelease) {
         // Stop listening on the original document
         if (lastDocument != null) {
             // Remove document listener with specific priority
@@ -583,6 +612,8 @@ public final class FoldHierarchyExecution implements DocumentListener {
             releaseOnly = true;
         }
         
+        releaseOnly &= doRelease;
+        
         if (adoc != null) {
             adoc.readLock();
             
@@ -591,6 +622,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
                 lastDocument = adoc;
                 // Add document listener with specific priority
                 DocumentUtilities.addDocumentListener(lastDocument, this, DocumentListenerPriority.FOLD_UPDATE);
+                suspended = false;
             }
         }
         try {
@@ -695,6 +727,32 @@ public final class FoldHierarchyExecution implements DocumentListener {
             // (and in fact the spi and the reference to the listener as well)
             // the listener does not need to be removed
             getComponent().addPropertyChangeListener(componentChangesListener);
+            
+            // offload to Swing EDT, to prevent deadlock on treelock
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    // will suspend document listening iff the component is not shown
+                    // fixes some bugs, and even improves performance :)
+                    getComponent().addHierarchyListener(new HierarchyListener() {
+                        @Override
+                        public void hierarchyChanged(HierarchyEvent e) {
+                            if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) == 0) {
+                                return;
+                            }
+                            
+
+                            if (e.getChanged().getParent() == null) {
+                                suspendDocumentChanges();
+                            }  else {
+                                resumeDocumentChanges();
+                            }
+                        }
+
+                    });
+                }
+            });
         }
     }
     
