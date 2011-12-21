@@ -95,6 +95,7 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     @MultiViewElement.Registration(
         displayName = "#CTL_SourceTabCaption",
         mimeType = "text/x-groovy",
+        iconBase = GroovySources.GROOVY_FILE_ICON_16x16,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "groovy.source",
         position = 1
