@@ -147,7 +147,7 @@ public class OutputTabOperatorTest extends JellyTestCase {
      * Test of findLine method.
      */
     public void testFindLine() {
-        assertTrue("Wrong row found.", outputTabOperator.findLine(targetName) > 0); // NOI18N
+        assertEquals("Wrong row found.", 0, outputTabOperator.findLine(targetName)); // NOI18N
     }
 
     /**
@@ -156,8 +156,8 @@ public class OutputTabOperatorTest extends JellyTestCase {
     public void testGetText() {
         String text = outputTabOperator.getText();
         assertTrue("Text is not from " + targetName + " output tab.", text.indexOf(targetName) > -1);
-        String twoLines = outputTabOperator.getText(0, 1);
-        assertTrue("Text from first and second lines should contain 2 ':'", twoLines.indexOf(':') != twoLines.lastIndexOf(':'));
+        String twoLines = outputTabOperator.getText(0, 2);
+        assertTrue("Text from first three lines should contain at least two ':'", twoLines.indexOf(':') != twoLines.lastIndexOf(':'));
     }
 
     /**
