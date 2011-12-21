@@ -161,7 +161,7 @@ public final class ApiGenPreferences {
     }
 
     public static String get(PhpModule phpModule, Property<? extends Object> property) {
-        // get default value lazy since it can do anything...
+        // get default value lazyly since it can do anything...
         String value = getPreferences(phpModule).get(property.getKey(), DEFAULT_VALUE);
         if (value == DEFAULT_VALUE) {
             Object defaultValue = property.getDefaultValue(phpModule);
