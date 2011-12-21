@@ -44,6 +44,7 @@ package org.netbeans.modules.java.source.usages;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
@@ -59,14 +60,14 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
 public final class ClassIndexEventsTransaction extends TransactionContext.Service {
 
     private final Set<URL> removedRoots;
-    private final Set<URL> addedRoots;
     private final Collection<ElementHandle<TypeElement>> addedTypes;
     private final Collection<ElementHandle<TypeElement>> removedTypes;
     private final Collection<ElementHandle<TypeElement>> changedTypes;
+    private URL addedRoot;
+    private URL changesInRoot;
 
     private ClassIndexEventsTransaction() {
         removedRoots = new HashSet<URL>();
-        addedRoots = new HashSet<URL>();
         addedTypes = new HashSet<ElementHandle<TypeElement>>();
         removedTypes = new HashSet<ElementHandle<TypeElement>>();
         changedTypes = new HashSet<ElementHandle<TypeElement>>();
@@ -75,7 +76,8 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
 
     public void rootAdded(@NonNull final URL root) {
         assert root != null;
-        addedRoots.add(root);
+        assert addedRoot == null;
+        addedRoot = root;
     }
 
     public void rootRemoved(@NonNull final URL root) {
@@ -83,25 +85,49 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         removedRoots.add(root);
     }
 
-    public void addedTypes(@NonNull final Collection<? extends ElementHandle<TypeElement>> added) {
+    public void addedTypes(
+        @NonNull final URL root,
+        @NonNull final Collection<? extends ElementHandle<TypeElement>> added) {
+        assert root != null;
         assert added != null;
+        assert changesInRoot == null || changesInRoot.equals(root);
+        assert addedRoot == null || addedRoot.equals(root);
         addedTypes.addAll(added);
+        changesInRoot = root;
     }
 
-    public void removedTypes(@NonNull final Collection<? extends ElementHandle<TypeElement>> removed) {
+    public void removedTypes(
+        @NonNull final URL root,
+        @NonNull final Collection<? extends ElementHandle<TypeElement>> removed) {
+        assert root != null;
         assert removed != null;
+        assert changesInRoot == null || changesInRoot.equals(root);
+        assert addedRoot == null || addedRoot.equals(root);
         removedTypes.addAll(removed);
+        changesInRoot = root;
     }
 
-    public void changedTypes(@NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
+    public void changedTypes(
+        @NonNull final URL root,
+        @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
+        assert root != null;
         assert changed != null;
+        assert changesInRoot == null || changesInRoot.equals(root);
+        assert addedRoot == null || addedRoot.equals(root);
         changedTypes.addAll(changed);
+        changesInRoot = root;
     }
 
     @Override
     protected void commit() throws IOException {
         final ClassIndexManager ciManager = ClassIndexManager.getDefault();
-        ciManager.fire(addedRoots, removedRoots);
+        ciManager.fire(Collections.<URL>singleton(addedRoot), removedRoots);
+        final ClassIndexImpl ci = changesInRoot == null ?
+            null:
+            ciManager.getUsagesQuery(changesInRoot, false);
+        if (ci != null) {
+            ci.typesEvent(addedTypes, removedTypes, changedTypes);
+        }
     }
 
     @Override

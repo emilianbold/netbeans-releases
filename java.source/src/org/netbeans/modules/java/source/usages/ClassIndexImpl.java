@@ -164,15 +164,18 @@ public abstract class ClassIndexImpl {
             }
         }
     }
-    
-    public void typesEvent (final Collection<? extends ElementHandle<TypeElement>> added, final Collection<? extends ElementHandle<TypeElement>> removed, final Collection<? extends ElementHandle<TypeElement>> changed) {
+
+    void typesEvent (
+            @NonNull final Collection<? extends ElementHandle<TypeElement>> added,
+            @NonNull final Collection<? extends ElementHandle<TypeElement>> removed,
+            @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
         final ClassIndexImplEvent a = added == null || added.isEmpty() ? null : new ClassIndexImplEvent(this, added);
         final ClassIndexImplEvent r = removed == null || removed.isEmpty() ? null : new ClassIndexImplEvent(this, removed);
         final ClassIndexImplEvent ch = changed == null || changed.isEmpty() ? null : new ClassIndexImplEvent(this, changed);
         typesEvent(a, r, ch);
     }
 
-    public void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
+    private void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
         WeakReference<ClassIndexImplListener>[] _listeners;
         synchronized (this.listeners) {
             _listeners = this.listeners.toArray(new WeakReference[this.listeners.size()]);

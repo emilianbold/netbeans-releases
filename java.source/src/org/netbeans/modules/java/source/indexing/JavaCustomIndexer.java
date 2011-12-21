@@ -131,6 +131,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         assert  txCtx != null;
         final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
         assert fmTx != null;
+        final ClassIndexEventsTransaction ciTx = txCtx.get(ClassIndexEventsTransaction.class);
+        assert ciTx != null;
         try {
             final FileObject root = context.getRoot();
             if (root == null) {
@@ -254,7 +256,9 @@ public class JavaCustomIndexer extends CustomIndexer {
             javaContext.checkSums.store();
             javaContext.fqn2Files.store();
             javaContext.sa.store();
-            javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
+            ciTx.addedTypes(context.getRootURI(), _at);
+            ciTx.removedTypes(context.getRootURI(), _rt);
+            ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
             if (!context.checkForEditorModifications()) { // #152222
                 BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
             }
@@ -321,6 +325,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         assert txCtx != null;
         final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
         assert fmTx != null;
+        final ClassIndexEventsTransaction ciTx = txCtx.get(ClassIndexEventsTransaction.class);
+        assert ciTx != null;
         try {
             final JavaParsingContext javaContext = new JavaParsingContext(context, true);
             try {
@@ -343,7 +349,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 javaContext.fqn2Files.store();
                 javaContext.sa.store();
                 BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
-                javaContext.uq.typesEvent(null, removedTypes, null);
+                ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
                 javaContext.finish();
             }
