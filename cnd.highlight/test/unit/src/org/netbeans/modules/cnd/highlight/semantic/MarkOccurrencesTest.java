@@ -161,14 +161,7 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         performTest(SOURCE, 126, 25);
         clearWorkDir();
         performTest(SOURCE, 141, 35);
-    }
-    
-    public void testAddSymbolMoreParams() throws Exception {
-        performTest(SOURCE, 111, 15);
         clearWorkDir();
-        performTest(SOURCE, 132, 25);
-        clearWorkDir();
-        performTest(SOURCE, 140, 35);
     }
     
     public void test206416_1() throws Exception {
@@ -190,6 +183,16 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         performTest(SOURCE, 155, 14);
         clearWorkDir();
         performTest(SOURCE, 156, 10);
+        clearWorkDir();
+    }
+    
+    public void testAddSymbolMoreParams() throws Exception {
+        performTest(SOURCE, 111, 15);
+        clearWorkDir();
+        performTest(SOURCE, 132, 25);
+        clearWorkDir();
+        performTest(SOURCE, 140, 35);
+        clearWorkDir();
     }
     
     @Override
