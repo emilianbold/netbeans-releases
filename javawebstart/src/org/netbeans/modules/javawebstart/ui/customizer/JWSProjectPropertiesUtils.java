@@ -299,10 +299,20 @@ public final class JWSProjectPropertiesUtils {
     }
 
     private static void copyTemplate(Project proj) throws IOException {
+        boolean isJnlpCurrent = true;
         FileObject projDir = proj.getProjectDirectory();
         FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
-
-        if (jnlpBuildFile != null && !isJnlpImplCurrentVer(computeCrc32(jnlpBuildFile.getInputStream()))) {
+        if (jnlpBuildFile != null) {
+            final InputStream in = jnlpBuildFile.getInputStream();
+            if(in != null) {
+                try {
+                    isJnlpCurrent = isJnlpImplCurrentVer(computeCrc32( in ));
+                } finally {
+                    in.close();
+                }
+            }
+        }
+        if (!isJnlpCurrent) {
             // try to close the file just in case the file is already opened in editor
             DataObject dobj = DataObject.find(jnlpBuildFile);
             CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
@@ -317,7 +327,6 @@ public final class JWSProjectPropertiesUtils {
             FileUtil.moveFile(jnlpBuildFile, nbproject, "jnlp-impl_backup");                    //NOI18N
             jnlpBuildFile = null;
         }
-
         if (jnlpBuildFile == null) {
             FileObject templateFO = FileUtil.getConfigFile(BUILD_TEMPLATE);
             if (templateFO != null) {
@@ -468,10 +477,12 @@ public final class JWSProjectPropertiesUtils {
         if (_currentJnlpImplCRC == null) {
             final FileObject template = FileUtil.getConfigFile(BUILD_TEMPLATE);
             final InputStream in = template.getInputStream();
-            try {
-                currentJnlpImplCRCCache = _currentJnlpImplCRC = computeCrc32(in);
-            } finally {
-                in.close();
+            if(in != null) {
+                try {
+                    currentJnlpImplCRCCache = _currentJnlpImplCRC = computeCrc32(in);
+                } finally {
+                    in.close();
+                }
             }
         }
         return _currentJnlpImplCRC.equals(crc);
