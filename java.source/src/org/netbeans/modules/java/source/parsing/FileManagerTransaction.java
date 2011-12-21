@@ -367,26 +367,48 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
             this.writer = wb;
         }
         
-        static File getRootFile(File startFrom, String pkgName) {
-            int index;
+        /**
+         * Computes root of the file hierarchy given an output file and package name. Goes
+         * up one directory for each package name segment (delimited by .)
+         * 
+         * @param startFrom the class/resource output file
+         * @param pkgName package name of the class/resource
+         * @return File representing the root of the package structure
+         */
+        private static File getRootFile(File startFrom, String pkgName) {
+            int index = -1;
             
-            while ((index = pkgName.indexOf('.')) != -1) {
+            while ((index = pkgName.indexOf('.', index + 1)) != -1) {
                 startFrom = startFrom.getParentFile();
             }
             return startFrom;
         }
-        
+
+        /**
+         * Flushes buffered content and releases this object. 
+         * 
+         * @throws IOException if file cannot be written, or the target directory created
+         */
         void flush() throws IOException {
+            // create directories up to the parent
+            if (!f.getParentFile().mkdirs() && !f.getParentFile().exists()) {
+                throw new IOException();
+            }
             final FileOutputStream out = new FileOutputStream(f);
             try {
                 out.write(content);
-                free();
+                release();
             } finally {
                 out.close();
             }
         }
         
-        void free() {
+        /**
+         * Releases data held by the cache, and redirects all calls to a regular
+         * File-based FileObject
+         */
+        void release() {
+            content = null;
             writer = null;
             delegate = (FileObjects.FileBase)FileObjects.fileFileObject(getFile(), getRootFile(getFile(), getPackage()), filter, encoding);
         }

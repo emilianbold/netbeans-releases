@@ -788,7 +788,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             ClassIndexManager.beginTrans();
-            TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.writeThrough());
+            TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.writeBack());
             boolean vote = true;
             try {
                 boolean classIndexConsistent = IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
