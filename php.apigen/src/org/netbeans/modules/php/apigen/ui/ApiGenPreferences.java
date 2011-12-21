@@ -176,7 +176,7 @@ public final class ApiGenPreferences {
         return value;
     }
 
-    public static List<String> getMore(PhpModule phpModule, Property<String> property) {
+    public static List<String> getMore(PhpModule phpModule, Property<? extends Object> property) {
         return StringUtils.explode(get(phpModule, property), SEPARATOR);
     }
 
@@ -192,7 +192,7 @@ public final class ApiGenPreferences {
         }
     }
 
-    public static void putMore(PhpModule phpModule, Property<String> property, List<String> values) {
+    public static void putMore(PhpModule phpModule, Property<? extends Object> property, List<String> values) {
         if (values.isEmpty()
                 || Collections.singletonList(property.getDefaultValue(phpModule)).equals(values)) {
             put(phpModule, property, null);
