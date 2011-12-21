@@ -402,27 +402,30 @@ public class MoveTransformer extends RefactoringVisitor {
                 }
             } else if(qualifiedIdentifier.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree memberSelect = (MemberSelectTree) qualifiedIdentifier;
-                if(memberSelect.getIdentifier().contentEquals("*") && !node.isStatic()) {
-                    PackageElement pakketje = (PackageElement) workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), memberSelect.getExpression()));
-                    if(isThisPackageMoving(pakketje)) {
-                        importToRemove.add(node);
-                    } else if(move.packages.contains(ElementHandle.create(pakketje))) {
-                        boolean packageWillBeEmpty = true;
-                        List<? extends Element> enclosedElements = pakketje.getEnclosedElements();
-                        for (Element element : enclosedElements) {
-                            if(!isElementMoving(element)) {
-                                packageWillBeEmpty = false;
-                                break;
-                            } else {
-                                String targetPackageName = getTargetPackageName(element);
-                                if(pakketje.getQualifiedName().contentEquals(targetPackageName)) {
+                if(memberSelect.getIdentifier().contentEquals("*")) {
+                    Element packageElement = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), memberSelect.getExpression()));
+                    if(packageElement.getKind() == ElementKind.PACKAGE) {
+                        PackageElement pakketje = (PackageElement) packageElement;
+                        if(isThisPackageMoving(pakketje)) {
+                            importToRemove.add(node);
+                        } else if(move.packages.contains(ElementHandle.create(pakketje))) {
+                            boolean packageWillBeEmpty = true;
+                            List<? extends Element> enclosedElements = pakketje.getEnclosedElements();
+                            for (Element element : enclosedElements) {
+                                if(!isElementMoving(element)) {
                                     packageWillBeEmpty = false;
                                     break;
+                                } else {
+                                    String targetPackageName = getTargetPackageName(element);
+                                    if(pakketje.getQualifiedName().contentEquals(targetPackageName)) {
+                                        packageWillBeEmpty = false;
+                                        break;
+                                    }
                                 }
                             }
-                        }
-                        if(packageWillBeEmpty) {
-                            importToRemove.add(node);
+                            if(packageWillBeEmpty) {
+                                importToRemove.add(node);
+                            }
                         }
                     }
                 }
