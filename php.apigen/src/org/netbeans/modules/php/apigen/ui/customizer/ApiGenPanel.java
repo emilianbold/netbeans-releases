@@ -282,7 +282,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         // warnings
         // charsets
-        String defaultCharset = ApiGenPreferences.CHARSETS.getDefaultValue(phpModule).toString();
+        String defaultCharset = ApiGenPreferences.CHARSETS.getDefaultValue(phpModule);
         if (getCharsets().indexOf(defaultCharset) == -1) {
             category.setErrorMessage(Bundle.ApiGenPanel_warn_missingCharset(defaultCharset));
             category.setValid(true);
