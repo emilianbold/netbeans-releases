@@ -85,11 +85,7 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public boolean canWriteReadonlyFile(FileProxyI file) {
-            final Boolean canWrite = VCSFilesystemInterceptor.canWriteReadonlyFile(toVCSFileProxy(file));
-            if (canWrite != null) {
-                return canWrite;
-            }
-            return false;
+            return VCSFilesystemInterceptor.canWriteReadonlyFile(toVCSFileProxy(file));
         }
 
         @Override
