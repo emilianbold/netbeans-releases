@@ -45,20 +45,7 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.List;
 
-import org.netbeans.modules.web.jsf.api.facesmodel.ApplicationFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.ExceptionHandlerFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.ExternalContextFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesContextFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.Factory;
-import org.netbeans.modules.web.jsf.api.facesmodel.FactoryElement;
-import org.netbeans.modules.web.jsf.api.facesmodel.FactoryExtension;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
-import org.netbeans.modules.web.jsf.api.facesmodel.LifecycleFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.PartialViewContextFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.RenderKitFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.TagHandlerDelegateFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.ViewDeclarationLanguageFactory;
-import org.netbeans.modules.web.jsf.api.facesmodel.VisitContextFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.w3c.dom.Element;
 
 
@@ -71,7 +58,7 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
     FactoryImpl( JSFConfigModelImpl model, Element element ) {
         super(model, element);
     }
-    
+
     FactoryImpl( JSFConfigModelImpl model ) {
         super(model, createElementNS(model, JSFConfigQNames.FACTORY));
     }
@@ -109,6 +96,10 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
      */
     public void addFacesContextFactory( FacesContextFactory factory ) {
         appendChild(FACES_CONTEXT_FACTORY, factory);
+    }
+
+    public void addFaceletCacheFactory( FaceletCacheFactory factory ) {
+        appendChild(FACELET_CACHE_FACTORY, factory);
     }
 
     /* (non-Javadoc)
@@ -199,6 +190,10 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
         return getChildren(FacesContextFactory.class);
     }
 
+    public List<FaceletCacheFactory> getFaceletCacheFactories() {
+        return getChildren(FaceletCacheFactory.class);
+    }
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.jsf.api.facesmodel.Factory#getFactoryExtensions()
      */
@@ -253,7 +248,7 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
      * @see org.netbeans.modules.web.jsf.api.facesmodel.Factory#removeApplicationFactory(org.netbeans.modules.web.jsf.api.facesmodel.ApplicationFactory)
      */
     public void removeApplicationFactory( ApplicationFactory factory ) {
-        
+
     }
 
     /* (non-Javadoc)
@@ -276,6 +271,10 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
      */
     public void removeFacesContextFactory( FacesContextFactory factory ) {
         removeChild( FACES_CONTEXT_FACTORY, factory ) ;
+    }
+
+    public void removeFaceletCacheFactory(FaceletCacheFactory factory) {
+        removeChild(FACELET_CACHE_FACTORY, factory) ;
     }
 
     /* (non-Javadoc)
@@ -339,10 +338,10 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
     public void accept( JSFConfigVisitor visitor ) {
         visitor.visit(this);
     }
-    
+
     private String getPropName( FactoryElement element ) {
         if ( element instanceof ApplicationFactory ){
-            return APPLICATION_FACTORY; 
+            return APPLICATION_FACTORY;
         }
         else if ( element instanceof ExceptionHandlerFactory ){
             return EXCEPTION_HANDLER_FACTORY;
@@ -352,6 +351,9 @@ class FactoryImpl extends IdentifiableComponentImpl implements Factory {
         }
         else if ( element instanceof FacesContextFactory ){
             return FACES_CONTEXT_FACTORY;
+        }
+        else if (element instanceof FaceletCacheFactory){
+            return FACELET_CACHE_FACTORY;
         }
         else if ( element instanceof FactoryExtension ){
             return FACTORY_EXTENSION;

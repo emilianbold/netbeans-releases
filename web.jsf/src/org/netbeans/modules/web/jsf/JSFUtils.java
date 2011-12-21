@@ -96,6 +96,7 @@ public class JSFUtils {
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
     public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.application.ProjectStage"; //NOI18N
+    public static final String JSF_2_1__API_SPECIFIC_CLASS = "javax.faces.component.TransientStateHelper"; //NOI18N
     public static final String JSF_2_0__IMPL_SPECIFIC_CLASS= "com.sun.faces.facelets.Facelet"; //NOI18N
     public static final String MYFACES_SPECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
 
@@ -245,7 +246,7 @@ public class JSFUtils {
         return (tmpPath != null ? path + tmpPath : null);
     }
 
-    public static boolean isJSF20(WebModule wm) {
+    public static boolean isJSF20Plus(WebModule wm) {
         if (wm == null)
             return false;
         ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
