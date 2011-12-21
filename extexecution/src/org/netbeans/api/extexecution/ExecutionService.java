@@ -83,6 +83,7 @@ import org.netbeans.api.extexecution.input.LineProcessors;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -127,7 +128,7 @@ public final class ExecutionService {
 
     private static final int EXECUTOR_SHUTDOWN_SLICE = 1000;
 
-    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
+    private static final ExecutorService EXECUTOR_SERVICE = new RequestProcessor(ExecutionService.class.getName(), Integer.MAX_VALUE);
 
     static {
         // rerun accessor

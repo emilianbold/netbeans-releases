@@ -40,8 +40,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.nodes;
-import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
+package org.netbeans.modules.maven.groovy;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -53,18 +53,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
+import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -76,7 +71,7 @@ public class GroovySourcesNodeFactory implements NodeFactory {
     private static final RequestProcessor RP = new RequestProcessor(GroovySourcesNodeFactory.class);
     
     @Override
-    public NodeList createNodes(Project project) {
+    public NodeList<?> createNodes(Project project) {
         return  new NList(project);
     }
     
@@ -97,7 +92,7 @@ public class GroovySourcesNodeFactory implements NodeFactory {
 
             List<SourceGroup> list = new ArrayList<SourceGroup>();
             Sources srcs = ProjectUtils.getSources(project);
-            SourceGroup[] groovygroup = srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY);
+            SourceGroup[] groovygroup = srcs.getSourceGroups(GroovySourcesImpl.TYPE_GROOVY);
             for (int i = 0; i < groovygroup.length; i++) {
                 if (!javaroots.contains(groovygroup[i].getRootFolder())) {
                     list.add(groovygroup[i]);
@@ -108,15 +103,7 @@ public class GroovySourcesNodeFactory implements NodeFactory {
         
         @Override
         public Node node(SourceGroup group) {
-            Node pack = PackageView.createPackageView(group);
-
-
-            if (MavenSourcesImpl.NAME_GROOVYSOURCE.equals(group.getName()) ||
-                MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(group.getName())) {
-                Lookup lkp = new ProxyLookup(Lookups.singleton(new GroovyPrivs()), pack.getLookup());
-                pack = new FilterNode(pack, new FilterNode.Children(pack), lkp);
-            }
-            return pack;
+            return PackageView.createPackageView(group);
         }
         
         @Override
@@ -140,18 +127,6 @@ public class GroovySourcesNodeFactory implements NodeFactory {
                     fireChange();
                 }
             });
-        }
-    }
-
-    private static class GroovyPrivs implements PrivilegedTemplates {
-
-        @Override
-        public String[] getPrivilegedTemplates() {
-            return new String[] {
-                "Templates/Groovy/GroovyClass.groovy", //NOI18N
-                "Templates/Groovy/GroovyScript.groovy", //NOI18N
-                "Templates/Other/Folder" //NOI18N
-            };
         }
     }
 }
