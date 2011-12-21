@@ -54,6 +54,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -81,6 +83,7 @@ import org.xml.sax.helpers.DefaultHandler;
 @SuppressWarnings({"PackageVisibleInnerClass","PackageVisibleField"})
 public final class ToolchainManagerImpl {
 
+    private static final Logger LOG = Logger.getLogger(ToolchainManagerImpl.class.getName());
     public static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
     private static final String SHADOW_KEY = "toolchain_shadow"; // NOI18N
@@ -238,6 +241,7 @@ public final class ToolchainManagerImpl {
 
     private boolean read(FileObject file, FileObject[] files, CompilerVendor v, Set<FileObject> antiloop, Map<String, String> cache) {
         if (antiloop.contains(file)) {
+            LOG.log(Level.INFO, "Recursive inclusion of file {0}", file.getNameExt()); // NOI18N
             return false;
         }
         antiloop.add(file);
@@ -251,13 +255,14 @@ public final class ToolchainManagerImpl {
             for (FileObject base : files) {
                 if (baseName.equals(base.getNameExt())) {
                     if (!read(base, files, v, antiloop, cache)) {
+                        LOG.log(Level.INFO, "Cannot read base file {0}", base.getNameExt()); // NOI18N
                         return false;
                     }
                     find = true;
                 }
             }
             if (!find) {
-                System.err.println("");
+                LOG.log(Level.INFO, "Cannot find base file {0}", baseName); // NOI18N
             }
         }
         try {
