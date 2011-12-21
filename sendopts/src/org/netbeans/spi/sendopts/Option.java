@@ -60,7 +60,8 @@ import org.netbeans.modules.sendopts.OptionImpl;
 import org.openide.util.Lookup;
 
 /** Represents possible option that can appear on {@link org.netbeans.api.sendopts.CommandLine}
- * and contains factory methods to create them.
+ * and contains factory methods to create them. Consider using {@link Arg} 
+ * annotation instead.
  * <p>
  * An option can have letter short version, long name. It can
  * accept arguments, one argument or an array of additional arguments. 

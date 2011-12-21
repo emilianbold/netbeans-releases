@@ -47,9 +47,9 @@ import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
-import org.netbeans.spi.sendopts.annotations.Arg;
-import org.netbeans.spi.sendopts.annotations.Description;
-import org.netbeans.spi.sendopts.annotations.ProcessArgs;
+import org.netbeans.spi.sendopts.Arg;
+import org.netbeans.spi.sendopts.Description;
+import org.netbeans.spi.sendopts.ProcessArgs;
 
 @Messages({
     "GroupOptionProcessor.open.name=--open-group NAME",

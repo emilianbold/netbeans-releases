@@ -42,6 +42,9 @@
 
 package org.netbeans.spi.sendopts.annotations;
 
+import org.netbeans.spi.sendopts.ProcessArgs;
+import org.netbeans.spi.sendopts.Description;
+import org.netbeans.spi.sendopts.Arg;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import org.netbeans.api.sendopts.CommandException;

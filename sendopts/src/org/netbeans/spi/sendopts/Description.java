@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.sendopts.annotations;
+package org.netbeans.spi.sendopts;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

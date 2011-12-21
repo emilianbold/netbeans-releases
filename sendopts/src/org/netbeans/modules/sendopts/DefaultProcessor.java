@@ -52,9 +52,9 @@ import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
-import org.netbeans.spi.sendopts.annotations.Arg;
-import org.netbeans.spi.sendopts.annotations.Description;
-import org.netbeans.spi.sendopts.annotations.ProcessArgs;
+import org.netbeans.spi.sendopts.Arg;
+import org.netbeans.spi.sendopts.Description;
+import org.netbeans.spi.sendopts.ProcessArgs;
 import org.openide.util.Lookup;
 
 /** Processor that is configured from a map, usually from a layer.

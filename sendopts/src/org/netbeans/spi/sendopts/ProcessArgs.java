@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.sendopts.annotations;
+package org.netbeans.spi.sendopts;
 
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;

@@ -42,6 +42,9 @@
 
 package org.netbeans.spi.sendopts.annotations;
 
+import org.netbeans.spi.sendopts.ProcessArgs;
+import org.netbeans.spi.sendopts.Description;
+import org.netbeans.spi.sendopts.Arg;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -201,7 +204,7 @@ public class OptionTest extends NbTestCase {
     public void testImplicitNeedsToBeOnStringArray() throws IOException {
         clearWorkDir();
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
-            "import org.netbeans.spi.sendopts.annotations.Arg;\n" +
+            "import org.netbeans.spi.sendopts.Arg;\n" +
             "public class A {\n" +
             "  @Arg(shortName='a',implicit=true)" +
             "  public String Static;" +

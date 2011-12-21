@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.sendopts.annotations;
+package org.netbeans.spi.sendopts;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -50,7 +50,8 @@ import java.lang.annotation.Target;
 /** Marks a non-static field in a class as on option and assigns it a short,
  * or long name. Usually used together with {@link Description} which provides
  * human readable explantation of the option's behavior. The field should be
- * public and the class should have public default constructor. Following 
+ * public and the class should have public default constructor. It is suggested
+ * the class implements {@link ProcessArgs}. Following 
  * line defines an option without any arguments: 
  * <pre>
  * {@code @}{@link Arg}(shortName='p', longName="") public boolean usedWithO;
