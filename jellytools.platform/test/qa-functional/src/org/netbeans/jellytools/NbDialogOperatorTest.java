@@ -48,7 +48,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JLabel;
 import junit.framework.Test;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.WindowOperator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -63,7 +62,6 @@ public class NbDialogOperatorTest extends JellyTestCase {
     public static String[] tests = new String[]{
         "testBtCancel",
         "testBtClose",
-        //TODO: find out why this test and testHelp sometimes kill JVM
         "testBtHelp",
         "testBtNo",
         "testBtOK",
@@ -113,8 +111,7 @@ public class NbDialogOperatorTest extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
         dialog.btHelp().push();
         JemmyProperties.setCurrentTimeout("WindowWaiter.WaitWindowTimeout", 60000);
-        //new HelpOperator().close();
-        new WindowOperator().close();
+        new HelpOperator().close();
         dialog.close();
     }
 
@@ -123,8 +120,7 @@ public class NbDialogOperatorTest extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
         dialog.help();
         JemmyProperties.setCurrentTimeout("WindowWaiter.WaitWindowTimeout", 60000);
-        //new HelpOperator().close();
-        new WindowOperator().close();
+        new HelpOperator().close();
         dialog.close();
     }
 
@@ -191,7 +187,7 @@ public class NbDialogOperatorTest extends JellyTestCase {
         label = new TestLabel(TEST_DIALOG_LABEL);
         DialogDescriptor dd = new DialogDescriptor(label, testDialogTitle, false,
                 options, null, DialogDescriptor.BOTTOM_ALIGN, null, label);
-        dd.setHelpCtx(new HelpCtx(""));
+        dd.setHelpCtx(new HelpCtx("org.netbeans.api.javahelp.MASTER_ID"));
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
     }
 
