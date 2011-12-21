@@ -83,10 +83,7 @@ import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
@@ -98,6 +95,7 @@ import org.openide.util.lookup.Lookups;
  */
 final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
+    private static final RequestProcessor RP = new RequestProcessor("LogicalFolderNode", 1); //NOI18N
     private static final MessageFormat FOLDER_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd-folder; class=org.netbeans.modules.cnd.makeproject.ui.LogicalFolderNode; mask={0}"); // NOI18N
     private final Folder folder;
     private final MakeLogicalViewProvider provider;
@@ -251,7 +249,17 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(final String newName) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                setNameImpl(newName);
+            }
+        });
+    }
+
+    public void setNameImpl(String newName) {
         String oldName = folder.getDisplayName();
         if (folder.isDiskFolder()) {
             String rootPath = folder.getRootPath();
@@ -322,11 +330,25 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    destroyImpl();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+    }
+    
+    public void destroyImpl() throws IOException {
         if (!getFolder().isDiskFolder()) {
             return;
         }
         String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
-        FileObject folderFileObject = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absPath));
+        FileObject folderFileObject = CndFileUtils.toFileObject(getFolder().getConfigurationDescriptor().getBaseDirFileSystem(), absPath);
         if (folderFileObject == null /*paranoia*/ || !folderFileObject.isValid() || !folderFileObject.isFolder()) {
             return;
         }
