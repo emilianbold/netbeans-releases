@@ -20,7 +20,7 @@
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
             <file name="SunStudio_12.4_linuxGNU_cpp" url="resources/toolchaindefinition/SunStudio_12.4_linuxGNU_cpp.xml">
-                <attr name="extends" stringvalue="SunStudio_12_2_cpp"/>
+                <attr name="extends" stringvalue="SunStudio_12.2_solaris-x86_linux_cpp"/>
             </file>
             <file name="SunStudio_12.4_linuxGNU_linker" url="resources/toolchaindefinition/SunStudio_12.4_linuxGNU_linker.xml">
                 <attr name="extends" stringvalue="SunStudio_linker"/>
@@ -54,7 +54,7 @@
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
             <file name="SunStudio_12.3_linuxGNU_cpp" url="resources/toolchaindefinition/SunStudio_12.3_linuxGNU_cpp.xml">
-                <attr name="extends" stringvalue="SunStudio_12_2_cpp"/>
+                <attr name="extends" stringvalue="SunStudio_12.2_solaris-x86_linux_cpp"/>
             </file>
             <file name="SunStudio_12.3_linuxGNU_linker" url="resources/toolchaindefinition/SunStudio_12.3_linuxGNU_linker.xml">
                 <attr name="extends" stringvalue="SunStudio_linker"/>
@@ -479,7 +479,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
                 </file>
                 <file name="linker.shadow">
-                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.3_linuxGNU_linker"/>
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_12.4_linuxGNU_linker"/>
                 </file>
                 <file name="make.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>

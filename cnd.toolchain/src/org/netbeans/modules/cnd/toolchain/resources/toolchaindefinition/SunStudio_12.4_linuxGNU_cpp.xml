@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <cpp>
+        <version flags="-V" pattern=".*Sun C\+\+ 5.13"/>
         <system_include_paths flags="-compat=g -xdryrun -E" parser="Sun"/>
         <system_macros flags="-compat=g -xdumpmacros=defs,sys -E" parser="Sun"/>
         <development_mode>
