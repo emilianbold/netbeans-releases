@@ -787,7 +787,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         FileManagerTransaction.class,
                         JavaIndex.hasSourceCache(
                             context.getRootURI(), false)?
-                            FileManagerTransaction.writeThrough()/*todo: should be FileManagerTransaction.writeBack() - after svata's commit*/:
+                            FileManagerTransaction.writeBack():
                             FileManagerTransaction.writeThrough()).
                     register(
                         ClassIndexEventsTransaction.class,
