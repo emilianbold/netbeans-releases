@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 
 
 public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener, DocumentListener {
-    
+
     private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
     private boolean isCDIEnabled = false;
     /**
@@ -83,7 +83,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
      */
     public ManagedBeanPanelVisual(Project proj) {
         initComponents();
-        
+
         WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
         if (wm != null){
             String[] configFiles = JSFConfigUtilities.getConfigFiles(wm);
@@ -123,7 +123,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
 
         jTextFieldName.setText("newJSFManagedBean");
         jTextFieldName.getDocument().addDocumentListener(this);
-        
+
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
     }
 
@@ -144,7 +144,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         jComboBoxScope.setModel(scopeModel);
         repaint();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -257,7 +257,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         jComboBoxConfigFile.setEnabled(addToConfig);
         updateScopeModel(addToConfig);
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox jComboBoxConfigFile;
@@ -270,7 +270,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     private javax.swing.JTextArea jTextAreaDesc;
     private javax.swing.JTextField jTextFieldName;
     // End of variables declaration//GEN-END:variables
-    
+
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
 
@@ -283,16 +283,16 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                         NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_No_Sources_found"));
             return false;
         }
-        
+
         if (configFile==null) {
-            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20(wm))) {
+            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20Plus(wm))) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile"));
                 return false;
             }
             return true;
         }
-        
+
         FileObject dir = wm.getDocumentBase();
         FileObject fo = dir.getFileObject(configFile);
         FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();
@@ -301,7 +301,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                     NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_InvalidConfigFile"));
             return false;
         }
-        
+
         String name = jTextFieldName.getText();
         if (name.trim().equals("")) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
@@ -323,34 +323,34 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         return true;
     }
-    
+
     void read(WizardDescriptor settings) {
     }
-    
+
     void store(WizardDescriptor settings) {
         settings.putProperty(WizardProperties.CONFIG_FILE, jComboBoxConfigFile.getSelectedItem());
         settings.putProperty(WizardProperties.NAME, jTextFieldName.getText());
         settings.putProperty(WizardProperties.SCOPE, jComboBoxScope.getSelectedItem());
         settings.putProperty(WizardProperties.DESCRIPTION, jTextAreaDesc.getText());
     }
-    
+
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ManagedBeanPanelVisual.class);
     }
-    
+
     public void intervalRemoved(ListDataEvent e) {
     }
-    
+
     public void intervalAdded(ListDataEvent e) {
     }
-    
+
     public void contentsChanged(ListDataEvent e) {
 
     }
-    
+
     private final Set<ChangeListener> listeners = new HashSet(1);
 
     public final void addChangeListener(ChangeListener l) {
