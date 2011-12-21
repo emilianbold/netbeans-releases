@@ -39,92 +39,78 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.indexing;
+package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 
 /**
  *
  * @author Tomas Zezula
  */
-public final class TransactionContext {
+//@NotThreadSafe
+public final class ClassIndexEventsTransaction extends TransactionContext.Service {
 
-    private static final ThreadLocal<TransactionContext> ctx = new ThreadLocal<TransactionContext>();
-    private final Map<Class<? extends Service>,Service> services;
+    private final Set<URL> removedRoots;
+    private final Set<URL> addedRoots;
+    private final Collection<ElementHandle<TypeElement>> addedTypes;
+    private final Collection<ElementHandle<TypeElement>> removedTypes;
+    private final Collection<ElementHandle<TypeElement>> changedTypes;
 
-    private TransactionContext() {
-        services = new LinkedHashMap<Class<? extends Service>, Service>();
+    private ClassIndexEventsTransaction() {
+        removedRoots = new HashSet<URL>();
+        addedRoots = new HashSet<URL>();
+        addedTypes = new HashSet<ElementHandle<TypeElement>>();
+        removedTypes = new HashSet<ElementHandle<TypeElement>>();
+        changedTypes = new HashSet<ElementHandle<TypeElement>>();
     }
 
-    public final void commit() throws IOException {
-        if (ctx.get() != this) {
-            throw new IllegalStateException();
-        }
-        try {
-            for (Service s : services.values()) {
-                s.commit();
-            }
-        } finally {
-            services.clear();
-            ctx.remove();
-        }
+
+    public void rootAdded(@NonNull final URL root) {
+        assert root != null;
+        addedRoots.add(root);
     }
 
-    public final void rollBack() throws IOException {
-        if (ctx.get() != this) {
-            throw new IllegalStateException();
-        }
-        try {
-            for (Service s : services.values()) {
-                s.rollBack();
-            }
-        } finally {
-            services.clear();
-            ctx.remove();
-        }
+    public void rootRemoved(@NonNull final URL root) {
+        assert root != null;
+        removedRoots.add(root);
     }
 
-    public TransactionContext register(
-        @NonNull final Class<? extends Service> type,
-        @NonNull final Service service) {
-        assert type != null;
-        assert service != null;
-        services.put(type,service);
-        return this;
+    public void addedTypes(@NonNull final Collection<? extends ElementHandle<TypeElement>> added) {
+        assert added != null;
+        addedTypes.addAll(added);
     }
 
-    @CheckForNull
-    public <T extends Service> T get(@NonNull final Class<T> type) {
-        return (T) services.get(type);
+    public void removedTypes(@NonNull final Collection<? extends ElementHandle<TypeElement>> removed) {
+        assert removed != null;
+        removedTypes.addAll(removed);
     }
 
-    @NonNull
-    public static TransactionContext beginTrans() {
-        if (ctx.get() != null) {
-            throw new IllegalStateException();
-        }
-        final TransactionContext res = new TransactionContext();
-        ctx.set(res);
-        return res;
+    public void changedTypes(@NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
+        assert changed != null;
+        changedTypes.addAll(changed);
+    }
+
+    @Override
+    protected void commit() throws IOException {
+        final ClassIndexManager ciManager = ClassIndexManager.getDefault();
+        ciManager.fire(addedRoots, removedRoots);
+    }
+
+    @Override
+    protected void rollBack() throws IOException {
     }
 
     @NonNull
-    public static TransactionContext get() throws IllegalStateException {
-        final TransactionContext res = ctx.get();
-        if (res == null) {
-            throw new IllegalStateException();
-        }
-        return res;
-    }
-
-
-    public static abstract class Service {
-        protected abstract void commit() throws IOException;
-        protected abstract void rollBack() throws IOException;
+    public static ClassIndexEventsTransaction create() {
+        return new ClassIndexEventsTransaction();
     }
 
 }

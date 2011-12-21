@@ -48,14 +48,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.openide.util.Exceptions;
@@ -68,16 +69,12 @@ public final class ClassIndexManager {
 
     public static final String PROP_DIRTY_ROOT = "dirty"; //NOI18N
     public static final String PROP_SOURCE_ROOT = "source";  //NOI18N
-    
-    private static final byte OP_ADD    = 1;
-    private static final byte OP_REMOVE = 2;
 
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final Map<URL, ClassIndexImpl> transientInstances = new HashMap<URL, ClassIndexImpl> ();
     private final InternalLock internalLock = new InternalLock();
     private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
-    private final ThreadLocal<Changes> changes = new ThreadLocal<Changes>();
     private boolean invalid;
 
 
@@ -98,27 +95,6 @@ public final class ClassIndexManager {
     public <T> T writeLock (final Action<T> r) throws IOException, InterruptedException {
         //Ugly, in scala much more cleaner.
         return IndexManager.writeAccess(r);
-    }
-
-    public static void beginTrans() {
-        final ClassIndexManager ins = getDefault();
-        assert ins.changes.get() == null;
-        ins.changes.set(new Changes());
-    }
-
-    public static void endTrans() {
-        final ClassIndexManager ins = getDefault();
-        final Changes cs = ins.changes.get();
-        assert cs != null;
-        ins.changes.set(null);
-        final Set<? extends URL> added = cs.getAddedRoots();
-        final Set<? extends URL> removed = cs.getRemovedRoots();
-        if (!removed.isEmpty()) {
-            ins.fire (removed, OP_REMOVE);
-        }
-        if (!added.isEmpty()) {
-            ins.fire (added, OP_ADD);
-        }
     }
 
     @CheckForNull
@@ -236,22 +212,29 @@ public final class ClassIndexManager {
         }
     }
 
-    private void fire (final Set<? extends URL> roots, final byte op) {
+    void fire (
+        @NonNull final Set<? extends URL> added,
+        @NonNull final Set<? extends URL> removed) {
+        final ClassIndexManagerEvent addEvent = added.isEmpty() ? null : new ClassIndexManagerEvent (this, added);
+        final ClassIndexManagerEvent rmEvent = removed.isEmpty()? null : new ClassIndexManagerEvent (this, removed);
+        fire(addEvent, rmEvent);
+    }
+
+
+    private void fire(
+        @NullAllowed ClassIndexManagerEvent addEvent,
+        @NullAllowed ClassIndexManagerEvent rmEvent) {
         if (!this.listeners.isEmpty()) {
             ClassIndexManagerListener[] _listeners;
             synchronized (this.listeners) {
                 _listeners = this.listeners.keySet().toArray(new ClassIndexManagerListener[this.listeners.size()]);
             }
-            final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
             for (ClassIndexManagerListener listener : _listeners) {
-                if (op == OP_ADD) {
-                    listener.classIndexAdded(event);
+                if (addEvent != null) {
+                    listener.classIndexAdded(addEvent);
                 }
-                else if (op == OP_REMOVE) {
-                    listener.classIndexRemoved(event);
-                }
-                else {
-                    assert false : "Unknown op: " + op;     //NOI18N
+                if (rmEvent != null) {
+                    listener.classIndexRemoved(rmEvent);
                 }
             }
         }
@@ -279,17 +262,13 @@ public final class ClassIndexManager {
     }
 
     private void markAddedRoot(@NonNull URL root) {
-        final Changes cs = changes.get();
-        if (cs != null) {
-            cs.added(root);
-        }
+        final TransactionContext txCtx = TransactionContext.get();
+        txCtx.get(ClassIndexEventsTransaction.class).rootAdded(root);
     }
 
     private void markRemovedRoot(@NonNull URL root) {
-        final Changes cs = changes.get();
-        if (cs != null) {
-            cs.removed(root);
-        }
+        final TransactionContext txCtx = TransactionContext.get();
+        txCtx.get(ClassIndexEventsTransaction.class).rootAdded(root);
     }
 
 
@@ -298,31 +277,6 @@ public final class ClassIndexManager {
             instance = new ClassIndexManager ();            
         }
         return instance;
-    }
-
-    private static final class Changes {
-        private Set<URL> added = new HashSet<URL>();
-        private Set<URL> removed = new HashSet<URL>();
-
-        private Changes() {}
-
-        Set<? extends URL> getAddedRoots() {
-            return Collections.unmodifiableSet(added);
-        }
-
-        Set<? extends URL> getRemovedRoots() {
-            return Collections.unmodifiableSet(removed);
-        }
-
-        void added (@NonNull URL url) {
-            assert url != null;
-            added.add(url);
-        }
-
-        void removed (@NonNull URL url) {
-            assert url != null;
-            removed.add(url);
-        }
     }
 
     private class InternalLock {}

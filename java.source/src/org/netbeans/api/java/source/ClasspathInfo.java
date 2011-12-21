@@ -191,7 +191,7 @@ public final class ClasspathInfo {
         if (backgroundCompilation) {
             final TransactionContext txCtx = TransactionContext.get();
             assert txCtx != null : "No transaction context associated with current thread"; //NOI18N
-            fmTx = TransactionContext.get().get(FileManagerTransaction.class);
+            fmTx = txCtx.get(FileManagerTransaction.class);
         } else {
             //No real transaction, read-only mode.
             fmTx = FileManagerTransaction.read();
