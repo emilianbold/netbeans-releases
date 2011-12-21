@@ -44,74 +44,64 @@ package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
  *
- * @author schmidtm
- */
-import java.util.Map;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
-/**
- *
  * @author Petr Hejl
  */
-public class OperatorsCCTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/operators/";
+public class OperatorsCCTest extends GroovyCCTestBase {
 
     public OperatorsCCTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    @Override
+    protected String getTestType() {
+        return "operators";
     }
 
-    protected @Override Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
-        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/operators")) }));
-        return map;
+    public void testSafeNavigation1_1() throws Exception {
+        checkCompletion(BASE + "SafeNavigation1.groovy", "        x?.b^", true);
     }
 
-    public void testSafeNavigation1() throws Exception {
-        checkCompletion(TEST_BASE + "SafeNavigation1.groovy", "        x?.b^", true);
+    public void testSafeNavigation1_2() throws Exception {
+        checkCompletion(BASE + "SafeNavigation1.groovy", "        this?.a^", true);
     }
 
-    public void testSafeNavigation2() throws Exception {
-        checkCompletion(TEST_BASE + "SafeNavigation1.groovy", "        this?.a^", true);
+    public void testSafeNavigation1_3() throws Exception {
+        checkCompletion(BASE + "SafeNavigation1.groovy", "        r?.t^", true);
     }
 
-    public void testSafeNavigation3() throws Exception {
-        checkCompletion(TEST_BASE + "SafeNavigation1.groovy", "        r?.t^", true);
-    }
-
-    /*public void testSafeNavigation4() throws Exception {
-        checkCompletion(TEST_BASE + "SafeNavigation2.groovy", "        \"\"?.^", true);
+    /*public void testSafeNavigation2_1() throws Exception {
+        checkCompletion(BASE + "SafeNavigation2.groovy", "        \"\"?.^", true);
     }*/
 
-    public void testMethodClosure1() throws Exception {
-        checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        x.&b^", true);
+    public void testMethodClosure1_1() throws Exception {
+        checkCompletion(BASE + "MethodClosure1.groovy", "        x.&b^", true);
     }
 
-    public void testMethodClosure2() throws Exception {
-        checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        this.&a^", true);
+    public void testMethodClosure1_2() throws Exception {
+        checkCompletion(BASE + "MethodClosure1.groovy", "        this.&a^", true);
     }
 
-    public void testMethodClosure3() throws Exception {
-        checkCompletion(TEST_BASE + "MethodClosure1.groovy", "        r.&t^", true);
+    public void testMethodClosure1_3() throws Exception {
+        checkCompletion(BASE + "MethodClosure1.groovy", "        r.&t^", true);
     }
 
-    /*public void testMethodClosure4() throws Exception {
-        checkCompletion(TEST_BASE + "MethodClosure2.groovy", "        \"\".&^", true);
+    /*public void testMethodClosure2_1() throws Exception {
+        checkCompletion(BASE + "MethodClosure2.groovy", "        \"\".&^", true);
     }*/
+
+    public void testSpreadOperator1_stringArray_all() throws Exception {
+        checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.^", true);
+    }
+
+    public void testSpreadOperator1_stringArray_sPrefix() throws Exception {
+        checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.s^", true);
+    }
+
+    public void testSpreadOperator2_stringArray_all() throws Exception {
+        checkCompletion(BASE + "SpreadOperator2.groovy", "        [1,2]*.^", true);
+    }
+
+    public void testSpreadOperator2_stringArray_sPrefix() throws Exception {
+        checkCompletion(BASE + "SpreadOperator2.groovy", "        [1,2]*.s^", true);
+    }
 }
