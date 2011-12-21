@@ -89,12 +89,7 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
-import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
-import org.netbeans.modules.java.source.usages.ClassIndexImpl;
-import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
+import org.netbeans.modules.java.source.usages.*;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
@@ -787,8 +782,17 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
-            ClassIndexManager.beginTrans();
-            TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.writeBack());
+            TransactionContext.beginTrans().
+                    register(
+                        FileManagerTransaction.class,
+                        JavaIndex.hasSourceCache(
+                            context.getRootURI(), false)?
+                            FileManagerTransaction.writeThrough()/*todo: should be FileManagerTransaction.writeBack() - after svata's commit*/:
+                            FileManagerTransaction.writeThrough()).
+                    register(
+                        ClassIndexEventsTransaction.class,
+                        ClassIndexEventsTransaction.create()
+                    );
             boolean vote = true;
             try {
                 boolean classIndexConsistent = IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
@@ -867,8 +871,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                     txCtx.commit();
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
-                } finally {
-                    ClassIndexManager.endTrans();
                 }
             }
         }
@@ -888,32 +890,39 @@ public class JavaCustomIndexer extends CustomIndexer {
         public void rootsRemoved(final Iterable<? extends URL> removedRoots) {
             assert removedRoots != null;
             JavaIndex.LOG.log(Level.FINE, "roots removed: {0}", removedRoots);
-            APTUtils.sourceRootUnregistered(removedRoots);
-            final ClassIndexManager cim = ClassIndexManager.getDefault();
-            final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
-            ClassIndexManager.beginTrans();
+            final TransactionContext txCtx = TransactionContext.beginTrans().
+                    register(ClassIndexEventsTransaction.class, ClassIndexEventsTransaction.create());
             try {
-                final Set<URL> toRefresh = new HashSet<URL>();
-                for (URL removedRoot : removedRoots) {
-                    cim.removeRoot(removedRoot);
-                    ffl.stopListeningOn(removedRoot);
-                    final FileObject root = URLMapper.findFileObject(removedRoot);
-                    if (root == null) {
-                        JavaIndex.setAttribute(removedRoot, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
-                    } else {
-                        ensureSourcePath(root);
+                APTUtils.sourceRootUnregistered(removedRoots);
+                final ClassIndexManager cim = ClassIndexManager.getDefault();
+                final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
+                try {
+                    final Set<URL> toRefresh = new HashSet<URL>();
+                    for (URL removedRoot : removedRoots) {
+                        cim.removeRoot(removedRoot);
+                        ffl.stopListeningOn(removedRoot);
+                        final FileObject root = URLMapper.findFileObject(removedRoot);
+                        if (root == null) {
+                            JavaIndex.setAttribute(removedRoot, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
+                        } else {
+                            ensureSourcePath(root);
+                        }
                     }
+                    for (URL removedRoot : removedRoots) {
+                        toRefresh.remove(removedRoot);
+                    }
+                    for (URL url : toRefresh) {
+                        IndexingManager.getDefault().refreshIndex(url, null, true);
+                    }
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
-                for (URL removedRoot : removedRoots) {
-                    toRefresh.remove(removedRoot);
-                }
-                for (URL url : toRefresh) {
-                    IndexingManager.getDefault().refreshIndex(url, null, true);
-                }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
             } finally {
-                ClassIndexManager.endTrans();
+                try {
+                    txCtx.commit();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
@@ -924,6 +933,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         }
 
         @Override
+        @NonNull
         public String getIndexerName() {
             return JavaIndex.NAME;
         }
@@ -937,7 +947,29 @@ public class JavaCustomIndexer extends CustomIndexer {
         public int getIndexVersion() {
             return JavaIndex.VERSION;
         }
-        
+
+        /**
+         * Equals for JavaCustomIndexer.Factory.
+         * Some Java Source tests register the JavaCustomIndexer.Factory twice im mime lookup.
+         * The implementation of equals and hashCode removes such duplicity causing
+         * the TransactionContext to fail.
+         * @param obj
+         * @return true if the Factory creates the same indexer (the same name and the same version).
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            if (!(obj instanceof JavaCustomIndexer.Factory)) {
+                return false;
+            }
+            final Factory of = (Factory) obj;
+            return of.getIndexerName().equals(getIndexerName()) && of.getIndexVersion() == getIndexVersion();
+        }
+
+        @Override
+        public int hashCode() {
+            return getIndexerName().hashCode();
+        }
+
         private static boolean ensureSourcePath(final @NonNull FileObject root) throws IOException {
             final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             String srcPathStr;

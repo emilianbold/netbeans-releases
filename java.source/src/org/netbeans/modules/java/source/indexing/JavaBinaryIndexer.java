@@ -66,6 +66,7 @@ import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
+import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
@@ -211,7 +212,9 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         @Override
         public void rootsRemoved (final Iterable<? extends URL> removedRoots) {
             assert removedRoots != null;
-            ClassIndexManager.beginTrans();
+            final TransactionContext txCtx = TransactionContext.beginTrans().register(
+                ClassIndexEventsTransaction.class,
+                ClassIndexEventsTransaction.create());
             try {
                 final ClassIndexManager cim = ClassIndexManager.getDefault();
                 for (URL removedRoot : removedRoots) {
@@ -220,13 +223,19 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             } finally {
-                ClassIndexManager.endTrans();
+                try {
+                    txCtx.commit();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
         @Override
         public boolean scanStarted(final Context context) {
-            ClassIndexManager.beginTrans();
+            TransactionContext.beginTrans().register(
+                ClassIndexEventsTransaction.class,
+                ClassIndexEventsTransaction.create());
             try {
                 return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
                     @Override
@@ -265,7 +274,13 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             } finally {
-                ClassIndexManager.endTrans();
+                final TransactionContext txCtx = TransactionContext.get();
+                assert txCtx != null;
+                try {
+                    txCtx.commit();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
