@@ -39,35 +39,27 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser;
 
-import org.netbeans.modules.cnd.antlr.Token;
+package org.netbeans.modules.maven.spi.queries;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
- *
- * @author nick
+ * Extension point for contributing source roots compilable in parallel with Java sources.
+ * Necessary since the {@link ClassPath#SOURCE} for {@code src/main/java/} must include {@code src/main/KIND/} too.
+ * Generally these roots (under {@code src/test/KIND/} also) will get the same classpath information as Java.
+ * Creation of {@link SourceGroup}s (or their nodes) is not automatic, as this requires display labels
+ * and might merit further customization.
+ * @see ProjectServiceProvider
+ * @since 2.36
  */
-public interface CppParserAction {
-    
-    void enum_declaration(Token token);
-    void enum_name(Token token);
-    void enum_body(Token token);
-    void enumerator(Token token);
-    void end_enum_body(Token token);
-    void end_enum_declaration(Token token);
+public interface JavaLikeRootProvider {
 
-    void class_name(Token token);
-    void class_body(Token token);
-    void end_class_body(Token token);
-    
-    void namespace_body(Token token);
-    void end_namespace_body(Token token);
-
-    void compound_statement(Token token);
-    void end_compound_statement(Token token);
-    
-    void id(Token token);
-    
-    boolean isType(String name);
+    /**
+     * Obtains the kind of language supported.
+     * @return e.g. {@code "groovy"}
+     */
+    String kind();
 
 }

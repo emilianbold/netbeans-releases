@@ -975,8 +975,8 @@ public final class MakeActionProvider implements ActionProvider {
                                     command = command.replace("\"", "\\\"");// NOI18N
                                 }
                             }
-                            command = command+" -o /dev/null";
-                            command = command+" -c "+item.getAbsolutePath();
+                            command = command+" -o /dev/null"; // NOI18N
+                            command = command+" -c "+item.getAbsolutePath(); // NOI18N
                             profile.setArgs(command);
                             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
                             actionEvents.add(projectActionEvent);

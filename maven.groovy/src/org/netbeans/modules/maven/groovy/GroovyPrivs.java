@@ -39,35 +39,33 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser;
 
-import org.netbeans.modules.cnd.antlr.Token;
+package org.netbeans.modules.maven.groovy;
 
-/**
- *
- * @author nick
- */
-public interface CppParserAction {
-    
-    void enum_declaration(Token token);
-    void enum_name(Token token);
-    void enum_body(Token token);
-    void enumerator(Token token);
-    void end_enum_body(Token token);
-    void end_enum_declaration(Token token);
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 
-    void class_name(Token token);
-    void class_body(Token token);
-    void end_class_body(Token token);
-    
-    void namespace_body(Token token);
-    void end_namespace_body(Token token);
+@ProjectServiceProvider(service=PrivilegedTemplates.class, projectType="org-netbeans-modules-maven")
+public class GroovyPrivs implements PrivilegedTemplates {
 
-    void compound_statement(Token token);
-    void end_compound_statement(Token token);
+    private final Project project;
+
+    public GroovyPrivs(Project project) {
+        this.project = project;
+    }
     
-    void id(Token token);
-    
-    boolean isType(String name);
+    @Override public String[] getPrivilegedTemplates() {
+        if (ProjectUtils.getSources(project).getSourceGroups(GroovySourcesImpl.TYPE_GROOVY).length > 0) {
+            return new String[] {
+                "Templates/Groovy/GroovyClass.groovy",
+                "Templates/Groovy/GroovyScript.groovy",
+                "Templates/Other/Folder"
+            };
+        } else {
+            return new String[0];
+        }
+    }
 
 }

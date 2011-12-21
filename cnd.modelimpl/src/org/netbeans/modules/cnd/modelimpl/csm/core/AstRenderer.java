@@ -145,13 +145,14 @@ public class AstRenderer {
                     }
                     break;
                 }
-                case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
                     if (isFuncLikeVariable(token, false)) {
                         if (renderFuncLikeVariable(token, currentNamespace, container, !isFuncLikeVariable(token, true))) {
                             break;
                         }
                     }
                 //nobreak!
+                case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:

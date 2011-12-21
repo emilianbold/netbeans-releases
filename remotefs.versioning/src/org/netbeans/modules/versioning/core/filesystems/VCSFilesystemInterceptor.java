@@ -62,7 +62,7 @@ import org.openide.filesystems.FileStatusListener;
  * @author Tomas Stupka
  */
 public final class VCSFilesystemInterceptor {
-    private static final Logger LOG = null;//VersioningManager.LOG;
+    private static final Logger LOG = Logger.getLogger(VCSFilesystemInterceptor.class.getName());//VersioningManager.LOG;
 //    private static final VersioningManager master = VersioningManager.getInstance();
     /**
      * Delete interceptor: holds files and folders that we do not want to delete
