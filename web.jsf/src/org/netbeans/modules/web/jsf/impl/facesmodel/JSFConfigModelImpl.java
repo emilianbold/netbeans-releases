@@ -47,10 +47,8 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponentFactory;
@@ -70,19 +68,19 @@ import org.w3c.dom.Node;
  * @author Petr Pisl, ads
  */
 public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent> implements JSFConfigModel {
-    
+
     private static final Logger LOGGER = Logger.getLogger(JSFConfigModelImpl.class.getName());
-    
+
     private FacesConfig facesConfig;
     private final JSFConfigComponentFactory componentFactory;
     private JsfModel myMetaModel;
-    
+
     /** Creates a new instance of JSFConfigModelImpl */
     public JSFConfigModelImpl(ModelSource source) {
         super(source);
         componentFactory = new JSFConfigComponentFactoryImpl(this);
     }
-    
+
     /** Creates a new instance of JSFConfigModelImpl */
     public JSFConfigModelImpl(ModelSource source, JsfModel model ) {
         this( source );
@@ -113,58 +111,62 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
     public JSFConfigComponentFactory getFactory() {
         return componentFactory;
     }
-    
+
     public JSFVersion getVersion() {
         String namespaceURI = getRootComponent().getPeer().getNamespaceURI();
         JSFVersion version = JSFVersion.JSF_1_1;
-        if ( JSFConfigQNames.JSF_2_0_NS.equals(namespaceURI)
-                && (getRootComponent().getVersion().equals("2.0") ||
-                checkJSF20SchemaLocation( getRootComponent().getPeer()))) 
-        {   //NOI18N
+        if (JSFConfigQNames.JSF_2_1_NS.equals(namespaceURI)
+                && (getRootComponent().getVersion().equals("2.1") //NOI18N
+                || checkSchemaLocation(
+                    getRootComponent().getPeer(),
+                    "http://java.sun.com/xml/ns/javaee/web-facesconfig_2_1.xsd"))) { //NOI18N
+            version = JSFVersion.JSF_2_1;
+        } else if (JSFConfigQNames.JSF_2_0_NS.equals(namespaceURI)
+                && (getRootComponent().getVersion().equals("2.0") //NOI18N
+                || checkSchemaLocation(
+                    getRootComponent().getPeer(),
+                    "http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"))) { //NOI18N
             version = JSFVersion.JSF_2_0;
-        }
-        else if (JSFConfigQNames.JSF_1_2_NS.equals(namespaceURI)){
+        } else if (JSFConfigQNames.JSF_1_2_NS.equals(namespaceURI)) {
             version = JSFVersion.JSF_1_2;
         }
         return version;
     }
-    
+
     public Set<QName> getQNames() {
         return JSFConfigQNames.getMappedQNames(getVersion());
     }
 
-    private boolean checkJSF20SchemaLocation( Element element ) {
-        NamedNodeMap map = element.getAttributes();
+    private boolean checkSchemaLocation(Element rootElement, String schemaLocation) {
+        NamedNodeMap map = rootElement.getAttributes();
         String prefix = null;
-        for ( int i=0; i<map.getLength(); i++ ){
+        for (int i = 0; i < map.getLength(); i++) {
             Node node = map.item(i);
-            Attr attr = (Attr)node;
+            Attr attr = (Attr) node;
             String value = attr.getValue();
-            if ( value.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)){
-                String prefixedAttr = null;
-                prefixedAttr = attr.getName();
-                if ( prefixedAttr.indexOf(":") !=-1){                             // NOI18N
-                    prefix = prefixedAttr.substring( prefixedAttr.indexOf(":")+1);// NOI18N
+            if (value.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
+                String prefixedAttr = attr.getName();
+                if (prefixedAttr.indexOf(":") != -1) { //NOI18N
+                    prefix = prefixedAttr.substring(prefixedAttr.indexOf(":") + 1); //NOI18N
                 }
                 break;
             }
         }
-        String schemaLocation = "schemaLocation";       // NOI18N
-        if ( prefix != null && prefix.length() >0 ){
-            schemaLocation = prefix+":"+schemaLocation; // NOI18N
+        String schemaLocationAttr = "schemaLocation"; //NOI18N
+        if (prefix != null && prefix.length() > 0) {
+            schemaLocationAttr = prefix + ":" + schemaLocationAttr; //NOI18N
         }
-        Attr attr = (Attr)map.getNamedItem( schemaLocation );
-        if ( attr == null ){
+        Attr attr = (Attr) map.getNamedItem(schemaLocationAttr);
+        if (attr == null) {
             return false;
         }
         String value = attr.getValue();
-        StringTokenizer tokenizer = new StringTokenizer( value );
+        StringTokenizer tokenizer = new StringTokenizer(value);
         String location = null;
-        while ( tokenizer.hasMoreTokens() ){
+        while (tokenizer.hasMoreTokens()) {
             location = tokenizer.nextToken();
         }
-        return "http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd". // NOI18N
-            equals(location);       
+        return schemaLocation.equals(location);
     }
 
 }
