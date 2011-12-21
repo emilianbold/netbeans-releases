@@ -219,8 +219,8 @@ public class ScannerTestCase extends NbTestCase {
         ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("OracleSolarisStudio_12.2", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertTrue(Pattern.compile(toolchain.getCpp().getVersionPattern()).matcher("CC: Sun C++ 5.11 SunOS_i386 2010/06/09").find());
         assertTrue(Pattern.compile(toolchain.getC().getVersionPattern()).matcher("C: Sun C 5.11 SunOS_i386 2010/06/09").find());
-        assertFalse(Pattern.compile(toolchain.getCpp().getVersionPattern()).matcher("CC: Sun C++ 5.11 SunOS_i386 Aten 2010/06/09").find());
-        assertFalse(Pattern.compile(toolchain.getC().getVersionPattern()).matcher("C: Sun C 5.11 SunOS_i386 Aten 2010/06/09").find());
+        assertTrue(Pattern.compile(toolchain.getCpp().getVersionPattern()).matcher("CC: Sun C++ 5.11 SunOS_i386 Aten 2010/06/09").find());
+        assertTrue(Pattern.compile(toolchain.getC().getVersionPattern()).matcher("C: Sun C 5.11 SunOS_i386 Aten 2010/06/09").find());
     }
 
     public void testSUNpatterns() throws Exception {
