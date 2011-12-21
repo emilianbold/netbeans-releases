@@ -294,16 +294,20 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             jsfComponentDescriptors.addAll(provider.getJsfComponents());
         }
 
-        for (JsfComponentImplementation jsfDescriptor : jsfComponentDescriptors) {
-            List<JsfComponentImplementation> list = componentsMap.get(jsfDescriptor.getJsfVersion());
+        for (JSFVersion jsfVersion : JSFVersion.values()) {
+            List<JsfComponentImplementation> list = componentsMap.get(jsfVersion);
             if (list == null) {
                 list = new ArrayList<JsfComponentImplementation>();
+                componentsMap.put(jsfVersion, list);
             }
-            list.add(jsfDescriptor);
-            componentsMap.put(jsfDescriptor.getJsfVersion(), list);
+            for (JsfComponentImplementation jsfImplementation : jsfComponentDescriptors) {
+                if (jsfImplementation.getJsfVersion().contains(jsfVersion)) {
+                    list.add(jsfImplementation);
+                }
+            }
         }
         jsfComponentsInitialized = true;
-        if (currentJSFVersion !=null) {
+        if (currentJSFVersion != null) {
             updateJsfComponentsModel(currentJSFVersion);
         }
     }
