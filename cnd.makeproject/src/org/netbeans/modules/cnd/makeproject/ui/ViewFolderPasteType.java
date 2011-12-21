@@ -49,6 +49,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.*;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -57,6 +59,7 @@ import org.openide.util.datatransfer.PasteType;
  */
 final class ViewFolderPasteType  extends PasteType {
 
+    private static final RequestProcessor RP = new RequestProcessor("ViewFolderPasteType", 1); //NOI18N
     private final Folder toFolder;
     private final LogicalFolderNode viewFolderNode;
     private final int type;
@@ -87,6 +90,21 @@ final class ViewFolderPasteType  extends PasteType {
 
     @Override
     public Transferable paste() throws IOException {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    pasteImpl();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        return null;
+    }
+    
+    private Transferable pasteImpl() throws IOException {
         if (!provider.gotMakeConfigurationDescriptor() || !(provider.getMakeConfigurationDescriptor().okToChange())) {
             return null;
         }

@@ -70,6 +70,8 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -78,6 +80,8 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Alexander Simon
  */
 final class ViewItemNode extends FilterNode implements ChangeListener {
+    
+    private static final RequestProcessor RP = new RequestProcessor("ViewItemNode", 1); //NOI18N
 
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.ViewItemNode; mask={0}"); // NOI18N
 
@@ -96,8 +100,14 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     }
 
     @Override
-    public void setName(String s) {
-        super.setName(s.trim()); // IZ #152560
+    public void setName(final String s) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                ViewItemNode.super.setName(s.trim()); // IZ #152560
+            }
+        });
     }
 
     public Folder getFolder() {
@@ -158,8 +168,18 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 
     @Override
     public void destroy() throws IOException {
-        super.destroy();
-        folder.removeItemAction(item);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    ViewItemNode.super.destroy();
+                    folder.removeItemAction(item);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 
     @Override
