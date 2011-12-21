@@ -565,6 +565,7 @@ public final class FoldHierarchyTransactionImpl {
             index = FoldUtilitiesImpl.findFoldInsertIndex(parentFold, foldStartOffset);
             useLast = false;
         }            
+        sbDebug.append(", rootFold = " + execution.getRootFold());
         
         // Check whether the index is withing bounds
         int foldCount = parentFold.getFoldCount();

@@ -922,18 +922,21 @@ public final class MakeActionProvider implements ActionProvider {
                 outputFile = customToolConfiguration.getOutputs().getValue();
             }
             if (conf.isMakefileConfiguration()) {
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                AbstractCompiler ccCompiler = null;
+                AllOptionsProvider optionProvider = null;
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                    ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                    optionProvider = itemConfiguration.getCCompilerConfiguration();
+                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                    ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                    optionProvider = itemConfiguration.getCCCompilerConfiguration();
+                } 
+                if (ccCompiler == null) {
+                    return false;
+                }
                 AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
                 if (options != null) {
-                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                    AbstractCompiler ccCompiler = null;
-                    if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                    } 
-                    if (ccCompiler == null) {
-                        return false;
-                    }
                     String compileLine = options.getAllOptions(ccCompiler);
                     if (compileLine != null) {
                         int hasPath = compileLine.indexOf('#');// NOI18N
@@ -953,6 +956,27 @@ public final class MakeActionProvider implements ActionProvider {
                                     command = command.replace("\"", "\\\"");// NOI18N
                                 }
                             }
+                            profile.setArgs(command);
+                            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
+                            actionEvents.add(projectActionEvent);
+                            return true;
+                        }
+                    }
+                } else {
+                    if (optionProvider != null) {
+                        String compileLine = optionProvider.getAllOptions(ccCompiler);
+                        if (compileLine != null) {
+                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
+                            profile.setRunDirectory(makeArtifact.getWorkingDirectory());
+                            String command = compileLine.trim();
+                            if (command.indexOf('\"') > 0) {// NOI18N
+                                int i = command.indexOf("\\\"");// NOI18N
+                                if (i < 0) {
+                                    command = command.replace("\"", "\\\"");// NOI18N
+                                }
+                            }
+                            command = command+" -o /dev/null";
+                            command = command+" -c "+item.getAbsolutePath();
                             profile.setArgs(command);
                             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
                             actionEvents.add(projectActionEvent);
@@ -1175,8 +1199,8 @@ public final class MakeActionProvider implements ActionProvider {
                     return false;
                 }
                 if (conf.isMakefileConfiguration()) {
-                    AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
-                    if (options != null) {
+                    //AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
+                    //if (options != null) {
                         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
                         AbstractCompiler ccCompiler = null;
                         if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
@@ -1188,8 +1212,8 @@ public final class MakeActionProvider implements ActionProvider {
                             return false;
                         }
                         return true;
-                    }
-                    return false;
+                    //}
+                    //return false;
                 }
             }
             return enabled;

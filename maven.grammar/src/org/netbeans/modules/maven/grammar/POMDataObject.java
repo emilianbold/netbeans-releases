@@ -94,7 +94,7 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="maven.pom",
         mimeType=MIME_TYPE,
@@ -106,7 +106,7 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text",
         mimeType=SETTINGS_MIME_TYPE,
