@@ -85,11 +85,7 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public boolean canWriteReadonlyFile(FileProxyI file) {
-            final Boolean canWrite = VCSFilesystemInterceptor.canWriteReadonlyFile(toVCSFileProxy(file));
-            if (canWrite != null) {
-                return canWrite;
-            }
-            return false;
+            return VCSFilesystemInterceptor.canWriteReadonlyFile(toVCSFileProxy(file));
         }
 
         @Override
@@ -110,13 +106,16 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         @Override
         public IOHandler getDeleteHandler(FileProxyI file) {
             final VCSFilesystemInterceptor.IOHandler deleteHandler = VCSFilesystemInterceptor.getDeleteHandler(toVCSFileProxy(file));
-            return new IOHandler() {
+            if (deleteHandler != null) {
+                return new IOHandler() {
 
-                @Override
-                public void handle() throws IOException {
-                    deleteHandler.handle();
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        deleteHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override
@@ -152,25 +151,31 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         @Override
         public IOHandler getMoveHandler(FileProxyI from, FileProxyI to) {
             final VCSFilesystemInterceptor.IOHandler moveHandler = VCSFilesystemInterceptor.getMoveHandler(toVCSFileProxy(from), toVCSFileProxy(to));
-            return new IOHandler() {
+            if (moveHandler != null) {
+                return new IOHandler() {
 
-                @Override
-                public void handle() throws IOException {
-                    moveHandler.handle();
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        moveHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override
         public IOHandler getRenameHandler(FileProxyI from, String newName) {
             final VCSFilesystemInterceptor.IOHandler renameHandler = VCSFilesystemInterceptor.getRenameHandler(toVCSFileProxy(from), newName);
-            return new IOHandler() {
+            if (renameHandler != null) {
+                return new IOHandler() {
 
-                @Override
-                public void handle() throws IOException {
-                    renameHandler.handle();
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        renameHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override
@@ -181,13 +186,16 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         @Override
         public FilesystemInterceptorProvider.IOHandler getCopyHandler(FileProxyI from, FileProxyI to) {
             final VCSFilesystemInterceptor.IOHandler copyHandler = VCSFilesystemInterceptor.getCopyHandler(toVCSFileProxy(from), toVCSFileProxy(to));
-            return new FilesystemInterceptorProvider.IOHandler() {
+            if (copyHandler != null) {
+                return new FilesystemInterceptorProvider.IOHandler() {
 
-                @Override
-                public void handle() throws IOException {
-                    copyHandler.handle();
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        copyHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override

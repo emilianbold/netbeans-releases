@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -105,8 +106,8 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
     }
 
     @Override
-    public JSFVersion getJsfVersion() {
-        return JSFVersion.JSF_2_0;
+    public Set<JSFVersion> getJsfVersion() {
+        return EnumSet.of(JSFVersion.JSF_2_0, JSFVersion.JSF_2_1);
     }
 
     @Override

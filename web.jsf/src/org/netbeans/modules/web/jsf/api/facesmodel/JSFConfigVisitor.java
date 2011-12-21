@@ -90,6 +90,7 @@ public interface JSFConfigVisitor {
     void visit( ExceptionHandlerFactory factory );
     void visit( ExternalContextFactory factory );
     void visit( FacesContextFactory factory);
+    void visit( FaceletCacheFactory factory);
     void visit( PartialViewContextFactory factory );
     void visit( LifecycleFactory factory );
     void visit( ViewDeclarationLanguageFactory factory );
@@ -114,7 +115,7 @@ public interface JSFConfigVisitor {
     void visit( PhaseListener listener );
     void visit( FacesValidator validator );
     void visit ( FacesBehavior behavior );
-    
+
     /**
      * Default shallow visitor.
      */
@@ -161,207 +162,211 @@ public interface JSFConfigVisitor {
         public void visit(SupportedLocale component) {
             visitChild();
         }
-        
+
         public void visit(ResourceBundle component) {
             visitChild();
         }
-        
+
         public void visit( ActionListener listener ) {
-            visitChild();            
+            visitChild();
         }
-        
+
         public void visit( DefaultRenderKitId id ) {
             visitChild();
         }
-        
+
         public void visit( MessageBundle id ) {
             visitChild();
         }
-        
+
         public void visit( NavigationHandler handler ){
             visitChild();
         }
-        
+
         public void visit( PartialTraversal traversal ) {
             visitChild();
         }
-        
+
         public void visit( StateManager manager ) {
             visitChild();
         }
-        
+
         public void visit( ElResolver resolver ) {
             visitChild();
         }
-        
+
         public void visit( PropertyResolver resolver ) {
             visitChild();
         }
-        
+
         public void visit( VariableResolver resolver ) {
             visitChild();
         }
-        
+
         public void visit( ResourceHandler handler ) {
             visitChild();
         }
-        
+
         public void visit( FacesSystemEventListener listener ) {
             visitChild();
         }
-        
+
         public void visit( DefaultValidators validators ) {
             visitChild();
         }
-        
+
         public void visit( Ordering ordering ) {
             visitChild();
         }
-        
+
         public void visit( After after ) {
             visitChild();
         }
-        
+
         public void visit( Before before ) {
             visitChild();
         }
-        
+
         public void visit( Name name ) {
             visitChild();
         }
-        
+
         public void visit( Others others ) {
             visitChild();
         }
-        
+
         public void visit( AbsoluteOrdering ordering ) {
             visitChild();
         }
-        
+
         public void visit( Factory factory ) {
             visitChild();
         }
-        
+
         public void visit( FacesValidatorId id ) {
             visitChild();
         }
-        
+
         public void visit(ApplicationFactory factory ){
             visitChild();
         }
-        
+
         public void visit( ExceptionHandlerFactory factory ){
             visitChild();
         }
-        
+
         public void visit(ExternalContextFactory factory ){
             visitChild();
         }
-        
+
         public void visit( FacesContextFactory factory){
             visitChild();
         }
-        
+
+        public void visit( FaceletCacheFactory factory){
+            visitChild();
+        }
+
         public void visit( PartialViewContextFactory factory ){
             visitChild();
         }
-        
+
         public void visit( LifecycleFactory factory ){
             visitChild();
         }
-        
+
         public  void visit( ViewDeclarationLanguageFactory factory ){
             visitChild();
         }
-        
+
         public void visit( TagHandlerDelegateFactory factory ){
             visitChild();
         }
-        
+
         public void visit( RenderKitFactory factory ){
             visitChild();
         }
-        
+
         public void visit( VisitContextFactory factory ){
             visitChild();
         }
-        
+
         public void visit( FacesComponent component ){
             visitChild();
         }
-        
+
         public void visit( Facet facet ){
             visitChild();
         }
-        
+
         public void visit( ConfigAttribute attribute ){
             visitChild();
         }
-        
+
         public void visit( Property property ){
             visitChild();
         }
-        
+
         public void visit( FacesManagedProperty property ){
             visitChild();
         }
-        
+
         public void visit( ListEntries entries ){
             visitChild();
         }
-        
+
         public void visit( MapEntries entries ){
             visitChild();
         }
-        
+
         public void visit( If iff ){
             visitChild();
         }
-        
+
         public void visit( Redirect redirect ){
             visitChild();
         }
-        
+
         public void visit( ViewParam param ){
             visitChild();
         }
-        
+
         public void visit( ReferencedBean bean ){
             visitChild();
         }
-        
+
         public void visit( RenderKit kit ){
             visitChild();
         }
-        
+
         public void visit( FacesRenderer render ){
             visitChild();
         }
-        
+
         public void visit( FacesClientBehaviorRenderer render ){
             visitChild();
         }
-        
+
         public void visit( Lifecycle lifecycle ){
             visitChild();
         }
-        
+
         public void visit( PhaseListener listener ){
             visitChild();
         }
-        
+
         public void visit( FacesValidator validator ){
             visitChild();
         }
-        
+
         public void visit( FacesBehavior behavior ){
             visitChild();
         }
-        
+
         protected void visitChild() {
         }
     }
-    
+
     /**
      * Deep visitor.
      */
@@ -372,5 +377,5 @@ public interface JSFConfigVisitor {
             }
         }
     }
-    
+
 }
