@@ -57,6 +57,16 @@ public class MethodCCTest extends GroovyCCTestBase {
         return "method"; //NOI18N
     }
 
+    // Randomly fails if it's not the first test in file - it's most probably some general classpath problem
+    // (see org.netbeans.modules.groovy.editor.api.temporary.README.txt) for more details
+    public void testCompletionInsideFor1_2() throws Exception {
+        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
+    }
+
+    public void testCompletionInsideFor1_1() throws Exception {
+        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for(new Date().get^", false);
+    }
+
     public void testMethods1_1() throws Exception {
         checkCompletion(BASE + "Methods1.groovy", "        new URL(\"http://google.com\").getPr^", false);
     }
@@ -115,14 +125,6 @@ public class MethodCCTest extends GroovyCCTestBase {
 
     public void testCompletionInsideConstructor1_3() throws Exception {
         checkCompletion(BASE + "CompletionInsideConstructor1.groovy", "if (new File(new Date().get^", false);
-    }
-
-    public void testCompletionInsideFor1_1() throws Exception {
-        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for(new Date().get^", false);
-    }
-
-    public void testCompletionInsideFor1_2() throws Exception {
-        checkCompletion(BASE + "CompletionInsideFor1.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
     }
 
     public void testCompletionGeneratedAccessors1_1() throws Exception {
