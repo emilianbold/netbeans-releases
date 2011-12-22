@@ -400,9 +400,14 @@ public final class CommandLine {
     private OptionImpl[] getOptions() {
         ArrayList<OptionImpl> arr = new ArrayList<OptionImpl>();
         
-        Collection<? extends OptionProcessor> proc = processors;
+        Iterable<? extends OptionProcessor> proc = processors;
         if (proc == null) {
-            proc = Lookup.getDefault().lookupAll(OptionProcessor.class);
+            try {
+                proc = lookupOptionProcessors();
+            } catch (LinkageError ex) {
+                // OK, running in standalone mode without Lookup
+                proc = ServiceLoader.load(OptionProcessor.class);
+            }
         }
         
         for (OptionProcessor p : proc) {
@@ -413,6 +418,10 @@ public final class CommandLine {
         }
         
         return arr.toArray(new OptionImpl[0]);
+    }
+
+    private Collection<? extends OptionProcessor> lookupOptionProcessors() {
+        return Lookup.getDefault().lookupAll(OptionProcessor.class);
     }
     
     private OptionImpl findByLongName(String lng, OptionImpl[] arr) {

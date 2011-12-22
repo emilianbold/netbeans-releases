@@ -44,8 +44,15 @@ package org.netbeans.api.sendopts;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.sendopts.Arg;
+import org.netbeans.spi.sendopts.Env;
+import org.netbeans.spi.sendopts.Option;
+import org.netbeans.spi.sendopts.OptionProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -89,6 +96,15 @@ public final class StandaloneTest extends NbTestCase {
         assertEquals("myvalue", System.getProperty("key"));
     }
     
+    public void testStandaloneGetDefaultUsage() throws Exception {
+        Method def = classCommandLine.getMethod("getDefault");
+        Object cli = def.invoke(null);
+        final Object param = new String[] { "--serviceloadervalue=defaultValue" };
+        methodProcess.invoke(cli, param);
+        
+        assertEquals("defaultValue", System.getProperty("serviceloadervalue"));
+    }
+    
     public static final class Options implements Runnable {
         @Arg(longName="value")
         public String value;
@@ -96,6 +112,21 @@ public final class StandaloneTest extends NbTestCase {
         @Override
         public void run() {
             System.setProperty("key", value);
+        }
+    }
+    
+    @ServiceProvider(service=OptionProcessor.class)
+    public static final class SLProcessor extends OptionProcessor {
+        private static final Option VALUE = Option.requiredArgument(Option.NO_SHORT_NAME, "serviceloadervalue");
+
+        @Override
+        protected Set<Option> getOptions() {
+            return Collections.singleton(VALUE);
+        }
+
+        @Override
+        protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
+            System.setProperty("serviceloadervalue", optionValues.get(VALUE)[0]);
         }
         
     }
