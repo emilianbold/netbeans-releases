@@ -68,8 +68,8 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-@ProjectServiceProvider(service=CdiUtil.class, projectType = 
-    "org-netbeans-modules-java-j2seproject")
+@ProjectServiceProvider(service=CdiUtil.class, projectType = {
+    "org-netbeans-modules-java-j2seproject", "org-netbeans-modules-maven/jar"})
 public class CdiUtil {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.ui.metrics.cdi");   // NOI18N
