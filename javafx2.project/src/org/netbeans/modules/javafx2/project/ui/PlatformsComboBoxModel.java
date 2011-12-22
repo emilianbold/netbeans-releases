@@ -92,7 +92,7 @@ public class PlatformsComboBoxModel implements ComboBoxModel {
     }
     
     private List getData() {
-        List data = new ArrayList();
+        List<Object> data = new ArrayList<Object>();
         int origSize = delegate.getSize();
         for (int i = 0; i < origSize; i++) {
             final Object element = delegate.getElementAt(i);
