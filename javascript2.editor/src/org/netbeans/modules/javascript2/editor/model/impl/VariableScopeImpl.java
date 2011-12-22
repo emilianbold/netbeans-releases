@@ -43,9 +43,9 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
 import java.util.Set;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.ModelElement;
 import org.netbeans.modules.javascript2.editor.model.Variable;
 import org.netbeans.modules.javascript2.editor.model.VariableScope;
@@ -57,8 +57,8 @@ import org.openide.filesystems.FileObject;
  */
 public class VariableScopeImpl extends ScopeImpl implements VariableScope {
 
-    public VariableScopeImpl(ModelElement in, ElementKind elementKind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        super(in, elementKind, fileObject, name, offsetRange, modifiers);
+    public VariableScopeImpl(ModelElement in, JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
+        super(in, kind, fileObject, name, offsetRange, modifiers);
     }
 
     @Override

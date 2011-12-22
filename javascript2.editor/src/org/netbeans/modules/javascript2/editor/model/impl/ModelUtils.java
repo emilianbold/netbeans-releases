@@ -41,64 +41,72 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.ObjectNode;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.javascript2.editor.model.FileScope;
+import org.netbeans.modules.javascript2.editor.model.FunctionScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.Scope;
-
+import org.netbeans.modules.javascript2.editor.model.ModelElement;
 
 /**
  *
  * @author Petr Pisl
  */
-public final class ModelElementFactory {
-    
-    private ModelElementFactory() {
-        
-    }
-    
-    static FunctionScopeImpl create(final FunctionNode function, final ModelBuilder context) {
-        final Scope currentScope = context.getCurrentScope();
-        FunctionScopeImpl result = new FunctionScopeImpl(currentScope, function);
+public class ModelUtils {
+
+    public static FileScopeImpl getFileScope(ModelElement element) {
+        FileScopeImpl result = null;
+
+        while (element != null && !(element instanceof FileScope)) {
+            element = element.getInElement();
+        }
+
+        if (element != null && element instanceof FileScope) {
+            result = (FileScopeImpl) element;
+        }
         return result;
     }
     
-    static FunctionScopeImpl create(final FunctionNode function, List<Identifier> name, final ModelBuilder context) {
-        assert name != null;
-        final Scope currentScope = context.getCurrentScope();
-        JsElement.Kind functionType = getFunctionType(function);
-        FunctionScopeImpl result = new FunctionScopeImpl(currentScope, name, function, functionType);
-        FileScopeImpl fileScope = ModelUtils.getFileScope(currentScope);
-        fileScope.addMethod(result);
-        return result;
-    }
-    
-    /**
-     * It decide, whether the function can be a constructor according this algorithm.
-     *    1. If there are defined method inside.
-     * 
-     * @param function
-     * @return true if the function should be treated as constructor
-     */
-    private static  JsElement.Kind getFunctionType(FunctionNode function) {
-        JsElement.Kind type = JsElement.Kind.FUNCTION;
-        if (function.getFunctions().size() > 0) {
-            type = JsElement.Kind.CONSTRUCTOR;
-        } else {
-            if (function.getIdent().getStart() == function.getIdent().getFinish()) {
-                type = JsElement.Kind.METHOD;
+    public static String getNameWithoutPrototype(List<Identifier> fqName) {
+        StringBuilder name = new StringBuilder();
+        int size = fqName.size();
+        String part;
+        for(int i = 0; i < size; i++) {
+            part = fqName.get(i).getName();
+            if ("prototype".equals(part)) {   //NOI18N
+                break;
+            }
+            name.append(part);
+            if (i < (size - 1) && !("prototype".equals(fqName.get(i+1).getName()))) {
+               name.append(".");                //NOI18N
             }
         }
-        return type;
+        return name.toString();
     }
     
-    static ObjectScopeImpl create(final ObjectNode object, List<Identifier> fqName, final ModelBuilder context) {
-        final Scope currentScope = context.getCurrentScope();
-        ObjectScopeImpl result = new ObjectScopeImpl(currentScope, object, fqName);
-        return result;
+    public static String getPartName(List<Identifier> fqName, int parts) {
+        StringBuilder name = new StringBuilder();
+        int size = fqName.size();
+        String part;
+        for(int i = 0; i < size && i < parts; i++) {
+            part = fqName.get(i).getName();
+            name.append(part);
+            if (i < (size - 1) && i < (parts - 1)) {
+               name.append(".");                //NOI18N
+            }
+        }
+        return name.toString();
+    }
+    
+    public static String getObjectName(FunctionScope function) {
+        String name = null;
+        int size = function.getFQDeclarationName().size();
+        if(size > 1) {
+            if ("prototype".equals(function.getFQDeclarationName().get(size - 2).getName())) {
+                name = getNameWithoutPrototype(function.getFQDeclarationName());
+            } else {
+                name = getPartName(function.getFQDeclarationName(), size - 1);
+            }
+        }
+        return name;
     }
 }

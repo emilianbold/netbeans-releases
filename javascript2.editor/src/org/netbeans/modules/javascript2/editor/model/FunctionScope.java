@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import java.util.List;
+
 /**
  *
  * @author Petr Pisl
  */
-public interface FunctionScope extends VariableScope {
+public interface FunctionScope extends VariableScope, FullQualifiedName {
     public Identifier getDeclarationName();
 }

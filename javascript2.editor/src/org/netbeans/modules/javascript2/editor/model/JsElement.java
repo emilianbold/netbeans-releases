@@ -48,5 +48,16 @@ import org.netbeans.modules.csl.api.ElementHandle;
  * @author Petr Pisl
  */
 public interface JsElement extends ElementHandle {
+    public enum Kind {
+        FUNCTION,
+        METHOD,
+        CONSTRUCTOR,
+        OBJECT, 
+        PROPERTY, 
+        VARIABLE, 
+        FILE
+    }
+    
     int getOffset();
+    Kind getJSKind();
 }
