@@ -168,13 +168,7 @@ public final class DefaultProcessor extends OptionProcessor {
     @Override
     protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
         try {
-            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-            if (l == null) {
-                l = Thread.currentThread().getContextClassLoader();
-            }
-            if (l == null) {
-                l = DefaultProcessor.class.getClassLoader();
-            }
+            ClassLoader l = findClassLoader();
             Class<?> realClazz = Class.forName(clazz, true, l);
             Object instance = realClazz.newInstance();
             Map<Option,Field> map = processFields(realClazz, options);
@@ -201,12 +195,35 @@ public final class DefaultProcessor extends OptionProcessor {
                         f.set(instance, entry.getValue()); break;
                 }
             }
+            if (instance instanceof Runnable) {
+                ((Runnable)instance).run();
+            }
             if (instance instanceof ProcessArgs) {
                 ((ProcessArgs)instance).process(env);
             }
         } catch (Exception exception) {
             throw (CommandException)new CommandException(10, exception.getLocalizedMessage()).initCause(exception);
         }
+    }
+
+    private static ClassLoader findClassLoader() {
+        ClassLoader l = null;
+        try {
+            l = findClassLoaderFromLookup();
+        } catch (LinkageError ex) {
+            // OK, lookup is not on classpath
+        }
+        if (l == null) {
+            l = Thread.currentThread().getContextClassLoader();
+        }
+        if (l == null) {
+            l = DefaultProcessor.class.getClassLoader();
+        }
+        return l;
+    }
+
+    private static ClassLoader findClassLoaderFromLookup() {
+        return Lookup.getDefault().lookup(ClassLoader.class);
     }
     
     private static Map<Option,Field> processFields(Class<?> type, Set<Option> options) {

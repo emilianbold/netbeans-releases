@@ -51,8 +51,9 @@ import java.lang.annotation.Target;
  * or long name. Usually used together with {@link Description} which provides
  * human readable explantation of the option's behavior. The field should be
  * public and the class should have public default constructor. It is suggested
- * the class implements {@link ProcessArgs}. Following 
- * line defines an option without any arguments: 
+ * the class implements {@link ProcessArgs} or at least {@link Runnable} - its
+ * methods will be called after successful assignment of argument fields. 
+ * Following line defines an option without any arguments: 
  * <pre>
  * {@code @}{@link Arg}(shortName='p', longName="") public boolean usedWithO;
  * </pre>
