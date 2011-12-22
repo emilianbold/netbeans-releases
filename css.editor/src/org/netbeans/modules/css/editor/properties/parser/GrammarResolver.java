@@ -46,10 +46,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.properties.Acceptors;
-import org.netbeans.modules.css.editor.properties.CssPropertyValueAcceptor;
-import org.netbeans.modules.css.editor.properties.KeywordUtil;
 import static org.netbeans.modules.css.editor.properties.parser.GrammarResolver.Log.*;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
 
 /**
@@ -92,30 +90,37 @@ public class GrammarResolver {
     private static boolean LOG = false;
     private static final Logger LOGGER = Logger.getLogger(GrammarResolver.class.getName());
 
-    public static GrammarResolver resolve(GroupGrammarElement grammar, String input) {
-        return new GrammarResolver(grammar, input).initialize();
+    public static GrammarResolver resolve(GroupGrammarElement grammar, CharSequence input) {
+        return new GrammarResolver(grammar, input);
     }
     private List<ResolvedToken> resolvedTokens = new ArrayList<ResolvedToken>();
-    private Stack<String> tokensLeft = new Stack<String>();
-    private Stack<String> tokens = new Stack<String>();
-    private GroupGrammarElement grammar;
-    private String input;
+    private Tokenizer tokenizer;
     private boolean inputResolved;
 
-    public GrammarResolver(GroupGrammarElement grammar, String input) {
-        this.grammar = grammar;
-        this.input = input;
-    }
+    private GrammarResolver(GroupGrammarElement grammar, CharSequence input) {
+        tokenizer = new Tokenizer(input);
+        
+        groupMemberResolved(grammar, grammar, createInputState(), true);
 
-    public List<String> tokens() {
-        return tokens;
+        inputResolved = resolve(grammar);
+
+        if (tokenizer.moveNext()) {
+            //the main element resolved, but something left in the input -- fail
+            inputResolved = false;
+        }
+
+        resolvingFinished();
     }
 
     /**
      * returns a list of value items not parsed
      */
-    public List<String> left() {
-        return tokensLeft;
+    public List<Token> left() {
+        return tokenizer.tokensList().subList(tokenizer.tokenIndex(), tokenizer.tokensCount());
+    }
+    
+    public List<Token> tokens() {
+        return tokenizer.tokensList();
     }
 
     public List<ResolvedToken> resolved() {
@@ -124,24 +129,6 @@ public class GrammarResolver {
 
     public boolean success() {
         return inputResolved;
-    }
-
-    private GrammarResolver initialize() {
-        tokens = Tokenizer.tokenize(input);
-        tokensLeft = (Stack<String>) tokens.clone();
-
-        groupMemberResolved(grammar, grammar, createInputState(), true);
-
-        inputResolved = resolve(grammar);
-
-        if (!tokensLeft.isEmpty()) {
-            //the main element resolved, but something left in the input -- fail
-            inputResolved = false;
-        }
-
-        resolvingFinished();
-
-        return this;
     }
 
     private void resolvingFinished() {
@@ -169,11 +156,11 @@ public class GrammarResolver {
     }
 
     private InputState createInputState() {
-        return new InputState(tokensLeft, resolvedTokens);
+        return new InputState();
     }
 
     private boolean equalsToCurrentState(InputState state) {
-        return tokensLeft.equals(state.input) && resolvedTokens.equals(state.consumed);
+        return tokenizer.tokenIndex() == state.tokenIndex && resolvedTokens.equals(state.consumed);
     }
 
     private void backupInputState(InputState state) {
@@ -182,7 +169,7 @@ public class GrammarResolver {
             return;
         }
 
-        tokensLeft = (Stack<String>) state.input.clone();
+        tokenizer.move(state.tokenIndex);
         resolvedTokens = new ArrayList<ResolvedToken>(state.consumed);
 
         if (LOG) {
@@ -220,7 +207,7 @@ public class GrammarResolver {
     private GrammarElement lastResolved;
 
     private void valueNotAccepted(ValueGrammarElement valueGrammarElement) {
-        if (resolvedTokens.size() < tokens.size()) {
+        if (resolvedTokens.size() < tokenizer.tokensCount()) {
             //ignore such alternatives, we need to find alts after all input tokens are resolved
             return;
         }
@@ -234,7 +221,7 @@ public class GrammarResolver {
     }
 
     private void groupMemberResolved(GrammarElement member, GroupGrammarElement group, InputState state, boolean root) {
-        if (!root && (state.consumed.size() < tokens.size())) {
+        if (!root && (state.consumed.size() < tokenizer.tokensCount())) {
             //ignore such alternatives, we need to find alts after all input tokens are resolved
             return;
         }
@@ -522,7 +509,6 @@ public class GrammarResolver {
 
         } //multiplicity loop
 
-
         if (successState == null) {
             //nothing from the group resolved, backup the input before leaving
             backupInputState(enteringGroupState);
@@ -538,15 +524,15 @@ public class GrammarResolver {
     }
 
     private boolean processValue(ValueGrammarElement ve) {
-        if (tokensLeft.isEmpty()) {
-            return false;
+        if(!tokenizer.moveNext()) {
+            return false; //eof
         }
-
-        String token = tokensLeft.peek();
-
-        if (ve.isUnit() && !KeywordUtil.isKeyword(token)) {
+        
+        Token token = tokenizer.token();
+        CharSequence tokenImg = token.image();
+        if (ve.isUnit()) {
             String unitName = ve.value();
-            CssPropertyValueAcceptor acceptor = Acceptors.instance().getAcceptor(unitName);
+            TokenAcceptor acceptor = TokenAcceptor.getAcceptor(unitName);
             if (acceptor != null) {
                 if (acceptor.accepts(token)) {
                     //consumed
@@ -561,7 +547,7 @@ public class GrammarResolver {
                 LOGGER.log(Level.WARNING, String.format("Cannot find unit acceptor '%s'!", ve.value())); //NOI18N
             }
 
-        } else if (token.equalsIgnoreCase(ve.value())) {
+        } else if (LexerUtils.equals(tokenImg, ve.value(), true, false)) {
             //consumed
             consumeValueGrammarElement(token, ve);
             if (LOG) {
@@ -569,14 +555,16 @@ public class GrammarResolver {
             }
             return true;
         }
-
+        
+        //backup the read token
+        tokenizer.movePrevious();
+        
         return false;
 
     }
 
-    private void consumeValueGrammarElement(String tokenImage, ValueGrammarElement element) {
-        tokensLeft.pop();
-        resolvedTokens.add(new ResolvedToken(tokenImage, element));
+    private void consumeValueGrammarElement(Token token, ValueGrammarElement element) {
+        resolvedTokens.add(new ResolvedToken(token, element));
     }
 
     private void log(String text) {
@@ -589,14 +577,14 @@ public class GrammarResolver {
         }
     }
 
-    private static class InputState {
+    private class InputState {
 
-        private final Stack<String> input;
-        private List<ResolvedToken> consumed;
+        private int tokenIndex;
+        private final List<ResolvedToken> consumed;
 
-        public InputState(Stack<String> input, List<ResolvedToken> consumed) {
-            this.input = (Stack<String>) input.clone();
-            this.consumed = new ArrayList<ResolvedToken>(consumed);
+        public InputState() {
+            this.tokenIndex = tokenizer.tokenIndex();
+            this.consumed = new ArrayList<ResolvedToken>(GrammarResolver.this.resolvedTokens);
         }
 
         @Override
@@ -616,6 +604,7 @@ public class GrammarResolver {
             sb.append(' ');
 
             //unresolved part
+            List<Token> input = tokenizer.tokensList();
             for (int i = input.size() - 1; i >= 0; i--) {
                 sb.append(input.get(i));
                 if (i > 0) {
@@ -634,7 +623,7 @@ public class GrammarResolver {
                 return false;
             }
             final InputState other = (InputState) obj;
-            if (this.input != other.input && (this.input == null || !this.input.equals(other.input))) {
+            if (this.tokenIndex != other.tokenIndex) {
                 return false;
             }
             if (this.consumed != other.consumed && (this.consumed == null || !this.consumed.equals(other.consumed))) {
@@ -646,7 +635,7 @@ public class GrammarResolver {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 79 * hash + (this.input != null ? this.input.hashCode() : 0);
+            hash = 79 * hash + this.tokenIndex;
             hash = 79 * hash + (this.consumed != null ? this.consumed.hashCode() : 0);
             return hash;
         }

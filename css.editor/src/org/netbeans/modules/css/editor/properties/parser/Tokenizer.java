@@ -41,105 +41,97 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
-import java.util.Stack;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 
 /**
+ * TODO possibly expose the lexer's token instead of the wrappers
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class Tokenizer {
+public final class Tokenizer {
     
-    public static Stack<String> tokenize(String input) {
-        //this semi-lexer started as three lines code and evolved to this
-        //ugly beast. Should be recoded to normal state lexing.
-        Stack<String> stack = new Stack<String>();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i
-                < input.length(); i++) {
-            char c = input.charAt(i);
-
-            if (c == '\'' || c == '"') {
-                //quoted values needs to be one token
-                sb.append(c); //add the quotation mark into the value
-                for (i++; i
-                        < input.length(); i++) {
-                    c = input.charAt(i);
-
-                    if (c == '\'' || c == '"') {
-                        break;
-                    } else {
-                        sb.append(c);
-                    }
-
-                }
-                sb.append(c); //add the quotation mark into the value
-                stack.add(0, sb.toString());
-                sb =
-                        new StringBuilder();
-
-            } else if (sb.toString().equalsIgnoreCase("url") && c == '(') { //NOI18N 
-                //store separate tokens: URL + ( + ..... + )
-                stack.add(0, sb.toString());
-                stack.add(0, "" + c); //NOI18N
-
-                sb = new StringBuilder();
-                //make one token until ) found
-                for (i++; i
-                        < input.length(); i++) {
-                    c = input.charAt(i);
-
-                    if (c == ')') {
-                        break;
-                    } else {
-                        sb.append(c);
-                    }
-
-                }
-
-                stack.add(0, sb.toString());
-                stack.add(0, "" + c); //add the quotation mark into the value  //NOI18N
-                sb = new StringBuilder();
-
-            } else if (c == ' ' || c == '\t' || c == '\n') {
-                if (sb.length() > 0) {
-                    stack.add(0, sb.toString());
-                    sb =
-                            new StringBuilder();
-                }
-//skip other potential whitespaces
-                for (; i
-                        < input.length(); i++) {
-                    c = input.charAt(i);
-                    if (c != ' ' || c != '\t') {
-                        break;
-                    }
-
-                }
-
-            } else {
-                //handling of chars which are both delimiters and values
-                if (c == ',' || c == '/' || c == '(' || c == ')') {
-                    if (sb.length() > 0) {
-                        stack.add(0, sb.toString());
-                    }
-
-                    stack.add(0, "" + c); //NOI18N
-
-                    sb =
-                            new StringBuilder();
-                } else {
-                    sb.append(c);
-                }
-
-            }
+    private CharSequence input;
+    private List<Token> tokens;
+    private int currentToken;
+    
+    private Tokenizer(List<Token> tokens, CharSequence input) {
+        this.tokens = tokens;
+        this.input = input;        
+    }
+    
+    public Tokenizer(CharSequence input) {
+        this(tokenize(input), input);
+        reset();
+    }
+    
+    public List<Token> tokensList() {
+        return tokens;
+    }
+    
+    public int tokenIndex() {
+        return currentToken;
+    }
+    
+    public int tokensCount() {
+        return tokens.size();
+    }
+    
+    public void move(int tokenIndex) {
+        currentToken = tokenIndex;
+    }
+    
+    public void reset() {
+        currentToken = -1;
+    }
+    
+    public Token token() {
+        if(currentToken == -1) {
+            currentToken = 0; //position at the beginning
         }
-
-        //value before eof
-        if (sb.length() > 0) {
-            stack.add(0, sb.toString());
+        if(currentToken >= tokens.size()) {
+            return null;
         }
         
-        return stack;
-
+        return tokens.get(currentToken);
     }
+    
+    public boolean moveNext() {
+        if(currentToken < tokens.size() - 1) {
+            currentToken++;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean movePrevious() {
+        if(currentToken >= 0) {
+            currentToken--;
+            return currentToken != -1;
+        } else {
+            return false;
+        }
+    }
+
+    private static List<Token> tokenize(CharSequence input) {
+        List<Token> stack = new LinkedList<Token>();
+        TokenHierarchy<CharSequence> th = TokenHierarchy.create(input, CssTokenId.language());
+        TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
+        ts.moveStart();
+        while(ts.moveNext()) {
+            org.netbeans.api.lexer.Token<CssTokenId> t = ts.token();
+            switch(t.id()) {
+                case WS:
+                case NL:
+                    continue; //ignore WS
+            }
+            stack.add(new Token(t.id(), ts.offset(), t.length(), input));
+        }
+        return stack;
+    }
+    
 }

@@ -70,4 +70,4 @@ public class GrammarParserTest extends CssModuleTestBase {
         assertEquals(GroupGrammarElement.Type.ALL, e.getType());
     }
     
-}
+    }

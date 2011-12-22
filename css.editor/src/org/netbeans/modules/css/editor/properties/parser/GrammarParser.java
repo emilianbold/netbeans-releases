@@ -46,8 +46,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.properties.Acceptors;
-import org.netbeans.modules.css.editor.properties.CssPropertyValueAcceptor;
 
 /**
  * @author mfukala@netbeans.org
@@ -190,7 +188,7 @@ public class GrammarParser {
                         }
                     }
                     String unitName = buf.toString();
-                    CssPropertyValueAcceptor acceptor = Acceptors.instance().getAcceptor(unitName);
+                    TokenAcceptor acceptor = TokenAcceptor.getAcceptor(unitName);
                     if(acceptor == null) {
                         throw new IllegalStateException(
                                 String.format("Property '%s' parsing error - No unit property value acceptor for '%s'. "

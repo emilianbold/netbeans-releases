@@ -49,9 +49,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.editor.properties.parser.Token;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -127,14 +127,11 @@ public class CssAnalyser {
                                 PropertyValue pv = new PropertyValue(property, valueImage);
                                 if (!pv.isResolved()) {
                                     String errorMsg = null;
-                                    if (pv instanceof CustomErrorMessageProvider) {
-                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
-                                    }
 
                                     //error in property 
-                                    String unexpectedToken = pv.getUnresolvedTokens().get(pv.getUnresolvedTokens().size() - 1);
+                                    Token unexpectedToken = pv.getUnresolvedTokens().get(pv.getUnresolvedTokens().size() - 1);
 
-                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
+                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
                                         return false;
                                     }
 

@@ -41,24 +41,28 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
- * the object is in fact immutable since the setMinimum/MaximumOccurrences is called only just after its creation.
+ * the object is in fact immutable since the setMinimum/MaximumOccurrences is
+ * called only just after its creation.
  */
 /**
  *
  * @author mfukala@netbeans.org
  */
 public abstract class GrammarElement {
-    
+
     private GroupGrammarElement parent;
     private String path;
 
     public GrammarElement(GroupGrammarElement parent) {
         this.parent = parent;
     }
-    
+
     public abstract GrammarElementKind getKind();
-    
     private int minimum_occurances = 1;
     private int maximum_occurances = 1;
 
@@ -77,7 +81,7 @@ public abstract class GrammarElement {
     public int getMinimumOccurances() {
         return minimum_occurances;
     }
-    
+
     public boolean isOptional() {
         return getMinimumOccurances() == 0;
     }
@@ -100,15 +104,17 @@ public abstract class GrammarElement {
         return path().hashCode();
     }
 
-    /** returns a name of the property from which this element comes from */
+    /**
+     * returns a name of the property from which this element comes from
+     */
     public String origin() {
         return origin(true);
     }
-    
+
     public String getVisibleOrigin() {
         return origin(false);
     }
-    
+
     private String origin(boolean allowNonVisibleElements) {
         GroupGrammarElement p = parent;
         while (p != null) {
@@ -123,7 +129,6 @@ public abstract class GrammarElement {
         return null;
     }
 
-
     public synchronized String path() {
         if (path == null) {
             StringBuilder sb = new StringBuilder();
@@ -135,6 +140,17 @@ public abstract class GrammarElement {
             path = sb.toString();
         }
         return path;
+    }
+
+    public List<GrammarElement> elementsPath() {
+        List<GrammarElement> elementsPath = new LinkedList<GrammarElement>();
+
+        GrammarElement element = this;
+        do {
+            elementsPath.add(0, element);
+        } while((element = element.parent()) != null);
+
+        return elementsPath;
     }
 
     @Override
@@ -157,5 +173,4 @@ public abstract class GrammarElement {
         }
         return sb.toString();
     }
-    
 }

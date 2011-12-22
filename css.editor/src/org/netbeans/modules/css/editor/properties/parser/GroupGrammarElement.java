@@ -132,6 +132,10 @@ public class GroupGrammarElement extends GrammarElement {
         }
         return all;
     }
+    
+    public String getName() {
+        return referenceName;
+    }
 
     @Override
     public String toString2(int level) {

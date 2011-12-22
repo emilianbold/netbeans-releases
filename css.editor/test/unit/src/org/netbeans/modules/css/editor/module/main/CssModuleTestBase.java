@@ -62,7 +62,6 @@ import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.properties.parser.*;
-import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -132,15 +131,17 @@ public class CssModuleTestBase extends CslTestBase {
     }
 
     protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {
-        if (PRINT_INFO_IN_ASSERT_RESOLVE) {
-            System.out.println("Grammar:");
-            System.out.println(tree.toString2(0));
-        }
 
         long a = System.currentTimeMillis();
         PropertyValue pv = new PropertyValue(tree, inputText);
         long c = System.currentTimeMillis();
 
+        if (PRINT_INFO_IN_ASSERT_RESOLVE) {
+            System.out.println("Tokens:");
+            System.out.println(dumpList(pv.getTokens()));
+            System.out.println("Grammar:");
+            System.out.println(tree.toString2(0));
+        }
         if (PRINT_GRAMMAR_RESOLVE_TIMES) {
             System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
         }
@@ -185,7 +186,8 @@ public class CssModuleTestBase extends CslTestBase {
     private Collection<String> convert(Set<ValueGrammarElement> toto) {
         Collection<String> x = new HashSet<String>();
         for (ValueGrammarElement e : toto) {
-            x.add(e.toString());
+            String strVal = (e.isUnit() ? "!" : "") + e.value();
+            x.add(strVal);
         }
         return x;
     }
@@ -198,6 +200,20 @@ public class CssModuleTestBase extends CslTestBase {
             sb.append('"');
             if (i.hasNext()) {
                 sb.append(',');
+            }
+        }
+        return sb.toString();
+    }
+
+    protected String dumpList(Collection<?> col) {
+        StringBuilder sb = new StringBuilder();
+        for (Iterator<?> itr = col.iterator(); itr.hasNext();) {
+            sb.append('"');
+            sb.append(itr.next());
+            sb.append('"');
+            if (itr.hasNext()) {
+                sb.append(',');
+                sb.append(' ');
             }
         }
         return sb.toString();

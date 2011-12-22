@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
+ * General Public License Version 2 only (getToken("GPL") or the Common
+ * Development and Distribution License(getToken("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,31 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.properties.parser;
 
-package org.netbeans.modules.css.editor.properties;
-
-import java.util.Arrays;
-import java.util.List;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class Angle extends NumberPostfixAcceptor {
-
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"deg", "rad", "grad", "turn"}); //NOI18N
+public class TokenAcceptorsTest extends NbTestCase {
     
-    public String id() {
-        return "angle"; //NOI18N
+    public TokenAcceptorsTest(String name) {
+        super(name);
+    }
+    
+    public void testBasic() {
+        TokenAcceptor ta = TokenAcceptor.getAcceptor("length");
+        assertNotNull(ta);
     }
 
-    public List<String> postfixes() {
-        return POSTFIXES;
+    public void testAccepts() {
+        TokenAcceptor ta = TokenAcceptor.getAcceptor("identifier");
+        assertTrue(ta.accepts(getToken("hello")));
+        assertTrue(ta.accepts(getToken("_hello")));
+        assertTrue(ta.accepts(getToken("hel_lo")));
+        assertTrue(ta.accepts(getToken("-hello")));
+        assertTrue(ta.accepts(getToken("hel-lo")));
+        assertTrue(ta.accepts(getToken("hello23")));
+        assertTrue(ta.accepts(getToken("\u0080hello")));
+        assertTrue(ta.accepts(getToken("hel\u0090o")));
+        assertTrue(ta.accepts(getToken("hel\\uffbbo")));
+        assertTrue(ta.accepts(getToken("hel\\no")));
+        
+        assertFalse(ta.accepts(getToken("0hello")));
+        
+    }
+    
+    private Token getToken(String tokenImg) {
+        Tokenizer t = new Tokenizer(tokenImg);
+        return t.token();
     }
     
 }
