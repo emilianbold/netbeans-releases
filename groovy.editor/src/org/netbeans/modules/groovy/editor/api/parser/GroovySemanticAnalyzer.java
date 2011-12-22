@@ -57,7 +57,6 @@ import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.SemanticAnalysisVisitor;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
@@ -65,8 +64,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  * 
  * @author MArtin Adamek
  */
-// FIXME parsing API - use type parameter
-public class GroovySemanticAnalyzer extends SemanticAnalyzer {
+public class GroovySemanticAnalyzer extends SemanticAnalyzer<GroovyParserResult> {
 
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -75,6 +73,7 @@ public class GroovySemanticAnalyzer extends SemanticAnalyzer {
         
     }
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
@@ -87,6 +86,7 @@ public class GroovySemanticAnalyzer extends SemanticAnalyzer {
         cancelled = false;
     }
 
+    @Override
     public final synchronized void cancel() {
         cancelled = true;
     }
@@ -103,20 +103,14 @@ public class GroovySemanticAnalyzer extends SemanticAnalyzer {
 
 
     @Override
-    public void run(Result result, SchedulerEvent event) {
-        
+    public void run(GroovyParserResult result, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {
             return;
         }
 
-        GroovyParserResult parserResult = AstUtilities.getParseResult(result);
-        if (parserResult == null) {
-            return;
-        }
-
-        ASTNode root = AstUtilities.getRoot(parserResult);
+        ASTNode root = AstUtilities.getRoot(result);
 
         if (root == null) {
             return;
@@ -128,7 +122,7 @@ public class GroovySemanticAnalyzer extends SemanticAnalyzer {
         AstPath path = new AstPath();
         path.descend(root);
 
-        BaseDocument doc = LexUtilities.getDocument(parserResult.getSnapshot().getSource(), false);
+        BaseDocument doc = LexUtilities.getDocument(result.getSnapshot().getSource(), false);
         if (doc == null) {
             return;
         }
@@ -147,7 +141,7 @@ public class GroovySemanticAnalyzer extends SemanticAnalyzer {
             //if (parserResult.getTranslatedSource() != null) {
                 Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange,Set<ColoringAttributes>>(2*highlights.size());
                 for (Map.Entry<OffsetRange,Set<ColoringAttributes>> entry : highlights.entrySet()) {
-                    OffsetRange range = LexUtilities.getLexerOffsets(parserResult, entry.getKey());
+                    OffsetRange range = LexUtilities.getLexerOffsets(result, entry.getKey());
                     if (range != OffsetRange.NONE) {
                         translated.put(range, entry.getValue());
                     }
