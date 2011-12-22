@@ -101,6 +101,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
+import org.netbeans.modules.web.common.reload.BrowserReload;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -340,6 +341,7 @@ class WebActionProvider extends BaseActionProvider {
                 if (requestParams != null) {
                     p.setProperty("client.urlPart", requestParams); //NOI18N
                     p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+                    initPropertiesFile(files[0], p);
                     return targetNames;
                 } else {
                     return null;
@@ -358,6 +360,7 @@ class WebActionProvider extends BaseActionProvider {
                     if (requestParams != null) {
                         p.setProperty("client.urlPart", requestParams); //NOI18N
                         p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes"); // NOI18N
+                        initPropertiesFile(files[0], p);
                         return targetNames;
                     } else {
                         return null;
@@ -401,6 +404,21 @@ class WebActionProvider extends BaseActionProvider {
             }
         }
         return super.getTargetNames(command, context, p, doJavaChecks);
+    }
+    
+    private void initPropertiesFile( FileObject context , Properties properties){
+        /*
+         * TODO : asks initialization of BrowserReload only if automatic reload 
+         * option is set in NB preferences
+         */
+        BrowserReload.getInstance();
+        File file = FileUtil.toFile( context );
+        try {
+           properties.put( "browser.file", file.getCanonicalPath() );   // NOI18N
+        }
+        catch (IOException e ){
+            Exceptions.printStackTrace(e);
+        }
     }
 
     private void initWebServiceProperties(Properties p) {
@@ -576,6 +594,7 @@ class WebActionProvider extends BaseActionProvider {
             return runEmptyMapping(javaFile);
         }
         p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+        initPropertiesFile(javaFile, p);
         targetNames.add("run"); // NOI18N
         return true;
     }
