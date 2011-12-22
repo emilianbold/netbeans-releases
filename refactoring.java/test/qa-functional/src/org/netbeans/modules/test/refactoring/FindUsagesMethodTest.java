@@ -89,6 +89,9 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(6, 19);
+        new EventTool().waitNoEvent(500);
+        editor.select(6, 19, 20);
+        new EventTool().waitNoEvent(1000);
         new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = null;
@@ -109,6 +112,9 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(10, 22);
+        new EventTool().waitNoEvent(500);
+        editor.select(10, 22, 23);
+        new EventTool().waitNoEvent(1000);
         new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = null;
@@ -138,6 +144,9 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         openSourceFile("fumethod", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(14, 28);
+        new EventTool().waitNoEvent(500);
+        editor.select(14, 28, 29);
+        new EventTool().waitNoEvent(1000);
         new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = null;
