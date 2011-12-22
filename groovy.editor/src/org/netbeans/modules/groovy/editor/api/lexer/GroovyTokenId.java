@@ -47,6 +47,7 @@ package org.netbeans.modules.groovy.editor.api.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
@@ -318,6 +319,7 @@ public enum GroovyTokenId implements TokenId {
      */
     public static final String GROOVY_MIME_TYPE = "text/x-groovy"; // NOI18N
 
+    private static final Language<GroovyTokenId> language = new GroovyLanguageHierachy().language();
     private final String primaryCategory;
     private final String fixedText;
 
@@ -326,6 +328,7 @@ public enum GroovyTokenId implements TokenId {
         this.fixedText = fixedText;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
@@ -334,31 +337,46 @@ public enum GroovyTokenId implements TokenId {
         return fixedText;
     }
 
-    private static final Language<GroovyTokenId> language =
-        new LanguageHierarchy<GroovyTokenId>() {
-
-            protected String mimeType() {
-                return GroovyTokenId.GROOVY_MIME_TYPE;
-            }
-
-            protected Collection<GroovyTokenId> createTokenIds() {
-                return EnumSet.allOf(GroovyTokenId.class);
-            }
-
-            @Override
-            protected Map<String, Collection<GroovyTokenId>> createTokenCategories() {
-                Map<String, Collection<GroovyTokenId>> cats = new HashMap<String, Collection<GroovyTokenId>>();
-                return cats;
-            }
-
-            protected Lexer<GroovyTokenId> createLexer(LexerRestartInfo<GroovyTokenId> info) {
-                return new GroovyLexer(info);
-            }
-
-        }.language();
 
     public static Language<GroovyTokenId> language() {
         return language;
     }
 
+    private static class GroovyLanguageHierachy extends LanguageHierarchy<GroovyTokenId> {
+        
+        @Override
+        protected String mimeType() {
+            return GroovyTokenId.GROOVY_MIME_TYPE;
+        }
+
+        @Override
+        protected Collection<GroovyTokenId> createTokenIds() {
+            return EnumSet.allOf(GroovyTokenId.class);
+        }
+
+        @Override
+        protected Map<String, Collection<GroovyTokenId>> createTokenCategories() {
+            Map<String, Collection<GroovyTokenId>> categories = new HashMap<String, Collection<GroovyTokenId>>();
+
+            for (GroovyTokenId tokenId : GroovyTokenId.values()) {
+                String category = tokenId.primaryCategory();
+                Collection<GroovyTokenId> categoryItems = categories.get(category);
+
+                // Collection for this category has not been created yet
+                if (categoryItems == null) {
+                    categoryItems = new HashSet<GroovyTokenId>();
+                    categories.put(category, categoryItems);
+                }
+
+                // Put token into right category
+                categoryItems.add(tokenId);
+            }
+            return categories;
+        }
+
+        @Override
+        protected Lexer<GroovyTokenId> createLexer(LexerRestartInfo<GroovyTokenId> info) {
+            return new GroovyLexer(info);
+        }
+    }
 }
