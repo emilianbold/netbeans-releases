@@ -57,6 +57,7 @@ public class PropertyValue {
     private GroupGrammarElement groupGrammarElement;
     private GrammarResolver grammarResolver;
     private static final Pattern FILTER_COMMENTS_PATTERN = Pattern.compile("/\\*.*?\\*/");//NOI18N
+    private Node simpleParseTree, fullParseTree;
 
     public PropertyValue(PropertyModel property, String value) {
         this(property.getGrammar(), property.getPropertyName(), filterComments(value));
@@ -81,20 +82,34 @@ public class PropertyValue {
         return groupGrammarElement;
     }
     
-    public List<String> getTokens() {
-        return grammarResolver.tokens();
-    }
-    
     public String getValue() {
         return value;
     }
 
-    public List<String> getUnresolvedTokens() {
+    public List<Token> getTokens() {
+        return grammarResolver.tokens();
+    }
+    
+    public List<Token> getUnresolvedTokens() {
         return grammarResolver.left();
     }
 
     public List<ResolvedToken> getResolvedTokens() {
         return grammarResolver.resolved();
+    }
+    
+    public synchronized Node getFullParseTree() {
+        if(fullParseTree == null) {
+            fullParseTree = generateParseTree(true);
+        }
+        return fullParseTree;
+    }
+    
+    public Node getSimpleParseTree() {
+        if(simpleParseTree == null) {
+            simpleParseTree = generateParseTree(false);
+        }
+        return simpleParseTree;
     }
 
     public boolean isResolved() {
@@ -124,6 +139,38 @@ public class PropertyValue {
             }
         }
         return b.toString();
+    }
+
+    /**
+     * 
+     * @param fullParseTree - if true then the parse tree contains also the anonymous
+     * group nodes. If false the parse tree contains only named nodes (references)
+     * 
+     */
+    private Node generateParseTree(boolean fullParseTree) {
+        Node.GroupNode root = new Node.GroupNode(getGroupGrammarElement());
+        
+        for(ResolvedToken token : getResolvedTokens()) {
+            Node.GroupNode current = root; //each path starts with the root element
+            List<GrammarElement> path = token.getGrammarElement().elementsPath();
+            //create group nodes for the elements excluding the root node and the value node itself
+            for(GrammarElement element : path.subList(1, path.size() - 1)) {
+                GroupGrammarElement groupElement = (GroupGrammarElement)element;
+                if(!fullParseTree) {
+                    if(groupElement.getName() == null) {
+                        //referred element == null so skip the anonymous element
+                        continue; 
+                    }
+                }
+                
+                Node.GroupNode newGroupNode = new Node.GroupNode(groupElement);
+                Node.GroupNode child = current.addChild(newGroupNode); //either returns the given node or an existing one equal to it.
+                current = child;
+            }
+            current.addChild(new Node.ResolvedTokenNode(token)); //add the leaf node for the resolved token itself
+        }
+        
+        return root;
     }
 
 }

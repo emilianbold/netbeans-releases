@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,33 +34,92 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.properties.parser;
 
-package org.netbeans.modules.css.editor.properties;
-
-import java.util.Arrays;
-import java.util.List;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class Resolution extends NumberPostfixAcceptor {
-
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"dpi", "dppx", "dpcm"}); //NOI18N
+public class Token {
+    
+    private int offset, length;
+    private CssTokenId tokenId;
+    private CharSequence tokenizerInput;
+    
+    Token(CssTokenId tokenId, int offset, int length, CharSequence tokenizerInput) {
+        this.tokenId = tokenId;
+        this.offset = offset;
+        this.length = length;
+        this.tokenizerInput = tokenizerInput;
+    }
+    
+    public CssTokenId tokenId() {
+        return tokenId;
+    }
+    
+    public int offset() {
+        return offset;
+    }
+    
+    public int length() {
+        return length;
+    }
+    
+    public CharSequence image() {
+        return tokenizerInput.subSequence(offset, offset + length);
+    }
     
     @Override
-    public String id() {
-        return "resolution"; //NOI18N
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(image());
+        sb.append('(');
+        sb.append(tokenId);
+        sb.append(';');
+        sb.append(offset());
+        sb.append('-');
+        sb.append(offset() + length());
+        sb.append(')');
+        return sb.toString();
     }
 
     @Override
-    public List<String> postfixes() {
-        return POSTFIXES;
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Token other = (Token) obj;
+        if (this.offset != other.offset) {
+            return false;
+        }
+        if (this.length != other.length) {
+            return false;
+        }
+        if (this.tokenId != other.tokenId) {
+            return false;
+        }
+        return true;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + this.offset;
+        hash = 89 * hash + this.length;
+        hash = 89 * hash + (this.tokenId != null ? this.tokenId.hashCode() : 0);
+        return hash;
+    }
+    
+    
     
 }

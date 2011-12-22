@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.css.editor.properties.parser;
 
+import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 
@@ -60,8 +63,6 @@ public class PropertyValueTest extends CssModuleTestBase {
 //        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
 //        PRINT_INFO_IN_ASSERT_RESOLVE = true;
     }
-    
-    
 
     public void testAlternativesComplicated1() {
         String grammar1 = "[ marek  jitka  [ [ ovecka | bubu ]? nee ] ] | [ marek jitka [ tobik | bibik ] ] ";
@@ -140,7 +141,7 @@ public class PropertyValueTest extends CssModuleTestBase {
         String text = "italic small-caps 30px";
 
         assertAlternatives(p.getGrammar(), text,
-                "fantasy","serif","!string","sans-serif","monospace","/","!identifier","cursive");
+                "fantasy", "serif", "!string", "sans-serif", "monospace", "/", "!identifier", "cursive");
 
     }
 
@@ -153,7 +154,7 @@ public class PropertyValueTest extends CssModuleTestBase {
 //    }
     public void testPaddingAlternatives() {
         PropertyModel p = CssModuleSupport.getPropertyModel("padding");
-        assertAlternatives(p.getGrammar(), "", "!percentage", "!length");
+        assertAlternatives(p.getGrammar(), "", "!percentage", "!length", "-");
 
     }
 
@@ -174,13 +175,13 @@ public class PropertyValueTest extends CssModuleTestBase {
 
     public void testFontThoroughly() {
         PropertyModel p = CssModuleSupport.getPropertyModel("font");
-        assertAlternatives(p.getGrammar(), "20px", 
-                "fantasy","serif","!string","sans-serif","monospace","/","!identifier","cursive");
+        assertAlternatives(p.getGrammar(), "20px",
+                "fantasy", "serif", "!string", "sans-serif", "monospace", "/", "!identifier", "cursive");
         assertAlternatives(p.getGrammar(), "20px /",
-                "initial","normal","none","!number","!length","!percentage");
+                "initial", "normal", "none", "!number", "!length", "!percentage", "-");
         assertAlternatives(p.getGrammar(), "20px / 5pt",
-                "fantasy","serif","!string","sans-serif","monospace","!identifier","cursive");
-        assertAlternatives(p.getGrammar(), "20px / 5pt cursive", 
+                "fantasy", "serif", "!string", "sans-serif", "monospace", "!identifier", "cursive");
+        assertAlternatives(p.getGrammar(), "20px / 5pt cursive",
                 ",");
     }
 
@@ -188,18 +189,18 @@ public class PropertyValueTest extends CssModuleTestBase {
         PropertyModel p = CssModuleSupport.getPropertyModel("font");
         assertAlternatives(p.getGrammar(), "italic",
                 "small-caps", "800", "normal", "lighter", "smaller", "600", "bold",
-                "700", "!length", "xx-small", "bolder", "100", "300", "!percentage",
+                "700", "!length", "-", "xx-small", "bolder", "100", "300", "!percentage",
                 "200", "larger", "medium", "500", "x-large", "x-small", "400",
                 "xx-large", "900", "small", "large");
 
         assertAlternatives(p.getGrammar(), "italic large",
-                "fantasy", "serif", "sans-serif", "monospace", "/", "cursive", "!string","!identifier");
+                "fantasy", "serif", "sans-serif", "monospace", "/", "cursive", "!string", "!identifier");
 
         assertAlternatives(p.getGrammar(), "italic large / ",
-                "!percentage", "initial", "normal", "!length", "none", "!number");
+                "!percentage", "initial", "normal", "!length", "-", "none", "!number");
 
         assertAlternatives(p.getGrammar(), "italic large / normal",
-                "fantasy", "serif", "sans-serif", "monospace", "cursive", "!string","!identifier");
+                "fantasy", "serif", "sans-serif", "monospace", "cursive", "!string", "!identifier");
     }
 
     public void testBackgroundRGBAlternatives() {
@@ -233,7 +234,7 @@ public class PropertyValueTest extends CssModuleTestBase {
         PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
 
         assertAlternatives(p.getGrammar(), "",
-                "fantasy", "serif", "sans-serif", "inherit", "monospace", "cursive", "!string","!identifier");
+                "fantasy", "serif", "sans-serif", "inherit", "monospace", "cursive", "!string", "!identifier");
 
     }
 
@@ -267,7 +268,7 @@ public class PropertyValueTest extends CssModuleTestBase {
     public void testTheBorderCase() {
         PropertyModel p = CssModuleSupport.getPropertyModel("border");
         assertAlternatives(p.getGrammar(), "red dashed",
-                "thick", "thin", "!length", "medium");
+                "thick", "thin", "!length", "-", "medium");
 
         assertAlternatives(p.getGrammar(), "red dashed 20px");
     }
@@ -277,10 +278,10 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertResolve(p.getGrammar(), "aliceblue");
         assertAlternatives(p.getGrammar(), "aliceblue",
                 "repeating-linear-gradient", "padding-box", "content-box", "round",
-                "repeat", "!length", "repeating-radial-gradient", "space", "!percentage",
+                "repeat", "!length", "-", "repeating-radial-gradient", "space", "!percentage",
                 "fixed", "border-box", "center", "no-repeat", "none", "left", "right",
                 "top", "element", "scroll", "repeat-y", "linear-gradient", "repeat-x",
-                "image", "url", "cross-fade", "radial-gradient", "bottom", "local");
+                "image", "!uri", "cross-fade", "radial-gradient", "bottom", "local");
     }
 
     public void testTheBackgroundCase2() {
@@ -289,8 +290,8 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertAlternatives(p.getGrammar(), "aliceblue bottom / auto",
                 "repeating-linear-gradient", "element", "padding-box", "scroll", ""
                 + "content-box", "repeat-y", "linear-gradient", "repeat-x", "image",
-                "round", "!length", "repeat", "repeating-radial-gradient", "space",
-                "fixed", "!percentage", "url", "border-box", "cross-fade",
+                "round", "!length", "-", "repeat", "repeating-radial-gradient", "space",
+                "fixed", "!percentage", "!uri", "border-box", "cross-fade",
                 "radial-gradient", "no-repeat", "auto", "none", "local");
 
 
@@ -320,32 +321,124 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertAlternatives(g, "c", "a");
     }
 
-     //Bug 205893 - font-family completion issue
-     public void testFontFamily() {
+    //Bug 205893 - font-family completion issue
+    public void testFontFamily() {
         PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
 //        assertResolve(p.getGrammar(), "fantasy");
         assertAlternatives(p.getGrammar(), "fantasy", ",");
 
-        assertAlternatives(p.getGrammar(), "fantasy, ", 
-                "fantasy","serif","sans-serif","monospace","cursive", "!string","!identifier");
-        
-        assertAlternatives(p.getGrammar(), "fantasy, monospace", 
+        assertAlternatives(p.getGrammar(), "fantasy, ",
+                "fantasy", "serif", "sans-serif", "monospace", "cursive", "!string", "!identifier");
+
+        assertAlternatives(p.getGrammar(), "fantasy, monospace",
                 ",");
 
-        assertAlternatives(p.getGrammar(), "fantasy, monospace, ", 
-                "fantasy","serif","sans-serif","monospace","cursive", "!string","!identifier");
+        assertAlternatives(p.getGrammar(), "fantasy, monospace, ",
+                "fantasy", "serif", "sans-serif", "monospace", "cursive", "!string", "!identifier");
 
     }
-     
-     public void testAnimation() {
+
+    public void testAnimation() {
         PropertyModel p = CssModuleSupport.getPropertyModel("animation");
 //        assertResolve(p.getGrammar(), "fantasy");
         assertAlternatives(p.getGrammar(), "cubic-bezier",
-                "alternate","linear","cubic-bezier","normal","ease","(","!time","ease-in",",","ease-in-out","ease-out","infinite","!number");
+                "alternate", "linear", "cubic-bezier", "normal", "ease", "(", "!time", "ease-in", ",", "ease-in-out", "ease-out", "infinite", "!number");
 
+    }
+
+    public void testAltsMinus() {
+        String g = "-? x";
+        assertAlternatives(g, "", "x", "-");
+    }
+
+    public void testGetSimpleParseTree() {
+        String g = " a [ b [ c | d ]* ]";
+        PropertyValue pv = new PropertyValue(g, "a b d d d c d");
         
+//        for(ResolvedToken t : pv.getResolvedTokens()) {
+//            System.out.println(t);
+//        }
+        
+        Node root = pv.getFullParseTree();
+//        dumpTree(root);
+        assertNotNull(root);
+        assertNull(root.parent()); //root node has no parent
+        
+        Collection<Node> ch = root.children();
+        assertEquals(2, ch.size());
+        
+        Iterator<Node> i = ch.iterator();
+        Node ch1 = i.next();
+        assertNotNull(ch1);
+        assertTrue(ch1 instanceof Node.ResolvedTokenNode);
+        
+        Node.ResolvedTokenNode tokenNode = (Node.ResolvedTokenNode)ch1;
+        assertEquals("a", tokenNode.image().toString());
+        assertEquals(root, tokenNode.parent());
+        
+        Node ch2 = i.next();
+        assertNotNull(ch2);
+        assertTrue(ch2 instanceof Node.GroupNode);
+        assertEquals(root, ch2.parent());
+        
+
     }
     
+    public void testGetFullParseTree() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
+        PropertyValue pv = new PropertyValue(p, "fantasy, monospace");
+        
+        Node root = pv.getSimpleParseTree();
+//        dumpTree(root);
+        
+        assertNotNull(root);
+        assertNull(root.parent()); //root node has no parent
+        assertEquals("[S0|font-family]", root.toString());
+        
+        Collection<Node> ch = root.children();
+        assertEquals(1, ch.size());
+        
+        Iterator<Node> i = ch.iterator();
+        Node ch1 = i.next();
+        assertNotNull(ch1);
+        assertTrue(ch1 instanceof Node.GroupNode);
+        assertEquals("[S3|@family-name]", ch1.toString());
+        assertEquals(root, ch1.parent());
+        
+        ch = ch1.children();
+        assertEquals(3, ch.size());
+        
+        i = ch.iterator();
+        Node ch2 = i.next();
+        assertNotNull(ch2);
+        assertTrue(ch2 instanceof Node.ResolvedTokenNode);
+        assertEquals("fantasy(IDENT;0-7)", ch2.toString());
+        assertEquals(ch1, ch2.parent());
+        
+    }
+
+    private void dumpTree(Node node) {
+        PrintWriter pw = new PrintWriter(System.out);
+        dumpTree(node, pw);
+        pw.flush();
+    }
+
+    private void dumpTree(Node node, PrintWriter pw) {
+        dump(node, 0, pw);
+
+    }
+
+    private void dump(Node tree, int level, PrintWriter pw) {
+        for (int i = 0; i < level; i++) {
+            pw.print("    ");
+        }
+        pw.print(tree.toString());
+        pw.println();
+        for (Node c : tree.children()) {
+            dump(c, level + 1, pw);
+        }
+    }
+
     public void testPerformance_Parse_Resolve() {
 //        Last results from my MacBook Pro:
 //        -------------------------------------------
@@ -355,14 +448,14 @@ public class PropertyValueTest extends CssModuleTestBase {
 //        50 iterations took 170 ms.
 //        Average time of 50 iterations is 327
 //        Average run of one resolve is 6 ms
-        
+
         PropertyModel p = CssModuleSupport.getPropertyModel("background");
 
         //dry run
         assertResolve(p.getGrammar(), "aliceblue bottom / auto");
 
         System.out.println("Testing parsing a grammar and resolving an input by the grammar...");
-        
+
         int loops = 3;
         int iterations = 50;
         int sum = 0;
@@ -375,14 +468,14 @@ public class PropertyValueTest extends CssModuleTestBase {
             long stop = System.currentTimeMillis();
 
             System.out.println(String.format("%s iterations took %s ms.", iterations, (stop - start)));
-            
-            sum += (stop-start);
+
+            sum += (stop - start);
         }
-        
-        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum/loops)));
-        System.out.println(String.format("Average run of one resolve is %s ms", (sum/loops/iterations)));
+
+        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum / loops)));
+        System.out.println(String.format("Average run of one resolve is %s ms", (sum / loops / iterations)));
     }
-    
+
     public void testPerformance_Resolve() {
 //        Last results from my MacBook Pro:
 //        -------------------------------------------
@@ -392,15 +485,15 @@ public class PropertyValueTest extends CssModuleTestBase {
 //        50 iterations took 87 ms.
 //        Average time of 50 iterations is 132
 //        Average run of one resolve is 2 ms
-        
-        
+
+
         PropertyModel p = CssModuleSupport.getPropertyModel("background");
 
         //dry run
         assertResolve(p.getGrammarElement(), "aliceblue bottom / auto");
 
         System.out.println("Testing parsing a grammar and resolving an input by the grammar...");
-        
+
         int loops = 3;
         int iterations = 50;
         int sum = 0;
@@ -413,13 +506,11 @@ public class PropertyValueTest extends CssModuleTestBase {
             long stop = System.currentTimeMillis();
 
             System.out.println(String.format("%s iterations took %s ms.", iterations, (stop - start)));
-            
-            sum += (stop-start);
+
+            sum += (stop - start);
         }
-        
-        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum/loops)));
-        System.out.println(String.format("Average run of one resolve is %s ms", (sum/loops/iterations)));
+
+        System.out.println(String.format("Average time of %s iterations is %s", iterations, (sum / loops)));
+        System.out.println(String.format("Average run of one resolve is %s ms", (sum / loops / iterations)));
     }
-    
-    
 }

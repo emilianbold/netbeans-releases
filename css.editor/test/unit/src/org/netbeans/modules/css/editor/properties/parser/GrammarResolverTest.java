@@ -62,18 +62,24 @@ public class GrammarResolverTest extends CssModuleTestBase {
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
     }
     
+    public void testParseVerySimpleGrammar() {
+        String g = "a | b";
+        assertResolve(g, "a");
+        assertResolve(g, "b");
+    }
+    
     public void testParseSimpleGrammar() {
-        String grammar = " url ( [ !string | !identifier ] )";
+        String grammar = " function ( [ !string | !identifier ] )";
 
-        assertResolve(grammar, "url(ahoj)");
-        assertResolve(grammar, "url(\"ahoj\")");
+        assertResolve(grammar, "function(ahoj)");
+        assertResolve(grammar, "function(\"ahoj\")");
     }
 
     public void testParseSimpleAmbiguousGrammar() {
-        String grammar = " [ url ( !string ) ] | [ url ( !identifier ) ]";
+        String grammar = " [ function ( !string ) ] | [ function ( !identifier ) ]";
 
-        assertResolve(grammar, "url(ahoj)");
-        assertResolve(grammar, "url(\"ahoj\")");
+        assertResolve(grammar, "function(ahoj)");
+        assertResolve(grammar, "function(\"ahoj\")");
     }
     
     public void testParseSimpleAmbiguousGrammar2() {
@@ -532,10 +538,10 @@ public class GrammarResolverTest extends CssModuleTestBase {
         assertEquals(4, resolved.size());
         
         Iterator<ResolvedToken> itr = resolved.iterator();
-        assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/!length (20px)", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[L10]// (/)", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[L10]/[S11|line-height]/!length (20px)", itr.next().toString());
-        assertEquals("[S0|font]/[S1]/[L2]/[S12|font-family]/[L13]/[S14]/[S18|@generic-family]/fantasy (fantasy)", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[S7|font-size]/[L10|@length]/!length (20px(LENGTH;0-4))", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L11]// (/(SOLIDUS;5-6))", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[L11]/[S12|line-height]/[L13|@length]/!length (20px(LENGTH;7-11))", itr.next().toString());
+        assertEquals("[S0|font]/[S1]/[L2]/[S14|font-family]/[L15]/[S16]/[S20|@generic-family]/fantasy (fantasy(IDENT;12-19))", itr.next().toString());
         
     }
 
