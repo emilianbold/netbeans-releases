@@ -47,11 +47,7 @@
  */
 package org.netbeans.modules.javafx2.project.ui;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
