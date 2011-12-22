@@ -43,7 +43,6 @@
 package org.netbeans.core.browser.webview;
 
 import java.awt.AWTEvent;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,7 +59,7 @@ import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
-import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
@@ -122,23 +121,38 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     public void reloadDocument() {
         if( !isInitialized() )
             return;
-        browser.getEngine().reload();
+        javafx.application.Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.getEngine().reload();
+            }
+        });
     }
 
     @Override
     public void stopLoading() {
         if( !isInitialized() )
             return;
-        browser.getEngine().getLoadWorker().cancel();
+        javafx.application.Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.getEngine().getLoadWorker().cancel();
+            }
+        });
     }
 
     @Override
-    public void setURL(String url) {
+    public void setURL(final String url) {
         if( !isInitialized() ) {
             urlToLoad = url;
             return;
         }
-        browser.getEngine().load( url );
+        javafx.application.Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.getEngine().load( url );
+            }
+        });
     }
 
     @Override
@@ -214,11 +228,16 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     @Override
-    public void setContent(String content) {
+    public void setContent(final String content) {
         if( !isInitialized() ) {
             return;
         }
-        browser.getEngine().loadContent( content );
+        javafx.application.Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.getEngine().loadContent( content );
+            }
+        });
     }
 
     @Override
@@ -333,10 +352,15 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     @Override
-    public void executeJavaScript(String script) {
+    public void executeJavaScript(final String script) {
         if( !isInitialized() )
             return;
-        browser.getEngine().executeScript( script);
+        javafx.application.Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.getEngine().executeScript( script);
+            }
+        });
     }
 
     private boolean isInitialized() {
@@ -386,20 +410,35 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         eng.setOnStatusChanged( new EventHandler<WebEvent<String>> () {
             @Override
             public void handle( WebEvent<String> e ) {
-                String oldStatus = status;
+                final String oldStatus = status;
                 status = e.getData();
-                propSupport.firePropertyChange( WebBrowser.PROP_STATUS_MESSAGE, oldStatus, status );
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        propSupport.firePropertyChange( WebBrowser.PROP_STATUS_MESSAGE, oldStatus, status );
+                    }
+                } );
             }
         });
 
         eng.locationProperty().addListener(new ChangeListener<String>() {
-            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                propSupport.firePropertyChange( WebBrowser.PROP_URL, oldValue, newValue );
+            @Override public void changed(ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        propSupport.firePropertyChange( WebBrowser.PROP_URL, oldValue, newValue );
+                    }
+                } );
             }
         });
         eng.titleProperty().addListener(new ChangeListener<String>() {
-            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                propSupport.firePropertyChange( WebBrowser.PROP_TITLE, oldValue, newValue );
+            @Override public void changed(ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        propSupport.firePropertyChange( WebBrowser.PROP_TITLE, oldValue, newValue );
+                    }
+                } );
             }
         });
         container.setScene( new Scene( browser) );
