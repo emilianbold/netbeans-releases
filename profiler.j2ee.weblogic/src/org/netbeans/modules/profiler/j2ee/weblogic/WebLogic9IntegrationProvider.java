@@ -171,7 +171,7 @@ public class WebLogic9IntegrationProvider extends WebLogicIntegrationProvider {
         // Step 5
         instructions.addStep(Bundle.WebLogicIntegrationProvider_ManualDynamicStep5Wl9Msg());
 
-        // Put here a warning that the IDE must be run under JDK6/7
+        // Put here a warning that the IDE must be run under JDK6/7/8
         instructions.addWarning(Bundle.WebLogicIntegrationProvider_DynamicWarningMessage(
                                     IntegrationUtils.getJavaPlatformName(getTargetJava())));
 
