@@ -220,7 +220,7 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
             if (deleted.isEmpty() && added.isEmpty()) {
                 return res;
             }
-            
+
             if (added.isEmpty()) {
                 // just filter out the deleted files
                 return Iterators.filter (
@@ -236,13 +236,14 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
             Collection<JavaFileObject> toAdd = storage.getFileObjects(packageName);
             Collection<Iterable<JavaFileObject>> chain = new ArrayList<Iterable<JavaFileObject>>(2);
             chain.add(toAdd);
-            chain.add(Iterators.filter (
+            chain.add(deleted.isEmpty()?
+                res:
+                Iterators.filter (
                     res,
                     new Comparable<JavaFileObject>() {
                         public int compareTo(@NonNull final JavaFileObject o) {
                             final File f = toFile(o);
-                            // we must also remove the added files, so the Iterator does not contain duplicates
-                            return deleted.contains(f) || added.contains(f) ? 0 : -1;
+                            return deleted.contains(f) ? 0 : -1;
                         }
                     }
             ));
