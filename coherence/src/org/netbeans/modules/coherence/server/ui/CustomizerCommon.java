@@ -372,7 +372,6 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         classpathLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.classpathLabel.text")); // NOI18N
         classpathLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CoherenceCommonTab.additionalClasspathLabel.desc")); // NOI18N
 
-        classpathList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         classpathList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 classpathListValueChanged(evt);
@@ -498,10 +497,14 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     }//GEN-LAST:event_addJarButtonActionPerformed
 
     private void removeClasspathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClasspathButtonActionPerformed
-        if (classpathList.getSelectedIndex() == -1) {
+        if (classpathList.getSelectedIndex() == -1
+                || classpathList.getSelectedIndices().length == 0) {
             return;
         }
-        listModel.remove(classpathList.getSelectedIndex());
+        int[] selectedIndices = classpathList.getSelectedIndices();
+        for (int i = selectedIndices.length - 1; i >= 0; i--) {
+            listModel.remove(selectedIndices[i]);
+        }
         changeSupport.fireChange();
     }//GEN-LAST:event_removeClasspathButtonActionPerformed
 
