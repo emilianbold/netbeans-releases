@@ -60,8 +60,8 @@ import org.openide.filesystems.FileUtil;
  * @author ads
  *
  */
-@ProjectServiceProvider(service={CdiUtil.class}, projectType = 
-    "org-netbeans-modules-web-project")
+@ProjectServiceProvider(service={CdiUtil.class}, projectType = {
+    "org-netbeans-modules-web-project", "org-netbeans-modules-maven/war"})
 public class WebCdiUtil extends CdiUtil {
     
     public WebCdiUtil( Project project ) {

@@ -57,7 +57,11 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
     "org-netbeans-modules-java-j2seproject",
     "org-netbeans-modules-j2ee-clientproject",
     "org-netbeans-modules-j2ee-ejbjarproject",
-    "org-netbeans-modules-web-project"}
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-maven/jar",
+    "org-netbeans-modules-maven/war",
+    "org-netbeans-modules-maven/ejb",
+    "org-netbeans-modules-maven/app-client"}
     )
 public class CdiProjectOpenHook extends ProjectOpenedHook {
     

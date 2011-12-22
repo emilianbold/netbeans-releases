@@ -56,8 +56,8 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-@ProjectServiceProvider(service=CdiUtil.class, projectType = 
-    "org-netbeans-modules-j2ee-clientproject")
+@ProjectServiceProvider(service=CdiUtil.class, projectType = {
+    "org-netbeans-modules-j2ee-clientproject","org-netbeans-modules-maven/app-client"})
 public class CarCdiUtil extends CdiUtil {
 
     public CarCdiUtil( Project project ) {
