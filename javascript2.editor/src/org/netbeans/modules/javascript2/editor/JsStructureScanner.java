@@ -65,7 +65,17 @@ public class JsStructureScanner implements StructureScanner {
         final Model model = result.getModel();
         FileScope fileScope = model.getFileScope();
         
-        getEmbededItems(fileScope, items);
+        for(Scope scope : fileScope.getLogicalElements()) {
+            if (scope instanceof FunctionScope) {
+                List<StructureItem> children = new ArrayList<StructureItem>();
+                children = getEmbededItems(scope, children);
+                items.add(new JsFunctionStructureItem((FunctionScope)scope, children));
+            } else if (scope instanceof ObjectScope) {
+                List<StructureItem> children = new ArrayList<StructureItem>();
+                children = getEmbededItems(scope, children);
+                items.add(new JsObjectStructureItem((ObjectScope)scope, children));
+            }
+        }
         
         return items;
     }
@@ -75,9 +85,17 @@ public class JsStructureScanner implements StructureScanner {
         List<? extends ModelElement> elements = scope.getElements();
         for (ModelElement element : elements) {
             if (element instanceof FunctionScope) {
-                List<StructureItem> children = new ArrayList<StructureItem>();
-                children = getEmbededItems((Scope) element, children);
-                collectedItems.add(new JsFunctionStructureItem((FunctionScope)element, children));
+                FunctionScope function = (FunctionScope) element;
+                if (function.getJSKind() == JsElement.Kind.METHOD) {
+                    List<StructureItem> children = new ArrayList<StructureItem>();
+                    children = getEmbededItems((Scope) element, children);
+                    collectedItems.add(new JsFunctionStructureItem(function, children));
+                } else if (function.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+                    collectedItems.add(new JsFunctionStructureItem(function, null));
+                    List<StructureItem> children = new ArrayList<StructureItem>();
+                    children = getEmbededItems((Scope) element, children);
+                    collectedItems.addAll(children);
+                }
             } else  if (element instanceof ObjectScope) {
                 List<StructureItem> children = new ArrayList<StructureItem>();
                 children = getEmbededItems((Scope) element, children);
@@ -272,7 +290,7 @@ public class JsStructureScanner implements StructureScanner {
             if (function == null) {
                 return;
             }
-            formatter.appendText(function.getName());
+            formatter.appendText(getFunctionScope().getDeclarationName().getName());
             formatter.appendText("()");   //NOI18N
         }
 
@@ -304,7 +322,15 @@ public class JsStructureScanner implements StructureScanner {
             if (object == null) {
                 return;
             }
-            formatter.appendText(object.getName());
+            StringBuilder name = new StringBuilder();
+            int identCount = object.getFQDeclarationName().size();
+            for (int i = 0; i < identCount; i++){
+                name.append(object.getFQDeclarationName().get(i).getName());
+                if (i < (identCount - 1)) {
+                    name.append(".");
+                }
+            }
+            formatter.appendText(name.toString());
         }
 
     }

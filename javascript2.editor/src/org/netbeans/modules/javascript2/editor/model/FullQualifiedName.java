@@ -41,22 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface ObjectScope extends Scope, FullQualifiedName {
-    Collection<? extends ModelElement> getDeclaredProperties();
-    /**
-     * If an object is logical, it's basically wrap for methods and properties, 
-     * that are defined in the file, but are not defined in the same scope.
-     * If an object is defined through a function, then the function will be 
-     * marked as constructor and will be part of a logical object. 
-     * 
-     * @return true if the object doesn't correspond with the source. 
-     * False is returned for object that are defined as objects in the code.     
-     */
-    boolean isLogical();
+public interface FullQualifiedName {
+    public List<Identifier> getFQDeclarationName();
 }

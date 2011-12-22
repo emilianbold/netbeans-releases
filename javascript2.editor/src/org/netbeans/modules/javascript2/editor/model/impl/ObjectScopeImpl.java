@@ -44,9 +44,12 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import com.oracle.nashorn.ir.ObjectNode;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.ModelElement;
 import org.netbeans.modules.javascript2.editor.model.ObjectScope;
 import org.netbeans.modules.javascript2.editor.model.Scope;
@@ -56,20 +59,43 @@ import org.netbeans.modules.javascript2.editor.model.Scope;
  * @author Petr Pisl
  */
 public class ObjectScopeImpl extends ScopeImpl implements ObjectScope {
-
-    public ObjectScopeImpl(Scope inScope, ObjectNode node) {
-        super(inScope, ElementKind.CLASS, inScope.getFileObject(), 
+    
+    private boolean isLogical;
+    public final List<Identifier> fullName;
+    
+    public ObjectScopeImpl(Scope inScope, ObjectNode node, List<Identifier> fqName) {
+        super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), 
                 "object", 
                 new OffsetRange(node.getStart(), node.getFinish()),
                 // TODO bug in parser. The end position is not returned correctly now
 //                Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken())), 
                 EnumSet.of(Modifier.PUBLIC));
         ((ScopeImpl)inScope).addElement(this);
+        this.isLogical = false;
+        this.fullName = fqName;
+    }
+    
+    public ObjectScopeImpl(Scope inScope, List<Identifier> fqName, OffsetRange range) {
+        super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), "object", range,
+                EnumSet.of(Modifier.PUBLIC));
+        ((ScopeImpl)inScope).addElement(this);
+        this.isLogical = true;
+        this.fullName = fqName;
     }
     
     @Override
     public Collection<? extends ModelElement> getDeclaredProperties() {
         return null;
+    }
+
+    @Override
+    public boolean isLogical() {
+        return isLogical;
+    }
+
+    @Override
+    public List<Identifier> getFQDeclarationName() {
+        return fullName;
     }
     
 }

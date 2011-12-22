@@ -127,7 +127,7 @@ public class ModelVisitor extends PathNodeVisitor {
             // todo parameters;
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 ScopeImpl scope = modelBuilder.getCurrentScope();
-                FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, name.get(0), modelBuilder);
+                FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
                 modelBuilder.setCurrentScope(scope = fncScope);
             }
 
@@ -160,8 +160,23 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
         if (onset) {
+            List<Identifier> name = null;
+            int pathSize = getPath().size();
+            Node lastVisited = getPath().get(pathSize - 1);
+            if ( lastVisited instanceof VarNode) {
+                name = getName((VarNode)lastVisited);
+            } else if (lastVisited instanceof PropertyNode) {
+                        name = getName((PropertyNode)lastVisited);
+                    } else if (lastVisited instanceof BinaryNode) {
+                        name = getName((BinaryNode)lastVisited);
+                    }
+            if (name == null) {
+                name = new ArrayList<Identifier>(1);
+                name.add(new IdentifierImpl("UNKNOWN", 
+                        new OffsetRange(objectNode.getStart(), objectNode.getFinish())));
+            }
             ScopeImpl scope = modelBuilder.getCurrentScope();
-            ObjectScopeImpl objectScope = ModelElementFactory.create(objectNode, modelBuilder);
+            ObjectScopeImpl objectScope = ModelElementFactory.create(objectNode, name, modelBuilder);
 
             modelBuilder.setCurrentScope(scope = objectScope);
         } else {
@@ -199,6 +214,13 @@ public class ModelVisitor extends PathNodeVisitor {
         return name;
     }
     
+    private List<Identifier> getName(VarNode varNode) {
+        List<Identifier> name = new ArrayList();
+        name.add(new IdentifierImpl(varNode.getName().getName(), 
+                new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish())));
+        return name;
+    }
+    
     private List<Identifier> getName(BinaryNode binaryNode) {
         List<Identifier> name = new ArrayList();
         Node lhs = binaryNode.lhs();
@@ -212,13 +234,16 @@ public class ModelVisitor extends PathNodeVisitor {
                 name.add(new IdentifierImpl(aNode.getProperty().getName() ,
                     new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
             }
-            if(name.size() > 1 && aNode.getBase() instanceof IdentNode) {
+            if(name.size() > 0 && aNode.getBase() instanceof IdentNode) {
                 IdentNode ident = (IdentNode)aNode.getBase();
-                name.add(new IdentifierImpl(ident.getName(), 
-                        new OffsetRange(ident.getStart(), ident.getFinish())));
+                if (!"this".equals(ident.getName())) {
+                    name.add(new IdentifierImpl(ident.getName(), 
+                            new OffsetRange(ident.getStart(), ident.getFinish())));
+                }
             }
 
         }
+        Collections.reverse(name);
         return name;
     }
 }

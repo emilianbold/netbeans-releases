@@ -44,12 +44,14 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.parser.Token;
 import java.util.EnumSet;
+import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.FunctionScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.Scope;
 
 /**
@@ -58,38 +60,50 @@ import org.netbeans.modules.javascript2.editor.model.Scope;
  */
 public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScope {
     
-    private Identifier declarationName;
-    
+    private Identifier name;
+    public List<Identifier> fullName;
     /**
      * This offset range is created to navigator navigate to the name of the function.
      */
     private OffsetRange offsetRangeForNavigator = null;
     
     public FunctionScopeImpl(Scope inScope, FunctionNode node) {
-        this(inScope, new IdentifierImpl(node.getIdent().getName(), new OffsetRange(node.getIdent().getStart(), node.getIdent().getFinish())), node);
+        this(inScope, new IdentifierImpl(node.getIdent().getName(), new OffsetRange(node.getIdent().getStart(), node.getIdent().getFinish())), node, JsElement.Kind.FUNCTION);
     }
     
-    public FunctionScopeImpl(Scope inScope, Identifier declarationName, FunctionNode node) {
-        super(inScope, ElementKind.METHOD, inScope.getFileObject(), 
+    public FunctionScopeImpl(Scope inScope, Identifier declarationName, FunctionNode node, JsElement.Kind kind) {
+        super(inScope, kind, inScope.getFileObject(), 
                 declarationName.getName(), 
                 new OffsetRange(node.getStart(), 
                 // TODO bug in parser. The end position is not returned correctly now
                 Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken())), 
                 EnumSet.of(Modifier.PUBLIC));
         ((ScopeImpl)inScope).addElement(this);
-        this.declarationName = declarationName;
+        this.name = declarationName;
+        this.fullName = null;
+    }
+    
+    public FunctionScopeImpl(Scope inScope, List<Identifier> declarationName, FunctionNode node, JsElement.Kind kind) {
+        this (inScope, declarationName.get(declarationName.size() - 1), node, kind);
+        this.fullName = declarationName;
     }
 
     @Override
     public Identifier getDeclarationName() {
-        return declarationName;
-    }   
+        return name;
+    }
+    
     
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         if (offsetRangeForNavigator == null) {
-            offsetRangeForNavigator = new OffsetRange(declarationName.getOffsetRange().getStart(), getBlockRange().getEnd());
+            offsetRangeForNavigator = new OffsetRange(name.getOffsetRange().getStart(), getBlockRange().getEnd());
         }
         return offsetRangeForNavigator;
-    }    
+    }
+
+    @Override
+    public List<Identifier> getFQDeclarationName() {
+        return fullName;
+    }
 }

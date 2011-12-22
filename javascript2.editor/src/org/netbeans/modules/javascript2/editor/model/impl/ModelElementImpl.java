@@ -43,9 +43,9 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.ModelElement;
 import org.openide.filesystems.FileObject;
 
@@ -58,8 +58,8 @@ public class ModelElementImpl extends JsElementImpl implements ModelElement {
     private ModelElement in;
     
     
-    public ModelElementImpl(ModelElement in, ElementKind elementKind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        super(elementKind, fileObject, name, offsetRange, modifiers);
+    public ModelElementImpl(ModelElement in, JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
+        super(kind, fileObject, name, offsetRange, modifiers);
         this.in = in;
     }
 
@@ -72,5 +72,4 @@ public class ModelElementImpl extends JsElementImpl implements ModelElement {
     public ModelElement getInElement() {
         return in;
     }
-    
 }

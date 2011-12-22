@@ -43,11 +43,17 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.FileScope;
 import org.netbeans.modules.javascript2.editor.model.FunctionScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.ObjectScope;
+import org.netbeans.modules.javascript2.editor.model.Scope;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -55,24 +61,57 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  * @author Petr Pisl
  */
 public class FileScopeImpl extends ScopeImpl implements FileScope {
-
-    Collection<? extends FunctionScope> allFunctions;
+    Hashtable<String, Scope> logicalElements;
     
     public FileScopeImpl(JsParserResult result, String name) {
-        super(null, ElementKind.OTHER, 
+        super(null, JsElement.Kind.FILE, 
                 result.getSnapshot().getSource().getFileObject(), name, new OffsetRange(0, 0),
                 Collections.<Modifier>emptySet());
-        
+        logicalElements = new Hashtable<String, Scope>();
     }
     
     FileScopeImpl(JsParserResult result) {
         this(result, result.getRoot().getName());
     }
-    
-    @Override
-    public Collection<? extends FunctionScope> getAllFunctions() {
-        return allFunctions;
-    }
 
+    @Override
+    public Collection<? extends Scope> getLogicalElements() {
+        return logicalElements.values();
+    }
     
+    protected void addObject(String fqName, Scope object){
+        logicalElements.put(fqName, object);
+    }
+    
+    protected void addMethod(FunctionScope function) {
+        List<Identifier> identifiers = function.getFQDeclarationName();
+        
+        switch (function.getJSKind()) {
+            case FUNCTION:
+                logicalElements.put(function.getName(), function);
+                break;
+            case CONSTRUCTOR:
+                String objectName = ModelUtils.getNameWithoutPrototype(identifiers);
+                ObjectScopeImpl logicalObject = new ObjectScopeImpl(this, identifiers, function.getBlockRange());
+                logicalElements.put(objectName.toString(), logicalObject);
+                logicalObject.addElement((FunctionScopeImpl) function);
+                break;
+            case METHOD:
+                if (identifiers.size() == 1
+                        && (function.getInElement() instanceof FunctionScope
+                        || function.getInElement() instanceof ObjectScope)) {
+                    // these methods are already in
+                    break;
+                }
+                objectName = ModelUtils.getObjectName(function);
+                logicalObject = (ObjectScopeImpl) logicalElements.get(objectName);
+                if (logicalObject == null) {
+                    logicalObject = new ObjectScopeImpl(this, identifiers, function.getBlockRange());
+                    logicalElements.put(objectName, logicalObject);
+                }
+                logicalObject.addElement((FunctionScopeImpl) function);
+                break;
+        }
+
+    }
 }

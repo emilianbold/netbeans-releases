@@ -48,5 +48,5 @@ import java.util.Collection;
  * @author Petr Pisl
  */
 public interface FileScope extends Scope {
-    Collection<? extends FunctionScope> getAllFunctions();
+    Collection<? extends Scope> getLogicalElements();
 }

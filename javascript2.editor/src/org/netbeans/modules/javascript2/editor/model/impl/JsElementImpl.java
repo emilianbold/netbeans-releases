@@ -57,27 +57,51 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class JsElementImpl implements JsElement {
 
-    private ElementKind elementKind;
+    private JsElement.Kind kind;
     private FileObject fileObject;
     private String name;
     private OffsetRange offsetRange;
     private Set<Modifier> modifiers;
     
-    public JsElementImpl(ElementKind elementKind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        this.elementKind = elementKind;
+    public JsElementImpl(JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
+        this.kind = kind;
         this.fileObject = fileObject;
         this.name = name;
         this.offsetRange = offsetRange;
         this.modifiers = modifiers;
     }
     
-    public JsElementImpl(ElementKind elementKind, FileObject fileObject, String name, OffsetRange offsetRange) {
-        this(elementKind, fileObject, name, offsetRange, Collections.<Modifier>emptySet());
+    public JsElementImpl(JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange) {
+        this(kind, fileObject, name, offsetRange, Collections.<Modifier>emptySet());
     }
            
     @Override
     public ElementKind getKind() {
-        return elementKind;
+        ElementKind result = ElementKind.OTHER;
+        switch (kind) {
+            case CONSTRUCTOR: 
+                result = ElementKind.CONSTRUCTOR;
+                break;
+            case METHOD:
+            case FUNCTION:
+                result = ElementKind.METHOD;
+                break;
+            case OBJECT:
+                result = ElementKind.CLASS;
+                break;
+            case PROPERTY:
+                result = ElementKind.FIELD;
+                break;
+            case FILE:
+                result = ElementKind.FILE;
+                break;
+        }
+        return result;
+    }
+
+    @Override
+    public Kind getJSKind() {
+        return kind;
     }
     
     @Override

@@ -43,9 +43,10 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.ModelElement;
 import org.netbeans.modules.javascript2.editor.model.Scope;
 import org.openide.filesystems.FileObject;
@@ -59,8 +60,8 @@ public class ScopeImpl extends ModelElementImpl implements Scope {
     private OffsetRange offsetRange;
     private final List<ModelElementImpl> elements = Collections.synchronizedList(new LinkedList<ModelElementImpl>());
     
-    public ScopeImpl(ModelElement in, ElementKind elementKind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        super(in, elementKind, fileObject, name, offsetRange, modifiers);
+    public ScopeImpl(ModelElement in, JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
+        super(in, kind, fileObject, name, offsetRange, modifiers);
         this.offsetRange = offsetRange;
     }
     
