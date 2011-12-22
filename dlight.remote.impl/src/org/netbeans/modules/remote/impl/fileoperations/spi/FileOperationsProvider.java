@@ -51,6 +51,7 @@ import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
@@ -111,6 +112,9 @@ abstract public class FileOperationsProvider {
         }
         
         private boolean isDirectory(FileProxyO file, int deep) {
+            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                return false;
+            }
             if (deep > 0) {
                 deep--;
                 Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
@@ -147,6 +151,9 @@ abstract public class FileOperationsProvider {
         }
         
         protected boolean isFile(FileProxyO file, int deep) {
+            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                return false;
+            }
             if (deep > 0) {
                 deep--;
                 Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
@@ -187,6 +194,9 @@ abstract public class FileOperationsProvider {
         }
         
         protected boolean canWrite(FileProxyO file) {
+            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                return false;
+            }
             Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
             try {
                 FileInfoProvider.StatInfo statInfo = stat.get();
@@ -211,6 +221,9 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean exists(FileProxyO file) {
+            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                return false;
+            }
             Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
             try {
                 FileInfoProvider.StatInfo statInfo = stat.get();

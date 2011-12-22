@@ -110,7 +110,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('l') >= 0);
     
     /** Nest array elements when array length is bigger then this. */
-    private static final int ARRAY_CHILDREN_NESTED_LENGTH = 100;
+    private static final int ARRAY_CHILDREN_NESTED_LENGTH = Integer.getInteger("netbeans.debug.arrayChildrenNest", 100);
     
     
     private JPDADebuggerImpl    debugger;

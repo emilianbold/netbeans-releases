@@ -47,9 +47,16 @@
  */
 package org.netbeans.modules.coherence.server.ui;
 
+import java.awt.Dimension;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -58,13 +65,24 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.library.LibraryUtils;
-import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.util.ClasspathPropertyUtils;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -128,6 +146,112 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         savePanel();
     }
 
+    @NbBundle.Messages({
+        "project.chooser.title=Add Project",
+        "project.chooser.add.project.jars=Add Project JAR Files",
+        "project.chooser.msg.no.jar.output=This project cannot be added because it does not produce a JAR file using an Ant script."
+    })
+    private void showProjectChooser() {
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        chooser.setDialogTitle(Bundle.project_chooser_title());
+        chooser.setApproveButtonText(Bundle.project_chooser_add_project_jars());
+        chooser.setPreferredSize(new Dimension(650, 380));
+        chooser.setCurrentDirectory(getNearestDirectory());
+        int option = chooser.showOpenDialog(this); //Show the chooser
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File dir = chooser.getSelectedFile();
+            Project selectedProject = FileOwnerQuery.getOwner(FileUtil.toFileObject(dir));
+
+            if (selectedProject != null) {
+                AntArtifact[] artifacts = AntArtifactQuery.findArtifactsByType(selectedProject, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                if (artifacts.length == 0) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.project_chooser_msg_no_jar_output()));
+                    return;
+                }
+
+                for (AntArtifact antArtifact : artifacts) {
+                    for (URI uri : antArtifact.getArtifactLocations()) {
+                        File jar = new File(FileUtil.toFile(selectedProject.getProjectDirectory()), uri.getPath());
+                        addElementToClasspathList(jar.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
+
+    private static File getNearestDirectory() {
+        File folder = ProjectChooser.getProjectsFolder();
+        if (folder == null) {
+            folder = new File(System.getProperty("user.home")); //NOI18N
+        }
+        return FileUtil.normalizeFile(folder);
+    }
+
+    private void showLibraryChooser() {
+        Set<Library> libraries = LibraryChooser.showDialog(
+                LibraryManager.getDefault(),
+                createLibraryFilter(),
+                null);
+        if (libraries != null) {
+            for (Library library : libraries) {
+                List<URL> cpContent = library.getContent("classpath"); //NOI18H
+                for (URL jarUrl : cpContent) {
+                    String libraryJarPath = getLibraryJarPath(jarUrl);
+                    if (libraryJarPath != null) {
+                        addElementToClasspathList(libraryJarPath);
+                    }
+                }
+            }
+        }
+    }
+
+    private static String getLibraryJarPath(URL pathUrl) {
+        String jarPath = null;
+        URI uri;
+        try {
+            uri = ((URL) pathUrl).toURI();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(CustomizerCommon.class.getName()).log(Level.WARNING, null, ex);
+            return null;
+        }
+        if (uri != null && uri.toString().startsWith("http")) { //NOI18N
+            return null;
+        } else if (uri != null) {
+            if (uri.toString().contains("!/")) { //NOI18N
+                uri = LibrariesSupport.getArchiveFile(uri);
+            }
+            FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(null, uri);
+            if (fo == null) {
+                jarPath = uri.toString();
+            } else {
+                if (uri.isAbsolute()) {
+                    jarPath = FileUtil.getFileDisplayName(fo);
+                } else {
+                    jarPath = LibrariesSupport.convertURIToFilePath(uri);
+                }
+            }
+        }
+        return jarPath;
+    }
+
+    private static LibraryChooser.Filter createLibraryFilter() {
+        return  new LibraryChooser.Filter() {
+
+            @Override
+            public boolean accept(Library library) {
+                if ("javascript".equals(library.getType())) { //NOI18N
+                    return false;
+                }
+                try {
+                    library.getContent("classpath"); //NOI18N
+                    return true;
+                } catch (IllegalArgumentException ex) {
+                    return false;
+                }
+            }
+        };
+    }
+
     private class SaveDocumentListener implements DocumentListener {
 
         @Override
@@ -171,11 +295,16 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
     private void addElementToClasspathList(String element) {
         listModel.addElement(element);
+        changeSupport.fireChange();
     }
 
     /**
      * Shows the fileChooser.
      */
+    @NbBundle.Messages({
+        "jar.chooser.title=Add JAR file",
+        "jar.chooser.filter=JAR file"
+    })
     private void showFileChooser() {
         if (fileChooser == null) {
             fileChooser = new JFileChooser();
@@ -200,9 +329,10 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
             @Override
             public String getDescription() {
-                return NbBundle.getMessage(CustomizerCommon.class, "DESC_AddJarToClasspath"); //NOI18N
+                return Bundle.jar_chooser_filter();
             }
         });
+        fileChooser.setDialogTitle(Bundle.jar_chooser_title());
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
@@ -225,7 +355,7 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         classpathLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         classpathList = new javax.swing.JList();
-        addClasspathButton = new javax.swing.JButton();
+        addJarButton = new javax.swing.JButton();
         removeClasspathButton = new javax.swing.JButton();
         javaFlagsLabel = new javax.swing.JLabel();
         javaFlagsTextField = new javax.swing.JTextField();
@@ -234,13 +364,14 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         coherenceLocationTextField = new javax.swing.JTextField();
         coherenceLocationLabel = new javax.swing.JLabel();
         createLibraryButton = new javax.swing.JButton();
+        addProjectButton = new javax.swing.JButton();
+        addLibraryButton = new javax.swing.JButton();
 
         setName(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "TITLE_Common")); // NOI18N
 
         classpathLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.classpathLabel.text")); // NOI18N
         classpathLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CoherenceCommonTab.additionalClasspathLabel.desc")); // NOI18N
 
-        classpathList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         classpathList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 classpathListValueChanged(evt);
@@ -248,10 +379,10 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         });
         jScrollPane1.setViewportView(classpathList);
 
-        addClasspathButton.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.addClasspathButton.text")); // NOI18N
-        addClasspathButton.addActionListener(new java.awt.event.ActionListener() {
+        addJarButton.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.addJarButton.text")); // NOI18N
+        addJarButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addClasspathButtonActionPerformed(evt);
+                addJarButtonActionPerformed(evt);
             }
         });
 
@@ -283,6 +414,20 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
             }
         });
 
+        addProjectButton.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.addProjectButton.text")); // NOI18N
+        addProjectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addProjectButtonActionPerformed(evt);
+            }
+        });
+
+        addLibraryButton.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.addLibraryButton.text")); // NOI18N
+        addLibraryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addLibraryButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -304,11 +449,13 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
                         .addComponent(coherenceLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
                     .addComponent(classpathLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(addClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(removeClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(addJarButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(removeClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(addProjectButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(addLibraryButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(createLibraryButton))
                 .addContainerGap())
         );
@@ -324,11 +471,15 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
                 .addGap(3, 3, 3)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(addClasspathButton)
+                        .addComponent(addJarButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addProjectButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addLibraryButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeClasspathButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(javaFlagsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(javaFlagsLabel))
@@ -341,16 +492,19 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addClasspathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClasspathButtonActionPerformed
+    private void addJarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addJarButtonActionPerformed
         showFileChooser();
-        changeSupport.fireChange();
-    }//GEN-LAST:event_addClasspathButtonActionPerformed
+    }//GEN-LAST:event_addJarButtonActionPerformed
 
     private void removeClasspathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClasspathButtonActionPerformed
-        if (classpathList.getSelectedIndex() == -1) {
+        if (classpathList.getSelectedIndex() == -1
+                || classpathList.getSelectedIndices().length == 0) {
             return;
         }
-        listModel.remove(classpathList.getSelectedIndex());
+        int[] selectedIndices = classpathList.getSelectedIndices();
+        for (int i = selectedIndices.length - 1; i >= 0; i--) {
+            listModel.remove(selectedIndices[i]);
+        }
         changeSupport.fireChange();
     }//GEN-LAST:event_removeClasspathButtonActionPerformed
 
@@ -372,8 +526,18 @@ private void classpathListValueChanged(javax.swing.event.ListSelectionEvent evt)
         }
     }//GEN-LAST:event_createLibraryButtonActionPerformed
 
+    private void addProjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProjectButtonActionPerformed
+        showProjectChooser();
+    }//GEN-LAST:event_addProjectButtonActionPerformed
+
+    private void addLibraryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLibraryButtonActionPerformed
+        showLibraryChooser();
+    }//GEN-LAST:event_addLibraryButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addClasspathButton;
+    private javax.swing.JButton addJarButton;
+    private javax.swing.JButton addLibraryButton;
+    private javax.swing.JButton addProjectButton;
     private javax.swing.JLabel classpathLabel;
     private javax.swing.JList classpathList;
     private javax.swing.JLabel coherenceLocationLabel;

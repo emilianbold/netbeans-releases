@@ -41,88 +41,193 @@
  */
 package org.netbeans.modules.php.apigen.ui;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.apigen.commands.ApiGenScript;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * ApiGen preferences for {@link PhpModule}.
  */
 public final class ApiGenPreferences {
 
-    private static final String TARGET = "target"; // NOI18N
-    private static final String TITLE = "title"; // NOI18N
-    private static final String CONFIG = "config"; // NOI18N
-    private static final String CHARSETS = "charsets"; // NOI18N
+    public static final Property<String> TITLE = new Property<String>("title") { // NOI18N
+        @Override
+        public String getDefaultValue(PhpModule phpModule) {
+            return phpModule.getDisplayName();
+        }
+    };
+    public static final Property<String> CONFIG = new Property<String>("config") { // NOI18N
+        @Override
+        public String getDefaultValue(PhpModule phpModule) {
+            List<FileObject> dirs = Arrays.asList(
+                    phpModule.getProjectDirectory(),
+                    phpModule.getSourceDirectory());
+            for (FileObject dir : dirs) {
+                FileObject config = dir.getFileObject(ApiGenScript.DEFAULT_CONFIG_NAME);
+                if (config != null && config.isData()) {
+                    return FileUtil.toFile(config).getAbsolutePath();
+                }
+            }
+            return null;
+        }
+    };
+    public static final Property<String> CHARSETS = new Property<String>("charsets") { // NOI18N
+        @Override
+        public String getDefaultValue(PhpModule phpModule) {
+            return phpModule.getProperties().getEncoding();
+        }
+    };
+    public static final Property<String> EXCLUDES = new Property<String>("excludes"); // NOI18N
+    public static final Property<String> ACCESS_LEVELS = new Property<String>("accessLevels") { // NOI18N
+        @Override
+        public String getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_ACCESS_LEVELS;
+        }
+    };
+    public static final Property<Boolean> INTERNAL = new Property<Boolean>("internal") { // NOI18N
+        @Override
+        public Boolean getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_INTERNAL;
+        }
+    };
+    public static final Property<Boolean> PHP = new Property<Boolean>("php") { // NOI18N
+        @Override
+        public Boolean getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_PHP;
+        }
+    };
+    public static final Property<Boolean> TREE = new Property<Boolean>("tree") { // NOI18N
+        @Override
+        public Boolean getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_TREE;
+        }
+    };
+    public static final Property<Boolean> DEPRECATED = new Property<Boolean>("deprecated") { // NOI18N
+        @Override
+        public Boolean getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_DEPRECATED;
+        }
+    };
+    public static final Property<Boolean> TODO = new Property<Boolean>("todo") { // NOI18N
+        @Override
+        public Boolean getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_TODO;
+        }
+    };
+    public static final Property<Boolean> DOWNLOAD = new Property<Boolean>("download") { // NOI18N
+        @Override
+        public Boolean getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_DOWNLOAD;
+        }
+    };
+    public static final Property<Boolean> SOURCE_CODE = new Property<Boolean>("sourceCode") { // NOI18N
+        @Override
+        public Boolean getDefaultValue(PhpModule phpModule) {
+            return ApiGenScript.DEFAULT_SOURCE_CODE;
+        }
+    };
 
+    // package private
+    static final Property<Object> TARGET = new Property<Object>("target"); // NOI18N
+
+    private static final String DEFAULT_VALUE = ""; // NOI18N
     private static final String SEPARATOR = ","; // NOI18N
 
 
     private ApiGenPreferences() {
     }
 
-    private static String getDefaultTitle(PhpModule phpModule) {
-        return phpModule.getDisplayName();
-    }
-
-    public static String getDefaultCharset(PhpModule phpModule) {
-        return phpModule.getProperties().getEncoding();
-    }
-
     public static String getTarget(PhpModule phpModule, boolean showPanel) {
-        String target = getPreferences(phpModule).get(TARGET, null);
+        String target = get(phpModule, TARGET);
         if (StringUtils.isEmpty(target) && showPanel) {
             target = BrowseFolderPanel.open(phpModule);
             if (target == null) {
                 // cancelled
                 return null;
             }
-            setTarget(phpModule, target);
+            put(phpModule, TARGET, target);
         }
         return target;
     }
 
-    public static void setTarget(PhpModule phpModule, String target) {
-        getPreferences(phpModule).put(TARGET, target);
+    public static void putTarget(PhpModule phpModule, String target) {
+        put(phpModule, TARGET, target);
     }
 
-    public static String getTitle(PhpModule phpModule) {
-        return getPreferences(phpModule).get(TITLE, getDefaultTitle(phpModule));
-    }
-
-    public static void setTitle(PhpModule phpModule, String title) {
-        if (title.equals(getDefaultTitle(phpModule))) {
-            getPreferences(phpModule).remove(TITLE);
-            return;
+    public static String get(PhpModule phpModule, Property<? extends Object> property) {
+        // get default value lazyly since it can do anything...
+        String value = getPreferences(phpModule).get(property.getKey(), DEFAULT_VALUE);
+        if (value == DEFAULT_VALUE) {
+            Object defaultValue = property.getDefaultValue(phpModule);
+            if (defaultValue == null) {
+                return null;
+            }
+            return defaultValue.toString();
         }
-        getPreferences(phpModule).put(TITLE, title);
-    }
-
-    public static String getConfig(PhpModule phpModule) {
-        return getPreferences(phpModule).get(CONFIG, null);
-    }
-
-    public static void setConfig(PhpModule phpModule, String config) {
-        getPreferences(phpModule).put(CONFIG, config);
-    }
-
-    public static List<String> getCharsets(PhpModule phpModule) {
-        return StringUtils.explode(getPreferences(phpModule).get(CHARSETS, getDefaultCharset(phpModule)), SEPARATOR);
-    }
-
-    public static void setCharsets(PhpModule phpModule, List<String> charsets) {
-        if (charsets.isEmpty()
-                || Collections.singletonList(getDefaultCharset(phpModule)).equals(charsets)) {
-            getPreferences(phpModule).remove(CHARSETS);
-            return;
+        if (!StringUtils.hasText(value)) {
+            return null;
         }
-        getPreferences(phpModule).put(CHARSETS, StringUtils.implode(charsets, SEPARATOR));
+        return value;
+    }
+
+    public static List<String> getMore(PhpModule phpModule, Property<? extends Object> property) {
+        return StringUtils.explode(get(phpModule, property), SEPARATOR);
+    }
+
+    public static boolean getBoolean(PhpModule phpModule, Property<Boolean> property) {
+        return Boolean.parseBoolean(get(phpModule, property));
+    }
+
+    public static void put(PhpModule phpModule, Property<? extends Object> property, String value) {
+        if (StringUtils.hasText(value) && !value.equals(property.getDefaultValue(phpModule))) {
+            getPreferences(phpModule).put(property.getKey(), value);
+        } else {
+            getPreferences(phpModule).remove(property.getKey());
+        }
+    }
+
+    public static void putMore(PhpModule phpModule, Property<? extends Object> property, List<String> values) {
+        if (values.isEmpty()
+                || Collections.singletonList(property.getDefaultValue(phpModule)).equals(values)) {
+            put(phpModule, property, null);
+        } else {
+            put(phpModule, property, StringUtils.implode(values, SEPARATOR));
+        }
+    }
+
+    public static void putBoolean(PhpModule phpModule, Property<Boolean> property, boolean value) {
+        put(phpModule, property, Boolean.toString(value));
     }
 
     private static Preferences getPreferences(PhpModule phpModule) {
         return phpModule.getPreferences(ApiGenPreferences.class, false);
+    }
+
+    //~ Inner classes
+
+    public static class Property<T> {
+
+        private final String key;
+
+        private Property(String key) {
+            assert key != null;
+            this.key = key;
+        }
+
+        String getKey() {
+            return key;
+        }
+
+        public T getDefaultValue(PhpModule phpModule) {
+            return null;
+        }
+
     }
 
 }

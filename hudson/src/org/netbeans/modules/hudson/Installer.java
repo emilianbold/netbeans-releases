@@ -70,7 +70,7 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     /** #159810: avoid loading anything further unless this module is known to be in use */
-    private static boolean active() {
+    public static boolean active() {
         try {
             return NbPreferences.forModule(Installer.class).nodeExists("instances"); // NOI18N
         } catch (BackingStoreException ex) {

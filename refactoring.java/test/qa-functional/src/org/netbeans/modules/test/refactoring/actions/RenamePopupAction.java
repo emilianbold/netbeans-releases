@@ -61,6 +61,7 @@ public class RenamePopupAction implements TestAction {
     public void perform(EditorOperator editor) {
         editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);
         JPopupMenuOperator jpmo = new JPopupMenuOperator();
+        new org.netbeans.jemmy.EventTool().waitNoEvent(500);
         jpmo.pushMenuNoBlock(new String[]{"Refactor","Rename..."});        
     }
                         

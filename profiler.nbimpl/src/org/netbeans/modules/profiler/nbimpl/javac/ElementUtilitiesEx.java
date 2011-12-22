@@ -150,6 +150,7 @@ public class ElementUtilitiesEx {
      * @param fuzzy Indicates whether in case of an unresolvable anonymous inner class the parent class should be returned instead
      * @return Returns a TypeElement representing the resolved class or NULL
      */
+    @NbBundle.Messages("MDRUtils_ClassNotResolvedMessage=Can not resolve class {0}")
     public static TypeElement resolveClassByName(
             final String className, final CompilationController controller, final boolean fuzzy) {
         if ((className == null) || (controller == null)) {
@@ -194,7 +195,7 @@ public class ElementUtilitiesEx {
         }
 
         if (mainClass == null) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ElementUtilitiesEx.class, "MDRUtils_ClassNotResolvedMessage", className)); // notify user
+            StatusDisplayer.getDefault().setStatusText(Bundle.MDRUtils_ClassNotResolvedMessage(className)); // notify user
         }
 
         return mainClass;

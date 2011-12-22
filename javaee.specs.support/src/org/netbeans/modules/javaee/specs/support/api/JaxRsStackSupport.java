@@ -44,7 +44,10 @@ package org.netbeans.modules.javaee.specs.support.api;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.javaee.specs.support.bridge.IdeJaxRsSupportImpl;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.openide.util.Parameters;
@@ -72,6 +75,27 @@ public final class JaxRsStackSupport {
             return getDefault();
         }
         return new JaxRsStackSupport( support );
+    }
+    
+    public static JaxRsStackSupport getInstance( @NonNull Project project){
+        J2eeModuleProvider moduleProvider = project.getLookup().lookup(
+                J2eeModuleProvider.class);
+        if ( moduleProvider != null ){
+            try {
+                String id = moduleProvider.getServerInstanceID();
+                if ( id == null ){
+                    return null;
+                }
+                J2eePlatform j2eePlatform = Deployment.getDefault().
+                    getServerInstance(id).getJ2eePlatform();
+                return JaxRsStackSupport.getInstance(j2eePlatform);
+            } catch (InstanceRemovedException ex) {
+                return null;
+            }
+        }
+        else{
+            return null;
+        }
     }
     
     public static JaxRsStackSupport getDefault(){
@@ -104,5 +128,14 @@ public final class JaxRsStackSupport {
      */
     public void removeJaxRsLibraries(Project project) {
         impl.removeJaxRsLibraries(project); 
+    }
+    
+    /**
+     * If custom Jersey library is chosen ( f.e. NB bundled ) then 
+     * some JEE servers require additional project configuration.
+     * Otherwise collision could happen between bundled server Jersey and custom library.
+     */
+    public void configureCustomJersey( Project project ){
+        impl.configureCustomJersey( project );
     }
 }

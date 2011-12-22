@@ -129,6 +129,7 @@ tokens {
 	CSM_CTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FUNCTION_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_FUNCTION_LIKE_VARIABLE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FUNCTION_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FUNCTION_RET_FUN_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_FUNCTION_RET_FUN_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -269,7 +270,7 @@ tokens {
 }
 
 {
-    public static CppParserAction action;
+    public CppParserAction action;
 
     // Defines for flags passed to init methods
     public static final int CPP_STATEMENT_TRACE		= 0x1;
@@ -702,7 +703,7 @@ template_explicit_specialization
     (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
         // Template explicit specialisation function definition (VK 30/05/06)
-        (declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
+        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try))=>
         {if(statementTrace >= 1) printf("external_declaration_0a[%d]: template " + "explicit-specialisation function definition\n", LT(1).getLine());}
         function_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
@@ -850,7 +851,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                             else	   #external_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #external_declaration_template); }
 		|
 			// Templated function declaration
-			(declaration_specifiers[false, false] function_declarator[false, false] SEMICOLON)=> 
+			(declaration_specifiers[false, false] function_declarator[false, false, false] SEMICOLON)=> 
 			{if (statementTrace>=1) 
 				printf("external_declaration_template_11c[%d]: Function template " +
 					"declaration\n", LT(1).getLine());
@@ -859,7 +860,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #external_declaration_template); }
     |
         // Templated function definition
-        ((template_head)? declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
+        ((template_head)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try))=>
         {if (statementTrace>=1) printf("external_declaration_template_11d[%d]: Function template " + "definition\n", LT(1).getLine());}
         (template_head)? function_definition
         { #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
@@ -1012,11 +1013,22 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             (options {greedy=true;} :function_attribute_specification)?
             declaration_specifiers[false, false]
             (options {greedy=true;} :function_attribute_specification)?
-            function_declarator[false, false] (EOF|SEMICOLON)
+            function_declarator[false, false, true] (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+    |
+        // Function declaration
+        (   (LITERAL___extension__)?
+            (options {greedy=true;} :function_attribute_specification)?
+            declaration_specifiers[false, false]
+            (options {greedy=true;} :function_attribute_specification)?
+            function_declarator[false, false, false] (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
+        { #external_declaration = #(#[CSM_FUNCTION_LIKE_VARIABLE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_DECLARATION"], #external_declaration); }
     |
         // Function declaration without ID in return type
         // IZ 146150 : 'unexpected token: ;' message appears on 'extern int errno;' line
@@ -1024,36 +1036,36 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             (options {greedy=true;} :function_attribute_specification)?
             declaration_specifiers[false, true]
             (options {greedy=true;} :function_attribute_specification)?
-            function_declarator[false, true] (EOF|SEMICOLON)
+            function_declarator[false, true, false] (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
-        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+        { #external_declaration = #(#[CSM_FUNCTION_LIKE_VARIABLE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_DECLARATION"], #external_declaration); }
     |
         // Extern function declaration without return type but with parameters list
         (   (LITERAL___extension__)?
             (options {greedy=true;} :function_attribute_specification)?
             LITERAL_extern
             (options {greedy=true;} :function_attribute_specification)?
-            function_declarator[false, false] (EOF|SEMICOLON)
+            function_declarator[false, false, false] (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declExternFunction]
-        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+        { #external_declaration = #(#[CSM_FUNCTION_LIKE_VARIABLE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_DECLARATION"], #external_declaration); }
     |
         // Simple function declaration without return type
         (ID LPAREN (simple_parameter_list)? RPAREN (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declSimpleFunction]
-        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+        { #external_declaration = #(#[CSM_FUNCTION_LIKE_VARIABLE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_DECLARATION"], #external_declaration); }
     |
         // Function definition with return value
         (   (LITERAL___extension__)?
             (options {greedy=true;} :function_attribute_specification!)?
             declaration_specifiers[false, false]
             (options {greedy=true;} :function_attribute_specification!)? 
-            function_declarator[true, false] (LCURLY | LITERAL_try)
+            function_declarator[true, false, false] (LCURLY | LITERAL_try)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_8[%d]: Function definition\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
@@ -1062,7 +1074,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         // FIXUP: Function definition without return value
         // till not correct hanlding in function_definition (external_declaration_7)
         // functions without return type
-		(function_declarator[true, false] (function_K_R_parameter_list)? LCURLY)=>
+		(function_declarator[true, false, false] (function_K_R_parameter_list)? LCURLY)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_8a[%d]: Function definition without ret value\n",
 				LT(1).getLine());
@@ -1071,7 +1083,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
 	|
 		// K & R Function definition
-		(declaration_specifiers[false, false]	function_declarator[true, false] declaration[declOther])=>
+		(declaration_specifiers[false, false]	function_declarator[true, false, false] declaration[declOther])=>
 		{K_and_R = true;
 		 if (statementTrace>=1) 
 			printf("external_declaration_9[%d]: K & R function definition\n",
@@ -1238,7 +1250,7 @@ member_declaration_template
 			{ #member_declaration_template = #(#[CSM_CTOR_TEMPLATE_DEFINITION, "CSM_CTOR_TEMPLATE_DEFINITION"], #member_declaration_template); }
 		|
 			// Templated function declaration
-			(declaration_specifiers[false, false] function_declarator[false, false] SEMICOLON)=>
+			(declaration_specifiers[false, false] function_declarator[false, false, false] SEMICOLON)=>
 			{if (statementTrace>=1) 
 				printf("member_declaration_13b[%d]: Function template " +
 					"declaration\n", LT(1).getLine());
@@ -1248,7 +1260,7 @@ member_declaration_template
     |
         // Templated function definition
         // Function definition DW 2/6/97
-        (declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
+        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try))=>
         {if (statementTrace>=1) printf("member_declaration_13c[%d]: Function template " + "definition\n", LT(1).getLine());}
         function_definition
         { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
@@ -1304,12 +1316,15 @@ member_declaration
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
+                {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
 				LT(1).getLine());
 		}
-		enum_specifier (member_declarator_list)? SEMICOLON!	//{end_of_stmt();}
+		enum_specifier (member_declarator_list)? 
+                {action.end_enum_declaration(LT(1));}
+                SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|	
                 //enum typedef )))	
@@ -1384,7 +1399,7 @@ member_declaration
         // Function declaration
         (   (LITERAL___extension__)?
             declaration_specifiers[false, false]
-            function_declarator[false, false]
+            function_declarator[false, false, false]
             (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("member_declaration_6[%d]: Function declaration\n", LT(1).getLine());}
@@ -1394,7 +1409,7 @@ member_declaration
         // Function definition
         (   (LITERAL___extension__)?
             declaration_specifiers[false, false]
-            function_declarator[true, false]
+            function_declarator[true, false, false]
             (LCURLY | LITERAL_try)
         ) =>
         {beginFieldDeclaration(); if(statementTrace>=1) printf("member_declaration_7[%d]: Function definition\n", LT(1).getLine());}
@@ -1402,7 +1417,7 @@ member_declaration
         { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
     |
         // Member without a type (I guess it can only be a function declaration or definition)
-        ((LITERAL_static)? function_declarator[false, false] (EOF|SEMICOLON))=>
+        ((LITERAL_static)? function_declarator[false, false, false] (EOF|SEMICOLON))=>
 		{beginFieldDeclaration();
                 if( reportOddWarnings ) {
                     printf("member_declaration[%d]: Warning Function declaration found without typename\n", LT(1).getLine());
@@ -1411,13 +1426,13 @@ member_declaration
 			printf("member_declaration_11a[%d]: Function declaration\n",
 				LT(1).getLine());
 		}
-		(LITERAL_static)? function_declarator[false, false] 
+		(LITERAL_static)? function_declarator[false, false, false] 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON ) //{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|
 		// Member without a type (I guess it can only be a function definition)
-		((LITERAL_static)? function_declarator[true, false] LCURLY)=>
+		((LITERAL_static)? function_declarator[true, false, false] LCURLY)=>
 		{
                     if( reportOddWarnings ) {
                         printf("member_function[%d]: Warning Function definition found without typename\n", LT(1).getLine());
@@ -1427,7 +1442,7 @@ member_declaration
 				LT(1).getLine());
 		    }
 		}
-		(LITERAL_static)? function_declarator[true, false] compound_statement //{endFunctionDefinition();}
+		(LITERAL_static)? function_declarator[true, false, false] compound_statement //{endFunctionDefinition();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
         |       
                 // function declaration with function as return type
@@ -1501,7 +1516,7 @@ function_definition_no_ret_type
 	:	// don't want next action as an init-action due to (...)=> caller
 	//{ beginFunctionDefinition(); }
 	(	// Next line is equivalent to guarded predicate in PCCTS
-		function_declarator[true, false]
+		function_declarator[true, false, false]
 		(	options{warnWhenFollowAmbig = false;}:
 			//(declaration)*	// Possible for K & R definition
                         (function_K_R_parameter_list)?
@@ -1516,7 +1531,7 @@ function_declarator_with_fun_as_ret_type  [boolean definition]
         :
                 (ptr_operator)=> ptr_operator function_declarator_with_fun_as_ret_type[definition]
                 |
-                LPAREN function_declarator[definition, false] RPAREN function_params
+                LPAREN function_declarator[definition, false, false] RPAREN function_params
         ;
     
 function_declaration_with_fun_as_ret_type
@@ -1562,7 +1577,7 @@ function_definition
     //              {( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
     declaration_specifiers[false, false]
     (options {greedy=true;} :function_attribute_specification!)?
-    function_declarator[true, false]
+    function_declarator[true, false, false]
     (   options{warnWhenFollowAmbig = false;}:
         //(declaration)*	// Possible for K & R definition
         (function_K_R_parameter_list)?
@@ -1797,7 +1812,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
         )
         (options {greedy=true;} : type_attribute_specification)?
         (sc = storage_class_specifier!)?
-        (   id = qualified_id
+        (   id = class_qualified_id
             (options{generateAmbigWarnings = false;}:
                 {
                     saveClass = enclosingClass;
@@ -1886,6 +1901,7 @@ enumerator_list
 
 enumerator
 	:	id:ID (ASSIGNEQUAL constant_expression)?
+                {action.enumerator(id);}
 		{enumElement((id.getText()));}
 	;
 
@@ -1918,6 +1934,31 @@ qualified_id returns [String q = ""]
 	)
 	{q = qitem.toString(); #qualified_id = #(#[CSM_QUALIFIED_ID, q], #qualified_id);}
 	;
+
+class_qualified_id returns [String q = ""]
+{
+    String so;
+    StringBuilder qitem = new StringBuilder();
+}
+:
+    so =  scope_override { qitem.append(so); }
+    (  
+        id:ID
+        { if(so.isEmpty()) {action.class_name(id);} }
+        (options{warnWhenFollowAmbig = false;}:
+            LESSTHAN template_argument_list GREATERTHAN)?
+            {qitem.append(id.getText());}
+        |  
+            LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
+            LESSTHAN template_argument_list GREATERTHAN)?
+            {qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+        |
+            LITERAL_this  // DW 21/07/03 fix to pass test8.i
+        |
+            (LITERAL_true|LITERAL_false) // DW 21/07/03 fix to pass test8.i
+    )
+    {q = qitem.toString(); #class_qualified_id = #(#[CSM_QUALIFIED_ID, q], #class_qualified_id);}
+;
 
 typeID
 	:	{isTypeName((LT(1).getText()))}?
@@ -2079,7 +2120,7 @@ conversion_function_decl_or_def returns [boolean definition = false]
 		LITERAL_OPERATOR declaration_specifiers[true, false]
                 (ptr_operator)*
                 (LESSTHAN template_parameter_list GREATERTHAN)?
-		LPAREN (parameter_list)? RPAREN	
+		LPAREN (parameter_list[false])? RPAREN	
 		(tq = cv_qualifier)?
 		(exception_specification)?
 		(	compound_statement { definition = true; }
@@ -2202,7 +2243,7 @@ direct_declarator[int kind, int level]
                     if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(dtor.getText()));
 		}
 		LPAREN //{declaratorParameterList(false);}
-		(parameter_list)?
+		(parameter_list[false])?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
 		LPAREN declarator[kind, level+1] RPAREN
@@ -2226,7 +2267,7 @@ function_like_var_declarator
 		id = idInBalanceParensHard
 		{declaratorID(id, qiFun);}
 		LPAREN //{declaratorParameterList(false);}
-		(parameter_list)?
+		(parameter_list[false])?
 		RPAREN //{declaratorEndParameterList(false);}
 		(tq = cv_qualifier)*
 		(exception_specification)?
@@ -2244,7 +2285,7 @@ declarator_suffixes
 		{declaratorArray();}
 	|	{(!((LA(1)==LPAREN)&&(LA(2)==ID))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
 		LPAREN //{declaratorParameterList(false);}
-		(parameter_list)?
+		(parameter_list[false])?
 		RPAREN //{declaratorEndParameterList(false);}
 		(tq = cv_qualifier)*
 		(exception_specification)?
@@ -2258,24 +2299,24 @@ declarator_suffixes
  *
  * TER: warning: seems that "ID::" will always bypass and go to 2nd alt :(
  */
-function_declarator [boolean definition, boolean allowParens]
+function_declarator [boolean definition, boolean allowParens, boolean symTabCheck]
     :
         //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
-        (ptr_operator)=> ptr_operator function_declarator[definition, allowParens]
+        (ptr_operator)=> ptr_operator function_declarator[definition, allowParens, symTabCheck]
     |	
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens] RPAREN (SEMICOLON | RPAREN)) =>
-        LPAREN function_declarator[definition, allowParens] RPAREN
+        {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
+        LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
-        function_direct_declarator[definition]
+        function_direct_declarator[definition, symTabCheck]
     ;
 
-function_direct_declarator [boolean definition] 
+function_direct_declarator [boolean definition, boolean symTabCheck] 
 	{String q; CPPParser.TypeQualifier tq;}
 	:
                 (options {greedy=true;} : function_attribute_specification)?
 		(
-		function_direct_declarator_2[definition]		
+		function_direct_declarator_2[definition, symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
@@ -2292,7 +2333,7 @@ function_direct_declarator [boolean definition]
 	;
         
 protected
-function_direct_declarator_2 [boolean definition] 
+function_direct_declarator_2 [boolean definition, boolean symTabCheck] 
     {String q; CPPParser.TypeQualifier tq;}
     :
     /* predicate indicate that plain ID is ok here; this counteracts any
@@ -2312,21 +2353,21 @@ function_direct_declarator_2 [boolean definition]
 		)
 */
         q = idInBalanceParensHard { declaratorID(q, qiFun);}
-        function_parameters
+        function_parameters[symTabCheck]
     ;
 
-function_parameters
+function_parameters [boolean symTabCheck]
     :
     LPAREN
     (
-        (LPAREN) => function_parameters
+        (LPAREN) => function_parameters[symTabCheck]
     |
         {   //functionParameterList();
             if (K_and_R == false) {
                 in_parameter_list = true;
             }
         }
-        (parameter_list)?
+        (parameter_list[symTabCheck])?
         {   if (K_and_R == false) {
                 in_parameter_list = false;
             } else {
@@ -2347,7 +2388,7 @@ function_params
 			    in_parameter_list = true;
 		    }
 		}
-		(parameter_list)? 
+		(parameter_list[false])? 
 		{
 		    if (K_and_R == false) {
 	  		in_parameter_list = false;
@@ -2385,7 +2426,7 @@ ctor_declarator[boolean definition]
         // VV: 06/06/06 handle constructor of class template explicite specialization
         (LESSTHAN template_argument_list GREATERTHAN)?
 	//{declaratorParameterList(definition);}
-	LPAREN (parameter_list)? RPAREN
+	LPAREN (parameter_list[false])? RPAREN
 	//{declaratorEndParameterList(definition);}
 	(exception_specification)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
@@ -2543,15 +2584,15 @@ dtor_body
 	//{endDestructorDefinition();}
 	;
 
-parameter_list
+parameter_list [boolean symTabCheck]
 	:	
-	parameter_declaration_list (ELLIPSIS)?
+	parameter_declaration_list[symTabCheck] (ELLIPSIS)?
 	{ #parameter_list = #(#[CSM_PARMLIST, "CSM_PARMLIST"], #parameter_list); }
 	;
 
-parameter_declaration_list
+parameter_declaration_list [boolean symTabCheck]
 	:	
-	(	parameter_declaration 
+	({!symTabCheck || action.isType(LT(1).getText())}?	parameter_declaration 
 		(// Have not been able to find way of stopping warning of
 		 // non-determinism between alt 1 and exit branch of block
 		 COMMA! parameter_declaration
@@ -2624,7 +2665,7 @@ abstract_declarator_suffix
 	|
 		LPAREN
 		//{declaratorParameterList(false);}
-		(parameter_list)?
+		(parameter_list[false])?
 		RPAREN
 		cv_qualifier_seq
 		//{declaratorEndParameterList(false);}
@@ -3249,7 +3290,7 @@ handler
 	;
 
 exception_declaration
-	:	parameter_declaration_list
+	:	parameter_declaration_list[false]
 	;
 
 /* This is an expression of type void according to the ARM, which

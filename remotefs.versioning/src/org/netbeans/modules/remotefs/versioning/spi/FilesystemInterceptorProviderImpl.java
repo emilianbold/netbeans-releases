@@ -84,8 +84,8 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
-        public boolean canWrite(FileProxyI file) {
-            return VCSFilesystemInterceptor.canWrite(toVCSFileProxy(file));
+        public boolean canWriteReadonlyFile(FileProxyI file) {
+            return VCSFilesystemInterceptor.canWriteReadonlyFile(toVCSFileProxy(file));
         }
 
         @Override
@@ -104,15 +104,18 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
-        public DeleteHandler getDeleteHandler(FileProxyI file) {
-            final VCSFilesystemInterceptor.DeleteHandler deleteHandler = VCSFilesystemInterceptor.getDeleteHandler(toVCSFileProxy(file));
-            return new DeleteHandler() {
+        public IOHandler getDeleteHandler(FileProxyI file) {
+            final VCSFilesystemInterceptor.IOHandler deleteHandler = VCSFilesystemInterceptor.getDeleteHandler(toVCSFileProxy(file));
+            if (deleteHandler != null) {
+                return new IOHandler() {
 
-                @Override
-                public boolean delete(FileProxyI file) {
-                    return deleteHandler.delete(toVCSFileProxy(file));
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        deleteHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override
@@ -148,25 +151,31 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         @Override
         public IOHandler getMoveHandler(FileProxyI from, FileProxyI to) {
             final VCSFilesystemInterceptor.IOHandler moveHandler = VCSFilesystemInterceptor.getMoveHandler(toVCSFileProxy(from), toVCSFileProxy(to));
-            return new IOHandler() {
+            if (moveHandler != null) {
+                return new IOHandler() {
 
-                @Override
-                public void handle() throws IOException {
-                    moveHandler.handle();
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        moveHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override
         public IOHandler getRenameHandler(FileProxyI from, String newName) {
             final VCSFilesystemInterceptor.IOHandler renameHandler = VCSFilesystemInterceptor.getRenameHandler(toVCSFileProxy(from), newName);
-            return new IOHandler() {
+            if (renameHandler != null) {
+                return new IOHandler() {
 
-                @Override
-                public void handle() throws IOException {
-                    renameHandler.handle();
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        renameHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override
@@ -177,13 +186,16 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         @Override
         public FilesystemInterceptorProvider.IOHandler getCopyHandler(FileProxyI from, FileProxyI to) {
             final VCSFilesystemInterceptor.IOHandler copyHandler = VCSFilesystemInterceptor.getCopyHandler(toVCSFileProxy(from), toVCSFileProxy(to));
-            return new FilesystemInterceptorProvider.IOHandler() {
+            if (copyHandler != null) {
+                return new FilesystemInterceptorProvider.IOHandler() {
 
-                @Override
-                public void handle() throws IOException {
-                    copyHandler.handle();
-                }
-            };
+                    @Override
+                    public void handle() throws IOException {
+                        copyHandler.handle();
+                    }
+                };
+            }
+            return null;
         }
 
         @Override

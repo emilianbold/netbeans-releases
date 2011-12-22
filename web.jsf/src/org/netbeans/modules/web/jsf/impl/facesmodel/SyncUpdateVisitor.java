@@ -62,6 +62,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.DisplayName;
 import org.netbeans.modules.web.jsf.api.facesmodel.ElResolver;
 import org.netbeans.modules.web.jsf.api.facesmodel.ExceptionHandlerFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ExternalContextFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.FaceletCacheFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesBehavior;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesClientBehaviorRenderer;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesComponent;
@@ -118,25 +119,25 @@ import org.netbeans.modules.xml.xam.ComponentUpdater;
  *
  * @author Petr Pisl, ads
  */
-class SyncUpdateVisitor extends JSFConfigVisitor.Default 
+class SyncUpdateVisitor extends JSFConfigVisitor.Default
     implements ComponentUpdater<JSFConfigComponent>
 {
-    
+
     private JSFConfigComponent target;
     private Operation operation;
     private int index;
-    
+
     /** Creates a new instance of SyncUpdateVisitor */
     SyncUpdateVisitor() {
     }
-    
+
 
     public void update(JSFConfigComponent target, JSFConfigComponent child, Operation operation) {
         update(target, child, -1 , operation);
     }
 
-    public void update(JSFConfigComponent target, JSFConfigComponent child, 
-            int index, Operation operation) 
+    public void update(JSFConfigComponent target, JSFConfigComponent child,
+            int index, Operation operation)
     {
         assert target != null;
         assert child != null;
@@ -149,11 +150,11 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
     private void insert(String propertyName, JSFConfigComponent component) {
         ((JSFConfigComponentImpl)target).insertAtIndex(propertyName, component, index);
     }
-    
+
     private void remove(String propertyName, JSFConfigComponent component) {
         ((JSFConfigComponentImpl)target).removeChild(propertyName, component);
     }
-    
+
     @Override
     public void visit(ManagedBean component){
         if (target instanceof FacesConfig) {
@@ -164,7 +165,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(NavigationRule component){
         if (target instanceof FacesConfig) {
@@ -175,7 +176,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(NavigationCase component){
         if (target instanceof NavigationRule) {
@@ -186,7 +187,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(Converter component){
         if (target instanceof FacesConfig) {
@@ -241,7 +242,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(SupportedLocale component) {
         if (target instanceof LocaleConfig) {
@@ -252,7 +253,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(ResourceBundle component) {
         if (target instanceof Application) {
@@ -263,7 +264,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(ActionListener component) {
         if (target instanceof Application) {
@@ -274,7 +275,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( DefaultRenderKitId id ) {
         if (target instanceof Application) {
@@ -285,7 +286,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( MessageBundle bundle ) {
         if (target instanceof Application) {
@@ -296,7 +297,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( NavigationHandler handler ) {
         if (target instanceof Application) {
@@ -307,7 +308,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( PartialTraversal traversal ) {
         if (target instanceof Application) {
@@ -318,7 +319,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( StateManager manager ) {
         if (target instanceof Application) {
@@ -329,7 +330,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( ElResolver resolver ) {
         if (target instanceof Application) {
@@ -340,7 +341,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( PropertyResolver resolver ) {
         if (target instanceof Application) {
@@ -351,7 +352,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( VariableResolver resolver ) {
         if (target instanceof Application) {
@@ -362,7 +363,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( ResourceHandler handler ) {
         if (target instanceof Application) {
@@ -373,7 +374,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( FacesSystemEventListener listener ) {
         if (target instanceof Application) {
@@ -384,7 +385,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( DefaultValidators validators ) {
         if (target instanceof Application) {
@@ -395,7 +396,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Ordering ordering ) {
         if (target instanceof FacesConfig) {
@@ -406,7 +407,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( After after ) {
         if (target instanceof Ordering) {
@@ -417,7 +418,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Before before ) {
         if (target instanceof Ordering) {
@@ -428,10 +429,10 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Name name ) {
-        if (target instanceof OrderingElement || target instanceof FacesConfig 
+        if (target instanceof OrderingElement || target instanceof FacesConfig
                 || target instanceof AbsoluteOrdering ) {
             if (operation == Operation.ADD) {
                 insert( OrderingElement.NAME, name);
@@ -440,7 +441,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Others others ) {
         if (target instanceof OrderingElement || target instanceof AbsoluteOrdering ) {
@@ -451,7 +452,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( AbsoluteOrdering ordering ) {
         if (target instanceof FacesConfig  ) {
@@ -462,7 +463,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( FacesValidatorId id ) {
         if (target instanceof DefaultValidators  ) {
@@ -473,7 +474,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Factory factory ) {
         if (target instanceof FacesConfig  ) {
@@ -484,7 +485,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( ApplicationFactory factory ) {
         if (target instanceof Factory  ) {
@@ -495,7 +496,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( ExceptionHandlerFactory factory ) {
         if (target instanceof Factory  ) {
@@ -506,7 +507,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( ExternalContextFactory factory ) {
         if (target instanceof Factory  ) {
@@ -517,7 +518,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( FacesContextFactory factory ) {
         if (target instanceof Factory  ) {
@@ -528,7 +529,18 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
+    @Override
+    public void visit(FaceletCacheFactory factory) {
+        if (target instanceof Factory) {
+            if (operation == Operation.ADD) {
+                insert(Factory.FACELET_CACHE_FACTORY, factory);
+            } else {
+                remove(Factory.FACELET_CACHE_FACTORY, factory);
+            }
+        }
+    }
+
     @Override
     public void visit( PartialViewContextFactory factory ) {
         if (target instanceof Factory  ) {
@@ -539,7 +551,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( LifecycleFactory factory ) {
         if (target instanceof Factory  ) {
@@ -550,7 +562,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( ViewDeclarationLanguageFactory factory ) {
         if (target instanceof Factory  ) {
@@ -561,7 +573,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( TagHandlerDelegateFactory factory ) {
         if (target instanceof Factory  ) {
@@ -572,7 +584,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( RenderKitFactory factory ) {
         if (target instanceof Factory  ) {
@@ -583,7 +595,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( VisitContextFactory factory ) {
         if (target instanceof Factory  ) {
@@ -594,7 +606,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( FacesComponent component ) {
         if (target instanceof FacesConfig  ) {
@@ -605,7 +617,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Facet facet ) {
         if (target instanceof FacesComponent  || target instanceof FacesRenderer) {
@@ -616,7 +628,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Property property ) {
         if (target instanceof PropertyContainer  ) {
@@ -627,7 +639,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( ConfigAttribute attribute ) {
         if (target instanceof AttributeContainer  ) {
@@ -638,7 +650,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Description description ) {
         if (target instanceof DescriptionGroup  ) {
@@ -649,7 +661,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit( Icon icon ) {
         if (target instanceof DescriptionGroup  ) {
@@ -660,7 +672,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  DisplayName name ) {
         if (target instanceof DescriptionGroup  ) {
@@ -671,7 +683,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  FacesManagedProperty property ) {
         if (target instanceof ManagedBean  ) {
@@ -682,7 +694,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  ListEntries entries ) {
         if (target instanceof ManagedBean  ) {
@@ -693,7 +705,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  MapEntries entries ) {
         if (target instanceof ManagedBean  ) {
@@ -704,7 +716,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  If iff ) {
         if (target instanceof NavigationCase  ) {
@@ -715,7 +727,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  Redirect redirect ) {
         if (target instanceof NavigationCase  ) {
@@ -726,7 +738,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  ViewParam viewParam ) {
         if (target instanceof Redirect  ) {
@@ -737,7 +749,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  ReferencedBean referencedBean ) {
         if (target instanceof FacesConfig  ) {
@@ -748,7 +760,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  RenderKit renderKit ) {
         if (target instanceof FacesConfig  ) {
@@ -759,7 +771,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  FacesRenderer renderer ) {
         if (target instanceof RenderKit  ) {
@@ -770,7 +782,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  FacesClientBehaviorRenderer renderer ) {
         if (target instanceof RenderKit  ) {
@@ -781,7 +793,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  Lifecycle lifecycle ) {
         if (target instanceof FacesConfig  ) {
@@ -792,7 +804,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  PhaseListener listener ) {
         if (target instanceof Lifecycle  ) {
@@ -803,7 +815,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  FacesValidator validator ) {
         if (target instanceof FacesConfig  ) {
@@ -814,7 +826,7 @@ class SyncUpdateVisitor extends JSFConfigVisitor.Default
             }
         }
     }
-    
+
     @Override
     public void visit(  FacesBehavior behavior ) {
         if (target instanceof FacesConfig  ) {

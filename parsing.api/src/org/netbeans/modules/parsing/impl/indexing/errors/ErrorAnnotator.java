@@ -65,6 +65,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -207,7 +208,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             FileObject f = it.next();
             try {
                 final URL furl = f.getURL();
-                assert furl.getHost() == null || furl.getHost().isEmpty();
+                assert PathRegistry.noHostPart(furl) : furl;
                 if (urls.contains(furl)) {
                     toRefresh.add(f);
                     Integer i = knownFiles2Error.get(f);
@@ -402,7 +403,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         }
 
         private void update(final URL root) {
-            assert root.getHost() == null || root.getHost().isEmpty();
+            assert PathRegistry.noHostPart(root) : root;
             WORKER_THREAD.post(new Runnable() {
 
                 @Override

@@ -43,6 +43,9 @@ package org.netbeans.modules.remotefs.versioning.spi;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -57,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 @org.openide.util.lookup.ServiceProvider(service=FileOperationsProvider.class, position = 1000)
 public class FileProxyProviderImpl extends FileOperationsProvider {
     private final Map<FileSystem, FileOperations> map = new HashMap<FileSystem, FileOperations>();
+    private static final Logger LOG = Logger.getLogger(FileProxyProviderImpl.class.getName());
 
     @Override
     public synchronized FileOperations getFileOperations(FileSystem fs) {
@@ -72,8 +76,11 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
     }
     
     private static final class FileOperationsImpl extends FileOperations implements VCSFileProxyOperations {
+        private boolean assertIt = false;
+        
         protected FileOperationsImpl(FileSystem fs) {
             super(fs);
+            assert (assertIt = true);
         }
 
         @Override
@@ -83,21 +90,25 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
 
         @Override
         public boolean isDirectory(VCSFileProxy file) {
+            softEDTAssert();
             return isDirectory(toFileProxy(file));
         }
 
         @Override
         public boolean isFile(VCSFileProxy file) {
+            softEDTAssert();
             return isFile(toFileProxy(file));
         }
 
         @Override
         public boolean canWrite(VCSFileProxy file) {
+            softEDTAssert();
             return canWrite(toFileProxy(file));
         }
 
         @Override
         public VCSFileProxy getParentFile(VCSFileProxy file) {
+            softEDTAssert();
             String parent = getDir(toFileProxy(file));
             if (parent == null) {
                 return null;
@@ -122,11 +133,13 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
 
         @Override
         public boolean exists(VCSFileProxy file) {
+            softEDTAssert();
             return exists(toFileProxy(file));
         }
 
         @Override
         public VCSFileProxy normalize(VCSFileProxy file) {
+            softEDTAssert();
             String path = normalizeUnixPath(toFileProxy(file));
             if (file.getPath().equals(path)) {
                 return file;
@@ -145,11 +158,13 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
 
         @Override
         public FileObject toFileObject(VCSFileProxy path) {
+            softEDTAssert();
             return toFileObject(toFileProxy(path));
         }
 
         @Override
         public VCSFileProxy[] list(VCSFileProxy path) {
+            softEDTAssert();
             String[] list = list(toFileProxy(path));
             if (list == null) {
                 return null;
@@ -163,7 +178,16 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
 
         @Override
         public ProcessBuilder createProcessBuilder(VCSFileProxy file) {
+            softEDTAssert();
             return createProcessBuilder(toFileProxy(file));
+        }
+        
+        private void softEDTAssert() {
+            if (assertIt) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    LOG.log(Level.INFO, "Method cannot be called in EDT", new Exception()); //NOI18N
+                }
+            }
         }
     }
 

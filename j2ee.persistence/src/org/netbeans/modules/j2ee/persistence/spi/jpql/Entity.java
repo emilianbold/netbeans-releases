@@ -47,6 +47,7 @@ import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IQuery;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 
 /**
@@ -76,5 +77,10 @@ public class Entity extends ManagedType implements IEntity {
         nq.setName("");
         return new Query(nq, string, getProvider());
     }
-    
+
+    @Override
+    Attributes getAttributes() {
+        org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity entity = (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity) getPersistentObject();
+        return entity.getAttributes();
+    }
 }

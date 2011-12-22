@@ -62,26 +62,18 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TimedTakeSnapshotProfilingPointFactory_PpType=Timed Take Snapshot",
+    "TimedTakeSnapshotProfilingPointFactory_PpDescr=Takes snapshot of currently collected profiling results similarly to Take Snapshot action in Profiler UI. This Profiling Point is defined globally for the profiling session and is invoked at certain time or periodically.",
+//# Timed Take Snapshot at Anagrams.java:32
+    "TimedTakeSnapshotProfilingPointFactory_PpDefaultName={0} in {1}"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String PP_TYPE = NbBundle.getMessage(TimedTakeSnapshotProfilingPointFactory.class,
-                                                              "TimedTakeSnapshotProfilingPointFactory_PpType"); // NOI18N
-    private static final String PP_DESCR = NbBundle.getMessage(TimedTakeSnapshotProfilingPointFactory.class,
-                                                               "TimedTakeSnapshotProfilingPointFactory_PpDescr"); // NOI18N
-    private static final String PP_DEFAULT_NAME = NbBundle.getMessage(TimedTakeSnapshotProfilingPointFactory.class,
-                                                                      "TimedTakeSnapshotProfilingPointFactory_PpDefaultName"); // NOI18N
-                                                                                                                               // -----
-    public static final String TAKE_SNAPSHOT_PP_TYPE = PP_TYPE;
-    public static final String TAKE_SNAPSHOT_PP_DESCR = PP_DESCR;
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getDescription() {
-        return TAKE_SNAPSHOT_PP_DESCR;
+        return Bundle.TimedTakeSnapshotProfilingPointFactory_PpDescr();
     }
 
     public Icon getIcon() {
@@ -102,7 +94,7 @@ public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFa
     }
 
     public String getType() {
-        return TAKE_SNAPSHOT_PP_TYPE;
+        return Bundle.TimedTakeSnapshotProfilingPointFactory_PpType();
     }
 
     public TimedTakeSnapshotProfilingPoint create(Lookup.Provider project) {
@@ -111,10 +103,9 @@ public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFa
         }
 
         String name = Utils.getUniqueName(getType(),
-                                          MessageFormat.format(PP_DEFAULT_NAME,
-                                                               new Object[] {
-                                                                   "", ProjectUtilities.getDisplayName(project)
-                                                               }), project);
+                                          Bundle.TimedTakeSnapshotProfilingPointFactory_PpDefaultName(
+                                                "", ProjectUtilities.getDisplayName(project)), // NOI18N
+                                          project);
 
         return new TimedTakeSnapshotProfilingPoint(name, project, this);
     }

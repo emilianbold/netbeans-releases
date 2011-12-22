@@ -42,11 +42,13 @@
                   </Group>
                   <Component id="classpathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Component id="jScrollPane1" pref="247" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="221" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="addClasspathButton" max="32767" attributes="1"/>
+                          <Component id="addJarButton" max="32767" attributes="1"/>
                           <Component id="removeClasspathButton" alignment="0" max="32767" attributes="1"/>
+                          <Component id="addProjectButton" max="32767" attributes="0"/>
+                          <Component id="addLibraryButton" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="createLibraryButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -68,13 +70,17 @@
               <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="addClasspathButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="addJarButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="addProjectButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="addLibraryButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeClasspathButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane1" alignment="0" min="-2" pref="137" max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" min="-2" pref="144" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="javaFlagsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="javaFlagsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -113,7 +119,6 @@
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
               <StringArray count="0"/>
             </Property>
-            <Property name="selectionMode" type="int" value="0"/>
           </Properties>
           <Events>
             <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="classpathListValueChanged"/>
@@ -121,14 +126,14 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JButton" name="addClasspathButton">
+    <Component class="javax.swing.JButton" name="addJarButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/coherence/server/ui/Bundle.properties" key="CustomizerCommon.addClasspathButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/coherence/server/ui/Bundle.properties" key="CustomizerCommon.addJarButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addClasspathButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addJarButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="removeClasspathButton">
@@ -195,6 +200,26 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createLibraryButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="addProjectButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/coherence/server/ui/Bundle.properties" key="CustomizerCommon.addProjectButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addProjectButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="addLibraryButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/coherence/server/ui/Bundle.properties" key="CustomizerCommon.addLibraryButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addLibraryButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

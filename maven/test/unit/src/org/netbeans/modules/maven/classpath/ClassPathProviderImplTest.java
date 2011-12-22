@@ -226,18 +226,17 @@ public class ClassPathProviderImplTest extends NbTestCase {
         ClassPath[] sourceCPs = pscpp.getProjectClassPaths(ClassPath.SOURCE);
         assertEquals(Arrays.toString(sourceCPs), 2, sourceCPs.length); // src/main/* + src/test/*
         List<ClassPath.Entry> entries = sourceCPs[0].entries();
-        assertEquals(entries.toString(), 4, entries.size());
+        assertEquals(entries.toString(), 2, entries.size());
         assertEquals(entries.toString(), new URL(d.getURL(), "src/main/java/"), entries.get(0).getURL());
-        // 1, 2: scala & groovy
-        assertEquals(entries.toString(), new URL(d.getURL(), "src/main/resources/"), entries.get(3).getURL());
-        assertTrue(entries.get(3).includes("META-INF/"));
-        assertTrue(entries.get(3).includes("META-INF/maven/"));
-        assertTrue(entries.get(3).includes("META-INF/maven/archetype-metadata.xml"));
-        assertFalse(entries.get(3).includes("archetype-resources/"));
-        assertFalse(entries.get(3).includes("archetype-resources/src/"));
-        assertFalse(entries.get(3).includes("archetype-resources/src/main/"));
-        assertFalse(entries.get(3).includes("archetype-resources/src/main/java/"));
-        assertFalse(entries.get(3).includes("archetype-resources/src/main/java/X.java"));
+        assertEquals(entries.toString(), new URL(d.getURL(), "src/main/resources/"), entries.get(1).getURL());
+        assertTrue(entries.get(1).includes("META-INF/"));
+        assertTrue(entries.get(1).includes("META-INF/maven/"));
+        assertTrue(entries.get(1).includes("META-INF/maven/archetype-metadata.xml"));
+        assertFalse(entries.get(1).includes("archetype-resources/"));
+        assertFalse(entries.get(1).includes("archetype-resources/src/"));
+        assertFalse(entries.get(1).includes("archetype-resources/src/main/"));
+        assertFalse(entries.get(1).includes("archetype-resources/src/main/java/"));
+        assertFalse(entries.get(1).includes("archetype-resources/src/main/java/X.java"));
     }
 
 }

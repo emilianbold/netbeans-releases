@@ -65,6 +65,7 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
+import org.netbeans.modules.maven.spi.queries.JavaLikeRootProvider;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
@@ -200,15 +201,11 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 toReturn.add(fo);
             }
         }
-        URI scala = project.getScalaDirectory(false);
-        FileObject scalafo = FileUtilities.convertURItoFileObject(scala);
-        if (scalafo != null) {
-            toReturn.add(scalafo);
-        }
-        URI groovy = project.getGroovyDirectory(false);
-        FileObject groovyfo = FileUtilities.convertURItoFileObject(groovy);
-        if (groovyfo != null) {
-            toReturn.add(groovyfo);
+        for (JavaLikeRootProvider rp : project.getLookup().lookupAll(JavaLikeRootProvider.class)) {
+            FileObject fo = project.getProjectDirectory().getFileObject("src/main/" + rp.kind());
+            if (fo != null) {
+                toReturn.add(fo);
+            }
         }
 
         URI[] res = project.getResources(false);
@@ -246,15 +243,11 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 toReturn.add(fo);
             }
         }
-        URI scala = project.getScalaDirectory(true);
-        FileObject scalafo = FileUtilities.convertURItoFileObject(scala);
-        if (scalafo != null) {
-            toReturn.add(scalafo);
-        }
-        URI groovy = project.getGroovyDirectory(true);
-        FileObject groovyfo = FileUtilities.convertURItoFileObject(groovy);
-        if (groovyfo != null) {
-            toReturn.add(groovyfo);
+        for (JavaLikeRootProvider rp : project.getLookup().lookupAll(JavaLikeRootProvider.class)) {
+            FileObject fo = project.getProjectDirectory().getFileObject("src/test/" + rp.kind());
+            if (fo != null) {
+                toReturn.add(fo);
+            }
         }
 
         URI[] res = project.getResources(true);

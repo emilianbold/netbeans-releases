@@ -76,9 +76,9 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
 import org.codehaus.plexus.util.FileUtils;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -110,14 +110,11 @@ import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -1091,52 +1088,34 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
             public void actionPerformed(ActionEvent e) {
                 DataObject dobj = getOriginal().getLookup().lookup(DataObject.class);
-                if (dobj != null && (javadoc || !dobj.getPrimaryFile().isFolder())) {
+                if (dobj == null) {
+                    return;
+                }
+                if (javadoc) {
                     try {
                         FileObject fil = dobj.getPrimaryFile();
                         FileObject jar = FileUtil.getArchiveFile(fil);
                         FileObject root = FileUtil.getArchiveRoot(jar);
                         String rel = FileUtil.getRelativePath(root, fil);
-                        if (rel.endsWith(".class")) { //NOI18N
-                            rel = rel.replaceAll("class$", javadoc ? "html" : ""); //NOI18N
+                        rel = rel.replaceAll("[.]class$", ".html"); //NOI18N
+                        JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.getURL());
+                        if (fil.isFolder()) {
+                            rel = rel + "/package-summary.html"; //NOI18N
                         }
-                        if (javadoc) {
-                            JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.getURL());
-                            if (fil.isFolder()) {
-                                rel = rel + "/package-summary.html"; //NOI18N
-                            }
-                            URL javadocUrl = findJavadoc(rel, res.getRoots());
-                            if (javadocUrl != null) {
-                                HtmlBrowser.URLDisplayer.getDefault().showURL(javadocUrl);
-                            } else {
-                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
-                            }
-                            return;
+                        URL javadocUrl = findJavadoc(rel, res.getRoots());
+                        if (javadocUrl != null) {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(javadocUrl);
                         } else {
-                            SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(root.getURL());
-                            for (FileObject srcRoot : res.getRoots()) {
-                                FileObject src = srcRoot.getFileObject(rel + "java"); //NOI18N
-                                if (src == null) {
-                                    src = srcRoot.getFileObject(rel + "scala"); //NOI18N
-                                }
-                                if (src == null) {
-                                    src = srcRoot.getFileObject(rel + "groovy"); //NOI18N
-                                }
-                                if (src != null) {
-                                    DataObject dobj2 = DataObject.find(src);
-                                    if (tryOpen(dobj2)) {
-                                        return;
-                                    }
-                                }
-                            }
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
                         }
                     } catch (FileStateInvalidException ex) {
                         Exceptions.printStackTrace(ex);
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
-                    //applies to  show source only..
-                    tryOpen(dobj);
+                } else if (!dobj.getPrimaryFile().isFolder()) {
+                    Openable oc = dobj.getLookup().lookup(Openable.class);
+                    if (oc != null) {
+                        oc.open();
+                    }
                 }
             }
 
@@ -1166,20 +1145,6 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 return null;
             }
 
-            private boolean tryOpen(DataObject dobj2) {
-                EditCookie ec = dobj2.getLookup().lookup(EditCookie.class);
-                if (ec != null) {
-                    ec.edit();
-                    return true;
-                } else {
-                    OpenCookie oc = dobj2.getLookup().lookup(OpenCookie.class);
-                    if (oc != null) {
-                        oc.open();
-                        return true;
-                    }
-                }
-                return false;
-            }
         }
     }
 

@@ -698,7 +698,9 @@ public final class ProjectXMLManager {
                         boolean compile = findElement(depEl, TEST_DEPENDENCY_COMPILE) != null;
                         if (_cnb != null) {
                             ModuleEntry me = ml.getEntry(_cnb);
-                            if (me != null) {
+                            if (me == null) {
+                                me = new NonexistentModuleEntry(_cnb);
+                            }
                                 TestModuleDependency tmd = new TestModuleDependency(me, test, recursive, compile);
                                 if (!directTestDeps.add(tmd)) {
                                     // testdependency already exists
@@ -710,7 +712,6 @@ public final class ProjectXMLManager {
                                             + tmd.getModule().getCodeNameBase() + " is duplicated!"; // NOI18N
                                     Util.err.log(ErrorManager.WARNING, msg);
                                 }
-                            }
                         }
                     }
                 }

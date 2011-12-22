@@ -51,7 +51,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
@@ -67,6 +66,9 @@ public class Type implements IType{
     private ITypeDeclaration tDeclaration;
 
     public Type(TypeRepository typeRepository, Element element){
+        if(element == null){
+            System.out.println("ATT");
+        }
         this.element = element;
         this.repository = typeRepository;
     }

@@ -80,6 +80,18 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "WizardPanel1UI_SelectProjectString=<Select Profiling Point project>",
+    "WizardPanel1UI_PpTypeString=Profiling point &type:",
+    "WizardPanel1UI_PpProjectString=Profiling point &project:",
+    "WizardPanel1UI_DescriptionLabelText=Description:",
+    "WizardPanel1UI_SupportedModesLabelText=Supported modes:",
+    "WizardPanel1UI_MonitorModeString=Monitor",
+    "WizardPanel1UI_CpuModeString=CPU",
+    "WizardPanel1UI_MemoryModeString=Memory",
+    "WizardPanel1UI_PpListAccessName=List of available Profiling Points",
+    "WizardPanel1UI_ProjectsListAccessName=List of open projects"
+})
 public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -115,23 +127,6 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String SELECT_PROJECT_STRING = NbBundle.getMessage(WizardPanel1UI.class,
-                                                                            "WizardPanel1UI_SelectProjectString"); // NOI18N
-    private static final String PP_TYPE_STRING = NbBundle.getMessage(WizardPanel1UI.class, "WizardPanel1UI_PpTypeString"); // NOI18N
-    private static final String PP_PROJECT_STRING = NbBundle.getMessage(WizardPanel1UI.class, "WizardPanel1UI_PpProjectString"); // NOI18N
-    private static final String DESCRIPTION_LABEL_TEXT = NbBundle.getMessage(WizardPanel1UI.class,
-                                                                             "WizardPanel1UI_DescriptionLabelText"); // NOI18N
-    private static final String SUPPORTED_MODES_LABEL_TEXT = NbBundle.getMessage(WizardPanel1UI.class,
-                                                                                 "WizardPanel1UI_SupportedModesLabelText"); // NOI18N
-    private static final String MONITOR_MODE_STRING = NbBundle.getMessage(WizardPanel1UI.class, "WizardPanel1UI_MonitorModeString"); // NOI18N
-    private static final String CPU_MODE_STRING = NbBundle.getMessage(WizardPanel1UI.class, "WizardPanel1UI_CpuModeString"); // NOI18N
-    private static final String MEMORY_MODE_STRING = NbBundle.getMessage(WizardPanel1UI.class, "WizardPanel1UI_MemoryModeString"); // NOI18N
-    private static final String PP_LIST_ACCESS_NAME = NbBundle.getMessage(WizardPanel1UI.class, "WizardPanel1UI_PpListAccessName"); // NOI18N
-    private static final String PROJECTS_LIST_ACCESS_NAME = NbBundle.getMessage(WizardPanel1UI.class,
-                                                                                "WizardPanel1UI_ProjectsListAccessName"); // NOI18N
-                                                                                                                          // -----
     private static final String HELP_CTX_KEY = "PPointsWizardPanel1UI.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static final Icon MONITOR_ICON = Icons.getIcon(ProfilerIcons.MONITORING);
@@ -187,9 +182,9 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
             ppointProjectCombo.setSelectedItem(project);
         }
         
-        if ((project == null || !project.equals(ppointProjectCombo.getSelectedItem())) && (ppointProjectCombo.getItemAt(0) != SELECT_PROJECT_STRING)) {
-            ppointProjectCombo.insertItemAt(SELECT_PROJECT_STRING, 0);
-            ppointProjectCombo.setSelectedItem(SELECT_PROJECT_STRING);
+        if ((project == null || !project.equals(ppointProjectCombo.getSelectedItem())) && (ppointProjectCombo.getItemAt(0) != Bundle.WizardPanel1UI_SelectProjectString())) {
+            ppointProjectCombo.insertItemAt(Bundle.WizardPanel1UI_SelectProjectString(), 0);
+            ppointProjectCombo.setSelectedItem(Bundle.WizardPanel1UI_SelectProjectString());
         }
     }
 
@@ -218,7 +213,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         GridBagConstraints constraints;
 
         ppointTypeCaptionLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(ppointTypeCaptionLabel, PP_TYPE_STRING);
+        org.openide.awt.Mnemonics.setLocalizedText(ppointTypeCaptionLabel, Bundle.WizardPanel1UI_PpTypeString());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -230,7 +225,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
 
         ppointTypeTableModel = new PPointTypeTableModel();
         ppointTypeTable = new JExtendedTable(ppointTypeTableModel);
-        ppointTypeTable.getAccessibleContext().setAccessibleName(PP_LIST_ACCESS_NAME);
+        ppointTypeTable.getAccessibleContext().setAccessibleName(Bundle.WizardPanel1UI_ProjectsListAccessName());
         ppointTypeCaptionLabel.setLabelFor(ppointTypeTable);
         ppointTypeTable.setTableHeader(null);
         ppointTypeTable.setRowSelectionAllowed(true);
@@ -261,7 +256,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         add(new JExtendedTablePanel(ppointTypeTable), constraints);
 
         ppointProjectLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(ppointProjectLabel, PP_PROJECT_STRING);
+        org.openide.awt.Mnemonics.setLocalizedText(ppointProjectLabel, Bundle.WizardPanel1UI_PpProjectString());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 2;
@@ -271,7 +266,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.insets = new Insets(0, 0, 5, 10);
         add(ppointProjectLabel, constraints);
 
-        ppointProjectCombo = new JComboBox(new Object[] { SELECT_PROJECT_STRING }) {
+        ppointProjectCombo = new JComboBox(new Object[] { Bundle.WizardPanel1UI_SelectProjectString()}) {
                 public Dimension getMaximumSize() {
                     return getPreferredSize();
                 }
@@ -281,7 +276,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
                 }
                 ;
             };
-        ppointProjectLabel.getAccessibleContext().setAccessibleName(PROJECTS_LIST_ACCESS_NAME);
+        ppointProjectLabel.getAccessibleContext().setAccessibleName(Bundle.WizardPanel1UI_ProjectsListAccessName());
         ppointProjectLabel.setLabelFor(ppointProjectCombo);
         ppointProjectCombo.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -298,7 +293,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.insets = new Insets(0, 15, 12, 10);
         add(ppointProjectCombo, constraints);
 
-        ppointDescriptionCaptionLabel = new JLabel(DESCRIPTION_LABEL_TEXT);
+        ppointDescriptionCaptionLabel = new JLabel(Bundle.WizardPanel1UI_DescriptionLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 4;
@@ -356,7 +351,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
 
         JPanel effectiveModesContainer = new JPanel(new GridBagLayout());
 
-        ppointEffectiveCaptionLabel = new JLabel(SUPPORTED_MODES_LABEL_TEXT) {
+        ppointEffectiveCaptionLabel = new JLabel(Bundle.WizardPanel1UI_SupportedModesLabelText()) {
                 public Dimension getPreferredSize() {
                     return new Dimension(super.getPreferredSize().width, mheight);
                 }
@@ -373,7 +368,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.insets = new Insets(0, 0, 0, 10);
         effectiveModesContainer.add(ppointEffectiveCaptionLabel, constraints);
 
-        ppointEffectiveMonitorLabel = new JLabel(MONITOR_MODE_STRING, MONITOR_ICON, SwingConstants.LEFT);
+        ppointEffectiveMonitorLabel = new JLabel(Bundle.WizardPanel1UI_MonitorModeString(), MONITOR_ICON, SwingConstants.LEFT);
         ppointEffectiveMonitorLabel.setVisible(false); // TODO: remove once Monitor mode will support Profiling Points
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -383,7 +378,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.insets = new Insets(0, 0, 0, 10);
         effectiveModesContainer.add(ppointEffectiveMonitorLabel, constraints);
 
-        ppointEffectiveCPULabel = new JLabel(CPU_MODE_STRING, CPU_ICON, SwingConstants.LEFT);
+        ppointEffectiveCPULabel = new JLabel(Bundle.WizardPanel1UI_CpuModeString(), CPU_ICON, SwingConstants.LEFT);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
         constraints.gridy = 0;
@@ -392,7 +387,7 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         constraints.insets = new Insets(0, 0, 0, 10);
         effectiveModesContainer.add(ppointEffectiveCPULabel, constraints);
 
-        ppointEffectiveMemoryLabel = new JLabel(MEMORY_MODE_STRING, MEMORY_ICON, SwingConstants.LEFT);
+        ppointEffectiveMemoryLabel = new JLabel(Bundle.WizardPanel1UI_MemoryModeString(), MEMORY_ICON, SwingConstants.LEFT);
         constraints = new GridBagConstraints();
         constraints.gridx = 3;
         constraints.gridy = 0;
@@ -425,8 +420,8 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
     }
 
     private void refresh() {
-        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider && (ppointProjectCombo.getItemAt(0) == SELECT_PROJECT_STRING)) {
-            ppointProjectCombo.removeItem(SELECT_PROJECT_STRING);
+        if (ppointProjectCombo.getSelectedItem() instanceof Lookup.Provider && (ppointProjectCombo.getItemAt(0) == Bundle.WizardPanel1UI_SelectProjectString())) {
+            ppointProjectCombo.removeItem(Bundle.WizardPanel1UI_SelectProjectString());
         }
 
         int selectedIndex = ppointTypeTable.getSelectedRow();

@@ -51,6 +51,7 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -88,6 +89,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.maven.spi.queries.JavaLikeRootProvider;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -97,6 +99,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -464,22 +467,24 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public URI[] getSourceRoots(boolean test) {
-        List<String> srcs = new ArrayList<String>();
-        List<String> s1 = test ? getOriginalMavenProject().getTestCompileSourceRoots() : getOriginalMavenProject().getCompileSourceRoots();
-        srcs.addAll(s1);
-        if (!test && getProjectDirectory().getFileObject("src/main/aspect") != null) { //NOI18N
-            srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject("src/main/aspect")).getAbsolutePath()); //NOI18N
+        List<URI> uris = new ArrayList<URI>();
+        for (String root : test ? getOriginalMavenProject().getTestCompileSourceRoots() : getOriginalMavenProject().getCompileSourceRoots()) {
+            uris.add(FileUtilities.convertStringToUri(root));
         }
-
-        URI[] uris = new URI[srcs.size() + 2];
-        int count = 0;
-        for (String str : srcs) {
-            uris[count] = FileUtilities.convertStringToUri(str);
-            count = count + 1;
+        for (JavaLikeRootProvider rp : getLookup().lookupAll(JavaLikeRootProvider.class)) {
+            // XXX for a few purposes (listening) it is desirable to list these even before they exist, but usually it is just noise (cf. #196414 comment #2)
+            FileObject root = getProjectDirectory().getFileObject("src/" + (test ? "test" : "main") + "/" + rp.kind());
+            if (root != null && root.isFolder()) {
+                try {
+                    uris.add(root.getURL().toURI());
+                } catch (FileStateInvalidException x) {
+                    LOG.log(Level.WARNING, null, x);
+                } catch (URISyntaxException x) {
+                    LOG.log(Level.WARNING, null, x);
+                }
+            }
         }
-        uris[uris.length - 2] = getScalaDirectory(test);
-        uris[uris.length - 1] = getGroovyDirectory(test);
-        return uris;
+        return uris.toArray(new URI[uris.size()]);
     }
 
     public URI[] getGeneratedSourceRoots(boolean test) {
@@ -544,23 +549,6 @@ public final class NbMavenProjectImpl implements Project {
         return FileUtilities.getDirURI(getProjectDirectory(), prop);
     }
 
-    public URI getScalaDirectory(boolean test) {
-        //TODO hack, should be supported somehow to read this..
-        String prop = PluginPropertyUtils.getPluginProperty(getOriginalMavenProject(), "org.scala.tools",
-                "scala-maven-plugin", //NOI18N
-                "sourceDir", //NOI18N
-                "compile"); //NOI18N
-
-        prop = prop == null ? (test ? "src/test/scala" : "src/main/scala") : prop; //NOI18N
-
-        return FileUtilities.getDirURI(getProjectDirectory(), prop);
-    }
-
-    public URI getGroovyDirectory(boolean test) {
-        String prop = test ? "src/test/groovy" : "src/main/groovy"; //NOI18N
-        return FileUtilities.getDirURI(getProjectDirectory(), prop);
-    }
-
     public URI[] getResources(boolean test) {
         List<URI> toRet = new ArrayList<URI>();
         List<Resource> res = test ? getOriginalMavenProject().getTestResources() : getOriginalMavenProject().getResources();
@@ -590,11 +578,17 @@ public final class NbMavenProjectImpl implements Project {
                 @Override
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
-                    return !("java".equalsIgnoreCase(name)) && //NOI18N
-                            !("webapp".equalsIgnoreCase(name)) && //NOI18N
-                            !("groovy".equalsIgnoreCase(name)) && //NOI18N
-                            !("scala".equalsIgnoreCase(name)) //NOI18N
-                            && VisibilityQuery.getDefault().isVisible(new File(dir, name));
+                    if ("java".equalsIgnoreCase(name) ||
+                            // XXX this cannot continue in a modular system! rethink "other root" system
+                            "webapp".equalsIgnoreCase(name)) {
+                        return false;
+                    }
+                    for (JavaLikeRootProvider rp : getLookup().lookupAll(JavaLikeRootProvider.class)) {
+                        if (rp.kind().equalsIgnoreCase(name)) {
+                            return false;
+                        }
+                    }
+                    return VisibilityQuery.getDefault().isVisible(new File(dir, name));
                 }
             });
             if (fls != null) { //#166709 listFiles() shall not return null for existing folders

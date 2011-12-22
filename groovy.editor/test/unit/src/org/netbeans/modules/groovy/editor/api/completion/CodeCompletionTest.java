@@ -42,14 +42,11 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import java.util.Map;
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,30 +55,15 @@ import org.openide.filesystems.FileUtil;
 public class CodeCompletionTest extends GroovyTestBase {
 
     String TEST_BASE = "testfiles/completion/";
-    String CLOSURE_BASE = "testfiles/completion/closures/";
 
     public CodeCompletionTest(String testName) {
         super(testName);
         Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
-    protected @Override Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
-
-        if (getName().contains("Closure")) {
-            map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(getDataFile("/testfiles/completion/closures")) }));
-        }
-
-        return map;
+    @Override
+    protected Set<String> additionalSourceClassPath() {
+        return Collections.singleton(TEST_BASE);
     }
 
     public void testMethodCompletion1() throws Exception {
@@ -154,40 +136,6 @@ public class CodeCompletionTest extends GroovyTestBase {
 
     public void testKeywordAboveClass2() throws Exception {
         checkCompletion(TEST_BASE + "KeywordAboveClass2.groovy", "ab^", false);
-    }
-
-    // Closure items named and unnamed
-
-    public void testInsideClosure1() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "(1..3).any {println ^}", false);
-    }
-
-    public void testInsideClosure2() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "[3,4,5].each {println i^}", false);
-    }
-
-    public void testInsideClosure3() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "(1..3).any {aa,ab -> println a^}", false);
-    }
-
-    public void testInsideClosure4() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "[3,4,5].each {xu1,xu2,xu3 -> println xu^}", false);
-    }
-
-    public void testInsideClosure5() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "def t1 = {println i^}", false);
-    }
-
-    public void testInsideClosure6() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "def t2 = {test1,test2,test3 -> println test^}", false);
-    }
-
-    public void testInsideClosure7() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println i^}", false);
-    }
-
-    public void testInsideClosure8() throws Exception {
-        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println lin^}", false);
     }
 
 //    // proper recognition of Constructor calls and the corresponding types.

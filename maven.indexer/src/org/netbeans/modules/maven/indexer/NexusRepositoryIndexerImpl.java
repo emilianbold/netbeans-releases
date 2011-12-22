@@ -885,7 +885,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 // XXX also consider using NexusArchetypeDataSource
                 bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")), BooleanClause.Occur.MUST)); //NOI18N
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                /* There are >512 archetypes in Central, and we want them all in ChooseArchetypePanel
                 fsr.setCount(MAX_RESULT_COUNT);
+                */
                 FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
                 if (response != null) {
                     List<NBVersionInfo> results = convertToNBVersionInfo(response.getResults());

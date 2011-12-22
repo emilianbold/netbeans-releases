@@ -57,7 +57,9 @@ import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.spi.queries.JavaLikeRootProvider;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
@@ -123,11 +125,13 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
                 return toReturn;
             }
         }
-        toReturn = checkRoot(fil, impl.getScalaDirectory(false), impl.getScalaDirectory(true));
-        if (toReturn != null) {
-            return toReturn;
+        for (JavaLikeRootProvider rp : project.getLookup().lookupAll(JavaLikeRootProvider.class)) {
+            toReturn = checkRoot(fil, FileUtilities.getDirURI(project.getProjectDirectory(), "src/main/" + rp.kind()), FileUtilities.getDirURI(project.getProjectDirectory(), "src/test/" + rp.kind()));
+            if (toReturn != null) {
+                return toReturn;
+            }
         }
-        return checkRoot(fil, impl.getGroovyDirectory(false), impl.getGroovyDirectory(true));
+        return null;
     }
 
     private Res checkRoot(File root, File source, File test) {

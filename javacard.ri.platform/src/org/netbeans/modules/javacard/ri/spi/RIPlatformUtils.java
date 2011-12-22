@@ -42,11 +42,7 @@
 
 package org.netbeans.modules.javacard.ri.spi;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import org.netbeans.modules.javacard.ri.platform.MergeProperties;
 import org.netbeans.modules.javacard.ri.platform.RIPlatform;
 import org.netbeans.modules.propdos.ObservableProperties;
