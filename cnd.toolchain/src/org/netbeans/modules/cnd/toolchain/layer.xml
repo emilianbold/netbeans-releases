@@ -8,10 +8,10 @@
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
             <file name="SunStudio_12.4_solaris-sparc_c" url="resources/toolchaindefinition/SunStudio_12.4_solaris-sparc_c.xml">
-                <attr name="extends" stringvalue="SunStudio_12_c"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_c"/>
             </file>
             <file name="SunStudio_12.4_solaris-sparc_cpp" url="resources/toolchaindefinition/SunStudio_12.4_solaris-sparc_cpp.xml">
-                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_cpp"/>
             </file>
             <file name="SunStudio_12.4_solaris-sparc_fortran" url="resources/toolchaindefinition/SunStudio_12.4_solaris-sparc_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
@@ -42,10 +42,10 @@
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
             <file name="SunStudio_12.3_solaris-sparc_c" url="resources/toolchaindefinition/SunStudio_12.3_solaris-sparc_c.xml">
-                <attr name="extends" stringvalue="SunStudio_12_c"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_c"/>
             </file>
             <file name="SunStudio_12.3_solaris-sparc_cpp" url="resources/toolchaindefinition/SunStudio_12.3_solaris-sparc_cpp.xml">
-                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_cpp"/>
             </file>
             <file name="SunStudio_12.3_solaris-sparc_fortran" url="resources/toolchaindefinition/SunStudio_12.3_solaris-sparc_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
@@ -76,10 +76,10 @@
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
             <file name="SunStudio_12.2_solaris-sparc_c" url="resources/toolchaindefinition/SunStudio_12.2_solaris-sparc_c.xml">
-                <attr name="extends" stringvalue="SunStudio_12_c"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_c"/>
             </file>
             <file name="SunStudio_12.2_solaris-sparc_cpp" url="resources/toolchaindefinition/SunStudio_12.2_solaris-sparc_cpp.xml">
-                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_cpp"/>
             </file>
             <file name="SunStudio_12.2_solaris-sparc_fortran" url="resources/toolchaindefinition/SunStudio_12.2_solaris-sparc_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
@@ -110,10 +110,10 @@
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
             </file>
             <file name="SunStudio_12.1_solaris-sparc_c" url="resources/toolchaindefinition/SunStudio_12.1_solaris-sparc_c.xml">
-                <attr name="extends" stringvalue="SunStudio_12_c"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_c"/>
             </file>
             <file name="SunStudio_12.1_solaris-sparc_cpp" url="resources/toolchaindefinition/SunStudio_12.1_solaris-sparc_cpp.xml">
-                <attr name="extends" stringvalue="SunStudio_12_cpp"/>
+                <attr name="extends" stringvalue="SunStudio_12_sparc_cpp"/>
             </file>
             <file name="SunStudio_12.1_solaris-sparc_fortran" url="resources/toolchaindefinition/SunStudio_12.1_solaris-sparc_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_12_fortran"/>
@@ -135,10 +135,16 @@
                 <attr name="extends" stringvalue="SunStudio_flavor"/>
             </file>
             <file name="SunStudio_12_c" url="resources/toolchaindefinition/SunStudio_12_c.xml">
-                <attr name="extends" stringvalue="SunStudio_c"/>
+                <attr name="extends" stringvalue="SunStudio_11_c"/>
+            </file>
+            <file name="SunStudio_12_sparc_c" url="resources/toolchaindefinition/SunStudio_12_sparc_c.xml">
+                <attr name="extends" stringvalue="SunStudio_11_sparc_c"/>
             </file>
             <file name="SunStudio_12_cpp" url="resources/toolchaindefinition/SunStudio_12_cpp.xml">
                 <attr name="extends" stringvalue="SunStudio_cpp"/>
+            </file>
+            <file name="SunStudio_12_sparc_cpp" url="resources/toolchaindefinition/SunStudio_12_sparc_cpp.xml">
+                <attr name="extends" stringvalue="SunStudio_11_sparc_cpp"/>
             </file>
             <file name="SunStudio_12_fortran" url="resources/toolchaindefinition/SunStudio_12_fortran.xml">
                 <attr name="extends" stringvalue="SunStudio_fortran"/>
@@ -150,7 +156,13 @@
             <file name="SunStudio_11_c" url="resources/toolchaindefinition/SunStudio_11_c.xml">
                 <attr name="extends" stringvalue="SunStudio_c"/>
             </file>
+            <file name="SunStudio_11_sparc_c" url="resources/toolchaindefinition/SunStudio_11_sparc_c.xml">
+                <attr name="extends" stringvalue="SunStudio_c"/>
+            </file>
             <file name="SunStudio_11_cpp" url="resources/toolchaindefinition/SunStudio_11_cpp.xml">
+                <attr name="extends" stringvalue="SunStudio_cpp"/>
+            </file>
+            <file name="SunStudio_11_sparc_cpp" url="resources/toolchaindefinition/SunStudio_11_sparc_cpp.xml">
                 <attr name="extends" stringvalue="SunStudio_cpp"/>
             </file>
             <file name="SunStudio_11_fortran" url="resources/toolchaindefinition/SunStudio_11_fortran.xml">
@@ -383,6 +395,7 @@
             </file>
         </folder>
         <folder name="ToolChains">
+<!-- SunStudio_12.4 -->
             <folder name="SunStudio_12.4_solaris-sparc">
                 <attr name="position" intvalue="1000"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -494,7 +507,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
-
+<!-- SunStudio_12.3 -->
             <folder name="SunStudio_12.3_solaris-sparc">
                 <attr name="position" intvalue="1010"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -606,7 +619,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
-
+<!-- SunStudio_12.2 -->
             <folder name="SunStudio_12.2_solaris-sparc">
                 <attr name="position" intvalue="1120"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -718,6 +731,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- SunStudio_12.1 -->
             <folder name="SunStudio_12.1_solaris-sparc">
                 <attr name="position" intvalue="1140"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -792,6 +806,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- SunStudio_12 -->
             <folder name="SunStudio_12">
                 <attr name="position" intvalue="1160"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -829,6 +844,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- SunStudio_11 -->
             <folder name="SunStudio_11">
                 <attr name="position" intvalue="1170"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -866,6 +882,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- SunStudio_10 -->
             <folder name="SunStudio_10">
                 <attr name="position" intvalue="1180"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -903,6 +920,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- SunStudio_9 -->
             <folder name="SunStudio_9">
                 <attr name="position" intvalue="1210"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -940,6 +958,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- SunStudio_8 -->
             <folder name="SunStudio_8">
                 <attr name="position" intvalue="1220"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -977,6 +996,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- OracleSolarisStudio -->
             <folder name="OracleSolarisStudio">
                 <attr name="position" intvalue="1908"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1014,6 +1034,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- SunStudio -->
             <folder name="SunStudio">
                 <attr name="position" intvalue="1910"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1051,6 +1072,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
                 </file>
             </folder>
+<!-- Cygwin_4.x -->
             <folder name="Cygwin_4.x">
                 <attr name="position" intvalue="3010"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1088,6 +1110,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- Cygwin -->
             <folder name="Cygwin">
                 <attr name="position" intvalue="3020"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1125,6 +1148,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- MinGW -->
             <folder name="MinGW">
                 <attr name="position" intvalue="3110"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1162,6 +1186,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- MinGW_TDM -->
             <folder name="MinGW_TDM">
                 <attr name="position" intvalue="3120"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1199,6 +1224,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- Interix -->
             <folder name="Interix">
                 <attr name="position" intvalue="3310"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1236,6 +1262,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- WinAVR -->
             <folder name="WinAVR">
                 <attr name="position" intvalue="3710"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1273,6 +1300,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- GNU_solaris -->
             <folder name="GNU_solaris">
                 <attr name="position" intvalue="4010"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1310,6 +1338,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- GNU_mac -->
             <folder name="GNU_mac">
                 <attr name="position" intvalue="4020"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
@@ -1347,6 +1376,7 @@
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
                 </file>
             </folder>
+<!-- GNU -->
             <folder name="GNU">
                 <attr name="position" intvalue="4030"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
