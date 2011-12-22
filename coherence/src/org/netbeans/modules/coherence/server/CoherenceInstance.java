@@ -63,6 +63,7 @@ import org.openide.nodes.Node;
 public final class CoherenceInstance implements ServerInstanceImplementation {
 
     private final ServerInstance serverInstance;
+    private final CoherenceServer coherenceServer;
     private final InstanceProperties instanceProperties;
     private final CoherenceProperties coherenceProperties;
     private CoherenceServerFullNode fullNode;
@@ -72,6 +73,7 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
         this.instanceProperties = instanceProperties;
         this.coherenceProperties = new CoherenceProperties(instanceProperties);
         serverInstance = ServerInstanceFactory.createServerInstance(this);
+        coherenceServer = new CoherenceServer(coherenceProperties);
     }
 
     /**
@@ -104,7 +106,7 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
     }
 
     @Override
-    public Node getFullNode() {
+    public CoherenceServerFullNode getFullNode() {
         if (fullNode == null) {
             fullNode = new CoherenceServerFullNode(this);
         }
@@ -112,7 +114,7 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
     }
 
     @Override
-    public Node getBasicNode() {
+    public CoherenceServerBaseNode getBasicNode() {
         if (baseNode == null) {
             baseNode = new CoherenceServerBaseNode(this);
         }
@@ -178,7 +180,6 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
 
         // create new instance
         CoherenceInstance instance = new CoherenceInstance(properties);
-
         CoherenceInstanceProvider.getCoherenceProvider().addServerInstance(instance);
 
         return instance;
@@ -211,6 +212,14 @@ public final class CoherenceInstance implements ServerInstanceImplementation {
      */
     public InstanceProperties getProperties() {
         return instanceProperties;
+    }
+
+    /**
+     * Gets Coherence server for this {@code CoherenceInstance}.
+     * @return {@code CoherenceServer} for this instance
+     */
+    public CoherenceServer getServer() {
+        return coherenceServer;
     }
 
 }
