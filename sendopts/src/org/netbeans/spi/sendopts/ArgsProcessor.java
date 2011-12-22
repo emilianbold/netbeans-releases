@@ -52,7 +52,7 @@ import org.netbeans.spi.sendopts.Env;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface ProcessArgs {
+public interface ArgsProcessor {
     /** 
      * Called after all fields annotated with {@code @}{@link Arg}
      * are filled with appropriate values.

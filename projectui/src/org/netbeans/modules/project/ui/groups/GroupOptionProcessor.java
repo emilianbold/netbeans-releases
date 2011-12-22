@@ -49,7 +49,7 @@ import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.Description;
-import org.netbeans.spi.sendopts.ProcessArgs;
+import org.netbeans.spi.sendopts.ArgsProcessor;
 
 @Messages({
     "GroupOptionProcessor.open.name=--open-group NAME",
@@ -57,7 +57,7 @@ import org.netbeans.spi.sendopts.ProcessArgs;
     "GroupOptionProcessor.close.desc=close any open project group",
     "GroupOptionProcessor.list.desc=list available project groups"
 })
-public class GroupOptionProcessor implements ProcessArgs {
+public class GroupOptionProcessor implements ArgsProcessor {
     @Arg(longName="open-group")
     @Description(
         displayName="#GroupOptionProcessor.open.name",

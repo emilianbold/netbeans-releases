@@ -42,7 +42,7 @@
 
 package org.netbeans.spi.sendopts.annotations;
 
-import org.netbeans.spi.sendopts.ProcessArgs;
+import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Arg;
 import java.io.ByteArrayOutputStream;
@@ -159,7 +159,7 @@ public class OptionTest extends NbTestCase {
             "NAME=AddOnParams", 
             "SHORT=ShortHelp"
         })
-    public static final class SampleOptions implements ProcessArgs {
+    public static final class SampleOptions implements ArgsProcessor {
         @Arg(longName="enabled")
         public boolean enabled;
 

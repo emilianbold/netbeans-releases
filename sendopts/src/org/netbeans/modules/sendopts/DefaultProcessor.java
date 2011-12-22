@@ -54,7 +54,7 @@ import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
 import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.Description;
-import org.netbeans.spi.sendopts.ProcessArgs;
+import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.openide.util.Lookup;
 
 /** Processor that is configured from a map, usually from a layer.
@@ -198,8 +198,8 @@ public final class DefaultProcessor extends OptionProcessor {
             if (instance instanceof Runnable) {
                 ((Runnable)instance).run();
             }
-            if (instance instanceof ProcessArgs) {
-                ((ProcessArgs)instance).process(env);
+            if (instance instanceof ArgsProcessor) {
+                ((ArgsProcessor)instance).process(env);
             }
         } catch (Exception exception) {
             throw (CommandException)new CommandException(10, exception.getLocalizedMessage()).initCause(exception);

@@ -54,7 +54,7 @@ import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
 import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.Description;
-import org.netbeans.spi.sendopts.ProcessArgs;
+import org.netbeans.spi.sendopts.ArgsProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * Processor for command line options.
  * @author Jesse Glick, Jaroslav Tulach
  */
-public final class Handler implements ProcessArgs {
+public final class Handler implements ArgsProcessor {
     @Arg(longName="open", implicit=true)
     @Description(
         displayName="#MSG_OpenOptionDisplayName", 
