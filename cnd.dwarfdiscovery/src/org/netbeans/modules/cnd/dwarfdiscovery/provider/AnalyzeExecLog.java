@@ -313,6 +313,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final ProjectProxy project;
         private final PathMap pathMapper;
         private final FileSystem fileSystem;
+        private final CompilerSettings compilerSettings;
 
         public ExecLogReader(String fileName, String root, ProjectProxy project) {
             if (root.length() > 0) {
@@ -324,6 +325,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             this.project = project;
             this.pathMapper = getPathMapper(project);
             this.fileSystem = getFileSystem(project);
+            this.compilerSettings = new CompilerSettings(project);
         }
 
         private PathMap getPathMapper(ProjectProxy project) {
@@ -480,7 +482,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             List<String> aUserIncludes = new ArrayList<String>();
             Map<String,String> aUserMacros = new HashMap<String, String>();
             List<String> languageArtifacts = new ArrayList<String>();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, false, aUserIncludes, aUserMacros, null, languageArtifacts);
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, false, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             for (String what : sourcesList) {
                 if (what == null) {
                     continue;

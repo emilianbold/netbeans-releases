@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -98,8 +99,8 @@ public class CppSymbolProvider implements SymbolProvider {
         }
     }
 
-    Cache cache;
-    private boolean cancelled;
+    private volatile Cache cache;
+    private final AtomicBoolean cancelled = new AtomicBoolean(false);
     private static final boolean TRACE = Boolean.getBoolean("cnd.gotosymbol.trace");
     private static final boolean USE_CACHE = CndUtils.getBoolean("cnd.gotosymbol.cache", true);
 
@@ -108,16 +109,16 @@ public class CppSymbolProvider implements SymbolProvider {
     }
 
     @Override
-    public synchronized void cancel() {
+    public void cancel() {
         if (TRACE) { trace("cancel"); } // NOI18N
-        cancelled = true;
+        cancelled.set(true);
         cache = null;
     }
 
     @Override
-    public synchronized void cleanup() {
+    public void cleanup() {
         if (TRACE) { trace("cleanup"); } // NOI18N
-        cancelled = false;
+        cancelled.set(false);
         cache = null;
     }
 
@@ -135,7 +136,7 @@ public class CppSymbolProvider implements SymbolProvider {
     @Override
     public synchronized void computeSymbolNames(Context context, Result result) {
         if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI18N
-        cancelled = false;
+        cancelled.set(false);
         CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context.getText(), context.getSearchType());
         if (nameAcceptor == null) {
             if (CndUtils.isDebugMode()) {
@@ -148,8 +149,9 @@ public class CppSymbolProvider implements SymbolProvider {
         List<CppSymbolDescriptor> symbols = new ArrayList<CppSymbolDescriptor>();
 
         boolean filled = false;
-        if (cache != null && context.getSearchType() == cache.searchType && context.getText().startsWith(cache.text)) {
-            List<CppSymbolDescriptor> cached = cache.data.get(context.getProject());
+        Cache aCache = cache;
+        if (aCache != null && context.getSearchType() == aCache.searchType && context.getText().startsWith(aCache.text)) {
+            List<CppSymbolDescriptor> cached = aCache.data.get(context.getProject());
             if (cached != null) {
                 filled = true;
                 long time = System.currentTimeMillis();
@@ -167,30 +169,31 @@ public class CppSymbolProvider implements SymbolProvider {
             if (TRACE) { trace("Collecting %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); } //NOI18N
         }
         
-        if (cancelled) {
+        if (cancelled.get()) {
             cache = null;
         } else {
             if (USE_CACHE) {
-                cache = new Cache(context.getSearchType(), context.getText());
-                cache.data.put(context.getProject(), symbols);
+                aCache = new Cache(context.getSearchType(), context.getText());
+                aCache.data.put(context.getProject(), symbols);
+                cache = aCache;
             }
             result.addResult(symbols);
         }
-        cancelled = false;
+        cancelled.set(false);
     }
 
     private void collect(Context context, NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
         if (context.getProject() == null) {
             Set<CsmProject> libs = new HashSet<CsmProject>();
             for (CsmProject csmProject : CsmModelAccessor.getModel().projects()) {
-                if (cancelled) {
+                if (cancelled.get()) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
                 collectLibs(csmProject, libs);
             }
             for (CsmProject csmProject : libs) {
-                if (cancelled) {
+                if (cancelled.get()) {
                     break;
                 }
                 collectSymbols(csmProject, nameAcceptor, symbols);
@@ -226,18 +229,18 @@ public class CppSymbolProvider implements SymbolProvider {
         for(CsmFile csmFile : csmProject.getAllFiles()) {
             // macros
             Iterator<CsmMacro> macros = CsmSelect.getMacros(csmFile, nameFilter);
-            while (macros.hasNext() && !cancelled) {
+            while (macros.hasNext() && !cancelled.get()) {
                 CsmMacro macro = macros.next();
                 if(CsmVisibilityQuery.isVisible(macro)) {
                     symbols.add(new CppSymbolDescriptor(macro));
                 }
             }
-            if (cancelled) {
+            if (cancelled.get()) {
                 break;
             }
             // static functions
             Iterator<CsmFunction> funcs = CsmSelect.getStaticFunctions(csmFile, nameFilter);
-            while (funcs.hasNext() && !cancelled) {
+            while (funcs.hasNext() && !cancelled.get()) {
                 CsmFunction func = funcs.next();
                 if (CsmKindUtilities.isFunctionDefinition(func)) { // which is unlikely, but just in case
                     if(CsmVisibilityQuery.isVisible(func)) {
@@ -254,12 +257,12 @@ public class CppSymbolProvider implements SymbolProvider {
                     }
                 }
             }
-            if (cancelled) {
+            if (cancelled.get()) {
                 break;
             }
             CsmSelect.CsmFilter definitions = CsmSelect.getFilterBuilder().createCompoundFilter(nameFilter,  CsmSelect.getFilterBuilder().createKindFilter(Kind.FUNCTION_DEFINITION));
             Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(csmFile, definitions);
-            while (declarations.hasNext() && !cancelled) {
+            while (declarations.hasNext() && !cancelled.get()) {
                 CsmOffsetableDeclaration decl = declarations.next();
                 if (CsmKindUtilities.isFunctionDefinition(decl) && ((CsmFunction)decl).isStatic()) {
                     CsmFunction func = (CsmFunction) decl;
@@ -270,18 +273,18 @@ public class CppSymbolProvider implements SymbolProvider {
                     }
                 }
             }
-            if (cancelled) {
+            if (cancelled.get()) {
                 break;
             }
             // static variables
             Iterator<CsmVariable> vars = CsmSelect.getStaticVariables(csmFile, nameFilter);
-            while (vars.hasNext() && !cancelled) {
+            while (vars.hasNext() && !cancelled.get()) {
                 CsmVariable var = vars.next();
                 if(CsmVisibilityQuery.isVisible(var)) {
                     symbols.add(new CppSymbolDescriptor(var));
                 }
             }
-            if (cancelled) {
+            if (cancelled.get()) {
                 break;
             }
         }
@@ -304,7 +307,7 @@ public class CppSymbolProvider implements SymbolProvider {
         
         Iterator<? extends CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(namespace, simpleNameAndKindFilter);
         while (declarations.hasNext()) {
-            if (cancelled) {
+            if (cancelled.get()) {
                 break;
             }
             CsmOffsetableDeclaration decl = declarations.next();
@@ -335,7 +338,7 @@ public class CppSymbolProvider implements SymbolProvider {
 
         declarations = CsmSelect.getDeclarations(namespace, compoundKindFilter);
         while (declarations.hasNext()) {
-            if (cancelled) {
+            if (cancelled.get()) {
                 break;
             }
             addDeclarationIfNeed(declarations.next(), nameAcceptor, symbols);
@@ -343,7 +346,7 @@ public class CppSymbolProvider implements SymbolProvider {
 
         // process nested namespaces
         for (CsmNamespace child : namespace.getNestedNamespaces()) {
-            if (cancelled) {
+            if (cancelled.get()) {
                 break;
             }
             collectSymbols(child, nameAcceptor, symbols);
