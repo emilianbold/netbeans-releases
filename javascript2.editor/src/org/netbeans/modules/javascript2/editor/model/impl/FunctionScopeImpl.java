@@ -45,7 +45,6 @@ import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.parser.Token;
 import java.util.EnumSet;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
