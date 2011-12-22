@@ -68,6 +68,7 @@ import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator
  */
 public class FindUsagesClassTest extends FindUsagesTestCase{
 
+       
     public FindUsagesClassTest(String name) {
         super(name);
     }
@@ -93,6 +94,9 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         openSourceFile("fu", fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(12, 19);
+        new EventTool().waitNoEvent(500);
+        editor.select(12, 19, 19);
+        new EventTool().waitNoEvent(1000);
         new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
@@ -232,6 +236,9 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         int tabCount = furo.getTabCount();
         EditorOperator editor = new EditorOperator("FUClass");
         editor.setCaretPosition(12, 19);
+        new EventTool().waitNoEvent(500);
+        editor.select(12, 19, 19);
+        new EventTool().waitNoEvent(1000);
         new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();

@@ -44,6 +44,7 @@ package org.netbeans.modules.test.refactoring.actions;
 
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
@@ -59,8 +60,10 @@ public class FindUsagesAction implements TestAction {
     }
     
     public void perform(EditorOperator editor) {
-        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);        
+        editor.clickForPopup();
+        new EventTool().waitNoEvent(2000);
         JPopupMenuOperator jpmo = new JPopupMenuOperator();
+        new EventTool().waitNoEvent(2000);
         jpmo.pushMenuNoBlock(new String[]{popupPath});        
     }
 

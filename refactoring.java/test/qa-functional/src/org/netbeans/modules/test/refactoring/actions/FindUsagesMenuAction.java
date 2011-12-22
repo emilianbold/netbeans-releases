@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,35 +34,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.test.refactoring.actions;
 
-import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author Adam Senk
  */
-public class RenamePopupAction implements TestAction {
-    
-    public static final String popupPath = "Refactor | Rename...";
+public class FindUsagesMenuAction implements TestAction {
 
     @Override
     public void perform(Object parameter) {
-        perform((EditorOperator)parameter);
+        MainWindowOperator.getDefault().menuBar().pushMenu(new String[]{"Edit", "Find Usages"});
     }
-       
-    public void perform(EditorOperator editor) {
-        editor.clickForPopup();
-        JPopupMenuOperator jpmo = new JPopupMenuOperator();
-        new org.netbeans.jemmy.EventTool().waitNoEvent(500);
-        jpmo.pushMenuNoBlock(new String[]{"Refactor","Rename..."});        
-    }
-                        
 }
