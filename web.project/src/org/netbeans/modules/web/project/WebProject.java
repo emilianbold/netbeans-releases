@@ -49,8 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.*;
-import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -68,10 +68,13 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
+import org.netbeans.modules.web.common.reload.BrowserReload;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -1563,6 +1566,12 @@ public final class WebProject implements Project {
             if (resources != null) {
                 FileUtil.addFileChangeListener(this, resources);
             }
+            
+            SourceRoots sourceRoots = getSourceRoots();
+            BuildArtifactMapper.ArtifactsUpdated listener = new BuildArtifactListener();
+            for( URL url : sourceRoots.getRootURLs()) {
+                BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
+            }
 
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
             LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
@@ -1753,6 +1762,17 @@ public final class WebProject implements Project {
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(artifacts);
             }
+            for (Artifact artifact : artifacts) {
+                File file = artifact.getFile();
+                if ( file == null ){
+                    continue;
+                }
+                FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
+                if ( fileObject == null ){
+                    continue;
+                }
+                BrowserReload.getInstance().reload(fileObject);
+            }
         }
 
         private boolean handleResource(FileEvent fe) {
@@ -1894,6 +1914,24 @@ public final class WebProject implements Project {
             assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
             return current;
         }
+    }
+    
+    private class BuildArtifactListener implements ArtifactsUpdated {
+
+        @Override
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            for( File file : artifacts ){
+                if ( file == null ){
+                    continue;
+                }
+                FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
+                if ( fileObject == null ){
+                    continue;
+                }
+                BrowserReload.getInstance().reload(fileObject);
+            }
+        } 
+        
     }
 
     private class ArtifactCopySupport extends ArtifactCopyOnSaveSupport {

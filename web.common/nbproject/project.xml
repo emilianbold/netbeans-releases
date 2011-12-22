@@ -172,7 +172,14 @@
                 <package>org.netbeans.modules.web.common.refactoring</package>
                 <package>org.netbeans.modules.web.common.spi</package>
                 <package>org.netbeans.modules.web.common.taginfo</package>
+                <package>org.netbeans.modules.web.common.reload</package>
             </friend-packages>
+            <extra-compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath>${module.classpath}:${ant.jar}:${tools.jar}</classpath>
+                <built-to>build/antclasses</built-to>
+                <built-to>${cluster}/ant/nblib/org-netbeans-modules-web-common-ant.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>
