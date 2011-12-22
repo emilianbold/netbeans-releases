@@ -61,6 +61,18 @@ public class IniLexerTest extends IniTestBase {
         performTest("basic");
     }
 
+    public void testSections() throws Exception {
+        performTest("sections");
+    }
+
+    public void testKeys() throws Exception {
+        performTest("keys");
+    }
+
+    public void testValues() throws Exception {
+        performTest("values");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".ini"));
