@@ -147,10 +147,17 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             urlToLoad = url;
             return;
         }
+        _setURL( url );
+    }
+    
+    private void _setURL( final String url ) {
         javafx.application.Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.getEngine().load( url );
+                String fullUrl = url;
+                if( !(url.startsWith( "http://") || url.startsWith( "https://")) )
+                    fullUrl = "http://" + url;
+                browser.getEngine().load( fullUrl );
             }
         });
     }
@@ -404,9 +411,9 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 //    }
 
     private void createBrowser() {
-        browser = new WebView();
-        browser.setMinSize(100, 100);
-        final WebEngine eng = browser.getEngine();
+        WebView view = new WebView();;
+        view.setMinSize(100, 100);
+        final WebEngine eng = view.getEngine();
         eng.setOnStatusChanged( new EventHandler<WebEvent<String>> () {
             @Override
             public void handle( WebEvent<String> e ) {
@@ -441,6 +448,13 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 } );
             }
         });
-        container.setScene( new Scene( browser) );
+        container.setScene( new Scene( view ) );
+        
+        browser = view;
+        
+        if( null != urlToLoad ) {
+            _setURL( urlToLoad );
+            urlToLoad = null;
+        }
     }
 }
