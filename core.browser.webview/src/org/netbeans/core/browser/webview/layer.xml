@@ -4,7 +4,7 @@
     <folder name="Services">
         <folder name="Browsers">
             <file name="webviewBrowser.settings" url="webviewBrowser.xml">
-                <attr name="hidden" methodvalue="org.netbeans.core.browser.djnsswt.BrowserFactory.isHidden"/>
+                <attr name="hidden" methodvalue="org.netbeans.core.browser.webview.BrowserFactory.isHidden"/>
                 <attr name="internal" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.browser.webview.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
