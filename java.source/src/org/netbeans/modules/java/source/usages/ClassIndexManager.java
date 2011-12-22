@@ -268,7 +268,7 @@ public final class ClassIndexManager {
 
     private void markRemovedRoot(@NonNull URL root) {
         final TransactionContext txCtx = TransactionContext.get();
-        txCtx.get(ClassIndexEventsTransaction.class).rootAdded(root);
+        txCtx.get(ClassIndexEventsTransaction.class).rootRemoved(root);
     }
 
 
