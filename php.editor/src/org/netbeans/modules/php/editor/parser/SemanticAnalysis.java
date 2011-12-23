@@ -272,6 +272,16 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         @Override
+        public void visit(TraitDeclaration node) {
+            if (isCancelled()) {
+                return;
+            }
+            Identifier name = node.getName();
+            addOffsetRange(name, ColoringAttributes.CLASS_SET);
+            node.getBody().accept(this);
+        }
+
+        @Override
         public void visit(FieldsDeclaration node) {
             if (isCancelled()) {
                 return;
