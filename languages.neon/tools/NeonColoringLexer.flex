@@ -151,7 +151,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 IDENTIFIER=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff\.]*"!"?
-KEYWORD=("true" | "TRUE" | "false" | "FALSE" | "yes" | "YES" | "no" | "NO" | "null" | "NULL")
+KEYWORD=("true" | "TRUE" | "false" | "FALSE" | "yes" | "YES" | "no" | "NO" | "null" | "NULL" | "not" | "self")
 WHITESPACE=[ \t]+
 NEWLINE=("\r"|"\n"|"\r\n")
 ZERO=0
