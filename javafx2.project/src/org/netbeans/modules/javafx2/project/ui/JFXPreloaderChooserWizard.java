@@ -83,6 +83,7 @@ public class JFXPreloaderChooserWizard extends WizardDescriptor {
         setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
     }
     
+    @SuppressWarnings("unchecked")
     public boolean show() {
         setPanelsAndSettings(wizardIterator, this);
         updateState();

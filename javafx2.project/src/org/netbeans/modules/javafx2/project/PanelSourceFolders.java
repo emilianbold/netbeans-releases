@@ -43,8 +43,8 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
