@@ -43,25 +43,21 @@
  */
 package org.netbeans.modules.versioning.history;
 
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.tree.MutableTreeNode;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Mutex;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Maros Sandor
@@ -71,17 +67,11 @@ import org.openide.util.RequestProcessor;
  *
  * @author Maros Sandor
  */
-public abstract class AbstractSummaryView implements MouseListener, ComponentListener, MouseMotionListener {
+public abstract class AbstractSummaryView implements MouseListener, ComponentListener, MouseMotionListener, PropertyChangeListener {
 
-    static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.AbstractSummaryView");
-    
-    private RootNode rootNode;
-    private RequestProcessor rp = new RequestProcessor("SummaryView", 10);
-    private boolean populated = false;
-
-    private JPanel panel = new JPanel();
-    private final JPanel linesPanel;
-    private final Map<String, KenaiUser> kenaiUsersMap;
+    static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.AbstractSummaryView"); //NOI18N
+    public static final String PROP_REVISIONS_ADDED = "propRevisionsAdded"; //NOI18N
+    private final PropertyChangeListener list;
 
     String getMessage() {
         return master.getMessage();
@@ -95,19 +85,57 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         return master.getActionColors();
     }
 
-    void fireNodeChanged(String revision) {
-        ResultModel tm = ((ResultModel) resultsTree.getModel());
-        for (int i = 0; i < rootNode.getChildCount(); i++) {
-            TreeNode n = rootNode.getChildAt(i);
-            if(n instanceof LogEntryNode) {
-                LogEntryNode len = (LogEntryNode)n;
-                LogEntry le = (LogEntry) len.getUserObject();
-                if(revision.equals(le.getRevision())) {
-                    tm.fireTreeNodesChanged(len, len.getPath(), new int[] {}, new TreeNode[] {});
-                    return;
-                }
-            }
+    SummaryViewMaster getMaster () {
+        return master;
+    }
+
+    void itemChanged (Point p) {
+        int index = resultsList.locationToIndex(p);
+        if (index != -1) {
+            ((SummaryListModel) resultsList.getModel()).contentChanged(index, index);
         }
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (LogEntry.PROP_EVENTS_CHANGED.equals(evt.getPropertyName())) {
+            LogEntry src = (LogEntry) evt.getSource();
+            refreshEvents(src);
+        }
+    }
+
+    private void refreshEvents (final LogEntry src) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                ((SummaryListModel) resultsList.getModel()).addEvents(src);
+            }
+        });
+    }
+
+    void showRemainingFiles (Point p, RevisionItem item) {
+        item.allEventsExpanded = true;
+        int index = resultsList.locationToIndex(p);
+        if (index != -1) {
+            ((SummaryListModel) resultsList.getModel()).contentChanged(index - item.getUserData().getEvents().size(), index);
+        }
+    }
+
+    void moreRevisions (Integer count) {
+        master.getMoreResults(this, count);
+    }
+    
+    public void entriesChanged (final List<? extends LogEntry> entries) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                Object[] selection = resultsList.getSelectedValues();
+                if (selection.length > 0 && selection[selection.length - 1] instanceof MoreRevisionsItem) {
+                    resultsList.getSelectionModel().removeIndexInterval(dispResults.size() - 1, dispResults.size() - 1);
+                }
+                ((SummaryListModel) resultsList.getModel()).addEntries(entries, !master.hasMoreResults());
+            }
+        });
     }
 
     public interface SummaryViewMaster {
@@ -115,152 +143,168 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         public File[] getRoots();
         public String getMessage();
         public Map<String, String> getActionColors();
-        public List<LogEntry> getMoreResults(List<LogEntry> results, int count);
+        public void getMoreResults(PropertyChangeListener callback, int count);
+        public boolean hasMoreResults ();
     }
 
     private final SummaryViewMaster master;
 
     public static abstract class LogEntry {
-        boolean messageExpanded = false;
-        private boolean eventsExpanded = false;
+        public static final String PROP_EVENTS_CHANGED = "propEventsChanged"; //NOI18N
+        private final PropertyChangeSupport support;
 
+        public LogEntry () {
+            support = new PropertyChangeSupport(this);
+        }
+        
         public abstract Collection<Event> getEvents();
-        public abstract Collection<Event> getContextEvents();
-
         public abstract String getAuthor();
         public abstract String getDate();
         public abstract String getRevision();
-        public abstract String getRevision2();
         public abstract String getMessage();
         public abstract Action[] getActions();
+        public abstract boolean isVisible ();
+
+        protected final void eventsChanged (List<? extends Event> oldEvents, List<? extends Event> newEvents) {
+            support.firePropertyChange(PROP_EVENTS_CHANGED, oldEvents, newEvents);
+        }
+        
+        public final void addPropertyChangeListener (String propertyName, PropertyChangeListener listener) {
+            support.addPropertyChangeListener(propertyName, listener);
+        }
+        public final void removePropertyChangeListener (String propertyName, PropertyChangeListener listener) {
+            support.removePropertyChangeListener(propertyName, listener);
+        }
+
+        protected abstract void cancelExpand ();
+        protected abstract void expand ();
+        protected abstract boolean isEventsInitialized ();
+
+        /**
+         * Returns true if the entry is of minor interest. Revisions like merges etc. might be of less importance than others.
+         */
+        protected abstract boolean isLessInteresting ();
+        
+        /**
+         * Returns a collection of highlights applicable to this entry's revision string
+         * Special parts of the revision string (e.g. branches, tags) can be displayed with different colors
+         * @return collection of revision string highlights
+         */
+        protected abstract Collection<RevisionHighlight> getRevisionHighlights ();
 
         public static abstract class Event {
             public abstract String getPath();
+            public abstract String getOriginalPath ();
+            public abstract File getFile();
             public abstract String getAction();
+            public abstract Action[] getUserActions();
+            public abstract boolean isVisibleByDefault ();
+        }
+        
+        public static final class RevisionHighlight {
+            private final int start;
+            private final int length;
+            private final Color foreground;
+            private final Color background;
+
+            public RevisionHighlight (int start, int length, Color foreground, Color background) {
+                this.start = start;
+                this.length = length;
+                this.foreground = foreground;
+                this.background = background;
+            }
+
+            public Color getBackground () {
+                return background;
+            }
+
+            public int getLength () {
+                return length;
+            }
+
+            public Color getForeground () {
+                return foreground;
+            }
+
+            public int getStart () {
+                return start;
+            }
+
         }
     }
 
-    private JTree resultsTree;
+    private JList resultsList;
     private JScrollPane scrollPane;
 
-    private List<LogEntry> dispResults;
+    private List<Item> dispResults;
 
     private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
 
-    public AbstractSummaryView(SummaryViewMaster master, List<LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
+    public AbstractSummaryView(SummaryViewMaster master, final List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
         this.master = master;
-        this.kenaiUsersMap = kenaiUsersMap;
+        list = WeakListeners.propertyChange(this, null);
 
-        dispResults = results;
-        rootNode = new RootNode(dispResults);
-        resultsTree = new JTree(new DefaultTreeModel(new WaitNode(rootNode)));
+        dispResults = initializeResults(results, master.hasMoreResults());
+        resultsList = new JList(new DefaultListModel());
+        resultsList.setModel(new SummaryListModel(results));
+        resultsList.setCellRenderer(new SummaryCellRenderer(this, linkerSupport, kenaiUsersMap));
+        resultsList.setFixedCellHeight(-1);
 
-        resultsTree.setLargeModel(true);
-        resultsTree.setRowHeight(0); // stands for different row heights
-        resultsTree.setShowsRootHandles(true);
-        resultsTree.setRootVisible(false);
-
-        resultsTree.addTreeExpansionListener(new TreeExpansionListener() {
-            @Override
-            public void treeExpanded(final TreeExpansionEvent event) {
-                TreePath path = event.getPath();
-                Object o = path.getLastPathComponent();
-                if(o instanceof LogEntryNode) {
-                    LogEntryNode n = (LogEntryNode) o;
-                    n.populateEvents(path);
-                }
-            }
-            @Override
-            public void treeCollapsed(TreeExpansionEvent event) { }
-        });
-
-        resultsTree.addMouseListener(this);
-        resultsTree.addMouseMotionListener(this);
-        resultsTree.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AbstractSummaryView.class, "ACSN_SummaryView_List")); // NOI18N
-        resultsTree.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AbstractSummaryView.class, "ACSD_SummaryView_List")); // NOI18N
-        scrollPane = new JScrollPane(resultsTree, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        resultsTree.addComponentListener(new ComponentAdapter() {
+        resultsList.addMouseListener(this);
+        resultsList.addMouseMotionListener(this);
+        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AbstractSummaryView.class, "ACSN_SummaryView_List")); //NOI18N
+        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AbstractSummaryView.class, "ACSD_SummaryView_List")); //NOI18N
+        scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        resultsList.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                //
-                populateTree();
+                refreshView();
             }
         });
 
         master.getComponent().addComponentListener(this);
 
-        resultsTree.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
-        resultsTree.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+        resultsList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); //NOI18N
+        resultsList.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsTree), getSelection(null));
+                Point p = org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList);
+                Object[] selection = getSelection();
+                if (selection.length > 0) {
+                    onPopup(resultsList, p, selection);
+                }
             }
         });
 
-        resultsTree.setSelectionModel(new SelectionModel());
-
-        linesPanel = new JPanel();
-        HyperlinkLabel label10 = new HyperlinkLabel();
-        HyperlinkLabel label50 = new HyperlinkLabel();
-        HyperlinkLabel label100 = new HyperlinkLabel();
-        HyperlinkLabel labelAll = new HyperlinkLabel();
-
-        label10.set("10", Color.BLUE, label10.getBackground());
-        label50.set("50", Color.BLUE, label10.getBackground());
-        label100.set("100", Color.BLUE, label10.getBackground());
-        labelAll.set("All Revisions", Color.BLUE, label10.getBackground()); // XXX
-
-        linesPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        linesPanel.add(new JLabel("Show more..."));
-        linesPanel.add(label10);
-        linesPanel.add(new JLabel(","));
-        linesPanel.add(label50);
-        linesPanel.add(new JLabel(","));
-        linesPanel.add(label100);
-        linesPanel.add(new JLabel(","));
-        linesPanel.add(labelAll);        
-
-        panel.setLayout(new BorderLayout());
-        panel.add(scrollPane, BorderLayout.PAGE_START);
-        panel.add(linesPanel, BorderLayout.PAGE_END);
-        panel.validate();
+        scrollPane.validate();
     }
 
-    void populateTree() {
-        if(populated) {
-            return;
+    private List<Item> initializeResults (final List<? extends LogEntry> results, boolean hasMoreResults) {
+        List<Item> toDisplay = expandResults(results);
+        if (hasMoreResults) {
+            toDisplay.add(new MoreRevisionsItem());
         }
-        populated = true;
-        resultsTree.setModel(new ResultModel(rootNode));
-        resultsTree.setCellRenderer(new SummaryCellRenderer(this, linkerSupport, dispResults, kenaiUsersMap));
+        return toDisplay;
     }
 
-    public JTree getList() {       
-        return resultsTree;
-    }
-
-    public JComponent getTreeComponent() {
-        return panel;
-    }
-
-    public List getResults() {
-        return dispResults;
+    private List<Item> expandResults (List<? extends LogEntry> results) {
+        ArrayList<Item> newResults = new ArrayList(results.size() * 6);
+        for (LogEntry le : results) {
+            le.removePropertyChangeListener(LogEntry.PROP_EVENTS_CHANGED, list);
+            le.addPropertyChangeListener(LogEntry.PROP_EVENTS_CHANGED, list);
+            RevisionItem item = new RevisionItem(le);
+            newResults.add(item);
+            newResults.add(new ActionsItem(item));
+            if (!le.isEventsInitialized()) {
+                newResults.add(new LoadingEventsItem(item));
+            }
+        }
+        return newResults;
     }
 
     @Override
     public void componentResized(ComponentEvent e) {
-        // XXX hack -> force cell width, might be needed only for visible rows!!!
-        // XXX
-        ResultModel tm = ((ResultModel) resultsTree.getModel());
-        int c = rootNode.getChildCount();
-        TreeNode[] nodes = new TreeNode[c];
-        int[] indices = new int[c];
-        for (int i = 0; i < c; i++) {
-            nodes[i] = rootNode.getChildAt(i);
-            indices[i] = i;
-        }
-        tm.fireTreeNodesChanged(rootNode, rootNode.getPath(), indices, nodes);
     }
 
     @Override
@@ -280,48 +324,30 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        TreePath path = resultsTree.getPathForLocation(e.getPoint().x, e.getPoint().y);
-        if (path == null) return;
-        Rectangle rect = resultsTree.getPathBounds(path);
+        int idx = resultsList.locationToIndex(e.getPoint());
+        if (idx == -1) return;
+        Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        
-        String revision = getRevision(path);
-        if(revision != null) {
-            linkerSupport.mouseClicked(p, revision);
-        }
+        linkerSupport.mouseClicked(p, getLinkerIdentFor(idx));
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        resultsTree.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        resultsTree.setToolTipText("");
-        TreePath path = resultsTree.getPathForLocation(e.getPoint().x, e.getPoint().y);
-        if (path == null) return;
-        Rectangle rect = resultsTree.getPathBounds(path);
+        resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        resultsList.setToolTipText(""); //NOI18N
+
+        int idx = resultsList.locationToIndex(e.getPoint());
+        if (idx == -1) return;
+        Rectangle rect = resultsList.getCellBounds(idx, idx);
         Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-
-        String revision = getRevision(path);
-        if(revision != null) {
-            linkerSupport.mouseMoved(p, resultsTree, revision);
-        }
+        linkerSupport.mouseMoved(p, resultsList, getLinkerIdentFor(idx));
     }
 
-    private String getRevision(TreePath path) {
-        String revision = null;
-        Object o = path.getLastPathComponent();
-        if(o instanceof LogEntryNode) {
-            LogEntryNode len = (LogEntryNode) o;
-            o = len.getUserObject();
-            LogEntry le = (LogEntry) len.getUserObject();
-            revision = le.getRevision();
-        } else if (o instanceof ActionNode) {
-            ActionNode an = (ActionNode) o;
-            LogEntry le = (LogEntry) ((LogEntryNode) an.getParent()).getUserObject();;
-            revision = le.getRevision();
-        }
-        return revision;
+    String getLinkerIdentFor (int index) {
+        Item item = ((SummaryListModel) resultsList.getModel()).getElementAt(index);
+        return item.getItemId();
     }
-
+    
     @Override
     public void mouseEntered(MouseEvent e) {
         // not interested
@@ -350,209 +376,251 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     public void mouseDragged(MouseEvent e) {
     }
 
+    public final void refreshView () {
+        int visibleIndex = resultsList.getLastVisibleIndex();
+        int selectionIndex = resultsList.getSelectedIndex();
+        if (selectionIndex != -1 && resultsList.getVisibleRect().intersects(resultsList.getCellBounds(selectionIndex, selectionIndex))) {
+            visibleIndex = selectionIndex;
+        }
+        ListCellRenderer r = resultsList.getCellRenderer();
+        resultsList.setCellRenderer(null);
+        resultsList.setCellRenderer(r);
+        scrollPane.revalidate();
+        if (visibleIndex != -1) {
+            resultsList.scrollRectToVisible(resultsList.getCellBounds(visibleIndex, visibleIndex));
+        }
+    }
+    
     private void onPopup(MouseEvent e) {
-        onPopup(e.getPoint(), getSelection(e.getPoint()));
+        Object[] selection = getSelection(e.getPoint());
+        if (selection.length > 0) {
+            onPopup(resultsList, e.getPoint(), selection);
+        }
     }
 
-    protected abstract void onPopup(Point p, Object[] selection);
+    protected abstract void onPopup(JComponent invoker, Point p, Object[] selection);
 
-    private Object[] getSelection(Point p) {
-        TreePath[] paths = resultsTree.getSelectionPaths();
-        if(paths == null || paths.length == 0) {
-            assert p != null;
-            paths = new TreePath[] {resultsTree.getPathForLocation(p.x, p.y)};
-        }
-        Object[] selection = new Object[paths.length];
-        for (int i = 0; i < paths.length; i++) {
-            TreePath path = paths[i];
-            selection[i] = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+    protected final Object[] getSelection () {
+        Object[] sel = resultsList.getSelectedValues();
+        Object[] selection = new Object[sel.length];
+        for (int i = 0; i < sel.length; ++i) {
+            Item item = (Item) sel[i];
+            Object o = item.getUserData();
+            if (o == null) {
+                // unallowed selection
+                return new Object[0];
+            }
+            selection[i] = o;
         }
         return selection;
+    }
+
+    private Object[] getSelection (Point p) {
+        int[] selected = resultsList.getSelectedIndices();
+        int idx = resultsList.locationToIndex(p);
+        if (idx == -1) {
+            return new Object[0];
+        }
+        boolean contains = false;
+        for (int i : selected) {
+            if (i == idx) {
+                contains = true;
+                break;
+            }
+        }
+        if (!contains) {
+            resultsList.setSelectedIndex(idx);
+        }
+        return getSelection();
     }
 
     public JComponent getComponent() {
         return scrollPane;
     }
 
-
-    class RootNode extends DefaultMutableTreeNode {
-        public RootNode(List<LogEntry> children) {
-            int i = 0;
-            for (LogEntry logEntry : children) {
-                insert(new LogEntryNode(logEntry, this), i++);
-            }
-        }
-    }
-
-    class LogEntryNode extends DefaultMutableTreeNode {
-        public WaitNode waitNode;
-        private boolean wait = true;
-
-        public LogEntryNode(LogEntry entry, MutableTreeNode parent) {
-            super(entry, true);
-            waitNode = new WaitNode(this);
-            add(waitNode);
+    abstract class Item<T> {
+        private final T userData;
+        
+        Item (T userData) {
+            this.userData = userData;
         }
 
-        private void populateEvents(final TreePath path) {
-            if(!wait) return;
-            wait = false;
-            rp.create(new Runnable() {
-                @Override
-                public void run() {
-                    final List<LogEntry.Event> events = new LinkedList<LogEntry.Event>(((LogEntry) getUserObject()).getEvents());
-                    if(events == null) {
-                        return;
-                    }
-                    Collections.sort(events, new EventComparator());
-                    final DefaultTreeModel model = (DefaultTreeModel) resultsTree.getModel();
-                    final boolean expanded = resultsTree.isExpanded(path) ;
-                    if(waitNode != null) {
-                        model.removeNodeFromParent(waitNode);
-                    }
-                    waitNode = null;
-                    EventQueue.invokeLater(new Runnable() {
-                       @Override
-                        public void run() {
-                            model.insertNodeInto(new ActionNode(LogEntryNode.this), LogEntryNode.this, 0);
-                            int i = 1;
-                            for (LogEntry.Event event : events) {
-                                model.insertNodeInto(new EventNode(event, LogEntryNode.this), LogEntryNode.this, i++);
-                            }
-                            if(expanded) {
-                                resultsTree.expandPath(path);
-                            }
-                        }
-                    });
-                }
-            }).schedule(0);
+        final T getUserData () {
+            return userData;
         }
-    }
 
-    class WaitNode extends DefaultMutableTreeNode {
-        public WaitNode(MutableTreeNode parent) {
-            super("Please wait...", false);
-        }
-    }
-
-    class EventNode extends DefaultMutableTreeNode {
-        public EventNode(LogEntry.Event event, LogEntryNode parent) {
-            super(event, false);
-        }
-    }
-
-    class ActionNode extends DefaultMutableTreeNode {
-        public ActionNode(LogEntryNode parent) {
-            super(parent, false);
-        }
-    }
+        abstract String getItemId ();
+    };
     
- 
-    private static class HyperlinkLabel extends JLabel {
+    class MoreRevisionsItem extends Item {
 
-        public HyperlinkLabel() {
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        public MoreRevisionsItem () {
+            super(null);
         }
 
-        public void set(String text, Color foreground, Color background) {
-            StringBuilder sb = new StringBuilder(100);
-            if (foreground.equals(UIManager.getColor("List.foreground"))) { // NOI18N
-                sb.append("<html><a href=\"\">"); // NOI18N
-                sb.append(text);
-                sb.append("</a>"); // NOI18N
-            } else {
-                sb.append("<html><a href=\"\" style=\"color:"); // NOI18N
-                sb.append("rgb("); // NOI18N
-                sb.append(foreground.getRed());
-                sb.append(","); // NOI18N
-                sb.append(foreground.getGreen());
-                sb.append(","); // NOI18N
-                sb.append(foreground.getBlue());
-                sb.append(")"); // NOI18N
-                sb.append("\">"); // NOI18N
-                sb.append(text);
-                sb.append("</a>"); // NOI18N
-            }
-            setText(sb.toString());
-            setBackground(background);
+        @Override
+        String getItemId () {
+            return "#MoreRevisions"; //NOI18N
+        }
+        
+        boolean isVisible () {
+            return true;
         }
     }
 
-    private class ResultModel extends DefaultTreeModel {
-        public ResultModel(TreeNode root) {
-            super(root, true);
-        }
-        @Override
-        protected void fireTreeNodesChanged(Object source, Object[] path, int[] childIndices, Object[] children) {
-            super.fireTreeNodesChanged(source, path, childIndices, children);
-        }
-    }
+    class RevisionItem extends Item<LogEntry> {
+        private final LogEntry entry;
+        boolean messageExpanded;
+        boolean revisionExpanded;
+        private boolean allEventsExpanded;
 
-    private class SelectionModel extends DefaultTreeSelectionModel {
-
-        public SelectionModel() {
+        public RevisionItem (LogEntry entry) {
+            super(entry);
+            this.entry = entry;
         }
 
         @Override
-        public void addSelectionPath(TreePath path) {
-            if(!checkPath(path)) return;
-            super.addSelectionPath(path);
+        String getItemId () {
+            return entry.getRevision();
+        }
+        
+        boolean isVisible () {
+            return entry.isVisible();
         }
 
-        @Override
-        protected boolean canPathsBeAdded(TreePath[] paths) {
-            return super.canPathsBeAdded(paths);
-        }
-
-        @Override
-        public void addSelectionPaths(TreePath[] paths) {
-            super.addSelectionPaths(paths);
-        }
-
-        @Override
-        public void setSelectionPaths(TreePath[] paths) {
-            if(paths.length == 0) {
-                return;
-            } else if(paths.length > 1) {
-                for (TreePath treePath : paths) {
-                    if(!checkPath(treePath)) return;
-                }
-            } else {
-                if(!checkPath(paths[0])) {
-                    if(!isSelectionEmpty()) {
-                        TreePath[] lastPath = getSelectionPaths();
-                        if(lastPath.length == 1) {
-                            int rPrev = resultsTree.getRowForPath(lastPath[0]);
-                            int rNext = resultsTree.getRowForPath(paths[0]);
-                            if(rPrev > rNext && rNext - 1 > -1) {
-                                rNext--;
-                            } else if (rPrev < rNext && ((rNext + 1) < resultsTree.getRowCount())) {
-                                rNext++;
-                            } else {
-                                return;
-                            }
-                            paths[0] = resultsTree.getPathForRow(rNext);
-                        } else {
-                            return;
+        private boolean isAllEventsVisible () {
+            boolean visible = revisionExpanded;
+            if (visible) {
+                if (!allEventsExpanded) {
+                    for (LogEntry.Event e : entry.getEvents()) {
+                        if (!e.isVisibleByDefault()) {
+                            visible = false;
+                            break;
                         }
-                    } else {
-                        return;
                     }
                 }
             }
-            super.setSelectionPaths(paths);
+            return visible;
         }
 
         @Override
-        public void setSelectionPath(TreePath path) {
-            if(!checkPath(path)) return;
-            super.setSelectionPath(path);
+        public String toString () {
+            return entry.toString();
+        }
+    }
+
+    class LoadingEventsItem extends Item {
+        private final RevisionItem parent;
+        public LoadingEventsItem (RevisionItem parent) {
+            super(null);
+            this.parent = parent;
         }
 
-        private boolean checkPath(TreePath path) {
-            return !(path.getLastPathComponent() instanceof ActionNode);
+        @Override
+        String getItemId () {
+            return parent.getItemId() + "#LOADING_EVENTS"; //NOI18N
         }
 
+        boolean isVisible () {
+            return parent.isVisible() && parent.revisionExpanded;
+        }
+    }
+
+    class EventItem extends Item<LogEntry.Event> {
+        private final RevisionItem parent;
+        private final LogEntry.Event event;
+        public EventItem (LogEntry.Event event, RevisionItem parent) {
+            super(event);
+            this.event = event;
+            this.parent = parent;
+        }
+
+        @Override
+        String getItemId () {
+            return parent.getItemId() + "#" + event.getPath(); //NOI18N
+        }
+
+        boolean isVisible () {
+            boolean visible = false;
+            if (parent.isVisible() && parent.revisionExpanded) {
+                if (parent.isAllEventsVisible()) {
+                    visible = true;
+                } else {
+                    visible = event.isVisibleByDefault();
+                }
+            };
+            return visible;
+        }
+
+        void actionsToPopup (Point p) {
+            Action[] actions = event.getUserActions();
+            if (actions.length > 0) {
+                JPopupMenu menu = new JPopupMenu();
+                for (Action a : actions) {
+                    menu.add(a);
+                }
+                int idx;
+                for (idx = 0; idx < dispResults.size(); ++idx) {
+                    if (dispResults.get(idx) == this) {
+                        break;
+                    }
+                }
+                if (idx == -1) return;
+                Rectangle rect = resultsList.getCellBounds(idx, idx);
+                menu.show(resultsList, p.x + rect.x, p.y + rect.y);
+            }
+        }
+        
+        RevisionItem getParent () {
+            return parent;
+        }
+
+        @Override
+        public String toString () {
+            return event.toString();
+        }
+    }
+
+    class ShowAllEventsItem extends Item {
+        private final RevisionItem parent;
+        public ShowAllEventsItem (RevisionItem parent) {
+            super(null);
+            this.parent = parent;
+        }
+
+        @Override
+        String getItemId () {
+            return parent.getItemId() + "#SHOW_ALL_FILES"; //NOI18N
+        }
+
+        boolean isVisible () {
+            return parent.isVisible() && parent.revisionExpanded && !parent.isAllEventsVisible();
+        }
+
+        RevisionItem getParent () {
+            return parent;
+        }
+    }
+
+    class ActionsItem extends Item {
+        private final RevisionItem parent;
+        public ActionsItem (RevisionItem parent) {
+            super(null);
+            this.parent = parent;
+        }
+
+        @Override
+        String getItemId () {
+            return parent.getItemId() + "#ACTIONS"; //NOI18N
+        }
+
+        boolean isVisible () {
+            return parent.isVisible() && parent.revisionExpanded;
+        }
+
+        RevisionItem getParent () {
+            return parent;
+        }
     }
 
     private static class EventComparator implements Comparator<LogEntry.Event> {
@@ -573,4 +641,91 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         }
     }
 
+    private class SummaryListModel extends AbstractListModel {
+
+        private final Set<String> revisions;
+
+        public SummaryListModel (List<? extends LogEntry> entries) {
+            revisions = new HashSet<String>();
+            for (LogEntry entry : entries) {
+                revisions.add(entry.getRevision());
+            }
+        }
+        
+        @Override
+        public int getSize() {
+            return dispResults.size();
+        }
+
+        @Override
+        public Item getElementAt(int index) {
+            return dispResults.get(index);
+        }
+
+        private void contentChanged (int from, int to) {
+            assert EventQueue.isDispatchThread();
+            fireContentsChanged(this, from, to);
+        }
+        
+        void addEvents (LogEntry src) {
+            assert EventQueue.isDispatchThread();
+            RevisionItem rev = null;
+            ListIterator<Item> it = dispResults.listIterator();
+            while (it.hasNext()) {
+                Item revCandidate = it.next();
+                if (revCandidate instanceof RevisionItem && revCandidate.getUserData() == src) {
+                    rev = (RevisionItem) revCandidate;
+                    if (it.hasNext()) {
+                        if (it.next() instanceof ActionsItem) {
+                            if (it.hasNext()) {
+                                if (it.next() instanceof LoadingEventsItem) {
+                                    it.remove();
+                                } else {
+                                    it.previous();
+                                }
+                            }
+                        } else {
+                            it.previous();
+                        }
+                    }
+                    break;
+                }
+            }
+            if (rev != null) {
+                Collection<LogEntry.Event> events = src.getEvents();
+                for (LogEntry.Event ev : events) {
+                    it.add(new EventItem(ev, rev));
+                }
+                it.add(new ShowAllEventsItem(rev));
+                fireIntervalAdded(this, it.previousIndex(), it.previousIndex() + events.size() + 1);
+            }
+        }
+
+        private void addEntries (List<? extends LogEntry> entries, boolean noMoreResults) {
+            List<LogEntry> newEntries = new LinkedList<LogEntry>(entries);
+            for (ListIterator<LogEntry> it = newEntries.listIterator(); it.hasNext(); ) {
+                LogEntry entry = it.next();
+                if (!revisions.add(entry.getRevision())) {
+                    it.remove();
+                }
+            }
+            List<Item> itemsToAdd = expandResults(newEntries);
+            if (!itemsToAdd.isEmpty()) {
+                int addedAtIndex;
+                if (dispResults.get(dispResults.size() - 1) instanceof MoreRevisionsItem) {
+                    addedAtIndex = getSize() - 1;
+                } else {
+                    addedAtIndex = getSize();
+                }
+                dispResults.addAll(addedAtIndex, itemsToAdd);
+                fireIntervalAdded(this, addedAtIndex, addedAtIndex + itemsToAdd.size());
+            }
+            if (noMoreResults && !dispResults.isEmpty()) {
+                if (dispResults.get(dispResults.size() - 1) instanceof MoreRevisionsItem) {
+                    dispResults.remove(dispResults.size() - 1);
+                    fireIntervalRemoved(this, dispResults.size(), dispResults.size());
+                }
+            }
+        }
+    }
 }

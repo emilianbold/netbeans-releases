@@ -88,14 +88,19 @@ import org.openide.windows.TopComponent;
 @LanguageRegistration(mimeType="text/x-groovy", useMultiview=true)
 @PathRecognizerRegistration(mimeTypes="text/x-groovy", sourcePathIds=ClassPath.SOURCE, libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class GroovyLanguage extends DefaultLanguageConfig {
-    
+
+    // Copy of groovy/support/resources icon because some API change caused
+    // that it's not possible to refer to resource from different module
+    private static final String GROOVY_FILE_ICON_16x16 = "org/netbeans/modules/groovy/editor/resources/GroovyFile16x16.png";
+
+
     public GroovyLanguage() {
     }
 
     @MultiViewElement.Registration(
         displayName = "#CTL_SourceTabCaption",
         mimeType = "text/x-groovy",
-        iconBase = GroovySources.GROOVY_FILE_ICON_16x16,
+        iconBase = GROOVY_FILE_ICON_16x16,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "groovy.source",
         position = 1

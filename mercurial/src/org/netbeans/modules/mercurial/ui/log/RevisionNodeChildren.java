@@ -43,45 +43,75 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 import java.util.*;
+import org.openide.nodes.AbstractNode;
+import org.openide.util.WeakListeners;
 
 /**
  * Represents children of a Revision Node in Search history results table.
  *
  * @author Maros Sandor
  */
-class RevisionNodeChildren extends Children.Keys<RepositoryRevision.Event> {
+class RevisionNodeChildren extends Children.Keys implements PropertyChangeListener {
 
     private RepositoryRevision container;
     private SearchHistoryPanel master;
+    private boolean nodesCreated;
+    private final PropertyChangeListener list;
 
     public RevisionNodeChildren(RepositoryRevision container, SearchHistoryPanel master) {
         this.container = container;
         this.master = master;
+        container.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, container));
     }
 
+    @Override
     protected void addNotify() {
         refreshKeys();
     }
 
+    @Override
     protected void removeNotify() {
         setKeys (Collections.<RepositoryRevision.Event>emptySet());
     }
     
     private void refreshKeys() {
-        setKeys(container.getEvents());
+        if (container.expandEvents()) {
+            setKeys(new Object[] { new Object() });
+        } else {
+            setKeys(container.getEvents());
+        }
     }
     
-    protected Node[] createNodes(RepositoryRevision.Event fn) {
-        RevisionNode node = new RevisionNode(fn, master);
-        return new Node[] { node };
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (nodesCreated && RepositoryRevision.PROP_EVENTS_CHANGED.equals(evt.getPropertyName()) && evt.getSource() == container) {
+            refreshKeys();
+        }
     }
 
-    public void refreshChildren() {
-        refreshKeys();
+    @Override
+    protected Node[] createNodes (Object fn) {
+        nodesCreated = true;
+        Node node;
+        if (fn instanceof RepositoryRevision.Event) {
+            node = new RevisionNode((RepositoryRevision.Event) fn, master);
+        } else {
+            node = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public String getName () {
+                    return "Loading...";
+                }
+                
+            };
+        }
+        return new Node[] { node };
     }
 }
 
