@@ -175,6 +175,15 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(false);
     }
 
+    private void cancelBackgroundSearch () {
+        if (currentSearch != null) {
+            currentSearch.cancel();
+        }
+        if (currentAdditionalSearch != null) {
+            currentAdditionalSearch.cancel();
+        }
+    }
+
     private void setupComponents() {
         searchCriteriaPanel.add(criteria);
         searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) { // NOI18N
@@ -326,12 +335,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private synchronized void search() {
-        if (currentSearch != null) {
-            currentSearch.cancel();
-        }
-        if (currentAdditionalSearch != null) {
-            currentAdditionalSearch.cancel();
-        }
+        cancelBackgroundSearch();
         setResults(null, null, true, -1);
         HgModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
         currentSearch = new SearchExecutor(this);
@@ -653,6 +657,10 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
 
     boolean hasMoreResults () {
         return showingResults > -1;
+    }
+
+    void windowClosed () {
+        cancelBackgroundSearch();
     }
     
     private class Search extends HgProgressSupport {

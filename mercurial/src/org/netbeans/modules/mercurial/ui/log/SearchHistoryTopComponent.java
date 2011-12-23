@@ -138,7 +138,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     
     @Override
     protected void componentClosed() {
-       //((DiffMainPanel) getComponent(0)).componentClosed();
+       shp.windowClosed();
        super.componentClosed();
     }
     
