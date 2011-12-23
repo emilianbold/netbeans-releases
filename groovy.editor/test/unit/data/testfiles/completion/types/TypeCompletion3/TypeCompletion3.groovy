@@ -1,2 +1,0 @@
-class Pre { 
-    Cl }
