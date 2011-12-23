@@ -43,8 +43,16 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
+import java.awt.EventQueue;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.*;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -57,41 +65,50 @@ public class RepositoryRevision {
 
     private HgLogMessage message;
 
-    private File repositoryRoot;
+    private final File repositoryRoot;
+    private final File[] selectionRoots;
+    private boolean eventsInitialized;
+    private Search currentSearch;
+    private final PropertyChangeSupport support;
+    public static final String PROP_EVENTS_CHANGED = "eventsChanged";
 
     /**
      * List of events associated with the revision.
      */ 
-    private final List<Event> events = new ArrayList<Event>(1);
+    private final List<Event> events = new ArrayList<Event>(5);
+    private final List<Event> dummyEvents;
+    private final boolean incoming;
+    private final Set<String> headOfBranches;
 
-    public RepositoryRevision(HgLogMessage message, File root) {
+    public RepositoryRevision(HgLogMessage message, File repositoryRoot, File[] selectionRoots, boolean isIncoming, Set<String> headOfBranches) {
         this.message = message;
-        this.repositoryRoot = root;
-        initEvents();
+        this.repositoryRoot = repositoryRoot;
+        this.selectionRoots = selectionRoots;
+        this.incoming = isIncoming;
+        this.headOfBranches = headOfBranches;
+        support = new PropertyChangeSupport(this);
+        dummyEvents = prepareEvents(message.getDummyChangedPaths());
     }
 
     public File getRepositoryRoot() {
         return repositoryRoot;
     }
 
-    private void initEvents() {
-        HgLogMessageChangedPath [] paths = message.getChangedPaths();
-        if (paths == null) return;
-        for (HgLogMessageChangedPath path : paths) {
-            events.add(new Event(path));
-        }
+    List<Event> getEvents() {
+        return events;
     }
 
-    public List<Event> getEvents() {
-        return events;
+    List<Event> getDummyEvents () {
+        return dummyEvents;
     }
 
     public HgLogMessage getLog() {
         return message;
     }
 
+    @Override
     public String toString() {        
-        StringBuffer text = new StringBuffer();
+        StringBuilder text = new StringBuilder();
         text.append(getLog().getRevisionNumber());
         text.append("\t");
         text.append(getLog().getCSetShortID());
@@ -102,6 +119,40 @@ public class RepositoryRevision {
         text.append("\n"); // NOI18N
         text.append(getLog().getMessage());
         return text.toString();
+    }
+
+    boolean expandEvents () {
+        Search s = currentSearch;
+        if (s == null && !eventsInitialized) {
+            currentSearch = new Search();
+            currentSearch.start(Mercurial.getInstance().getParallelRequestProcessor());
+            return true;
+        }
+        return false;
+    }
+
+    void cancelExpand () {
+        Search s = currentSearch;
+        if (s != null) {
+            s.cancel();
+            currentSearch = null;
+        }
+    }
+
+    boolean isEventsInitialized () {
+        return eventsInitialized;
+    }
+    
+    public void addPropertyChangeListener (String propertyName, PropertyChangeListener listener) {
+        support.addPropertyChangeListener(propertyName, listener);
+    }
+    
+    public void removePropertyChangeListener (String propertyName, PropertyChangeListener listener) {
+        support.removePropertyChangeListener(propertyName, listener);
+    }
+
+    boolean isHeadOfBranch (String branchName) {
+        return headOfBranches.contains(branchName);
     }
     
     public class Event {
@@ -116,9 +167,9 @@ public class RepositoryRevision {
 
         private String name;
         private String path;
-        private Set<File> renames;
+        private boolean underRoots;
 
-        public Event(HgLogMessageChangedPath changedPath) {
+        Event (HgLogMessageChangedPath changedPath) {
             this.changedPath = changedPath;
             name = changedPath.getPath().substring(changedPath.getPath().lastIndexOf('/') + 1);
             
@@ -133,7 +184,7 @@ public class RepositoryRevision {
             return RepositoryRevision.this;
         }
 
-        public HgLogMessageChangedPath getChangedPath() {
+        HgLogMessageChangedPath getChangedPath() {
             return changedPath;
         }
 
@@ -147,8 +198,9 @@ public class RepositoryRevision {
         /** Setter for property file.
          * @param file New value of property file.
          */
-        public void setFile(File file) {
+        public void setFile(File file, boolean isUnderRoots) {
             this.file = file;
+            this.underRoots = isUnderRoots;
         }
 
         public File getOriginalFile() {
@@ -157,10 +209,6 @@ public class RepositoryRevision {
 
         void setOriginalFile (File file) {
             this.originalFile = file;
-        }
-
-        void setRenames (Set<File> renames) {
-            this.renames = new HashSet<File>(renames);
         }
 
         public String getName() {
@@ -176,10 +224,80 @@ public class RepositoryRevision {
             return changedPath.getPath();
         }
 
-        boolean isPredecessorFor (File file) {
-            return file.equals(getFile()) || renames != null && renames.contains(file);
+        boolean isUnderRoots () {
+            return underRoots;
+        }
+    }
+
+    private List<Event> prepareEvents (HgLogMessageChangedPath[] paths) {
+        final List<Event> logEvents = new ArrayList<Event>(paths.length);
+        for (HgLogMessageChangedPath path : paths) {
+            logEvents.add(new Event(path));
+        }
+        for (RepositoryRevision.Event event : logEvents) {
+            String filePath = event.getChangedPath().getPath();
+            File f = new File(repositoryRoot, filePath);
+            boolean underRoots = false;
+            for (File selectionRoot : selectionRoots) {
+                if (VersioningSupport.isFlat(selectionRoot)) {
+                    underRoots = selectionRoot.equals(f.getParentFile());
+                } else {
+                    underRoots = Utils.isAncestorOrEqual(selectionRoot, f);
+                }
+                if (underRoots) {
+                    break;
+                }
+            }
+            event.setFile(f, underRoots);
+            event.setOriginalFile(f);
+        }
+        for (RepositoryRevision.Event event : logEvents) {
+            if ((event.getChangedPath().getAction() == HgLogMessage.HgCopyStatus || event.getChangedPath().getAction() == HgLogMessage.HgRenameStatus)
+                    && event.getChangedPath().getCopySrcPath() != null) {
+                File originalFile = new File(repositoryRoot, event.getChangedPath().getCopySrcPath());
+                event.setOriginalFile(originalFile);
+            }
+        }
+        return logEvents;
+    }
+
+    private class Search extends HgProgressSupport {
+
+        @Override
+        protected void perform () {
+            getLog().refreshChangedPaths(this, incoming);
+            HgLogMessageChangedPath [] paths = getLog().getChangedPaths();            
+            final List<Event> logEvents = prepareEvents(paths);
+            if (!isCanceled()) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        if (!isCanceled()) {
+                            events.clear();
+                            dummyEvents.clear();
+                            events.addAll(logEvents);
+                            eventsInitialized = true;
+                            currentSearch = null;
+                            support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<Event>(events));
+                        }
+                    }
+                });
+            }
         }
 
-        
+        @Override
+        protected void finnishProgress () {
+
+        }
+
+        @Override
+        protected void startProgress () {
+
+        }
+
+        @Override
+        protected ProgressHandle getProgressHandle () {
+            return null;
+        }
     }
 }
