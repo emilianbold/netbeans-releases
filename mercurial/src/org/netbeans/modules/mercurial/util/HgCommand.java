@@ -3270,7 +3270,7 @@ public class HgCommand {
         return patches;
     }
 
-    public static void qPushPatches (File repository, String onTopPatch, OutputLogger logger) throws HgException {
+    public static List<String> qPushPatches (File repository, String onTopPatch, OutputLogger logger) throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -3290,6 +3290,7 @@ public class HgCommand {
         if (!list.isEmpty() && isErrorAbort(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QPUSH_FAILED"), logger); //NOI18N
         }
+        return list;
     }
 
     public static void qPopPatches (File repository, String onTopPatch, OutputLogger logger) throws HgException {
@@ -3314,7 +3315,7 @@ public class HgCommand {
         }
     }
 
-    public static void qGoToPatch (File repository, String patch, OutputLogger logger) throws HgException {
+    public static List<String> qGoToPatch (File repository, String patch, OutputLogger logger) throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -3330,6 +3331,7 @@ public class HgCommand {
         if (!list.isEmpty() && isErrorAbort(list.get(0))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QGOTO_FAILED"), logger); //NOI18N
         }
+        return list;
     }
 
     private static QPatch[] parsePatches (List<String> list) {
