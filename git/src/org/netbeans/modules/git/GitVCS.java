@@ -48,6 +48,8 @@ import java.util.MissingResourceException;
 import java.io.File;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -63,14 +65,14 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
     metadataFolderNames={".git"}, 
     actionsCategory="Git"
 )
-public class GitVCS extends VersioningSystem implements PropertyChangeListener {
+public class GitVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.GitVCS"); //NOI18N
 
     public GitVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName()); 
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_MainMenu")); // NOI18N
-        
+        GitModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         Git.getInstance().registerGitVCS(this);
     }
 
@@ -137,6 +139,13 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
 
     void refreshStatus (Set<File> files) {
         fireStatusChanged(files == null || files.isEmpty() ? null : files);
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(GitModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            fireStatusChanged((Set<File>) null);
+        }
     }
 
 }
