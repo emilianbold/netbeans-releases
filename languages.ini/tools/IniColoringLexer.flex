@@ -37,18 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.languages.neon;
+package org.netbeans.modules.languages.ini;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 %%
 
 %public
-%class NeonColoringLexer
-%type NeonTokenId
+%class IniColoringLexer
+%type IniTokenId
 %function nextToken
 %unicode
 %caseless
@@ -59,7 +59,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             // backup eof
             input.backup(1);
             //and return the text as error token
-            return NeonTokenId.NEON_UNKNOWN;
+            return IniTokenId.INI_ERROR;
         } else {
             return null;
         }
@@ -71,7 +71,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private LexerInput input;
 
-    public NeonColoringLexer(LexerRestartInfo info) {
+    public IniColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
         if(info.state() != null) {
             //reset state
@@ -150,47 +150,24 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %}
 
-IDENTIFIER=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff\.]*"!"?
-KEYWORD=("true" | "TRUE" | "false" | "FALSE" | "yes" | "YES" | "no" | "NO" | "null" | "NULL" | "not" | "self")
 WHITESPACE=[ \t]+
 NEWLINE=("\r"|"\n"|"\r\n")
-ZERO=0
-DECIMAL=[\+\-]?[1-9][0-9]*
-OCTAL=0[0-7]+
-HEXADECIMAL=0[xX][0-9A-Fa-f]+
-EXPONENT=[eE][\+\-]?[0-9]+
-FLOAT_1=[0-9]+\.[0-9]+{EXPONENT}?
-FLOAT_2=\.[0-9]+{EXPONENT}?
-FLOAT_3=[0-9]+\.{EXPONENT}?
-FLOAT_4=[0-9]+{EXPONENT}
-FLOAT={FLOAT_1} | {FLOAT_2} | {FLOAT_3} | {FLOAT_4}
-NUMBER={ZERO} | {DECIMAL} | {OCTAL} | {HEXADECIMAL} | {FLOAT}
-LITERAL=([^#%\"',=\[\]\{\}\(\)\<\>\t\n\r@ ])+
-ARRAY_CLOSE_DELIM = ("]" | "}" | ")")
-ARRAY_MINUS_DELIM="-"
-ARRAY_ITEM_DELIM=","
-D_STRING="\""([^"\r""\n""\r\n""\""]|"\\\"")*"\""
-S_STRING="'"([^"\r""\n""\r\n""'"]|"\\'")*"'"
-STRING = {D_STRING} | {S_STRING}
-VARIABLE="%"{LITERAL}"%"?
-ARRAY_KEY=({REFERENCE} | {LITERAL} | {STRING} | {NUMBER}){WHITESPACE}*(":"|"=")
-ARRAY_VALUE={WHITESPACE}*({REFERENCE} | {LITERAL} | {STRING} | {NUMBER} | {VARIABLE} | {KEYWORD}){WHITESPACE}*
-BLOCK_HEADER={IDENTIFIER}({WHITESPACE}*"<"{WHITESPACE}*{IDENTIFIER})?{WHITESPACE}*":"{WHITESPACE}*({NEWLINE} | {COMMENT})
-COMMENT="#"[^"\r""\n""\r\n"]*
-BLOCK_ARRAY_SEPARATOR=":" | "="
-REFERENCE="@"({IDENTIFIER} | "\\")+
+D_STRING="\""([^"\""]|"\\\"")*"\""
+S_STRING="'"([^"'"]|"\\'")*"'"
+EQUALS="="
+COMMENT=";"[^"\r""\n""\r\n"]*
+SECTION="["[^"]""\r""\n""\r\n"]*"]"
+KEY=[^"=""\r""\n""\r\n"";"]+
+QUOTED_VALUE={D_STRING} | {S_STRING}
+UNQUOTED_VALUE=[^"\r""\n""\r\n"";"]+
+VALUE={WHITESPACE}*{QUOTED_VALUE}{UNQUOTED_VALUE}? | {UNQUOTED_VALUE}
+ERROR=[^"\r""\n""\r\n"";"]+
 
 %state ST_IN_BLOCK
-%state ST_BLOCK_HEADER
-%state ST_VALUED_BLOCK
-%state ST_IN_INHERITED_BLOCK
-%state ST_IN_RIGHT_BLOCK
-%state ST_IN_ARRAY_KEY
-%state ST_IN_ARRAY_VALUE
-%state ST_IN_MINUS_ARRAY_VALUE
-%state ST_IN_SQ_ARRAY
-%state ST_IN_CU_ARRAY
-%state ST_IN_PA_ARRAY
+%state ST_IN_SECTION
+%state ST_AFTER_SECTION
+%state ST_IN_KEY
+%state ST_IN_VALUE
 %state ST_HIGHLIGHTING_ERROR
 
 
@@ -200,176 +177,84 @@ REFERENCE="@"({IDENTIFIER} | "\\")+
     pushState(ST_IN_BLOCK);
 }
 
-<ST_IN_BLOCK, ST_IN_INHERITED_BLOCK, ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_KEY, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE, ST_IN_SQ_ARRAY, ST_IN_CU_ARRAY, ST_IN_PA_ARRAY, ST_BLOCK_HEADER, ST_VALUED_BLOCK>{WHITESPACE}+ {
-    return NeonTokenId.NEON_WHITESPACE;
+<ST_IN_BLOCK, ST_AFTER_SECTION, ST_IN_KEY, ST_IN_VALUE>{WHITESPACE} {
+    return IniTokenId.INI_WHITESPACE;
 }
 
-<ST_IN_BLOCK, ST_IN_INHERITED_BLOCK, ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_KEY, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE, ST_IN_SQ_ARRAY, ST_IN_CU_ARRAY, ST_IN_PA_ARRAY, ST_BLOCK_HEADER, ST_VALUED_BLOCK>{COMMENT} {
-    return NeonTokenId.NEON_COMMENT;
+<ST_IN_BLOCK, ST_AFTER_SECTION, ST_IN_KEY>{COMMENT} {
+    return IniTokenId.INI_COMMENT;
 }
 
 <ST_IN_BLOCK> {
-    {BLOCK_HEADER} {
-        pushState(ST_BLOCK_HEADER);
+    {SECTION} {
         yypushback(yylength());
+        pushState(ST_IN_SECTION);
     }
     {NEWLINE} {
-        return NeonTokenId.NEON_WHITESPACE;
-    }
-    {BLOCK_ARRAY_SEPARATOR} {
-        pushState(ST_IN_RIGHT_BLOCK);
-        return NeonTokenId.NEON_INTERPUNCTION;
+        return IniTokenId.INI_WHITESPACE;
     }
     . {
-        pushState(ST_VALUED_BLOCK);
+        pushState(ST_IN_KEY);
         yypushback(yylength());
     }
 }
 
-<ST_BLOCK_HEADER, ST_VALUED_BLOCK> {
-    {BLOCK_ARRAY_SEPARATOR} {
-        popState();
-        yypushback(yylength());
-    }
-    "<" {
-        pushState(ST_IN_INHERITED_BLOCK);
-        return NeonTokenId.NEON_INTERPUNCTION;
-    }
-    {ARRAY_MINUS_DELIM} / {WHITESPACE}+ {
-        pushState(ST_IN_MINUS_ARRAY_VALUE);
-        return NeonTokenId.NEON_INTERPUNCTION;
-    }
-    {NEWLINE} {
-        popState();
-        yypushback(yylength());
-    }
-}
-
-<ST_BLOCK_HEADER> {
-    {IDENTIFIER} {
-        return NeonTokenId.NEON_BLOCK;
-    }
-}
-
-<ST_VALUED_BLOCK> {
-    {IDENTIFIER} | {STRING} {
-        return NeonTokenId.NEON_VALUED_BLOCK;
-    }
-}
-
-<ST_IN_INHERITED_BLOCK> {
-    {BLOCK_ARRAY_SEPARATOR} {
-        popState();
-        yypushback(yylength());
-    }
-    {IDENTIFIER} {
-        return NeonTokenId.NEON_BLOCK;
-    }
-    {NEWLINE} {
-        popState();
-        return NeonTokenId.NEON_WHITESPACE;
-    }
-}
-<ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE> {
-    {REFERENCE} {
-        return NeonTokenId.NEON_REFERENCE;
-    }
-    {KEYWORD} {
-        return NeonTokenId.NEON_KEYWORD;
-    }
-    {NUMBER} {
-        return NeonTokenId.NEON_NUMBER;
-    }
-    {LITERAL} {
-        return NeonTokenId.NEON_LITERAL;
-    }
-    {VARIABLE} {
-        return NeonTokenId.NEON_VARIABLE;
-    }
-    {STRING} {
-        return NeonTokenId.NEON_STRING;
-    }
-}
-<ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE> {
+<ST_IN_SECTION> {
     "[" {
-        pushState(ST_IN_SQ_ARRAY);
-        return NeonTokenId.NEON_INTERPUNCTION;
+        return IniTokenId.INI_SECTION_DELIM;
     }
-    "{" {
-        pushState(ST_IN_CU_ARRAY);
-        return NeonTokenId.NEON_INTERPUNCTION;
-    }
-    "(" {
-        pushState(ST_IN_PA_ARRAY);
-        return NeonTokenId.NEON_INTERPUNCTION;
-    }
-}
-
-<ST_IN_RIGHT_BLOCK, ST_IN_MINUS_ARRAY_VALUE> {
-    {NEWLINE} {
-        yypushback(yylength());
-        popState();
-    }
-}
-
-<ST_IN_SQ_ARRAY, ST_IN_CU_ARRAY, ST_IN_PA_ARRAY> {
-    {ARRAY_KEY} {
-        pushState(ST_IN_ARRAY_KEY);
-        yypushback(yylength());
-    }
-    {ARRAY_VALUE} {
-        pushState(ST_IN_ARRAY_VALUE);
-        yypushback(yylength());
-    }
-    {ARRAY_ITEM_DELIM} {
-        return NeonTokenId.NEON_INTERPUNCTION;
-    }
-}
-
-<ST_IN_SQ_ARRAY> {
     "]" {
         popState();
-        return NeonTokenId.NEON_INTERPUNCTION;
+        pushState(ST_AFTER_SECTION);
+        return IniTokenId.INI_SECTION_DELIM;
+    }
+    [^\[\]]+ {
+        return IniTokenId.INI_SECTION;
     }
 }
 
-<ST_IN_CU_ARRAY> {
-    "}" {
+<ST_AFTER_SECTION> {
+    {WHITESPACE} {
+        return IniTokenId.INI_WHITESPACE;
+    }
+    {COMMENT} {
+        return IniTokenId.INI_COMMENT;
+    }
+    {ERROR} {
+        return IniTokenId.INI_ERROR;
+    }
+    {NEWLINE} {
         popState();
-        return NeonTokenId.NEON_INTERPUNCTION;
+        return IniTokenId.INI_WHITESPACE;
     }
 }
 
-<ST_IN_PA_ARRAY> {
-    ")" {
+<ST_IN_KEY> {
+    {EQUALS} {
         popState();
-        return NeonTokenId.NEON_INTERPUNCTION;
+        pushState(ST_IN_VALUE);
+        return IniTokenId.INI_EQUALS;
+    }
+    {KEY} {
+        return IniTokenId.INI_KEY;
+    }
+    {NEWLINE} {
+        popState();
+        return IniTokenId.INI_WHITESPACE;
     }
 }
 
-<ST_IN_ARRAY_KEY> {
-    {REFERENCE} {
-        return NeonTokenId.NEON_REFERENCE;
+<ST_IN_VALUE> {
+    {VALUE} {
+        return IniTokenId.INI_VALUE;
     }
-    {NUMBER} {
-        return NeonTokenId.NEON_NUMBER;
-    }
-    {LITERAL} {
-        return NeonTokenId.NEON_LITERAL;
-    }
-    {STRING} {
-        return NeonTokenId.NEON_STRING;
-    }
-    {BLOCK_ARRAY_SEPARATOR} {
+    {COMMENT} {
         popState();
-        return NeonTokenId.NEON_INTERPUNCTION;
+        return IniTokenId.INI_COMMENT;
     }
-}
-
-<ST_IN_ARRAY_VALUE> {
-    {ARRAY_CLOSE_DELIM} | {ARRAY_ITEM_DELIM} {
+    {NEWLINE} {
         popState();
-        yypushback(yylength());
+        return IniTokenId.INI_WHITESPACE;
     }
 }
 
@@ -380,18 +265,19 @@ REFERENCE="@"({IDENTIFIER} | "\\")+
 <ST_HIGHLIGHTING_ERROR> {
 	{WHITESPACE} {
         popState();
-        return NeonTokenId.NEON_WHITESPACE;
+        return IniTokenId.INI_WHITESPACE;
     }
     . | {NEWLINE} {
-        return NeonTokenId.NEON_UNKNOWN;
+        return IniTokenId.INI_ERROR;
     }
 }
 
+// not needed for ini files...
 /* ============================================
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_IN_BLOCK, ST_IN_INHERITED_BLOCK, ST_IN_RIGHT_BLOCK, ST_IN_ARRAY_KEY, ST_IN_ARRAY_VALUE, ST_IN_MINUS_ARRAY_VALUE, ST_IN_SQ_ARRAY, ST_IN_CU_ARRAY, ST_IN_PA_ARRAY, ST_BLOCK_HEADER, ST_VALUED_BLOCK> {
+/*<YYINITIAL, ST_IN_BLOCK, ST_IN_SECTION, ST_AFTER_SECTION, ST_IN_KEY, ST_IN_VALUE> {
     . {
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);
@@ -400,4 +286,4 @@ REFERENCE="@"({IDENTIFIER} | "\\")+
         yypushback(yylength());
         pushState(ST_HIGHLIGHTING_ERROR);
     }
-}
+}*/
