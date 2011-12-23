@@ -65,6 +65,7 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.openide.util.WeakListeners;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -87,6 +88,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private boolean                 dividerSet;
     protected List<RepositoryRevision> results;
     private static final RequestProcessor rp = new RequestProcessor("MercurialDiff", 1, true);  // NOI18N
+    private final PropertyChangeListener list;
+    private Node[] selectedNodes;
+    private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);
 
     public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
@@ -98,6 +102,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         diffView = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         diffView.setTopComponent(treeView);
         setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"))); // NOI18N
+        list = WeakListeners.propertyChange(this, null);
     }
 
     @Override
@@ -129,62 +134,113 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            final Node [] nodes = (Node[]) evt.getNewValue();
+            assert EventQueue.isDispatchThread();
+            selectedNodes = (Node[]) evt.getNewValue();
             currentDifferenceIndex = 0;
-            if (nodes.length == 0) {
+            if (selectedNodes.length == 0) {
                 showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
-            else if (nodes.length > 2) {
+            else if (selectedNodes.length > 2) {
                 showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_TooManyRevisions")); // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
+            revisionsToRefresh.clear();
 
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    RepositoryRevision container1 = nodes[0].getLookup().lookup(RepositoryRevision.class);
-                    RepositoryRevision.Event r1 = nodes[0].getLookup().lookup(RepositoryRevision.Event.class);
-                    try {
-                        currentIndex = treeView.getSelection()[0];
-                        if (nodes.length == 1) {
-                            if (container1 != null) {
-                                showContainerDiff(container1, onSelectionshowLastDifference);
-                            }
-                            else if (r1 != null) {
-                                showRevisionDiff(r1, onSelectionshowLastDifference);
-                            }
-                        } else if (nodes.length == 2) {
-                            RepositoryRevision.Event revOlder = null;
-                            if (container1 != null) {
-                                /**
-                                 * both repository revision events must be acquired from a container, not through a Lookup as before,
-                                 * since only two containers (and no rev-event) are present in the lookup
-                                 */
-                                RepositoryRevision container2 = nodes[1].getLookup().lookup(RepositoryRevision.class);
-                                r1 = getEventForRoots(container1, null);
-                                revOlder = getEventForRoots(container2, r1 == null ? null : r1.getFile());
-                            } else {
-                                revOlder = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
-                            }
-                            if (r1 == null || revOlder == null || revOlder.getFile() == null || !revOlder.isPredecessorFor(r1.getFile())) {
-                                throw new Exception();
-                            }
-                            HgRevision revisionOlder = r1.getLogInfoHeader().getLog().getHgRevision();
-                            HgRevision revisionNewer = revOlder.getLogInfoHeader().getLog().getHgRevision();
-                            showDiff(r1, revisionNewer, revisionOlder, false);
-                        }
-                    } catch (Exception e) {
-                        showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
-                        parent.refreshComponents(false);
-                    }
-
+                    showDiff();
                 }
             };
-            SwingUtilities.invokeLater(runnable);
+            EventQueue.invokeLater(runnable);
+        } else if (RepositoryRevision.PROP_EVENTS_CHANGED.equals(evt.getPropertyName())) {
+            if (evt.getSource() instanceof RepositoryRevision) {
+                RepositoryRevision revision = (RepositoryRevision) evt.getSource();
+                revision.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                if (revisionsToRefresh.contains(revision) && selectedNodes != null && selectedNodes.length > 0) {
+                    showDiff();
+                }
+            }
+        }
+    }
+    
+    private void showDiff () {
+        RepositoryRevision container1 = selectedNodes[0].getLookup().lookup(RepositoryRevision.class);
+        RepositoryRevision.Event r1 = selectedNodes[0].getLookup().lookup(RepositoryRevision.Event.class);
+        boolean error = false;
+        boolean loading = false;
+        try {
+            currentIndex = treeView.getSelection()[0];
+            if (selectedNodes.length == 1) {
+                if (container1 != null) {
+                    container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                    container1.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                    if (container1.expandEvents()) {
+                        revisionsToRefresh.add(container1);
+                        loading = true;
+                    } else {
+                        container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                    }
+                    if (showContainerDiff(container1, onSelectionshowLastDifference)) {
+                        loading = false;
+                    }
+                } else if (r1 != null) {
+                    showRevisionDiff(r1, onSelectionshowLastDifference);
+                }
+            } else if (selectedNodes.length == 2) {
+                RepositoryRevision.Event revOlder = null;
+                if (container1 != null) {
+                    /**
+                        * both repository revision events must be acquired from a container, not through a Lookup as before,
+                        * since only two containers (and no rev-event) are present in the lookup
+                        */
+                    RepositoryRevision container2 = selectedNodes[1].getLookup().lookup(RepositoryRevision.class);
+                    if (container2 == null) {
+                        error = true;
+                    } else {
+                        container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        container1.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        container2.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        container2.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        if (container1.expandEvents() || container2.expandEvents()) {
+                            loading = true;
+                            revisionsToRefresh.add(container1);
+                            revisionsToRefresh.add(container2);
+                        } else {
+                            container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                            container2.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        }
+                        r1 = getEventForRoots(container1, null);
+                        revOlder = getEventForRoots(container2, r1 == null ? null : r1.getFile());
+                        if (r1 != null && revOlder != null) {
+                            loading = false;
+                        }
+                    }
+                } else {
+                    revOlder = (RepositoryRevision.Event) selectedNodes[1].getLookup().lookup(RepositoryRevision.Event.class);
+                }
+                if (r1 == null || revOlder == null || revOlder.getFile() == null) {
+                    error = true;
+                } else {
+                    showDiff(r1.getLogInfoHeader().getRepositoryRoot(), revOlder, r1, false);
+                }
+            }
+        } catch (Exception e) {
+            error = true;
+        }
+        
+        if (loading) {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
+            parent.refreshComponents(false);
+        } else if (error) {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
+            parent.refreshComponents(false);
+        } else {
+            revisionsToRefresh.clear();
         }
     }
 
@@ -227,40 +283,22 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
     }
 
-    protected void setBottomComponent(Component component) {
+    protected final void setBottomComponent(Component component) {
         assert EventQueue.isDispatchThread();
         int dl = diffView.getDividerLocation();
         diffView.setBottomComponent(component);
         diffView.setDividerLocation(dl);
     }
 
-    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, HgRevision revision1, HgRevision revision2, boolean showLastDifference) {
-        return new ShowDiffTask(header, revision1, revision2, showLastDifference);
+    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
+        return new ShowDiffTask(revision1, revision2, showLastDifference);
     }
 
-    /**
-     *
-     * @param header
-     * @param revision1 if null then parent revision will be used
-     * @param revision2
-     * @param showLastDifference
-     */
-    protected void showDiff(RepositoryRevision.Event header, HgRevision revision1, HgRevision revision2, boolean showLastDifference) {
+    protected void showDiff (File repositoryRoot, RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
         synchronized(this) {
             cancelBackgroundTasks();
-            char action = header.getChangedPath().getAction();
-            if(action == HgLogMessage.HgModStatus){
-                currentTask = createShowDiffTask(header, revision1, revision2, showLastDifference);
-            }else if(action == HgLogMessage.HgAddStatus){
-                currentTask = createShowDiffTask(header, HgRevision.EMPTY, revision2, showLastDifference);
-            }else if(action == HgLogMessage.HgDelStatus){
-                currentTask = createShowDiffTask(header, revision1, HgRevision.EMPTY, showLastDifference);
-            }else if(action == HgLogMessage.HgCopyStatus){
-                currentTask = createShowDiffTask(header, revision1, revision2, showLastDifference);
-            } else {
-                currentTask = createShowDiffTask(header, revision1, revision2, showLastDifference);
-            }
-            currentShowDiffTask = currentTask.start(rp, header.getLogInfoHeader().getRepositoryRoot(), NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing"));
+            currentTask = createShowDiffTask(revision1, revision2, showLastDifference);
+            currentShowDiffTask = currentTask.start(rp, repositoryRoot, NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing")); //NOI18N
         }
     }
 
@@ -281,33 +319,53 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
-        showDiff(rev, null, rev.getLogInfoHeader().getLog().getHgRevision(), showLastDifference);
+        showDiff(rev.getLogInfoHeader().getRepositoryRoot(), null, rev, showLastDifference);
     }
 
-    protected void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
+    protected boolean showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
+        boolean initialized = container.isEventsInitialized();
         List<RepositoryRevision.Event> revs = container.getEvents();
         
         RepositoryRevision.Event newest = getEventForRoots(container, null);
         if(newest == null) {
             newest = revs.get(0);   
-        }        
-        showRevisionDiff(newest, showLastDifference);
+        }
+        if (newest == null && !initialized) {
+            return false;
+        } else {
+            showRevisionDiff(newest, showLastDifference);
+            return true;
+        }
     }
 
     private RepositoryRevision.Event getEventForRoots(RepositoryRevision container, File preferedFile) {
         RepositoryRevision.Event event = null;
-        List<RepositoryRevision.Event> revs = container.getEvents();
+        List<RepositoryRevision.Event> revs;
+        if (container.isEventsInitialized()) {
+            revs = container.getEvents();
+        } else {
+            revs = container.getDummyEvents();
+        }
 
         //try to get the root
         File[] roots = parent.getRoots();
         outer:
-        for(File root : roots) {
-            for(RepositoryRevision.Event evt : revs) {
-                if (evt.isPredecessorFor(root)) {
-                    event = evt;
-                    if (preferedFile == null || root.equals(preferedFile)) {
+        for(RepositoryRevision.Event evt : revs) {
+            if (preferedFile == null) {
+                for(File root : roots) {
+                    if (root.equals(evt.getFile())) {
+                        event = evt;
                         break outer;
+                    } else if (similarPaths(root, evt.getFile())) {
+                        event = evt;
                     }
+                }
+            } else {
+                if (preferedFile.equals(evt.getFile())) {
+                    event = evt;
+                    break;
+                } else if (similarPaths(preferedFile, evt.getFile())) {
+                    event = evt;
                 }
             }
         }
@@ -372,17 +430,38 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         treeView.setSelection(container);
     }
 
+    void refreshResults (List<RepositoryRevision> res) {
+        res = new ArrayList<RepositoryRevision>(res);
+        if (!parent.isShowMerges()) {
+            for (ListIterator<RepositoryRevision> it = res.listIterator(); it.hasNext(); ) {
+                RepositoryRevision rev = it.next();
+                if (rev.getLog().isMerge()) {
+                    it.remove();
+                }
+            }
+        }
+        results = res;
+        treeView.refreshResults(res);
+    }
+
+    private boolean similarPaths (File referenceFile, File file) {
+        return referenceFile.getName().equals(file.getName())
+                || referenceFile.getAbsolutePath().equalsIgnoreCase(null);
+    }
+
     private class ShowDiffTask extends HgProgressSupport {
         
-        private final RepositoryRevision.Event header;
+        private File file1;
         private HgRevision revision1;
-        private final HgRevision revision2;
         private boolean showLastDifference;
+        private final RepositoryRevision.Event event2;
 
-        public ShowDiffTask(RepositoryRevision.Event header, HgRevision revision1, HgRevision revision2, boolean showLastDifference) {
-            this.header = header;
-            this.revision1 = revision1;
-            this.revision2 = revision2;
+        public ShowDiffTask(RepositoryRevision.Event event1, RepositoryRevision.Event event2, boolean showLastDifference) {
+            this.event2 = event2;
+            if (event1 != null) {
+                revision1 = event1.getLogInfoHeader().getLog().getHgRevision();
+                file1 = event1.getOriginalFile();
+            }
             this.showLastDifference = showLastDifference;
         }
 
@@ -390,13 +469,15 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             if (revision1 == null) {
-                revision1 = header.getLogInfoHeader().getLog().getAncestor(header.getOriginalFile());
+                revision1 = event2.getLogInfoHeader().getLog().getAncestor(event2.getOriginalFile());
+                file1 = event2.getOriginalFile();
             }
             if (isCanceled()) {
                 return;
             }
-            final DiffStreamSource s1 = new DiffStreamSource(header.getOriginalFile(), revision1, revision1.getRevisionNumber());
-            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2.getRevisionNumber());
+            final DiffStreamSource s1 = new DiffStreamSource(file1, revision1, file1.getName() + " (" + revision1.getRevisionNumber() + ")"); //NOI18N
+            final DiffStreamSource s2 = new DiffStreamSource(event2.getFile(), event2.getLogInfoHeader().getLog().getHgRevision(), 
+                    event2.getFile().getName() + " (" + event2.getLogInfoHeader().getLog().getHgRevision().getRevisionNumber() + ")"); //NOI18N
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
