@@ -4461,50 +4461,29 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         // ParserResultTask implementation
         // -------------------------------------------------------------------
 
-        public void cancel() {
-                        
+        private void suspend() {
             if (notInterruptible) {
                 // ignore the request
                 return;
             }
+            suspendSupport.suspend();
+        }
 
-            final Parser.CancelReason cancelReason = Utilities.getTaskCancelReason();
-            if (cancelReason == Parser.CancelReason.SOURCE_MODIFICATION_EVENT) {
-                //ignore the request
+        private void resume() {
+            if (notInterruptible) {
+                // ignore the request
                 return;
             }
-
-            recordCaller();
-            synchronized (todo) {
-                if (!cancelled) {
-                    cancelled = true;
-                    cancelledWork = workInProgress;
-                    if (cancelledWork != null) {
-                        cancelledWork.setCancelled(true);
-                    }
-                    TEST_LOGGER.log(Level.FINEST, "cancel");  //NOI18N
-                }
-            }
+            suspendSupport.resume();
         }
+
 
         @Override
         public void run() {
-            synchronized (todo) {
-                cancelled = false;
-                cancelledWork = null;
-            }
             try {
                 _run();
             } finally {
                 synchronized (todo) {
-                    if (cancelledWork != null && !cancelledWork.isFinished()) {
-                        if (!allCancelled) {
-                            // push the work back in the queue
-                            cancelledWork.setCancelled(false);
-                            todo.add(0, cancelledWork);
-                        }
-                        cancelledWork = null;
-                    }
                     if (todo.isEmpty()) {
                         scheduled = false;
                         LOGGER.fine("scheduled = false");   //NOI18N
@@ -4524,13 +4503,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final List<Work> todo = new LinkedList<Work>();
         private boolean followUpWorksSorted = true;
         private Work workInProgress = null;
-        private Work cancelledWork = null;
         private boolean scheduled = false;
         private boolean allCancelled = false;
-        private boolean cancelled = false;
         private List<Long> protectedOwners = new LinkedList<Long>();
         private List<Runnable> followupTasks = null;
-        
+        private final SuspendSupport suspendSupport = new SuspendSupport();
+
         private void _run() {
             ProgressHandle progressHandle = null;
             try {
@@ -4588,7 +4566,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private Work getWork () {
             synchronized (todo) {
                 Work w;
-                if (!cancelled && protectedOwners.isEmpty() && todo.size() > 0) {
+                if (protectedOwners.isEmpty() && todo.size() > 0) {
                     w = todo.remove(0);
 
                     if (w instanceof FileListWork && ((FileListWork) w).isFollowUpJob() && !followUpWorksSorted) {
