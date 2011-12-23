@@ -431,15 +431,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     void refreshResults (List<RepositoryRevision> res) {
-        res = new ArrayList<RepositoryRevision>(res);
-        if (!parent.isShowMerges()) {
-            for (ListIterator<RepositoryRevision> it = res.listIterator(); it.hasNext(); ) {
-                RepositoryRevision rev = it.next();
-                if (rev.getLog().isMerge()) {
-                    it.remove();
-                }
-            }
-        }
         results = res;
         treeView.refreshResults(res);
     }

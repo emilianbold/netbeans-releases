@@ -209,9 +209,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         @Override
         public boolean isVisible () {
             boolean visible = true;
-            if (!master.isShowMerges() && revision.getLog().isMerge()) {
-                visible = false;
-            }
+            // can apply filter criteria here
             return visible;
         }
 

@@ -88,7 +88,8 @@ class SearchExecutor extends HgProgressSupport {
     private final String branchName;
     private final String username;
     private final String msg;
-    private static final int DEFAULT_LIMIT = 10;
+    static final int DEFAULT_LIMIT = 10;
+    private final boolean includeMerges;
     private HgBranch[] branches;
 
     public SearchExecutor(SearchHistoryPanel master) {
@@ -96,6 +97,7 @@ class SearchExecutor extends HgProgressSupport {
         SearchCriteriaPanel criteria = master.getCriteria();
         fromRevision = criteria.getFrom();
         toRevision = criteria.getTo();
+        includeMerges = criteria.isIncludeMerges();
         limitRevisions = criteria.getLimit();
         if (limitRevisions <= 0) {
             limitRevisions = DEFAULT_LIMIT;
@@ -142,12 +144,12 @@ class SearchExecutor extends HgProgressSupport {
         
         HgLogMessage[] messages;
         if (master.isIncomingSearch()) {
-            messages = HgCommand.getIncomingMessages(root, toRevision, true, false, true, limitRevisions, logger);
+            messages = HgCommand.getIncomingMessages(root, toRevision, includeMerges, false, true, limitRevisions, logger);
         } else if (master.isOutSearch()) {
-            messages = HgCommand.getOutMessages(root, toRevision, true, limitRevisions, logger);
+            messages = HgCommand.getOutMessages(root, toRevision, includeMerges, limitRevisions, logger);
         } else {
             List<String> branchNames = branchName.isEmpty() ? Collections.<String>emptyList() : Collections.singletonList(branchName);
-            messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, true, limitRevisions, branchNames, logger);
+            messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, includeMerges, limitRevisions, branchNames, logger);
         }
         return appendResults(root, messages);
     }
