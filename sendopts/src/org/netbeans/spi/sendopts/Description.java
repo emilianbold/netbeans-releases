@@ -48,8 +48,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /** Adds human readable description to {@code @}{@link Arg} annotation.
- * Can be attached to public non-static fields of a class that implements
- * {@link ProcessArgs}.
+ * Can be attached to public non-static fields that are also annotated 
+ * by {@code @}{@link Arg}.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
