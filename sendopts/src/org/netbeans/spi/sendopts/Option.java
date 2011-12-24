@@ -398,6 +398,9 @@ public final class Option {
                 if (key == null) {
                     return null;
                 }
+                if (bundle == OptionImpl.NO_BUNDLE) {
+                    return key;
+                }
                 ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                 if (loader == null) {
                     loader = Thread.currentThread().getContextClassLoader();

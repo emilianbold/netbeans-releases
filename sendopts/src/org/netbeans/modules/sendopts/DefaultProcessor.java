@@ -86,11 +86,11 @@ public final class DefaultProcessor extends OptionProcessor {
             default: assert false;
         }
         if (displayName != null) {
-            String[] arr = displayName.split("#", 2); // NOI18N
+            String[] arr = fixBundles(displayName.split("#", 2)); // NOI18N
             o = Option.displayName(o, arr[0], arr[1]);
         }
         if (description != null) {
-            String[] arr = description.split("#", 2); // NOI18N
+            String[] arr = fixBundles(description.split("#", 2)); // NOI18N
             o = Option.shortDescription(o, arr[0], arr[1]);
         }
         return o;
@@ -286,5 +286,12 @@ public final class DefaultProcessor extends OptionProcessor {
             value = pkg.getName() + ".Bundle" + value;
         }
         f.put(key, value);
+    }
+    private static String[] fixBundles(String[] oneOrTwo) {
+        if (oneOrTwo.length == 2) {
+            return oneOrTwo;
+        } else {
+            return new String[] { OptionImpl.NO_BUNDLE, oneOrTwo[0] };
+        }
     }
 }

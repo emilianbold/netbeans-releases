@@ -49,8 +49,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.logging.Level;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.api.sendopts.CommandLine;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.sendopts.Env;
 import org.openide.util.NbBundle;
@@ -139,10 +141,13 @@ public class OptionTest extends NbTestCase {
         assertNotNull("environment provided", methodEnv);
     }
     public void testHelp() throws CommandException {
+        CharSequence log = Log.enable("org.netbeans.modules.sendopts", Level.WARNING);
         StringWriter w = new StringWriter();
         cmd.usage(new PrintWriter(w));
         assertTrue("contains additionalParams:\n" + w, w.toString().contains(("AddOnParams")));
         assertTrue("contains short help:\n" + w, w.toString().contains(("ShortHelp")));
+        assertTrue("contains description for p\n" + w, w.toString().contains("Short description for p"));
+        assertEquals("No warnings:\n" + log, 0, log.length());
     }
         public void testDefaultValueNotProvided() throws CommandException {
             cmd.process("--default");
@@ -163,6 +168,7 @@ public class OptionTest extends NbTestCase {
         @Arg(longName="enabled")
         public boolean enabled;
 
+        @Description(shortDescription="Short description for p")
         @Arg(longName="", shortName='p')
         public String withParam;
 
