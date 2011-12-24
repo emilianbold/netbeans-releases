@@ -71,7 +71,7 @@ import java.lang.annotation.Target;
  * {@link org.netbeans.spi.sendopts.Option#additionalArguments(char, java.lang.String) additional arguments}
  * made available:
  * <pre>
- * {@code @}{@link Arg}(longName="additional") public String[] additionaArgs;
+ * {@code @}{@link Arg}(longName="additional") public String[] additionalArgs;
  * </pre>
  * To define an option with {@link org.netbeans.spi.sendopts.Option#optionalArgument(char, java.lang.String) optional argument}
  * one can annotate string field and provide its default value:
