@@ -86,11 +86,11 @@ public final class DefaultProcessor extends OptionProcessor {
             default: assert false;
         }
         if (displayName != null) {
-            String[] arr = displayName.split("#"); // NOI18N
+            String[] arr = displayName.split("#", 2); // NOI18N
             o = Option.displayName(o, arr[0], arr[1]);
         }
         if (description != null) {
-            String[] arr = description.split("#"); // NOI18N
+            String[] arr = description.split("#", 2); // NOI18N
             o = Option.shortDescription(o, arr[0], arr[1]);
         }
         return o;
