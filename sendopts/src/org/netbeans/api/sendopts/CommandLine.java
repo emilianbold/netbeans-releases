@@ -59,7 +59,8 @@ import org.openide.util.NbBundle;
 
 /**
  * A class for clients that have an array of strings and want to process
- * it - e.g. parse it and also invoke registered {@link OptionProcessor}s.
+ * it - e.g. parse it and also invoke associated {@link OptionProcessor}s
+ * and {@link org.netbeans.spi.sendopts.Arg declarative options}.
  *
  * @author Jaroslav Tulach
  */
