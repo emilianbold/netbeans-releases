@@ -91,7 +91,7 @@ public final class CommandLine {
      * @param classes classes that declare the options
      * @return new command line object that contains options declared in the
      *   provided classes
-     * @since XXX
+     * @since 2.20
      */
     public static CommandLine create(Class<?>... classes) {
         List<OptionProcessor> arr = new ArrayList<OptionProcessor>();

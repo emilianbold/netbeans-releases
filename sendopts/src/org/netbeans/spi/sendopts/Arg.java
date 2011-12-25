@@ -79,6 +79,7 @@ import java.lang.annotation.Target;
  * {@code @}{@link Arg}(shortName='o', longName="", defaultValue="no-arg-provided") public String optionArg;
  * </pre>
  * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 2.20
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

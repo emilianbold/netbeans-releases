@@ -42,7 +42,6 @@
 package org.netbeans.spi.sendopts;
 
 import org.netbeans.api.sendopts.CommandException;
-import org.netbeans.spi.sendopts.Env;
 
 /** Method in this interface is invoked to finish processing 
  * of options defined by subclass of this interface. <code>public</code>
@@ -51,6 +50,7 @@ import org.netbeans.spi.sendopts.Env;
  * The subclass needs to have public default constructor.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 2.20
  */
 public interface ArgsProcessor {
     /** 
