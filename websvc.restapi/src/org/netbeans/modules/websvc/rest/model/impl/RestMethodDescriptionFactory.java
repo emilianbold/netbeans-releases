@@ -56,7 +56,7 @@ class RestMethodDescriptionFactory {
     
     public static RestMethodDescriptionImpl create(Element element) {
         
-        if (element.getKind() == ElementKind.METHOD) {
+        if (element != null && element.getKind() == ElementKind.METHOD) {
             if (Utils.hasHttpMethod(element)) {
                 return new HttpMethodImpl((ExecutableElement) element);
             }
