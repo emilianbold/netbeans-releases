@@ -120,9 +120,8 @@ class SummaryCellRenderer implements ListCellRenderer {
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
     private static final int INDENT = ICON_EXPANDED.getIconWidth() + 3;
-    private static final String PATH_COLOR = getColorString(UIManager.getColor("Label.disabledForeground")); //NOI18N
     private static final JLabel EMPTY_SPACE_LABEL = new JLabel();
-    private static final String PREFIX_PATH_FROM = "from ";
+    private static final String PREFIX_PATH_FROM = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_SummaryCellRenderer.pathPrefixFrom"); //NOI18N
     private Collection<VCSHyperlinkProvider> hpInstances;
     
     Map<Object, ListCellRenderer> renderers = new WeakHashMap<Object, ListCellRenderer>();
@@ -487,6 +486,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         private final JLabel actionLabel;
         private final JButton actionButton;
         private String id;
+        private final String PATH_COLOR = getColorString(UIManager.getColor("Label.disabledForeground")); //NOI18N
 
         public EventRenderer () {
             pathLabel = new JLabel();
