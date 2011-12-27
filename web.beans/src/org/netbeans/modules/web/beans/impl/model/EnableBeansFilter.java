@@ -57,6 +57,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
@@ -151,7 +152,7 @@ class EnableBeansFilter {
             if ( typeElements.size() == 0 && productions.size() == 0 ){
                 return new ErrorImpl(getResult().getVariable(), 
                         getResult().getVariableType(), NbBundle.getMessage(
-                                EnableBeansFilter.class, "ERR_NoFound"));
+                                EnableBeansFilter.class, "ERR_NoFound"));   // NOI18N
             }
             if ( typesSize==0 && productionsSize == 0 )
             {
@@ -160,10 +161,10 @@ class EnableBeansFilter {
                  * was not turned on in beans.xml. 
                  */  
                 return new ResolutionErrorImpl(getResult(), NbBundle.getMessage(
-                        EnableBeansFilter.class, "ERR_AlternativesOnly"));
+                        EnableBeansFilter.class, "ERR_AlternativesOnly"));  // NOI18N
             }
             return new ResolutionErrorImpl( getResult(),  NbBundle.getMessage(
-                    EnableBeansFilter.class, "ERR_NoEnabledBeans"));
+                    EnableBeansFilter.class, "ERR_NoEnabledBeans"));        // NOI18N
         }
         Set<Element> allElements = new HashSet<Element>( enabledTypes );
         allElements.addAll( enabledProductions );
@@ -189,7 +190,7 @@ class EnableBeansFilter {
         }
         else {
             String message = NbBundle.getMessage(EnableBeansFilter.class,
-                    "ERR_UnresolvedAmbiguousDependency"); // NOI81N
+                    "ERR_UnresolvedAmbiguousDependency");           // NOI81N
             return new ResolutionErrorImpl(getResult(), message, enabledTypes);
         }
     }
@@ -341,7 +342,8 @@ class EnableBeansFilter {
              * Client proxies are never required for a bean whose 
              * scope is a pseudo-scope such as @Dependent.
              */
-            if ( getHelper().hasAnnotation( elementsUtil.getAllAnnotationMirrors( 
+            if ( scopeElement == null ||
+                    getHelper().hasAnnotation( elementsUtil.getAllAnnotationMirrors( 
                     scopeElement), SCOPE) )
             {
                 return;
@@ -421,7 +423,7 @@ class EnableBeansFilter {
     }
     
     private DeclaredType getDeclaredType( TypeMirror type ){
-        if ( type instanceof DeclaredType ){
+        if ( type instanceof DeclaredType && type.getKind()!= TypeKind.ERROR){
             return (DeclaredType)type;
         }
         if ( type instanceof TypeVariable ){
