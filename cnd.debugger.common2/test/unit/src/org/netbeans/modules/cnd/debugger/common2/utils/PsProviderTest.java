@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import org.junit.Test;
@@ -105,6 +107,25 @@ public class PsProviderTest {
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("./firefox", res.get(0).get(data.commandColumnIdx()));
         assertEquals("18719", res.get(0).get(1));
+    }
+    
+    @Test
+    public void testSolarisArgs() { // CR 7116814
+        PsProvider.PsData data = prepareSolarisData();
+        data.addProcess("    abcd 12345   994   1   Oct 05 pts/1     273:08 ./firefox1");
+        data.addProcess("    abcd 18719   994   1   Oct 05 pts/1     273:08 ./firefox2");
+        ArrayList<String> pargs = new ArrayList<String>();
+        pargs.add("");
+        pargs.add("pargs: cannot examine 12345: no such process or core file");
+        pargs.add("pargs: Couldn't determine locale of target process.");
+        pargs.add("pargs: Some strings may not be displayed properly.");
+        pargs.add("firefox2 a b c");
+        PsProvider.updatePargsData(data, new String[]{"","12345","18719"}, pargs);
+        Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
+        assertEquals("./firefox1", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("12345", res.get(0).get(1));
+        assertEquals("firefox2 a b c", res.get(1).get(data.commandColumnIdx()));
+        assertEquals("18719", res.get(1).get(1));
     }
     
     @Test
