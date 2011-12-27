@@ -51,6 +51,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -61,6 +63,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -218,8 +221,17 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
         }
         return new DelegateOutputStream(interceptor);
     }
-   
 
+    // Fixing #206726 - If a remote file is saved frequently, "File modified externally" message appears, user changes are lost
+    @Override
+    public void refresh(boolean expected) {        
+        try {
+            WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this), null);
+        } catch (InterruptedException ex) {
+            RemoteLogger.finest(ex, this);
+        }
+    }
+   
     @Override
     public FileType getType() {
         return FileType.fromChar(fileTypeChar);
