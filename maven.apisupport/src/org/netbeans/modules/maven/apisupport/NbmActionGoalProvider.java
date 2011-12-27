@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.Action;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -66,7 +67,6 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
@@ -110,8 +110,8 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     @ActionRegistration(displayName = "#ACT_NBM_Reload", lazy=false)
     @ActionReference(position = 1250, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_NBM_Reload=Install/Reload in Development IDE")
-    public static ContextAwareAction createReloadAction() {
-        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(NBMRELOAD, ACT_NBM_Reload(), null);
+    public static Action createReloadAction() {
+        Action a = ProjectSensitiveActions.projectCommandAction(NBMRELOAD, ACT_NBM_Reload(), null);
         a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         return a;
     }
@@ -120,8 +120,8 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     @ActionRegistration(displayName = "#ACT_NBM_Reload_Target", lazy=false)
     @ActionReference(position = 1225, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_NBM_Reload_Target=Reload in Target Platform")
-    public static ContextAwareAction createReloadTargetAction() {
-        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, ACT_NBM_Reload_Target(), null);
+    public static Action createReloadTargetAction() {
+        Action a = ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, ACT_NBM_Reload_Target(), null);
         a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         return a;
     }
