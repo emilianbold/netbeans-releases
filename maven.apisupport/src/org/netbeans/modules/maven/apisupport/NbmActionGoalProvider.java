@@ -139,7 +139,10 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         return false;
     }
 
-    @Messages("NbmActionGoalProvider.target_platform_not_running=You can only reload a module while running the application.")
+    @Messages({
+        "NbmActionGoalProvider.target_platform_not_running=You can only reload a module while running the application.",
+        "NbmActionGoalProvider.no_app_found=No single open nbm-application project found with a dependency on this module.",
+    })
     public @Override RunConfig createConfigForDefaultAction(String actionName,
             Project project,
             Lookup lookup) {
@@ -162,6 +165,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
                 // XXX why does getPluginProperty(prj, GROUP_APACHE_PLUGINS, PLUGIN_JAR, "finalName", "jar") not work?
                 rc.setProperty("module", "'" + FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), outputDir + "/" + prj.getArtifactId() + "-" + prj.getVersion() + ".jar") + "'"); // NOI18N
                 return rc;
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbmActionGoalProvider_no_app_found(), NotifyDescriptor.WARNING_MESSAGE));
+                return null;
             }
         }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
