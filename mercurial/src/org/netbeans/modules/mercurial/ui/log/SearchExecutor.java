@@ -166,8 +166,6 @@ class SearchExecutor extends HgProgressSupport {
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             HgLogMessage logMessage = logMessages[i];
-            if (username != null && logMessage.getAuthor().indexOf(username) == -1) continue;
-            if (msg != null && logMessage.getMessage().indexOf(msg) == -1) continue;
             RepositoryRevision rev = new RepositoryRevision(logMessage, root, master.getRoots(), master.isIncomingSearch(), getBranches(logMessage));
             results.add(rev);
         }
@@ -206,6 +204,14 @@ class SearchExecutor extends HgProgressSupport {
             }
         }
         return headOfBranches;
+    }
+
+    String getUsername () {
+        return username;
+    }
+
+    String getMessage () {
+        return msg;
     }
   
 }
