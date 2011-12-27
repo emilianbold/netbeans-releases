@@ -314,7 +314,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private void setResults(List<RepositoryRevision> newResults, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap, boolean searching, int limit) {
-        this.results = newResults == null ? newResults : new ArrayList<RepositoryRevision>(newResults);
+        this.results = newResults == null ? null : filter(newResults);
         this.kenaiUserMap = kenaiUserMap;
         this.searchInProgress = searching;
         showingResults = limit;
@@ -662,6 +662,18 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     void windowClosed () {
         cancelBackgroundSearch();
     }
+
+    private List<RepositoryRevision> filter (List<RepositoryRevision> results) {
+        String username = currentSearch.getUsername();
+        String msg = currentSearch.getMessage();
+        List<RepositoryRevision> newResults = new ArrayList<RepositoryRevision>(results.size());
+        for (RepositoryRevision rev : results) {
+            if (username != null && !rev.getLog().getAuthor().contains(username)) continue;
+            if (msg != null && !rev.getLog().getMessage().contains(msg)) continue;
+            newResults.add(rev);
+        }
+        return newResults;
+    }
     
     private class Search extends HgProgressSupport {
         private final int count;
@@ -687,7 +699,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
                             }
                             
                             List<RepositoryRevision> toAdd = new ArrayList<RepositoryRevision>(newResults.size());
-                            for (RepositoryRevision rev : newResults) {
+                            for (RepositoryRevision rev : filter(newResults)) {
                                 if (!visibleRevisions.contains(rev.getLog().getCSetShortID())) {
                                     toAdd.add(rev);
                                 }
@@ -698,7 +710,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
                             } else {
                                 showingResults = count;
                             }
-                            if (showingResults > results.size()) {
+                            if (showingResults > newResults.size()) {
                                 showingResults = -1;
                             }
                             logEntries = createLogEntries(results);
