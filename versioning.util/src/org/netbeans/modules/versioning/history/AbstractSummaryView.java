@@ -334,7 +334,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     @Override
     public void mouseMoved(MouseEvent e) {
         resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        resultsList.setToolTipText(""); //NOI18N
+        resultsList.setToolTipText(null);
 
         int idx = resultsList.locationToIndex(e.getPoint());
         if (idx == -1) return;
