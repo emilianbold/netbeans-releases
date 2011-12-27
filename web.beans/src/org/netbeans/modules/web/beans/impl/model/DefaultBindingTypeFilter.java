@@ -83,6 +83,9 @@ class DefaultBindingTypeFilter<T extends Element> extends Filter<T> {
                         .getAnnotationType();
                 TypeElement annotationElement = (TypeElement) annotationType
                         .asElement();
+                if ( annotationElement == null ){
+                    continue;
+                }
                 String annotationName = annotationElement.getQualifiedName()
                     .toString();
                 if ( WebBeansModelProviderImpl.ANY_QUALIFIER_ANNOTATION.equals(

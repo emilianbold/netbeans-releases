@@ -2092,7 +2092,26 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
         }
 
+        // disable breakpoints and signals
+        send("-break-disable"); //NOI18N
+        send("-gdb-set unwindonsignal on"); //NOI18N
+        
         dataMIEval(expr, dis);
+        
+        // enable breakpoints and signals
+        final Handler[] handlers = bm().getHandlers();
+        if (handlers.length > 0) {
+            StringBuilder command = new StringBuilder();
+            command.append("-break-enable"); // NOI18N
+            for (Handler h : handlers) {
+                if (h.breakpoint().isEnabled()) {
+                    command.append(' ');
+                    command.append(h.getId());
+                }
+            }
+            send(command.toString());
+        }
+        send("-gdb-set unwindonsignal off"); //NOI18N
     }
 
     @Override

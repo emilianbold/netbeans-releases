@@ -60,6 +60,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.ElementHandle;
@@ -298,9 +299,14 @@ public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
             DeclaredType annotationType = annotationMirror
                     .getAnnotationType();
+            if ( annotationType == null || annotationType.getKind() == TypeKind.ERROR){
+                continue;
+            }
             TypeElement annotationElement = (TypeElement) annotationType
                     .asElement();
-            if (isQualifier(annotationElement, helper , event )) {
+            if (annotationElement!= null && isQualifier(annotationElement, 
+                    helper , event )) 
+            {
                 strategy.handleAnnotation(annotationMirror , annotationElement );
             }
         }
