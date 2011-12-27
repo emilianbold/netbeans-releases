@@ -2484,20 +2484,25 @@ abstract public class CsmCompletionQuery {
                         OUTER:
                         while (ts.movePrevious()) {
                             Token<TokenId> token = ts.token();
-                            if (CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory())) {
+                            final TokenId id = token.id();
+                            if (CppTokenId.WHITESPACE_CATEGORY.equals(id.primaryCategory())) {
                                 continue;
                             }
-                            switch ((CppTokenId)token.id()) {
-                                case IDENTIFIER:
-                                case SCOPE:
-                                case EQ:
-                                    // valid
-                                    break;
-                                case NAMESPACE:
-                                    out.set(true);
-                                    break OUTER;
-                                default:
-                                    break OUTER;
+                            if (id instanceof CppTokenId) {
+                                switch ((CppTokenId)id) {
+                                    case IDENTIFIER:
+                                    case SCOPE:
+                                    case EQ:
+                                        // valid
+                                        break;
+                                    case NAMESPACE:
+                                        out.set(true);
+                                        break OUTER;
+                                    default:
+                                        break OUTER;
+                                }
+                            } else {
+                                break;
                             }
                         }
                     }
