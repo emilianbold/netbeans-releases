@@ -323,11 +323,13 @@ class SummaryCellRenderer implements ListCellRenderer {
                     foregroundColor = selectionForeground;
                     backgroundColor = selectionBackground;
                     style = selectedStyle;
+                    textPane.setOpaque(false);
                 } else {
                     foregroundColor = UIManager.getColor("List.foreground"); //NOI18N
                     backgroundColor = UIManager.getColor("List.background"); //NOI18N
                     backgroundColor = entry.isLessInteresting() ? darkerUninteresting(backgroundColor) : darker(backgroundColor);
                     style = normalStyle;
+                    textPane.setOpaque(true);
                 }
                 textPane.setBackground(backgroundColor);
                 setBackground(backgroundColor);
@@ -493,7 +495,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         private final JLabel actionLabel;
         private final JButton actionButton;
         private String id;
-        private final String PATH_COLOR = getColorString(UIManager.getColor("Label.disabledForeground")); //NOI18N
+        private final String PATH_COLOR = getColorString(UIManager.getColor("TextField.inactiveForeground")); //NOI18N
 
         public EventRenderer () {
             pathLabel = new JLabel();
