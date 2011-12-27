@@ -504,27 +504,7 @@ public final class GitClient {
     public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
         RepositoryState state = repository.getRepositoryState();
-        switch (state) {
-            case APPLY:
-                return GitRepositoryState.APPLY;
-            case BARE:
-                return GitRepositoryState.BARE;
-            case BISECTING:
-                return GitRepositoryState.BISECTING;
-            case MERGING:
-                return GitRepositoryState.MERGING;
-            case MERGING_RESOLVED:
-                return GitRepositoryState.MERGING_RESOLVED;
-            case REBASING:
-            case REBASING_INTERACTIVE:
-            case REBASING_MERGE:
-            case REBASING_REBASING:
-                return GitRepositoryState.REBASING;
-            case SAFE:
-                return GitRepositoryState.SAFE;
-            default:
-                throw new IllegalStateException(state.getDescription());
-        }
+        return GitRepositoryState.getStateFor(state);
     }
 
     /**

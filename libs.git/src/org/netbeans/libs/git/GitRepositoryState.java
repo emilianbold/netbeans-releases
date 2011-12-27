@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git;
 
+import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.jgit.Utils;
 
 /**
@@ -165,4 +166,30 @@ public enum GitRepositoryState {
 	 * @return true if reset to another HEAD is considered SAFE
 	 */
 	public abstract boolean canResetHead ();
+
+        static GitRepositoryState getStateFor (RepositoryState state) {
+            switch (state) {
+                case APPLY:
+                    return GitRepositoryState.APPLY;
+                case BARE:
+                    return GitRepositoryState.BARE;
+                case BISECTING:
+                    return GitRepositoryState.BISECTING;
+                case MERGING:
+                case CHERRY_PICKING:
+                    return GitRepositoryState.MERGING;
+                case MERGING_RESOLVED:
+                case CHERRY_PICKING_RESOLVED:
+                    return GitRepositoryState.MERGING_RESOLVED;
+                case REBASING:
+                case REBASING_INTERACTIVE:
+                case REBASING_MERGE:
+                case REBASING_REBASING:
+                    return GitRepositoryState.REBASING;
+                case SAFE:
+                    return GitRepositoryState.SAFE;
+                default:
+                    throw new IllegalStateException(state.getDescription());
+            }
+        }
 }

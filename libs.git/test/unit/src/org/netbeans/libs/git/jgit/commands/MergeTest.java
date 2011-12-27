@@ -81,12 +81,6 @@ public class MergeTest extends AbstractGitTestCase {
         workDir = getWorkingDirectory();
         repo = getRepository(getLocalGitRepository());
     }
-    
-    public void testMergeStatus () {
-        for (org.eclipse.jgit.api.MergeResult.MergeStatus status : org.eclipse.jgit.api.MergeResult.MergeStatus.values()) {
-            assertNotNull(MergeStatus.valueOf(status.name()));
-        }
-    }
 
     public void testMergeNoChange () throws Exception {
         File f = new File(workDir, "file");
