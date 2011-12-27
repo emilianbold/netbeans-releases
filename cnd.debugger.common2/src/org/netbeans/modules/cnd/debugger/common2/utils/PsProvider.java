@@ -264,23 +264,29 @@ public abstract class PsProvider {
 
                 try {
                     List<String> pargsOutput = ProcessUtils.readProcessOutput(pargsBuilder.call());
-
-                    idx = 1;
-                    for (String procArgs : pargsOutput) {
-                        if (procArgs.isEmpty() || procArgs.startsWith("pargs: Warning")) { // NOI18N
-                            continue;
-                        }
-                        if (!procArgs.startsWith("pargs:")) { // NOI18N
-                            res.updateCommand(pargs_args[idx], procArgs);
-                        }
-                        idx++;
-                    }
+                    updatePargsData(res, pargs_args, pargsOutput);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
             
             return res;
+        }
+    }
+    
+    static void updatePargsData(PsData res, String[] pargs_args, List<String> pargsOutput) {
+        int idx = 1;
+        for (String procArgs : pargsOutput) {
+            if (procArgs.isEmpty() ||
+                    procArgs.startsWith("pargs: Warning") || // NOI18N
+                    procArgs.startsWith("pargs: Couldn't determine locale of target process") || // NOI18N
+                    procArgs.startsWith("pargs: Some strings may not be displayed properly")) { // NOI18N
+                continue;
+            }
+            if (!procArgs.startsWith("pargs:")) { // NOI18N
+                res.updateCommand(pargs_args[idx], procArgs);
+            }
+            idx++;
         }
     }
 
