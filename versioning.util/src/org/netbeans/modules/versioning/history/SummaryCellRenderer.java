@@ -246,7 +246,6 @@ class SummaryCellRenderer implements ListCellRenderer {
         private String id;
         private final Style selectedStyle;
         private final Style normalStyle;
-        private final Style filenameStyle;
         private final Style indentStyle;
         private final Style noindentStyle;
         private final Style issueHyperlinkStyle;
@@ -272,8 +271,6 @@ class SummaryCellRenderer implements ListCellRenderer {
             StyleConstants.setBackground(selectedStyle, selectionBackground);
             normalStyle = textPane.addStyle("normal", null); //NOI18N
             StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); //NOI18N
-            filenameStyle = textPane.addStyle("filename", normalStyle); //NOI18N
-            StyleConstants.setBold(filenameStyle, true);
             indentStyle = textPane.addStyle("indent", null); //NOI18N
             StyleConstants.setLeftIndent(indentStyle, 50);
             noindentStyle = textPane.addStyle("noindent", null); //NOI18N
@@ -285,6 +282,7 @@ class SummaryCellRenderer implements ListCellRenderer {
 
             linkStyle = textPane.addStyle("link", normalStyle); //NOI18N
             StyleConstants.setForeground(linkStyle, Color.BLUE);
+            StyleConstants.setBold(linkStyle, true);
 
             authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
             StyleConstants.setForeground(authorStyle, Color.BLUE);
@@ -351,10 +349,10 @@ class SummaryCellRenderer implements ListCellRenderer {
 
                     // add revision
                     sd.insertString(0, item.getUserData().getRevision(), null);
-                    sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
+                    sd.setCharacterAttributes(0, sd.getLength(), normalStyle, false);
                     if (!selected) {
                         for (AbstractSummaryView.LogEntry.RevisionHighlight highlight : item.getUserData().getRevisionHighlights()) {
-                            Style s = textPane.addStyle(null, filenameStyle);
+                            Style s = textPane.addStyle(null, normalStyle);
                             StyleConstants.setForeground(s, highlight.getForeground());
                             StyleConstants.setBackground(s, highlight.getBackground());
                             sd.setCharacterAttributes(highlight.getStart(), highlight.getLength(), s, false);
@@ -411,11 +409,20 @@ class SummaryCellRenderer implements ListCellRenderer {
                             }
                         }
                     }
+                    int pos = sd.getLength();
                     if(l != null) {
                         l.insertString(sd, style);
                     } else {
                         sd.insertString(sd.getLength(), commitMessage, style);
                     }
+                    // paint first line of commit message bold
+                    int lineEnd = sd.getText(pos, sd.getLength() - pos).indexOf("\n");
+                    if (lineEnd == -1) {
+                        lineEnd = sd.getLength() - pos;
+                    }
+                    Style s = textPane.addStyle(null, style);
+                    StyleConstants.setBold(s, true);
+                    sd.setCharacterAttributes(pos, lineEnd, s, false);
                     if (nlc > 0 && !item.messageExpanded) {
                         l = linkerSupport.getLinker(ExpandMsgHyperlink.class, id);
                         if (l == null) {
