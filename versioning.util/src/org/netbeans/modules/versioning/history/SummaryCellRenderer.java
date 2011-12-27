@@ -603,7 +603,7 @@ class SummaryCellRenderer implements ListCellRenderer {
                     linkerSupport.add(new ShowRemainingFilesLink(((AbstractSummaryView.ShowAllEventsItem) value).getParent()), id);
                 }
                 StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
-                sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowRemainingFiles")); //NOI18N
+                sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
                 sb.append("</a></html>"); //NOI18N
                 comp = dlcr.getListCellRendererComponent(list, sb.toString(), index, isSelected, cellHasFocus);
                 removeAll();
@@ -1022,7 +1022,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         public boolean mouseMoved(Point p, JComponent component) {
             if (bounds != null && bounds.contains(p)) {
                 component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowRemainingFiles")); //NOI18N
+                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
                 return true;
             }
             return false;
