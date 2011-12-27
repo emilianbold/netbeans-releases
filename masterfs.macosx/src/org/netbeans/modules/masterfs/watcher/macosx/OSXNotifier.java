@@ -37,8 +37,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs.watcher;
+package org.netbeans.modules.masterfs.watcher.macosx;
 
+import org.netbeans.modules.masterfs.providers.Notifier;
 import com.sun.jna.Callback;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
@@ -54,12 +55,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class OSXNotifier extends Notifier<Void> {
+@ServiceProvider(service=Notifier.class, position=300)
+public final class OSXNotifier extends Notifier<Void> {
     private static final Level DEBUG_LOG_LEVEL = Level.FINE;
     private static final Level PERF_LOG_LEVEL = Level.FINE;
     private static final long kFSEventStreamEventIdSinceNow = 0xFFFFFFFFFFFFFFFFL;

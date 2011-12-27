@@ -37,18 +37,13 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs.watcher;
+package org.netbeans.modules.masterfs.providers;
 
 import java.io.IOException;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.util.logging.Level;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.netbeans.modules.masterfs.watcher.NotifierAccessor;
 
 /**
- * This internal SPI represents the interface between masterfs and
+ * This SPI represents the interface between masterfs and
  * different implementations of filesystem watches on various systems.
  *
  * The SPI is kept very minimal, as the only necessary information is a queue
@@ -59,10 +54,10 @@ import org.openide.util.Utilities;
  * The implementation can report more events than registered, the infrastructure
  * should take care of filtering them.
  *
- * @author nenik
+ * @author Petr Nejedly
+ * @since 2.36
  */
 public abstract class Notifier<KEY> {
-
     /**
      * Register a path for notifications. Optionally provide a key useful
      * for unregistering the path. The implementations that need to have every
@@ -75,7 +70,7 @@ public abstract class Notifier<KEY> {
      * OS limit on the number of watched folders is reached. The exception
      * should be annotated with localized explanation.
      */
-    public abstract KEY addWatch(String path) throws IOException;
+    protected abstract KEY addWatch(String path) throws IOException;
     
     /**
      * Unregister a path. Implementations that listen recursively on the whole
@@ -85,7 +80,7 @@ public abstract class Notifier<KEY> {
      * @param key the key obtained during registration.
      * @throws IOException
      */
-    public abstract void removeWatch(KEY key) throws IOException;
+    protected abstract void removeWatch(KEY key) throws IOException;
 
     /**
      *
@@ -94,7 +89,14 @@ public abstract class Notifier<KEY> {
      * @throws IOException
      * @throws InterruptedException
      */
-    public abstract String nextEvent() throws IOException, InterruptedException;
+    protected abstract String nextEvent() throws IOException, InterruptedException;
+    
+    /** Starts the notifier. If the implementation is not ready to work,
+     * it may throw I/O exception to signal it has not been initialized 
+     * properly.
+     * @exception IOException if the initialization cannot be performed
+     */
+    protected abstract void start() throws IOException;
     
     /** Get ready for stop. Clean all resources, the system is about to
      * shutdown the VM. By default this is no-op operation.
@@ -102,52 +104,28 @@ public abstract class Notifier<KEY> {
     protected void stop() throws IOException {
     }
     
-    class KeyRef extends WeakReference<FileObject> {
-        private final KEY key;
-        private final int hash;
-
-        public KeyRef(FileObject fo, KEY key, ReferenceQueue<FileObject> queue) {
-            super(fo, queue);
-            this.key = key;
-            this.hash = fo.hashCode();
-            if (key != null) {
-                Watcher.LOG.log(Level.FINE, "Adding watch for {0}", key);
+    static {
+        NotifierAccessor impl = new NotifierAccessor() {
+            @Override
+            protected <KEY> KEY addWatch(Notifier<KEY> n, String path) throws IOException {
+                return n.addWatch(path);
             }
-        }
-
-        @Override
-        public FileObject get() {
-            return super.get();
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
+            @Override
+            protected <KEY> void removeWatch(Notifier<KEY> n, KEY key) throws IOException {
+                n.removeWatch(key);
             }
-            try {
-                KeyRef kr = (KeyRef)obj;
-                FileObject mine = get();
-                FileObject theirs = kr.get();
-                if (mine == null) {
-                    return theirs == null;
-                } else {
-                    return mine.equals(theirs);
-                }
-            } catch (ClassCastException ex) {
-                return false;
+            @Override
+            protected String nextEvent(Notifier<?> n) throws IOException, InterruptedException {
+                return n.nextEvent();
             }
-        }
-
-        final void removeWatch() throws IOException {
-            Watcher.LOG.log(Level.FINE, "Removing watch for {0}", key);
-            Notifier.this.removeWatch(key);
-        }
-
-        @Override
-        public int hashCode() {
-            return hash;
-        }
-    } // KeyRef
-    
+            @Override
+            protected void start(Notifier<?> n) throws IOException {
+                n.start();
+            }
+            @Override
+            protected void stop(Notifier<?> n) throws IOException {
+                n.stop();
+            }
+        };
+    }
 }
