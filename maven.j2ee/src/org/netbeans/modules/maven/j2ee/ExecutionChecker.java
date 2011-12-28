@@ -229,7 +229,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                         persistServer(project, instanceId, serverId, panel.getChosenProject());
                     } else {
                         SessionContent sc = project.getLookup().lookup(SessionContent.class);
-                        sc.setServerInstanceId(instanceId);
+                        if (sc != null) {
+                            sc.setServerInstanceId(instanceId);
+                        }
                         
                         // We want to initiate context path to default value if there isn't related deployment descriptor yet
                         MavenProjectSupport.changeServer(project, true);

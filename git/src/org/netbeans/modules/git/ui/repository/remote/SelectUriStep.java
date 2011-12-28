@@ -59,7 +59,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
+import javax.swing.Timer;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitRemoteConfig;
@@ -77,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public class SelectUriStep extends AbstractWizardPanel implements ActionListener, ItemListener, ChangeListener, AsynchronousValidatingPanel<WizardDescriptor> {
+public class SelectUriStep extends AbstractWizardPanel implements ActionListener, ItemListener, ChangeListener, DocumentListener, AsynchronousValidatingPanel<WizardDescriptor> {
 
     private final Map<String, GitRemoteConfig> remotes;
     private final SelectUriPanel panel;
@@ -88,6 +92,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     private Map<String, String> remoteTags;
     private final RemoteRepository repository;
     private final Mode mode;
+    private final Timer remoteNameEditTimer;
 
     public static enum Mode {
         PULL("pull"), //NOI18N
@@ -118,6 +123,8 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             panel.lblRemoteNames.setVisible(false);
             panel.cmbRemoteNames.setVisible(false);
         }
+        remoteNameEditTimer = new Timer(300, this);
+        remoteNameEditTimer.stop();
         fillPanel();
         attachListeners();
         Mutex.EVENT.readAccess(new Runnable() {
@@ -162,6 +169,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         panel.rbConfiguredUri.addActionListener(this);
         panel.cmbConfiguredRepositories.addActionListener(this);
         panel.cmbRemoteNames.addItemListener(this);
+        ((JTextComponent) panel.cmbRemoteNames.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         repository.addChangeListener(this);
     }
 
@@ -170,12 +178,33 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         if (e.getSource() == panel.rbCreateNew || e.getSource() == panel.rbConfiguredUri || e.getSource() == panel.cmbConfiguredRepositories) {
             enableFields();
             validateBeforeNext();
+        } else if (e.getSource() == remoteNameEditTimer) {
+            validateBeforeNext();
         }
     }
 
     @Override
     public void itemStateChanged (ItemEvent e) {
         validateBeforeNext();
+    }
+    
+    @Override
+    public void insertUpdate (DocumentEvent e) {
+        restartTimer();
+    }
+
+    @Override
+    public void removeUpdate (DocumentEvent e) {
+        restartTimer();
+    }
+
+    @Override
+    public void changedUpdate (DocumentEvent e) {
+        restartTimer();
+    }
+
+    private void restartTimer () {
+        remoteNameEditTimer.restart();
     }
 
     private void enableFields () {
@@ -198,7 +227,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         } else if (panel.rbCreateNew.isSelected()) {
             valid = repository.isValid();
             msg = repository.getMessage();
-            if (valid && mode != Mode.PUSH && (panel.cmbRemoteNames.getSelectedItem() == null || ((String) panel.cmbRemoteNames.getSelectedItem()).isEmpty())) {
+            if (valid && mode != Mode.PUSH && ((JTextComponent) panel.cmbRemoteNames.getEditor().getEditorComponent()).getText().trim().isEmpty()) {
                 valid = false;
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptyRemoteName"), false); //NOI18N
             }

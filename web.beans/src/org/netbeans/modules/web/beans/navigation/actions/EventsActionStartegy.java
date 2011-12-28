@@ -116,7 +116,7 @@ final class EventsActionStartegy implements ModelActionStrategy {
         Element element = ((ElementHandle<?>)handle).resolve( 
                 model.getCompilationController());
         ExecutableElement method = (ExecutableElement)element;
-        if ( model.getObserverParameter( method ) == null ){
+        if ( element == null || model.getObserverParameter( method ) == null ){
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(EventsActionStartegy.class,
                             "LBL_NotObserverContext"), // NOI18N
