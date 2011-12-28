@@ -73,9 +73,7 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
     }
     
     public void setColorings(final Map<Token, Coloring> colorings, final Set<Token> addedTokens, final Set<Token> removedTokens) {
-        NbDocument.runAtomic((StyledDocument) doc, 
-//        SwingUtilities.invokeLater(
-        /*doc.render(*/new Runnable() {
+        doc.render(new Runnable() { // hopefully doc.render() is ok
             public void run() {
                 synchronized (LexerBasedHighlightLayer.this) {
                     LexerBasedHighlightLayer.this.colorings = colorings;
