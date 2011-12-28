@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,33 +35,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): theanuradha@netbeans.org
+ * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.search;
+package org.netbeans.modules.maven.indexer.spi.ui;
 
-import java.util.List;
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactNodeSelector;
-import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
-public class OpenArtifactInfo implements Runnable {
+/**
+ * Displays artifacts under the Maven Repositories node.
+ * @since 2.6
+ * @see ServiceProvider
+ */
+public interface ArtifactNodeSelector {
 
-    private NBArtifactInfo artifactInfo;
-
-    public OpenArtifactInfo(NBArtifactInfo artifactInfo) {
-        this.artifactInfo = artifactInfo;
-    }
-
-    @Override public void run() {
-        List<NBVersionInfo> infos = artifactInfo.getVersionInfos();
-        ArtifactNodeSelector s = Lookup.getDefault().lookup(ArtifactNodeSelector.class);
-        if (!infos.isEmpty() && s != null) {
-            s.select(infos.get(0));
-        }
-    }
+    /**
+     * Tries to select the node corresponding to a given artifact, if it can be located.
+     * @param artifact to display
+     */
+    void select(NBVersionInfo artifact);
 
 }

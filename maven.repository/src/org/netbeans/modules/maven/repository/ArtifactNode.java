@@ -63,10 +63,10 @@ public class ArtifactNode extends AbstractNode {
 
     private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/repository/ArtifactBadge.png";
 
-    public ArtifactNode(RepositoryInfo info,String id, String art) {
-        super(Children.create(new ArtifactChildren(info,id, art), true));
-        setName(art);
-        setDisplayName(art);
+    public ArtifactNode(RepositoryInfo info,String groupId, String artifactId) {
+        super(Children.create(new ArtifactChildren(info,groupId, artifactId), true));
+        setName(artifactId);
+        setDisplayName(artifactId);
     }
 
     public ArtifactNode(final RepositoryInfo info,final NBArtifactInfo artifactInfo) {
