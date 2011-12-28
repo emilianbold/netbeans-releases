@@ -120,6 +120,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
             try {
                 this.kind = kind;
                 switch (kind) {
+                    case TRANSLATION_UNIT_WITH_COMPOUND:
+                        parser.setLazyCompound(false);
+                        parser.translation_unit();
+                        break;
                     case TRANSLATION_UNIT:
                         parser.translation_unit();
                         break;
@@ -156,6 +160,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     List<CsmStatement> list = (List<CsmStatement>) context[0];
                     ((LazyStatementImpl)parserContainer).renderStatements(ast, list, objects);
                     break;
+                case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     if (ast != null) {
                         new AstRenderer(file, objects).render(ast);
@@ -228,6 +233,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             try {
                 this.kind = kind;
                 switch (kind) {
+                    case TRANSLATION_UNIT_WITH_COMPOUND:
                     case TRANSLATION_UNIT:
                             ret = parser.program();
                         break;
@@ -243,6 +249,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         @Override
         public void render(Object... context) {
             switch (kind) {
+                case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     new DataRenderer(file).render(parser.parsedObjects);
                     file.incParseCount();
