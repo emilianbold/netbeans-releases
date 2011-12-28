@@ -1130,9 +1130,11 @@ public class Gdb {
         @Override
         protected void notifyAsyncOutput(MIRecord record) {
             if (record.token() == 0) {
-                if (record.cls().equals("thread-group-added") || //NOI18N
+                if (record.cls().equals("thread-group-started")) { //NOI18N
+                    debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
+                    debugger.session().setPid(Long.valueOf(record.results().valueOf("pid").asConst().value())); //NOI18N
+                } else if (record.cls().equals("thread-group-added") || //NOI18N
                     record.cls().equals("thread-group-removed") || //NOI18N
-                    record.cls().equals("thread-group-started") || //NOI18N
                     record.cls().equals("thread-group-exited") || //NOI18N
                     record.cls().equals("thread-created") || //NOI18N
                     record.cls().equals("thread-exited") || //NOI18N
