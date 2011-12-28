@@ -82,7 +82,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private final SearchHistoryPanel master;
     
-    private static DateFormat defaultFormat = DateFormat.getDateTimeInstance();
+    private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     private static final Color HIGHLIGHT_BRANCH_FG = Color.BLACK;
     private static final Color HIGHLIGHT_TAG_FG = Color.BLACK;
     private static final Color HIGHLIGHT_BRANCH_BG = Color.decode("0xd5dde6"); //NOI18N
