@@ -55,6 +55,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
 
@@ -1037,19 +1039,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         @Override
 	protected void onDone(MIRecord record) {
-            int pid = 0;
-            String msg = record.command().getConsoleStream();
-	    int pos1 = msg.toLowerCase().indexOf("* 1 thread "); // NOI18N
-            if (pos1 >= 0) {
-                int pos2 = msg.indexOf('.', pos1);
-                if (pos2 > 0) {
-                    try {
-                        pid = Integer.valueOf(msg.substring(pos1 + 11, pos2));
-                    } catch (NumberFormatException ex) {
-                        //log.warning("Failed to get PID from \"info threads\""); // NOI18N
-                    }
-                }
-            }
+            long pid = extractPidThreads(record);
 
 	    session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
 	    if (pid != 0) {
@@ -1061,6 +1051,25 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 	    finish();
 	}
+    }
+    
+    static long extractPidThreads(MIRecord record) {
+        String msg = record.command().getConsoleStream();
+        Pattern pattern = Pattern.compile("[*]\\s+1\\s+[Tt]hread\\s+\\d+"); //NOI18N
+        Matcher matcher = pattern.matcher(msg);
+        if (matcher.find()) {
+            String group = matcher.group();
+            Pattern patternPid = Pattern.compile("\\d+$");  //NOI18N
+            Matcher matcherPid = patternPid.matcher(group);
+            if (matcherPid.find()) {
+                try {
+                    return Long.valueOf(matcherPid.group());
+                } catch (NumberFormatException ex) {
+                    //log.warning("Failed to get PID from \"info threads\""); // NOI18N
+                }
+            }
+        }
+        return 0;
     }
 
     private final class InfoProcMICmd extends MiCommandImpl {
