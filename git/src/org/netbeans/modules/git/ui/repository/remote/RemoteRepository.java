@@ -627,7 +627,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             settingsPanel.savePasswordCheckBox.setSelected(settings.isSaveCredentials());
             settingsPanel.savePassphrase.setSelected(settings.isSaveCredentials());
             settingsPanel.rbPrivateKey.setSelected(settings.isPrivateKeyAuth());
-            settingsPanel.rbPrivateKey.setSelected(!settings.isPrivateKeyAuth());
+            settingsPanel.rbUsernamePassword.setSelected(!settings.isPrivateKeyAuth());
             settingsPanel.txtIdentityFile.setText(settings.getIdentityFile());
             updateAuthSelection();
         }
@@ -716,6 +716,8 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 authViaPassword = true;
                 settingsPanel.rbUsernamePassword.setSelected(true);
             }
+            authViaPassword &= settingsPanel.rbUsernamePassword.isEnabled();
+            authViaPrivateKey &= settingsPanel.rbPrivateKey.isEnabled();
             for (JComponent c : authKeyFields) {
                 c.setEnabled(authViaPrivateKey);
             }
