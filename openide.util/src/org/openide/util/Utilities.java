@@ -799,7 +799,9 @@ widthcheck:  {
     * @param arr array of objects, can contain <code>null</code>s
     * @return the hash code
     * @see Object#hashCode
+    * @deprecated Use {@link Arrays#hashCode(Object[])} instead.
     */
+    @Deprecated
     public static int arrayHashCode(Object[] arr) {
         int c = 0;
         int len = arr.length;
@@ -822,6 +824,7 @@ widthcheck:  {
     * </UL>
     * This method is <code>null</code>-safe, so if one of the parameters is true and the second not,
     * it returns <code>false</code>.
+    * <p>Use {@code java.util.Objects.deepEquals} in JDK 7.
     * @param  o1 the first object to compare
     * @param  o2 the second object to compare
     * @return <code>true</code> if the objects are equal
@@ -831,6 +834,7 @@ widthcheck:  {
     }
 
     /** Safe equality check with array recursion.
+    * <p>Use {@code java.util.Objects.deepEquals} in JDK 7.
     * @param  o1 the first object to compare
     * @param  o2 the second object to compare
     * @param  checkArraysDepth the depth to which arrays should be compared for equality (negative for infinite depth, zero for no comparison of elements, one for shallow, etc.)
