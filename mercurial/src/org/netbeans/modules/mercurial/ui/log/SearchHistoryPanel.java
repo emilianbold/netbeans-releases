@@ -195,8 +195,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 search();
             }
         };
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
-        getActionMap().put("search", searchAction); // NOI18N
+        searchCriteriaPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
+        searchCriteriaPanel.getActionMap().put("search", searchAction); // NOI18N
         bSearch.setAction(searchAction);
         Mnemonics.setLocalizedText(bSearch, NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")); // NOI18N
         
@@ -284,6 +284,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                         summaryView = new SummaryView(this, logEntries = createLogEntries(results), kenaiUserMap);
                     }
                     resultsPanel.add(summaryView.getComponent());
+                    summaryView.requestFocusInWindow();
                 } else {
                     if (diffView == null) {
                         diffView = diffViewFactory.createDiffResultsView(this, results);

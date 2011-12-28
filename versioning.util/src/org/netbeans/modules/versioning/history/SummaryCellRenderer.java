@@ -1022,7 +1022,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         @Override
         public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
-                summaryView.showRemainingFiles(p, item);
+                summaryView.showRemainingFiles(item);
                 return true;
             }
             return false;
