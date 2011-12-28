@@ -120,9 +120,8 @@ class SummaryCellRenderer implements ListCellRenderer {
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
     private static final int INDENT = ICON_EXPANDED.getIconWidth() + 3;
-    private static final String PATH_COLOR = getColorString(UIManager.getColor("Label.disabledForeground")); //NOI18N
     private static final JLabel EMPTY_SPACE_LABEL = new JLabel();
-    private static final String PREFIX_PATH_FROM = "from ";
+    private static final String PREFIX_PATH_FROM = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_SummaryCellRenderer.pathPrefixFrom"); //NOI18N
     private Collection<VCSHyperlinkProvider> hpInstances;
     
     Map<Object, ListCellRenderer> renderers = new WeakHashMap<Object, ListCellRenderer>();
@@ -164,31 +163,25 @@ class SummaryCellRenderer implements ListCellRenderer {
     @Override
     public Component getListCellRendererComponent (JList list, Object value, int index, boolean selected, boolean hasFocus) {
         if (value instanceof AbstractSummaryView.RevisionItem) {
-            if (((AbstractSummaryView.RevisionItem) value).isVisible()) {
-                ListCellRenderer ren = renderers.get(value);
-                if (ren == null) {
-                    ren = new RevisionRenderer();
-                    renderers.put(value, ren);
-                }
-                return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
+            ListCellRenderer ren = renderers.get(value);
+            if (ren == null) {
+                ren = new RevisionRenderer();
+                renderers.put(value, ren);
             }
+            return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
         } else if (value instanceof AbstractSummaryView.EventItem) {
-            if (((AbstractSummaryView.EventItem) value).isVisible()) {
-                ListCellRenderer ren = renderers.get(value);
-                if (ren == null) {
-                    ren = new EventRenderer();
-                    renderers.put(value, ren);
-                }
-                return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
+            ListCellRenderer ren = renderers.get(value);
+            if (ren == null) {
+                ren = new EventRenderer();
+                renderers.put(value, ren);
             }
+            return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
         } else if (value instanceof AbstractSummaryView.LoadingEventsItem) {
-            if (((AbstractSummaryView.LoadingEventsItem) value).isVisible()) {
-                Component comp = dlcr.getListCellRendererComponent(list, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_LoadingEvents"), index, selected, hasFocus); //NOI18N
-                if (comp instanceof JComponent) {
-                    ((JComponent) comp).setBorder(BorderFactory.createEmptyBorder(0, INDENT, 0, 0));
-                }
-                return comp;
+            Component comp = dlcr.getListCellRendererComponent(list, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_LoadingEvents"), index, selected, hasFocus); //NOI18N
+            if (comp instanceof JComponent) {
+                ((JComponent) comp).setBorder(BorderFactory.createEmptyBorder(0, INDENT, 0, 0));
             }
+            return comp;
         } else if (value instanceof AbstractSummaryView.ShowAllEventsItem) {
             return remainingFilesRenderer.getListCellRendererComponent(list, value, index, selected, hasFocus);
         } else if (value instanceof AbstractSummaryView.ActionsItem) {
@@ -247,7 +240,6 @@ class SummaryCellRenderer implements ListCellRenderer {
         private String id;
         private final Style selectedStyle;
         private final Style normalStyle;
-        private final Style filenameStyle;
         private final Style indentStyle;
         private final Style noindentStyle;
         private final Style issueHyperlinkStyle;
@@ -273,8 +265,6 @@ class SummaryCellRenderer implements ListCellRenderer {
             StyleConstants.setBackground(selectedStyle, selectionBackground);
             normalStyle = textPane.addStyle("normal", null); //NOI18N
             StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); //NOI18N
-            filenameStyle = textPane.addStyle("filename", normalStyle); //NOI18N
-            StyleConstants.setBold(filenameStyle, true);
             indentStyle = textPane.addStyle("indent", null); //NOI18N
             StyleConstants.setLeftIndent(indentStyle, 50);
             noindentStyle = textPane.addStyle("noindent", null); //NOI18N
@@ -286,6 +276,7 @@ class SummaryCellRenderer implements ListCellRenderer {
 
             linkStyle = textPane.addStyle("link", normalStyle); //NOI18N
             StyleConstants.setForeground(linkStyle, Color.BLUE);
+            StyleConstants.setBold(linkStyle, true);
 
             authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
             StyleConstants.setForeground(authorStyle, Color.BLUE);
@@ -326,11 +317,13 @@ class SummaryCellRenderer implements ListCellRenderer {
                     foregroundColor = selectionForeground;
                     backgroundColor = selectionBackground;
                     style = selectedStyle;
+                    textPane.setOpaque(false);
                 } else {
                     foregroundColor = UIManager.getColor("List.foreground"); //NOI18N
                     backgroundColor = UIManager.getColor("List.background"); //NOI18N
                     backgroundColor = entry.isLessInteresting() ? darkerUninteresting(backgroundColor) : darker(backgroundColor);
                     style = normalStyle;
+                    textPane.setOpaque(true);
                 }
                 textPane.setBackground(backgroundColor);
                 setBackground(backgroundColor);
@@ -352,10 +345,10 @@ class SummaryCellRenderer implements ListCellRenderer {
 
                     // add revision
                     sd.insertString(0, item.getUserData().getRevision(), null);
-                    sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
+                    sd.setCharacterAttributes(0, sd.getLength(), normalStyle, false);
                     if (!selected) {
                         for (AbstractSummaryView.LogEntry.RevisionHighlight highlight : item.getUserData().getRevisionHighlights()) {
-                            Style s = textPane.addStyle(null, filenameStyle);
+                            Style s = textPane.addStyle(null, normalStyle);
                             StyleConstants.setForeground(s, highlight.getForeground());
                             StyleConstants.setBackground(s, highlight.getBackground());
                             sd.setCharacterAttributes(highlight.getStart(), highlight.getLength(), s, false);
@@ -412,11 +405,20 @@ class SummaryCellRenderer implements ListCellRenderer {
                             }
                         }
                     }
+                    int pos = sd.getLength();
                     if(l != null) {
                         l.insertString(sd, style);
                     } else {
                         sd.insertString(sd.getLength(), commitMessage, style);
                     }
+                    // paint first line of commit message bold
+                    int lineEnd = sd.getText(pos, sd.getLength() - pos).indexOf("\n");
+                    if (lineEnd == -1) {
+                        lineEnd = sd.getLength() - pos;
+                    }
+                    Style s = textPane.addStyle(null, style);
+                    StyleConstants.setBold(s, true);
+                    sd.setCharacterAttributes(pos, lineEnd, s, false);
                     if (nlc > 0 && !item.messageExpanded) {
                         l = linkerSupport.getLinker(ExpandMsgHyperlink.class, id);
                         if (l == null) {
@@ -487,6 +489,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         private final JLabel actionLabel;
         private final JButton actionButton;
         private String id;
+        private final String PATH_COLOR = getColorString(UIManager.getColor("TextField.inactiveForeground")); //NOI18N
 
         public EventRenderer () {
             pathLabel = new JLabel();
@@ -597,23 +600,19 @@ class SummaryCellRenderer implements ListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (((AbstractSummaryView.ShowAllEventsItem) value).isVisible()) {
-                id = ((AbstractSummaryView.ShowAllEventsItem) value).getItemId();
-                if (linkerSupport.getLinker(ShowRemainingFilesLink.class, id) == null) {
-                    linkerSupport.add(new ShowRemainingFilesLink(((AbstractSummaryView.ShowAllEventsItem) value).getParent()), id);
-                }
-                StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
-                sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowRemainingFiles")); //NOI18N
-                sb.append("</a></html>"); //NOI18N
-                comp = dlcr.getListCellRendererComponent(list, sb.toString(), index, isSelected, cellHasFocus);
-                removeAll();
-                add(comp);
-                comp.setMaximumSize(comp.getPreferredSize());
-                setBackground(comp.getBackground());
-                return this;
-            } else {
-                return EMPTY_SPACE_LABEL;
+            id = ((AbstractSummaryView.ShowAllEventsItem) value).getItemId();
+            if (linkerSupport.getLinker(ShowRemainingFilesLink.class, id) == null) {
+                linkerSupport.add(new ShowRemainingFilesLink(((AbstractSummaryView.ShowAllEventsItem) value).getParent()), id);
             }
+            StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
+            sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
+            sb.append("</a></html>"); //NOI18N
+            comp = dlcr.getListCellRendererComponent(list, sb.toString(), index, isSelected, cellHasFocus);
+            removeAll();
+            add(comp);
+            comp.setMaximumSize(comp.getPreferredSize());
+            setBackground(comp.getBackground());
+            return this;
         }
 
         @Override
@@ -640,27 +639,23 @@ class SummaryCellRenderer implements ListCellRenderer {
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Action[] actions = ((AbstractSummaryView.ActionsItem) value).getParent().getUserData().getActions();
-            if (((AbstractSummaryView.ActionsItem) value).isVisible() && actions.length > 0) {
-                id = ((AbstractSummaryView.ActionsItem) value).getItemId();
-                removeAll();
-                labels = new HashMap<Component, Action>(actions.length);
-                Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"action\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
-                setBackground(comp.getBackground());
-                for (Action a : actions) {
-                    JLabel label = getLabelFor((String) a.getValue(Action.NAME));
-                    label.setForeground(comp.getForeground());
-                    label.setBackground(comp.getBackground());
-                    label.setBorder(BorderFactory.createEmptyBorder());
-                    labels.put(label, a);
-                    add(label);
-                }
-                if (linkerSupport.getLinker(ActionHyperlink.class, id) == null) {
-                    linkerSupport.add(new ActionHyperlink(), id);
-                }
-                return this;
-            } else {
-                return EMPTY_SPACE_LABEL;
+            id = ((AbstractSummaryView.ActionsItem) value).getItemId();
+            removeAll();
+            labels = new HashMap<Component, Action>(actions.length);
+            Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"action\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
+            setBackground(comp.getBackground());
+            for (Action a : actions) {
+                JLabel label = getLabelFor((String) a.getValue(Action.NAME));
+                label.setForeground(comp.getForeground());
+                label.setBackground(comp.getBackground());
+                label.setBorder(BorderFactory.createEmptyBorder());
+                labels.put(label, a);
+                add(label);
             }
+            if (linkerSupport.getLinker(ActionHyperlink.class, id) == null) {
+                linkerSupport.add(new ActionHyperlink(), id);
+            }
+            return this;
         }
 
         @Override
@@ -732,21 +727,17 @@ class SummaryCellRenderer implements ListCellRenderer {
         
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (((AbstractSummaryView.MoreRevisionsItem) value).isVisible()) {
-                id = ((AbstractSummaryView.MoreRevisionsItem) value).getItemId();
-                if (linkerSupport.getLinker(MoreRevisionsHyperlink.class, id) == null) {
-                    linkerSupport.add(new MoreRevisionsHyperlink(), id);
-                }
-                Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"more\">MORE</a>", index, isSelected, cellHasFocus); //NOI18N
-                for (JLabel lbl : labels) {
-                    lbl.setForeground(comp.getForeground());
-                    lbl.setBackground(isSelected ? comp.getBackground() : backgroundColor);
-                }
-                setBackground(isSelected ? comp.getBackground() : backgroundColor);
-                return this;
-            } else {
-                return EMPTY_SPACE_LABEL;
+            id = ((AbstractSummaryView.MoreRevisionsItem) value).getItemId();
+            if (linkerSupport.getLinker(MoreRevisionsHyperlink.class, id) == null) {
+                linkerSupport.add(new MoreRevisionsHyperlink(), id);
             }
+            Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"more\">MORE</a>", index, isSelected, cellHasFocus); //NOI18N
+            for (JLabel lbl : labels) {
+                lbl.setForeground(comp.getForeground());
+                lbl.setBackground(isSelected ? comp.getBackground() : backgroundColor);
+            }
+            setBackground(isSelected ? comp.getBackground() : backgroundColor);
+            return this;
         }
 
         @Override
@@ -1022,7 +1013,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         public boolean mouseMoved(Point p, JComponent component) {
             if (bounds != null && bounds.contains(p)) {
                 component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowRemainingFiles")); //NOI18N
+                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
                 return true;
             }
             return false;

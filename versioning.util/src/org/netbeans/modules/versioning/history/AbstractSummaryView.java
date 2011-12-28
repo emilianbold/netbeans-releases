@@ -92,7 +92,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     void itemChanged (Point p) {
         int index = resultsList.locationToIndex(p);
         if (index != -1) {
-            ((SummaryListModel) resultsList.getModel()).contentChanged(index, index);
+            ((SummaryListModel) resultsList.getModel()).refreshModel();
         }
     }
 
@@ -117,7 +117,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         item.allEventsExpanded = true;
         int index = resultsList.locationToIndex(p);
         if (index != -1) {
-            ((SummaryListModel) resultsList.getModel()).contentChanged(index - item.getUserData().getEvents().size(), index);
+            ((SummaryListModel) resultsList.getModel()).refreshModel();
         }
     }
 
@@ -131,7 +131,8 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             public void run () {
                 Object[] selection = resultsList.getSelectedValues();
                 if (selection.length > 0 && selection[selection.length - 1] instanceof MoreRevisionsItem) {
-                    resultsList.getSelectionModel().removeIndexInterval(dispResults.size() - 1, dispResults.size() - 1);
+                    int lastIndex = ((SummaryListModel) resultsList.getModel()).getSize() - 1;
+                    resultsList.getSelectionModel().removeIndexInterval(lastIndex, lastIndex);
                 }
                 ((SummaryListModel) resultsList.getModel()).addEntries(entries, !master.hasMoreResults());
             }
@@ -236,17 +237,14 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     private JList resultsList;
     private JScrollPane scrollPane;
 
-    private List<Item> dispResults;
-
     private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
 
     public AbstractSummaryView(SummaryViewMaster master, final List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
         this.master = master;
         list = WeakListeners.propertyChange(this, null);
 
-        dispResults = initializeResults(results, master.hasMoreResults());
         resultsList = new JList(new DefaultListModel());
-        resultsList.setModel(new SummaryListModel(results));
+        resultsList.setModel(new SummaryListModel(results, master.hasMoreResults()));
         resultsList.setCellRenderer(new SummaryCellRenderer(this, linkerSupport, kenaiUsersMap));
         resultsList.setFixedCellHeight(-1);
 
@@ -258,7 +256,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         resultsList.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                refreshView();
+                refreshView(false);
             }
         });
 
@@ -334,7 +332,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     @Override
     public void mouseMoved(MouseEvent e) {
         resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        resultsList.setToolTipText(""); //NOI18N
+        resultsList.setToolTipText(null);
 
         int idx = resultsList.locationToIndex(e.getPoint());
         if (idx == -1) return;
@@ -377,18 +375,17 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     }
 
     public final void refreshView () {
-        int visibleIndex = resultsList.getLastVisibleIndex();
-        int selectionIndex = resultsList.getSelectedIndex();
-        if (selectionIndex != -1 && resultsList.getVisibleRect().intersects(resultsList.getCellBounds(selectionIndex, selectionIndex))) {
-            visibleIndex = selectionIndex;
-        }
+        refreshView(true);
+    }
+
+    private void refreshView (boolean refreshModel) {
         ListCellRenderer r = resultsList.getCellRenderer();
         resultsList.setCellRenderer(null);
         resultsList.setCellRenderer(r);
-        scrollPane.revalidate();
-        if (visibleIndex != -1) {
-            resultsList.scrollRectToVisible(resultsList.getCellBounds(visibleIndex, visibleIndex));
+        if (refreshModel) {
+            ((SummaryListModel) resultsList.getModel()).refreshModel();
         }
+        scrollPane.revalidate();
     }
     
     private void onPopup(MouseEvent e) {
@@ -448,11 +445,16 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         final T getUserData () {
             return userData;
         }
+        
+        boolean isVisible () {
+            return true;
+        }
 
         abstract String getItemId ();
     };
     
     class MoreRevisionsItem extends Item {
+        private boolean visibleDefault = true;
 
         public MoreRevisionsItem () {
             super(null);
@@ -462,9 +464,14 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         String getItemId () {
             return "#MoreRevisions"; //NOI18N
         }
-        
+
+        private void setVisible (boolean visible) {
+            visibleDefault = visible;
+        }
+
+        @Override
         boolean isVisible () {
-            return true;
+            return visibleDefault;
         }
     }
 
@@ -484,6 +491,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             return entry.getRevision();
         }
         
+        @Override
         boolean isVisible () {
             return entry.isVisible();
         }
@@ -511,6 +519,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
 
     class LoadingEventsItem extends Item {
         private final RevisionItem parent;
+        private boolean visibleDefault = true;
         public LoadingEventsItem (RevisionItem parent) {
             super(null);
             this.parent = parent;
@@ -521,8 +530,13 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             return parent.getItemId() + "#LOADING_EVENTS"; //NOI18N
         }
 
+        @Override
         boolean isVisible () {
-            return parent.isVisible() && parent.revisionExpanded;
+            return visibleDefault && parent.isVisible() && parent.revisionExpanded;
+        }
+
+        private void setVisible (boolean visible) {
+            visibleDefault = visible;
         }
     }
 
@@ -540,6 +554,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             return parent.getItemId() + "#" + event.getPath(); //NOI18N
         }
 
+        @Override
         boolean isVisible () {
             boolean visible = false;
             if (parent.isVisible() && parent.revisionExpanded) {
@@ -548,7 +563,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                 } else {
                     visible = event.isVisibleByDefault();
                 }
-            };
+            }
             return visible;
         }
 
@@ -560,8 +575,8 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                     menu.add(a);
                 }
                 int idx;
-                for (idx = 0; idx < dispResults.size(); ++idx) {
-                    if (dispResults.get(idx) == this) {
+                for (idx = 0; idx < resultsList.getModel().getSize(); ++idx) {
+                    if (resultsList.getModel().getElementAt(idx) == this) {
                         break;
                     }
                 }
@@ -593,6 +608,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             return parent.getItemId() + "#SHOW_ALL_FILES"; //NOI18N
         }
 
+        @Override
         boolean isVisible () {
             return parent.isVisible() && parent.revisionExpanded && !parent.isAllEventsVisible();
         }
@@ -614,8 +630,9 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             return parent.getItemId() + "#ACTIONS"; //NOI18N
         }
 
+        @Override
         boolean isVisible () {
-            return parent.isVisible() && parent.revisionExpanded;
+            return parent.isVisible() && parent.revisionExpanded && parent.getUserData().getActions().length > 0;
         }
 
         RevisionItem getParent () {
@@ -644,12 +661,17 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     private class SummaryListModel extends AbstractListModel {
 
         private final Set<String> revisions;
+        private final List<Item> allResults;
+        private final List<Item> dispResults;
 
-        public SummaryListModel (List<? extends LogEntry> entries) {
+        public SummaryListModel (List<? extends LogEntry> entries, boolean hasMoreResults) {
+            allResults = new ArrayList<Item>(initializeResults(entries, master.hasMoreResults()));
+            dispResults = new ArrayList<Item>(allResults.size());
             revisions = new HashSet<String>();
             for (LogEntry entry : entries) {
                 revisions.add(entry.getRevision());
             }
+            refreshModel();
         }
         
         @Override
@@ -661,16 +683,11 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         public Item getElementAt(int index) {
             return dispResults.get(index);
         }
-
-        private void contentChanged (int from, int to) {
-            assert EventQueue.isDispatchThread();
-            fireContentsChanged(this, from, to);
-        }
         
         void addEvents (LogEntry src) {
             assert EventQueue.isDispatchThread();
             RevisionItem rev = null;
-            ListIterator<Item> it = dispResults.listIterator();
+            ListIterator<Item> it = allResults.listIterator();
             while (it.hasNext()) {
                 Item revCandidate = it.next();
                 if (revCandidate instanceof RevisionItem && revCandidate.getUserData() == src) {
@@ -678,7 +695,9 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                     if (it.hasNext()) {
                         if (it.next() instanceof ActionsItem) {
                             if (it.hasNext()) {
-                                if (it.next() instanceof LoadingEventsItem) {
+                                Item item = it.next();
+                                if (item instanceof LoadingEventsItem) {
+                                    ((LoadingEventsItem) item).setVisible(false);
                                     it.remove();
                                 } else {
                                     it.previous();
@@ -697,8 +716,8 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                     it.add(new EventItem(ev, rev));
                 }
                 it.add(new ShowAllEventsItem(rev));
-                fireIntervalAdded(this, it.previousIndex(), it.previousIndex() + events.size() + 1);
             }
+            refreshModel();
         }
 
         private void addEntries (List<? extends LogEntry> entries, boolean noMoreResults) {
@@ -712,19 +731,66 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             List<Item> itemsToAdd = expandResults(newEntries);
             if (!itemsToAdd.isEmpty()) {
                 int addedAtIndex;
-                if (dispResults.get(dispResults.size() - 1) instanceof MoreRevisionsItem) {
-                    addedAtIndex = getSize() - 1;
+                if (allResults.get(allResults.size() - 1) instanceof MoreRevisionsItem) {
+                    addedAtIndex = allResults.size() - 1;
                 } else {
-                    addedAtIndex = getSize();
+                    addedAtIndex = allResults.size();
                 }
-                dispResults.addAll(addedAtIndex, itemsToAdd);
-                fireIntervalAdded(this, addedAtIndex, addedAtIndex + itemsToAdd.size());
+                allResults.addAll(addedAtIndex, itemsToAdd);
             }
-            if (noMoreResults && !dispResults.isEmpty()) {
-                if (dispResults.get(dispResults.size() - 1) instanceof MoreRevisionsItem) {
-                    dispResults.remove(dispResults.size() - 1);
-                    fireIntervalRemoved(this, dispResults.size(), dispResults.size());
+            if (noMoreResults && !allResults.isEmpty()) {
+                if (allResults.get(allResults.size() - 1) instanceof MoreRevisionsItem) {
+                    ((MoreRevisionsItem) allResults.remove(allResults.size() - 1)).setVisible(false);
                 }
+            }
+            refreshModel();
+        }
+
+        private void refreshModel () {
+            int index = 0;
+            for (ListIterator<Item> it = dispResults.listIterator(); it.hasNext(); ) {
+                if (it.next().isVisible()) {
+                    ++index;
+                } else {
+                    it.remove();
+                    fireIntervalRemoved(it, index, index);
+                }
+            }
+            if (dispResults.isEmpty()) {
+                for (Item item : allResults) {
+                    if (item.isVisible()) {
+                        dispResults.add(item);
+                    }
+                }
+                fireIntervalAdded(this, 0, dispResults.size());
+            } else {
+                ListIterator<Item> allIterator = allResults.listIterator();
+                dispResults.add(new MoreRevisionsItem());
+                ListIterator<Item> dispIterator = dispResults.listIterator();
+                Item displayed = dispIterator.next();
+                index = 0;
+                while (allIterator.hasNext()) {
+                    Item item = allIterator.next();
+                    if (item == displayed) {
+                        if (!item.isVisible()) {
+                            dispIterator.remove();
+                            fireIntervalRemoved(this, index, index);
+                        }
+                        if (dispIterator.hasNext()) {
+                            displayed = dispIterator.next();
+                            ++index;
+                        }
+                    } else {
+                        if (item.isVisible()) {
+                            dispIterator.previous();
+                            dispIterator.add(item);
+                            fireIntervalAdded(this, index, index);
+                            dispIterator.next();
+                            ++index;
+                        }
+                    }
+                }
+                dispResults.remove(dispResults.size() - 1);
             }
         }
     }

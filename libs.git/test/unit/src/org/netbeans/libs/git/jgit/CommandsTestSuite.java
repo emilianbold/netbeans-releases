@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.libs.git.GitEnumsStateTest;
 import org.netbeans.libs.git.jgit.commands.AddTest;
 import org.netbeans.libs.git.jgit.commands.BlameTest;
 import org.netbeans.libs.git.jgit.commands.BranchTest;
@@ -88,6 +89,7 @@ public class CommandsTestSuite extends NbTestSuite {
 
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
+        suite.addTestSuite(GitEnumsStateTest.class);
         suite.addTestSuite(AddTest.class);
         suite.addTestSuite(BlameTest.class);
         suite.addTestSuite(BranchTest.class);
