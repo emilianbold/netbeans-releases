@@ -141,7 +141,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
 
     @Messages({
         "NbmActionGoalProvider.target_platform_not_running=You can only reload a module while running the application.",
-        "NbmActionGoalProvider.no_app_found=No single open nbm-application project found with a dependency on this module.",
+        "NbmActionGoalProvider.no_app_found=No single open nbm-application project found with a dependency on this module."
     })
     public @Override RunConfig createConfigForDefaultAction(String actionName,
             Project project,
