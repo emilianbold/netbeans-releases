@@ -113,12 +113,9 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         });
     }
 
-    void showRemainingFiles (Point p, RevisionItem item) {
+    void showRemainingFiles (RevisionItem item) {
         item.allEventsExpanded = true;
-        int index = resultsList.locationToIndex(p);
-        if (index != -1) {
-            ((SummaryListModel) resultsList.getModel()).refreshModel();
-        }
+        ((SummaryListModel) resultsList.getModel()).refreshModel();
     }
 
     void moreRevisions (Integer count) {
@@ -274,6 +271,21 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                 }
             }
         });
+        resultsList.getActionMap().put("selectNextColumn", new ExpandAction());
+        resultsList.getActionMap().put("selectPreviousColumn", new CollapseAction());
+        resultsList.getActionMap().put("addToSelection", new AbstractAction() { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object[] selection = resultsList.getSelectedValues();
+                if (selection.length == 1) {
+                    if (selection[0] instanceof ShowAllEventsItem) {
+                        showRemainingFiles(((ShowAllEventsItem) selection[0]).getParent());
+                    } else if (selection[0] instanceof MoreRevisionsItem) {
+                        moreRevisions(10);
+                    }
+                }
+            }
+        });
 
         scrollPane.validate();
     }
@@ -299,6 +311,10 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
             }
         }
         return newResults;
+    }
+    
+    public final void requestFocusInWindow () {
+        resultsList.requestFocusInWindow();
     }
 
     @Override
@@ -515,6 +531,50 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         public String toString () {
             return entry.toString();
         }
+
+        private void setExpanded (boolean expanded) {
+            revisionExpanded = expanded;
+            if (revisionExpanded) {
+                entry.expand();
+            }
+        }
+    }
+
+    private abstract class ExpandCollapseAction extends AbstractAction {
+        
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            Object[] selection = resultsList.getSelectedValues();
+            if (selection.length == 1 && selection[0] instanceof RevisionItem) {
+                perform((RevisionItem) selection[0]);
+            }
+        }
+
+        protected abstract void perform (RevisionItem revisionItem);
+    }
+
+    private class ExpandAction extends ExpandCollapseAction {
+
+        @Override
+        protected void perform (RevisionItem revisionItem) {
+            if (!revisionItem.revisionExpanded) {
+                revisionItem.setExpanded(true);
+                ((SummaryListModel) resultsList.getModel()).refreshModel();
+            }
+        }
+        
+    }
+
+    private class CollapseAction extends ExpandCollapseAction {
+
+        @Override
+        protected void perform (RevisionItem revisionItem) {
+            if (revisionItem.revisionExpanded) {
+                revisionItem.setExpanded(false);
+                ((SummaryListModel) resultsList.getModel()).refreshModel();
+            }
+        }
+        
     }
 
     class LoadingEventsItem extends Item {
@@ -621,7 +681,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     class ActionsItem extends Item {
         private final RevisionItem parent;
         public ActionsItem (RevisionItem parent) {
-            super(null);
+            super(parent.getUserData());
             this.parent = parent;
         }
 
