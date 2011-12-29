@@ -41,77 +41,65 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
 import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
-
 /**
  *
  * @author sp153251
  */
-public class DefaultType implements IType {
-    
-    private final String typeName;
-    private final ITypeRepository typeRepository;
-    private ITypeDeclaration typeDeclaration;
-    
-    DefaultType(ITypeRepository typeRepository, String typeName){
-        this.typeRepository = typeRepository;
-        this.typeName = typeName;
+public class JavaConstructor implements IConstructor {
+    private final JavaType parent;
+    private final Constructor<?> constructor;
+    private ITypeDeclaration[] parameterTypes;
+
+    JavaConstructor(JavaType parent, Constructor<?> constructor){
+        this.parent = parent;
+        this.constructor = constructor;
     }
     
+	private ITypeDeclaration[] buildParameterTypes() {
 
-    @Override
-    public Iterable<IConstructor> constructors() {
-            return Collections.emptyList();
-    }
+		Class<?>[] types = constructor.getParameterTypes();
+		Type[] genericTypes = constructor.getGenericParameterTypes();
+		ITypeDeclaration[] typeDeclarations = new ITypeDeclaration[types.length];
 
-
-    @Override
-    public String getName() {
-        return typeName;
-    }
-
-    @Override
-    public boolean equals(IType itype) {
-        return typeName.equals(itype.getName());
-    }
-
-    @Override
-    public String[] getEnumConstants() {
-        return new String[]{};
-    }
-
-    @Override
-    public ITypeDeclaration getTypeDeclaration() {
-		if (typeDeclaration == null) {
-			typeDeclaration = new TypeDeclaration(this, new ITypeDeclaration[0], 0);
+		for (int index = 0, count = types.length; index < count; index++) {
+			typeDeclarations[index] = buildTypeDeclaration(types[index], genericTypes[index]);
 		}
-		return typeDeclaration;
-    }
 
-    @Override
-    public boolean hasAnnotation(Class<? extends Annotation> type) {
-        return false;
-    }
+		return typeDeclarations;
+	}
 
-    @Override
-    public boolean isAssignableTo(IType itype) {
-        return false;//TODO ???
-    }
+	private ITypeDeclaration buildTypeDeclaration(Class<?> javaType, Type genericType) {
+		ITypeRepository typeRepository = getTypeRepository();
+		IType type = typeRepository.getType(javaType);
+		return new JavaTypeDeclaration(typeRepository, type, genericType, javaType.isArray());
+	}
 
+	/**
+	 * {@inheritDoc}
+	 */
     @Override
-    public boolean isEnum() {
-        return false;
-    }
+	public ITypeDeclaration[] getParameterTypes() {
+		if (parameterTypes == null) {
+			parameterTypes = buildParameterTypes();
+		}
+		return parameterTypes;
+	}
 
-    @Override
-    public boolean isResolvable() {
-        return false;
-    }
-    
-    
+	private ITypeRepository getTypeRepository() {
+		return parent.getTypeRepository();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return constructor.toGenericString();
+	}
 }

@@ -78,6 +78,7 @@ import org.netbeans.spi.editor.hints.Severity;
 
 /**
  * Verify content of @NamedQuery query
+ * TODO: good to move warning to query level instead of class level
  */
 public class JPQLValidation extends JPAClassRule {
     
