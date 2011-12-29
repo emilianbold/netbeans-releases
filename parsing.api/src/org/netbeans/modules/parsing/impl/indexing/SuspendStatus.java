@@ -41,47 +41,21 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
-
 /**
  *
  * @author Tomas Zezula
  */
-final class SuspendSupport implements SuspendStatus {
+interface SuspendStatus {
+    boolean isSuspended();
+    void parkWhileSuspended() throws InterruptedException;
 
-    private final Object lock = new Object();
-    //@GuardedBy("lock")
-    private int suspedDepth;
-
-    SuspendSupport() {}
-
-    public void suspend() {
-        synchronized(lock) {
-            suspedDepth++;
+    static final SuspendStatus NOP = new SuspendStatus () {
+        @Override
+        public boolean isSuspended() {
+            return false;
         }
-    }
-
-    public void resume() {
-        synchronized(lock) {
-            assert suspedDepth > 0;
-            suspedDepth--;
-            if (suspedDepth == 0) {
-                lock.notifyAll();
-            }
+        @Override
+        public void parkWhileSuspended() throws InterruptedException {
         }
-    }
-
-    public boolean isSuspended() {
-        synchronized(lock) {
-            return suspedDepth > 0;
-        }
-    }
-
-    public void parkWhileSuspended() throws InterruptedException {
-        synchronized(lock) {
-            while (suspedDepth > 0) {
-                lock.wait();
-            }
-        }
-    }
-
+    };
 }
