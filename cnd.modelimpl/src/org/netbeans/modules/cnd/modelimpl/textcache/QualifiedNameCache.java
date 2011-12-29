@@ -59,6 +59,7 @@ public class QualifiedNameCache extends APTStringManager {
     private QualifiedNameCache() {
     }
     
+    @Override
     public CharSequence getString(CharSequence text) {
         if (text == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
@@ -67,6 +68,7 @@ public class QualifiedNameCache extends APTStringManager {
         return instance.getString(text);
     }
     
+    @Override
     public void dispose() {
         instance.dispose();
     }

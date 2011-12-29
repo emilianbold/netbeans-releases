@@ -69,6 +69,7 @@ public class RefactoringTreeElement implements TreeElement {
         this.parent = curParent;
     }
     
+    @Override
     public TreeElement getParent(boolean isLogical) {
         Object curParent = null;
         if (isLogical) {
@@ -79,14 +80,17 @@ public class RefactoringTreeElement implements TreeElement {
         return curParent != null ? TreeElementFactory.getTreeElement(curParent) : null;
     }
     
+    @Override
     public Icon getIcon() {
         return null;   
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return refactoringElement.getDisplayText();
     }
 
+    @Override
     public Object getUserObject() {
         return refactoringElement;
     }

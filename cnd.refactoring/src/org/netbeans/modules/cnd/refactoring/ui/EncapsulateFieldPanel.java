@@ -184,12 +184,14 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jComboJavadoc.setEnabled(false && EXPERIMENTAL);
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }
     
     private boolean initialized = false;
         
+    @Override
     public final void initialize() {
         if (initialized) {
             return;
@@ -224,6 +226,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jTableFields.repaint();
         model.addTableModelListener(new TableModelListener() {
             boolean isUpdating = false;
+            @Override
             public void tableChanged(TableModelEvent e) {
                 if (isUpdating) {
                     return;
@@ -862,6 +865,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return displayName;
         }
 
+        @Override
         public int compare(SortBy o1, SortBy o2) {
             if (o1 == o2) {
                 return 0;
@@ -894,6 +898,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return displayName;
         }
 
+        @Override
         public int compare(Documentation o1, Documentation o2) {
             if (o1 == o2) {
                 return 0;

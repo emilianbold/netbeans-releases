@@ -97,7 +97,7 @@ public class CppParserActionImpl implements CppParserAction {
 
         if(enumBuilder != null) {
             EnumImpl e = enumBuilder.create(true);
-            if(e != null) {
+            if(e != null && objects != null) {
                 objects.put(e.getStartOffset(), e);
                 SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
                 enumEntry.setAttribute(CppAttributes.DEFINITION, e);

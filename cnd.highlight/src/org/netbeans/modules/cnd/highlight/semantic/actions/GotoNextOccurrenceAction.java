@@ -71,6 +71,7 @@ public final class GotoNextOccurrenceAction extends BaseAction {
         putValue(SHORT_DESCRIPTION, getDefaultShortDescription());
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent txt) {
         SemanticUtils.navigateToOccurrence(true);
     }

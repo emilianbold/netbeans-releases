@@ -68,6 +68,7 @@ public final class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResol
     public IncludeHierarchyResolverImpl() {
     }
 
+    @Override
     public Collection<CsmFile> getFiles(CsmFile referencedFile) {
         CsmProject project = referencedFile.getProject();
         if (project instanceof ProjectBase) {
@@ -76,6 +77,7 @@ public final class IncludeHierarchyResolverImpl extends CsmIncludeHierarchyResol
         return Collections.<CsmFile>emptyList();
     }
 
+    @Override
     public Collection<CsmReference> getIncludes(CsmFile referencedFile) {
         CsmProject project = referencedFile.getProject();
         if (project instanceof ProjectBase) {

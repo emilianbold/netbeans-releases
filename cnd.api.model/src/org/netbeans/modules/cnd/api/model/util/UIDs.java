@@ -74,6 +74,7 @@ public final class UIDs {
     // impl details
 
     private final static class SelfUIDProvider implements UIDProvider {
+        @Override
         public <T> CsmUID<T> get(T obj) {
             return new SelfUID<T>(obj);
         }
@@ -87,6 +88,7 @@ public final class UIDs {
                 this.element = element;
             }
 
+            @Override
             public T getObject() {
                 return this.element;
             }

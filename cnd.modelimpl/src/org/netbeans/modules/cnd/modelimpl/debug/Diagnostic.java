@@ -624,6 +624,7 @@ public class Diagnostic {
             
             /** comparator */
             static final Comparator<IncludeInfo> COMPARATOR = new Comparator<IncludeInfo>() {
+                @Override
                 public int compare(IncludeInfo i1, IncludeInfo i2) {
                     if (i1 == i2) {
                         return 0;
@@ -758,6 +759,7 @@ public class Diagnostic {
             /** comparator */
             static final Comparator<ExceptionWrapper> COMPARATOR = new Comparator<ExceptionWrapper>() {
                 
+                @Override
                 public int compare(ExceptionWrapper w1, ExceptionWrapper w2) {
                     if (w1 == w2) {
                         return 0;

@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.highlight.error.*;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmModelStateListener.class)
 public class HighlightInstaller implements CsmModelStateListener {
 
+    @Override
     public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
 	switch( newState ) {
 	    case ON:

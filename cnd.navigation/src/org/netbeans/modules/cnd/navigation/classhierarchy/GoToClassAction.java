@@ -65,6 +65,7 @@ public class GoToClassAction extends AbstractAction {
         putValue(Action.NAME, NbBundle.getMessage(GoToClassAction.class, "LBL_GoToClass")); //NOI18N
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (delegate != null){
             delegate.actionPerformed(e);
