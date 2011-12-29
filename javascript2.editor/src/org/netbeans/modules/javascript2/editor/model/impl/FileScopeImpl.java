@@ -109,7 +109,11 @@ public class FileScopeImpl extends ScopeImpl implements FileScope {
                     logicalObject = new ObjectScopeImpl(this, identifiers, function.getBlockRange());
                     logicalElements.put(objectName, logicalObject);
                 }
-                logicalObject.addElement((FunctionScopeImpl) function);
+                FunctionScopeImpl functionImpl = (FunctionScopeImpl) function;
+                logicalObject.addElement(functionImpl);
+                if (logicalObject.isLogical() && !ModelUtils.isPrototype(functionImpl)) {
+                    functionImpl.setStatic(true);
+                }
                 break;
         }
 

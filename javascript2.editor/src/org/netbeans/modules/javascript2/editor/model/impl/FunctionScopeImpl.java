@@ -105,4 +105,12 @@ public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScop
     public List<Identifier> getFQDeclarationName() {
         return fullName;
     }
+    
+    protected void setStatic(boolean isStatic) {
+        if (isStatic) {
+            getModifiers().add(Modifier.STATIC);
+        } else {
+            getModifiers().remove(Modifier.STATIC);
+        }
+    }
 }

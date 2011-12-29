@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.model.FunctionScope;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -117,5 +118,24 @@ public class ModelTest extends JsTestBase {
         assertEquals("getName", method.getDeclarationName().getName());
         method = iterator.next();
         assertEquals("getInfo", method.getDeclarationName().getName());
+    }
+    
+    public void testStaticMethod01() throws Exception {
+        Model model = getModel("testfiles/model/staticMethods01.js");
+        assertNotNull(model);
+        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
+        assertEquals(1, elements.size());
+        Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
+        ObjectScope object = ModelUtils.getFirst(objects);
+        Collection<? extends FunctionScope> methods = object.getMethods();
+        assertEquals(3, methods.size());
+        boolean checked = false;
+        for (FunctionScope method : methods) {
+            if (method.getModifiers().contains(Modifier.STATIC)) {
+                checked = true;
+                assertEquals("getFormula", method.getDeclarationName().getName());
+            }
+        }
+        assertTrue(checked);
     }
 }

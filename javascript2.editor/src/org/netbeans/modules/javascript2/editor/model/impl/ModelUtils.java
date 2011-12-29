@@ -100,11 +100,20 @@ public class ModelUtils {
         return name.toString();
     }
     
+    public static boolean isPrototype(FunctionScope function) {
+        boolean result = false;
+        int size = function.getFQDeclarationName().size();
+        if(size > 1) {
+            result = "prototype".equals(function.getFQDeclarationName().get(size - 2).getName()); // NOI18N
+        }
+        return result;
+    }
+    
     public static String getObjectName(FunctionScope function) {
         String name = null;
         int size = function.getFQDeclarationName().size();
         if(size > 1) {
-            if ("prototype".equals(function.getFQDeclarationName().get(size - 2).getName())) {
+            if (isPrototype(function)) {
                 name = getNameWithoutPrototype(function.getFQDeclarationName());
             } else {
                 name = getPartName(function.getFQDeclarationName(), size - 1);
