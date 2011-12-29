@@ -43,6 +43,8 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.model.FunctionScope;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -99,5 +101,21 @@ public class ModelTest extends JsTestBase {
         ObjectScope object = ModelUtils.getFirst(objects);
         FunctionScope method = ModelUtils.getFirst(object.getMethods());
         assertEquals("getName", method.getDeclarationName().getName());
+    }
+    
+    public void testMethods02() throws Exception {
+        Model model = getModel("testfiles/model/objectMethods01.js");
+        assertNotNull(model);
+        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
+        assertEquals(1, elements.size());
+        Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
+        ObjectScope object = ModelUtils.getFirst(objects);
+        Collection<? extends FunctionScope> methods = object.getMethods();
+        assertEquals(2, methods.size());
+        final Iterator<? extends FunctionScope> iterator = methods.iterator();
+        FunctionScope method = iterator.next();
+        assertEquals("getName", method.getDeclarationName().getName());
+        method = iterator.next();
+        assertEquals("getInfo", method.getDeclarationName().getName());
     }
 }
