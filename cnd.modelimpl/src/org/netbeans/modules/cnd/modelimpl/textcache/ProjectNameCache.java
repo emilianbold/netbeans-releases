@@ -59,6 +59,7 @@ public final class ProjectNameCache extends APTStringManager {
     private ProjectNameCache() {
     }
     
+    @Override
     public CharSequence getString(CharSequence text) {
         if (text == null){
             return text;
@@ -67,6 +68,7 @@ public final class ProjectNameCache extends APTStringManager {
         return instance.getString(text);
     }
     
+    @Override
     public void dispose() {
         instance.dispose();
     }

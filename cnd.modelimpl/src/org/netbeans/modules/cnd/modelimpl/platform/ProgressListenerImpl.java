@@ -68,6 +68,7 @@ public class ProgressListenerImpl implements CsmProgressListener {
         return handle;
     }
 
+    @Override
     public void projectParsingStarted(CsmProject project) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("ProgressListenerImpl.projectParsingStarted " + project.getName());
@@ -75,6 +76,7 @@ public class ProgressListenerImpl implements CsmProgressListener {
         getHandle(project, true).start();
     }
 
+    @Override
     public void projectFilesCounted(CsmProject project, int filesCount) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("ProgressListenerImpl.projectFilesCounted " + project.getName() + ' ' + filesCount);
@@ -82,6 +84,7 @@ public class ProgressListenerImpl implements CsmProgressListener {
         getHandle(project, true).switchToDeterminate(filesCount);
     }
 
+    @Override
     public void projectParsingFinished(CsmProject project) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("ProgressListenerImpl.projectParsingFinished " + project.getName());
@@ -89,12 +92,14 @@ public class ProgressListenerImpl implements CsmProgressListener {
         done(project);
     }
 
+    @Override
     public void projectLoaded(CsmProject project) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("ProgressListenerImpl.projectLoaded " + project.getName());
         }
     }
 
+    @Override
     public void projectParsingCancelled(CsmProject project) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("ProgressListenerImpl.projectParsingCancelled " + project.getName());
@@ -109,9 +114,11 @@ public class ProgressListenerImpl implements CsmProgressListener {
         }
     }
 
+    @Override
     public void fileInvalidated(CsmFile file) {
     }
 
+    @Override
     public void fileAddedToParse(CsmFile file) {
         CsmProject project = file.getProject();
         ParsingProgress handle = getHandle(project, false);
@@ -131,6 +138,7 @@ public class ProgressListenerImpl implements CsmProgressListener {
         }
     }
 
+    @Override
     public void fileParsingStarted(CsmFile file) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("  ProgressListenerImpl.fileParsingStarted " + file.getAbsolutePath());
@@ -153,12 +161,14 @@ public class ProgressListenerImpl implements CsmProgressListener {
         }
     }
 
+    @Override
     public void fileParsingFinished(CsmFile file) {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("  ProgressListenerImpl.fileParsingFinished " + file.getAbsolutePath());
         }
     }
 
+    @Override
     public void parserIdle() {
         if (TraceFlags.TRACE_PARSER_QUEUE) {
             System.err.println("  ProgressListenerImpl.parserIdle");

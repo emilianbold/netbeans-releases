@@ -82,82 +82,102 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
         this.parameter = type.parameter;
     }
 
+    @Override
     public CsmTemplateParameter getParameter() {
         return UIDCsmConverter.UIDtoCsmObject(this.parameter);
     }
 
+    @Override
     public CsmType getTemplateType() {
         return type;
     }
 
+    @Override
     public CsmFile getContainingFile() {
         return type.getContainingFile();
     }
 
+    @Override
     public int getEndOffset() {
         return type.getEndOffset();
     }
 
+    @Override
     public Position getEndPosition() {
         return type.getEndPosition();
     }
 
+    @Override
     public CharSequence getClassifierText() {
         return type.getClassifierText();
     }
 
+    @Override
     public int getStartOffset() {
         return type.getStartOffset();
     }
 
+    @Override
     public Position getStartPosition() {
         return type.getStartPosition();
     }
 
+    @Override
     public CharSequence getText() {
         return type.getText();
     }
 
+    @Override
     public int getArrayDepth() {
         return type.getArrayDepth();
     }
 
+    @Override
     public CharSequence getCanonicalText() {
         return type.getCanonicalText();
     }
 
+    @Override
     public CsmClassifier getClassifier() {
         return (CsmClassifier) UIDCsmConverter.UIDtoCsmObject(parameter);
     }
 
+    @Override
     public int getPointerDepth() {
         return type.getPointerDepth();
     }
 
+    @Override
     public boolean isBuiltInBased(boolean resolveTypeChain) {
         return type.isBuiltInBased(resolveTypeChain);
     }
 
+    @Override
     public boolean isConst() {
         return type.isConst();
     }
 
+    @Override
     public boolean isPointer() {
         return type.isPointer();
     }
 
+    @Override
     public boolean isReference() {
         return type.isReference();
     }
 
+    @Override
     public List<CsmSpecializationParameter> getInstantiationParams() {
         return type.getInstantiationParams();
     }
 
+    @Override
     public boolean isInstantiation() {
         return type.isInstantiation();
     }
 
+    @Override
     public boolean isTemplateBased() {
         return true;
     }

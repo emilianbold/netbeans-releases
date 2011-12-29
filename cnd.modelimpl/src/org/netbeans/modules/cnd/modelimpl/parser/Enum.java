@@ -56,6 +56,7 @@ public class Enum {
         this.id = id;
     }
 
+    @Override
     public String toString() {
         return id;
     }
