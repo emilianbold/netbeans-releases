@@ -95,6 +95,7 @@ public abstract class CsmStatementKindResolver {
             res = Lookup.getDefault().lookupResult(CsmStatementKindResolver.class);
         }
 
+        @Override
         public StatementKind getKind(Document doc, int offset) {
             for (CsmStatementKindResolver resolver : res.allInstances()) {
                 StatementKind out = resolver.getKind(doc, offset);
