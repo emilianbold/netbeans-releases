@@ -333,7 +333,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         for (final CloneableEditorSupport ces : ceSupports) {
             final Document d = ces.getDocument();
             if (d!=null) {
-                NbDocument.runAtomic((StyledDocument)d, new Runnable() {
+                d.render(new Runnable() {
                     public void run() {
                         synchronized(allCES) {
                             if (allCES.add(ces)) {
