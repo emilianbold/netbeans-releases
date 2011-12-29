@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.model.FunctionScope;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.ObjectScope;
 import org.netbeans.modules.javascript2.editor.model.Scope;
@@ -87,5 +88,16 @@ public class ModelTest extends JsTestBase {
         Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
         ObjectScope object = ModelUtils.getFirst(objects);
         assertEquals("Ridic", object.getFQDeclarationName().get(0).getName());
+    }
+    
+    public void testMethods01() throws Exception {
+        Model model = getModel("testfiles/model/objectNames01.js");
+        assertNotNull(model);
+        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
+        assertEquals(1, elements.size());
+        Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
+        ObjectScope object = ModelUtils.getFirst(objects);
+        FunctionScope method = ModelUtils.getFirst(object.getMethods());
+        assertEquals("getName", method.getDeclarationName().getName());
     }
 }

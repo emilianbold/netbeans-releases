@@ -42,17 +42,14 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.ObjectNode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.ModelElement;
-import org.netbeans.modules.javascript2.editor.model.ObjectScope;
-import org.netbeans.modules.javascript2.editor.model.Scope;
+import org.netbeans.modules.javascript2.editor.model.*;
 
 /**
  *
@@ -96,6 +93,26 @@ public class ObjectScopeImpl extends ScopeImpl implements ObjectScope {
     @Override
     public List<Identifier> getFQDeclarationName() {
         return fullName;
+    }
+
+    @Override
+    public Collection<? extends FunctionScope> getMethods() {
+        List<FunctionScope> result = new ArrayList<FunctionScope>();
+        
+        Collection<? extends FunctionScope> constructors = filter(getElements(), new ElementFilter() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(JsElement.Kind.CONSTRUCTOR);
+            }
+        });
+        if (constructors.size() > 0) {
+            FunctionScope constructor = ModelUtils.getFirst(constructors);
+            Collection<? extends FunctionScope> inConstructor = ModelUtils.getMethods(constructor);
+            result.addAll(inConstructor);
+        }
+        
+        result.addAll(ModelUtils.getMethods(this));
+        return result;
     }
     
 }

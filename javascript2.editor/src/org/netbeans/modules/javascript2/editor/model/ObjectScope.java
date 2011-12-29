@@ -49,6 +49,8 @@ import java.util.Collection;
  */
 public interface ObjectScope extends Scope, FullQualifiedName {
     Collection<? extends ModelElement> getDeclaredProperties();
+    
+    Collection<? extends FunctionScope> getMethods();
     /**
      * If an object is logical, it's basically wrap for methods and properties, 
      * that are defined in the file, but are not defined in the same scope.

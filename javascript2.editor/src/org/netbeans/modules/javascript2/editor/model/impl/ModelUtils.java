@@ -45,8 +45,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ScopeImpl.ElementFilter;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  *
@@ -131,7 +133,6 @@ public class ModelUtils {
     }
     
     public static Collection<? extends ObjectScope> getObjects(FileScope fileScope) {
-        List<FunctionScope> retval = new ArrayList<FunctionScope>();
         Collection<? extends Scope> elements = fileScope.getLogicalElements();
         return filter(elements, new ElementFilter() {
             @Override
@@ -139,5 +140,16 @@ public class ModelUtils {
                 return element.getJSKind().equals(JsElement.Kind.OBJECT);
             }
         });
+    }
+    
+    public static Collection<? extends FunctionScope> getMethods(Scope scope) {
+        Collection<? extends FunctionScope> result = filter(scope.getElements(), new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(JsElement.Kind.METHOD);
+            }
+        });
+        return result;
     }
 }

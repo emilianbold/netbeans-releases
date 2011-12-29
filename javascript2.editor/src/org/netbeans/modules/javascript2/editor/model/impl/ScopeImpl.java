@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -99,6 +100,16 @@ public class ScopeImpl extends ModelElementImpl implements Scope {
             }
         }
         return retval;
+    }
+    
+    @NonNull
+    public static <T extends ModelElement> Collection<? extends T> filter(Collection<T> allElements, final JsElement.Kind kind) {
+        return filter(allElements, new ElementFilter<T>() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(kind);
+            }
+        });
     }
     
 }
