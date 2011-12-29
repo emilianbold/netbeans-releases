@@ -72,6 +72,7 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.AbstractSummaryView"); //NOI18N
     public static final String PROP_REVISIONS_ADDED = "propRevisionsAdded"; //NOI18N
     private final PropertyChangeListener list;
+    private final ExpandCollapseGeneralAction expandCollapseAction;
 
     String getMessage() {
         return master.getMessage();
@@ -271,8 +272,11 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                 }
             }
         });
-        resultsList.getActionMap().put("selectNextColumn", new ExpandAction());
-        resultsList.getActionMap().put("selectPreviousColumn", new CollapseAction());
+        ExpandAction expand = new ExpandAction();
+        CollapseAction collapse = new CollapseAction();
+        expandCollapseAction = new ExpandCollapseGeneralAction(expand, collapse);
+        resultsList.getActionMap().put("selectNextColumn", expand);
+        resultsList.getActionMap().put("selectPreviousColumn", collapse);
         resultsList.getActionMap().put("addToSelection", new AbstractAction() { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -338,11 +342,15 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        int idx = resultsList.locationToIndex(e.getPoint());
-        if (idx == -1) return;
-        Rectangle rect = resultsList.getCellBounds(idx, idx);
-        Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        linkerSupport.mouseClicked(p, getLinkerIdentFor(idx));
+        if (e.getClickCount() == 2) {
+            expandCollapseAction.actionPerformed(new ActionEvent(resultsList, ActionEvent.ACTION_PERFORMED, null));
+        } else {
+            int idx = resultsList.locationToIndex(e.getPoint());
+            if (idx == -1) return;
+            Rectangle rect = resultsList.getCellBounds(idx, idx);
+            Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
+            linkerSupport.mouseClicked(p, getLinkerIdentFor(idx));
+        }
     }
 
     @Override
@@ -574,7 +582,25 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                 ((SummaryListModel) resultsList.getModel()).refreshModel();
             }
         }
+    }
+
+    private class ExpandCollapseGeneralAction extends ExpandCollapseAction {
+        private final ExpandCollapseAction collapseAction;
+        private final ExpandCollapseAction expandAction;
+
+        public ExpandCollapseGeneralAction (ExpandCollapseAction expandAction, ExpandCollapseAction collapseAction) {
+            this.expandAction = expandAction;
+            this.collapseAction = collapseAction;
+        }
         
+        @Override
+        protected void perform (RevisionItem revisionItem) {
+            if (revisionItem.revisionExpanded) {
+                collapseAction.perform(revisionItem);
+            } else {
+                expandAction.perform(revisionItem);
+            }
+        }
     }
 
     class LoadingEventsItem extends Item {
