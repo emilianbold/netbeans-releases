@@ -642,6 +642,14 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         }
     }
     private final Map<Watch, NativeWatch> watchMap = new HashMap<Watch, NativeWatch>();
+    
+    /**
+     * Add a NativeWatch to the watch map.
+     */
+    public void watchMap(NativeWatch nativeWatch) {
+        assert nativeWatch.watch() != null;
+        watchMap.put(nativeWatch.watch(), nativeWatch);
+    }
 
     /**
      * Note that a Watch was added.
@@ -666,8 +674,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
                 System.out.printf("\tproceeding\n"); // NOI18N
             }
             NativeWatch nativeWatch = new NativeWatch(watch);
-            assert nativeWatch.watch() != null;
-            watchMap.put(nativeWatch.watch(), nativeWatch);
+            watchMap(nativeWatch);
             watchBag().restore(nativeWatch);
             
             // IZ 181906 was fixed, so this should not happen any more
