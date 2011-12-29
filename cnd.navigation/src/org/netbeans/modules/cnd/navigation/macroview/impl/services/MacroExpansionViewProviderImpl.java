@@ -86,6 +86,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
      * @param doc - document
      * @param offset - offset in document
      */
+    @Override
     public void showMacroExpansionView(Document doc, int offset) {
         final Document mainDoc = doc;
         if (mainDoc == null) {
