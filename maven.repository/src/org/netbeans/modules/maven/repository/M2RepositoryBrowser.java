@@ -70,18 +70,19 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Union2;
 
-@ServicesTabNodeRegistration(name="M2RepositoryBrowser", displayName="#CTL_M2RepositoryBrowserTopComponent", shortDescription="#HINT_M2RepositoryBrowserTopComponent", iconResource=M2RepositoryBrowser.ICON_PATH, position=431)
+@ServicesTabNodeRegistration(name=M2RepositoryBrowser.NAME, displayName="#CTL_M2RepositoryBrowserTopComponent", shortDescription="#HINT_M2RepositoryBrowserTopComponent", iconResource=M2RepositoryBrowser.ICON_PATH, position=431)
 @Messages({
     "CTL_M2RepositoryBrowserTopComponent=Maven Repositories",
     "HINT_M2RepositoryBrowserTopComponent=Displays contents of local and remote Apache Maven repositories and permits them to be searched and indexed."
 })
 public final class M2RepositoryBrowser extends AbstractNode {
 
+    static final String NAME = "M2RepositoryBrowser";
     static final /* XXX javac bug @StaticResource */ String ICON_PATH = "org/netbeans/modules/maven/repository/MavenRepoBrowser.png";
 
     private M2RepositoryBrowser() {
         super(Children.create(new RootNodes(), true));
-        setName("M2RepositoryBrowser");
+        setName(NAME);
         setDisplayName(CTL_M2RepositoryBrowserTopComponent());
         setShortDescription(HINT_M2RepositoryBrowserTopComponent());
         setIconBaseWithExtension(ICON_PATH);
