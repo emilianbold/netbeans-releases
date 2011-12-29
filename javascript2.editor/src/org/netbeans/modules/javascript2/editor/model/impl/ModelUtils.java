@@ -41,11 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.FileScope;
-import org.netbeans.modules.javascript2.editor.model.FunctionScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.ModelElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.ScopeImpl.ElementFilter;
 
 /**
  *
@@ -108,5 +109,35 @@ public class ModelUtils {
             }
         }
         return name;
+    }
+    
+    @CheckForNull
+    public static <T> T getFirst(Collection<? extends T> all) {
+        if (all instanceof List) {
+            return all.size() > 0 ? ((List<T>)all).get(0) : null;
+        }
+        return all.size() > 0 ? all.iterator().next() : null;
+    }
+    
+    public static <T extends ModelElement> List<? extends T> filter(final Collection<? extends T> instances, final ElementFilter<T> filter) {
+        List<T> retval = new ArrayList<T>();
+        for (T baseElement : instances) {
+            boolean accepted = filter.isAccepted(baseElement);
+            if (accepted) {
+                retval.add(baseElement);
+            }
+        }
+        return retval;
+    }
+    
+    public static Collection<? extends ObjectScope> getObjects(FileScope fileScope) {
+        List<FunctionScope> retval = new ArrayList<FunctionScope>();
+        Collection<? extends Scope> elements = fileScope.getLogicalElements();
+        return filter(elements, new ElementFilter() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(JsElement.Kind.OBJECT);
+            }
+        });
     }
 }
