@@ -46,14 +46,18 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.ListResourceBundle;
+import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -66,7 +70,6 @@ import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
@@ -75,6 +78,7 @@ import org.netbeans.spi.editor.hints.Severity;
 
 /**
  * Verify content of @NamedQuery query
+ * TODO: good to move warning to query level instead of class level
  */
 public class JPQLValidation extends JPAClassRule {
     
@@ -134,7 +138,15 @@ public class JPQLValidation extends JPAClassRule {
         if (problems != null && problems.size()>0){
             ErrorDescription[] ret = new ErrorDescription[problems.size()];
             for(int i=0;i<ret.length;i++){
-                ret[i] = createProblem(subject, ctx, "JPQL :" + problems.get(i), Severity.WARNING);
+                ListResourceBundle msgBundle = null;
+                try{
+                    msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
+                } catch (MissingResourceException ex) {//default en
+                    msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName(), Locale.ENGLISH);//NOI18N
+                }
+                String message = java.text.MessageFormat.format(msgBundle.getString(problems.get(i).getMessageKey()), (Object[])  problems.get(i).getMessageArguments());
+                String pos = "["+problems.get(i).getStartPosition() + ";"+problems.get(i).getEndPosition()+"]";
+                ret[i] = createProblem(subject, ctx, pos + ": " + message , Severity.WARNING);
             }
             return ret;
         }
