@@ -644,25 +644,6 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     private final Map<Watch, NativeWatch> watchMap = new HashMap<Watch, NativeWatch>();
 
     /**
-     * Map a Watch to it's corresponding NativeWatch.
-     */
-    public NativeWatch mapWatch(Watch watch) {
-        NativeWatch nativeWatch = watchMap.get(watch);
-        if (nativeWatch != null) {
-            assert nativeWatch.watch() == watch;
-        }
-        return nativeWatch;
-    }
-
-    /**
-     * Add a NativeWatch to the watch map.
-     */
-    public void watchMap(NativeWatch nativeWatch) {
-        assert nativeWatch.watch() != null;
-        watchMap.put(nativeWatch.watch(), nativeWatch);
-    }
-
-    /**
      * Note that a Watch was added.
      * Called out from debuggercore.
      */
@@ -685,7 +666,8 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
                 System.out.printf("\tproceeding\n"); // NOI18N
             }
             NativeWatch nativeWatch = new NativeWatch(watch);
-            watchMap(nativeWatch);
+            assert nativeWatch.watch() != null;
+            watchMap.put(nativeWatch.watch(), nativeWatch);
             watchBag().restore(nativeWatch);
             
             // IZ 181906 was fixed, so this should not happen any more
@@ -1280,6 +1262,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public WatchBag watchBag() {
         if (watchBag == null) {
             watchBag = new WatchBag();
+            // on creation read all existing watches from debuggercore Watches
+            // see IZ 203606
+            Watch[] existingWatches = getWatches();
+            for (Watch watch : existingWatches) {
+                watchAdded(watch);
+            }
         }
         return watchBag;
     }
