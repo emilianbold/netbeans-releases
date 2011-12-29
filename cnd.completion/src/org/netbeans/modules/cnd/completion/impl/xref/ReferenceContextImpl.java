@@ -96,14 +96,17 @@ public class ReferenceContextImpl implements CsmReferenceContext {
         this.popCount = c.popCount;
     }
 
+    @Override
     public int size() {
         return parentSize - popCount + stack.size() / 2;
     }
 
+    @Override
     public CsmReference getReference() {
         return getReference(size() - 1);
     }
 
+    @Override
     public CsmReference getReference(int i) {
         if (0 <= i && i < parentSize - popCount) {
             return parent.getReference(i);
@@ -112,10 +115,12 @@ public class ReferenceContextImpl implements CsmReferenceContext {
         }
     }
 
+    @Override
     public CppTokenId getToken() {
         return getToken(size() - 1);
     }
 
+    @Override
     public CppTokenId getToken(int i) {
         if (0 <= i && i < parentSize - popCount) {
             return parent.getToken(i);
