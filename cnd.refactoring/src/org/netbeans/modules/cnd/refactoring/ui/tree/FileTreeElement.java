@@ -78,6 +78,7 @@ public class FileTreeElement implements TreeElement {
         this.csmProject = CsmRefactoringUtils.getHandler(csmFile.getProject());
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         CsmProject prj = csmProject.getObject();
         if (prj == null) {
@@ -87,14 +88,17 @@ public class FileTreeElement implements TreeElement {
         }
     }
 
+    @Override
     public Icon getIcon() {
         return this.icon;
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return fo.getNameExt();
     }
 
+    @Override
     public Object getUserObject() {
         return fo;
     }

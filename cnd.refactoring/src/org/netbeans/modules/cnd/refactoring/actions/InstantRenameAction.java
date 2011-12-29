@@ -61,6 +61,7 @@ public class InstantRenameAction extends BaseAction {
         super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET); // NOI18N
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
         InstantRenamePerformer.invokeInstantRename(target);
     }
