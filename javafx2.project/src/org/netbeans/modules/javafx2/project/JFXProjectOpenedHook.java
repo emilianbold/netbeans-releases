@@ -50,17 +50,13 @@ import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Tomas Zezula
+ * @author Tomas Zezula, Anton Chechel
  */
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType={"org-netbeans-modules-java-j2seproject"}) // NOI18N
 public final class JFXProjectOpenedHook extends ProjectOpenedHook {
-//public final class JFXProjectOpenedHook extends ProjectOpenedHook implements TaskListener {
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
-//    private volatile RequestProcessor.Task task;
-//    private ProgressHandle progressHandle;
-
     @Override
     protected synchronized void projectOpened() {
         logUsage(JFXProjectGenerator.PROJECT_OPEN);
@@ -81,18 +77,8 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         Logger.getLogger(JFXProjectGenerator.METRICS_LOGGER).log(logRecord);
     }
 
-//    @Override
-//    public synchronized void taskFinished(Task task) {
-//        task.removeTaskListener(this);
-//        this.task = null;
-//        
-//        progressHandle.finish();
-//        progressHandle = null;
-//    }
-
     private void checkPlatforms() {
         if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
-            
             // I do it in the same thread because otherwise we have problem with "resolve reference" modal dialog.
             // Creation of Deafult JavaFX platform must be finished before J2SEProject checks for broken links after opening.
             switchBusy();
@@ -103,27 +89,8 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
             } finally {
                 switchDefault();
             }
-
-//            progressHandle = ProgressHandleFactory.createSystemHandle(
-//                    NbBundle.getMessage(PanelOptionsVisual.class, "MSG_Default_Platform_Creation")); // NOI18N
-//            progressHandle.start();
-            
-//            task = RequestProcessor.getDefault().create(new CreatePlatformTask());
-//            task.addTaskListener(this);
-//            task.schedule(0);
         }
     }
-
-//    private class CreatePlatformTask implements Runnable {
-//        @Override
-//        public void run() {
-//            try {
-//                JavaFXPlatformUtils.createDefaultJavaFXPlatform();
-//            } catch (Exception ex) {
-//                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
-//            }
-//        }
-//    }
 
     private void switchBusy() {
         SwingUtilities.invokeLater(new Runnable() {
