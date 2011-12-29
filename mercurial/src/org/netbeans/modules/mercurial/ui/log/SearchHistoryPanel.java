@@ -637,7 +637,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
 
     void getMoreRevisions (PropertyChangeListener callback, int count) {
         if (currentSearch == null) {
-            throw new IllegalStateException("No search task active");
+            throw new IllegalStateException("No search task active"); //NOI18N
         }
         if (currentAdditionalSearch != null) {
             currentAdditionalSearch.cancel();
@@ -649,7 +649,8 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         }
         currentAdditionalSearch = new Search(count);
         currentAdditionalSearch.start(Mercurial.getInstance().getParallelRequestProcessor(), 
-                Mercurial.getInstance().getRepositoryRoot(roots[0]), "Getting more revisions");
+                Mercurial.getInstance().getRepositoryRoot(roots[0]), 
+                NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SearchHistoryPanel.GettingMoreRevisions")); //NOI18N
     }
 
     List<RepositoryRevision> getResults () {
