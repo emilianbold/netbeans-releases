@@ -81,6 +81,7 @@ public class RepositoryThreadManager {
             this.delegate = delegate;
         }
         
+        @Override
         public void run() {
             try {
                 Thread.currentThread().setName(threadNameBase + ' ' + currThread++);
