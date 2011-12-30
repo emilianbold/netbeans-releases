@@ -149,14 +149,14 @@ public final class MainLookup extends ProxyLookup {
      */
 
     public static final void modulesClassPathInitialized () {
-        //System.err.println("mCPI");
-    //StartLog.logStart ("MainLookup: initialization of FolderLookup"); // NOI18N
-
+        modulesClassPathInitialized(CoreBridge.getDefault().lookupCacheLoad());
+    }
+    static final void modulesClassPathInitialized(Lookup services) {
         // replace the lookup by new one
         Lookup lookup = Lookup.getDefault ();
         StartLog.logProgress ("Got Lookup"); // NOI18N
 
-        ((MainLookup)lookup).doInitializeLookup ();
+        ((MainLookup)lookup).doInitializeLookup(services);
     }
 
     //
@@ -192,7 +192,7 @@ public final class MainLookup extends ProxyLookup {
     
     
 
-    private final void doInitializeLookup () {
+    private final void doInitializeLookup(Lookup services) {
         //System.err.println("doInitializeLookup");
 
         // extend the lookup
@@ -201,7 +201,7 @@ public final class MainLookup extends ProxyLookup {
             getLookups()[1], // ClassLoader lookup
             getLookups()[2], // ModuleInfo lookup
             instanceLookup, 
-            CoreBridge.getDefault().lookupCacheLoad(),
+            services,
         };
         StartLog.logProgress ("prepared other Lookups"); // NOI18N
 
