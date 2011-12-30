@@ -75,6 +75,10 @@ public class Query implements IQuery{
     public IManagedTypeProvider getProvider() {
         return provider;
     }
+    
+    public NamedQuery getNamedQuery(){
+        return query;
+    }
 
     @Override
     public String toString() {
