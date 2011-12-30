@@ -51,7 +51,7 @@ import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 
 /**
- *
+ * 
  * @author sp153251
  */
 public class JavaType implements IType {
@@ -94,44 +94,18 @@ public class JavaType implements IType {
         this.typeRepository = typeRepository;
     }
 
-    private IConstructor buildConstructor(java.lang.reflect.Constructor<?> constructor) {
-        return new JavaConstructor(this, constructor);
-    }
-
-    private Collection<IConstructor> buildConstructors() {
-
-        java.lang.reflect.Constructor<?>[] javaConstructors = type.getDeclaredConstructors();
-        Collection<IConstructor> constructors = new ArrayList<IConstructor>(javaConstructors.length);
-
-        for (java.lang.reflect.Constructor<?> javaConstructor : javaConstructors) {
-            constructors.add(buildConstructor(javaConstructor));
-        }
-
-        return constructors;
-    }
-
-    private String[] buildEnumConstants() {
-
-        if (!type.isEnum()) {
-            return new String[]{};
-        }
-
-        Object[] enumConstants = type.getEnumConstants();
-        String[] names = new String[enumConstants.length];
-
-        for (int index = enumConstants.length; --index >= 0;) {
-            names[index] = ((Enum<?>) enumConstants[index]).name();
-        }
-
-        return names;
-    }
-
     /**
      * {@inheritDoc}
      */
+    @Override
     public Iterable<IConstructor> constructors() {
         if (constructors == null) {
-            constructors = buildConstructors();
+            java.lang.reflect.Constructor<?>[] javaConstructors = type.getDeclaredConstructors();
+            constructors = new ArrayList<IConstructor>(javaConstructors.length);
+
+            for (java.lang.reflect.Constructor<?> javaConstructor : javaConstructors) {
+                constructors.add(new JavaConstructor(this,javaConstructor));
+            }
         }
         return Collections.unmodifiableCollection(constructors);
     }
@@ -139,6 +113,7 @@ public class JavaType implements IType {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(IType type) {
         return (this == type) ? true : typeName.equals(type.getName());
     }
@@ -154,9 +129,21 @@ public class JavaType implements IType {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String[] getEnumConstants() {
         if (enumConstants == null) {
-            enumConstants = buildEnumConstants();
+            if (!type.isEnum()) {
+                enumConstants = new String[]{};
+            } else {
+
+                Object[] enumC = type.getEnumConstants();
+                enumConstants = new String[enumC.length];
+
+                for (int index = enumC.length; --index >= 0;) {
+                    enumConstants[index] = ((Enum<?>) enumC[index]).name();
+                }
+
+            }
         }
         return enumConstants;
     }
@@ -164,22 +151,15 @@ public class JavaType implements IType {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName() {
         return typeName;
     }
 
     /**
-     * Returns the encapsulated {@link Class}, which is the actual type.
-     *
-     * @return The actual Java type, if <code>null</code> is returned; then the class could not be resolved
-     */
-    Class<?> getType() {
-        return type;
-    }
-
-    /**
      * {@inheritDoc}
      */
+    @Override
     public ITypeDeclaration getTypeDeclaration() {
         if (typeDeclaration == null) {
             typeDeclaration = new JavaTypeDeclaration(typeRepository, this, null, (type != null) ? type.isArray() : false);
@@ -188,7 +168,6 @@ public class JavaType implements IType {
     }
 
     /**
-     * Returns the type repository for the application.
      *
      * @return The repository of {@link IType ITypes}
      */
@@ -199,6 +178,7 @@ public class JavaType implements IType {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean hasAnnotation(Class<? extends Annotation> annotationType) {
         return type.isAnnotationPresent(annotationType);
     }
@@ -214,6 +194,7 @@ public class JavaType implements IType {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isAssignableTo(IType type) {
 
         if (this == type) {
@@ -235,6 +216,7 @@ public class JavaType implements IType {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEnum() {
         return (type != null) && type.isEnum();
     }
@@ -242,22 +224,8 @@ public class JavaType implements IType {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isResolvable() {
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setTypeDeclaration(ITypeDeclaration typeDeclaration) {
-        this.typeDeclaration = typeDeclaration;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return typeName;
     }
 }
