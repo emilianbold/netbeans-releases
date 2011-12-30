@@ -91,8 +91,6 @@ public class JavaTypeDeclaration implements ITypeDeclaration {
             IType type,
             Object genericType,
             boolean array) {
-
-        super();
         this.type = type;
         this.array = array;
         this.genericType = genericType;

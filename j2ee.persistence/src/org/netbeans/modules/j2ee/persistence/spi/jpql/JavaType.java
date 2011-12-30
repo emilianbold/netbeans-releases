@@ -73,10 +73,6 @@ public class JavaType implements IType {
      */
     private ITypeDeclaration typeDeclaration;
     /**
-     * The fully qualified name of the Java type.
-     */
-    private String typeName;
-    /**
      * The external form of a type repository.
      */
     private ITypeRepository typeRepository;
@@ -90,7 +86,6 @@ public class JavaType implements IType {
     JavaType(ITypeRepository typeRepository, Class<?> type) {
         super();
         this.type = type;
-        this.typeName = type.getName();
         this.typeRepository = typeRepository;
     }
 
@@ -115,7 +110,7 @@ public class JavaType implements IType {
      */
     @Override
     public boolean equals(IType type) {
-        return (this == type) ? true : typeName.equals(type.getName());
+        return (this == type) ? true : type.getName().equals(type.getName());
     }
 
     /**
@@ -153,7 +148,7 @@ public class JavaType implements IType {
      */
     @Override
     public String getName() {
-        return typeName;
+        return type.getName();
     }
 
     /**
@@ -188,7 +183,7 @@ public class JavaType implements IType {
      */
     @Override
     public int hashCode() {
-        return typeName.hashCode();
+        return type.getName().hashCode();
     }
 
     /**
