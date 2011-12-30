@@ -130,12 +130,49 @@ public class OpenProjectsTest extends NbTestCase {
         assertFalse(Arrays.asList((Project[])e.getNewValue()).contains(testProject));
     }
     
+    public void testPreListenerOpenClose () throws Exception {
+        assertEquals("No project is open.", 0, OpenProjects.getDefault ().getOpenProjects ().length); 
+        class MyListener implements PropertyChangeListener {
+            PropertyChangeEvent preEvent;
+            
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("willOpenProjects".equals(evt.getPropertyName())) {
+                    assertNull("Only one event expected", preEvent);
+                    preEvent = evt;
+                    assertEquals("No open projects yet", 0, OpenProjects.getDefault().getOpenProjects().length);
+                }
+            }
+        }
+        MyListener list = new MyListener();
+        try {
+            OpenProjects.getDefault().addPropertyChangeListener(list);
+            OpenProjects.getDefault ().open (new Project[] { testProject }, true);
+            assertNotNull("Pre event delivered", list.preEvent);
+            assertNull("No old value", list.preEvent.getOldValue());
+            assertTrue("Array is new value", list.preEvent.getNewValue() instanceof Project[]);
+            Project[] arr = (Project[]) list.preEvent.getNewValue();
+            assertEquals("Length is one", 1, arr.length);
+            assertEquals("Same as our project", testProject, arr[0]);
+
+            list.preEvent = null;
+            OpenProjectList.getDefault().close(new Project[] {testProject}, false);
+            assertNull("No pre-event delivered on close", list.preEvent);
+        } finally {
+            OpenProjects.getDefault().removePropertyChangeListener(list);
+        }
+    }
+
     
     private static final class PropertyChangeListenerImpl implements PropertyChangeListener {
         
         private List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            if ("willOpenProjects".equals(evt.getPropertyName())) {
+                return;
+            }
             events.add(evt);
         }
         
