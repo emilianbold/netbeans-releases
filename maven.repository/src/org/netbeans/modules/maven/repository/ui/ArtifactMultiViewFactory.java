@@ -151,10 +151,10 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         }
         final Artifact fArt = artifact;
 
+        if (prj == null) {
         RP.post(new Runnable() {
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-                MavenProject mvnprj;
                 AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
@@ -162,7 +162,6 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                 ProgressTransferListener.setAggregateHandle(hndl);
                 hndl.start();
                 try {
-                    if (prj == null) {
                         List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
                         if (fRepos != null) {
                             repos.addAll(fRepos);
@@ -179,27 +178,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                                 }
                             }
                         }
-                        mvnprj = readMavenProject(embedder, fArt, repos);
-                    } else {
-                        NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
-                        @SuppressWarnings("unchecked")
-                        List<Profile> profiles = im.getMavenProject().getActiveProfiles();
-                        List<String> profileIds = new ArrayList<String>();
-                        for (Profile p : profiles) {
-                            profileIds.add(p.getId());
-                        }
-                        mvnprj = im.loadAlternateMavenProject(embedder, profileIds, new Properties());
-                        FileObject fo = prj.getLookup().lookup(FileObject.class);
-                        if (fo != null) {
-                            ModelSource ms = Utilities.createModelSource(fo);
-                            if (ms.isEditable()) {
-                                POMModel model = POMModelFactory.getDefault().getModel(ms);
-                                if (model != null) {
-                                    ic.add(model);
-                                }
-                            }
-                        }
-                    }
+                        MavenProject mvnprj = readMavenProject(embedder, fArt, repos);
 
                     if(mvnprj != null){
                         ic.add(mvnprj);
@@ -223,6 +202,26 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                 }
             }
         });
+        } else {
+            NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
+            List<String> profileIds = new ArrayList<String>();
+            for (Profile p : im.getMavenProject().getActiveProfiles()) {
+                profileIds.add(p.getId());
+            }
+            MavenProject mvnprj = im.loadAlternateMavenProject(EmbedderFactory.getProjectEmbedder(), profileIds, new Properties());
+            ic.add(mvnprj);
+            ic.add(DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getProjectEmbedder(), Artifact.SCOPE_TEST));
+            FileObject fo = prj.getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                ModelSource ms = Utilities.createModelSource(fo);
+                if (ms.isEditable()) {
+                    POMModel model = POMModelFactory.getDefault().getModel(ms);
+                    if (model != null) {
+                        ic.add(model);
+                    }
+                }
+            }
+        }
 
         Action[] toolbarActions = new Action[] {
             new AddAsDependencyAction(fArt),

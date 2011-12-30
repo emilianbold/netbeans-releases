@@ -69,6 +69,9 @@ class ScopesVisitor implements DependencyNodeVisitor {
         }
         if (node.getState() == DependencyNode.INCLUDED) {
             ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
+            if (grNode == null) {
+                return false;
+            }
             ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
             aw.hightlightScopes(scopes);
             path.push(node);

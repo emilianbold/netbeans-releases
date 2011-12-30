@@ -72,6 +72,9 @@ class SearchVisitor implements DependencyNodeVisitor {
         }
         if (node.getState() == DependencyNode.INCLUDED) {
             ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
+            if (grNode == null) {
+                return false;
+            }
             ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
             aw.highlightText(searchTerm);
             path.push(node);

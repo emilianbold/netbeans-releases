@@ -61,6 +61,7 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.EditProvider;
@@ -82,7 +83,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.netbeans.modules.maven.graph.FixVersionConflictPanel.FixDescription;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
-import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
@@ -96,8 +96,9 @@ import org.openide.util.RequestProcessor;
  *
  * @author Milos Kleint 
  */
-public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, ArtifactGraphEdge> {
+public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, ArtifactGraphEdge> implements Runnable {
     
+    private static final RequestProcessor RP = new RequestProcessor(DependencyGraphScene.class);
     private LayerWidget mainLayer;
     private LayerWidget connectionLayer;
     private ArtifactGraphNode rootNode;
@@ -172,13 +173,13 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return true;
     }
 
-    ArtifactGraphNode getGraphNodeRepresentant(DependencyNode node) {
+    @CheckForNull ArtifactGraphNode getGraphNodeRepresentant(DependencyNode node) {
         for (ArtifactGraphNode grnode : getNodes()) {
             if (grnode.represents(node)) {
                 return grnode;
             }
         }
-        throw new IllegalStateException();
+        return null;
     }
     
     @Override protected Widget attachNodeWidget(ArtifactGraphNode node) {
@@ -234,7 +235,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         @SuppressWarnings("unchecked")
         List<DependencyNode> children = (List<DependencyNode>)node.getArtifact().getChildren();
         for (DependencyNode n : children) {
-            childrenNodes.add(getGraphNodeRepresentant(n));
+            ArtifactGraphNode child = getGraphNodeRepresentant(n);
+            if (child != null) {
+                childrenNodes.add(child);
+            }
         }
 
         childrenEdges.addAll(findNodeEdges(node, true, false));
@@ -289,7 +293,14 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         ArtifactGraphNode grNode;
         while (parentDepN != null) {
             grNode = getGraphNodeRepresentant(parentDepN);
-            edges.addAll(findEdgesBetween(grNode, getGraphNodeRepresentant(depN)));
+            if (grNode == null) {
+                return;
+            }
+            ArtifactGraphNode targetNode = getGraphNodeRepresentant(depN);
+            if (targetNode == null) {
+                return;
+            }
+            edges.addAll(findEdgesBetween(grNode, targetNode));
             nodes.add(grNode);
             depN = parentDepN;
             parentDepN = grNode.getArtifactParent();
@@ -678,6 +689,9 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         for (ArtifactGraphEdge age : outgoing) {
             dn = age.getTarget();
             childNode = getGraphNodeRepresentant(dn);
+            if (childNode == null) {
+                continue;
+            }
             children.add(childNode);
             removeEdge(age);
             age.getSource().removeChild(dn);
@@ -692,7 +706,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         removeNode(node);
     }
 
-    private class ExcludeDepAction extends AbstractAction implements Runnable {
+    private class ExcludeDepAction extends AbstractAction {
         private ArtifactGraphNode node;
 
         @Messages({
@@ -726,23 +740,23 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             updateGraphAfterExclusion(node, exclTargets, conflictParents);
 
             // save changes
-            RequestProcessor.getDefault().post(this);
-        }
-
-        /** Saves fix changes to the pom file, posted to RequestProcessor */
-        @Override public void run() {
-            try {
-                Utilities.saveChanges(model);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                //TODO error reporting on wrong model save
-            }
+            RP.post(DependencyGraphScene.this);
         }
 
     }
 
+    /** Saves fix changes to the pom file, posted to RequestProcessor */
+    @Override public void run() {
+        try {
+            tc.saveChanges(model);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            //TODO error reporting on wrong model save
+        }
+    }
 
-    private class FixVersionConflictAction extends AbstractAction implements Runnable {
+    private class FixVersionConflictAction extends AbstractAction {
+
         private ArtifactGraphNode node;
         private Artifact nodeArtif;
 
@@ -763,17 +777,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 fixDependency(res);
                 updateGraph(res);
                 // save changes
-                RequestProcessor.getDefault().post(this);
-            }
-        }
-
-        /** Saves fix changes to the pom file, posted to RequestProcessor */
-        @Override public void run() {
-            try {
-                Utilities.saveChanges(model);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                //TODO error reporting on wrong model save
+                RP.post(DependencyGraphScene.this);
             }
         }
 
