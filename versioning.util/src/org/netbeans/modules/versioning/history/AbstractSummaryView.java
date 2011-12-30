@@ -67,11 +67,217 @@ import org.openide.util.WeakListeners;
  *
  * @author Maros Sandor
  */
-public abstract class AbstractSummaryView implements MouseListener, ComponentListener, MouseMotionListener, PropertyChangeListener {
+public abstract class AbstractSummaryView implements MouseListener, MouseMotionListener, PropertyChangeListener {
 
     static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.AbstractSummaryView"); //NOI18N
     public static final String PROP_REVISIONS_ADDED = "propRevisionsAdded"; //NOI18N
     private final PropertyChangeListener list;
+    private final ExpandCollapseGeneralAction expandCollapseAction;
+    private JList resultsList;
+    private JScrollPane scrollPane;
+
+    private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
+
+    public AbstractSummaryView(SummaryViewMaster master, final List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
+        this.master = master;
+        list = WeakListeners.propertyChange(this, null);
+
+        resultsList = new JList(new DefaultListModel());
+        resultsList.setModel(new SummaryListModel(results, master.hasMoreResults()));
+        resultsList.setCellRenderer(new SummaryCellRenderer(this, linkerSupport, kenaiUsersMap));
+        resultsList.setFixedCellHeight(-1);
+
+        resultsList.addMouseListener(this);
+        resultsList.addMouseMotionListener(this);
+        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AbstractSummaryView.class, "ACSN_SummaryView_List")); //NOI18N
+        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AbstractSummaryView.class, "ACSD_SummaryView_List")); //NOI18N
+        scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        resultsList.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                refreshView(false);
+            }
+        });
+
+        resultsList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); //NOI18N
+        resultsList.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Point p = org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList);
+                Object[] selection = getSelection();
+                if (selection.length > 0) {
+                    onPopup(resultsList, p, selection);
+                }
+            }
+        });
+        ExpandAction expand = new ExpandAction();
+        CollapseAction collapse = new CollapseAction();
+        expandCollapseAction = new ExpandCollapseGeneralAction(expand, collapse);
+        resultsList.getActionMap().put("selectNextColumn", expand);
+        resultsList.getActionMap().put("selectPreviousColumn", collapse);
+        resultsList.getActionMap().put("addToSelection", new AbstractAction() { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object[] selection = resultsList.getSelectedValues();
+                if (selection.length == 1) {
+                    if (selection[0] instanceof ShowAllEventsItem) {
+                        showRemainingFiles(((ShowAllEventsItem) selection[0]).getParent());
+                    } else if (selection[0] instanceof MoreRevisionsItem) {
+                        moreRevisions(10);
+                    }
+                }
+            }
+        });
+
+        scrollPane.validate();
+    }
+
+    private List<Item> initializeResults (final List<? extends LogEntry> results, boolean hasMoreResults) {
+        List<Item> toDisplay = expandResults(results);
+        if (hasMoreResults) {
+            toDisplay.add(new MoreRevisionsItem());
+        }
+        return toDisplay;
+    }
+
+    private List<Item> expandResults (List<? extends LogEntry> results) {
+        ArrayList<Item> newResults = new ArrayList(results.size() * 6);
+        for (LogEntry le : results) {
+            le.removePropertyChangeListener(LogEntry.PROP_EVENTS_CHANGED, list);
+            le.addPropertyChangeListener(LogEntry.PROP_EVENTS_CHANGED, list);
+            RevisionItem item = new RevisionItem(le);
+            newResults.add(item);
+            newResults.add(new ActionsItem(item));
+            if (!le.isEventsInitialized()) {
+                newResults.add(new LoadingEventsItem(item));
+            }
+        }
+        return newResults;
+    }
+    
+    public final void requestFocusInWindow () {
+        resultsList.requestFocusInWindow();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() == 2) {
+            expandCollapseAction.actionPerformed(new ActionEvent(resultsList, ActionEvent.ACTION_PERFORMED, null));
+        } else {
+            int idx = resultsList.locationToIndex(e.getPoint());
+            if (idx == -1) return;
+            Rectangle rect = resultsList.getCellBounds(idx, idx);
+            Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
+            linkerSupport.mouseClicked(p, getLinkerIdentFor(idx));
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        resultsList.setToolTipText(null);
+
+        int idx = resultsList.locationToIndex(e.getPoint());
+        if (idx == -1) return;
+        Rectangle rect = resultsList.getCellBounds(idx, idx);
+        Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
+        linkerSupport.mouseMoved(p, resultsList, getLinkerIdentFor(idx));
+    }
+
+    String getLinkerIdentFor (int index) {
+        Item item = ((SummaryListModel) resultsList.getModel()).getElementAt(index);
+        return item.getItemId();
+    }
+    
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // not interested
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // not interested
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            onPopup(e);
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            onPopup(e);
+        }
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    public final void refreshView () {
+        refreshView(true);
+    }
+
+    private void refreshView (boolean refreshModel) {
+        ListCellRenderer r = resultsList.getCellRenderer();
+        resultsList.setCellRenderer(null);
+        resultsList.setCellRenderer(r);
+        if (refreshModel) {
+            ((SummaryListModel) resultsList.getModel()).refreshModel();
+        }
+        scrollPane.revalidate();
+    }
+    
+    private void onPopup(MouseEvent e) {
+        Object[] selection = getSelection(e.getPoint());
+        if (selection.length > 0) {
+            onPopup(resultsList, e.getPoint(), selection);
+        }
+    }
+
+    protected abstract void onPopup(JComponent invoker, Point p, Object[] selection);
+
+    protected final Object[] getSelection () {
+        Object[] sel = resultsList.getSelectedValues();
+        Object[] selection = new Object[sel.length];
+        for (int i = 0; i < sel.length; ++i) {
+            Item item = (Item) sel[i];
+            Object o = item.getUserData();
+            if (o == null) {
+                // unallowed selection
+                return new Object[0];
+            }
+            selection[i] = o;
+        }
+        return selection;
+    }
+
+    private Object[] getSelection (Point p) {
+        int[] selected = resultsList.getSelectedIndices();
+        int idx = resultsList.locationToIndex(p);
+        if (idx == -1) {
+            return new Object[0];
+        }
+        boolean contains = false;
+        for (int i : selected) {
+            if (i == idx) {
+                contains = true;
+                break;
+            }
+        }
+        if (!contains) {
+            resultsList.setSelectedIndex(idx);
+        }
+        return getSelection();
+    }
+
+    public JComponent getComponent() {
+        return scrollPane;
+    }
 
     String getMessage() {
         return master.getMessage();
@@ -231,226 +437,6 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
         }
     }
 
-    private JList resultsList;
-    private JScrollPane scrollPane;
-
-    private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
-
-    public AbstractSummaryView(SummaryViewMaster master, final List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
-        this.master = master;
-        list = WeakListeners.propertyChange(this, null);
-
-        resultsList = new JList(new DefaultListModel());
-        resultsList.setModel(new SummaryListModel(results, master.hasMoreResults()));
-        resultsList.setCellRenderer(new SummaryCellRenderer(this, linkerSupport, kenaiUsersMap));
-        resultsList.setFixedCellHeight(-1);
-
-        resultsList.addMouseListener(this);
-        resultsList.addMouseMotionListener(this);
-        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AbstractSummaryView.class, "ACSN_SummaryView_List")); //NOI18N
-        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AbstractSummaryView.class, "ACSD_SummaryView_List")); //NOI18N
-        scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        resultsList.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                refreshView(false);
-            }
-        });
-
-        master.getComponent().addComponentListener(this);
-
-        resultsList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); //NOI18N
-        resultsList.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Point p = org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList);
-                Object[] selection = getSelection();
-                if (selection.length > 0) {
-                    onPopup(resultsList, p, selection);
-                }
-            }
-        });
-        resultsList.getActionMap().put("selectNextColumn", new ExpandAction());
-        resultsList.getActionMap().put("selectPreviousColumn", new CollapseAction());
-        resultsList.getActionMap().put("addToSelection", new AbstractAction() { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Object[] selection = resultsList.getSelectedValues();
-                if (selection.length == 1) {
-                    if (selection[0] instanceof ShowAllEventsItem) {
-                        showRemainingFiles(((ShowAllEventsItem) selection[0]).getParent());
-                    } else if (selection[0] instanceof MoreRevisionsItem) {
-                        moreRevisions(10);
-                    }
-                }
-            }
-        });
-
-        scrollPane.validate();
-    }
-
-    private List<Item> initializeResults (final List<? extends LogEntry> results, boolean hasMoreResults) {
-        List<Item> toDisplay = expandResults(results);
-        if (hasMoreResults) {
-            toDisplay.add(new MoreRevisionsItem());
-        }
-        return toDisplay;
-    }
-
-    private List<Item> expandResults (List<? extends LogEntry> results) {
-        ArrayList<Item> newResults = new ArrayList(results.size() * 6);
-        for (LogEntry le : results) {
-            le.removePropertyChangeListener(LogEntry.PROP_EVENTS_CHANGED, list);
-            le.addPropertyChangeListener(LogEntry.PROP_EVENTS_CHANGED, list);
-            RevisionItem item = new RevisionItem(le);
-            newResults.add(item);
-            newResults.add(new ActionsItem(item));
-            if (!le.isEventsInitialized()) {
-                newResults.add(new LoadingEventsItem(item));
-            }
-        }
-        return newResults;
-    }
-    
-    public final void requestFocusInWindow () {
-        resultsList.requestFocusInWindow();
-    }
-
-    @Override
-    public void componentResized(ComponentEvent e) {
-    }
-
-    @Override
-    public void componentHidden(ComponentEvent e) {
-        // not interested
-    }
-
-    @Override
-    public void componentMoved(ComponentEvent e) {
-        // not interested
-    }
-
-    @Override
-    public void componentShown(ComponentEvent e) {
-        // not interested
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        int idx = resultsList.locationToIndex(e.getPoint());
-        if (idx == -1) return;
-        Rectangle rect = resultsList.getCellBounds(idx, idx);
-        Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        linkerSupport.mouseClicked(p, getLinkerIdentFor(idx));
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        resultsList.setToolTipText(null);
-
-        int idx = resultsList.locationToIndex(e.getPoint());
-        if (idx == -1) return;
-        Rectangle rect = resultsList.getCellBounds(idx, idx);
-        Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        linkerSupport.mouseMoved(p, resultsList, getLinkerIdentFor(idx));
-    }
-
-    String getLinkerIdentFor (int index) {
-        Item item = ((SummaryListModel) resultsList.getModel()).getElementAt(index);
-        return item.getItemId();
-    }
-    
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        // not interested
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        // not interested
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            onPopup(e);
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            onPopup(e);
-        }
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-    }
-
-    public final void refreshView () {
-        refreshView(true);
-    }
-
-    private void refreshView (boolean refreshModel) {
-        ListCellRenderer r = resultsList.getCellRenderer();
-        resultsList.setCellRenderer(null);
-        resultsList.setCellRenderer(r);
-        if (refreshModel) {
-            ((SummaryListModel) resultsList.getModel()).refreshModel();
-        }
-        scrollPane.revalidate();
-    }
-    
-    private void onPopup(MouseEvent e) {
-        Object[] selection = getSelection(e.getPoint());
-        if (selection.length > 0) {
-            onPopup(resultsList, e.getPoint(), selection);
-        }
-    }
-
-    protected abstract void onPopup(JComponent invoker, Point p, Object[] selection);
-
-    protected final Object[] getSelection () {
-        Object[] sel = resultsList.getSelectedValues();
-        Object[] selection = new Object[sel.length];
-        for (int i = 0; i < sel.length; ++i) {
-            Item item = (Item) sel[i];
-            Object o = item.getUserData();
-            if (o == null) {
-                // unallowed selection
-                return new Object[0];
-            }
-            selection[i] = o;
-        }
-        return selection;
-    }
-
-    private Object[] getSelection (Point p) {
-        int[] selected = resultsList.getSelectedIndices();
-        int idx = resultsList.locationToIndex(p);
-        if (idx == -1) {
-            return new Object[0];
-        }
-        boolean contains = false;
-        for (int i : selected) {
-            if (i == idx) {
-                contains = true;
-                break;
-            }
-        }
-        if (!contains) {
-            resultsList.setSelectedIndex(idx);
-        }
-        return getSelection();
-    }
-
-    public JComponent getComponent() {
-        return scrollPane;
-    }
-
     abstract class Item<T> {
         private final T userData;
         
@@ -574,7 +560,25 @@ public abstract class AbstractSummaryView implements MouseListener, ComponentLis
                 ((SummaryListModel) resultsList.getModel()).refreshModel();
             }
         }
+    }
+
+    private class ExpandCollapseGeneralAction extends ExpandCollapseAction {
+        private final ExpandCollapseAction collapseAction;
+        private final ExpandCollapseAction expandAction;
+
+        public ExpandCollapseGeneralAction (ExpandCollapseAction expandAction, ExpandCollapseAction collapseAction) {
+            this.expandAction = expandAction;
+            this.collapseAction = collapseAction;
+        }
         
+        @Override
+        protected void perform (RevisionItem revisionItem) {
+            if (revisionItem.revisionExpanded) {
+                collapseAction.perform(revisionItem);
+            } else {
+                expandAction.perform(revisionItem);
+            }
+        }
     }
 
     class LoadingEventsItem extends Item {
