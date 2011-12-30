@@ -49,26 +49,12 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import java.util.ArrayList;
-import org.netbeans.api.debugger.Watch;
 
 public class WatchBag {
     private ArrayList<NativeWatch> watches = new ArrayList<NativeWatch>();
 
-    private static DebuggerManager manager() {
-	return DebuggerManager.get();
-    }
-
-    public WatchBag() {
-        // on creation read all existing watches from debuggercore Watches
-        // see IZ 203606
-        Watch[] existingWatches = manager().getWatches();
-        for (Watch watch : existingWatches) {
-            restore(new NativeWatch(watch));
-        }
-    }
-
-    ModelChangeDelegator watchUpdater() {
-	return manager().watchUpdater();
+    private ModelChangeDelegator watchUpdater() {
+	return DebuggerManager.get().watchUpdater();
     }
 
     public NativeWatch[] getWatches() {

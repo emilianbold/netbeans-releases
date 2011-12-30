@@ -160,10 +160,12 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 //        pkgRename = true;
 //    }
        
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             String name = fromListener ? newName : oldName;
@@ -177,6 +179,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         return NbBundle.getMessage(RenameRefactoringUI.class, key);
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         if (!panel.isUpdateReferences()) {
             return null;
@@ -189,6 +192,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         return refactoring.checkParameters();
     }
     
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (!panel.isUpdateReferences()) {
             return null;
@@ -200,24 +204,29 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         return refactoring.fastCheckParameters();
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         return new MessageFormat(NbBundle.getMessage(RenamePanel.class, "DSC_Rename")).format (
                     new Object[] {dispOldName, newName}
                 );
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(RenamePanel.class, "LBL_RefactoringRenameName", oldName, newName);
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         String postfix = "";
 //        if (handle==null) {
@@ -238,10 +247,12 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         return new HelpCtx(RenameRefactoringUI.class.getName() + postfix);
     }
     
+    @Override
     public boolean isRefactoringBypassRequired() {
         return !panel.isUpdateReferences();
     }
     
+    @Override
     public void doRefactoringBypass() throws IOException {
         DataObject dob = null;
         if (byPassFolder != null) {

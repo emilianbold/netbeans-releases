@@ -52,10 +52,12 @@ public class InterrupterImpl implements Interrupter, Cancellable {
 
     private boolean canceled = false;
 
+    @Override
     public boolean cancelled() {
         return canceled;
     }
 
+    @Override
     public boolean cancel() {
         canceled = true;
         return true;

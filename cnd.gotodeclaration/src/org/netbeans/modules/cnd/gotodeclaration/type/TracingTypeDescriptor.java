@@ -49,51 +49,61 @@ class TracingTypeDescriptor extends TypeDescriptor {
 	name = delegate.getSimpleName();
     }
 	    
+    @Override
     public String getContextName() {
 	System.err.printf("TypeDescriptor.getContextName(%s)\n", name);
 	return delegate.getContextName();
     }
 
+    @Override
     public FileObject getFileObject() {
 	System.err.printf("TypeDescriptor.getFileObject(%s)\n", name);
 	return delegate.getFileObject();
     }
 
+    @Override
     public Icon getIcon() {
 	System.err.printf("TypeDescriptor.getIcon(%s)\n", name);
 	return delegate.getIcon();
     }
 
+    @Override
     public int getOffset() {
 	System.err.printf("TypeDescriptor.getOffset(%s)\n", name);
 	return delegate.getOffset();
     }
 
+    @Override
     public String getOuterName() {
 	System.err.printf("TypeDescriptor.getOuterName(%s)\n", name);
 	return delegate.getOuterName();
     }
 
+    @Override
     public Icon getProjectIcon() {
 	System.err.printf("TypeDescriptor.getProjectIcon(%s)\n", name);
 	return delegate.getProjectIcon();
     }
 
+    @Override
     public String getProjectName() {
 	System.err.printf("TypeDescriptor.getProjectName(%s)\n", name);
 	return delegate.getProjectName();
     }
 
+    @Override
     public String getSimpleName() {
 	System.err.printf("TypeDescriptor.getSimpleName(%s)\n", name);
 	return delegate.getSimpleName();
     }
 
+    @Override
     public String getTypeName() {
 	System.err.printf("TypeDescriptor.getTypeName(%s)\n", name);
 	return delegate.getTypeName();
     }
 
+    @Override
     public void open() {
 	System.err.printf("TypeDescriptor.open(%s)\n", name);
 	delegate.open();

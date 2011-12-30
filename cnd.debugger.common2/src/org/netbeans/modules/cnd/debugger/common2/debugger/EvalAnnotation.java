@@ -248,7 +248,14 @@ public final class EvalAnnotation extends Annotation {
                     }
                     break;
                 case '*': // Allow *'s: for example in "foo[*bar]"
+                    break;
                 case ':': // Foo::bar
+                    // pass only scope members, see IZ 206740
+                    if (str[ep+1] != ':') {
+                        foundEnd = true;
+                    } else {
+                        ep++;
+                    }
                     break;
                 default:
                     foundEnd = true;

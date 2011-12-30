@@ -441,6 +441,11 @@ No.
         Useful mostly in testing environment, but it may be interesting for some
         users too. Don't rely (much) on this property from production code however.
     </api>
+    <api name="org.netbeans.modules.masterfs.watcher.FAM" category="private" type="export" group="systemproperty">
+        It is possible to enable use of FAM notifier on Solaris disabled by default.
+        Useful mostly in testing environment, but it may be interesting for some
+        users too. Don't rely (much) on this property from production code however.
+    </api>
 </answer>
 
 

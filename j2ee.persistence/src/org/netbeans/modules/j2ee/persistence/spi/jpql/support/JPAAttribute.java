@@ -41,7 +41,15 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql.support;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.eclipse.persistence.jpa.jpql.spi.IMappingType;
+import org.eclipse.persistence.jpa.jpql.spi.IType;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embedded;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EmbeddedId;
@@ -51,6 +59,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
+import org.netbeans.modules.j2ee.persistence.spi.jpql.DefaultType;
 
 /**
  *
@@ -61,59 +70,71 @@ public class JPAAttribute {
     private Object attr;
     private IMappingType mType = IMappingType.TRANSIENT;
     private String name;
+    private PersistentObject parent;
+    private TypeElement typeElement;
+    private String typeName;
     
-    public JPAAttribute(ManyToMany attr){
+    public JPAAttribute(PersistentObject parent, ManyToMany attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.MANY_TO_MANY;
+        this.parent = parent;
     }
     
-    public JPAAttribute(ManyToOne attr){
+    public JPAAttribute(PersistentObject parent, ManyToOne attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.MANY_TO_ONE;
+        this.parent = parent;
     }
     
-    public JPAAttribute(OneToMany attr){
+    public JPAAttribute(PersistentObject parent, OneToMany attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.ONE_TO_MANY;
+        this.parent = parent;
     }    
     
-    public JPAAttribute(OneToOne attr){
+    public JPAAttribute(PersistentObject parent, OneToOne attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.ONE_TO_ONE;
+        this.parent = parent;
     } 
     
-    public JPAAttribute(Basic attr){
+    public JPAAttribute(PersistentObject parent, Basic attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.BASIC;
+        this.parent = parent;
     } 
     
-    public JPAAttribute(Id attr){
+    public JPAAttribute(PersistentObject parent, Id attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.ID;
+        this.parent = parent;
     } 
     
-    public JPAAttribute(Embedded attr){
+    public JPAAttribute(PersistentObject parent, Embedded attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.EMBEDDED;
+        this.parent = parent;
     }    
     
-    public JPAAttribute(EmbeddedId attr){
+    public JPAAttribute(PersistentObject parent, EmbeddedId attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.EMBEDDED_ID;
+        this.parent = parent;
     }   
     
-    public JPAAttribute(Version attr){
+    public JPAAttribute(PersistentObject parent, Version attr){
         this.attr = attr;
         name = attr.getName();
         mType = IMappingType.VERSION;
+        this.parent = parent;
     }        
     //
     public IMappingType getMappingType(){
@@ -122,6 +143,56 @@ public class JPAAttribute {
     
     public String getName(){
         return name;
+    }
+
+    public TypeElement getType() {
+        if(typeElement==null){
+            buildType();
+        }
+        return typeElement;
+    }
+    
+    public String getTypeName(){
+        if(typeName == null){
+            buildType();
+        }
+        return typeName;
+    }
+    
+    private void buildType(){
+            TypeMirror tm = null;
+            VariableElement var = Utils.getField(parent.getTypeElement(), name);
+            if(var == null){
+                ExecutableElement acc = Utils.getAccesor(parent.getTypeElement(), name);
+                if(acc != null){
+                    tm = acc.getReturnType();
+                }
+            } else {
+                tm = var.asType();
+            }
+            if( tm!=null ){
+                if(tm.getKind() == TypeKind.DECLARED){
+                    DeclaredType declaredType = (DeclaredType) tm;
+                    typeElement =  (TypeElement) declaredType.asElement();
+                    typeName = typeElement.getQualifiedName().toString();
+                } else if (TypeKind.BOOLEAN == tm.getKind()) {
+                    typeName = ("boolean");//NOI18N
+                } else if (TypeKind.BYTE == tm.getKind()) {
+                    typeName = "byte";//NOI18N
+                } else if (TypeKind.CHAR == tm.getKind()) {
+                    typeName = "char";//NOI18N
+                } else if (TypeKind.DOUBLE == tm.getKind()) {
+                    typeName = "double";//NOI18N
+                } else if (TypeKind.FLOAT == tm.getKind()) {
+                    typeName = "float";//NOI18N
+                } else if (TypeKind.INT == tm.getKind()) {
+                    typeName = "int";//NOI18N
+                } else if (TypeKind.LONG == tm.getKind()) {
+                    typeName = "long";//NOI18N
+                } else if (TypeKind.SHORT == tm.getKind()) {
+                    typeName = "short";//NOI18N
+                }
+            }        
     }
 }
 /*

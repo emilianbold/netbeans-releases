@@ -100,6 +100,7 @@ public class FindFileWhileClosingProject extends RepositoryAccessTestBase {
             project.waitParse();
             RequestProcessor.Task task = model.enqueueModelTask(new Runnable() {
 
+                @Override
                 public void run() {
                     TraceModelBase.closeProject(project);
                 }
