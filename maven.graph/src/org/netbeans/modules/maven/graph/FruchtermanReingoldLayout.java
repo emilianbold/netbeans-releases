@@ -88,7 +88,11 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         scene.validate();
         Rectangle rectangle = new Rectangle (0, 0, 1, 1);
         for (Widget widget : scene.getChildren()) {
-             rectangle = rectangle.union (widget.convertLocalToScene (widget.getBounds ()));
+            Rectangle childBounds = widget.getBounds();
+            if (childBounds == null) {
+                continue;
+            }
+            rectangle = rectangle.union(widget.convertLocalToScene(childBounds));
         }
         Dimension dim = rectangle.getSize ();
         Dimension viewDim = panel.getViewportBorderBounds ().getSize ();
@@ -143,6 +147,9 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         int nds = scene.getNodes().size();
         iterations = iters;
         bounds = scene.getBounds();
+        if (bounds == null) {
+            return;
+        }
 //        System.out.println("scene bounds are =" + bounds);
         temp = bounds.getWidth() / 1000;
 //        forceConstant = 0.75 * Math.sqrt(bounds.getHeight() * bounds.getWidth() / nds);

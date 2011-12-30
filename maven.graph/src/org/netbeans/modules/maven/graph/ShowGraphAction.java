@@ -48,6 +48,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -56,6 +57,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -67,9 +69,10 @@ import org.openide.util.Lookup;
     @ActionReference(position = 1650, path = "Projects/org-netbeans-modules-maven/Actions", separatorAfter=1655),
     @ActionReference(position = 113, path = "Editors/text/x-maven-pom+xml/Popup", separatorAfter=213)
 })
+@Messages("ACT_Show_Graph=Show Dependency Graph")
 public class ShowGraphAction extends AbstractAction implements ContextAwareAction {
     public ShowGraphAction() {
-        putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ShowGraphAction.class, "ACT_Show_Graph"));
+        putValue(Action.NAME, ACT_Show_Graph());
     }
     
     public ShowGraphAction(Project prj) {
@@ -85,12 +88,12 @@ public class ShowGraphAction extends AbstractAction implements ContextAwareActio
         return project != null && project.getLookup().lookup(NbMavenProject.class) != null;
     }
     
-    public void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         final Project project = (Project) getValue("prj"); //NOI18N
         ArtifactViewer.showArtifactViewer(project, ArtifactViewer.HINT_GRAPH);
     }
     
-    public Action createContextAwareInstance(Lookup lookup) {
+    @Override public Action createContextAwareInstance(Lookup lookup) {
         Project prj = lookup.lookup(Project.class);
         if (prj == null) {
             FileObject fo = lookup.lookup(FileObject.class);

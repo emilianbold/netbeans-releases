@@ -55,7 +55,8 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.graph.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -134,6 +135,14 @@ public class EdgeWidget extends ConnectionWidget {
         updateAppearance();
     }
 
+    @Messages({
+        "TIP_VersionConflict=Conflict with {0} version required by {1}",
+        "TIP_VersionWarning=Warning, overridden by {0} version required by {1}",
+        "TIP_Primary=Primary dependency path",
+        "TIP_Secondary=Secondary dependency path"
+    })
+    @SuppressWarnings("fallthrough")
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SF_SWITCH_FALLTHROUGH")
     private void updateAppearance () {
         Color inactiveC = UIManager.getColor("textInactiveText");
         if (inactiveC == null) {
@@ -172,19 +181,18 @@ public class EdgeWidget extends ConnectionWidget {
                 DependencyNode includedDepN = grScene.getGraphNodeRepresentant(
                         edge.getTarget()).getArtifact();
                 DependencyNode parent = includedDepN.getParent();
-                String confText = NbBundle.getMessage(EdgeWidget.class,
-                        edgeConflictType == ArtifactGraphNode.CONFLICT ? "TIP_VersionConflict" : "TIP_VersionWarning",
-                        includedDepN.getArtifact().getVersion(),
-                        parent != null ? parent.getArtifact().getArtifactId() : "???");
+                String version = includedDepN.getArtifact().getVersion();
+                String requester = parent != null ? parent.getArtifact().getArtifactId() : "???";
+                String confText = edgeConflictType == ArtifactGraphNode.CONFLICT ? TIP_VersionConflict(version, requester) : TIP_VersionWarning(version, requester);
                 conflictVersion.setToolTipText(confText);
                 sb.append(confText);
                 sb.append("<br>");
             }
             sb.append("<i>");
             if (edge.isPrimary()) {
-                sb.append(NbBundle.getMessage(EdgeWidget.class, "TIP_Primary"));
+                sb.append(TIP_Primary());
             } else {
-                sb.append(NbBundle.getMessage(EdgeWidget.class, "TIP_Secondary"));
+                sb.append(TIP_Secondary());
             }
             sb.append("</i>");
             sb.append("</html>");

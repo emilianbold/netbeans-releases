@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -80,6 +79,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.netbeans.modules.maven.graph.FixVersionConflictPanel.FixDescription;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.model.Utilities;
@@ -89,7 +89,7 @@ import org.netbeans.modules.maven.model.pom.Profile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -112,7 +112,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     WidgetAction hoverAction = ActionFactory.createHoverAction(new HoverController());
 
     Action sceneZoomToFitAction = new SceneZoomToFitAction();
-    Action highlitedZoomToFitAction = new HighlitedZoomToFitAction();
+    Action highlitedZoomToFitAction = new HighlightedZoomToFitAction();
 
     private FruchtermanReingoldLayout layout;
     private int maxDepth = 0;
@@ -181,7 +181,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         throw new IllegalStateException();
     }
     
-    protected Widget attachNodeWidget(ArtifactGraphNode node) {
+    @Override protected Widget attachNodeWidget(ArtifactGraphNode node) {
         if (node.getPrimaryLevel() > maxDepth) {
             maxDepth = node.getPrimaryLevel();
         }
@@ -202,20 +202,20 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return root;
     }
     
-    protected Widget attachEdgeWidget(ArtifactGraphEdge edge) {
+    @Override protected Widget attachEdgeWidget(ArtifactGraphEdge edge) {
         EdgeWidget connectionWidget = new EdgeWidget(this, edge);
         connectionLayer.addChild(connectionWidget);
         return connectionWidget;
     }
     
-    protected void attachEdgeSourceAnchor(ArtifactGraphEdge edge,
+    @Override protected void attachEdgeSourceAnchor(ArtifactGraphEdge edge,
             ArtifactGraphNode oldsource,
             ArtifactGraphNode source) {
         ((ConnectionWidget) findWidget(edge)).setSourceAnchor(AnchorFactory.createRectangularAnchor(findWidget(source)));
         
     }
     
-    protected void attachEdgeTargetAnchor(ArtifactGraphEdge edge,
+    @Override protected void attachEdgeTargetAnchor(ArtifactGraphEdge edge,
             ArtifactGraphNode oldtarget,
             ArtifactGraphNode target) {
         ArtifactWidget wid = (ArtifactWidget)findWidget(target);
@@ -319,10 +319,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             }
         }*/
 
-        /*** PopupMenuProvider ***/
-
-        @SuppressWarnings("unchecked")
-        public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
+        @Override public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu();
             if (widget == DependencyGraphScene.this) {
                 popupMenu.add(sceneZoomToFitAction);
@@ -346,20 +343,18 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 if (!node.isRoot()) {
                     Action a = CommonArtifactActions.createViewArtifactDetails(node.getArtifact().getArtifact(), project.getRemoteArtifactRepositories());
                     a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
-                    a.putValue(Action.NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_Show_Graph"));
+                    a.putValue(Action.NAME, ACT_Show_Graph());
                     popupMenu.add(a);
                 }
             }
             return popupMenu;
         }
 
-        /*** MoveProvider ***/
-
-        public void movementStarted (Widget widget) {
+        @Override public void movementStarted(Widget widget) {
             widget.bringToFront();
             moveStart = widget.getLocation();
         }
-        public void movementFinished (Widget widget) {
+        @Override public void movementFinished(Widget widget) {
             // little hack to call highlightRelated on mouse click while leaving
             // normal move behaviour on real dragging
             Point moveEnd = widget.getLocation();
@@ -370,16 +365,14 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 }
             }
         }
-        public Point getOriginalLocation (Widget widget) {
+        @Override public Point getOriginalLocation(Widget widget) {
             return widget.getPreferredLocation ();
         }
-        public void setNewLocation (Widget widget, Point location) {
+        @Override public void setNewLocation(Widget widget, Point location) {
             widget.setPreferredLocation (location);
         }
 
-        /*** EditProvider ***/
-
-        public void edit(Widget widget) {
+        @Override public void edit(Widget widget) {
             if (DependencyGraphScene.this == widget) {
                 sceneZoomToFitAction.actionPerformed(null);
             } else {
@@ -387,15 +380,15 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             }
         }
 
-        public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+        @Override public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
             return false;
         }
 
-        public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+        @Override public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
             return true;
         }
 
-        public void select(Widget widget, Point localLocation, boolean invertSelection) {
+        @Override public void select(Widget widget, Point localLocation, boolean invertSelection) {
             setSelectedObjects(EMPTY_SELECTION);
             DependencyGraphScene.this.tc.depthHighlight();
         }
@@ -422,7 +415,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         private List<? extends Widget> widgets = null;
         private DependencyGraphScene depScene;
 
-        public FitToViewLayout(DependencyGraphScene scene) {
+        FitToViewLayout(DependencyGraphScene scene) {
             super(scene);
             this.depScene = scene;
         }
@@ -441,10 +434,14 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             }
 
             for (Widget widget : toFit) {
+                Rectangle bounds = widget.getBounds();
+                if (bounds == null) {
+                    continue;
+                }
                 if (rectangle == null) {
-                    rectangle = widget.convertLocalToScene (widget.getBounds ());
+                    rectangle = widget.convertLocalToScene(bounds);
                 } else {
-                    rectangle = rectangle.union (widget.convertLocalToScene (widget.getBounds ()));
+                    rectangle = rectangle.union(widget.convertLocalToScene(bounds));
                 }
             }
             // margin around
@@ -473,25 +470,25 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
     private class SceneZoomToFitAction extends AbstractAction {
 
-        public SceneZoomToFitAction() {
-            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_ZoomToFit"));
+        @Messages("ACT_ZoomToFit=Zoom To Fit")
+        SceneZoomToFitAction() {
+            putValue(NAME, ACT_ZoomToFit());
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             FitToViewLayout ftvl = DependencyGraphScene.this.getFitToViewLayout();
             ftvl.setWidgetsToFit(null);
             ftvl.invokeLayout();
         }
     };
 
-    private class HighlitedZoomToFitAction extends AbstractAction {
+    private class HighlightedZoomToFitAction extends AbstractAction {
 
-        public HighlitedZoomToFitAction() {
-            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_ZoomToFit"));
+        HighlightedZoomToFitAction() {
+            putValue(NAME, ACT_ZoomToFit());
         }
 
-        public void actionPerformed(ActionEvent e) {
-            @SuppressWarnings("unchecked")
+        @Override public void actionPerformed(ActionEvent e) {
             Collection<ArtifactGraphNode> grNodes = DependencyGraphScene.this.getNodes();
             List<ArtifactWidget> aws = new ArrayList<ArtifactWidget>();
             ArtifactWidget aw = null;
@@ -560,9 +557,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 // now check the active profiles for the dependency..
                 List<String> profileNames = new ArrayList<String>();
                 NbMavenProject nbMavproject = nbProject.getLookup().lookup(NbMavenProject.class);
-                Iterator it = nbMavproject.getMavenProject().getActiveProfiles().iterator();
-                while (it.hasNext()) {
-                    org.apache.maven.model.Profile prof = (org.apache.maven.model.Profile) it.next();
+                for (org.apache.maven.model.Profile prof : nbMavproject.getMavenProject().getActiveProfiles()) {
                     profileNames.add(prof.getId());
                 }
                 for (String profileId : profileNames) {
@@ -699,19 +694,25 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private class ExcludeDepAction extends AbstractAction implements Runnable {
         private ArtifactGraphNode node;
 
-        public ExcludeDepAction(ArtifactGraphNode node) {
+        @Messages({
+            "ACT_ExcludeDep=Exclude",
+            "TIP_ExcludeDep=Adds dependency exclusion of this artifact to relevant direct dependencies"
+        })
+        ExcludeDepAction(ArtifactGraphNode node) {
             this.node = node;
-            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_ExcludeDep"));
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DependencyGraphScene.class, "TIP_ExcludeDep"));
+            putValue(NAME, ACT_ExcludeDep());
+            putValue(SHORT_DESCRIPTION, TIP_ExcludeDep());
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Override public void actionPerformed(ActionEvent e) {
             FixVersionConflictPanel.ExclusionTargets et =
                     new FixVersionConflictPanel.ExclusionTargets(node, findNewest(node, true));
             Set<Artifact> exclTargets = et.getAll();
 
+            if (!model.startTransaction()) {
+                return;
+            }
             try {
-                model.startTransaction();
                 excludeDepFromModel(node, exclTargets);
             } finally {
                 model.endTransaction();
@@ -728,7 +729,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         /** Saves fix changes to the pom file, posted to RequestProcessor */
-        public void run() {
+        @Override public void run() {
             try {
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
@@ -744,16 +745,16 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         private ArtifactGraphNode node;
         private Artifact nodeArtif;
 
-        public FixVersionConflictAction(ArtifactGraphNode node) {
+        FixVersionConflictAction(ArtifactGraphNode node) {
             this.node = node;
             this.nodeArtif = node.getArtifact().getArtifact();
-            putValue(NAME, NbBundle.getMessage(DependencyGraphScene.class, "ACT_FixVersionConflict"));
+            putValue(NAME, ACT_FixVersionConflict());
         }
 
-        public void actionPerformed(ActionEvent e) {
+        @Messages("TIT_FixConflict=Fix Version Conflict")
+        @Override public void actionPerformed(ActionEvent e) {
             FixVersionConflictPanel fixPanel = new FixVersionConflictPanel(DependencyGraphScene.this, node);
-            DialogDescriptor dd = new DialogDescriptor(fixPanel,
-                    NbBundle.getMessage(DependencyGraphScene.class,"TIT_FixConflict"));
+            DialogDescriptor dd = new DialogDescriptor(fixPanel, TIT_FixConflict());
             //pnl.setStatusDisplayer(dd.createNotificationLineSupport());
             Object ret = DialogDisplayer.getDefault().notify(dd);
             if (ret == DialogDescriptor.OK_OPTION) {
@@ -766,7 +767,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         /** Saves fix changes to the pom file, posted to RequestProcessor */
-        public void run() {
+        @Override public void run() {
             try {
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
@@ -776,9 +777,10 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         private void fixDependency (FixVersionConflictPanel.FixDescription fixContent) {
+            if (!model.startTransaction()) {
+                return;
+            }
             try {
-                model.startTransaction();
-
                 if (fixContent.isSet && fixContent.version2Set != null) {
                     org.netbeans.modules.maven.model.pom.Dependency dep =
                             ModelUtils.checkModelDependency(model,
@@ -831,16 +833,16 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     } // FixVersionConflictAction
 
 
-    private class HoverController implements TwoStateHoverProvider {
+    private static class HoverController implements TwoStateHoverProvider {
 
-        public void unsetHovering(Widget widget) {
+        @Override public void unsetHovering(Widget widget) {
             ArtifactWidget aw = findArtifactW(widget);
             if (widget != null) {
                 aw.bulbUnhovered();
             }
         }
 
-        public void setHovering(Widget widget) {
+        @Override public void setHovering(Widget widget) {
             ArtifactWidget aw = findArtifactW(widget);
             if (aw != null) {
                 aw.bulbHovered();

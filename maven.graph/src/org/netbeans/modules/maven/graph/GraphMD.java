@@ -46,11 +46,14 @@ import java.awt.Image;
 import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 /**
@@ -59,6 +62,8 @@ import org.openide.windows.TopComponent;
  */
 public class GraphMD implements MultiViewDescription, Serializable {
 
+    private static final /* XXX not actually in CP: @StaticResource */ String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
+
     private Lookup lookup;
 
     GraphMD(Lookup lkp) {
@@ -66,34 +71,35 @@ public class GraphMD implements MultiViewDescription, Serializable {
     }
 
 
-    public int getPersistenceType() {
+    @Override public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
-    public String getDisplayName() {
-        return org.openide.util.NbBundle.getMessage(GraphMD.class, "TAB_Graph");
+    @Messages("TAB_Graph=Graph")
+    @Override public String getDisplayName() {
+        return TAB_Graph();
     }
 
-    public Image getIcon() {
-        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true); //NOI18N
+    @Override public Image getIcon() {
+        return ImageUtilities.loadImage(DEPENDENCY_JAR, true);
     }
 
-    public HelpCtx getHelpCtx() {
+    @Override public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    public String preferredID() {
+    @Override public String preferredID() {
         return ArtifactViewer.HINT_GRAPH;
     }
 
-    public MultiViewElement createElement() {
+    @Override public MultiViewElement createElement() {
         return new DependencyGraphTopComponent(lookup);
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=400)
+    @ServiceProvider(service=ArtifactViewerPanelProvider.class, position=400)
     public static class Factory implements ArtifactViewerPanelProvider {
 
-        public MultiViewDescription createPanel(Lookup content) {
+        @Override public MultiViewDescription createPanel(Lookup content) {
             return new GraphMD(content);
         }
     }
