@@ -672,14 +672,17 @@ public final class CompletionSupport implements DocumentListener {
         }
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         this.lastSeparatorOffset = -1;
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         this.lastSeparatorOffset = -1;
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         this.lastSeparatorOffset = -1;
     }

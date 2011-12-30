@@ -118,6 +118,7 @@ public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
 
     private class TypeComparator implements Comparator<SymbolDescriptor> {
 
+        @Override
         public int compare(SymbolDescriptor t1, SymbolDescriptor t2) {
             int result = compareStrings(t1.getSymbolName(), t2.getSymbolName());
             if (result == 0) {

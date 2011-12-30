@@ -469,6 +469,7 @@ abstract public class CsmCompletion {
         SimpleClass() {
         }
 
+        @Override
         public final CharSequence getName() {
             if (clazz != null) {
                 return clazz.getName();
@@ -480,6 +481,7 @@ abstract public class CsmCompletion {
             return packageName;
         }
 
+        @Override
         public CharSequence getQualifiedName() {
             if (clazz != null) {
                 return clazz.getQualifiedName();
@@ -490,6 +492,7 @@ abstract public class CsmCompletion {
             return fullName;
         }
 
+        @Override
         public CharSequence getUniqueName() {
             return getQualifiedName();
         }
@@ -569,6 +572,7 @@ abstract public class CsmCompletion {
             return stringValue;
         }
 
+        @Override
         public CsmDeclaration.Kind getKind() {
             if (clazz != null) {
                 return clazz.getKind();
@@ -576,6 +580,7 @@ abstract public class CsmCompletion {
             return kind;
         }
 
+        @Override
         public CsmScope getScope() {
             if (clazz != null) {
                 return clazz.getScope();
@@ -583,6 +588,7 @@ abstract public class CsmCompletion {
             return null;
         }
 
+        @Override
         public boolean isValid() {
             return CsmBaseUtilities.isValid(clazz);
         }
@@ -611,6 +617,7 @@ abstract public class CsmCompletion {
         BaseType() {
         }
 
+        @Override
         public int getArrayDepth() {
             return arrayDepth;
         }
@@ -680,6 +687,7 @@ abstract public class CsmCompletion {
             return format(true);
         }
 
+        @Override
         public CsmClassifier getClassifier() {
             if (clazz instanceof SimpleClass) {
                 return ((SimpleClass) clazz).clazz == null ? clazz : ((SimpleClass) clazz).clazz;
@@ -688,46 +696,57 @@ abstract public class CsmCompletion {
             }
         }
 
+        @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             return Collections.emptyList();
         }
 
+        @Override
         public boolean isInstantiation() {
             return false;
         }
 
+        @Override
         public boolean isTemplateBased() {
             return CsmKindUtilities.isTemplateParameter(clazz);
         }
 
+        @Override
         public CharSequence getClassifierText() {
             return clazz.getName();
         }
 
+        @Override
         public boolean isPointer() {
             return pointerDepth > 0;
         }
 
+        @Override
         public int getPointerDepth() {
             return pointerDepth;
         }
 
+        @Override
         public boolean isReference() {
             return reference;
         }
 
+        @Override
         public boolean isConst() {
             return _const;
         }
 
+        @Override
         public CharSequence getText() {
             return format(true);
         }
 
+        @Override
         public CharSequence getCanonicalText() {
             return getText();
         }
 
+        @Override
         public CsmFile getContainingFile() {
             if (CsmKindUtilities.isOffsetable(clazz)) {
                 return ((CsmOffsetable)clazz).getContainingFile();
@@ -736,22 +755,27 @@ abstract public class CsmCompletion {
             }
         }
 
+        @Override
         public int getStartOffset() {
             return 0;
         }
 
+        @Override
         public int getEndOffset() {
             return 0;
         }
 
+        @Override
         public CsmOffsetable.Position getStartPosition() {
             return null;
         }
 
+        @Override
         public CsmOffsetable.Position getEndPosition() {
             return null;
         }
 
+        @Override
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return CsmKindUtilities.isBuiltIn(clazz);
         }
@@ -773,6 +797,7 @@ abstract public class CsmCompletion {
             this.end = end;
         }
 
+        @Override
         public int getArrayDepth() {
             return delegate.getArrayDepth();
         }
@@ -799,70 +824,87 @@ abstract public class CsmCompletion {
             return delegate.toString();
         }
 
+        @Override
         public CsmClassifier getClassifier() {
             return delegate.getClassifier();
         }
 
+        @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             return delegate.getInstantiationParams();
         }
 
+        @Override
         public boolean isInstantiation() {
             return delegate.isInstantiation();
         }
 
+        @Override
         public boolean isTemplateBased() {
             return delegate.isTemplateBased();
         }
 
+        @Override
         public CharSequence getClassifierText() {
             return delegate.getClassifierText();
         }
 
+        @Override
         public boolean isPointer() {
             return delegate.isPointer();
         }
 
+        @Override
         public int getPointerDepth() {
             return delegate.getPointerDepth();
         }
 
+        @Override
         public boolean isReference() {
             return delegate.isReference();
         }
 
+        @Override
         public boolean isConst() {
             return delegate.isConst();
         }
 
+        @Override
         public CharSequence getText() {
             return delegate.getText();
         }
 
+        @Override
         public CharSequence getCanonicalText() {
             return delegate.getCanonicalText();
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return container;
         }
 
+        @Override
         public int getStartOffset() {
             return start;
         }
 
+        @Override
         public int getEndOffset() {
             return end;
         }
 
+        @Override
         public CsmOffsetable.Position getStartPosition() {
             return null;
         }
 
+        @Override
         public CsmOffsetable.Position getEndPosition() {
             return null;
         }
 
+        @Override
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return delegate.isBuiltInBased(resolveTypeChain);
         }

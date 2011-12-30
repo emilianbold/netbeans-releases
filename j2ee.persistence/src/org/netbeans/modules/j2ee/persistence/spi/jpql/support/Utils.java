@@ -39,79 +39,69 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.spi.jpql;
+package org.netbeans.modules.j2ee.persistence.spi.jpql.support;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 
 /**
  *
  * @author sp153251
  */
-public class DefaultType implements IType {
-    
-    private final String typeName;
-    private final ITypeRepository typeRepository;
-    private ITypeDeclaration typeDeclaration;
-    
-    DefaultType(ITypeRepository typeRepository, String typeName){
-        this.typeRepository = typeRepository;
-        this.typeName = typeName;
-    }
-    
+public class Utils {
 
-    @Override
-    public Iterable<IConstructor> constructors() {
-            return Collections.emptyList();
+    public static VariableElement getField(TypeElement clazz, String fieldName) {
+        for (VariableElement field : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
+            if (field.getSimpleName().contentEquals(fieldName)) {
+                return field;
+            }
+        }
+
+        return null;
     }
 
+    // TODO: reimplement this method to take a type argument and assure 100% accuracy 
+    public static ExecutableElement getAccesor(TypeElement clazz, String fieldName) {
+        for (ExecutableElement method : getMethod(clazz, getAccesorName(fieldName))) {
+            if (method.getParameters().isEmpty()) {
+                return method;
+            }
+        }
 
-    @Override
-    public String getName() {
-        return typeName;
+        for (ExecutableElement method : getMethod(clazz, getBooleanAccesorName(fieldName))) {
+            if (method.getParameters().isEmpty()) {
+                return method;
+            }
+        }
+
+        return null;
     }
 
-    @Override
-    public boolean equals(IType itype) {
-        return typeName.equals(itype.getName());
+    public static String getAccesorName(String fieldName) {
+        return "get" //NOI18N
+                + Character.toString(fieldName.charAt(0)).toUpperCase()
+                + fieldName.substring(1);
     }
 
-    @Override
-    public String[] getEnumConstants() {
-        return new String[]{};
+    public static String getBooleanAccesorName(String fieldName) {
+        return "is" //NOI18N
+                + Character.toString(fieldName.charAt(0)).toUpperCase()
+                + fieldName.substring(1);
     }
 
-    @Override
-    public ITypeDeclaration getTypeDeclaration() {
-		if (typeDeclaration == null) {
-			typeDeclaration = new TypeDeclaration(this, new ITypeDeclaration[0], 0);
-		}
-		return typeDeclaration;
-    }
+    public static ExecutableElement[] getMethod(TypeElement clazz, String methodName) {
+        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
 
-    @Override
-    public boolean hasAnnotation(Class<? extends Annotation> type) {
-        return false;
-    }
+        for (ExecutableElement method : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
+            if (method.getSimpleName().contentEquals(methodName)) {
+                methods.add(method);
+            }
+        }
 
-    @Override
-    public boolean isAssignableTo(IType itype) {
-        return false;//TODO ???
+        return methods.toArray(new ExecutableElement[methods.size()]);
     }
-
-    @Override
-    public boolean isEnum() {
-        return false;
-    }
-
-    @Override
-    public boolean isResolvable() {
-        return false;
-    }
-    
-    
 }

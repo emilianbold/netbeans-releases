@@ -65,7 +65,7 @@ public class Type implements IType{
     private final ITypeRepository repository;
     private ITypeDeclaration tDeclaration;
 
-    public Type(TypeRepository typeRepository, Element element){
+    public Type(ITypeRepository typeRepository, Element element){
         if(element == null){
             System.out.println("ATT");
         }

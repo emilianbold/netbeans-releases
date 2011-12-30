@@ -79,6 +79,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         setIcon(icon);
     }
 
+    @Override
     public final String getName() {
         return (String) getValue(Action.NAME);
     }
@@ -96,6 +97,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         return arg.replace("...", ""); // NOI18N
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -137,10 +139,12 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
     
     protected abstract boolean applicable(Lookup context);
 
+    @Override
     public final void performAction(final Node[] activatedNodes) {
         performAction(getLookup(activatedNodes));
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return enable(getLookup(activatedNodes));
     }
@@ -158,6 +162,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
             this.context = context;
         }
 
+        @Override
         public Object getValue(String arg0) {
             if ("applicable".equals(arg0)) { //NOI18N
                 return CsmRefactoringGlobalAction.this.applicable(context);
@@ -165,30 +170,37 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
             return CsmRefactoringGlobalAction.this.getValue(arg0);
         }
 
+        @Override
         public void putValue(String arg0, Object arg1) {
             CsmRefactoringGlobalAction.this.putValue(arg0, arg1);
         }
 
+        @Override
         public void setEnabled(boolean arg0) {
             CsmRefactoringGlobalAction.this.setEnabled(arg0);
         }
 
+        @Override
         public boolean isEnabled() {
             return enable(context);
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener arg0) {
             CsmRefactoringGlobalAction.this.addPropertyChangeListener(arg0);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener arg0) {
             CsmRefactoringGlobalAction.this.removePropertyChangeListener(arg0);
         }
 
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             CsmRefactoringGlobalAction.this.performAction(context);
         }
 
+        @Override
         public JMenuItem getMenuPresenter() {
             if (isMethodOverridden(CsmRefactoringGlobalAction.this, "getMenuPresenter")) { // NOI18N
 
@@ -198,6 +210,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
             }
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             if (isMethodOverridden(CsmRefactoringGlobalAction.this, "getPopupPresenter")) { // NOI18N
 

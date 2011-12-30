@@ -160,6 +160,7 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
     }
     private static final Comparator<RefactoringElementImplementation> COMPARATOR = new Comparator<RefactoringElementImplementation>() {
 
+        @Override
         public int compare(RefactoringElementImplementation o1, RefactoringElementImplementation o2) {
             Parameters.notNull("o1", o1);
             Parameters.notNull("o2", o2);

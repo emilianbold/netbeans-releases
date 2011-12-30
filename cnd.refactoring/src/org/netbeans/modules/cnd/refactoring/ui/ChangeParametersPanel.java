@@ -98,6 +98,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         "<default>", // NOI18N
     };
     
+    @Override
     public Component getComponent() {
         return this;
     }
@@ -138,6 +139,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         if (initialized) {
             return;
@@ -447,6 +449,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private ListSelectionListener getListener1() {
         return new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting()) {
                     return;
@@ -479,6 +482,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private TableModelListener getListener2() {
         return new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 // update buttons availability
                 int[] selectedRows = paramTable.getSelectedRows();
@@ -748,6 +752,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     } // end ParamTableModel
 
     private static class EditAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent ae) {
             autoEdit((JTable) ae.getSource());
         }

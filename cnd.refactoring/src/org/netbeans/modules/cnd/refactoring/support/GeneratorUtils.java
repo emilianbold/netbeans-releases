@@ -550,6 +550,7 @@ public class GeneratorUtils {
             result.append("\n"); // NOI18N
             final Document doc = path.getDocument();
             Runnable update = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         doc.insertString(def.dot, result.toString(), null);

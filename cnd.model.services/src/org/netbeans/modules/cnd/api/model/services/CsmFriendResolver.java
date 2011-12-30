@@ -117,10 +117,12 @@ public abstract class CsmFriendResolver {
     private static final class Empty extends CsmFriendResolver {
         Empty() {
         }
+        @Override
         public boolean isFriend(CsmOffsetableDeclaration friendDecl, CsmClass target) {
             return false;
         }
 
+        @Override
         public Collection<CsmFriend> findFriends(CsmOffsetableDeclaration decl) {
             return Collections.<CsmFriend>emptyList();
         }

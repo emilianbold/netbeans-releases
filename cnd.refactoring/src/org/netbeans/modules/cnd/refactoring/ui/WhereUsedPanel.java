@@ -181,6 +181,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         initialized = false;
     }
 
+    @Override
     public void initialize() {
         // method is called to make initialization of components out of AWT
         if (initialized) {
@@ -325,6 +326,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         final boolean showClassPanel = _needClassPanel;
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 remove(classesPanel);
                 remove(methodsPanel);
@@ -675,6 +677,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
         return searchInComments.isSelected();
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }
@@ -735,6 +738,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
         public JLabelRenderer () {
             setOpaque(true);
         }
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
-
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * offset based CsmOffsetable.Position implementation
- * do not keep reference to this object for a long time to prevent memory leaks
- * @author Vladimir Voskresensky
+ *
+ * @author Egor Ushakov
  */
-public final class LazyOffsPositionImpl implements CsmOffsetable.Position {
-    private int line = -1;
-    private int col = -1;
-    private final int offset;
-    private final FileImpl file;
+public class EvalAnnotationTest {
     
-    public LazyOffsPositionImpl(FileImpl file, int offset) {
-        this.offset = offset;
-        this.file = file;
+    public EvalAnnotationTest() {
     }
 
-    @Override
-    public int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public int getLine() {
-        if (line == -1) {
-            int[] res = file.getLineColumn(offset);
-            line = res[0];
-            col = res[1];
-        }
-        return line;
-    }
-
-    @Override
-    public int getColumn() {
-        if (col == -1) {
-            int[] res = file.getLineColumn(offset);
-            line = res[0];
-            col = res[1];
-        }
-        return col;
+    @Test
+    public void test206740() {
+        String expr = EvalAnnotation.extractExpr(11, "case ABC::DEF:");
+        assertEquals("ABC::DEF", expr);
     }
     
-    @Override
-    public String toString() {
-        int end = getOffset();
-        return "" + getLine() + ':' + getColumn() + '/' + (end == Integer.MAX_VALUE ? "FILE_LENGTH" : end); // NOI18N
+    @Test
+    public void test206740_2() {
+        String expr = EvalAnnotation.extractExpr(6, "case ABC::DEF:");
+        assertEquals("ABC::DEF", expr);
     }
-}       
+}
