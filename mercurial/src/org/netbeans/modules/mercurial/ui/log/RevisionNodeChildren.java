@@ -50,6 +50,7 @@ import org.openide.nodes.Node;
 
 import java.util.*;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -106,7 +107,7 @@ class RevisionNodeChildren extends Children.Keys implements PropertyChangeListen
 
                 @Override
                 public String getName () {
-                    return "Loading...";
+                    return NbBundle.getMessage(RevisionNodeChildren.class, "MSG_RevisionNodeChildren.Loading"); //NOI18N
                 }
                 
             };

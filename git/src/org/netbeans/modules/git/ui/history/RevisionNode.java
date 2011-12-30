@@ -80,9 +80,6 @@ class RevisionNode extends AbstractNode {
         this.path = null;
         String rev = container.getLog().getRevision();
         String name = rev.length() > 7 ? rev.substring(0, 7) : rev;
-        if (master.isShowInfo()) {
-            name += NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", container.getEvents().size());
-        }
         setName(name);
         initProperties();
     }
