@@ -397,6 +397,9 @@ public final class MultiViewFactory {
 
         @Override
         public Image getIcon() {
+            if (!map.containsKey("iconBase")) {
+                return null; // #206525
+            }
             String base = get("iconBase", String.class); // NOI18N
             return ImageUtilities.loadImage(base, true);
         }
