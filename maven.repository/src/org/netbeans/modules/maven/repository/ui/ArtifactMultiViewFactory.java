@@ -104,21 +104,42 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
     private static final RequestProcessor RP = new RequestProcessor(ArtifactMultiViewFactory.class);
 
-    @Override @NonNull public TopComponent createTopComponent(@NonNull Artifact artifact, @NullAllowed List<ArtifactRepository> repos) {
-        return createTopComponent(null, null, artifact, repos);
+    @Override @NonNull public Lookup createLookup(@NonNull Artifact artifact, @NullAllowed List<ArtifactRepository> repos) {
+        return createLookup(null, null, artifact, repos);
     }
-    @Override @NonNull public TopComponent createTopComponent(@NonNull NBVersionInfo info) {
-        return createTopComponent(null, info, RepositoryUtil.createArtifact(info), null);
+    @Override @NonNull public Lookup createLookup(@NonNull NBVersionInfo info) {
+        return createLookup(null, info, RepositoryUtil.createArtifact(info), null);
     }
 
-    @Override @CheckForNull public TopComponent createTopComponent(@NonNull Project prj) {
+    @Override @CheckForNull public Lookup createLookup(@NonNull Project prj) {
         NbMavenProject mvPrj = prj.getLookup().lookup(NbMavenProject.class);
         MavenProject mvn = mvPrj.getMavenProject();
         Artifact artifact = mvn.getArtifact();
-        return artifact != null ? createTopComponent(prj, null, artifact, null) : null;
+        return artifact != null ? createLookup(prj, null, artifact, null) : null;
     }
 
-    @NonNull private TopComponent createTopComponent(final @NullAllowed Project prj, final @NullAllowed NBVersionInfo info, final @NonNull Artifact artifact, final @NullAllowed List<ArtifactRepository> fRepos) {
+    @Override @NonNull public TopComponent createTopComponent(@NonNull Lookup lookup) {
+        Artifact artifact = lookup.lookup(Artifact.class);
+        assert artifact != null;
+        TopComponent existing = findExistingTc(artifact);
+        if (existing != null) {
+            return existing;
+        }
+        Collection<? extends ArtifactViewerPanelProvider> provs = Lookup.getDefault().lookupAll(ArtifactViewerPanelProvider.class);
+        MultiViewDescription[] panels = new MultiViewDescription[provs.size()];
+        int i = 0;
+        for (ArtifactViewerPanelProvider prov : provs) {
+            panels[i] = prov.createPanel(lookup);
+            i = i + 1;
+        }
+        TopComponent tc = MultiViewFactory.createMultiView(panels, panels[0]);
+        tc.setDisplayName(artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
+        tc.setToolTipText(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
+        tc.putClientProperty(MAVEN_TC_PROPERTY, getTcId(artifact));
+        return tc;
+    }
+
+    @NonNull private Lookup createLookup(final @NullAllowed Project prj, final @NullAllowed NBVersionInfo info, final @NonNull Artifact artifact, final @NullAllowed List<ArtifactRepository> fRepos) {
         final InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
         if (prj != null) {
@@ -129,11 +150,6 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
             ic.add(info);
         }
         final Artifact fArt = artifact;
-
-        TopComponent existing = findExistingTc(artifact);
-        if (existing != null) {
-            return existing;
-        }
 
         RP.post(new Runnable() {
             public void run() {
@@ -215,18 +231,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         };
         ic.add(toolbarActions);
 
-        Collection<? extends ArtifactViewerPanelProvider> provs = Lookup.getDefault().lookupAll(ArtifactViewerPanelProvider.class);
-        MultiViewDescription[] panels = new MultiViewDescription[provs.size()];
-        int i = 0;
-        for (ArtifactViewerPanelProvider prov : provs) {
-            panels[i] = prov.createPanel(lookup);
-            i = i + 1;
-        }
-        TopComponent tc = MultiViewFactory.createMultiView(panels, panels[0]);
-        tc.setDisplayName(artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
-        tc.setToolTipText(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion()); //NOI18N
-        tc.putClientProperty(MAVEN_TC_PROPERTY, getTcId(artifact));
-        return tc;
+        return lookup;
     }
 
     private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws  ProjectBuildingException {

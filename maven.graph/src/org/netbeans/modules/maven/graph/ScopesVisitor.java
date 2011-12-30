@@ -63,7 +63,7 @@ class ScopesVisitor implements DependencyNodeVisitor {
         this.scopes = scopes;
     }
 
-    public boolean visit(DependencyNode node) {
+    @Override public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
         }
@@ -78,7 +78,7 @@ class ScopesVisitor implements DependencyNodeVisitor {
         }
     }
 
-    public boolean endVisit(DependencyNode node) {
+    @Override public boolean endVisit(DependencyNode node) {
         if (node.getState() == DependencyNode.INCLUDED) {
             path.pop();
         }
