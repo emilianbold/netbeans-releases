@@ -123,6 +123,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         return item;
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
@@ -138,6 +139,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         }
     }
 
+    @Override
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             JTextComponent component = (JTextComponent) evt.getSource();
@@ -186,6 +188,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         }
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent component) {
         if (supportInstantSubst) {
             defaultAction(component);
@@ -195,20 +198,24 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         }
     }
 
+    @Override
     public CompletionTask createDocumentationTask() {
         CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
 
         return p != null ? p.createDocumentationTask(this) : null;
     }
 
+    @Override
     public CompletionTask createToolTipTask() {
         return null;
     }
 
+    @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(true), getRightText(false, File.separator), g, defaultFont);
     }
 
+    @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), PARENT_COLOR_TAG + getRightText(true, File.separator), g, defaultFont, defaultColor, width, height, selected);
     }
@@ -225,14 +232,17 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         return out.toString();
     }
 
+    @Override
     public int getSortPriority() {
         return this.priority;
     }
 
+    @Override
     public CharSequence getSortText() {
         return item;
     }
 
+    @Override
     public CharSequence getInsertPrefix() {
         return item;
     }
@@ -255,6 +265,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         if (itemText != null) {
             doc.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         int len = origLen;

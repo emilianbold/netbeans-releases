@@ -178,8 +178,10 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         String dataPath = fileDataPath.getAbsolutePath();
         final AtomicBoolean finish = new AtomicBoolean(false);
         ExecutionListener listener = new ExecutionListener() {
+            @Override
             public void executionStarted(int pid) {
             }
+            @Override
             public void executionFinished(int rc) {
                 finish.set(true);
             }

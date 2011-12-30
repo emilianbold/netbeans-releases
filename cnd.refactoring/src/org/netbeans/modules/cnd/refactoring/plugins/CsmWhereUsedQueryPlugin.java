@@ -103,6 +103,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         startReferenceObject = refactoring.getRefactoringSource().lookup(CsmObject.class);
     }
     
+    @Override
     public Problem prepare(final RefactoringElementsBag elements) {
         CsmUID referencedObjectUID = refactoring.getRefactoringSource().lookup(CsmUID.class);
         CsmObject referencedObject = referencedObjectUID == null ? null : (CsmObject) referencedObjectUID.getObject();
@@ -319,6 +320,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         final CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
         final Interrupter interrupter = new Interrupter(){
+            @Override
             public boolean cancelled() {
                 return isCancelled();
             }
@@ -327,6 +329,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         final CountDownLatch waitFinished = new CountDownLatch(files.size());
         for (final CsmFile file : files) {
             Runnable task = new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (!isCancelled()) {
@@ -396,6 +399,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         return elements;
     }
 
+    @Override
     protected final ModificationResult processFiles(Collection<CsmFile> files, AtomicReference<Problem> outProblem) {
         // where used query does not modify files
         return null;

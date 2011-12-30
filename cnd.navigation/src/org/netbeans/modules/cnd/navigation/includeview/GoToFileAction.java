@@ -65,6 +65,7 @@ public class GoToFileAction extends AbstractAction {
         putValue(Action.NAME, NbBundle.getMessage(GoToFileAction.class, "LBL_GoToFile")); //NOI18N
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (delegate != null){
             delegate.actionPerformed(e);

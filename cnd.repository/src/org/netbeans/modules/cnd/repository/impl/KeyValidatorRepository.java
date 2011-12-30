@@ -59,6 +59,7 @@ public class KeyValidatorRepository extends HashMapRepository {
     
     Map<Key, Key> keyMap = Collections.synchronizedMap(new HashMap<Key, Key>());
 
+    @Override
     public void put(Key key, Persistent obj) {
         // Validate key
         Key oldKey = keyMap.get(key);
@@ -72,6 +73,7 @@ public class KeyValidatorRepository extends HashMapRepository {
         keyMap.put(key,key);
     }
 
+    @Override
     public void shutdown() {
         super.shutdown();
         keyMap.clear();

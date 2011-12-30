@@ -72,17 +72,21 @@ public class CodeAssistanceSubmenuAction extends NodeAction {
         popupMenu.setEnabled(!items.isEmpty());
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(CodeAssistanceSubmenuAction.class, "LBL_CodeAssistanceAction_Name"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

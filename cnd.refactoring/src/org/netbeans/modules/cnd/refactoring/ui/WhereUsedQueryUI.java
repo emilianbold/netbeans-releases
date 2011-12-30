@@ -79,10 +79,12 @@ public class WhereUsedQueryUI implements RefactoringUI {
         name = getSearchElementName(this.origObject);
     }
     
+    @Override
     public boolean isQuery() {
         return true;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         // this method returns panel used for displaying config options
         // of refactoring/find usages
@@ -94,6 +96,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         return panel;
     }
 
+    @Override
     public Problem setParameters() {
         try {
             // handle parameters defined in panel
@@ -152,6 +155,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
     }
     
+    @Override
     public Problem checkParameters() {
         assert panel != null;
         if (panel.isVirtualMethod()) {
@@ -165,10 +169,12 @@ public class WhereUsedQueryUI implements RefactoringUI {
         }
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return query;
     }
 
+    @Override
     public String getDescription() {
         // this method returns description displayed in Find Usages tab
         // i.e. "Usages of "name" (2 occurrences]"
@@ -203,14 +209,17 @@ public class WhereUsedQueryUI implements RefactoringUI {
         return NbBundle.getMessage(WhereUsedQueryUI.class, key, value);
     }
 
+    @Override
     public String getName() {
         return getString("LBL_UsagesOf", name); // NOI18N
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(WhereUsedQueryUI.class);
     }

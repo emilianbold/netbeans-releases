@@ -70,6 +70,7 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
         searchFrom = 0;
     }
     
+    @Override
     public boolean change() throws BadLocationException {
         BaseDocument doc = getDocument();
         String text = doc.getText(searchFrom,  doc.getLength() - searchFrom);
@@ -125,6 +126,7 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
         return stat;
     }
     
+    @Override
     public void analyze(Collection<CsmErrorInfo> errors) {
         Stat stat = getCurrentStat();
         stat.triesCount++;

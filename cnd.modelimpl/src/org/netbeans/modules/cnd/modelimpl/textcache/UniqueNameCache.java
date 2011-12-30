@@ -59,6 +59,7 @@ public class UniqueNameCache extends APTStringManager {
     private UniqueNameCache() {
     }
 
+    @Override
     public CharSequence getString(CharSequence text) {
         if (text == null){
             return text;
@@ -68,6 +69,7 @@ public class UniqueNameCache extends APTStringManager {
         //return instance.getString(text);
     }
 
+    @Override
     public void dispose() {
         //instance.dispose();
     }
