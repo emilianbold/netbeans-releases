@@ -45,6 +45,7 @@
 package org.netbeans.core.api.multiview;
 
 import java.awt.Image;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.openide.util.HelpCtx;
 
@@ -92,8 +93,8 @@ public final class MultiViewPerspective {
     /** 
      * Icon for the multi view component. Will be shown as {@link org.openide.windows.TopComponent}'s icon
      * when this element is selected.
-     * @return The icon of multi view element */
-    public Image getIcon () {
+     * @return The icon of multi view element, or null */
+    public @CheckForNull Image getIcon () {
         return description.getIcon();
     }
 

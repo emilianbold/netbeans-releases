@@ -72,8 +72,7 @@ class HighlightVisitor implements DependencyNodeVisitor {
         return rectangle;
     }
 
-
-    public boolean visit(DependencyNode node) {
+    @Override public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
         }
@@ -106,7 +105,7 @@ class HighlightVisitor implements DependencyNodeVisitor {
         }
     }
 
-    public boolean endVisit(DependencyNode node) {
+    @Override public boolean endVisit(DependencyNode node) {
         if (node.getState() == DependencyNode.INCLUDED) {
             path.pop();
         }
