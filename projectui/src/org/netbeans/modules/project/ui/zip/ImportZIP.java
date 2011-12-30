@@ -94,7 +94,7 @@ public class ImportZIP extends JPanel {
     @Messages({
         "CTL_ImportZIPAction=From &ZIP...",
         "LBL_import=Import",
-        "TITLE_import=Import Project(s) from ZIP",
+        "TITLE_import=Import Project(s) from ZIP"
     })
     public static final class ImportZIPAction implements ActionListener {
         @Override public void actionPerformed(ActionEvent e) {
