@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.modules.project.ui;
 
-import java.io.File;
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.UIResource;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 
 /**
- *
- * @author Jan Becicka
+ * Cell renderer for {@link Project}.
  */
-public final class GitFileInfo {
+// #89393: GTK needs cell renderer to implement UIResource to look "natively"
+public class ProjectCellRenderer extends JLabel implements ListCellRenderer, UIResource {
 
-    public static enum Status {
-        ADDED,
-        MODIFIED,
-        RENAMED,
-        COPIED,
-        REMOVED,
-        UNKNOWN
-    }
-    
-    private final String relativePath;
-    private final String originalPath;
-    private final Status status;
-    private final File file;
-    private final File originalFile;
-
-    public GitFileInfo (File file, String relativePath, Status status, File originalFile, String originalPath) {
-        this.relativePath = relativePath;
-        this.status = status;
-        this.file = file;
-        this.originalFile = originalFile;
-        this.originalPath = originalPath;
+    public ProjectCellRenderer() {
+        setOpaque(true);
     }
 
-    public String getRelativePath() {
-        return relativePath;
+    @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        // #89393: GTK needs name to render cell renderer "natively"
+        setName("ComboBox.listRenderer"); // NOI18N
+        if (value instanceof Project) {
+            ProjectInformation pi = ProjectUtils.getInformation((Project) value);
+            setText(pi.getDisplayName());
+            setIcon(pi.getIcon());
+        } else {
+            setText(value == null ? "" : value.toString()); // NOI18N
+            setIcon(null);
+        }
+        if (isSelected) {
+            setBackground(list.getSelectionBackground());
+            setForeground(list.getSelectionForeground());
+        } else {
+            setBackground(list.getBackground());
+            setForeground(list.getForeground());
+        }
+        return this;
     }
 
-    public String getOriginalPath() {
-        return originalPath;
+    // #89393: GTK needs name to render cell renderer "natively"
+    @Override public String getName() {
+        String name = super.getName();
+        return name == null ? "ComboBox.renderer" : name; // NOI18N
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public File getFile () {
-        return file;
-    }
-    
-    public File getOriginalFile () {
-        return originalFile;
-    }
 }

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
@@ -54,7 +53,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.openide.awt.MouseUtils;
 
 /** Show a warning that no main project is set and allows choose it.
@@ -76,7 +74,7 @@ public class NoMainProjectWarning extends JPanel {
         if (model.getSize () > 0) {
             jList1.setSelectedIndex (0);
         }
-        jList1.setCellRenderer(new ProjectsRenderer ());
+        jList1.setCellRenderer(new ProjectCellRenderer());
         jList1.addListSelectionListener (new ListSelectionListener () {
             public void valueChanged (ListSelectionEvent evt) {
                 if (changeListener != null) {
@@ -217,34 +215,6 @@ public class NoMainProjectWarning extends JPanel {
             } else {
                 return openProjects;
             }
-        }
-    }
-
-    private static final class ProjectsRenderer extends JLabel implements ListCellRenderer {
-        ProjectsRenderer () {
-            setOpaque (true);
-        }
-        
-        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof Project) {
-                Project prj = (Project) value;
-                setText (ProjectUtils.getInformation (prj).getDisplayName ());
-                setIcon (ProjectUtils.getInformation (prj).getIcon ());
-            } else {
-                setText (value.toString ());
-                setIcon (null);
-            }
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-                //setBorder (BorderFactory.createLineBorder (Color.BLACK));
-            }
-            else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-                //setBorder (null);
-            }
-            return this;
         }
     }
 
