@@ -72,14 +72,18 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.graph.Bundle.*;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -94,10 +98,32 @@ import org.openide.windows.TopComponent;
  */
 public class DependencyGraphTopComponent extends TopComponent implements LookupListener, MultiViewElement {
 
+    static final /* XXX not actually in CP: @StaticResource */ String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
     private static final @StaticResource String ZOOM_IN_ICON = "org/netbeans/modules/maven/graph/zoomin.gif";
     private static final @StaticResource String ZOOM_OUT_ICON = "org/netbeans/modules/maven/graph/zoomout.gif";
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     
+    @MultiViewElement.Registration(
+        displayName="#TAB_Graph",
+        iconBase=DEPENDENCY_JAR,
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID=ArtifactViewer.HINT_GRAPH,
+        mimeType="text/x-maven-pom+xml",
+        position=100
+    )
+    @Messages("TAB_Graph=Graph")
+    public static MultiViewElement forPOM(Lookup editor) {
+        FileObject pom = editor.lookup(FileObject.class);
+        assert pom != null : editor;
+        Project p = FileOwnerQuery.getOwner(pom);
+        assert p != null : pom;
+        ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+        assert avf != null;
+        Lookup l = avf.createLookup(p);
+        assert l != null;
+        return new DependencyGraphTopComponent(l);
+    }
+
 //    private Project project;
     private Lookup.Result<DependencyNode> result;
     private Lookup.Result<MavenProject> result2;

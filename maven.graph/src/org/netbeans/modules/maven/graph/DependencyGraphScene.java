@@ -319,6 +319,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             }
         }*/
 
+        @Messages("ACT_Show_Graph=Show Dependency Graph")
         @Override public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu();
             if (widget == DependencyGraphScene.this) {

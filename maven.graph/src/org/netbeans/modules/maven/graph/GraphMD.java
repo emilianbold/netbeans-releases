@@ -52,7 +52,6 @@ import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -61,8 +60,6 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class GraphMD implements MultiViewDescription, Serializable {
-
-    private static final /* XXX not actually in CP: @StaticResource */ String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
 
     private Lookup lookup;
 
@@ -75,13 +72,12 @@ public class GraphMD implements MultiViewDescription, Serializable {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
-    @Messages("TAB_Graph=Graph")
     @Override public String getDisplayName() {
         return TAB_Graph();
     }
 
     @Override public Image getIcon() {
-        return ImageUtilities.loadImage(DEPENDENCY_JAR, true);
+        return ImageUtilities.loadImage(DependencyGraphTopComponent.DEPENDENCY_JAR, true);
     }
 
     @Override public HelpCtx getHelpCtx() {
