@@ -102,10 +102,11 @@ public class CLICoreBridge extends CLIHandler {
         
         ModuleSystem moduleSystem;
         try {
+            System.setProperty("netbeans.user", "memory"); // NOI18N
             moduleSystem = new ModuleSystem(FileUtil.getConfigRoot().getFileSystem());
         } catch (IOException ioe) {
             // System will be screwed up.
-            throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N
+            throw new IllegalStateException("Module system cannot be created", ioe); // NOI18N
         }
 
 //        moduleSystem.loadBootModules();
