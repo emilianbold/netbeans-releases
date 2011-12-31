@@ -5990,5 +5990,9 @@ org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj$Delivered
 org.netbeans.modules.openide.loaders.AWTTask$EDT
 org.netbeans.modules.uihandler.UIHandler$2WriteOut
 
+# Infrastructure types for CLI
+org.netbeans.modules.sendopts.DefaultProcessor
+org.netbeans.modules.sendopts.DefaultProcessor$Type
+org.netbeans.spi.sendopts.Arg
 
 
