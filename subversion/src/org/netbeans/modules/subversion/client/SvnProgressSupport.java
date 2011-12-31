@@ -132,7 +132,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
         if(task != null) {
             task.cancel();
         }
-        getProgressHandle().finish();
+        finnishProgress();
         canceled = true;
         return true;
     }
