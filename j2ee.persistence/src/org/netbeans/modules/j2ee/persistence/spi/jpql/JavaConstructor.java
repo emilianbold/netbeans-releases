@@ -47,59 +47,38 @@ import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
+
 /**
- *
+ * support for java types
  * @author sp153251
  */
 public class JavaConstructor implements IConstructor {
+
     private final JavaType parent;
     private final Constructor<?> constructor;
     private ITypeDeclaration[] parameterTypes;
 
-    JavaConstructor(JavaType parent, Constructor<?> constructor){
+    JavaConstructor(JavaType parent, Constructor<?> constructor) {
         this.parent = parent;
         this.constructor = constructor;
     }
     
-	private ITypeDeclaration[] buildParameterTypes() {
-
-		Class<?>[] types = constructor.getParameterTypes();
-		Type[] genericTypes = constructor.getGenericParameterTypes();
-		ITypeDeclaration[] typeDeclarations = new ITypeDeclaration[types.length];
-
-		for (int index = 0, count = types.length; index < count; index++) {
-			typeDeclarations[index] = buildTypeDeclaration(types[index], genericTypes[index]);
-		}
-
-		return typeDeclarations;
-	}
-
-	private ITypeDeclaration buildTypeDeclaration(Class<?> javaType, Type genericType) {
-		ITypeRepository typeRepository = getTypeRepository();
-		IType type = typeRepository.getType(javaType);
-		return new JavaTypeDeclaration(typeRepository, type, genericType, javaType.isArray());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-	public ITypeDeclaration[] getParameterTypes() {
-		if (parameterTypes == null) {
-			parameterTypes = buildParameterTypes();
-		}
-		return parameterTypes;
-	}
+    public ITypeDeclaration[] getParameterTypes() {
+        if (parameterTypes == null) {
+            Class<?>[] types = constructor.getParameterTypes();
+            Type[] genericTypes = constructor.getGenericParameterTypes();
+            parameterTypes = new ITypeDeclaration[types.length];
+            ITypeRepository typeRepository = parent.getTypeRepository();
 
-	private ITypeRepository getTypeRepository() {
-		return parent.getTypeRepository();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return constructor.toGenericString();
-	}
+            for (int index = 0, count = types.length; index < count; index++) {
+                IType type = typeRepository.getType(types[index]);
+                parameterTypes[index] = new JavaTypeDeclaration(typeRepository, type, genericTypes[index], types[index].isArray());
+            }
+        }
+        return parameterTypes;
+    }
 }

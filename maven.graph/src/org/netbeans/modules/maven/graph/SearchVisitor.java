@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.maven.graph;
 
-import java.util.Collection;
 import java.util.Stack;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 
@@ -68,14 +66,14 @@ class SearchVisitor implements DependencyNodeVisitor {
     }
 
 
-    public boolean visit(DependencyNode node) {
+    @Override public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
         }
         if (node.getState() == DependencyNode.INCLUDED) {
             ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
             ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
-            aw.hightlightText(searchTerm);
+            aw.highlightText(searchTerm);
             path.push(node);
             return true;
         } else {
@@ -83,7 +81,7 @@ class SearchVisitor implements DependencyNodeVisitor {
         }
     }
 
-    public boolean endVisit(DependencyNode node) {
+    @Override public boolean endVisit(DependencyNode node) {
         if (node.getState() == DependencyNode.INCLUDED) {
             path.pop();
         }

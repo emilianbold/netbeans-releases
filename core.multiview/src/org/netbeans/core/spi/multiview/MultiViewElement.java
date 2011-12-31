@@ -179,7 +179,7 @@ public interface MultiViewElement {
      * factory methods. 
      * <p>
      * The element class may have default constructor or a constructor that 
-     * takes {@link Lookup} as an argument.
+     * takes {@link Lookup} as an argument. Similarly for a factory method.
      */
     @Target({ ElementType.TYPE, ElementType.METHOD })
     @Retention(RetentionPolicy.SOURCE)

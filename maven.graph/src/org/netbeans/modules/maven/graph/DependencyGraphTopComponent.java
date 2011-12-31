@@ -71,18 +71,24 @@ import javax.swing.event.DocumentListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.graph.Bundle.*;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
@@ -91,8 +97,33 @@ import org.openide.windows.TopComponent;
  * @author Milos Kleint 
  */
 public class DependencyGraphTopComponent extends TopComponent implements LookupListener, MultiViewElement {
+
+    static final /* XXX not actually in CP: @StaticResource */ String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
+    private static final @StaticResource String ZOOM_IN_ICON = "org/netbeans/modules/maven/graph/zoomin.gif";
+    private static final @StaticResource String ZOOM_OUT_ICON = "org/netbeans/modules/maven/graph/zoomout.gif";
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     
+    @MultiViewElement.Registration(
+        displayName="#TAB_Graph",
+        iconBase=DEPENDENCY_JAR,
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID=ArtifactViewer.HINT_GRAPH,
+        mimeType="text/x-maven-pom+xml",
+        position=100
+    )
+    @Messages("TAB_Graph=Graph")
+    public static MultiViewElement forPOM(Lookup editor) {
+        FileObject pom = editor.lookup(FileObject.class);
+        assert pom != null : editor;
+        Project p = FileOwnerQuery.getOwner(pom);
+        assert p != null : pom;
+        ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+        assert avf != null;
+        Lookup l = avf.createLookup(p);
+        assert l != null;
+        return new DependencyGraphTopComponent(l);
+    }
+
 //    private Project project;
     private Lookup.Result<DependencyNode> result;
     private Lookup.Result<MavenProject> result2;
@@ -105,53 +136,54 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private HighlightVisitor highlightV;
     
     private Timer timer = new Timer(500, new ActionListener() {
-        public void actionPerformed(ActionEvent arg0) {
+        @Override public void actionPerformed(ActionEvent arg0) {
             checkFindValue();
         }
     });
     private JToolBar toolbar;
     
-    /** Creates new form ModulesGraphTopComponent */
+    @Messages({
+        "LBL_Scope_All=All",
+        "LBL_Scope_Compile=Compile",
+        "LBL_Scope_Runtime=Runtime",
+        "LBL_Scope_Test=Test"
+    })
     public DependencyGraphTopComponent(Lookup lookup) {
         super();
         associateLookup(lookup);
         initComponents();
 //        project = proj;
-        //sldDepth.getLabelTable().put(new Integer(0), new JLabel(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_All")));
+        //sldDepth.getLabelTable().put(0, new JLabel(LBL_All())); LBL_All=All
         timer.setDelay(500);
         timer.setRepeats(false);
         txtFind.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent arg0) {
+            @Override public void insertUpdate(DocumentEvent arg0) {
                 timer.restart();
             }
 
-            public void removeUpdate(DocumentEvent arg0) {
+            @Override public void removeUpdate(DocumentEvent arg0) {
                 timer.restart();
             }
 
-            public void changedUpdate(DocumentEvent arg0) {
+            @Override public void changedUpdate(DocumentEvent arg0) {
                 timer.restart();
             }
         });
         comScopes.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                @SuppressWarnings("unchecked")
-                int scopesSize = ((List<String>) value).size();
-                String bundleKey;
+                int scopesSize = ((List<?>) value).size();
+                String msg;
                 if (scopesSize == 0) {
-                    bundleKey = "LBL_Scope_All";
+                    msg = LBL_Scope_All();
                 } else if (scopesSize == 2) {
-                    bundleKey = "LBL_Scope_Compile";
+                    msg = LBL_Scope_Compile();
                 } else if (scopesSize == 3) {
-                    bundleKey = "LBL_Scope_Runtime";
+                    msg = LBL_Scope_Runtime();
                 } else {
-                    bundleKey = "LBL_Scope_Test";
+                    msg = LBL_Scope_Test();
                 }
-
-                return super.getListCellRendererComponent(list,
-                        NbBundle.getMessage(DependencyGraphTopComponent.class, bundleKey),
-                        index, isSelected, cellHasFocus);
+                return super.getListCellRendererComponent(list, msg, index, isSelected, cellHasFocus);
             }
         });
         DefaultComboBoxModel mdl = new DefaultComboBoxModel();
@@ -173,7 +205,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         }));
         comScopes.setModel(mdl);
         comScopes.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e) {
                 if (scene != null) {
                     @SuppressWarnings("unchecked")
                     List<String> selected = (List<String>) comScopes.getSelectedItem();
@@ -212,8 +244,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         return TopComponent.PERSISTENCE_NEVER;
     }
     
-    @Override
-    public void componentOpened() {
+    @Messages("LBL_Loading=Loading and constructing graph:")
+    @Override public void componentOpened() {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
         maxPathSpinner.setEnabled(false);
@@ -224,12 +256,12 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         btnSmaller.setEnabled(false);
         comScopes.setEnabled(false);
         add(pane, BorderLayout.CENTER);
-        setPaneText(NbBundle.getMessage(DependencyGraphTopComponent.class, "LBL_Loading"), true);
-        result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
+        setPaneText(LBL_Loading(), true);
+        result = getLookup().lookupResult(DependencyNode.class);
         result.addLookupListener(this);
-        result2 = getLookup().lookup(new Lookup.Template<MavenProject>(MavenProject.class));
+        result2 = getLookup().lookupResult(MavenProject.class);
         result2.addLookupListener(this);
-        result3 = getLookup().lookup(new Lookup.Template<POMModel>(POMModel.class));
+        result3 = getLookup().lookupResult(POMModel.class);
         result3.addLookupListener(this);
         createScene();
     }
@@ -286,7 +318,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        btnBigger.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomin.gif", true)));
+        btnBigger.setIcon(ImageUtilities.loadImageIcon(ZOOM_IN_ICON, true));
         btnBigger.setFocusable(false);
         btnBigger.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnBigger.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -297,7 +329,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         });
         jToolBar1.add(btnBigger);
 
-        btnSmaller.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/graph/zoomout.gif", true)));
+        btnSmaller.setIcon(ImageUtilities.loadImageIcon(ZOOM_OUT_ICON, true));
         btnSmaller.setFocusable(false);
         btnSmaller.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnSmaller.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -406,30 +438,31 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         return pane;
     }
 
+    @Messages("Err_CannotLoad=Cannot display Artifact's dependency tree.")
     private void createScene() {
         Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
         Iterator<? extends POMModel> it3 = result3.allInstances().iterator();
         final MavenProject prj = it2.hasNext() ? it2.next() : null;
         if (prj != null && NbMavenProject.isErrorPlaceholder(prj)) {
-            setPaneText(org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "Err_CannotLoad"), false);
+            setPaneText(Err_CannotLoad(), false);
         }
         final Project nbProj = getLookup().lookup(Project.class);
         if (prj != null && it1.hasNext()) {
             final DependencyNode root = it1.next();
             final POMModel model = it3.hasNext() ? it3.next() : null;
             RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this, model);
                     GraphConstructor constr = new GraphConstructor(scene);
                     root.accept(constr);
                     SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+                        @Override public void run() {
                             JComponent sceneView = scene.getView();
                             if (sceneView == null) {
                                 sceneView = scene.createView();
                                 // vlv: print
-                                sceneView.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+                                sceneView.putClientProperty("print.printable", true); // NOI18N
                             }
                             pane.setViewportView(sceneView);
                             scene.cleanLayout(pane);
@@ -514,11 +547,11 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         return toolbar;
     }
 
-    public void setMultiViewCallback(MultiViewElementCallback callback) {
+    @Override public void setMultiViewCallback(MultiViewElementCallback callback) {
         this.callback = callback;
     }
 
-    public CloseOperationState canCloseElement() {
+    @Override public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
 

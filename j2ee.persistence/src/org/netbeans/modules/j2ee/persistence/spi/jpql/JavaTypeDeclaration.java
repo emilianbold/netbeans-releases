@@ -52,240 +52,234 @@ import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 
 /**
- *
+ * TODO: rewrite
  * @author sp153251
  */
-public class JavaTypeDeclaration implements ITypeDeclaration{
+public class JavaTypeDeclaration implements ITypeDeclaration {
 
+    /**
+     * Determines whether the type declaration represents an array.
+     */
+    private boolean array;
+    /**
+     * The actual type that contains the generics, if any is present.
+     */
+    private Object genericType;
+    /**
+     * The cached {@link ITypeDeclaration ITypeDeclarations} representing the generics of the {@link
+     * Type}.
+     */
+    private ITypeDeclaration[] genericTypes;
+    /**
+     * The external form of the Java type.
+     */
+    private final IType type;
+    /**
+     * The repository of {@link IType ITypes}.
+     */
+    private ITypeRepository typeRepository;
 
-	/**
-	 * Determines whether the type declaration represents an array.
-	 */
-	private boolean array;
+    /**
+     * Creates a new <code>JavaTypeDeclaration</code>.
+     *
+     * @param typeRepository The repository of {@link IType ITypes}
+     * @param type The external form of the Java type
+     * @param genericType The actual type that contains the generics, if any is present
+     * @param array Determines whether the type declaration represents an array
+     */
+    JavaTypeDeclaration(ITypeRepository typeRepository,
+            IType type,
+            Object genericType,
+            boolean array) {
+        this.type = type;
+        this.array = array;
+        this.genericType = genericType;
+        this.typeRepository = typeRepository;
+    }
 
-	/**
-	 * The actual type that contains the generics, if any is present.
-	 */
-	private Object genericType;
+    private String buildArrayTypeName(String arrayTypeName) {
 
-	/**
-	 * The cached {@link ITypeDeclaration ITypeDeclarations} representing the generics of the {@link
-	 * Type}.
-	 */
-	private ITypeDeclaration[] genericTypes;
+        StringBuilder sb = new StringBuilder();
+        int index = arrayTypeName.indexOf('[');
+        int dimensionality = (arrayTypeName.length() - index) / 2;
+        String typeName = arrayTypeName.substring(0, index);
 
-	/**
-	 * The external form of the Java type.
-	 */
-	private final IType type;
+        while (--dimensionality >= 0) {
+            sb.append("[");
+        }
 
-	/**
-	 * The repository of {@link IType ITypes}.
-	 */
-	private ITypeRepository typeRepository;
+        String elementType = elementType(typeName);
 
-	/**
-	 * Creates a new <code>JavaTypeDeclaration</code>.
-	 *
-	 * @param typeRepository The repository of {@link IType ITypes}
-	 * @param type The external form of the Java type
-	 * @param genericType The actual type that contains the generics, if any is present
-	 * @param array Determines whether the type declaration represents an array
-	 */
-	JavaTypeDeclaration(ITypeRepository typeRepository,
-	                    IType type,
-	                    Object genericType,
-	                    boolean array) {
+        sb.append(elementType);
+        sb.append(typeName);
 
-		super();
-		this.type           = type;
-		this.array          = array;
-		this.genericType    = genericType;
-		this.typeRepository = typeRepository;
-	}
+        if (elementType.equals("L")) {
+            sb.append(";");
+        }
 
-	private String buildArrayTypeName(String arrayTypeName) {
+        return sb.toString();
+    }
 
-		StringBuilder sb = new StringBuilder();
-		int index = arrayTypeName.indexOf('[');
-		int dimensionality = (arrayTypeName.length() - index) / 2;
-		String typeName = arrayTypeName.substring(0, index);
+    private ITypeDeclaration[] buildParameterTypes() {
 
-		while (--dimensionality >= 0) {
-			sb.append("[");
-		}
+        List<ITypeDeclaration> parameterTypes = new ArrayList<ITypeDeclaration>();
 
-		String elementType = elementType(typeName);
+        // Example: Class<T>
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+            for (java.lang.reflect.Type tp : parameterizedType.getActualTypeArguments()) {
+                ITypeDeclaration typeParameter = buildTypeDeclaration(tp);
+                parameterTypes.add(typeParameter);
+            }
+        } // T[]
+        else if (genericType instanceof GenericArrayType) {
+            GenericArrayType genericArrayType = (GenericArrayType) genericType;
+            parameterTypes.add(buildTypeDeclaration(genericArrayType.getGenericComponentType()));
+        } // Example: Class
+        else if (genericType.getClass() == Class.class) {
+            ITypeDeclaration typeParameter = buildTypeDeclaration((Class<?>) genericType);
+            parameterTypes.add(typeParameter);
+        } // Example: <K, V>
+        else if (genericType.getClass() == Class[].class) {
+            for (Class<?> javaType : ((Class<?>[]) genericType)) {
+                ITypeDeclaration typeParameter = buildTypeDeclaration(javaType);
+                parameterTypes.add(typeParameter);
+            }
+        } // Example: <K, V>
+        else if (genericType.getClass() == IType[].class) {
+            for (IType tp : ((IType[]) genericType)) {
+                ITypeDeclaration typeParameter = new JavaTypeDeclaration(typeRepository, tp, null, false);
+                parameterTypes.add(typeParameter);
+            }
+        }
 
-		sb.append(elementType);
-		sb.append(typeName);
+        return parameterTypes.toArray(new ITypeDeclaration[parameterTypes.size()]);
+    }
 
-		if (elementType.equals("L")) {
-			sb.append(";");
-		}
+    private JavaTypeDeclaration buildTypeDeclaration(Class<?> javaType) {
+        return new JavaTypeDeclaration(
+                typeRepository,
+                typeRepository.getType(javaType),
+                null,
+                javaType.isArray());
+    }
 
-		return sb.toString();
-	}
+    private JavaTypeDeclaration buildTypeDeclaration(Object genericType) {
 
-	private ITypeDeclaration[] buildParameterTypes() {
+        // <T1, ..., Tn>
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+            return buildTypeDeclaration(parameterizedType.getRawType());
+        }
 
-		List<ITypeDeclaration> parameterTypes = new ArrayList<ITypeDeclaration>();
+        // <T>
+        if (genericType instanceof TypeVariable) {
+            TypeVariable<?> typeVariable = (TypeVariable<?>) genericType;
+            for (java.lang.reflect.Type tp : typeVariable.getBounds()) {
+                return buildTypeDeclaration(tp);
+            }
+            return buildTypeDeclaration(Object.class);
+        }
 
-		// Example: Class<T>
-		if (genericType instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType) genericType;
-			for (java.lang.reflect.Type type : parameterizedType.getActualTypeArguments()) {
-				ITypeDeclaration typeParameter = buildTypeDeclaration(type);
-				parameterTypes.add(typeParameter);
-			}
-		}
-		// T[]
-		else if (genericType instanceof GenericArrayType) {
-			GenericArrayType genericArrayType = (GenericArrayType) genericType;
-			parameterTypes.add(buildTypeDeclaration(genericArrayType.getGenericComponentType()));
-		}
-		// Example: Class
-		else if (genericType.getClass() == Class.class) {
-			ITypeDeclaration typeParameter = buildTypeDeclaration((Class<?>) genericType);
-			parameterTypes.add(typeParameter);
-		}
-		// Example: <K, V>
-		else if (genericType.getClass() == Class[].class) {
-			for (Class<?> javaType : ((Class<?>[]) genericType)) {
-				ITypeDeclaration typeParameter = buildTypeDeclaration(javaType);
-				parameterTypes.add(typeParameter);
-			}
-		}
-		// Example: <K, V>
-		else if (genericType.getClass() == IType[].class) {
-			for (IType type : ((IType[]) genericType)) {
-				ITypeDeclaration typeParameter = new JavaTypeDeclaration(typeRepository, type, null, false);
-				parameterTypes.add(typeParameter);
-			}
-		}
+        // ?
+        if (genericType instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) genericType;
+            for (java.lang.reflect.Type tp : wildcardType.getUpperBounds()) {
+                return buildTypeDeclaration(tp);
+            }
+            return buildTypeDeclaration(Object.class);
+        }
 
-		return parameterTypes.toArray(new ITypeDeclaration[parameterTypes.size()]);
-	}
+        // T[]
+        if (genericType instanceof GenericArrayType) {
+            GenericArrayType genericArrayType = (GenericArrayType) genericType;
+            String arrayTypeName = buildArrayTypeName(genericArrayType.toString());
+            IType arrayType = typeRepository.getType(arrayTypeName);
 
-	private JavaTypeDeclaration buildTypeDeclaration(Class<?> javaType) {
-		return new JavaTypeDeclaration(
-			typeRepository,
-			getType(javaType),
-			null,
-			javaType.isArray()
-		);
-	}
+            return new JavaTypeDeclaration(
+                    typeRepository,
+                    arrayType,
+                    genericArrayType.getGenericComponentType(),
+                    true);
+        }
 
-	private JavaTypeDeclaration buildTypeDeclaration(Object genericType) {
+        return buildTypeDeclaration((Class<?>) genericType);
+    }
 
-		// <T1, ..., Tn>
-		if (genericType instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType) genericType;
-			return buildTypeDeclaration(parameterizedType.getRawType());
-		}
+    private String elementType(String typeName) {
 
-		// <T>
-		if (genericType instanceof TypeVariable) {
-			TypeVariable<?> typeVariable = (TypeVariable<?>) genericType;
-			for (java.lang.reflect.Type type : typeVariable.getBounds()) {
-				return buildTypeDeclaration(type);
-			}
-			return buildTypeDeclaration(Object.class);
-		}
+        if (typeName.equals("boolean")) {
+            return "Z";
+        }
+        if (typeName.equals("byte")) {
+            return "B";
+        }
+        if (typeName.equals("char")) {
+            return "C";
+        }
+        if (typeName.equals("double")) {
+            return "D";
+        }
+        if (typeName.equals("float")) {
+            return "F";
+        }
+        if (typeName.equals("int")) {
+            return "I";
+        }
+        if (typeName.equals("long")) {
+            return "J";
+        }
+        if (typeName.equals("short")) {
+            return "S";
+        }
 
-		// ?
-		if (genericType instanceof WildcardType) {
-			WildcardType wildcardType = (WildcardType) genericType;
-			for (java.lang.reflect.Type type : wildcardType.getUpperBounds()) {
-				return buildTypeDeclaration(type);
-			}
-			return buildTypeDeclaration(Object.class);
-		}
+        return "L";
+    }
 
-		// T[]
-		if (genericType instanceof GenericArrayType) {
-			GenericArrayType genericArrayType = (GenericArrayType) genericType;
-			String arrayTypeName = buildArrayTypeName(genericArrayType.toString());
-			IType arrayType = typeRepository.getType(arrayTypeName);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getDimensionality() {
+        if (array) {
+            String name = type.getName();
+            int index = 0;
+            while (name.charAt(index) == '[') {
+                index++;
+            }
+            return index;
+        }
+        return 0;
+    }
 
-			return new JavaTypeDeclaration(
-				typeRepository,
-				arrayType,
-				genericArrayType.getGenericComponentType(),
-				true
-			);
-		}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public IType getType() {
+        return type;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ITypeDeclaration[] getTypeParameters() {
+        if (genericTypes == null) {
+            if (genericType == null) {
+                genericTypes = new ITypeDeclaration[0];
+            } else {
+                genericTypes = buildParameterTypes();
+            }
+        }
+        return genericTypes;
+    }
 
-		return buildTypeDeclaration((Class<?>) genericType);
-	}
-
-	private String elementType(String typeName) {
-
-		if (typeName.equals("boolean")) return "Z";
-		if (typeName.equals("byte"))    return "B";
-		if (typeName.equals("char"))    return "C";
-		if (typeName.equals("double"))  return "D";
-		if (typeName.equals("float"))   return "F";
-		if (typeName.equals("int"))     return "I";
-		if (typeName.equals("long"))    return "J";
-		if (typeName.equals("short"))   return "S";
-
-		return "L";
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public int getDimensionality() {
-		if (array) {
-			String name = type.getName();
-			int index = 0;
-			while (name.charAt(index) == '[') {
-				index++;
-			}
-			return index;
-		}
-		return 0;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public IType getType() {
-		return type;
-	}
-
-	private IType getType(Class<?> type) {
-		return typeRepository.getType(type);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public ITypeDeclaration[] getTypeParameters() {
-		if (genericTypes == null) {
-			if (genericType == null) {
-				genericTypes = new ITypeDeclaration[0];
-			}
-			else {
-				genericTypes = buildParameterTypes();
-			}
-		}
-		return genericTypes;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean isArray() {
-		return array;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return (genericType != null) ? genericType.toString() : type.toString();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isArray() {
+        return array;
+    }
 }
