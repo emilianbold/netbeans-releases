@@ -526,21 +526,23 @@ class SummaryCellRenderer implements ListCellRenderer {
                 pathLabel.setFont(list.getFont());
                 pathLabel.setForeground(foregroundColor);
                 pathLabel.setBackground(backgroundColor);
+                actionLabel.setBackground(backgroundColor);
                 setBackground(backgroundColor);
 
-                StringBuilder sb = new StringBuilder("<html>"); //NOI18N
+                StringBuilder sb = new StringBuilder("<html><body>"); //NOI18N
                 sb.append("<b>"); //NOI18N
                 String action = item.getUserData().getAction();
                 String color = summaryView.getActionColors().get(action);
                 if (color != null && !selected) {
                     sb.append("<font color=\"").append(color).append("\">").append(action).append("</font>"); //NOI18N
                 } else  {
+                    actionLabel.setForeground(foregroundColor);
                     sb.append(action);
                 }
-                sb.append("</b></html>"); //NOI18N
+                sb.append("</b></body></html>"); //NOI18N
                 actionLabel.setText(sb.toString());
 
-                sb = new StringBuilder("<html>"); //NOI18N
+                sb = new StringBuilder("<html><body>"); //NOI18N
                 int i = 0;
                 for (String path : getInterestingPaths(item.getUserData())) {
                     if (++i == 2 && path == null) {
@@ -559,7 +561,7 @@ class SummaryCellRenderer implements ListCellRenderer {
                         sb.append(path.substring(idx, path.length()));
                     }
                 }
-                pathLabel.setText(sb.toString());
+                pathLabel.setText(sb.append("</body></html>").toString()); //NOI18N
                 int width = getMaxPathWidth(list, item.getParent(), pathLabel.getGraphics());
                 width = width + 15 + INDENT - actionLabel.getPreferredSize().width;
                 pathLabel.setPreferredSize(new Dimension(width, pathLabel.getPreferredSize().height));
