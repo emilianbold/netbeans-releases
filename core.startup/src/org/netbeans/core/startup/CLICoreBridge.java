@@ -99,10 +99,10 @@ public class CLICoreBridge extends CLIHandler {
             w.flush();
             return;
         }
-        
+
+        CLIOptions.fallbackToMemory();
         ModuleSystem moduleSystem;
         try {
-            System.setProperty("netbeans.user", "memory"); // NOI18N
             moduleSystem = new ModuleSystem(FileUtil.getConfigRoot().getFileSystem());
         } catch (IOException ioe) {
             // System will be screwed up.
