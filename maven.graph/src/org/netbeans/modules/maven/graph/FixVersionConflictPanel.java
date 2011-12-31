@@ -40,12 +40,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * FixVersionConflictPanel.java
- *
- * Created on Apr 7, 2009, 2:57:30 PM
- */
-
 package org.netbeans.modules.maven.graph;
 
 import java.awt.Component;
@@ -84,7 +78,6 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
     private List<ArtifactVersion> clashingVersions;
     private ExclusionTargets eTargets;
 
-    /** Creates new form FixVersionConflictPanel */
     public FixVersionConflictPanel (DependencyGraphScene scene, ArtifactGraphNode node) {
         this.scene = scene;
         this.conflictNode = node;
@@ -98,7 +91,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
 
         eTargets = new ExclusionTargets(conflictNode, getClashingVersions().get(0));
 
-        visualizeRecommendations(computeRecommandations());
+        visualizeRecommendations(computeRecommendations());
     }
 
     FixDescription getResult() {
@@ -183,7 +176,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
      *
      * @return description of found recommended solution
      */
-    private FixDescription computeRecommandations () {
+    private FixDescription computeRecommendations() {
         FixDescription recs = new FixDescription();
 
         boolean isDirect = conflictNode.getPrimaryLevel() == 1;

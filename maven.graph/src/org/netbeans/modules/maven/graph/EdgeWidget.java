@@ -93,7 +93,11 @@ public class EdgeWidget extends ConnectionWidget {
 
     private void updateVersionW (boolean isConflict) {
         DependencyGraphScene scene = (DependencyGraphScene)getScene();
-        int includedConflictType = scene.getGraphNodeRepresentant(edge.getTarget()).getConflictType();
+        ArtifactGraphNode targetNode = scene.getGraphNodeRepresentant(edge.getTarget());
+        if (targetNode == null) {
+            return;
+        }
+        int includedConflictType = targetNode.getConflictType();
 
         if (versionW == null) {
             if (isConflict || includedConflictType != ArtifactGraphNode.NO_CONFLICT) {
@@ -180,6 +184,9 @@ public class EdgeWidget extends ConnectionWidget {
                 DependencyGraphScene grScene = (DependencyGraphScene)getScene();
                 DependencyNode includedDepN = grScene.getGraphNodeRepresentant(
                         edge.getTarget()).getArtifact();
+                if (includedDepN == null) {
+                    return;
+                }
                 DependencyNode parent = includedDepN.getParent();
                 String version = includedDepN.getArtifact().getVersion();
                 String requester = parent != null ? parent.getArtifact().getArtifactId() : "???";
@@ -222,6 +229,9 @@ public class EdgeWidget extends ConnectionWidget {
 
     private int getConflictType () {
         ArtifactGraphNode included = ((DependencyGraphScene)getScene()).getGraphNodeRepresentant(edge.getTarget());
+        if (included == null) {
+            return ArtifactGraphNode.NO_CONFLICT;
+        }
         DefaultArtifactVersion edgeV = new DefaultArtifactVersion(edge.getTarget().getArtifact().getVersion());
         DefaultArtifactVersion includedV = new DefaultArtifactVersion(included.getArtifact().getArtifact().getVersion());
         int ret = edgeV.compareTo(includedV);

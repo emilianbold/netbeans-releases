@@ -48,10 +48,15 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
@@ -81,6 +86,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
+import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -90,6 +96,8 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -102,6 +110,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private static final @StaticResource String ZOOM_IN_ICON = "org/netbeans/modules/maven/graph/zoomin.gif";
     private static final @StaticResource String ZOOM_OUT_ICON = "org/netbeans/modules/maven/graph/zoomout.gif";
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(DependencyGraphTopComponent.class.getName());
     
     @MultiViewElement.Registration(
         displayName="#TAB_Graph",
@@ -112,16 +121,49 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         position=100
     )
     @Messages("TAB_Graph=Graph")
-    public static MultiViewElement forPOM(Lookup editor) {
-        FileObject pom = editor.lookup(FileObject.class);
-        assert pom != null : editor;
-        Project p = FileOwnerQuery.getOwner(pom);
-        assert p != null : pom;
-        ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
-        assert avf != null;
-        Lookup l = avf.createLookup(p);
-        assert l != null;
-        return new DependencyGraphTopComponent(l);
+    public static MultiViewElement forPOM(final Lookup editor) {
+        class L extends ProxyLookup implements PropertyChangeListener {
+            Project p;
+            L() {
+                FileObject pom = editor.lookup(FileObject.class);
+                if (pom != null) {
+                    p = FileOwnerQuery.getOwner(pom);
+                    if (p != null) {
+                        NbMavenProject nbmp = p.getLookup().lookup(NbMavenProject.class);
+                        if (nbmp != null) {
+                            nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
+                            reset();
+                        } else {
+                            LOG.log(Level.WARNING, "not a Maven project: {0}", p);
+                        }
+                    } else {
+                        LOG.log(Level.WARNING, "no owner of {0}", pom);
+                    }
+                } else {
+                    LOG.log(Level.WARNING, "no FileObject in {0}", editor);
+                }
+            }
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    reset();
+                }
+            }
+            private void reset() {
+                ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+                if (avf != null) {
+                    Lookup l = avf.createLookup(p);
+                    if (l != null) {
+                        setLookups(l);
+                    } else {
+                        LOG.log(Level.WARNING, "no artifact lookup for {0}", p);
+                    }
+                } else {
+                    LOG.warning("no ArtifactViewerFactory found");
+                }
+            }
+        }
+        return new DependencyGraphTopComponent(new L());
     }
 
 //    private Project project;
@@ -149,7 +191,9 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         "LBL_Scope_Test=Test"
     })
     public DependencyGraphTopComponent(Lookup lookup) {
-        super();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, hashCode() + " created: " + lookup, new Exception());
+        }
         associateLookup(lookup);
         initComponents();
 //        project = proj;
@@ -415,8 +459,26 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
 
+    private boolean expectingChanges;
+    void saveChanges(POMModel model) throws IOException {
+        LOG.log(Level.FINE, "{0} saveChanges...", hashCode());
+        assert !expectingChanges;
+        expectingChanges = true;
+        try {
+            Utilities.saveChanges(model);
+        } finally {
+            expectingChanges = false;
+            LOG.log(Level.FINE, "{0} saveChanges...done", hashCode());
+        }
+    }
+
     @Override
     public void resultChanged(LookupEvent ev) {
+        if (expectingChanges) {
+            LOG.log(Level.FINE, "{0} expecting change", hashCode());
+            return;
+        }
+        LOG.log(Level.FINE, hashCode() + " not expecting change", new Exception());
         createScene();
     }
 
@@ -483,6 +545,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                     });
                 }
             });
+        } else {
+            LOG.log(Level.WARNING, "{0} missing DependencyNode and/or Project", hashCode());
         }
     }
 
