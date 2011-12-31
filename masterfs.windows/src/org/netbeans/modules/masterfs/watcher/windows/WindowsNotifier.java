@@ -37,8 +37,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs.watcher;
+package org.netbeans.modules.masterfs.watcher.windows;
 
+import org.netbeans.modules.masterfs.providers.Notifier;
 import com.sun.jna.FromNativeContext;
 import com.sun.jna.IntegerType;
 import com.sun.jna.Library;
@@ -61,6 +62,8 @@ import java.io.InterruptedIOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * A {@link Notifier} implementation using Win32 API ReadDirectoryChangesW.
@@ -68,7 +71,9 @@ import java.util.logging.Level;
  *
  * @author nenik
  */
-public class WindowsNotifier extends Notifier<Void> {
+@ServiceProvider(service=Notifier.class, position=100)
+public final class WindowsNotifier extends Notifier<Void> {
+    static final Logger LOG = Logger.getLogger(WindowsNotifier.class.getName());
 
     public static final class HANDLE extends PointerType {
         private boolean immutable;
@@ -344,7 +349,7 @@ public class WindowsNotifier extends Notifier<Void> {
                         try {
                             handleChanges(finfo);
                         } catch(IOException e) {
-                            Watcher.LOG.log(Level.INFO, "handleChanges", e); 
+                            LOG.log(Level.INFO, "handleChanges", e); 
                         }
                     }
                 }
@@ -357,6 +362,10 @@ public class WindowsNotifier extends Notifier<Void> {
         return null;
     }
     
+    @Override
+    protected void start() throws IOException {
+    }
+
     @Override
     public void stop() throws IOException {
         try {

@@ -1003,7 +1003,13 @@ public final class FileUtil extends Object {
      * For example, to make this method work in unit tests in an Ant-based module project,
      * right-click Unit Test Libraries, Add Unit Test Dependency, check Show Non-API Modules, select Master Filesystem.
      * (Also right-click the new Master Filesystem node, Edit, uncheck Include in Compile Classpath.)
+     * To ensure masterfs (or some other module that can handle the conversion)
+     * is present put following line into your module manifest:
      * </p>
+     * <pre>
+     * OpenIDE-Module-Needs: org.openide.filesystems.FileUtil.toFileObject
+     * </pre>
+     * 
      * @param file a disk file (may or may not exist). This file
      * must be {@linkplain #normalizeFile normalized}.
      * @return a corresponding file object, or null if the file does not exist

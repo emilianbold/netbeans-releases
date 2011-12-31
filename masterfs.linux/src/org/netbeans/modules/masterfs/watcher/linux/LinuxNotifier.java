@@ -37,8 +37,9 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.masterfs.watcher;
+package org.netbeans.modules.masterfs.watcher.linux;
 
+import org.netbeans.modules.masterfs.providers.Notifier;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
@@ -49,15 +50,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * A {@link Notifier} implementation based on Linux inotify mechanism.
  *
  * @author nenik
  */
-final class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
+@ServiceProvider(service=Notifier.class, position=500)
+public final class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
     private static final Logger LOG = Logger.getLogger(LinuxNotifier.class.getName());
-    
+
     private static interface InotifyImpl extends Library {
 	public int inotify_init();
 	public int inotify_init1(int flags);
@@ -97,21 +100,7 @@ final class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
     private Map<Integer, LKey> map = new HashMap<Integer, LKey>();
 
     public LinuxNotifier() {
-         IMPL = (InotifyImpl) Native.loadLibrary("c", InotifyImpl.class);
-         buff.position(buff.capacity()); // make the buffer empty
-         buff.order(ByteOrder.nativeOrder());
-         fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
-         if (fd < 0) {
-             LOG.log(
-                 Level.INFO, "Linux kernel {0} returned {1} from inotify_init1",
-                 new Object[] { System.getProperty("os.version"), fd }
-             );
-             fd = IMPL.inotify_init();
-             LOG.log(Level.INFO, "Trying inotify_init: {0}", fd);
-         }
-         if (fd < 0) {
-             throw new IllegalStateException("inotify_init failed: " + fd);
-         }
+        IMPL = (InotifyImpl) Native.loadLibrary("c", InotifyImpl.class);
     }
 
     private String getString(int maxLen) {
@@ -177,6 +166,23 @@ final class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
         @Override
         public String toString() {
             return "LKey[" + id + " - '" + path + "']";
+        }
+    }
+
+    @Override
+    protected void start() throws IOException {
+        buff.position(buff.capacity()); // make the buffer empty
+        buff.order(ByteOrder.nativeOrder());
+        fd = IMPL.inotify_init1(InotifyImpl.O_CLOEXEC);
+        if (fd < 0) {
+            LOG.log(
+                    Level.INFO, "Linux kernel {0} returned {1} from inotify_init1",
+                    new Object[]{System.getProperty("os.version"), fd});
+            fd = IMPL.inotify_init();
+            LOG.log(Level.INFO, "Trying inotify_init: {0}", fd);
+        }
+        if (fd < 0) {
+            throw new IOException("inotify_init failed: " + fd);
         }
     }
 

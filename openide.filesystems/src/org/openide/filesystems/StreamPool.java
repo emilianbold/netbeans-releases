@@ -453,9 +453,9 @@ final class StreamPool extends Object {
         }
         String annotateProp = System.getProperty("org.openide.filesystems.annotateUnclosedStreams"); // NOI18N;
         annotateUnclosedStreams = Boolean.parseBoolean(annotateProp);
-        try {
-            assert false;
-        } catch (AssertionError ex) {
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (assertsOn) {
             annotateUnclosedStreams = annotateProp == null ? true : ! Boolean.FALSE.toString().equals(annotateProp);
         }
         return annotateUnclosedStreams;
