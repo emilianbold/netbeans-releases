@@ -457,6 +457,7 @@ abstract class PatternSandbox extends JPanel
             this.regexp = regexp;
             this.matchCase = matchCase;
             initComponents();
+            searchCriteria.setRegexp(true);
         }
 
         @Override
@@ -565,6 +566,7 @@ abstract class PatternSandbox extends JPanel
         public PathPatternSandbox(String value) {
             this.value = value;
             initComponents();
+            searchCriteria.setFileNameRegexp(true);
         }
 
         @Override
@@ -721,6 +723,9 @@ abstract class PatternSandbox extends JPanel
             super(value);
             this.pathRegexp = pathRegexp;
             initComponents();
+            if (pathRegexp) {
+                searchCriteria.setFileNameRegexp(true);
+            }
         }
 
         @Override
@@ -733,8 +738,6 @@ abstract class PatternSandbox extends JPanel
 
             Mnemonics.setLocalizedText(chkFileRegexp,
                     getText("BasicSearchForm.chkFileNameRegex.text"));  //NOI18N
-
-            searchCriteria.setFileNameRegexp(pathRegexp);
         }
 
         @Override
