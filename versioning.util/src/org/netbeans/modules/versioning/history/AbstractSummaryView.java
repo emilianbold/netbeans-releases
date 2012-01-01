@@ -298,6 +298,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     void itemChanged (Point p) {
         int index = resultsList.locationToIndex(p);
         if (index != -1) {
+            ((SummaryListModel) resultsList.getModel()).fireChange(index);
             ((SummaryListModel) resultsList.getModel()).refreshModel();
         }
     }
@@ -856,6 +857,10 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                 }
                 dispResults.remove(dispResults.size() - 1);
             }
+        }
+
+        private void fireChange (int index) {
+            fireContentsChanged(this, index, index);
         }
     }
 }
