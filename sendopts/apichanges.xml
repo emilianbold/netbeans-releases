@@ -52,6 +52,25 @@ made subject to such option by the copyright holder.
     <apidef name="sendoptsspi">SendOpts SPI</apidef>
 </apidefs>
 <changes>
+    <change id="declarative-options">
+      <api name="sendoptsspi"/>
+      <summary>@Arg annotation</summary>
+      <version major="2" minor="20"/>
+      <date day="31" month="12" year="2011"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">@Arg</a> annotation
+          and associated classes allow to register options declaratively. There
+          is a new  <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create(java.lang.Class...)">
+            factory method
+          </a> to create multiple instances of differently configured
+          <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html">command lines</a>.
+     </description>
+     <class package="org.netbeans.spi.sendopts" name="Arg"/>
+     <class package="org.netbeans.spi.sendopts" name="ArgsProcessor"/>
+     <class package="org.netbeans.api.sendopts" name="CommandLine"/>
+    </change>
     <change id="always">
       <api name="sendoptsspi"/>
       <summary>An option that is always on</summary>
