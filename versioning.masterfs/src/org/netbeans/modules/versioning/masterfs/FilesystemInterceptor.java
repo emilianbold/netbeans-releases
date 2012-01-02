@@ -249,11 +249,13 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     @Override
     public void fileRenamed(FileRenameEvent fe) {
+        String name = fe.getName();
+        String ext = fe.getExt();
+        if(ext != null && !ext.isEmpty()) {
+            name += ext;
+        }
         VCSFilesystemInterceptor.afterMove(
-            VCSFileProxy.createFileProxy(
-                VCSFileProxy.createFileProxy(fe.getFile()).getParentFile(), 
-                fe.getName() + '.' + fe.getExt()
-            ),
+            VCSFileProxy.createFileProxy(VCSFileProxy.createFileProxy(fe.getFile()).getParentFile(), name),
             VCSFileProxy.createFileProxy(fe.getFile())
         );
     }
