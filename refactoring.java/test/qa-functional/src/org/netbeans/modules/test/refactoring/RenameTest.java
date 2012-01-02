@@ -175,7 +175,7 @@ public class RenameTest extends ModifyingRefactoring {
     private void performRename(String className,String pkgName, String newName, int row, int col) {
         openSourceFile(pkgName, className);
         new EventTool().waitNoEvent(1000);
-        EditorOperator editor = new EditorOperator(className);
+        EditorOperator editor = new EditorOperator(className+".java");
         editor.setCaretPosition(row, col);
         editor.select(row, col, col+1);
         new EventTool().waitNoEvent(1000);
