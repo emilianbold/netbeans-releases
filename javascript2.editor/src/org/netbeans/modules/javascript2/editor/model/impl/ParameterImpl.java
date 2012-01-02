@@ -41,23 +41,28 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+
+import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.Parameter;
+import org.netbeans.modules.javascript2.editor.model.Scope;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ParameterImpl implements Parameter {
+public class ParameterImpl extends ModelElementImpl implements Parameter {
     private final Identifier declaration;
 
-    public ParameterImpl(Identifier declaration) {
+    public ParameterImpl(Scope scope, Identifier declaration) {
+        super(scope, JsElement.Kind.PARAMETER, scope.getFileObject(), 
+                declaration.getName(), declaration.getOffsetRange(), Collections.EMPTY_SET);
         this.declaration = declaration;
     }
     
     @Override
     public Identifier getDeclaration() {
         return declaration;
-    }
-    
+    }  
 }

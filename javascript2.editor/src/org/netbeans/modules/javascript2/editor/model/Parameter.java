@@ -45,7 +45,7 @@ package org.netbeans.modules.javascript2.editor.model;
  *
  * @author Petr Pisl
  */
-public interface Parameter {
+public interface Parameter extends ModelElement {
     
     public Identifier getDeclaration();
 }

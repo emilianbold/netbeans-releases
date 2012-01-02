@@ -83,7 +83,7 @@ public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScop
         this.fullName = null;
         parameters  = new ArrayList<Parameter>(node.getParameters().size());
         for(IdentNode param : node.getParameters()) {
-            parameters.add(new ParameterImpl(new IdentifierImpl(param.getName(), new OffsetRange(param.getStart(), param.getFinish()))));
+            parameters.add(new ParameterImpl(this, new IdentifierImpl(param.getName(), new OffsetRange(param.getStart(), param.getFinish()))));
         }
     }
     

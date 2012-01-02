@@ -45,6 +45,6 @@ package org.netbeans.modules.javascript2.editor.model;
  *
  * @author Petr Pisl
  */
-public interface Variable extends ModelElement{
-    
+public interface Variable extends Parameter, ModelElement {
+    public boolean isGlobal();
 }

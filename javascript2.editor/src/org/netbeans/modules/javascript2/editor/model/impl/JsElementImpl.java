@@ -95,6 +95,9 @@ public abstract class JsElementImpl implements JsElement {
             case FILE:
                 result = ElementKind.FILE;
                 break;
+            case PARAMETER:
+                result = ElementKind.PARAMETER;
+                break;
         }
         return result;
     }

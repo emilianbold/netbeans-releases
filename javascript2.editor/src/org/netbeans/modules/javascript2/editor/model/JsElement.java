@@ -55,7 +55,8 @@ public interface JsElement extends ElementHandle {
         OBJECT, 
         PROPERTY, 
         VARIABLE, 
-        FILE
+        FILE,
+        PARAMETER
     }
     
     int getOffset();
