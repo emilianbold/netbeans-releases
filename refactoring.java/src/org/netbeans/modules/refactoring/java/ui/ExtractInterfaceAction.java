@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.ExtractInterfaceAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_ExtractInterface_Action")
+@ActionRegistration(displayName = "#LBL_ExtractInterface_Action", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ExtractInterfaceAction", position = 700)
 public final class ExtractInterfaceAction extends JavaRefactoringGlobalAction {
 

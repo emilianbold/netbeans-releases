@@ -210,6 +210,22 @@ public class RefactoringUtils {
      * @param info
      * @return true if given element comes from library
      */
+    public static boolean isFromLibrary(ElementHandle<? extends Element> element, ClasspathInfo info) {
+        FileObject file = SourceUtils.getFile(element, info);
+        if (file == null) {
+            //no source for given element. Element is from library
+            return true;
+        }
+        return FileUtil.getArchiveFile(file) != null;
+    }
+    
+    /**
+     * @param element
+     * @param info
+     * @return true if given element comes from library
+     * @deprecated
+     */
+    @SuppressWarnings("deprecation")
     public static boolean isFromLibrary(Element element, ClasspathInfo info) {
         FileObject file = SourceUtils.getFile(element, info);
         if (file == null) {
@@ -462,8 +478,9 @@ public class RefactoringUtils {
         }
         Collection<TypeElement> result = new HashSet<TypeElement>();
         for (TypeElement el : getSuperTypes(type, info)) {
-            FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-            if (file != null && isFileInOpenProject(file) && !isFromLibrary(el, info.getClasspathInfo())) {
+            ElementHandle<TypeElement> handle = ElementHandle.create(el);
+            FileObject file = SourceUtils.getFile(handle, info.getClasspathInfo());
+            if (file != null && isFileInOpenProject(file) && !isFromLibrary(handle, info.getClasspathInfo())) {
                 result.add(el);
             }
         }

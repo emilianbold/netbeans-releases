@@ -48,40 +48,25 @@ import com.sun.javadoc.Doc;
 import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.SourcePosition;
 import com.sun.javadoc.Tag;
-import com.sun.source.util.Trees;
-import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.Comment;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.openide.util.Exceptions;
@@ -132,7 +117,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     }
 
     private void checkNewModifier(TreePath tree, Element p) throws MissingResourceException {
-        ClassTree classTree = (ClassTree) RefactoringUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
+        ClassTree classTree = (ClassTree) JavaRefactoringUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
         if(!problemClasses.contains(classTree) && !newModifiers.contains(Modifier.PUBLIC)) { // Only give one warning for every file
             Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree));
             TypeElement enclosingTypeElement1 = workingCopy.getElementUtilities().outermostTypeElement(el);
