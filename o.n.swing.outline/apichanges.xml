@@ -217,6 +217,23 @@ is the proper place.
       <class package="org.netbeans.swing.etable" name="ETable"/>
       <issue number="200991"/>
     </change>
+    <change id="row_mapping_enhanced">
+      <api name="etable_outline"/>
+      <summary>RowMapping is enhanced to cache the transformed value.</summary>
+      <version major="1" minor="19"/>
+      <date day="2" month="1" year="2012"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+          In order to make the row sorting faster and more robust, RowMapping
+          class is enhanced to cache the transformed value from the requested
+          column. A new constructor with ETable argument and method
+          getTransformedValue(int) are added. It prevents from altering of the
+          values during the sorting process.
+      </description>
+      <class package="org.netbeans.swing.etable" name="ETable"/>
+      <issue number="205828"/>
+    </change>
 
 </changes>
 
