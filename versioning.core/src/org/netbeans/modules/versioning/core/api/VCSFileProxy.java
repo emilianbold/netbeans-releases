@@ -54,7 +54,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Represents file on remote or local file system.
+ * Represents a file on a file system. 
  *
  * @author Alexander Simon
  * @author Tomas Stupka

@@ -46,7 +46,10 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Operations available on a file represented by {@link VCSFileProxy}.<br>
+ * Filesystem implementors interested in VCSFileProxy should provide for each FileObject 
+ * an instance available via {@link FileObject#getAttribute(java.lang.String)}.
+ * 
  * @author Vladimir Voskresensky
  */
 public interface VCSFileProxyOperations {

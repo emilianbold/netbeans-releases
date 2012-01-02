@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusListener;
 
 /**
- * Work in progress - summarizes the current communication between VCS and masterfs 
+ * Entry point for calls from a filesystem. 
  * 
  * @author Tomas Stupka
  */

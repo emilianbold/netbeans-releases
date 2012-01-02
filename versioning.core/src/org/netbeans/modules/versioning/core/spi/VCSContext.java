@@ -102,6 +102,9 @@ public final class VCSContext {
     private Set<VCSFileProxy>       computedFilesCached;
     private FileFilter      fileFilterCached;
 
+    /**
+     * A {@link VCSFileProxy} analogy to {@link java.io.FileFilter}
+     */
     public interface FileFilter {
         boolean accept(VCSFileProxy file);
     }
