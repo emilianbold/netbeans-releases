@@ -557,9 +557,8 @@ public class WatchPanel {
             if (javaSource == null) return null;
             final CompilationController[] result = new CompilationController[1];
             result[0] = null;
-            final Future<Void> parsingTask;
             try {
-                parsingTask = javaSource.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
                     @Override
                     public void cancel() {
                     }
@@ -575,10 +574,6 @@ public class WatchPanel {
                         result[0] = ci;
                     }
                 }, true);
-                if (!parsingTask.isDone()) {
-                    parsingTask.cancel(true);
-                    return null;
-                }
             } catch (IOException ioex) {
                 ErrorManager.getDefault().notify(ioex);
                 return null;

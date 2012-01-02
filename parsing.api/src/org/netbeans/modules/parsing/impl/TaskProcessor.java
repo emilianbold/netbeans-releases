@@ -267,7 +267,7 @@ public class TaskProcessor {
                     if (isScanner[0]) {
                         assert request == null;
                         return sync;
-                    }                    
+                    }
                     if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
                         try {
                             if (todo.remove(r)) {
@@ -297,7 +297,29 @@ public class TaskProcessor {
         }
         return sync;
     }
-    
+
+    public static void performDeferredTasks() {
+        scheduleSpecialTask(new Runnable() {
+            @Override
+            public void run() {
+                DeferredTask[] _todo;
+                synchronized (todo) {
+                    _todo = todo.toArray(new DeferredTask[todo.size()]);
+                    todo.clear();
+                }
+                for (DeferredTask rq : _todo) {
+                    try {
+                        runUserTask(rq.task, rq.sources);
+                    } catch (ParseException e) {
+                        Exceptions.printStackTrace(e);
+                    } finally {
+                        rq.sync.taskFinished();
+                    }
+                }
+            }
+        }, 0);
+    }
+
     /** Adds a task to scheduled requests. The tasks will run sequentially.
      * @see SchedulerTask for information about implementation requirements 
      * @task The task to run.
@@ -516,8 +538,28 @@ public class TaskProcessor {
         return parserLock.isHeldByCurrentThread();
     }
     
-    static void scheduleSpecialTask (final SchedulerTask task) {
-        assert task != null;
+    static void scheduleSpecialTask (final Runnable runnable, final int priority) {
+        assert runnable != null;
+        final ParserResultTask<? extends Result> task = new ParserResultTask<Result>() {
+            @Override
+            public int getPriority() {
+                return 0;
+            }
+
+            @Override
+            public Class<? extends Scheduler> getSchedulerClass() {
+                return null;
+            }
+
+            @Override
+            public void cancel() {
+            }
+
+            @Override
+            public void run(Result result, SchedulerEvent event) {
+                runnable.run();
+            }
+        };
         final Collection<? extends Request> rqs = Collections.<Request>singleton(new Request(task, null, ReschedulePolicy.NEVER, null));
         if (handleAddRequests (null, rqs)) {
             cancelLowPriorityTask(rqs);
@@ -730,18 +772,6 @@ public class TaskProcessor {
                                             currentRequest.clearCurrentTask();
                                             boolean cancelled = requests.contains(r);
                                             if (!cancelled) {
-                                            DeferredTask[] _todo;
-                                                synchronized (todo) {
-                                                    _todo = todo.toArray(new DeferredTask[todo.size()]);
-                                                    todo.clear();
-                                                }
-                                                for (DeferredTask rq : _todo) {
-                                                    try {
-                                                        runUserTask(rq.task, rq.sources);
-                                                    } finally {
-                                                        rq.sync.taskFinished();
-                                                    }
-                                                }
                                             }
                                         }
                                     } catch (RuntimeException re) {

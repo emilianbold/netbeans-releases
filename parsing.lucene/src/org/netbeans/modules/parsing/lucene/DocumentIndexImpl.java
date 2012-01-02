@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -70,6 +71,12 @@ import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 public final class DocumentIndexImpl implements DocumentIndex {
     
     private final Index luceneIndex;
+    
+    /**
+     * Transactional extension to the index
+     */
+    private final Index.Transactional txLuceneIndex;
+    
     private static final Convertor<IndexDocumentImpl,Document> ADD_CONVERTOR = new AddConvertor();
     private static final Convertor<String,Query> REMOVE_CONVERTOR = new RemoveConvertor();
     private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = new QueryConvertor();
@@ -84,6 +91,19 @@ public final class DocumentIndexImpl implements DocumentIndex {
     public DocumentIndexImpl (final Index index) {
         assert index != null;
         this.luceneIndex = index;
+        if (index instanceof Index.Transactional) {
+            this.txLuceneIndex = (Index.Transactional)index;
+        } else {
+            this.txLuceneIndex = null;
+        }
+    }
+
+    /**
+     * Use in tests only ! Clears data ref, causing the next addDocument
+     * or removeDocument to flush the buffered contents
+     */
+    void testClarDataRef() {
+        dataRef.clear();
     }
 
     /**
@@ -92,7 +112,7 @@ public final class DocumentIndexImpl implements DocumentIndex {
      */
     @Override
     public void addDocument(IndexDocument document) {
-        final boolean forceFlush;
+        boolean forceFlush;
 
         synchronized (this) {
             assert document instanceof IndexDocumentImpl;
@@ -102,11 +122,11 @@ public final class DocumentIndexImpl implements DocumentIndex {
             toAdd.add((IndexDocumentImpl)document);
             toRemove.add(document.getPrimaryKey());
         }
-
+        
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
-                store(false);
+                store(false, true);
                 System.gc();
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
@@ -132,7 +152,7 @@ public final class DocumentIndexImpl implements DocumentIndex {
         if (forceFlush) {
             try {
                 LOGGER.fine("Extra flush forced"); //NOI18N
-                store(false);
+                store(false, true);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
             }
@@ -155,9 +175,13 @@ public final class DocumentIndexImpl implements DocumentIndex {
     public void close() throws IOException {
         luceneIndex.close();
     }
-
+    
     @Override
     public void store(boolean optimize) throws IOException {
+        store(optimize, false);
+    }
+    
+    private void store(boolean optimize, boolean flushOnly) throws IOException {
         final List<IndexDocumentImpl> _toAdd;
         final List<String> _toRemove;
 
@@ -179,12 +203,23 @@ public final class DocumentIndexImpl implements DocumentIndex {
 
         if (_toAdd.size() > 0 || _toRemove.size() > 0) {                                        
             LOGGER.log(Level.FINE, "Flushing: {0}", luceneIndex.toString()); //NOI18N
-            luceneIndex.store(
-                    _toAdd,
-                    _toRemove,
-                    ADD_CONVERTOR,
-                    REMOVE_CONVERTOR,
-                    optimize);                    
+            if (flushOnly && txLuceneIndex != null) {
+                txLuceneIndex.txStore(
+                        _toAdd, 
+                        _toRemove, 
+                        ADD_CONVERTOR, 
+                        REMOVE_CONVERTOR
+                );
+            } else {
+                luceneIndex.store(
+                        _toAdd,
+                        _toRemove,
+                        ADD_CONVERTOR,
+                        REMOVE_CONVERTOR,
+                        optimize);                    
+            }
+        } else if (!flushOnly && txLuceneIndex != null) {
+            txLuceneIndex.commit();
         }
     }
 

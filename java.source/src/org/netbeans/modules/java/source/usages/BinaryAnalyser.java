@@ -472,16 +472,28 @@ public class BinaryAnalyser {
         }
         uset.add(usage);
     }
-
+    
+    private void releaseData() {
+        refs.clear();
+        toDelete.clear();
+    }
+    
+    private void flush() throws IOException {
+        try {
+            if (this.refs.size()>0 || this.toDelete.size()>0) {
+                this.writer.deleteAndFlush(this.refs,this.toDelete);
+            }
+        } finally {
+            releaseData();
+        }
+    }
 
     private void store() throws IOException {
         try {
-            if (this.refs.size()>0 || this.toDelete.size()>0) {
-                this.writer.deleteAndStore(this.refs,this.toDelete);
-            }
+            // do unconditionally, so pending flushed changes are committed, at least.
+            this.writer.deleteAndStore(this.refs,this.toDelete);
         } finally {
-            refs.clear();
-            toDelete.clear();
+            releaseData();
         }
     }
     
@@ -865,7 +877,7 @@ public class BinaryAnalyser {
                         in.close();
                     }
                     if (lmListener.isLowMemory()) {
-                        store();
+                        flush();
                     }
                 }
                 //Partinal cancel not supported by parsing API
@@ -943,7 +955,7 @@ public class BinaryAnalyser {
                             LOGGER.log(Level.FINE, null, ex);
                         }
                         if (lmListener.isLowMemory()) {
-                            store();
+                            flush();
                         }
                     }
                 }
@@ -996,7 +1008,7 @@ public class BinaryAnalyser {
                         in.close();
                     }
                     if (lmListener.isLowMemory()) {
-                        store();
+                        flush();
                     }
                 }
                 // Partinal cancel not supported by parsing API

@@ -44,10 +44,13 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,8 +67,11 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -91,20 +97,7 @@ public class BinaryAnalyserTest extends NbTestCase {
                 File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
                 final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
-                BinaryAnalyser a = new BinaryAnalyser(new ClassIndexImpl.Writer() {
-                    @Override
-                    public void clear() throws IOException {
-                        index.clear();
-                    }
-                    @Override
-                    public void deleteEnclosedAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
-                        index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(false),true);
-                    }
-                    @Override
-                    public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
-                        index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
-                    }
-                }, getWorkDir());
+                BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
                 assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
@@ -118,6 +111,129 @@ public class BinaryAnalyserTest extends NbTestCase {
                 return null;
             }
         });
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        setLowMemory(false);
+        super.tearDown();
+    }
+    
+    private int flushCount = 0;
+    
+    public void testTransactionalFlush() throws Exception {
+        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
+            @Override
+            public Void run() throws IOException, InterruptedException {
+                FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+                FileObject indexDir = workDir.createFolder("index");
+                File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
+
+                final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
+                BinaryAnalyser a = new BinaryAnalyser(
+                    new IndexWriter(index) {
+                        @Override
+                        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                            super.deleteAndFlush(refs, toDelete);
+                        try {
+                            dataFlushed(index);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        }
+                    }, getWorkDir()
+                );
+
+                setLowMemory(true);
+                assertEquals(Result.FINISHED, 
+                        a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
+
+                a.finish();
+                
+                // at least one flush occured.
+                assertFalse(flushCount == 0);
+
+                assertReference(index, "annotations.NoArgAnnotation", "usages.ClassAnnotations", "usages.MethodAnnotations", "usages.FieldAnnotations");
+                assertReference(index, "annotations.ArrayOfStringArgAnnotation", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+                assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+                assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+
+                return null;
+            }
+        });
+    }
+    
+    /**
+     * This method is eventually called from the middle of BinaryAnalyser work, after it flushes some data from memory. The method
+     * must check & store information that the data is NOT visible to IndexReaders yet
+     */
+    private void dataFlushed(Index index) throws IOException, InterruptedException {
+        Collection<String> names = new LinkedList<String>();
+        // check using collected usages
+
+        index.query(
+                names,
+                DocumentUtil.binaryNameConvertor(),
+                DocumentUtil.declaredTypesFieldSelector(),
+                null,
+                QueryUtil.createUsagesQuery("java.util.List", EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
+        names.retainAll(
+                Arrays.asList(
+                "usages.ClassAnnotations", 
+                "usages.ClassArrayAnnotations", 
+                "usages.MethodAnnotations", 
+                "usages.MethodArrayAnnotations", 
+                "usages.FieldAnnotations", 
+                "usages.FieldArrayAnnotations")
+        );
+        assertTrue(names.isEmpty());
+        
+        flushCount++;
+    }
+    
+    private void setLowMemory(boolean enable) {
+        try {
+            Field f = LowMemoryWatcher.class.getDeclaredField("heapLimit");
+            f.setAccessible(true);
+            if (enable) {
+                f.set(null, 0);
+            } else {
+                f.set(null, 0.8f);
+            }
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private static class IndexWriter implements ClassIndexImpl.Writer {
+        Index index;
+
+        public IndexWriter(Index index) {
+            this.index = index;
+        }
+        
+        @Override
+        public void clear() throws IOException {
+            index.clear();
+        }
+        @Override
+        public void deleteEnclosedAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
+            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(false),true);
+        }
+        @Override
+        public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+            index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
+        }
+        @Override
+        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+            ((Index.Transactional)index).txStore(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor());
+        }
     }
 
     public void testCRCDiff () throws Exception {
