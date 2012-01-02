@@ -2242,11 +2242,11 @@ public class ETable extends JTable {
      */
     public final static class RowMapping {
         // index (of the row) in the TableModel
-        private int originalIndex;
+        private final int originalIndex;
         // table model of my table
-        private TableModel model;
+        private final TableModel model;
         // The table
-        private ETable table;
+        private final ETable table;
         // The cached transformed value
         private Object transformed = TRANSFORMED_NONE;
         // The column of the transformed value
@@ -2265,6 +2265,7 @@ public class ETable extends JTable {
         public RowMapping(int index, TableModel model) {
             originalIndex = index;
             this.model = model;
+            this.table = null;
         }
         
         /**
