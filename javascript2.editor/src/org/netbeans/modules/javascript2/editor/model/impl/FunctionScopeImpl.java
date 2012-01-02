@@ -42,16 +42,16 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.parser.Token;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.model.FunctionScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.Scope;
+import org.netbeans.modules.javascript2.editor.model.*;
 
 /**
  *
@@ -60,7 +60,8 @@ import org.netbeans.modules.javascript2.editor.model.Scope;
 public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScope {
     
     private Identifier name;
-    public List<Identifier> fullName;
+    private List<Identifier> fullName;
+    private final List<Parameter> parameters;
     /**
      * This offset range is created to navigator navigate to the name of the function.
      */
@@ -80,6 +81,10 @@ public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScop
         ((ScopeImpl)inScope).addElement(this);
         this.name = declarationName;
         this.fullName = null;
+        parameters  = new ArrayList<Parameter>(node.getParameters().size());
+        for(IdentNode param : node.getParameters()) {
+            parameters.add(new ParameterImpl(new IdentifierImpl(param.getName(), new OffsetRange(param.getStart(), param.getFinish()))));
+        }
     }
     
     public FunctionScopeImpl(Scope inScope, List<Identifier> declarationName, FunctionNode node, JsElement.Kind kind) {
@@ -112,5 +117,10 @@ public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScop
         } else {
             getModifiers().remove(Modifier.STATIC);
         }
+    }
+
+    @Override
+    public Collection<? extends Parameter> getParameters() {
+        return parameters;
     }
 }
