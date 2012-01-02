@@ -54,6 +54,7 @@ import org.openide.util.actions.CookieAction;
 
 public final class ShowClassHierarchyAction extends CookieAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         CsmClass decl = ContextUtils.getContextClass(activatedNodes);
         if (decl != null){
@@ -70,14 +71,17 @@ public final class ShowClassHierarchyAction extends CookieAction {
         }
     }
 
+    @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_ShowHierarchyAction"); // NOI18N
     }
     
+    @Override
     protected Class[] cookieClasses() {
         return new Class[]{DataObject.class};
     }
@@ -89,6 +93,7 @@ public final class ShowClassHierarchyAction extends CookieAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

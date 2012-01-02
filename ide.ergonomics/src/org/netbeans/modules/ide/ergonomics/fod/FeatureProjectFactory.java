@@ -91,6 +91,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
+import org.openide.util.RequestProcessor.Task;
 import org.xml.sax.SAXException;
 
 /**
@@ -264,9 +265,14 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
 
     @Override
     public void run() {
+        final Project[] toCheck = OpenProjects.getDefault().getOpenProjects();
+        checkProjects(toCheck);
+    }
+
+    private void checkProjects(final Project[] toCheck) {
         final List<FeatureInfo> additional = new ArrayList<FeatureInfo>();
         FeatureInfo f = null;
-        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+        for (Project p : toCheck) {
             Data d = new Data(p.getProjectDirectory(), true);
             for (FeatureInfo info : FeatureManager.features()) {
                 switch (info.isProject(d)) {
@@ -300,6 +306,19 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        if ("willOpenProjects".equals(evt.getPropertyName())) { // NOI18N
+            final Object arr = evt.getNewValue();
+            if (arr instanceof Project[]) {
+                Task t = FeatureManager.getInstance().create(new Runnable() {
+                    @Override
+                    public void run() {
+                        checkProjects((Project[])arr);
+                    }
+                });
+                t.schedule(0);
+                t.waitFinished();
+            }
+        }
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
             RequestProcessor.Task t = FeatureManager.getInstance().create(this);
             t.schedule(0);

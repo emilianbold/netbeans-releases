@@ -82,7 +82,7 @@ import org.w3c.dom.Element;
 
 public final class ClassPathProviderImpl implements ClassPathProvider {
 
-    static final String BOOTCLASSPATH_PREPEND = "bootclasspath.prepend";
+    public static final String BOOTCLASSPATH_PREPEND = "bootclasspath.prepend";
     
     private final NbModuleProject project;
     

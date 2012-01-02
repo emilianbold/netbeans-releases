@@ -69,7 +69,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -130,18 +130,22 @@ final class Call implements CallDescriptor {
         return model;
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
 
+    @Override
     public Icon getIcon() {
         return icon;
     }
 
+    @Override
     public boolean isLeaf() {
         return leaf;
     }
@@ -170,6 +174,7 @@ final class Call implements CallDescriptor {
                 : declaration != null ? declaration : selection;
     }
 
+    @Override
     public void open() {
         if (occurrences != null && !occurrences.isEmpty()) {
             occurrences.get(0).open();
@@ -215,7 +220,7 @@ final class Call implements CallDescriptor {
         Element wanted = javac.getTrees().getElement(selection);
 
         if (isCallerGraph && wanted != null && wanted.getKind() == ElementKind.METHOD) {
-            Collection<ExecutableElement> overridenMethods = RetoucheUtils.getOverridenMethods((ExecutableElement) wanted, javac);
+            Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) wanted, javac);
             if (!overridenMethods.isEmpty()) {
                 ExecutableElement next = overridenMethods.iterator().next();
                 c.overridden = TreePathHandle.create(next, javac);
@@ -418,6 +423,7 @@ final class Call implements CallDescriptor {
 
                             EventQueue.invokeLater(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     ec.getOpenedPanes()[0].setSelectionStart(begin);
                                     ec.getOpenedPanes()[0].setSelectionEnd(end);

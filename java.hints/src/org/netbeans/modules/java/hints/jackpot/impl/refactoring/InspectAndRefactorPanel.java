@@ -67,6 +67,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -110,6 +111,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
 import org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI.HintWrap;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsPanel;
@@ -137,7 +139,9 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
     private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N    
     private FileObject fileObject;
+    private final Lookup context;
     private final HintWrap hintWrap;
+    private final ClassPathBasedHintWrapper cpBased;
     org.netbeans.modules.refactoring.api.Scope customScope;
     
     private JLabel customScopeLab = null;
@@ -148,13 +152,19 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private Project project;
     private String PREF_SCOPE = "InspectAndTransform-Scope";
     
-    /** Creates new form InspectAndRefactorPanel */
-    public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query) {
-        
+    public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query, ClassPathBasedHintWrapper cpBased) {
+        this.context = context;
+        this.hintWrap = context.lookup(HintWrap.class);
+        this.cpBased = cpBased;
+    }
+
+    private Map<? extends HintMetadata, ? extends Iterable<? extends HintDescription>> allHints;
+
+    public synchronized void initialize() {
         initComponents();
-        hintWrap = context.lookup(HintWrap.class);
         configurationCombo.setModel(new ConfigurationsComboModel(false));
-        singleRefactoringCombo.setModel(new InspectionComboModel(hintWrap != null ? Collections.singletonList(hintWrap.hm) : Utilities.getBatchSupportedHints()));
+        allHints = hintWrap != null ? Collections.singletonMap(hintWrap.hm, hintWrap.hints) : Utilities.getBatchSupportedHints(cpBased);
+        singleRefactoringCombo.setModel(new InspectionComboModel(allHints.keySet()));
         singleRefactoringCombo.addActionListener( new ActionListener() {
 
             Object currentItem = singleRefactoringCombo.getSelectedItem();
@@ -171,7 +181,8 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
    
         configurationCombo.setRenderer(new ConfigurationRenderer());
         singleRefactoringCombo.setRenderer(new InspectionRenderer());
-        singleRefactoringCombo.addPopupMenuListener(this);
+        //popup disabled
+        //singleRefactoringCombo.addPopupMenuListener(this);
 
         DataObject dob = context.lookup(DataObject.class);
         Icon prj = null;
@@ -258,11 +269,16 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         inspectLabel.setLabelFor(scopeCombo);
 
         Mnemonics.setLocalizedText(inspectLabel, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.inspectLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(refactorUsingLabel, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.refactorUsingLabel.text"));
+        Mnemonics.setLocalizedText(refactorUsingLabel, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.refactorUsingLabel.text")); // NOI18N
 
         buttonGroup.add(configurationRadio);
         configurationRadio.setSelected(true);
-        Mnemonics.setLocalizedText(configurationRadio, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.configurationRadio.text"));
+        Mnemonics.setLocalizedText(configurationRadio, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.configurationRadio.text")); // NOI18N
+        configurationRadio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configurationRadioActionPerformed(evt);
+            }
+        });
         configurationRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configurationRadioActionPerformed(evt);
@@ -271,7 +287,12 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
         buttonGroup.add(singleRefactorRadio);
 
-        Mnemonics.setLocalizedText(singleRefactorRadio, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.singleRefactorRadio.text"));
+        Mnemonics.setLocalizedText(singleRefactorRadio, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.singleRefactorRadio.text")); // NOI18N
+        configurationCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                configurationComboItemStateChanged(evt);
+            }
+        });
         singleRefactorRadio.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 singleRefactorRadioActionPerformed(evt);
@@ -292,7 +313,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         });
 
         Mnemonics.setLocalizedText(manageConfigurations, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.manageConfigurations.text")); // NOI18N
-        manageConfigurations.addItemListener(new ItemListener() {
+                manageConfigurations.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent evt) {
                 manageConfigurationsItemStateChanged(evt);
             }
@@ -302,14 +323,14 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 manageConfigurationsActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(manageSingleRefactoring, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.manageSingleRefactoring.text"));
+        Mnemonics.setLocalizedText(manageSingleRefactoring, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.manageSingleRefactoring.text")); // NOI18N
         manageSingleRefactoring.setEnabled(false);
         manageSingleRefactoring.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 manageSingleRefactoringActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(customScopeButton, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.customScopeButton.text"));
+        Mnemonics.setLocalizedText(customScopeButton, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.customScopeButton.text")); // NOI18N
         customScopeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 customScopeButtonActionPerformed(evt);
@@ -333,9 +354,9 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                             .addComponent(singleRefactorRadio))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(singleRefactoringCombo, 0, 45, Short.MAX_VALUE)
-                            .addComponent(configurationCombo, 0, 45, Short.MAX_VALUE)))
-                    .addComponent(scopeCombo, Alignment.TRAILING, 0, 191, Short.MAX_VALUE))
+                            .addComponent(singleRefactoringCombo, 0, 196, Short.MAX_VALUE)
+                            .addComponent(configurationCombo, 0, 196, Short.MAX_VALUE)))
+                    .addComponent(scopeCombo, Alignment.TRAILING, 0, 346, Short.MAX_VALUE))
                 .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
@@ -425,7 +446,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
                     @Override
                     public FileObject getFolder() {
-                        return fileObject.getParent();
+                        return fileObject.isFolder()?fileObject:fileObject.getParent();
                     }
                 });
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, col, Collections.EMPTY_LIST);
@@ -460,20 +481,22 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private JComboBox singleRefactoringCombo;
     // End of variables declaration//GEN-END:variables
 
-    public Union2<String, Iterable<? extends HintDescription>> getPattern() {
+    public synchronized Union2<String, Iterable<? extends HintDescription>> getPattern() {
         if(singleRefactorRadio.isSelected()) {
             if (hintWrap != null) {
                 return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintWrap.hints);
             }
         HintMetadata hint = (HintMetadata) singleRefactoringCombo.getSelectedItem();
-        Collection<? extends HintDescription> hintDesc = RulesManager.getInstance().allHints.get(hint);
+        Iterable<? extends HintDescription> hintDesc = allHints.get(hint);
         return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintDesc);
             
         } else {
             Configuration config = (Configuration) configurationCombo.getSelectedItem();
             List<HintDescription> hintsToApply = new LinkedList();
-            for (HintMetadata hint:config.getHints()) {
-                hintsToApply.addAll(RulesManager.getInstance().allHints.get(hint));
+            for (HintMetadata hint:config.getHints(allHints)) {
+                for (HintDescription hd : allHints.get(hint)) {
+                    hintsToApply.add(hd);
+                }
             }
             return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintsToApply);
         }
@@ -600,19 +623,19 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private Scope getThisPackageScope() {
-        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.getParent())));
+        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.isFolder()?fileObject:fileObject.getParent())));
     }
 
     private Scope getThisFileScope() {
         return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject)));
     }
 
-    private void manageRefactorings(boolean single) {
+    private synchronized void manageRefactorings(boolean single) {
         HintsPanel panel;
         if (single) {
-            panel = new HintsPanel((HintMetadata) singleRefactoringCombo.getSelectedItem());
+            panel = new HintsPanel((HintMetadata) singleRefactoringCombo.getSelectedItem(), cpBased);
         } else {
-            panel = new HintsPanel((Configuration) configurationCombo.getSelectedItem());
+            panel = new HintsPanel((Configuration) configurationCombo.getSelectedItem(), cpBased);
         }
         DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(InspectAndRefactorPanel.class, "CTL_ManageRefactorings"), true, new Object[]{}, null, 0, null, null);
         
@@ -630,7 +653,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 HintMetadata selectedHint = panel.getSelectedHint();
                 if (selectedHint != null) {
                     if (panel.hasNewHints()) {
-                        singleRefactoringCombo.setModel(new InspectionComboModel(Utilities.getBatchSupportedHints()));
+                        singleRefactoringCombo.setModel(new InspectionComboModel((allHints = Utilities.getBatchSupportedHints(cpBased)).keySet()));
                     }
                     singleRefactoringCombo.setSelectedItem(selectedHint);
                 }
@@ -712,7 +735,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 final JEditorPane pane = new JEditorPane();
                 pane.setContentType("text/html");  //NOI18N
                 pane.setEditable(false);
-                JScrollPane scrollPane = new JScrollPane(pane);
+                final JScrollPane scrollPane = new JScrollPane(pane);
                 pane.setText(HTML_DESC_HEADER + item.description + HintsPanelLogic.getQueryWarning(item) + HTML_DESC_FOOTER);
                 scrollPane.setPreferredSize(menu.getSize());
                 Dimension size = menu.getSize();
@@ -728,6 +751,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                                 HintMetadata item = (HintMetadata) elementAt;
                                 pane.setText(HTML_DESC_HEADER + item.description + HintsPanelLogic.getQueryWarning(item) + HTML_DESC_FOOTER);
                                 pane.setCaretPosition(0);
+                                scrollPane.getVerticalScrollBar().setValue(0);
                             }
                         }
                     }

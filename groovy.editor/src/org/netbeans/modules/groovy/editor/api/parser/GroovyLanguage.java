@@ -53,6 +53,7 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -70,6 +71,7 @@ import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
@@ -86,14 +88,19 @@ import org.openide.windows.TopComponent;
 @LanguageRegistration(mimeType="text/x-groovy", useMultiview=true)
 @PathRecognizerRegistration(mimeTypes="text/x-groovy", sourcePathIds=ClassPath.SOURCE, libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class GroovyLanguage extends DefaultLanguageConfig {
-    
+
+    // Copy of groovy/support/resources icon because some API change caused
+    // that it's not possible to refer to resource from different module
+    private static final String GROOVY_FILE_ICON_16x16 = "org/netbeans/modules/groovy/editor/resources/GroovyFile16x16.png";
+
+
     public GroovyLanguage() {
     }
 
     @MultiViewElement.Registration(
         displayName = "#CTL_SourceTabCaption",
-        iconBase = GroovySources.GROOVY_FILE_ICON_16x16,
         mimeType = "text/x-groovy",
+        iconBase = GROOVY_FILE_ICON_16x16,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "groovy.source",
         position = 1
@@ -184,10 +191,10 @@ public class GroovyLanguage extends DefaultLanguageConfig {
         return true;
     }
 
-//    @Override
-//    public HintsProvider getHintsProvider() {
-//        return new GroovyHintsProvider();
-//    }
+    @Override
+    public HintsProvider getHintsProvider() {
+        return new GroovyHintsProvider();
+    }
 
     @Override
     public DeclarationFinder getDeclarationFinder() {

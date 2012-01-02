@@ -7,6 +7,7 @@
  * @author Michael Spector <michael@zend.com>
  */
 
+define("BRANCH_DIR", ""); // can be e.g. "/trunk" (do not forget slash!)
 define("DOC_URL", "./html/");      // PHP documentation, separate HTML files
 if (!is_dir(DOC_URL)) {
     die('Incorrect directory for separated HTML files ("./html/" expected)!');
@@ -196,6 +197,7 @@ function clean_php_identifier ($name) {
 
 function clean_php_value($type) {
     $type = trim($type);
+    $type = str_replace("&null;", "null", $type);
     $type = strip_tags($type);
     return $type;
 }
@@ -234,13 +236,13 @@ function make_classmember_ref ($className, $memberName) {
  */
 function parse_phpdoc_functions ($phpdocDir, $extensions) {
 	$xml_files = array_merge (
-		glob ("{$phpdocDir}/en/reference/*/functions/*.xml"),
-		glob ("{$phpdocDir}/en/language/predefined/*/*.xml"),
-		glob ("{$phpdocDir}/en/reference/*/functions/*/*.xml")
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/functions/*.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/language/predefined/*/*.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/functions/*/*.xml")
 	);
 	foreach ($extensions as $extName) {
 		$extName = strtolower($extName);
-		$globPattern = "{$phpdocDir}/en/reference/{$extName}/*/*.xml";
+		$globPattern = "{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*/*.xml";
 		$xml_files = array_merge (
 			$xml_files,
 			glob ($globPattern)
@@ -353,8 +355,8 @@ function parse_phpdoc_fields ($phpdocDir, $extensions) {
 
 		$xml_files = array_merge (
 			$xml_files,
-			glob ("{$phpdocDir}/en/reference/{$extName}/*.xml"),
-                        glob ("{$phpdocDir}/en/reference/{$extName}/*/*.xml")
+			glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*.xml"),
+                        glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*/*.xml")
 		);
 	}
         foreach ($xml_files as $xml_file) {
@@ -397,14 +399,14 @@ function parse_phpdoc_fields ($phpdocDir, $extensions) {
  */
 function parse_phpdoc_classes ($phpdocDir, $extensions) {
 	$xml_files = array_merge (
-		glob ("{$phpdocDir}/en/reference/*/reference.xml"),
-		glob ("{$phpdocDir}/en/reference/*/classes.xml"),
-		glob ("{$phpdocDir}/en/language/*/*.xml"),
-		glob ("{$phpdocDir}/en/language/*.xml")
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/reference.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/reference/*/classes.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/language/*/*.xml"),
+		glob ("{$phpdocDir}/en" . BRANCH_DIR . "/language/*.xml")
 	);
 	foreach ($extensions as $extName) {
 		$extName = strtolower($extName);
-		$globPattern = "{$phpdocDir}/en/reference/{$extName}/*.xml";
+		$globPattern = "{$phpdocDir}/en" . BRANCH_DIR . "/reference/{$extName}/*.xml";
 		$xml_files = array_merge (
 			$xml_files,
 			glob ($globPattern)
@@ -578,7 +580,7 @@ function print_class ($classRef, $tabs = 0) {
             if ($methodRef->getName() == 'clone') {
                 continue;
             }
-			print_function ($methodRef, $tabs + 1);
+			print_method($classRef, $methodRef, $tabs + 1);
 		}
 		print "\n";
 	}
@@ -594,11 +596,15 @@ function print_class ($classRef, $tabs = 0) {
 function print_property ($propertyRef, $tabs = 0) {
 	print_doccomment ($propertyRef, $tabs);
 	print_tabs ($tabs);
-	print_modifiers ($propertyRef);
+	print_modifiers ($propertyRef, true);
 	print "\${$propertyRef->getName()};\n";
 }
 
 function print_function ($functionRef, $tabs = 0) {
+    print_method(null, $functionRef, $tabs);
+}
+
+function print_method ($classRef, $functionRef, $tabs = 0) {
 	global $functionsDoc;
 	global $processedFunctions;
 
@@ -606,10 +612,12 @@ function print_function ($functionRef, $tabs = 0) {
 	$processedFunctions[$funckey] = true;
 
 	print "\n";
+        $modifiers = null;
 	print_doccomment ($functionRef, $tabs);
 	print_tabs ($tabs);
 	if (!($functionRef instanceof ReflectionFunction)) {
 		print_modifiers ($functionRef);
+                $modifiers = Reflection::getModifierNames($functionRef->getModifiers());
 	}
 
 	print "function ";
@@ -623,7 +631,24 @@ function print_function ($functionRef, $tabs = 0) {
 	} else {
 		print_parameters_ref ($functionRef->getParameters());
 	}
-	print ") {}\n";
+	print ")";
+        $body = true;
+        if ($classRef != null && $classRef->isInterface()) {
+            $body = false;
+        } elseif (is_array($modifiers)) {
+            foreach ($modifiers as $modifier) {
+                if ($modifier == "abstract") {
+                    $body = false;
+                    break;
+                }
+            }
+        }
+        if ($body) {
+            print " {}";
+        } else {
+            print ";";
+        }
+	print "\n";
 }
 
 
@@ -665,7 +690,7 @@ function print_parameters ($parameters) {
 				if (@strlen($parameter['defaultvalue'])) {
 					$value = $parameter['defaultvalue'];
                                         if (is_numeric ($value)
-                                                || in_array(strtolower($value), array('true', 'false', '&null'))
+                                                || in_array(strtolower($value), array('true', 'false', 'null'))
                                                 || (substr($value, 0, 1) == '\'' && substr($value, -1) == '\'')
                                                 || (substr($value, 0, 1) == '"' && substr($value, -1) == '"')) {
                                             // no apostrophes
@@ -805,10 +830,15 @@ function print_class_constants ($classRef, $constants, $tabs = 0) {
  * Prints modifiers of reflection object in format of PHP code
  * @param ref Reflection some reflection object
  */
-function print_modifiers ($ref) {
+function print_modifiers ($ref, $forFields = false) {
 	$modifiers = Reflection::getModifierNames ($ref->getModifiers());
 	if (count ($modifiers) > 0) {
-		print implode(' ', $modifiers);
+                $print = implode(' ', $modifiers);
+                if ($forFields) {
+                    $print = str_replace("final", "", $print);
+                    $print = str_replace("abstract", "", $print);
+                }
+		print trim($print);
 		print " ";
 	}
 }
@@ -959,6 +989,7 @@ function xml_to_phpdoc ($str) {
 	$str = str_replace ("&return.void;", "", $str);
 	$str = str_replace ("&true;", "true", $str);
 	$str = str_replace ("&null;", "null", $str);
+	$str = str_replace ("&php.ini;", "###(i)###php.ini###(/i)###", $str); // XXX will be replaced in strip_tags_special()
 	$str = str_replace ("&false;", "false", $str);
 	$str = str_replace ("&example.outputs;", "The above example will output:", $str);
 	$str = str_replace ("&resource;", "resource", $str);

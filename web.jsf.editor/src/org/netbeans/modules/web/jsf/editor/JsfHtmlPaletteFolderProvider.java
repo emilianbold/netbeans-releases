@@ -48,12 +48,13 @@ import org.openide.filesystems.FileObject;
 /**
  * Enables JSF palette for fileobjects located in capable project.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class JsfHtmlPaletteFolderProvider implements HtmlPaletteFolderProvider {
 
+    @Override
     public String getPaletteFolderName(FileObject fileObject) {
-        return (fileObject.getMIMEType().equals("text/xhtml") && 
+        return (fileObject.getMIMEType().equals(JsfUtils.XHTML_MIMETYPE) && 
                 JsfSupportImpl.findFor(fileObject) != null) ? "XHTMLPalette" : null; //NOI18N
     }
 

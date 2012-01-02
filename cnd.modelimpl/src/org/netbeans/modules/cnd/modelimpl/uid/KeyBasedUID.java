@@ -66,10 +66,12 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
         this.key = key;
     }
 
+    @Override
     public T getObject() {
         return RepositoryUtils.get(this);
     }
 
+    @Override
     public Key getKey() {
         return key;
     }
@@ -104,6 +106,7 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
         return this.key.equals(other.key);
     }
 
+    @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         KeyObjectFactory.getDefaultFactory().writeKey(key, aStream);
     }
@@ -113,6 +116,7 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public int compareTo(CsmUID<T> o) {
         assert o != null;
         assert o instanceof KeyBasedUID;

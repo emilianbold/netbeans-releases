@@ -45,9 +45,13 @@
 
 package org.netbeans.modules.progress.spi;
 
+import java.awt.EventQueue;
+import java.util.LinkedHashSet;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
@@ -57,18 +61,27 @@ import javax.swing.event.ListSelectionListener;
  */
 public final class TaskModel {
     private DefaultListSelectionModel selectionModel;
-    private DefaultListModel model;
+    private final DefaultListModel model;
     private InternalHandle explicit;
+    private final LinkedHashSet<ListDataListener> dataListeners;
+    private final LinkedHashSet<ListSelectionListener> selectionListeners;
     /** Creates a new instance of TaskModel */
     public TaskModel() {
         selectionModel = new DefaultListSelectionModel();
         model = new DefaultListModel();
+        dataListeners = new LinkedHashSet<ListDataListener>();
+        selectionListeners = new LinkedHashSet<ListSelectionListener>();
+        TaskListener list = new TaskListener();
+        model.addListDataListener(list);
+        selectionModel.addListSelectionListener(list);
     }
     
     
     
     public void addHandle(InternalHandle handle) {
-        model.addElement(handle);
+        synchronized (model) {
+            model.addElement(handle);
+        }
         updateSelection();
     }
     
@@ -76,7 +89,9 @@ public final class TaskModel {
         if (explicit == handle) {
             explicit = null;
         }
-        model.removeElement(handle);
+        synchronized (model) {
+            model.removeElement(handle);
+        }
         updateSelection();
     }
     
@@ -96,16 +111,18 @@ public final class TaskModel {
 
         // select last added that is not in sleep mode and preferrably userInitiated
         InternalHandle toSelect = null;
-        for (int i = 0; i < model.size(); i++) {
-            InternalHandle curHandle = (InternalHandle)model.getElementAt(i);
-            if (getSelectionRating(curHandle) >= getSelectionRating(toSelect)) {
-                toSelect = curHandle;
+        synchronized (model) {
+            for (int i = 0; i < model.size(); i++) {
+                InternalHandle curHandle = (InternalHandle) model.getElementAt(i);
+                if (getSelectionRating(curHandle) >= getSelectionRating(toSelect)) {
+                    toSelect = curHandle;
+                }
             }
-        }
-        if (toSelect != null) {
-            selectionModel.setSelectionInterval(model.indexOf(toSelect), model.indexOf(toSelect));
-        } else {
-            selectionModel.clearSelection();
+            if (toSelect != null) {
+                selectionModel.setSelectionInterval(model.indexOf(toSelect), model.indexOf(toSelect));
+            } else {
+                selectionModel.clearSelection();
+            }
         }
     }
 
@@ -125,11 +142,13 @@ public final class TaskModel {
     
     public void explicitlySelect(InternalHandle handle) {
         explicit = handle;
-        int index = model.indexOf(explicit);
-        if (index == -1) {
-            //TODO what?
+        synchronized (model) {
+            int index = model.indexOf(explicit);
+            if (index == -1) {
+                return;
+            }
+            selectionModel.setSelectionInterval(index, index);
         }
-        selectionModel.setSelectionInterval(index, index);
     }
     
     public InternalHandle getExplicitSelection() {
@@ -137,39 +156,123 @@ public final class TaskModel {
     }
     
     public int getSize() {
-        return model.size();
+        synchronized (model) {
+            return model.size();
+        }
     }
            
     
     public InternalHandle[] getHandles() {
-        InternalHandle[] handles = new InternalHandle[model.size()];
-        model.copyInto(handles);
+        InternalHandle[] handles;
+        synchronized (model) {
+            handles = new InternalHandle[model.size()];
+            model.copyInto(handles);
+        }
         return handles;
     }
     
     public InternalHandle getSelectedHandle() {
-        int select = selectionModel.getMinSelectionIndex();
-        if (select != -1) {
-            if (select >= 0 && select < model.size()) {
-                return (InternalHandle)model.getElementAt(selectionModel.getMinSelectionIndex());
+        synchronized (model) {
+            int select = selectionModel.getMinSelectionIndex();
+            if (select != -1) {
+                if (select >= 0 && select < model.size()) {
+                    return (InternalHandle) model.getElementAt(select);
+                }
             }
         }
         return null;
     }
     
-    public void addListSelectionListener(ListSelectionListener listener) {
-        selectionModel.addListSelectionListener(listener);
+    public void addListSelectionListener(ListSelectionListener listener) {        
+        synchronized (selectionListeners) {
+            selectionListeners.add(listener);
+        }
     }
     
     public void removeListSelectionListener(ListSelectionListener listener) {
-        selectionModel.removeListSelectionListener(listener);
+        synchronized (selectionListeners) {
+            selectionListeners.remove(listener);
+        }
     }
     
     public void addListDataListener(ListDataListener listener) {
-        model.addListDataListener(listener);
+        synchronized (dataListeners) {
+            dataListeners.add(listener);
+        }
     }
     
-    public void removeListDataListener(ListDataListener listener) {
-        model.removeListDataListener(listener);
+    public void removeListDataListener(ListDataListener listener) {        
+        synchronized (dataListeners) {
+            dataListeners.remove(listener);
+        }
+    }
+    
+    private ListDataListener[] getDataListeners() {
+        synchronized (dataListeners) {
+            return dataListeners.toArray(new ListDataListener[dataListeners.size()]);
+        }
+    } 
+    
+    private ListSelectionListener[] getSelectionListeners() {
+        synchronized (selectionListeners) {
+            return selectionListeners.toArray(new ListSelectionListener[selectionListeners.size()]);
+        }
+    }
+     
+     
+    private class TaskListener implements ListDataListener, ListSelectionListener {
+
+        @Override
+        public void intervalAdded(final ListDataEvent e) {
+            final ListDataListener[] lists = getDataListeners();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (ListDataListener list : lists) {
+                        list.intervalAdded(e);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void intervalRemoved(final ListDataEvent e) {
+            final ListDataListener[] lists = getDataListeners();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (ListDataListener list : lists) {
+                        list.intervalRemoved(e);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void contentsChanged(final ListDataEvent e) {
+            final ListDataListener[] lists = getDataListeners();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (ListDataListener list : lists) {
+                        list.contentsChanged(e);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void valueChanged(final ListSelectionEvent e) {
+            final ListSelectionListener[] lists = getSelectionListeners();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (ListSelectionListener list : lists) {
+                        list.valueChanged(e);
+                    }
+                }
+            });
+        }
+        
     }
 }

@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 
 
 /**
@@ -57,14 +56,6 @@ import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
  * @author Maros Sandor
  */
 public class OpenProfilingPointsWindowAction extends SystemAction {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(OpenProfilingPointsWindowAction.class,
-                                                                  "OpenProfilingPointsWindowAction_ActionName"); // NOI18N
-                                                                                                                 // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public OpenProfilingPointsWindowAction() {
@@ -78,8 +69,9 @@ public class OpenProfilingPointsWindowAction extends SystemAction {
         return new HelpCtx(OpenProfilingPointsWindowAction.class);
     }
 
+    @NbBundle.Messages("OpenProfilingPointsWindowAction_ActionName=&Profiling Points")
     public String getName() {
-        return ACTION_NAME;
+        return Bundle.OpenProfilingPointsWindowAction_ActionName();
     }
 
     public void actionPerformed(ActionEvent e) {

@@ -858,7 +858,12 @@ final class ModuleListParser {
         if (!m.getName().endsWith(".jar")) {
             return true;
         }
-        JarFile jf = new JarFile(m);
+        JarFile jf;
+        try {
+            jf = new JarFile(m);
+        } catch (IOException x) {
+            throw new IOException("could not open " + m + ": " + x, x);
+        }
         File dir = m.getParentFile();
         try {
             Attributes attr = jf.getManifest().getMainAttributes();

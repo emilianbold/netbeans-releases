@@ -120,7 +120,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     static synchronized void activate() {
         if (!activated) {
-            HtmlExtension.register("text/xhtml", new JsfHtmlExtension()); //NOI18N
+            HtmlExtension.register(JsfUtils.XHTML_MIMETYPE, new JsfHtmlExtension()); //NOI18N
             activated = true;
         }
     }
@@ -146,7 +146,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             inputAttributes = new InputAttributes();
             doc.putProperty(InputAttributes.class, inputAttributes);
         }
-        Language xhtmlLang = Language.find("text/xhtml"); //NOI18N
+        Language xhtmlLang = Language.find(JsfUtils.XHTML_MIMETYPE); //NOI18N
         if (inputAttributes.getValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY) == null) {
             inputAttributes.setValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY, new Object(), false);
 

@@ -288,7 +288,7 @@ public final class AntBridge {
         LOG.fine("AntBridge.createAntInstance - loading Ant installation...");
         try {
             List<File> mainClassPath = createMainClassPath();
-            LOG.log(Level.FINE, "mainClassPath={0}", mainClassPath);
+            LOG.log(Level.FINER, "mainClassPath={0}", mainClassPath);
             ClassLoader main = createMainClassLoader(mainClassPath);
             ClassLoader bridgeLoader = createBridgeClassLoader(main);
             // Ensures that the loader is functional, and that it is at least 1.5.x
@@ -409,7 +409,7 @@ public final class AntBridge {
                 } else {
                     parentURLs = null;
                 }
-                LOG.fine("AntBridge.createMainClassLoader: cp=" + Arrays.asList(cp) + " parent.urls=" + parentURLs);
+                LOG.log(Level.FINER, "AntBridge.createMainClassLoader: cp={0} parent.urls={1}", new Object[] {Arrays.asList(cp), parentURLs});
             }
             return new MainClassLoader(cp, parent);
         } else {
@@ -1040,7 +1040,7 @@ public final class AntBridge {
     public static synchronized void fakeJavaClassPath() {
         if (fakingJavaClassPath++ == 0) {
             String cp = getMainClassPath();
-            LOG.log(Level.FINE, "Faking java.class.path={0}", cp);
+            LOG.log(Level.FINER, "Faking java.class.path={0}", cp);
             System.setProperty("java.class.path", cp); // NOI18N
         }
     }
@@ -1050,7 +1050,7 @@ public final class AntBridge {
      */
     public static synchronized void unfakeJavaClassPath() {
         if (--fakingJavaClassPath == 0) {
-            LOG.log(Level.FINE, "Restoring java.class.path={0}", originalJavaClassPath);
+            LOG.log(Level.FINER, "Restoring java.class.path={0}", originalJavaClassPath);
             System.setProperty("java.class.path", originalJavaClassPath); // NOI18N
         }
     }

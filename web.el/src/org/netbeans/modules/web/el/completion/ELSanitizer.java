@@ -157,6 +157,13 @@ public final class ELSanitizer {
             if (ELTokenId.DOT == elToken) {
                 return expression + ADDED_SUFFIX + spaces ;
             }
+
+            // for COLON - e.g. #{foo:
+            if (ELTokenId.COLON == elToken) {
+                return expression + ADDED_SUFFIX + ELTokenId.LPAREN.fixedText()
+                        + ELTokenId.RPAREN.fixedText() + spaces;
+            }
+
             // for operators
             if (ELTokenId.ELTokenCategories.OPERATORS.hasCategory(elToken)) {
                 return expression + spaces + ADDED_SUFFIX;
@@ -165,8 +172,13 @@ public final class ELSanitizer {
                 return expression + " " + spaces + ADDED_SUFFIX;
             }
         }
-        return expression + spaces;
 
+        // for COLON - e.g. #{foo:foo
+        if (expression.contains(ELTokenId.COLON.fixedText())) {
+            return expression + ELTokenId.LPAREN.fixedText() + ELTokenId.RPAREN.fixedText() + spaces;
+        }
+
+        return expression + spaces;
     }
 
     // package private for tests

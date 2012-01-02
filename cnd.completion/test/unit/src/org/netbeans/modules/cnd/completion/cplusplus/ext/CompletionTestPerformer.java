@@ -185,6 +185,7 @@ public class CompletionTestPerformer {
             final BadLocationException ex[] = new BadLocationException[] { null };
             insDoc.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         insDoc.insertString(insOffset, textToInsert, null);
@@ -224,6 +225,7 @@ public class CompletionTestPerformer {
                 final Throwable[] asserts = new Throwable[] { null };
                 final BaseDocument doc = CndCoreTestUtils.getBaseDocument(testFile);
                 Runnable run = new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             array[0] = testPerform(log, null, doc, unsorted, textToInsert, offsetAfterInsertion, line, col, tooltip);

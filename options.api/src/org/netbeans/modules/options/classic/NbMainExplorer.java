@@ -174,7 +174,6 @@ public final class NbMainExplorer {
         */
         protected TreeView initGui () {
             TreeView v = new BeanTreeView();
-            v.setUseSubstringInQuickSearch(true);
             v.setDragSource (true);
             setLayout(new BorderLayout());
             add (v);

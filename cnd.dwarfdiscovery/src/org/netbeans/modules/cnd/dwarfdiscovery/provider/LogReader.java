@@ -91,6 +91,7 @@ public class LogReader {
     private List<SourceFileProperties> result;
     private final PathMap pathMapper;
     private final ProjectProxy project;
+    private final CompilerSettings compilerSettings;
 
     public LogReader(String fileName, String root, ProjectProxy project) {
         if (root.length()>0) {
@@ -101,6 +102,7 @@ public class LogReader {
         this.fileName = fileName;
         this.project = project;
         this.pathMapper = getPathMapper(project);
+        this.compilerSettings = new CompilerSettings(project);
 
         // XXX
         setWorkingDir(root);
@@ -685,7 +687,7 @@ public class LogReader {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
         for(String what : sourcesList) {
             if (what == null){
                 continue;

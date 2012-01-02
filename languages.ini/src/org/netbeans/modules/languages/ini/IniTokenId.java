@@ -47,13 +47,14 @@ import org.netbeans.api.lexer.TokenId;
 
 public enum IniTokenId implements TokenId {
 
-    COMMENT("comment"), // NOI18N
-    SECTION("section"), // NOI18N
-    NAME("name"), // NOI18N
-    EQUALS("equals"), // NOI18N
-    VALUE("value"), // NOI18N
-    WHITESPACE("whitespace"), // NOI18N
-    ERROR("error"); // NOI18N
+    INI_COMMENT("comment"), // NOI18N
+    INI_SECTION_DELIM("section_delim"), // NOI18N
+    INI_SECTION("section"), // NOI18N
+    INI_KEY("key"), // NOI18N
+    INI_EQUALS("equals"), // NOI18N
+    INI_VALUE("value"), // NOI18N
+    INI_WHITESPACE("whitespace"), // NOI18N
+    INI_ERROR("error"); // NOI18N
 
     private final String name;
 

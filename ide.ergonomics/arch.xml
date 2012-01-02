@@ -655,6 +655,12 @@ FeaturesOnDemand-Proxy-Layer: false</pre>
         </api>
     </li>
   </ul>
+  <p>
+      Ergonomics import a special friend contract from projectuiapi module, 
+      they rely on special property change event to be delivered:
+      <api name="willOpenProjects" category="friend" group="property" type="import"
+         url="@org-netbeans-modules-projectuiapi@/architecture-overview.html#property-willOpenProjects"/>.
+  </p>
  </answer>
 
 

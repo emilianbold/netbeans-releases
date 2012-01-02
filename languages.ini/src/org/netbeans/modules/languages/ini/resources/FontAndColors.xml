@@ -46,12 +46,13 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
     <fontcolor foreColor="ff969696" name="comment"/>
-    <fontcolor foreColor="ff509a05" name="section">
+    <fontcolor foreColor="ff509a05" name="section_delim">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor foreColor="ff09097c" name="name" />
+    <fontcolor foreColor="ff509a05" name="section"/>
+    <fontcolor foreColor="ff09097c" name="key" />
     <fontcolor foreColor="ff000000" name="equals"/>
     <fontcolor foreColor="ffd15a00" name="value" />
     <fontcolor name="whitespace" />
-    <fontcolor foreColor="ffff0000" name="error"/>
+    <fontcolor name="error" default="error"/>
 </fontscolors>

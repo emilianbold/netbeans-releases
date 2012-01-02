@@ -103,6 +103,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.spi.quicksearch</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -227,6 +235,7 @@
                 <friend>org.netbeans.modules.hudson.indexerinstaller</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.hudson.mercurial</friend>
+                <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.hudson.subversion</friend>
                 <friend>org.netbeans.modules.hudson.tasklist</friend>
                 <package>org.netbeans.modules.hudson.api</package>

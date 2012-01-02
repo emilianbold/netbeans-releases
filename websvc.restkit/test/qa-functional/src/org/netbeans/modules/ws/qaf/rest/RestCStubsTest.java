@@ -54,12 +54,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileUtil;
@@ -144,30 +139,20 @@ public class RestCStubsTest extends RestTestBase {
         assertEquals("browse selection not propagated", "WEB-INF", new JTextFieldOperator(wo, 2).getText().trim()); //NOI18N
         //add project
         addProject(wo, path);
-        new EventTool().waitEvent(2000);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-        }
+        new EventTool().waitNoEvent(300);
         JListOperator jlo = new JListOperator(wo, 1);
         ListModel lm = jlo.getModel();
         assertEquals(1, lm.getSize());
         //add second project
         addProject(wo, path2);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-        }
+        new EventTool().waitNoEvent(300);
         assertEquals(2, lm.getSize());
         //select first project
         jlo.selectItem(0);
         //remove it
         String removeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveProject");
         new JButtonOperator(wo, removeLabel).push();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-        }
+        new EventTool().waitNoEvent(300);
         assertEquals(1, lm.getSize());
         //cancel/close the wizard
         wo.cancel();
@@ -198,8 +183,7 @@ public class RestCStubsTest extends RestTestBase {
         JRadioButtonOperator jrbo = new JRadioButtonOperator(wo, 1);
         jrbo.clickMouse();
         JTextFieldOperator jtfo = new JTextFieldOperator(wo, 0);
-        jtfo.clearText();
-        jtfo.typeText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
+        jtfo.setText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
         if (useJMaki()) {
             new JCheckBoxOperator(wo, 0).setSelected(true);
         }
@@ -236,20 +220,9 @@ public class RestCStubsTest extends RestTestBase {
         //Add Project...
         String addProjectLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddProject");
         new JButtonOperator(wo, addProjectLabel).pushNoBlock();
-        //Select Project
-        String prjDlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_ProjectChooserTitle");
-        NbDialogOperator ndo = new NbDialogOperator(prjDlgTitle);
-        JTextFieldOperator jtfo = new JTextFieldOperator(ndo, 0);
-        jtfo.clearText();
-        jtfo.typeText(path);
-        //Open
-        JButton jb = JButtonOperator.findJButton(ndo.getContentPane(), "OK", false, false); //NOI18N
-        if (jb != null) {
-            JButtonOperator jbo = new JButtonOperator(jb);
-            jbo.push();
-        } else {
-            fail("Open button not found...."); //NOI18N
-        }
+        JFileChooserOperator fileChooserOp = new JFileChooserOperator();
+        fileChooserOp.setSelectedFile(new File(path));
+        fileChooserOp.approve();
     }
 
     private Project getProject(String name) {

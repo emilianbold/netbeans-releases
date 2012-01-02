@@ -49,10 +49,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
+import org.apache.maven.model.io.ModelReader;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
@@ -242,6 +246,58 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             }
             if (stale) {
                 prefs().remove(key); // stale
+            }
+        } else {
+            LOG.log(Level.FINE, "No known owner for {0}", key);
+        }
+        return null;
+    }
+
+    public File getOwnerPOM(String groupId, String artifactId, String version) {
+        LOG.log(Level.FINER, "Checking {0} / {1} / {2} (POM only)", new Object[] {groupId, artifactId, version});
+        String key = groupId + ':' + artifactId;
+        String ownerURI = prefs().get(key, null);
+        if (ownerURI != null) {
+            try {
+                URI uri = new URI(ownerURI);
+                if ("file".equals(uri.getScheme())) {
+                    File pom = new File(uri.resolve("pom.xml"));
+                    if (pom.isFile()) {
+                        ModelReader reader = EmbedderFactory.getProjectEmbedder().lookupComponent(ModelReader.class);
+                        Model model = reader.read(pom, Collections.singletonMap(ModelReader.IS_STRICT, false));
+                        Parent parent = model.getParent();
+                        if (groupId.equals(model.getGroupId()) || (parent != null && groupId.equals(parent.getGroupId()))) {
+                            if (artifactId.equals(model.getArtifactId()) || (parent != null && artifactId.equals(parent.getArtifactId()))) {
+                                if (version.equals(model.getVersion()) || (parent != null && version.equals(parent.getVersion()))) {
+                                    LOG.log(Level.FINE, "found match {0}", pom);
+                                    return pom;
+                                } else {
+                                    LOG.log(Level.FINE, "mismatch on version in {0}", pom);
+                                }
+                            } else {
+                                LOG.log(Level.FINE, "mismatch on artifactId in {0}", pom);
+                            }
+                        } else {
+                            LOG.log(Level.FINE, "mismatch on groupId in {0}", pom);
+                        }
+                        // Might actually be a match due to use of e.g. string interpolation, so double-check with live project.
+                        Project p = getOwner(groupId, artifactId, version);
+                        if (p != null) {
+                            LOG.log(Level.FINE, "live project match for {0}", pom);
+                            return p.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile();
+                        } else {
+                            LOG.log(Level.FINE, "no live project match for {0}", pom);
+                        }
+                    } else {
+                        LOG.log(Level.FINE, "no such file {0}", pom);
+                    }
+                } else {
+                    LOG.log(Level.FINE, "not a file URI {0}", uri);
+                }
+            } catch (IOException x) {
+                LOG.log(Level.FINE, "Could not load project in " + ownerURI, x);
+            } catch (URISyntaxException x) {
+                LOG.log(Level.INFO, null, x);
             }
         } else {
             LOG.log(Level.FINE, "No known owner for {0}", key);

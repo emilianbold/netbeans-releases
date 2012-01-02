@@ -78,7 +78,6 @@ import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.LifecycleManager;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.text.CloneableEditorSupport;
@@ -476,14 +475,17 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         disableComponents(RefactoringPanel.this);
         progressListener = new ProgressL();
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     session.addProgressListener(progressListener);
                     session.doRefactoring(true);
                 } finally {
                     session.removeProgressListener(progressListener);
+                    progressListener.stop(null);
                     progressListener = null;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             RefactoringPanel.this.close();
                         }
@@ -571,11 +573,13 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         requestFocus();
     }
     
+    @Override
     public void invalidateObject() {
         if (isQuery) {
             return;
         }
         Runnable invalidate = new Runnable() {
+            @Override
             public void run() {
                 setRefactoringEnabled(false, false);
             }
@@ -589,9 +593,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
 
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
-        if (!isQuery)
-            LifecycleManager.getDefault().saveAll();
-        
+
         if (showParametersPanel) {
             // create parameters panel for refactoring
             if (parametersPanel == null) {
@@ -647,6 +649,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             tree=null;
         } else {
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     Set<CloneableEditorSupport> editorSupports = new HashSet<CloneableEditorSupport>();
                     int errorsNum = 0;
@@ -719,6 +722,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     }
                     
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             if (tree == null) {
                                 // add panel with appropriate content
@@ -804,6 +808,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             }
         }
         Collections.sort(nodes, new Comparator<CheckNode>() {
+            @Override
             public int compare(CheckNode o1, CheckNode o2) {
                 return o1.getLabel().compareTo(o2.getLabel());
             }
@@ -897,6 +902,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     ////////////////////////////////////////////////////////////////////////////
 
     private class ButtonL implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent event) {
             Object o = event.getSource();
             // Cancel button pressed, remove refactoring panel
@@ -1024,8 +1030,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         private Dialog d;
         private int counter;
         
+        @Override
         public void start(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     counter = 0;
                     final String lab = NbBundle.getMessage(RefactoringPanel.class, "LBL_RefactorProgressLabel");
@@ -1049,8 +1057,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             });
         }
         
+        @Override
         public void step(ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         handle.progress(++counter);
@@ -1061,10 +1071,14 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             });
         }
         
-        public void stop(ProgressEvent event) {
+        @Override
+        public void stop(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
-                    handle.finish();
+                    if (event!=null) {
+                        handle.finish();
+                    }
                     d.setVisible(false);
                 }
             });

@@ -678,7 +678,7 @@ import org.openide.util.NbBundle;
 
             WizardDescriptor.Panel persistenceClientEntitySelectionPanel = new PersistenceClientEntitySelection(NbBundle.getMessage(EjbFacadeWizardIterator.class, "LBL_EntityClasses"), new HelpCtx(EjbFacadeWizardIterator.class.getName() + "$PersistenceClientEntitySelection"), wizard);
             // persistence panel improved about server validation
-            WizardDescriptor.Panel validatedPersistenceClientEntitySelectionPanel = new EjbLiteServerValidationPanel(persistenceClientEntitySelectionPanel);
+            WizardDescriptor.Panel validatedPersistenceClientEntitySelectionPanel = new AppServerValidationPanel(persistenceClientEntitySelectionPanel);
             EjbFacadeWizardPanel2 ejbFacadeWizardPanel2 = new EjbFacadeWizardPanel2(project, wizard);
 
             if (noPuNeeded) {

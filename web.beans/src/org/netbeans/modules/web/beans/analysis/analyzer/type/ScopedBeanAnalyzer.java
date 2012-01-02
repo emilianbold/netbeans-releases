@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -102,6 +103,26 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
             return;
         }
         checkParameterizedBean(scopeElement , element , model , result );
+        if ( cancel.get() ){
+            return;
+        }
+        checkInterceptorDecorator( scopeElement , element , model , result);
+    }
+
+    private void checkInterceptorDecorator( TypeElement scopeElement,
+            Element element, WebBeansModel model, Result result )
+    {
+        if ( scopeElement.getQualifiedName().contentEquals(AnnotationUtil.DEPENDENT)){
+            return;
+        }
+        AnnotationMirror annotationMirror = AnnotationUtil.getAnnotationMirror(
+                element, model.getCompilationController(),
+                AnnotationUtil.INTERCEPTOR, AnnotationUtil.DECORATOR);
+        if ( annotationMirror!= null ){
+            result.addNotification( Severity.WARNING, element, model,  
+                    NbBundle.getMessage(ScopedBeanAnalyzer.class,
+                        "WARN_ScopedDecoratorInterceptor" ));    // NOI18N
+        }
     }
 
     private void checkParameterizedBean( TypeElement scopeElement,

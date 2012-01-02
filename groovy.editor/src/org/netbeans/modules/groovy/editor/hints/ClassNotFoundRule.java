@@ -69,32 +69,34 @@ import org.openide.filesystems.FileObject;
  */
 public class ClassNotFoundRule extends GroovyErrorRule {
 
-    public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName()); // NOI18N
-    private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription");
+    public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName());
+    private final String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription"); // NOI18N
     private final FixImportsHelper helper = new FixImportsHelper();
 
     public ClassNotFoundRule() {
         super();
     }
 
+    @Override
     public Set<GroovyCompilerErrorID> getCodes() {
-        LOG.log(Level.FINEST, "getCodes()");
+        LOG.log(Level.FINEST, "getCodes()"); // NOI18N
         Set<GroovyCompilerErrorID> result = new HashSet<GroovyCompilerErrorID>();
         result.add(GroovyCompilerErrorID.CLASS_NOT_FOUND);
         return result;
     }
 
+    @Override
     public void run(GroovyRuleContext context, GroovyError error, List<Hint> result) {
-        LOG.log(Level.FINEST, "run()");
+        LOG.log(Level.FINEST, "run()"); // NOI18N
 
         String desc = error.getDescription();
 
         if (desc == null) {
-            LOG.log(Level.FINEST, "desc == null");
+            LOG.log(Level.FINEST, "desc == null"); // NOI18N
             return;
         }
 
-        LOG.log(Level.FINEST, "Processing : {0}", desc);
+        LOG.log(Level.FINEST, "Processing : {0}", desc); // NOI18N
 
         String missingClassName = FixImportsHelper.getMissingClassName(desc);
 
@@ -127,7 +129,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
             lineEnd = Utilities.getRowEnd(context.doc, error.getEndPosition());
 
         } catch (BadLocationException ex) {
-            LOG.log(Level.FINEST, "Processing : {0}", ex);
+            LOG.log(Level.FINEST, "Processing : {0}", ex); // NOI18N
             return;
         }
 
@@ -148,25 +150,29 @@ public class ClassNotFoundRule extends GroovyErrorRule {
         return;
     }
 
+    @Override
     public boolean appliesTo(RuleContext context) {
         return true;
     }
 
+    @Override
     public String getDisplayName() {
         return DESC;
     }
 
+    @Override
     public boolean showInTasklist() {
         return false;
     }
 
+    @Override
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.ERROR;
     }
 
     private class AddImportFix implements HintFix {
 
-        String HINT_PREFIX = NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription");
+        String HINT_PREFIX = NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription"); // NOI18N
         FileObject fo;
         String fqn;
 
@@ -175,19 +181,23 @@ public class ClassNotFoundRule extends GroovyErrorRule {
             this.fqn = fqn;
         }
 
+        @Override
         public String getDescription() {
             return HINT_PREFIX + " " + fqn;
         }
 
+        @Override
         public void implement() throws Exception {
             helper.doImport(fo, fqn);
             return;
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }

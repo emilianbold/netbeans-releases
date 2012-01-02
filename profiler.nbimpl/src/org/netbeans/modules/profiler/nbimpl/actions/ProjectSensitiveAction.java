@@ -47,8 +47,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.profiler.ui.NBSwingWorker;
-import org.netbeans.modules.profiler.ui.ProgressDisplayer;
-import org.netbeans.modules.profiler.utils.OutputParameter;
+import org.netbeans.modules.profiler.ui.ProfilerProgressDisplayer;
+import org.netbeans.modules.profiler.utilities.OutputParameter;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -66,6 +66,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.lib.profiler.common.CommonUtils;
+import org.netbeans.modules.profiler.api.ProgressDisplayer;
 
 
 /**
@@ -352,9 +353,10 @@ public class ProjectSensitiveAction extends AbstractAction implements ContextAwa
                         }
 
                         protected void nonResponding() {
-                            progress.setValue(ProgressDisplayer.showProgress(java.util.ResourceBundle.getBundle("org/netbeans/modules/profiler/actions/Bundle") // NOI18N
-                                                                                                     .getString("AntActions_LazyEnablementProgressMessage"), // NOI18N
-                                                                             new ProgressDisplayer.ProgressController() {
+                            progress.setValue(ProfilerProgressDisplayer.getDefault().showProgress(
+                                    java.util.ResourceBundle.getBundle("org/netbeans/modules/profiler/actions/Bundle") // NOI18N
+                                        .getString("AntActions_LazyEnablementProgressMessage"), // NOI18N
+                                    new ProgressDisplayer.ProgressController() {
                                     public boolean cancel() {
                                         if (progress.isSet()) {
                                             progress.getValue().close();

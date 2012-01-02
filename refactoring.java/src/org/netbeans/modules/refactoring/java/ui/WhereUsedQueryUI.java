@@ -57,7 +57,7 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -83,12 +83,13 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
         // ClasspathInfo needs to be in context until all other modules change there
         // implementation to use scopes #199779. This is used by at least JPA refactoring and
         // API support.
-        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
+        this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(handle));
         this.element = handle;
         Element el = handle.resolveElement(info);
-        if (!(el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.PARAMETER))
-            elementHandle = ElementHandle.create(el);
         if (el!=null) {
+            if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
+                elementHandle = ElementHandle.create(el);
+            }
             name = ElementHeaders.getHeader(el, info, ElementHeaders.NAME);
             kind = el.getKind();
         } else {
@@ -109,10 +110,12 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
     }
     
 
+    @Override
     public boolean isQuery() {
         return true;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             panel = new WhereUsedPanel(name, element, parent);
@@ -120,6 +123,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
         return panel;
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
 //        query.putValue(query., name);
@@ -150,6 +154,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
         query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
     }
     
+    @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (kind == ElementKind.METHOD) {
             setForMethod();
@@ -161,10 +166,12 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
             return null;
     }
 
+    @Override
     public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
         return query!=null?query:delegate;
     }
 
+    @Override
     public String getDescription() {
         if (panel!=null) {
             if ((kind == ElementKind.INTERFACE) || (kind == ElementKind.CLASS)) {
@@ -211,16 +218,19 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
     }
 
 
+    @Override
     public String getName() {
         return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOf")).format (
                     new Object[] {name}
                 );
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(WhereUsedQueryUI.class);
     }

@@ -261,43 +261,53 @@ public final class CsmMacroExpansion {
         EmptyMacroExpansionDoc() {
         }
 
+        @Override
         public int expand(Document inDoc, int startOffset, int endOffset, Document outDoc) {
             return 0;
         }
 
+        @Override
         public String expand(Document doc, int startOffset, int endOffset) {
             return null;
         }
 
+        @Override
         public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
             return null;
         }
         
+        @Override
         public String expand(Document doc, int offset, String code) {
             return null;
         }
 
+        @Override
         public int[] getMacroExpansionSpan(Document doc, int offset, boolean wait) {
             // returns empty expansion
             return new int[]{offset, offset};
         }
 
+        @Override
         public int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {
             return originalOffset;
         }
 
+        @Override
         public int getOffsetInOriginalText(Document expandedDoc, int expandedOffset) {
             return expandedOffset;
         }
 
+        @Override
         public int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
             return expandedOffset;
         }
 
+        @Override
         public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
             return expandedOffset;
         }
 
+        @Override
         public int[][] getUsages(Document expandedDoc, int offset) {
             return null;
         }
@@ -311,6 +321,7 @@ public final class CsmMacroExpansion {
         EmptyMacroExpansionView() {
         }
 
+        @Override
         public void showMacroExpansionView(Document doc, int offset) {
         }
 

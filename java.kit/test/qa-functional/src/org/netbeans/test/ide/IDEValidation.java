@@ -335,7 +335,6 @@ public class IDEValidation extends JellyTestCase {
         copyClassDialog.waitClosed();
 
         Node newClassNode = new Node(sample1Node, "SampleClass11"); // NOI18N
-        newClassNode.select();
         // "Cut"
         CutAction cutAction = new CutAction();
         cutAction.perform(newClassNode);
@@ -344,13 +343,20 @@ public class IDEValidation extends JellyTestCase {
         // "Move..."
         String moveItem = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_MoveAction");
         new ActionNoBlock(null, pasteAction.getPopupPath() + "|" + refactorItem + " " + moveItem).perform(sampleProjectPackage);
+        new EventTool().waitNoEvent(1000);
         // confirm refactoring
         // "Move Class"
         String moveClassTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_MoveClass");
         NbDialogOperator moveClassDialog = new NbDialogOperator(moveClassTitle);
         new JButtonOperator(moveClassDialog, refactorLabel).push();
         // refactoring is done asynchronously => need to wait until dialog dismisses
-        moveClassDialog.waitClosed();
+        try {
+            moveClassDialog.waitClosed();
+        } catch (TimeoutExpiredException e) {
+            // try it once more
+            moveClassDialog = new NbDialogOperator(moveClassTitle);
+            new JButtonOperator(moveClassDialog, refactorLabel).push();
+        }
         // "Delete"
         newClassNode = new Node(sampleProjectPackage, "SampleClass11"); // NOI18N
         new EventTool().waitNoEvent(2000);

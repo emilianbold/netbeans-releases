@@ -88,9 +88,6 @@ class RevisionNode extends AbstractNode {
         setName(container.getLog().getRevision().getNumber() +
                 (changedPaths > 0 ? NbBundle.getMessage(RevisionNode.class, "LBL_NumberOfChangedPaths", changedPaths) : ""));
 
-        if(changedPaths == 0) {
-            setChildren(Children.LEAF);
-        }        
         initProperties();
     }
 

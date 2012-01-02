@@ -154,6 +154,9 @@ public final class VistaLFCustoms extends LFCustoms {
             "NbSlideBar.GroupSeparator.Gap.Before", 9,
             "NbSlideBar.GroupSeparator.Gap.After", 3,
             "NbSlideBar.RestoreButton.Gap", 2,
+            
+            //#204646 - Vista l&f shows action icons and check boxes in the same menu column
+            "Nb.MenuBar.VerticalAlign", Boolean.FALSE,
         }; //NOI18N
         
         //Workaround for JDK 1.5.0 bug 5080144 - Disabled JTextFields stay white

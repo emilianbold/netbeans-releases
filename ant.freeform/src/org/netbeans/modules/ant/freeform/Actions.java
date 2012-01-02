@@ -493,7 +493,7 @@ public final class Actions implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.ant.freeform.Actions$Custom", category = "Project")
-    @ActionRegistration(displayName = "Custom Freeform Actions") // should not be displayed in UI anyway
+    @ActionRegistration(displayName = "Custom Freeform Actions", lazy=false) // should not be displayed in UI anyway
     @ActionReference(position = 300, path = "Projects/org-netbeans-modules-ant-freeform/Actions")
     public static final class Custom extends AbstractAction implements ContextAwareAction {
         public Custom() {

@@ -95,6 +95,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.xml.EntityCatalog;
@@ -341,7 +342,7 @@ final class ModuleList implements Stamps.Updater {
             LOG.log(Level.INFO, null, ie);
             Module bad = ie.getModule();
             if (bad == null) throw new IllegalStateException();
-            Set<Module> affectedModules = mgr.getModuleInterdependencies (bad, true, true);
+            Set<Module> affectedModules = mgr.getModuleInterdependencies(bad, true, true, true);
             ev.log(Events.FAILED_INSTALL_NEW_UNEXPECTED, bad, affectedModules, ie);
             modules.removeAll (affectedModules);
             // Try again without it. Note that some other dependent modules might
@@ -990,8 +991,6 @@ final class ModuleList implements Stamps.Updater {
         return p;
     }
     
-    private static RequestProcessor rpListener = null;
-
     final void init() {
         weakListener = FileUtil.weakFileChangeListener(listener, folder);
         folder.getChildren();
@@ -1006,8 +1005,11 @@ final class ModuleList implements Stamps.Updater {
      * Also listens to changes in the Modules/ folder and processes them in req proc.
      */
     private final class Listener implements PropertyChangeListener, ErrorHandler, EntityResolver, FileChangeListener, Runnable {
+        private final RequestProcessor.Task task;
         
-        Listener() {}
+        Listener() {
+            task = RequestProcessor.getDefault().create(this);
+        }
         
         // Property change coming from ModuleManager or some known Module.
         
@@ -1194,20 +1196,11 @@ final class ModuleList implements Stamps.Updater {
         
         // Dealing with changes in Modules/ folder and processing them.
         
-        private boolean pendingRun = false;
-        private synchronized void runme() {
-            if (! pendingRun) {
-                pendingRun = true;
-                if (rpListener == null) {
-                    rpListener = new RequestProcessor("org.netbeans.core.modules.ModuleList.Listener"); // NOI18N
-                }
-                rpListener.post(this);
-            }
+        private void runme() {
+            task.schedule(100);
         }
+        @Override
         public void run() {
-            synchronized (this) {
-                pendingRun = false;
-            }
             LOG.fine("ModuleList: will process outstanding external XML changes");
             mgr.mutexPrivileged().enterWriteAccess();
             try {
@@ -1558,15 +1551,23 @@ final class ModuleList implements Stamps.Updater {
         }
     }
 
-    private class ReadInitial implements AtomicAction {
-
+    private class ReadInitial implements AtomicAction, Runnable {
         private final Set<Module> read;
+        private volatile Task task;
 
         public ReadInitial(Set<Module> read) {
             this.read = read;
         }
 
-        public void run() throws IOException {
+        @Override
+        public void run() {
+            if (task != null) {
+                init();
+                return;
+            }
+            task = RequestProcessor.getDefault().create(this);
+            task.schedule(0);
+            
             Map<String, Map<String, Object>> cache = readCache();
             String[] names;
             if (cache != null) {
@@ -1687,7 +1688,7 @@ final class ModuleList implements Stamps.Updater {
             }
             ev.log(Events.FINISH_READ, read);
             // Handle changes in the Modules/ folder on disk by parsing & applying them.
-            init();
+            task.waitFinished();
         }
     }
     

@@ -92,7 +92,7 @@ public final class DeleteLocalAction extends ContextAction {
         }
         
         final Context ctx = getContext(nodes);
-        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
             public void perform() {
                 performDelete(ctx, this);
             }

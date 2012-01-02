@@ -476,6 +476,11 @@ public final class HQLEditorTopComponent extends TopComponent {
 
     }
 
+    /**
+     * 
+     * @param result
+     * @param ccl 
+     */
     public void setResult(HQLResult result, ClassLoader ccl) {
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ccl);
@@ -521,6 +526,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                 }
 
             }
+            resultsTable.clearSelection();
             resultsTable.setModel(new HQLEditorResultTableModel(tableData, tableHeaders)); //new DefaultTableModel(tableData, tableHeaders));
 
 

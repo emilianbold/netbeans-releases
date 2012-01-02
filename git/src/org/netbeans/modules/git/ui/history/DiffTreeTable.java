@@ -70,7 +70,7 @@ import org.openide.explorer.view.OutlineView;
 class DiffTreeTable extends OutlineView {
     
     private RevisionsRootNode rootNode;
-    private List results;
+    private List<RepositoryRevision> results;
     private final SearchHistoryPanel master;
 
     public DiffTreeTable(SearchHistoryPanel master) {
@@ -178,7 +178,7 @@ class DiffTreeTable extends OutlineView {
         setDefaultColumnSizes();
     }
 
-    public void setResults(List results) {
+    public void setResults(List<RepositoryRevision> results) {
         this.results = results;
         rootNode = new RevisionsRootNode();
         ExplorerManager em = ExplorerManager.find(this);
@@ -186,11 +186,16 @@ class DiffTreeTable extends OutlineView {
             em.setRootContext(rootNode);
         }
     }
+
+    public void refreshResults (List<RepositoryRevision> results) {
+        this.results = results;
+        ((RevisionsRootNodeChildren) rootNode.getChildren()).refreshKeys();
+    }
     
     private class RevisionsRootNode extends AbstractNode {
     
         public RevisionsRootNode() {
-            super(new RevisionsRootNodeChildren(), Lookups.singleton(results));
+            super(new RevisionsRootNodeChildren());
         }
 
         @Override

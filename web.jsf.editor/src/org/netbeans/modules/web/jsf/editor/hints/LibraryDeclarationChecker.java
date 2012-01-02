@@ -120,6 +120,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
         AstNode root = result.root();
 
         final Document doc = snapshot.getSource().getDocument(true);
+        if(doc == null) {
+            return ; //cannot load document - removed fileobject?
+        }
         final AtomicReference<String> docTextRef = new AtomicReference<String>();
         doc.render(new Runnable() {
 

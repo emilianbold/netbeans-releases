@@ -60,7 +60,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,6 +125,7 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -415,23 +415,14 @@ public final class NbModuleProject implements Project {
         return eval;
     }
     
-    private final Map<String,FileObject> directoryCache = new WeakHashMap<String,FileObject>();
-    
     private FileObject getDir(String prop) {
-        // XXX also add a PropertyChangeListener to eval and clear the cache of changed props
-        if (directoryCache.containsKey(prop)) {
-            return directoryCache.get(prop);
-        } else {
-            String v = evaluator().getProperty(prop);
-            if (v == null) {
-                Logger.getLogger(NbModuleProject.class.getName()).log(Level.WARNING,
-                        "#150612: property {0} was undefined in {1}", new Object[] {prop, this});
-                return null;
-            }
-            FileObject f = helper.resolveFileObject(v);
-            directoryCache.put(prop, f);
-            return f;
+        String v = evaluator().getProperty(prop);
+        if (v == null) {
+            Logger.getLogger(NbModuleProject.class.getName()).log(Level.WARNING,
+                    "#150612: property {0} was undefined in {1}", new Object[] {prop, this});
+            return null;
         }
+        return helper.resolveFileObject(v);
     }
 
     public FileObject getSourceDirectory() {
@@ -956,10 +947,11 @@ public final class NbModuleProject implements Project {
         }
     }    
 
-    private final class LocalizedBundleInfoProvider implements LocalizedBundleInfo.Provider {
+    private final class LocalizedBundleInfoProvider extends FileChangeAdapter implements LocalizedBundleInfo.Provider {
 
         private LocalizedBundleInfo bundleInfo;
         private FileObject manifestFO;
+        private final FileChangeListener listener = FileUtil.weakFileChangeListener(this, null);
 
         public LocalizedBundleInfo getLocalizedBundleInfo() {
             if (bundleInfo == null) {
@@ -973,22 +965,23 @@ public final class NbModuleProject implements Project {
                 }
                 if (mf != null) {
                     manifestFO = getManifestFile();
-                    manifestFO.addFileChangeListener(new FileChangeAdapter() {
-                        public @Override void fileChanged(FileEvent fe) {
-                            // cannot reload manifest-dependent things immediately (see 67961 for more details)
-                            bundleInfo = null;
-                        }
-
-                        @Override
-                        public void fileDeleted(FileEvent fe) {
-                            manifestFO = null;
-                        }
-
-                    });
+                    if (manifestFO != null) {
+                        manifestFO.addFileChangeListener(listener);
+                    }
                 }
             }
             return bundleInfo;
         }
+
+        @Override public void fileChanged(FileEvent fe) {
+            // cannot reload manifest-dependent things immediately (see 67961 for more details)
+            bundleInfo = null;
+        }
+
+        @Override public void fileDeleted(FileEvent fe) {
+            manifestFO = null;
+        }
+
     }
 
     private SourceForBinaryQueryImplementation createESQI(ExtraSJQEvaluator eJSQEval) {

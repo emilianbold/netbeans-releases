@@ -101,6 +101,10 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         }
     }
 
+    private static boolean containsClass(ClassPath classpath, String clazz) {
+        return classpath.findResource(clazz.replace('.', '/') + ".class") != null; //NOI18N
+    }
+
     public static FileObject createFacesConfig(Project project, FileObject targetDir, String targetName, boolean addJSFFrameworkIfNecessary) throws IOException {
         FileObject result = null;
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
@@ -108,11 +112,12 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             FileObject dir = wm.getDocumentBase();
 
             ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-            boolean isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
-            String template_file = "faces-config_2_0.xml"; //NOI18N
+            String template_file;
             Profile profile = wm.getJ2eeProfile();
             if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-                if (isJSF20) {
+                if (containsClass(classpath, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS)) {
+                    template_file = "faces-config_2_1.xml"; //NOI18N
+                } else if (containsClass(classpath, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS)) {
                     template_file = "faces-config_2_0.xml"; //NOI18N
                 } else {
                     template_file = "faces-config_1_2.xml"; //NOI18N
@@ -208,7 +213,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
 	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
 	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
 	}
-        
+
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject webInf = wm.getWebInf();

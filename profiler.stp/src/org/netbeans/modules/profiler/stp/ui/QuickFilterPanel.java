@@ -35,7 +35,7 @@
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
  * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
+ * to extend the choice of license to i ts licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
@@ -64,6 +64,21 @@ import javax.swing.event.DocumentListener;
  * @author Tomas Hurka
  * @author  Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "QuickFilterPanel_FilterTypeLabelText=Filter Type:",
+    "QuickFilterPanel_FilterTypeExclusiveRadioText=&Exclusive",
+    "QuickFilterPanel_FilterTypeInclusiveRadioText=&Inclusive",
+    "QuickFilterPanel_FilterValueLabelText=&Filter Value:",
+    "QuickFilterPanel_OkButtonText=OK",
+    "QuickFilterPanel_CancelButtonText=Cancel",
+    "QuickFilterPanel_EmptyFilterMsg=Empty instrumentation filter",
+    "QuickFilterPanel_InvalidFilterMsg=Not a valid profiling instrumentation filter",
+//# HTML-formatted
+    "QuickFilterPanel_HintMsg=<strong>Example:</strong> <code>java.*</code> or <code>javax.swing.</code> or <code>javax.xml.parsers.SAXParser</code><br><br><strong>Exclusive</strong> filter means listed methods are not instrumented. <strong>Inclusive</strong> filter means only listed methods are instrumented. Wildcard '<strong>*</strong>' symbol can only be used at end of filter value.",
+    "QuickFilterPanel_FilterTypeExclusiveRadioAccessDescr=Selected classes will not be instrumented.",
+    "QuickFilterPanel_FilterTypeInclusiveRadioAccessDescr=Only selected classes will be instrumented.",
+    "QuickFilterPanel_FilterValueTextFieldAccessName=Enter quick filter value here."
+})
 public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -85,30 +100,6 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String FILTER_TYPE_LABEL_TEXT = NbBundle.getMessage(QuickFilterPanel.class,
-                                                                             "QuickFilterPanel_FilterTypeLabelText"); //NOI18N
-    private static final String FILTER_TYPE_EXCLUSIVE_RADIO_TEXT = NbBundle.getMessage(QuickFilterPanel.class,
-                                                                                       "QuickFilterPanel_FilterTypeExclusiveRadioText"); //NOI18N
-    private static final String FILTER_TYPE_INCLUSIVE_RADIO_TEXT = NbBundle.getMessage(QuickFilterPanel.class,
-                                                                                       "QuickFilterPanel_FilterTypeInclusiveRadioText"); //NOI18N
-    private static final String FILTER_VALUE_LABEL_TEXT = NbBundle.getMessage(QuickFilterPanel.class,
-                                                                              "QuickFilterPanel_FilterValueLabelText"); //NOI18N
-    private static final String OK_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class, "QuickFilterPanel_OkButtonText"); //NOI18N
-    private static final String CANCEL_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                         "QuickFilterPanel_CancelButtonText"); //NOI18N
-    private static final String EMPTY_FILTER_MSG = NbBundle.getMessage(GlobalFiltersPanel.class, "QuickFilterPanel_EmptyFilterMsg"); //NOI18N
-    private static final String INVALID_FILTER_MSG = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                         "QuickFilterPanel_InvalidFilterMsg"); //NOI18N
-    private static final String HINT_MSG = NbBundle.getMessage(GlobalFiltersPanel.class, "QuickFilterPanel_HintMsg"); //NOI18N
-    private static final String FILTER_TYPE_EXCLUSIVE_RADIO_ACCESS_DESCR = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                                               "QuickFilterPanel_FilterTypeExclusiveRadioAccessDescr"); //NOI18N
-    private static final String FILTER_TYPE_INCLUSIVE_RADIO_ACCESS_DESCR = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                                               "QuickFilterPanel_FilterTypeInclusiveRadioAccessDescr"); //NOI18N
-    private static final String FILTER_VALUE_TEXT_FIELD_ACCESS_NAME = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                                          "QuickFilterPanel_FilterValueTextFieldAccessName"); //NOI18N
-                                                                                                                                              // -----
     private static final String HELP_CTX_KEY = "QuickFilterPanel.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static QuickFilterPanel defaultInstance;
@@ -192,7 +183,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
 
             Collections.sort(filterPartsList);
 
-            StringBuffer val = new StringBuffer(filterParts.length);
+            StringBuilder val = new StringBuilder(filterParts.length);
             Iterator<String> it = filterPartsList.iterator();
 
             while (it.hasNext()) {
@@ -225,7 +216,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
 
     // Converts JTextArea text delimited by \n to FilterUtils text delimited by ,
     private String getFilterValueInternal() {
-        StringBuffer convertedValue = new StringBuffer();
+        StringBuilder convertedValue = new StringBuilder();
 
         String[] filterValues = getFilterValues();
 
@@ -256,12 +247,12 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
         String filterValue = filterValueTextArea.getText().trim();
 
         if (filterValue.length() == 0) {
-            filterValueHintLabel.setText(EMPTY_FILTER_MSG);
+            filterValueHintLabel.setText(Bundle.QuickFilterPanel_EmptyFilterMsg());
             OKButton.setEnabled(false);
             filterValueTextArea.setForeground(Color.red);
             filterValueTextArea.setSelectedTextColor(Color.red);
         } else if (!isFilterValid()) {
-            filterValueHintLabel.setText(INVALID_FILTER_MSG);
+            filterValueHintLabel.setText(Bundle.QuickFilterPanel_InvalidFilterMsg());
             OKButton.setEnabled(false);
             filterValueTextArea.setForeground(Color.red);
             filterValueTextArea.setSelectedTextColor(Color.red);
@@ -277,8 +268,8 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
         GridBagConstraints gridBagConstraints;
 
         // buttons to export
-        OKButton = new JButton(OK_BUTTON_TEXT);
-        CancelButton = new JButton(CANCEL_BUTTON_TEXT);
+        OKButton = new JButton(Bundle.QuickFilterPanel_OkButtonText());
+        CancelButton = new JButton(Bundle.QuickFilterPanel_CancelButtonText());
 
         filterTypeLabel = new JLabel();
         filterValueLabel = new JLabel();
@@ -297,7 +288,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
         setLayout(new GridBagLayout());
 
         // filterTypeLabel
-        filterTypeLabel.setText(FILTER_TYPE_LABEL_TEXT);
+        filterTypeLabel.setText(Bundle.QuickFilterPanel_FilterTypeLabelText());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -307,13 +298,13 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
         add(filterTypeLabel, gridBagConstraints);
 
         // filterTypeExclusiveRadio
-        org.openide.awt.Mnemonics.setLocalizedText(filterTypeExclusiveRadio, FILTER_TYPE_EXCLUSIVE_RADIO_TEXT);
-        filterTypeExclusiveRadio.getAccessibleContext().setAccessibleDescription(FILTER_TYPE_EXCLUSIVE_RADIO_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(filterTypeExclusiveRadio, Bundle.QuickFilterPanel_FilterTypeExclusiveRadioText());
+        filterTypeExclusiveRadio.getAccessibleContext().setAccessibleDescription(Bundle.QuickFilterPanel_FilterTypeExclusiveRadioAccessDescr());
         filterTypeButtonGroup.add(filterTypeExclusiveRadio);
 
         // filterTypeInclusiveRadio
-        org.openide.awt.Mnemonics.setLocalizedText(filterTypeInclusiveRadio, FILTER_TYPE_INCLUSIVE_RADIO_TEXT);
-        filterTypeInclusiveRadio.getAccessibleContext().setAccessibleDescription(FILTER_TYPE_INCLUSIVE_RADIO_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(filterTypeInclusiveRadio, Bundle.QuickFilterPanel_FilterTypeInclusiveRadioText());
+        filterTypeInclusiveRadio.getAccessibleContext().setAccessibleDescription(Bundle.QuickFilterPanel_FilterTypeInclusiveRadioAccessDescr());
         filterTypeInclusiveRadio.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
         filterTypeButtonGroup.add(filterTypeInclusiveRadio);
 
@@ -331,7 +322,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
         add(filterRadiosPanel, gridBagConstraints);
 
         // filterValueLabel
-        org.openide.awt.Mnemonics.setLocalizedText(filterValueLabel, FILTER_VALUE_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(filterValueLabel, Bundle.QuickFilterPanel_FilterValueLabelText());
         filterValueLabel.setLabelFor(filterValueTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -342,7 +333,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
         add(filterValueLabel, gridBagConstraints);
 
         // filterValueTextArea
-        filterValueTextArea.getAccessibleContext().setAccessibleName(FILTER_VALUE_TEXT_FIELD_ACCESS_NAME);
+        filterValueTextArea.getAccessibleContext().setAccessibleName(Bundle.QuickFilterPanel_FilterValueTextFieldAccessName());
         filterValueTextArea.setSelectionColor(UIConstants.TABLE_SELECTION_BACKGROUND_COLOR);
         filterValueTextArea.setSelectedTextColor(UIConstants.TABLE_SELECTION_FOREGROUND_COLOR);
         filterValueTextArea.getDocument().addDocumentListener(new FilterValueTextFieldDocumentListener());
@@ -390,7 +381,7 @@ public final class QuickFilterPanel extends JPanel implements HelpCtx.Provider {
                                                     panelBackground.getBlue() - 10);
 
         // hintArea
-        hintArea.setText(HINT_MSG); // NOI18N
+        hintArea.setText(Bundle.QuickFilterPanel_HintMsg()); // NOI18N
         hintArea.setEnabled(false);
         hintArea.setDisabledTextColor(Color.darkGray);
         hintArea.setBackground(hintBackground);

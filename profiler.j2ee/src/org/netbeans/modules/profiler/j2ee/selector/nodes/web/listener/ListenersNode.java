@@ -62,18 +62,12 @@ import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
  * @author Jaroslav Bachorik
  */
 public class ListenersNode extends AbstractWebContainerNode {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String LISTENERS_STRING = NbBundle.getMessage(ListenersNode.class, "ListenersNode_ListenersString"); // NOI18N
-                                                                                                                              // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of ServletsNode */
+    @NbBundle.Messages("ListenersNode_ListenersString=Listeners")
     public ListenersNode(ContainerNode parent) {
-        super(LISTENERS_STRING, parent);
+        super(Bundle.ListenersNode_ListenersString(), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

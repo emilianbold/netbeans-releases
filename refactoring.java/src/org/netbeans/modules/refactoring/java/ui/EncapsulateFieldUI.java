@@ -56,7 +56,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -96,10 +96,12 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         refactoring = new EncapsulateFieldsRefactoring(Arrays.asList(handles));
     }
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             Collection selectedObjects = refactoring.getRefactoringSource().lookup(Collection.class);
@@ -113,6 +115,8 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         refactoring.setMethodModifiers(panel.getMethodModifiers());
         refactoring.setFieldModifiers(panel.getFieldModifiers());
         refactoring.setAlwaysUseAccessors(panel.isCheckAccess());
+        refactoring.setGeneratePropertyChangeSupport(panel.isBound());
+        refactoring.setGenerateVetoableSupport(panel.isVetoable());
         refactoring.getContext().add(panel.getInsertPoint());
         refactoring.getContext().add(panel.getSortBy());
         refactoring.getContext().add(panel.getJavadoc());
@@ -123,10 +127,12 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         }
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         String name = panel.getClassname();
 //        name = "<anonymous>"; // NOI18N
@@ -135,22 +141,27 @@ public final class EncapsulateFieldUI implements RefactoringUI {
                 );
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(EncapsulateFieldUI.class, "LBL_EncapsulateFields");
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
     
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(EncapsulateFieldUI.class);
     }
@@ -174,7 +185,7 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         }
         
         // neither interface, annotation type nor annonymous declaration
-        TreePath tpencloser = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+        TreePath tpencloser = RefactoringUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
 
         if (tpencloser == null) {
             return null;

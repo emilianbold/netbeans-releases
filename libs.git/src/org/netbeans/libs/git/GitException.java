@@ -42,7 +42,8 @@
 
 package org.netbeans.libs.git;
 
-import org.openide.util.NbBundle;
+import java.text.MessageFormat;
+import org.netbeans.libs.git.jgit.Utils;
 
 /**
  *
@@ -67,13 +68,13 @@ public class GitException extends Exception {
         private final GitObjectType objectType;
 
         public MissingObjectException (String objectName, GitObjectType objectType) {
-            super(NbBundle.getMessage(GitException.class, "MSG_Exception_ObjectDoesNotExist", new Object[] { objectType.toString(), objectName })); //NOI18N
+            super(MessageFormat.format(Utils.getBundle(GitException.class).getString("MSG_Exception_ObjectDoesNotExist"), new Object[] { objectType.toString(), objectName })); //NOI18N
             this.objectName = objectName;
             this.objectType = objectType;
         }
 
         public MissingObjectException (String objectName, GitObjectType objectType, Throwable ex) {
-            super(NbBundle.getMessage(GitException.class, "MSG_Exception_ObjectDoesNotExist", new Object[] { objectType.toString(), objectName }), ex); //NOI18N
+            super(MessageFormat.format(Utils.getBundle(GitException.class).getString("MSG_Exception_ObjectDoesNotExist"), new Object[] { objectType.toString(), objectName }), ex); //NOI18N
             this.objectName = objectName;
             this.objectType = objectType;
         }
@@ -91,7 +92,7 @@ public class GitException extends Exception {
         private final String[] conflicts;
 
         public CheckoutConflictException (String[] conflicts, Throwable cause) {
-            super(NbBundle.getMessage(GitException.class, "MSG_Exception_CheckoutConflicts"), cause);
+            super(Utils.getBundle(GitException.class).getString("MSG_Exception_CheckoutConflicts"), cause);
             this.conflicts = conflicts;
         }
 

@@ -63,6 +63,7 @@ public class ElementGripTreeElement implements TreeElement {
         this.parent = element.getParent();
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
             if (parent == null) {
@@ -74,15 +75,18 @@ public class ElementGripTreeElement implements TreeElement {
         }
     }
 
+    @Override
     public Icon getIcon() {
         return element.getIcon();
     }
 
+    @Override
     public String getText(boolean isLogical) {
 //        return CsmRefactoringUtils.htmlize(element.toString());
         return element.toString();
     }
 
+    @Override
     public Object getUserObject() {
         return element;
     }

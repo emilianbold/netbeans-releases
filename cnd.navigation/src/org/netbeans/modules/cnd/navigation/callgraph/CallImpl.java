@@ -71,18 +71,22 @@ public class CallImpl implements Call {
         return reference;
     }
 
+    @Override
     public void open() {
         CsmUtilities.openSource(reference);
     }
 
+    @Override
     public Function getCallee() {
         return function;
     }
 
+    @Override
     public Function getCaller() {
         return owner;
     }
 
+    @Override
     public int compareTo(Call o) {
         if (nameOrder) {
             return getCaller().getName().compareTo(o.getCaller().getName());
@@ -103,10 +107,12 @@ public class CallImpl implements Call {
         }
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return CsmReferenceSupport.getContextLineHtml(reference, true).toString();
     }
 
+    @Override
     public String getDescription() {
         CharSequence ret = CsmReferenceSupport.getContextLine(reference);
         if (ret != null) {

@@ -86,7 +86,7 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         AnnotationModelHelper helper = getHelper();
         
         for (Element element : typeElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD) {
+            if (element!= null && element.getKind() == ElementKind.METHOD) {
                 addMethod(element);
             }
         }
@@ -158,7 +158,7 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         
         // Refresh all the methods.
         for (Element element : typeElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD) {
+            if (element!= null && element.getKind() == ElementKind.METHOD) {
                 String methodName = element.getSimpleName().toString();
                 
                 RestMethodDescriptionImpl method = prevMethods.get(methodName);

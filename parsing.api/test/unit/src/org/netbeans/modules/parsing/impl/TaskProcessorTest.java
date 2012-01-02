@@ -68,6 +68,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -651,77 +652,80 @@ public class TaskProcessorTest extends NbTestCase {
         final Source source = Source.create(srcFile);
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicInteger timeToWait = new AtomicInteger(0);
-        MockProfiler mockProfiler = new MockProfiler();
-        SelfProfile.mockProfiler = mockProfiler;
+        final MockProfiler mockProfiler = new MockProfiler();
+        final Logger log = Logger.getLogger("org.netbeans.modules.parsing.impl.SelfProfile");   //NOI18N
+        log.addHandler(mockProfiler);
+        log.setLevel(Level.FINEST);
+        try {
+            final Callable<Void> runCB = new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    latch.countDown();
+                    return null;
+                }
+            };
+            final Callable<Void> cancelCB = new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        Thread.sleep(timeToWait.get());
+                    } catch (InterruptedException ie) {}
+                    return null;
+                }
+            };
 
-        final Callable<Void> runCB = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                latch.countDown();
-                return null;
-            }
-        };
-        final Callable<Void> cancelCB = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    Thread.sleep(timeToWait.get());
-                } catch (InterruptedException ie) {}
-                return null;
-            }
-        };
+            //No profiling should be started when cancel is immediate
+            SlowCancelTask sct = new SlowCancelTask(runCB, cancelCB);
+            mockProfiler.expect(EnumSet.noneOf(MockProfiler.Event.class));
+            TaskProcessor.addPhaseCompletionTasks(
+                    Arrays.<SchedulerTask>asList(sct),
+                    SourceAccessor.getINSTANCE().getCache(source),
+                    false,
+                    sct.getSchedulerClass());
+            assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+            ParserManager.parse(Arrays.asList(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                }
+            });
+            assertTrue(mockProfiler.verify(5000));
 
-        //No profiling should be started when cancel is immediate
-        SlowCancelTask sct = new SlowCancelTask(runCB, cancelCB);
-        mockProfiler.expect(EnumSet.noneOf(MockProfiler.Event.class));
-        TaskProcessor.addPhaseCompletionTasks(
-                Arrays.<SchedulerTask>asList(sct),
-                SourceAccessor.getINSTANCE().getCache(source),
-                false,
-                sct.getSchedulerClass());
-        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
-        ParserManager.parse(Arrays.asList(source), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-            }
-        });
-        assertTrue(mockProfiler.verify(5000));
+            //Profiling should be started when cancel is delayed when cancel is slower
+            timeToWait.set(3500);
+            sct = new SlowCancelTask(runCB, cancelCB);
+            mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.CANCELED));
+            TaskProcessor.addPhaseCompletionTasks(
+                    Arrays.<SchedulerTask>asList(sct),
+                    SourceAccessor.getINSTANCE().getCache(source),
+                    false,
+                    sct.getSchedulerClass());
+            assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+            ParserManager.parse(Arrays.asList(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                }
+            });
+            assertTrue(mockProfiler.verify(5000));
 
-        //Profiling should be started when cancel is delayed when cancel is slower
-        timeToWait.set(3500);
-        sct = new SlowCancelTask(runCB, cancelCB);
-        mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.CANCELED));
-        TaskProcessor.addPhaseCompletionTasks(
-                Arrays.<SchedulerTask>asList(sct),
-                SourceAccessor.getINSTANCE().getCache(source),
-                false,
-                sct.getSchedulerClass());
-        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
-        ParserManager.parse(Arrays.asList(source), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-            }
-        });
-        assertTrue(mockProfiler.verify(5000));
-
-        //Profiling should be started and report sent when cancel is very slow
-        timeToWait.set(6500);
-        sct = new SlowCancelTask(runCB, cancelCB);
-        mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.LOGGED));
-        TaskProcessor.addPhaseCompletionTasks(
-                Arrays.<SchedulerTask>asList(sct),
-                SourceAccessor.getINSTANCE().getCache(source),
-                false,
-                sct.getSchedulerClass());
-        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
-        ParserManager.parse(Arrays.asList(source), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-            }
-        });
-        assertTrue(mockProfiler.verify(8000));
-
-        
+            //Profiling should be started and report sent when cancel is very slow
+            timeToWait.set(6500);
+            sct = new SlowCancelTask(runCB, cancelCB);
+            mockProfiler.expect(EnumSet.of(MockProfiler.Event.STARTED, MockProfiler.Event.LOGGED));
+            TaskProcessor.addPhaseCompletionTasks(
+                    Arrays.<SchedulerTask>asList(sct),
+                    SourceAccessor.getINSTANCE().getCache(source),
+                    false,
+                    sct.getSchedulerClass());
+            assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+            ParserManager.parse(Arrays.asList(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                }
+            });
+            assertTrue(mockProfiler.verify(8000));
+        } finally {
+            log.removeHandler(mockProfiler);
+        }
     }
 
     private void runLoop(
@@ -910,7 +914,7 @@ public class TaskProcessorTest extends NbTestCase {
         }
     }
 
-    private static class MockProfiler implements Runnable, ActionListener {
+    private static class MockProfiler extends Handler {
 
         private enum Event {
             STARTED,
@@ -949,16 +953,21 @@ public class TaskProcessorTest extends NbTestCase {
         }
 
         @Override
-        public void run() {
-            handleEvent(Event.STARTED);
+        public void flush() {
         }
 
         @Override
-        public void actionPerformed (final @NonNull ActionEvent e) {
-            final String cmd = e.getActionCommand();
-            if ("write".equals(cmd)) {  //NOI18N
+        public void close() throws SecurityException {
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            final String msg = record.getMessage();
+            if ("STARTED".equals(msg)) {        //NOI18N
+                handleEvent(Event.STARTED);
+            } else if ("LOGGED".equals(msg)) {  //NOI18N
                 handleEvent(Event.LOGGED);
-            } else if ("cancel".equals(cmd)) {  //NOI18N
+            } else if ("CANCEL".equals(msg)) {    //NOI18N
                 handleEvent(Event.CANCELED);
             }
         }

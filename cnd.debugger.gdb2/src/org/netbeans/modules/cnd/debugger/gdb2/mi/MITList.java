@@ -46,7 +46,8 @@ package org.netbeans.modules.cnd.debugger.gdb2.mi;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Representation of a 'tuple/list' combo sub-tree from the MI spec.
@@ -66,6 +67,8 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 
     private boolean sawResults;
     private boolean sawValues;
+    
+    private static final Logger LOG = Logger.getLogger(MITList.class.toString());
 
     MITList(boolean isList, boolean topLevel) {
 	list = new ArrayList<MITListItem>();
@@ -73,6 +76,7 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 	this.topLevel = topLevel;
     } 
 
+    @Override
     public String toString() {
 	String s = new String();
 	if (!topLevel)
@@ -109,6 +113,7 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 	return true;
     }
 
+    @Override
     public Iterator<MITListItem> iterator() {
         return list.iterator();
     }
@@ -183,11 +188,16 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
      */
 
     public MIValue valueOf(String variable) {
-	assert sawResults : "Getting value from a result list";
-	for (int vx = 0; vx < list.size(); vx++) {
-	    MIResult result = (MIResult) list.get(vx);
-	    if (result.matches(variable))
-		return result.value();
+	//assert sawResults : "Getting value from a result list";
+        for (MITListItem item : list) {
+            if (item instanceof MIResult) {
+                MIResult result = (MIResult) item;
+                if (result.matches(variable)) {
+                    return result.value();
+                }
+            } else {
+                LOG.log(Level.WARNING, "Trying to get value from a result list :{0}", this);
+            }
 	}
 	return null;
     }

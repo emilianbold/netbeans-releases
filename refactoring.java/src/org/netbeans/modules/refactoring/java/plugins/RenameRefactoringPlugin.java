@@ -56,7 +56,8 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -155,7 +156,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         case METHOD:
             fireProgressListenerStep();
             fireProgressListenerStep();
-            overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
+            overriddenByMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info);
             fireProgressListenerStep();
             if (el.getModifiers().contains(Modifier.NATIVE)) {
                 preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", el));
@@ -165,7 +166,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         new Object[] {info.getElementUtilities().enclosingTypeElement(el).getSimpleName().toString()});
                 preCheckProblem = createProblem(preCheckProblem, false, msg);
                 for (ExecutableElement method : overriddenByMethods) {
-                    if(RetoucheUtils.getOverridenMethods(method, info).size() > 1) {
+                    if(JavaRefactoringUtils.getOverriddenMethods(method, info).size() > 1) {
                         preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_IsOverriddenOverrides", method));
                         break;
                     }
@@ -176,7 +177,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", e));
                 }
             }
-            overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
+            overridesMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)el, info);
             fireProgressListenerStep();
             if (!overridesMethods.isEmpty()) {
                 boolean fatal = false;
@@ -185,7 +186,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     if (method.getModifiers().contains(Modifier.NATIVE)) {
                         preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", method));
                     }
-                    if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
+                    if (RefactoringUtils.isFromLibrary(method, info.getClasspathInfo())) {
                         fatal = true;
                         break;
                     }
@@ -279,7 +280,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 
 //                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
 //                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
+                if (RefactoringUtils.typeExists(newFqn, info)) {
                     String msg = new MessageFormat(getString("ERR_ClassClash")).format(
                             new Object[] {newName, pkgname}
                     );
@@ -306,7 +307,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 fastCheckProblem = createProblem(fastCheckProblem, true, msg);
             }
         } else if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
-            String msg = RetoucheUtils.variableClashes(newName,treePath, info);
+            String msg = RefactoringUtils.variableClashes(newName,treePath, info);
             if (msg != null) {
                 fastCheckProblem = createProblem(fastCheckProblem, true, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_LocVariableClash", msg));
                 return fastCheckProblem;
@@ -358,9 +359,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
             fireProgressListenerStep();
             if (hiddenField != null) {
-                if (RetoucheUtils.isWeakerAccess(element.getModifiers(), hiddenField.getModifiers())) {
-                    msg = getString("ERR_WillHidePrivate", RetoucheUtils.getAccess(element.getModifiers()),
-                            RetoucheUtils.getAccess(hiddenField.getModifiers()), 
+                if (RefactoringUtils.isWeakerAccess(element.getModifiers(), hiddenField.getModifiers())) {
+                    msg = getString("ERR_WillHidePrivate", RefactoringUtils.getAccess(element.getModifiers()),
+                            RefactoringUtils.getAccess(hiddenField.getModifiers()), 
                             info.getElementUtilities().enclosingTypeElement(hiddenField).toString()
                             );
                 } else {
@@ -424,13 +425,13 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         } else if (kind == ElementKind.METHOD) {
                             //add all references of overriding methods
                             allMethods.add(ElementHandle.create((ExecutableElement)el));
-                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
+                            for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info)) {
                                 addMethods(e, set, info, idx);
                             }
                             //add all references of overriden methods
-                            for (ExecutableElement ov: RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                            for (ExecutableElement ov: JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)el, info)) {
                                 addMethods(ov, set, info, idx);
-                                for (ExecutableElement e:RetoucheUtils.getOverridingMethods( ov,info)) {
+                                for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods( ov,info)) {
                                     addMethods(e, set, info, idx);
                                 }
                             }

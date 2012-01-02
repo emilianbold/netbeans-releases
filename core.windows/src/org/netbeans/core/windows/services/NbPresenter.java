@@ -111,7 +111,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1493,27 +1492,12 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     } // end of HackTypeAhead
 
     /** Shows a specified HelpCtx in IDE's help window.
-     * XXX would be better to directly depend on org.netbeans.api.javahelp.Help
     * @param helpCtx thehelp to be shown
     */
     private static void showHelp(HelpCtx helpCtx) {
-        // Awkward but should work.
-        try {
-            Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
-            Object o = Lookup.getDefault().lookup(c);
-            if (o != null) {
-                Method m = c.getMethod("showHelp", new Class[] {HelpCtx.class}); // NOI18N
-                m.invoke(o, new Object[] {helpCtx});
-                return;
-            }
-        } catch (ClassNotFoundException cnfe) {
-            // ignore - maybe javahelp module is not installed, not so strange
-        } catch (Exception e) {
-            // potentially more serious
-            Logger.getLogger(NbPresenter.class.getName()).log(Level.WARNING, null, e);
+        if (!helpCtx.display()) {
+            Toolkit.getDefaultToolkit().beep();
         }
-        // Did not work.
-        Toolkit.getDefaultToolkit().beep();
     }
 
 }

@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Voskresensky
  */
 public final class ElementGrip {
+    private static final boolean LAZY = false;
     private CsmUID<CsmOffsetable> thisObject;
     private String toString;
     private FileObject fileObject;
@@ -69,7 +70,7 @@ public final class ElementGrip {
      */
     public ElementGrip(CsmOffsetable object) {
         this.thisObject = CsmRefactoringUtils.getHandler(object);
-        this.toString = CsmRefactoringUtils.getHtml(object);
+        this.toString = LAZY ? null : CsmRefactoringUtils.getHtml(object);
         this.fileObject = CsmRefactoringUtils.getFileObject(object);
         this.icon = CsmImageLoader.getIcon(object);
     }
@@ -80,6 +81,9 @@ public final class ElementGrip {
     
     @Override
     public String toString() {
+        if (toString == null && LAZY) {
+            toString = CsmRefactoringUtils.getHtml(getResolved());
+        }
         return toString;
     }
 

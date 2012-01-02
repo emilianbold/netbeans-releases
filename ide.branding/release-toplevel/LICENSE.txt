@@ -1,4 +1,4 @@
-NETBEANS IDE 7.1 Beta ("Product")
+NETBEANS IDE 7.1 ("Product")
 
 Oracle licenses NetBeans IDE under the CDDL v 1.0 (CDDL) or
 GNU General Public License version 2 (GPL), both of which
@@ -15,7 +15,7 @@ of the third party technology license agreement specified
 and not under either the CDDL or GPL.
 
 Please review the list of libraries and licenses provided
-for use. This license file contains six distinct licenses.
+for use.
 
 Unless specified below, the use of NetBeans IDE and
 components from the GlassFish runtime are governed by the
@@ -24,7 +24,7 @@ with Classpath Exception ("GPLv2 with Classpath Exception")
 or the Common Development and Distribution License ("CDDL").
 The Product also contains components  which are governed
 exclusively by the terms of the GPLv2 with Classpath
-Exception (e.g. components from OpenJDK) .
+Exception (e.g. components from OpenJDK).
 
 LICENSE #1: GPLv2 with Classpath Exception. 
 
@@ -38,10 +38,13 @@ LICENSE #4: The use of the Java ME SDK 3.0 is subject to
 this Software License Agreement and Entitlement.
 
 LICENSE #5: The use of Oracle JDBC drivers is subject to 
-this software License Agreement and Entitlement 
+this software License Agreement and Entitlement.
 
 LICENSE #6: The use of Java Card Development Kit 3.0.2 is
-subject to this software License Agreement and Entitlement
+subject to this software License Agreement and Entitlement.
+
+LICENSE #7: The use of Perseus Library is subject to
+these Oracle License Terms.
 
 ************************************************************
 
@@ -1856,3 +1859,299 @@ representative of each party.
 
 Please contact Sun Microsystems, Inc. 4150 Network Circle,
 Santa Clara, California 95054 if you have questions.
+
+************************************************************
+
+LICENSE #7:
+
+Oracle License Terms for Perseus Library
+ 
+Export Controls
+
+Export laws and regulations of the United States and any
+other relevant local export laws and regulations apply to
+the programs. You agree that such export control laws govern
+your use of the Program (including technical data) and any
+services deliverables provided under this agreement, and you
+agree to comply with all such export laws and regulations
+(including "deemed export" and "deemed re-export"
+regulations). You agree that no data, information, program
+and/or materials resulting from services (or direct product
+thereof) will be exported, directly or indirectly, in
+violation of these laws, or will be used for any purpose
+prohibited by these laws including, without limitation,
+nuclear, chemical, or biological weapons proliferation, or
+development of missile technology.
+
+Accordingly, you confirm:
+
+- You will not download, provide, make available or
+otherwise export or re-export the Programs, directly or
+indirectly, to countries prohibited by applicable laws and
+regulations nor to citizens, nationals or residents of those
+countries.
+
+- You are not listed on the United States Department of
+Treasury lists of Specially Designated Nationals and Blocked
+Persons, Specially Designated Terrorists, and Specially
+Designated Narcotic Traffickers, nor are you listed on the
+United States Department of Commerce Table of Denial Orders.
+
+- You will not download or otherwise export or re-export the
+Programs, directly or indirectly, to persons on the above
+mentioned lists.
+
+- You will not use the Program for, and will not allow the
+Program to be used for, any purposes prohibited by
+applicable law, including, without limitation, for the
+development, design, manufacture or production of nuclear,
+chemical or biological weapons of mass destruction.
+
+PLEASE READ THE FOLLOWING LICENSE AGREEMENT TERMS AND
+CONDITIONS CAREFULLY BEFORE INSTALLING OR USING THE
+PROGRAMS. THESE TERMS AND CONDITIONS CONSTITUTE A LEGAL
+AGREEMENT BETWEEN YOU AND ORACLE.
+
+ORACLE TECHNOLOGY NETWORK LICENSE AGREEMENT
+
+"We," "us," and "our" refers to Oracle America, Inc., for
+and on behalf of itself and its subsidiaries and affiliates
+under common control. "You" and "your" refers to the
+individual or entity that wishes to use the programs from
+Oracle. "Programs" refers to Perseus Library that you
+selected for install or use from Oracle or its authorized
+licensees, any other machine readable materials, any updates
+or error corrections provided by Oracle, and any user
+manuals, programming guides and other documentation provided
+to you by Oracle under this Agreement. "License" refers to
+your right to use the programs under the terms of this
+agreement.  This agreement is governed by the substantive
+and procedural laws of California. You and Oracle agree to
+submit to the exclusive jurisdiction of, and venue in, the
+courts of San Francisco, San Mateo, or Santa Clara counties
+in California in any dispute arising out of or relating to
+this agreement. 
+
+We are willing to license the Programs to you only upon the
+condition that you accept all of the terms contained in this
+agreement. Read the terms. If you are not willing to be
+bound by these terms, do not use the Programs. 
+
+License Rights 
+
+Except for any included software package or file that is
+licensed to you by Oracle under different license terms, we
+grant you a perpetual (unless terminated as provided in this
+agreement), nonexclusive, nontransferable, limited License
+to use the Programs for your business operations.  You may
+distribute the Programs unmodified to your customers for use
+in such customers’ business operations under the Program
+Distribution section below.
+
+All rights not expressly granted above are hereby reserved.
+If you want to use the Programs for any purpose other than
+as permitted under this agreement, you must obtain a valid
+license permitting such use. We may audit your use of the
+Programs. 
+
+Program may contain source code that, unless expressly
+licensed for other purposes (for example, licensed under an
+open source license), is provided solely for reference
+purposes pursuant to the terms of this Agreement.  
+
+Program Distribution
+
+We grant you a nonexclusive, nontransferable right to copy
+and distribute the programs to your end users provided that
+you do not charge your end users for use of the programs and
+provided your end users may only use the programs to run
+your applications for their business operations.  Prior to
+distributing the programs you shall require your end users
+to execute an agreement binding them to terms consistent
+with those contained in this section and the sections of
+this agreement entitled “License Rights,” “Ownership
+and Restrictions,” “Export,” “Disclaimer of
+Warranties and Exclusive Remedies,” “No Technical
+Support,” “End of Agreement,” “Relationship Between
+the Parties,” and “Open Source Software”. You must
+also include a provision stating that your end users shall
+have no right to distribute the programs, and a provision
+specifying us as a third party beneficiary of the agreement. 
+You are responsible for obtaining these agreements with your
+end users.  
+
+You agree to:  (a) defend and indemnify us against all
+claims and damages caused by your distribution of the
+programs in breach of this agreements and/or failure to
+include the required contractual provisions in your end user
+agreement as stated above; (b) keep executed end user
+agreements and records of end user information including
+name, address, date of distribution and identity of programs
+distributed; (c) allow us to inspect your end user
+agreements and records upon request; and, (d) enforce the
+terms of your end user agreements so as to effect a timely
+cure of any end user breach, and to notify us of any breach
+of the terms.
+
+Third-Party Technology
+
+The Programs may contain or be distributed with certain
+third-party technology. Oracle may provide certain notices
+related to such third-party technology in the program
+documentation, or in readme or notice files provided with
+the Programs. Without limitation of the foregoing, copyright
+notices and license terms applicable to certain portions of
+the software downloaded with the Program are set forth in
+the THIRDPARTYLICENSEREADME file and/or documentation
+accessible from:
+
+http://www.oracle.com/technetwork/indexes/documentation/index.html.
+
+Third party technology will be licensed to you either under
+the terms of this agreement, or, if specified in the program
+documentation, readme files or otherwise in writing, under
+separate license terms ("Separate Terms") and not under the
+terms of this agreement ("Separately Licensed Third Party
+Technology"). Licensee's rights to use such Separately
+Licensed Third Party Technology under the Separate Terms are
+not restricted or modified in any way by this Agreement.
+
+Information Collection and Registration
+
+The Program's installation and auto-update processes
+transmit a limited amount of data to Oracle (or its service
+provider) about those specific processes to help Oracle
+understand and optimize them.  Oracle does not associate the
+data with personally identifiable information.  
+
+Ownership and Restrictions 
+
+We retain all ownership and intellectual property rights in
+the programs. Unless enforcement is prohibited by applicable
+law, you may not modify, decompile, or reverse engineer
+Program. You may make a sufficient number of copies of the
+Programs for the licensed use and one copy of the Programs
+for backup purposes. 
+
+You may not: 
+
+- remove or modify any program markings or any notice of our
+proprietary rights; 
+
+- assign this agreement; 
+
+- cause or permit reverse engineering (unless required by
+law for interoperability), disassembly or decompilation of
+the programs; 
+
+- disclose results of any benchmark test results related to
+the Programs without our prior consent. 
+
+- create, modify, or change the behavior of classes,
+interfaces, or subpackages that are in any way identified as 
+"java", "javax", "sun", “oracle” or similar convention
+as specified by Oracle in any naming convention designation; 
+
+Export 
+
+You agree that U.S. export control laws and other applicable
+export and import laws govern your use of the programs,
+including technical data; additional information can be
+found on Oracle's Global Trade Compliance web site located
+at http://www.oracle.com/products/export/index.html. You
+agree that neither the programs nor any direct product
+thereof will be exported, directly, or indirectly, in
+violation of these laws, or will be used for any purpose
+prohibited by these laws including, without limitation,
+nuclear, chemical, or biological weapons proliferation. 
+
+Disclaimer of Warranty and Exclusive Remedies 
+
+THE PROGRAMS ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+KIND. WE FURTHER DISCLAIM ALL WARRANTIES, EXPRESS AND
+IMPLIED, INCLUDING WITHOUT LIMITATION, ANY IMPLIED
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE OR NONINFRINGEMENT. 
+
+IN NO EVENT SHALL WE BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+SPECIAL, PUNITIVE OR CONSEQUENTIAL DAMAGES, OR DAMAGES FOR
+LOSS OF PROFITS, REVENUE, DATA OR DATA USE, INCURRED BY YOU
+OR ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR
+TORT, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES. OUR ENTIRE LIABILITY FOR DAMAGES HEREUNDER
+SHALL IN NO EVENT EXCEED ONE THOUSAND DOLLARS (U.S. $1,000).
+  No Technical Support  Our technical support organization
+will not provide technical support, phone support, or
+updates to you for the programs licensed under this
+agreement. 
+
+End of Agreement 
+
+You may terminate this agreement by destroying all copies of
+the programs. We have the right to terminate your right to
+use the programs if you fail to comply with any of the terms
+of this agreement, in which case you shall destroy all
+copies of the programs. 
+
+Relationship Between the Parties 
+
+The relationship between you and us is that of
+licensee/licensor. Neither party will represent that it has
+any authority to assume or create any obligation, express or
+implied, on behalf of the other party, nor to represent the
+other party as agent, employee, franchisee, or in any other
+capacity. Nothing in this agreement shall be construed to
+limit either party's right to independently develop or
+distribute software that is functionally similar to the
+other party's products, so long as proprietary information
+of the other party is not included in such software. 
+
+Open Source Software
+
+"Open Source" software - software available without charge
+for use, modification and distribution - is often licensed
+under terms that require the user to make the user's
+modifications to the Open Source software or any software
+that the user 'combines' with the Open Source software
+freely available in source code form. If you use Open Source
+software in conjunction with the programs, you must ensure
+that your use does not: (i) create, or purport to create,
+obligations of us with respect to the Oracle programs; or
+(ii) grant, or purport to grant, to any third party any
+rights to or immunities under our intellectual property or
+proprietary rights in the Oracle programs. For example, you
+may not develop a software program using an Oracle program
+and an Open Source program where such use results in a
+program file(s) that contains code from both the Oracle
+program and the Open Source program (including without
+limitation libraries) if the Open Source program is licensed
+under a license that requires any "modifications" be made
+freely available. You also may not combine the Oracle
+program with programs licensed under the GNU General Public
+License ("GPL") in any manner that could cause, or could be
+interpreted or asserted to cause, the Oracle program or any
+modifications thereto to become subject to the terms of the
+GPL.  
+
+Entire Agreement 
+
+You agree that this agreement is the complete agreement for
+the programs and licenses, and this agreement supersedes all
+prior or contemporaneous agreements or representations. If
+any term of this agreement is found to be invalid or
+unenforceable, the remaining provisions will remain
+effective. 
+
+Last updated: 1 December 2011
+
+Should you have any questions concerning this License
+Agreement, or if you desire to contact Oracle for any
+reason, please write: 
+
+Oracle America, Inc.
+500 Oracle Parkway,
+Redwood City,
+CA 94065
+
+Oracle may contact you to ask if you had a satisfactory
+experience installing and using this OTN software download.

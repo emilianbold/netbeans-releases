@@ -84,12 +84,6 @@ public class PushTest extends AbstractGitTestCase {
         workDir = getWorkingDirectory();
         repository = getRepository(getLocalGitRepository());
     }
-
-    public void testRemoteUpdateStatus () {
-        for (RemoteRefUpdate.Status status : RemoteRefUpdate.Status.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(status.name()));
-        }
-    }
     
     public void testPushNewBranch () throws Exception {
         String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();

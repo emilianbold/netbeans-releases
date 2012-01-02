@@ -387,6 +387,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                 Children.MUTEX.writeAccess(new Runnable(){
+                    @Override
                     public void run() {
                         children.remove(children.getNodes());
                         final IncludedModel model = HierarchyFactory.getInstance().buildIncludeHierarchyModel(csmFile, actions, whoIncludes, plain, recursive);
@@ -394,6 +395,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
                         final Node node = new IncludeNode(csmFile, model, null);
                         children.add(new Node[]{node});
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 ((BeanTreeView) hierarchyPane).expandNode(node);
                                 Node selected = findSelection();
@@ -474,6 +476,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                 Children.MUTEX.writeAccess(new Runnable(){
+                    @Override
                     public void run() {
                         children.remove(children.getNodes());
                     }
@@ -482,6 +485,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         }
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -509,10 +513,12 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             refreshButtonActionPerformed(e);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             return menuItem;
         }
@@ -527,10 +533,12 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setWhoIncludes(true);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(whoIncludes);
             return menuItem;
@@ -546,10 +554,12 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setWhoIncludes(false);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!whoIncludes);
             return menuItem;
@@ -565,10 +575,12 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setRecursive(!recursive);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!recursive);
             return menuItem;
@@ -584,10 +596,12 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setPlain(!plain);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!plain);
             return menuItem;
@@ -616,6 +630,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private class DialogClose extends AbstractAction {
         public DialogClose() {
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             Component p = IncludeHierarchyPanel.this;
             while (p != null){
@@ -677,6 +692,7 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         return org.openide.util.NbBundle.getMessage(getClass(), path);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("IncludeView"); // NOI18N
     }

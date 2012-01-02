@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.platform.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,9 +50,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.Parameters;
 
 /**
  * API Utility class for JavaFX platform.
@@ -118,7 +121,19 @@ public final class JavaFXPlatformUtils {
     public static String getJavaFXRuntimePath(@NonNull String platformName) {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getRuntimePropertyKey(platformName));
     }
-    
+
+    /**
+     * Returns a reference to JavaFX Runtime Folder
+     * @param platformName the name of the platform for which the reference should be created
+     * @return the reference to JavaFX Runtime Folder for given platform
+     * @since 1.5
+     */
+    @NonNull
+    public static String getJavaFXRuntimePathReference(@NonNull String platformName) {
+        Parameters.notNull("platformName", platformName);   //NOI18N
+        return String.format("${platforms.%s.javafx.runtime.home}", platformName);  //NOI18N
+    }
+
     /**
      * Returns path to JavaFX SDK installation
      * 
@@ -130,6 +145,17 @@ public final class JavaFXPlatformUtils {
         return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getSDKPropertyKey(platformName));
     }
     
+    /**
+     * Returns a reference to JavaFX SDK Folder
+     * @param platformName the name of the platform for which the reference should be created
+     * @return the reference to JavaFX SDK Folder for given platform
+     * @since 1.5
+     */
+    @NonNull
+    public static String getJavaFXSDKPathReference(@NonNull String platformName) {
+        Parameters.notNull("platformName", platformName);   //NOI18N
+        return String.format("${platforms.%s.javafx.sdk.home}", platformName);  //NOI18N
+    }
     /**
      * Constructs classpath for JavaFX project
      * xxx: Is this really an "API"?
@@ -158,13 +184,30 @@ public final class JavaFXPlatformUtils {
     }
     
     /**
+     * Determines whether any JavaFX enabled platform exist
+     * 
+     * @return is there any JavaFX platform
+     */
+    public static boolean isThereAnyJavaFXPlatform() {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (JavaPlatform javaPlatform : platforms) {
+            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Creates new default JavaFX platform
      * 
      * @return instance of created JavaFX Platform, or null if creation was
      * not successful: such platform already exists or IO exception has occurred
+     * @throws IOException if the platform was invalid or its definition could not be stored
+     * @throws IllegalArgumentException if a default JavaFX Platform already exists
      */
     @CheckForNull
-    public static JavaPlatform createDefaultJavaFXPlatform() {
+    public static JavaPlatform createDefaultJavaFXPlatform() throws IOException, IllegalArgumentException {
         String sdkPath = null;
         String runtimePath = null;
         String javadocPath = null;

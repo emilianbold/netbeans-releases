@@ -60,8 +60,8 @@ import org.openide.loaders.DataObject;
  */
 public final class Util {
 
-        //For unit tests
-    public static Set<String> allMimeTypes;
+
+    /*tests*/ static Set<String> allMimeTypes;
 
     public static Set<String> getAllMimeTypes () {
         return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();

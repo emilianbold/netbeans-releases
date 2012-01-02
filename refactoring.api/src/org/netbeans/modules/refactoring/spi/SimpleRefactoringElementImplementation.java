@@ -76,22 +76,27 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
     private boolean enabled = true;
     private int status = NORMAL;
     
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
     
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
     
+    @Override
     public int getStatus() {
         return status;
     }
     
+    @Override
     public void setStatus(int status) {
         this.status = status;
     }
     
+    @Override
     public void openInEditor() {
         
         PositionBounds bounds = getPosition();
@@ -122,6 +127,7 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
         }
     }
     
+    @Override
     public void showPreview() {
         PreviewManager manager = PreviewManager.getDefault();
         manager.refresh(this);
@@ -144,6 +150,7 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
         return (TopComponent) temp;
     }
     
+    @Override
     public void undoChange() {
     }
     

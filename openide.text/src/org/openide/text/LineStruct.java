@@ -61,7 +61,8 @@ final class LineStruct extends Object {
     private static final int MAX = Integer.MAX_VALUE / 2;
 
     /** processor for all requests */
-    private static final RequestProcessor PROCESSOR = new RequestProcessor("LineStruct Processor"); // NOI18N
+    private static final RequestProcessor PROCESSOR = new RequestProcessor("LineStruct Processor", // NOI18N
+            1, false, false);
 
     /** list of Info objects that represents the whole document */
     private List<Info> list;

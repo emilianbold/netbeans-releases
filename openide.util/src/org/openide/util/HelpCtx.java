@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Provides help for any window or other feature in the system.
 * It is designed to be JavaHelp-compatible and to use the same tactics when
@@ -118,6 +119,21 @@ public final class HelpCtx extends Object {
     */
     public String getHelpID() {
         return helpID;
+    }
+
+    /**
+     * Displays the help page in a supported viewer, if any.
+     * @return true if this help was displayed successfully
+     * @since 8.21
+     * @see org.openide.util.HelpCtx.Displayer#display
+     */
+    public boolean display() {
+        for (Displayer d : Lookup.getDefault().lookupAll(Displayer.class)) {
+            if (d.display(this)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // object identity
@@ -269,4 +285,23 @@ public final class HelpCtx extends Object {
          */
         public HelpCtx getHelpCtx();
     }
+
+    /**
+     * Service to display a {@link HelpCtx} in a help viewer.
+     * Permits modules with minimal API dependencies to display JavaHelp where supported.
+     * @see ServiceProvider
+     * @see #display()
+     * @since 8.21
+     */
+    public interface Displayer {
+
+        /**
+         * Displays a help page.
+         * @param help a help ID to display
+         * @return true if it was displayed successfully
+         */
+        boolean display(HelpCtx help);
+
+    }
+
 }

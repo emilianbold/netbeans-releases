@@ -1904,10 +1904,19 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
         
         String pkg = cp.getResourceName(folder, '/', false);
+        // #176958 : append the rootFolderName in the fullSuiteName, so that we can decide in which Classpath root folder 
+        //           the new Suite file will be generated, when createTestClass(...) is called later on
+        String rootFolderName = ""; //NOI18N
+        if (cp.getRoots().length > 1) {
+            FileObject rootOwnerFO = cp.findOwnerRoot(folder);
+            if (rootOwnerFO != null) {
+                rootFolderName = rootOwnerFO.getName() + '/';
+            }
+        }
         String dotPkg = pkg.replace('/', '.');
-        String fullSuiteName = (suiteName != null)
+        String fullSuiteName = rootFolderName.concat((suiteName != null)
                                ? pkg + '/' + suiteName
-                               : TestUtil.convertPackage2SuiteName(pkg);
+                               : TestUtil.convertPackage2SuiteName(pkg));
 
         String classNames = makeListOfClasses(classesToInclude, null);
         String classes = makeListOfClasses(classesToInclude, ".class"); //NOI18N
@@ -2059,10 +2068,23 @@ public final class DefaultPlugin extends JUnitPlugin {
                                         throws DataObjectNotFoundException,
                                                IOException {
         
-        assert cp.getRoots().length == 1:
-            "Please, re-open Bug 176958 with the following info:\n" +
-            "More than one root in the ClassPath=" + cp;                //NOI18N
         FileObject root = cp.getRoots()[0];
+        // #176958 : decide in which Classpath root folder the new Suite file will be generated
+        String rootFolderName = ""; //NOI18N
+        if (cp.getRoots().length > 1) {
+            int indexFirst = testClassName.indexOf('/');
+            int indexLast = testClassName.lastIndexOf('/');
+            assert indexFirst != indexLast :  // this should not happen
+                    "ClassPath=" + cp + "\n" + "testClassName=" + testClassName;                //NOI18N
+            rootFolderName = testClassName.substring(0, indexFirst);
+            testClassName = testClassName.substring(indexLast + 1);
+            for (int i = 0; i < cp.getRoots().length; i++) {
+                FileObject rootFO = cp.getRoots()[i];
+                if (rootFO.getPath().endsWith(rootFolderName)) {
+                    root = rootFO;
+                }
+            }
+        }
         int index = testClassName.lastIndexOf('/');
         String pkg = index > -1 ? testClassName.substring(0, index)
                                 : "";                                   //NOI18N

@@ -59,20 +59,26 @@ public final class GitFileInfo {
         UNKNOWN
     }
     
-    private String relativePath;
-    private Status status;
+    private final String relativePath;
+    private final String originalPath;
+    private final Status status;
     private final File file;
-    private File originalFile;
+    private final File originalFile;
 
-    public GitFileInfo (File file, String relativePath, Status status, File originalFile) {
+    public GitFileInfo (File file, String relativePath, Status status, File originalFile, String originalPath) {
         this.relativePath = relativePath;
         this.status = status;
         this.file = file;
         this.originalFile = originalFile;
+        this.originalPath = originalPath;
     }
 
     public String getRelativePath() {
         return relativePath;
+    }
+
+    public String getOriginalPath() {
+        return originalPath;
     }
 
     public Status getStatus() {

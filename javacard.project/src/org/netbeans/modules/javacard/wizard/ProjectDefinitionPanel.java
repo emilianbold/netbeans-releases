@@ -70,9 +70,13 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -599,6 +603,10 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             invalidPlatform = !platform.isValid();
             d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, platform.getSystemName());
             d.putProperty("activeplatform", platform.getSystemName()); //NOI18N //XXX constant?
+
+            // #200688
+            boolean usePreprocessor = JCUtil.useCompilationPreprocessor(platform.getJavacardVersion());
+            d.putProperty(ProjectPropertyNames.PROJECT_PROP_USE_PREPROCESSOR, String.valueOf(usePreprocessor));
         } else {
             invalidPlatform = true;
             d.putProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM, JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME);

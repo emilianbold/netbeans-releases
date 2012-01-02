@@ -80,6 +80,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	super(source);
     }
     
+    @Override
     public Collection<CsmFile> getNewFiles() {
 	if( newFiles == null ) {
 	    newFiles = new HashSet<CsmFile>();
@@ -87,6 +88,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	return newFiles;
     }
     
+    @Override
     public Collection<CsmFile> getRemovedFiles() {
 	if( removedFiles == null ) {
 	    removedFiles = new HashSet<CsmFile>();
@@ -94,6 +96,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	return removedFiles;
     }
     
+    @Override
     public Collection<CsmFile> getChangedFiles() {
 	if( changedFiles == null ) {
 	    changedFiles = new HashSet<CsmFile>();
@@ -101,6 +104,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	return changedFiles;
     }
     
+    @Override
     public Collection<CsmOffsetableDeclaration> getNewDeclarations() {
 	if( newDeclarations == null ) {
 	    newDeclarations = new HashSet<CsmOffsetableDeclaration>();
@@ -108,6 +112,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	return newDeclarations;
     }
     
+    @Override
     public Collection<CsmOffsetableDeclaration> getRemovedDeclarations() { 
 	if( removedDeclarations == null ) { 
 	    removedDeclarations = new HashSet<CsmOffsetableDeclaration>(); 
@@ -115,6 +120,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	return removedDeclarations; 
     }
     
+    @Override
     public Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> getChangedDeclarations() { 
 	if( changedDeclarations == null ) { 
 	    changedDeclarations = new HashMap<CsmOffsetableDeclaration,CsmOffsetableDeclaration>(); 
@@ -122,6 +128,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
 	return changedDeclarations; 
     }
     
+    @Override
     public Collection<CsmProject> getChangedProjects() {
         if( changedProjects == null ) {
             changedProjects = new HashSet<CsmProject>();
@@ -129,6 +136,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
         return changedProjects;
     }
     
+    @Override
     public Collection<CsmNamespace> getNewNamespaces() {
         if( newNamespaces != null ) {
             return newNamespaces.values();
@@ -136,6 +144,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
         return Collections.<CsmNamespace>emptyList();
     }
     
+    @Override
     public Collection<CsmNamespace> getRemovedNamespaces() {
         if( removedNamespaces != null ) {
             return removedNamespaces.values();

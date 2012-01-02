@@ -91,6 +91,7 @@ public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
         closeCnt = 0;
         
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 while( runOtherThread ) {
                     try {

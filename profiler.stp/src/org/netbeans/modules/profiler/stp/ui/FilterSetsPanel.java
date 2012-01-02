@@ -73,6 +73,35 @@ import org.openide.DialogDisplayer;
  * @author Tomas Hurka
  * @author  Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "FilterSetsPanel_ColumnNameActive=Active",
+    "FilterSetsPanel_ColumnNameName=Name",
+    "FilterSetsPanel_ColumnNameValue=Value",
+    "FilterSetsPanel_AddFilterSetButtonText=&Add",
+    "FilterSetsPanel_RemoveFilterSetButtonText=&Remove",
+    "FilterSetsPanel_MoveUpButtonText=Move &Up",
+    "FilterSetsPanel_MoveDownButtonText=Move &Down",
+    "FilterSetsPanel_FilterSetNameLabelText=&Filter Set Name:",
+    "FilterSetsPanel_FilterSetTypeLabelText=Filter Set Type:",
+    "FilterSetsPanel_FilterSetTypeExclusiveRadioText=&Exclusive",
+    "FilterSetsPanel_FilterSetTypeInclusiveRadioText=&Inclusive",
+    "FilterSetsPanel_ActiveFiltersLabelText=&Global Filters:",
+    "FilterSetsPanel_DefinedFilterSetsBorderCaption=Defined Filter Sets",
+    "FilterSetsPanel_FilterSetPropertiesBorderCaption=Filter Set Properties",
+    "FilterSetsPanel_EditGlobalFiltersDialogCaption=Edit Global Filters",
+//# HTML-formatted
+    "FilterSetsPanel_HintMsg=<strong>Exclusive</strong> filter set defines methods that are not instrumented. <strong>Inclusive</strong> filter set defines the methods that are instrumented. If you want to edit a filter, double-click its value or click <strong>Edit Global Filters</strong>.",
+    "FilterSetsPanel_DefinedFilterSetsListAccessName=List of defined instrumentation filter sets.",
+    "FilterSetsPanel_DefinedFilterSetsListAccessDescr=Select an item to edit its properties.",
+    "FilterSetsPanel_AddFilterSetButtonAccessDescr=Create new filter set.",
+    "FilterSetsPanel_RemoveFilterSetButtonAccessDescr=Delete selected filter sets.",
+    "FilterSetsPanel_MoveUpButtonAccessDescr=Move selected filter set up.",
+    "FilterSetsPanel_MoveDownButtonAccessDescr=Move selected filter set down.",
+    "FilterSetsPanel_ActiveFiltersTableAccessName=List of available global filters.",
+    "FilterSetsPanel_ActiveFiltersTableAccessDescr=Select global filters to include in the filter set.",
+    "FilterSetsPanel_FilterTypeExclusiveRadioAccessDescr=Selected classes will not be instrumented.",
+    "FilterSetsPanel_FilterTypeInclusiveRadioAccessDescr=Only selected classes will be instrumented."
+})
 public final class FilterSetsPanel extends JPanel implements ActionListener, HelpCtx.Provider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -180,7 +209,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
             final GlobalFiltersPanel globalFiltersPanel = GlobalFiltersPanel.getDefault();
 
             // TODO: implement String getDialogCaption() for FilterSetsPanel, GlobalFiltersPanel and QuickFilterPanel
-            final DialogDescriptor dd = new DialogDescriptor(globalFiltersPanel, EDIT_GLOBAL_FILTERS_DIALOG_CAPTION, true,
+            final DialogDescriptor dd = new DialogDescriptor(globalFiltersPanel, Bundle.FilterSetsPanel_EditGlobalFiltersDialogCaption(), true,
                                                              new Object[] {
                                                                  DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION
                                                              }, DialogDescriptor.OK_OPTION, DialogDescriptor.BOTTOM_ALIGN, null,
@@ -436,57 +465,6 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String COLUMN_NAME_ACTIVE = NbBundle.getMessage(FilterSetsPanel.class, "FilterSetsPanel_ColumnNameActive"); //NOI18N
-    private static final String COLUMN_NAME_NAME = NbBundle.getMessage(FilterSetsPanel.class, "FilterSetsPanel_ColumnNameName"); //NOI18N
-    private static final String COLUMN_NAME_VALUE = NbBundle.getMessage(FilterSetsPanel.class, "FilterSetsPanel_ColumnNameValue"); //NOI18N
-    private static final String ADD_FILTER_SET_BUTTON_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                 "FilterSetsPanel_AddFilterSetButtonText"); //NOI18N
-    private static final String REMOVE_FILTER_SET_BUTTON_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                    "FilterSetsPanel_RemoveFilterSetButtonText"); //NOI18N
-    private static final String MOVE_UP_BUTTON_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                          "FilterSetsPanel_MoveUpButtonText"); //NOI18N
-    private static final String MOVE_DOWN_BUTTON_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                            "FilterSetsPanel_MoveDownButtonText"); //NOI18N
-    private static final String FILTERSET_NAME_LABEL_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                "FilterSetsPanel_FilterSetNameLabelText"); //NOI18N
-    private static final String FILTERSET_TYPE_LABEL_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                "FilterSetsPanel_FilterSetTypeLabelText"); //NOI18N
-    private static final String FILTERSET_TYPE_EXCLUSIVE_RADIO_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                          "FilterSetsPanel_FilterSetTypeExclusiveRadioText"); //NOI18N
-    private static final String FILTERSET_TYPE_INCLUSIVE_RADIO_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                          "FilterSetsPanel_FilterSetTypeInclusiveRadioText"); //NOI18N
-    private static final String ACTIVE_FILTERS_LABEL_TEXT = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                "FilterSetsPanel_ActiveFiltersLabelText"); //NOI18N
-    private static final String DEFINED_FILTERSETS_BORDER_CAPTION = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                        "FilterSetsPanel_DefinedFilterSetsBorderCaption"); //NOI18N
-    private static final String FILTERSET_PROPERTIES_BORDER_CAPTION = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                          "FilterSetsPanel_FilterSetPropertiesBorderCaption"); //NOI18N
-    private static final String EDIT_GLOBAL_FILTERS_DIALOG_CAPTION = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                         "FilterSetsPanel_EditGlobalFiltersDialogCaption"); //NOI18N
-    private static final String HINT_MSG = NbBundle.getMessage(FilterSetsPanel.class, "FilterSetsPanel_HintMsg"); //NOI18N
-    private static final String DEFINED_FILTER_SETS_LIST_ACCESS_NAME = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                           "FilterSetsPanel_DefinedFilterSetsListAccessName"); //NOI18N
-    private static final String DEFINED_FILTER_SETS_LIST_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                            "FilterSetsPanel_DefinedFilterSetsListAccessDescr"); //NOI18N
-    private static final String ADD_FILTER_SET_BUTTON_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                         "FilterSetsPanel_AddFilterSetButtonAccessDescr"); //NOI18N
-    private static final String REMOVE_FILTER_SET_BUTTON_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                            "FilterSetsPanel_RemoveFilterSetButtonAccessDescr"); //NOI18N
-    private static final String MOVE_UP_BUTTON_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                  "FilterSetsPanel_MoveUpButtonAccessDescr"); //NOI18N
-    private static final String MOVE_DOWN_BUTTON_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                    "FilterSetsPanel_MoveDownButtonAccessDescr"); //NOI18N
-    private static final String ACTIVE_FILTERS_TABLE_ACCESS_NAME = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                       "FilterSetsPanel_ActiveFiltersTableAccessName"); //NOI18N
-    private static final String ACTIVE_FILTERS_TABLE_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                        "FilterSetsPanel_ActiveFiltersTableAccessDescr"); //NOI18N
-    private static final String FILTER_TYPE_EXCLUSIVE_RADIO_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                               "FilterSetsPanel_FilterTypeExclusiveRadioAccessDescr"); //NOI18N
-    private static final String FILTER_TYPE_INCLUSIVE_RADIO_ACCESS_DESCR = NbBundle.getMessage(FilterSetsPanel.class,
-                                                                                               "FilterSetsPanel_FilterTypeInclusiveRadioAccessDescr"); //NOI18N
-                                                                                                                                                       // -----
     private static final String HELP_CTX_KEY = "FilterSetsPanel.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static FilterSetsPanel defaultInstance;
@@ -527,7 +505,11 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
     private FilterSetsPanel() {
         filterSets = new DefinedFilterSets();
 
-        columnNames = new String[] { COLUMN_NAME_ACTIVE, COLUMN_NAME_NAME, COLUMN_NAME_VALUE };
+        columnNames = new String[] { 
+            Bundle.FilterSetsPanel_ColumnNameActive(), 
+            Bundle.FilterSetsPanel_ColumnNameName(), 
+            Bundle.FilterSetsPanel_ColumnNameValue() 
+        };
         columnClasses = new Class[] { Boolean.class, String.class, String.class };
 
         initComponents();
@@ -689,14 +671,14 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
         setLayout(new java.awt.BorderLayout());
 
-        final TitledBorder filterSetsPreviewPanelTitledBorder = BorderFactory.createTitledBorder(DEFINED_FILTERSETS_BORDER_CAPTION);
+        final TitledBorder filterSetsPreviewPanelTitledBorder = BorderFactory.createTitledBorder(Bundle.FilterSetsPanel_DefinedFilterSetsBorderCaption());
 
         filterSetsPreviewPanel.setLayout(new java.awt.BorderLayout());
         filterSetsPreviewPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(7, 5, 5, 5),
                                                                             filterSetsPreviewPanelTitledBorder));
 
-        definedFilterSetsList.getAccessibleContext().setAccessibleName(DEFINED_FILTER_SETS_LIST_ACCESS_NAME);
-        definedFilterSetsList.getAccessibleContext().setAccessibleDescription(DEFINED_FILTER_SETS_LIST_ACCESS_DESCR);
+        definedFilterSetsList.getAccessibleContext().setAccessibleName(Bundle.FilterSetsPanel_DefinedFilterSetsListAccessName());
+        definedFilterSetsList.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_DefinedFilterSetsListAccessDescr());
         definedFilterSetsList.setModel(new DefinedFilterSetsListModel());
         definedFilterSetsList.setCellRenderer(new DefaultListCellRenderer() {
                 public java.awt.Component getListCellRendererComponent(final JList list, final Object value, final int index,
@@ -722,26 +704,26 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         buttonsPanel.setLayout(new java.awt.GridLayout(4, 1, 0, 5));
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 5));
 
-        org.openide.awt.Mnemonics.setLocalizedText(addFilterSetButton, ADD_FILTER_SET_BUTTON_TEXT);
-        addFilterSetButton.getAccessibleContext().setAccessibleDescription(ADD_FILTER_SET_BUTTON_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(addFilterSetButton, Bundle.FilterSetsPanel_AddFilterSetButtonText());
+        addFilterSetButton.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_AddFilterSetButtonAccessDescr());
         addFilterSetButton.addActionListener(this);
         buttonsPanel.add(addFilterSetButton);
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeFilterSetButton, REMOVE_FILTER_SET_BUTTON_TEXT);
-        removeFilterSetButton.getAccessibleContext().setAccessibleDescription(REMOVE_FILTER_SET_BUTTON_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(removeFilterSetButton, Bundle.FilterSetsPanel_RemoveFilterSetButtonText());
+        removeFilterSetButton.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_RemoveFilterSetButtonAccessDescr());
         removeFilterSetButton.setEnabled(false);
         removeFilterSetButton.addActionListener(this);
         buttonsPanel.add(removeFilterSetButton);
 
         //buttonsPanel.add(new JPanel());
-        org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, MOVE_UP_BUTTON_TEXT);
-        moveUpButton.getAccessibleContext().setAccessibleDescription(MOVE_UP_BUTTON_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, Bundle.FilterSetsPanel_MoveUpButtonText());
+        moveUpButton.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_MoveUpButtonAccessDescr());
         moveUpButton.setEnabled(false);
         moveUpButton.addActionListener(this);
         buttonsPanel.add(moveUpButton);
 
-        org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, MOVE_DOWN_BUTTON_TEXT);
-        moveDownButton.getAccessibleContext().setAccessibleDescription(MOVE_DOWN_BUTTON_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, Bundle.FilterSetsPanel_MoveDownButtonText());
+        moveDownButton.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_MoveDownButtonAccessDescr());
         moveDownButton.setEnabled(false);
         moveDownButton.addActionListener(this);
         buttonsPanel.add(moveDownButton);
@@ -750,7 +732,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
         add(filterSetsPreviewPanel, java.awt.BorderLayout.NORTH);
 
-        final TitledBorder filterSetPropertiesPanelTitledBorder = BorderFactory.createTitledBorder(FILTERSET_PROPERTIES_BORDER_CAPTION);
+        final TitledBorder filterSetPropertiesPanelTitledBorder = BorderFactory.createTitledBorder(Bundle.FilterSetsPanel_FilterSetPropertiesBorderCaption());
 
         filterSetPropertiesPanel.setLayout(new java.awt.BorderLayout());
         filterSetPropertiesPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 5, 5, 5),
@@ -762,8 +744,8 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
         // activeFiltersTable
         activeFiltersTable = new JExtendedTable(new ActiveFiltersTableModel());
-        activeFiltersTable.getAccessibleContext().setAccessibleName(ACTIVE_FILTERS_TABLE_ACCESS_NAME);
-        activeFiltersTable.getAccessibleContext().setAccessibleDescription(ACTIVE_FILTERS_TABLE_ACCESS_DESCR);
+        activeFiltersTable.getAccessibleContext().setAccessibleName(Bundle.FilterSetsPanel_ActiveFiltersTableAccessName());
+        activeFiltersTable.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_ActiveFiltersTableAccessDescr());
         activeFiltersTable.setRowSelectionAllowed(true);
         activeFiltersTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         activeFiltersTable.setGridColor(UIConstants.TABLE_VERTICAL_GRID_COLOR);
@@ -790,7 +772,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
         // filterTable columns
         final TableColumn firstColumn = activeFiltersTable.getColumnModel().getColumn(0);
-        final int firstColumnWidth = new JButton(COLUMN_NAME_ACTIVE).getPreferredSize().width;
+        final int firstColumnWidth = new JButton(Bundle.FilterSetsPanel_ColumnNameActive()).getPreferredSize().width;
         firstColumn.setMinWidth(firstColumnWidth);
         firstColumn.setPreferredWidth(firstColumnWidth);
         firstColumn.setMaxWidth(firstColumnWidth);
@@ -820,7 +802,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
         filterSetSettingsPanel.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(filterNameLabel, FILTERSET_NAME_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(filterNameLabel, Bundle.FilterSetsPanel_FilterSetNameLabelText());
         filterNameLabel.setLabelFor(filterNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -848,7 +830,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         filterSetSettingsPanel.add(filterNameTextField, gridBagConstraints);
 
-        filterTypeLabel.setText(FILTERSET_TYPE_LABEL_TEXT);
+        filterTypeLabel.setText(Bundle.FilterSetsPanel_FilterSetTypeLabelText());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -856,8 +838,8 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         filterSetSettingsPanel.add(filterTypeLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(filterTypeExclusiveRadio, FILTERSET_TYPE_EXCLUSIVE_RADIO_TEXT);
-        filterTypeExclusiveRadio.getAccessibleContext().setAccessibleDescription(FILTER_TYPE_EXCLUSIVE_RADIO_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(filterTypeExclusiveRadio, Bundle.FilterSetsPanel_FilterSetTypeExclusiveRadioText());
+        filterTypeExclusiveRadio.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_FilterTypeExclusiveRadioAccessDescr());
         filterTypeExclusiveRadio.addActionListener(this);
         filterTypeButtonGroup.add(filterTypeExclusiveRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -867,8 +849,8 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         filterSetSettingsPanel.add(filterTypeExclusiveRadio, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(filterTypeInclusiveRadio, FILTERSET_TYPE_INCLUSIVE_RADIO_TEXT);
-        filterTypeInclusiveRadio.getAccessibleContext().setAccessibleDescription(FILTER_TYPE_INCLUSIVE_RADIO_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(filterTypeInclusiveRadio, Bundle.FilterSetsPanel_FilterSetTypeInclusiveRadioText());
+        filterTypeInclusiveRadio.getAccessibleContext().setAccessibleDescription(Bundle.FilterSetsPanel_FilterTypeInclusiveRadioAccessDescr());
         filterTypeInclusiveRadio.addActionListener(this);
         filterTypeButtonGroup.add(filterTypeInclusiveRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -881,7 +863,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
         activeFiltersLabel.setLabelFor(activeFiltersTable);
         //    activeFiltersLabel.setFocusable(false);
-        org.openide.awt.Mnemonics.setLocalizedText(activeFiltersLabel, ACTIVE_FILTERS_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(activeFiltersLabel, Bundle.FilterSetsPanel_ActiveFiltersLabelText());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -908,7 +890,7 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         Color hintBackground = UIUtils.getSafeColor(panelBackground.getRed() - 10, panelBackground.getGreen() - 10,
                                                     panelBackground.getBlue() - 10);
         // hintArea
-        hintArea.setText(HINT_MSG); // NOI18N
+        hintArea.setText(Bundle.FilterSetsPanel_HintMsg()); // NOI18N
         hintArea.setEnabled(false);
         hintArea.setDisabledTextColor(Color.darkGray);
         hintArea.setBackground(hintBackground);

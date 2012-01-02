@@ -94,7 +94,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.CancelService;
+import org.netbeans.modules.java.source.javac.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
@@ -158,6 +158,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
+import org.netbeans.modules.java.source.javac.NBParserFactory.NBEndPosParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -919,9 +920,12 @@ public class Utilities {
         public ClasspathInfo createUniversalCPInfo() {
             JavaPlatform select = JavaPlatform.getDefault();
 
-            for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-                if (p.getSpecification().getVersion().compareTo(select.getSpecification().getVersion()) > 0) {
-                    select = p;
+            if (select.getSpecification().getVersion() != null) {
+                for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+                    if (!"j2se".equals(p.getSpecification().getName()) || p.getSpecification().getVersion() == null) continue;
+                    if (p.getSpecification().getVersion().compareTo(select.getSpecification().getVersion()) > 0) {
+                        select = p;
+                    }
                 }
             }
 
@@ -1114,7 +1118,7 @@ public class Utilities {
         }
     }
 
-    private static class JackpotJavacParser extends EndPosParser {
+    private static class JackpotJavacParser extends NBEndPosParser {
 
         private final Context ctx;
         public JackpotJavacParser(Context ctx, ParserFactory fac,

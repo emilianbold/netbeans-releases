@@ -103,10 +103,9 @@ public interface SourceGroup {
      * contained in the group.
      * </p>
      * @param file a file or folder; must be a descendant of the root folder
-     * @return true if the group contains that file, false if it is to be excluded
-     * @throws IllegalArgumentException if a file is passed which is not inside the root
+     * @return true if the group contains that file; false if it is to be excluded, or is not inside the root
      */
-    boolean contains(FileObject file) throws IllegalArgumentException;
+    boolean contains(FileObject file);
     
     /**
      * Add a listener to changes in aspects of the source group.

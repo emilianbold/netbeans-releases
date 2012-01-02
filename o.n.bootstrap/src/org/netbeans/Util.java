@@ -309,7 +309,7 @@ public final class Util {
      * @see #moduleDependencies
      * @see ModuleManager#getModuleInterdependencies
      */
-    static Set<Module> moduleInterdependencies(Module m, boolean reverse, boolean transitive,
+    static Set<Module> moduleInterdependencies(Module m, boolean reverse, boolean transitive, boolean considerNeeds,
                                        Set<Module> modules, Map<String,Module> modulesByName, Map<String,Set<Module>> providersOf) {
         // XXX these algorithms could surely be made faster using standard techniques
         // for now the speed is not critical however
@@ -319,7 +319,7 @@ public final class Util {
                 if (m2 == m) {
                     continue;
                 }
-                if (moduleInterdependencies(m2, false, transitive, modules, modulesByName, providersOf).contains(m)) {
+                if (moduleInterdependencies(m2, false, transitive, considerNeeds, modules, modulesByName, providersOf).contains(m)) {
                     s.add(m2);
                 }
             }
@@ -327,7 +327,7 @@ public final class Util {
         } else {
             Set<Module> s = new HashSet<Module>();
             for (Dependency dep : m.getDependenciesArray()) {
-                if (dep.getType() == Dependency.TYPE_REQUIRES || dep.getType() == Dependency.TYPE_NEEDS) {
+                if (dep.getType() == Dependency.TYPE_REQUIRES || considerNeeds && dep.getType() == Dependency.TYPE_NEEDS) {
                     Set<Module> providers = providersOf.get(dep.getName());
                     if (providers != null) {
                         s.addAll(providers);
@@ -346,7 +346,7 @@ public final class Util {
                 do {
                     toAdd = new HashSet<Module>();
                     for (Module m2: s) {
-                        Set<Module> s2 = moduleInterdependencies(m2, false, false, modules, modulesByName, providersOf);
+                        Set<Module> s2 = moduleInterdependencies(m2, false, false, considerNeeds, modules, modulesByName, providersOf);
                         s2.remove(m);
                         s2.removeAll(s);
                         toAdd.addAll(s2);

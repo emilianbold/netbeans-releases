@@ -128,6 +128,9 @@ class ResultViewPanel extends JPanel{
     /** */
     final JTree tree;
 
+    /** */
+    private ResultTreeScrollController scrollControl;
+
     /** listens on various actions performed on nodes in the tree */
     private final NodeListener nodeListener;
 
@@ -202,7 +205,7 @@ class ResultViewPanel extends JPanel{
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
         treeView.setBorder(BorderFactory.createEmptyBorder());
-        ResultTreeScrollController.register(treeView, tree);
+        scrollControl = ResultTreeScrollController.register(treeView, tree);
 
         resultsPanel = new JPanel(resultViewCards = new CardLayout());
 
@@ -1245,6 +1248,13 @@ class ResultViewPanel extends JPanel{
         if (dividerLocation != -1.0d) {
             splitPane.setDividerLocation(dividerLocation);
         }
+    }
+
+    /**
+     * Enable or disable scroll controller.
+     */
+    void setScrollControllerEnabled(boolean enabled) {
+        scrollControl.setEnabled(enabled);
     }
 
     /**

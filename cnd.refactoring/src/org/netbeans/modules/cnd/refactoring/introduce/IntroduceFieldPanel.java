@@ -155,6 +155,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     private JLabel createErrorLabel() {
         ErrorLabel.Validator validator = new ErrorLabel.Validator() {
 
+            @Override
             public String validate(String text) {
                 if (null == text || text.length() == 0) {
                     return ""; // NOI18N
@@ -169,6 +170,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         final ErrorLabel errorLabel = new ErrorLabel(name.getDocument(), validator);
         errorLabel.addPropertyChangeListener(ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent e) {
                 btnOk.setEnabled(errorLabel.isInputTextValid());
             }

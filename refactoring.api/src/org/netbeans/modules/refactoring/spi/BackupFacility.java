@@ -93,7 +93,7 @@ import org.openide.util.Lookup;
  * @see RefactoringElementImplementation#performChange
  * @see RefactoringElementImplementation#undoChange
  * @see RefactoringElementsBag#registerTransaction
- * @see RefactoringElementsBag#registerFileChange
+ * @see RefactoringElementsBag#addFileChange
  * @see BackupFacility.Handle
  * @author Jan Becicka
  */
@@ -149,13 +149,13 @@ public abstract class BackupFacility {
     }
     
     /**
-     * Handle class representing handle to file{s), which were backuped
+     * Handle class representing handle to file(s), which were backuped
      * by
-     * {@link  org.netbeans.modules.refactoring.spi.BackupFacility.backup()}
+     * {@link  org.netbeans.modules.refactoring.spi.BackupFacility#backup()}
      */
     public interface Handle {
         /**
-         * restore file(s), which was stored by  {@link  org.netbeans.modules.refactoring.spi.BackupFacility.backup()}
+         * restore file(s), which was stored by  {@link  org.netbeans.modules.refactoring.spi.BackupFacility#backup()}
          * @throws java.io.IOException if restore failed.
          */
         void restore() throws IOException;
@@ -168,6 +168,7 @@ public abstract class BackupFacility {
             this.handle = handles;
             this.instance = instance;
         }
+        @Override
         public void restore() throws IOException {
             for (long l:handle) {
                 instance.restore(l);
@@ -189,6 +190,7 @@ public abstract class BackupFacility {
         private DefaultImpl() {
         }
         
+        @Override
         public Handle backup(FileObject ... file) throws IOException {
             ArrayList<Long> list = new ArrayList<Long>();
             for (FileObject f:file) {
@@ -293,6 +295,7 @@ public abstract class BackupFacility {
             }
         }
         
+        @Override
         public void clear() {
             for(BackupEntry entry: map.values()) {
                 entry.file.delete();

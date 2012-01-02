@@ -187,6 +187,9 @@ public class GuardedDocument extends BaseDocument
     }
 
     public boolean isPosGuarded(int offset) {
+        if (!modifiable) { // if whole doc is readonly due to CES modificationListener veto
+            return true;
+        }
         int rel = guardedBlockChain.compareBlock(offset, offset) & MarkBlock.IGNORE_EMPTY;
         // Return not guarded when inside line
         return (rel == MarkBlock.INNER || (rel == MarkBlock.INSIDE_BEGIN && // and at line begining

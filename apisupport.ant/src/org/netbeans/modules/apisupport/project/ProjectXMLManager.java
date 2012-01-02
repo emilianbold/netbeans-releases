@@ -330,6 +330,7 @@ public final class ProjectXMLManager {
             }
         }
         project.putPrimaryConfigurationData(_confData);
+        directDeps = null;
     }
 
     /**
@@ -342,6 +343,7 @@ public final class ProjectXMLManager {
             cnbsToDelete.add(dep.getModuleEntry().getCodeNameBase());
         }
         removeDependenciesByCNB(cnbsToDelete);
+        directDeps = null;
     }
 
     /**
@@ -366,6 +368,7 @@ public final class ProjectXMLManager {
                     "Some modules weren't deleted: " + cnbsToDelete); // NOI18N
         }
         project.putPrimaryConfigurationData(_confData);
+        directDeps = null;
     }
 
     public void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
@@ -384,6 +387,7 @@ public final class ProjectXMLManager {
             }
         }
         project.putPrimaryConfigurationData(_confData);
+        directDeps = null;
     }
 
     /**
@@ -694,7 +698,9 @@ public final class ProjectXMLManager {
                         boolean compile = findElement(depEl, TEST_DEPENDENCY_COMPILE) != null;
                         if (_cnb != null) {
                             ModuleEntry me = ml.getEntry(_cnb);
-                            if (me != null) {
+                            if (me == null) {
+                                me = new NonexistentModuleEntry(_cnb);
+                            }
                                 TestModuleDependency tmd = new TestModuleDependency(me, test, recursive, compile);
                                 if (!directTestDeps.add(tmd)) {
                                     // testdependency already exists
@@ -706,7 +712,6 @@ public final class ProjectXMLManager {
                                             + tmd.getModule().getCodeNameBase() + " is duplicated!"; // NOI18N
                                     Util.err.log(ErrorManager.WARNING, msg);
                                 }
-                            }
                         }
                     }
                 }

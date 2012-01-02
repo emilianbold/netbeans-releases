@@ -51,17 +51,16 @@ import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Lists archetypes found in local repository index. Will include both old archetypes
  * and archetypeng ones.
  * @author mkleint
  */
+@ServiceProvider(service=ArchetypeProvider.class, position=300)
 public class LocalRepoProvider implements ArchetypeProvider {
     
-    public LocalRepoProvider() {
-    }
-
     public @Override List<Archetype> getArchetypes() {
         List<Archetype> lst = new ArrayList<Archetype>();
             List<NBVersionInfo> archs = RepositoryQueries.findArchetypes(Collections.singletonList(RepositoryPreferences.getInstance().getLocalRepository()));

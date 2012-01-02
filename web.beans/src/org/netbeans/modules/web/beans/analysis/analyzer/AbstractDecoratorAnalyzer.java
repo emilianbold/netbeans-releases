@@ -180,6 +180,9 @@ public abstract class AbstractDecoratorAnalyzer<T> {
                 return false;
             }
         }
+        else {
+            return false;
+        }
         
         if ( model.hasImplicitDefaultQualifier( element ) ){
             return true;

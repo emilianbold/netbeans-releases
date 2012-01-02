@@ -117,20 +117,22 @@ class BehaviorImpl extends DescriptionGroupImpl implements FacesBehavior {
         visitor.visit(this );
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Behavior#getBehaviorClass()
+    /**
+     * Gets behavior-class of the faces-config-behaviorType.
+     * @return trimmed behavior-class if any, {@code null} otherwise
      */
     public String getBehaviorClass() {
-        return getChildElementText(
-                JSFConfigQNames.BEHAVIOR_CLASS.getQName(getNamespaceURI()));
+        String behaviorClass = getChildElementText(JSFConfigQNames.BEHAVIOR_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(behaviorClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Behavior#getBehaviorId()
+    /**
+     * Gets behavior-id of the faces-config-behaviorType.
+     * @return trimmed behavior-id if any, {@code null} otherwise
      */
     public String getBehaviorId() {
-        return getChildElementText(
-                JSFConfigQNames.BEHAVIOR_ID.getQName(getNamespaceURI()));
+        String behaviorId = getChildElementText(JSFConfigQNames.BEHAVIOR_ID.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(behaviorId);
     }
     
     protected List<String> getSortedListOfLocalNames(){

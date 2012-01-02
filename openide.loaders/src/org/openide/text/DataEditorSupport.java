@@ -502,6 +502,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
 
     private static boolean createAndThrowIncorrectCharsetUQE(final FileObject fo, Charset charset) throws UserQuestionException {
+        ERR.log(Level.INFO, "Encoding problem using {0} for {1}", new Object[]{charset, fo}); // NOI18N
         throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", charset)) {
             @Override
             public void confirmed() throws IOException {
@@ -607,8 +608,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
 
     /** Indicates whether the <code>Env</code> is read only. */
-    @Override
-    boolean isEnvReadOnly() {
+    private boolean isEnvReadOnly() {
         CloneableEditorSupport.Env myEnv = desEnv();
         return myEnv instanceof Env && !((Env) myEnv).getFileImpl().canWrite();
     }
