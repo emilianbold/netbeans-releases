@@ -41,17 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.FunctionNode.Kind;
 import com.oracle.nashorn.ir.*;
-import com.oracle.nashorn.parser.Token;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.FileScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.Scope;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
