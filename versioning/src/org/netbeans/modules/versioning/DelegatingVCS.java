@@ -366,6 +366,21 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return interceptor;
     }
     
+    @Override
+    public boolean accept(VCSContext ctx) {
+        Set<VCSFileProxy> roots = ctx.getRootFiles();
+        for (VCSFileProxy root : roots) {
+            if(!accept(root)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean accept(VCSFileProxy root) {
+        return root.toFile() != null;
+    }   
+    
     // package private due unit tests
     boolean isMetadataFile(VCSFileProxy file) {
         return getMetadataFolderNames().contains(file.getName());
@@ -527,17 +542,4 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return null;
     }
     
-    private boolean accept(VCSContext ctx) {
-        Set<VCSFileProxy> roots = ctx.getRootFiles();
-        for (VCSFileProxy root : roots) {
-            if(!accept(root)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean accept(VCSFileProxy root) {
-        return root.toFile() != null;
-    }
 }

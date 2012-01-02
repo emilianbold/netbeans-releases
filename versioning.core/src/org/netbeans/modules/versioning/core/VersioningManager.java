@@ -209,6 +209,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         @Override public Object getDelegate() { throw new IllegalStateException(); }
         @Override public String getDisplayName() { throw new IllegalStateException(); }
         @Override public String getMenuLabel() { throw new IllegalStateException(); }
+        @Override public boolean accept(VCSContext ctx) { throw new IllegalStateException(); }
     };
     
     

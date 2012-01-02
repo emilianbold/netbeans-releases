@@ -223,6 +223,11 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     public VCSInterceptor getInterceptor() {
         return getDelegate().getVCSInterceptor();
     }
+
+    @Override
+    public boolean accept(VCSContext ctx) {
+        return true;
+    }
     
     boolean isMetadataFile(VCSFileProxy file) {
         return getMetadataFolderNames().contains(file.getName());

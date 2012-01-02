@@ -46,6 +46,7 @@ import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
@@ -111,6 +112,8 @@ public abstract class VCSSystemProvider {
         public void removePropertyCL(PropertyChangeListener listener);
 
         public boolean isExcluded(VCSFileProxy file);
+        
+        public boolean accept(VCSContext ctx);
         
     }
 }

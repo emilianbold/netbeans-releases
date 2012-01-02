@@ -53,6 +53,7 @@ import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.NbPreferences;
 import org.openide.util.test.MockLookup;
@@ -301,6 +302,12 @@ public class ConnectDisconnectTest extends NbTestCase {
         public String getMenuLabel() {
             return "TestVCSProxy";
         }
+
+        @Override
+        public boolean accept(VCSContext ctx) {
+            return true;
+        }
+        
     }
     private static void awakeDelegates() {
         for(VersioningSystem s : VersioningManager.getInstance().getVersioningSystems()) {

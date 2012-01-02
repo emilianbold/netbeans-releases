@@ -107,21 +107,27 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 dummy.setEnabled(false);
                 items.add(dummy);
                 items.add(Utils.createJSeparator());
-            } else {
-                items.add(NoVCSMenuItem.createNoVcsMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
-                return items.toArray(new JComponent[items.size()]);
-            }
+            } 
 
             Collections.sort(systems, new ByDisplayNameComparator());
 
             VersioningSystem localHistory = null;
+            boolean accepted = false;
             for (final VersioningSystem system : systems) {
+                if(!system.accept(ctx)) {
+                    continue;
+                }
+                accepted = true;
                 if (system.isLocalHistory()) {
                     localHistory = system;
                 } else if (!"".equals(system.getMenuLabel())) { //NOI18N
                     JMenu menu = createVersioningSystemMenu(system, true);
                     items.add(menu);
                 }
+            }
+            if(!accepted) {
+                items.add(NoVCSMenuItem.createNoVcsMenu(NbBundle.getMessage(VersioningMainMenu.class, "CTL_MenuItem_VersioningMenu")));
+                return items.toArray(new JComponent[items.size()]);
             }
 
             if (localHistory != null) {
