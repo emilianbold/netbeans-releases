@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.InnerToOuterAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_InnerToOuter_Action")
+@ActionRegistration(displayName = "#LBL_InnerToOuter_Action", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "InnerToOuterAction", position = 1000)
 public class InnerToOuterAction extends JavaRefactoringGlobalAction {
     

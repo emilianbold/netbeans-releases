@@ -53,7 +53,6 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;

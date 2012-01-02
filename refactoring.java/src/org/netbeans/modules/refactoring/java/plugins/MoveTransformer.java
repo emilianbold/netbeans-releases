@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
@@ -126,7 +127,7 @@ public class MoveTransformer extends RefactoringVisitor {
                             Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                             
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                            TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if(enclosingTypeElement != null && enclosingClass != null
                                     && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -145,7 +146,7 @@ public class MoveTransformer extends RefactoringVisitor {
                             Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
 
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                            TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if(enclosingTypeElement != null && enclosingClass != null
                                     && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -191,7 +192,7 @@ public class MoveTransformer extends RefactoringVisitor {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                        TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                         Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                         if(enclosingTypeElement != null && enclosingClass != null
                                 && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -216,7 +217,7 @@ public class MoveTransformer extends RefactoringVisitor {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                        TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                         if (enclosingClassPath != null) {
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if (enclosingTypeElement != null && enclosingClass != null

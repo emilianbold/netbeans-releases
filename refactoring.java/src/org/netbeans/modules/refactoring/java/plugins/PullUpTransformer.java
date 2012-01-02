@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -52,7 +51,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -60,6 +60,7 @@ import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.MemberInfo.Group;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
 
