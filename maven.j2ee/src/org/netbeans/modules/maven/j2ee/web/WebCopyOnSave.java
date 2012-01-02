@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
@@ -84,7 +85,12 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private boolean isInPlace() throws IOException {
-        FileObject fo = getJ2eeModule().getContentDirectory();
+        J2eeModule j2eeModule = getJ2eeModule();
+        if (j2eeModule == null) {
+            return false;
+        }
+
+        FileObject fo = j2eeModule.getContentDirectory();
         return fo != null && fo.equals(getWebModule().getDocumentBase());
     }
 
@@ -108,7 +114,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
 
     private void smallinitialize() throws FileStateInvalidException {
         WebModule webModule = getWebModule();
-        
+
         if (webModule != null) {
             docBase = webModule.getDocumentBase();
             if (docBase != null) {
@@ -139,7 +145,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private class FileListenerImpl extends FileChangeAdapter {
-        
+
         /** Fired when a file is changed.
          * @param fe the event describing context where action has taken place
          */
@@ -243,7 +249,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
             }
         }
     }
-        
+
 
     private boolean isSynchronizationAppropriate(String filePath) {
         if (filePath.startsWith("WEB-INF/classes")) { //NOI18N
@@ -280,7 +286,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
         }
     }
 
-    /** Copies a content file to an appropriate  destination directory, 
+    /** Copies a content file to an appropriate  destination directory,
      * if applicable and relevant.
      */
     private void handleCopyFileToDestDir(FileObject fo) throws IOException {
@@ -293,7 +299,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
                     return;
                 }
                 FileObject webBuildBase = getJ2eeModule().getContentDirectory();
-                
+
                 if (webBuildBase != null) {
                     // project was built
                     if (FileUtil.isParentOf(documentBase, webBuildBase) || FileUtil.isParentOf(webBuildBase, documentBase)) {
@@ -321,5 +327,5 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     protected String getDestinationSubFolderName() {
         return "WEB-INF/classes"; // NOI18N
     }
-    
+
 }
