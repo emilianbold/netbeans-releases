@@ -91,6 +91,7 @@ import java_cup.runtime.*;
 %state ST_COMMENT
 %state ST_DOCBLOCK
 %state ST_ONE_LINE_COMMENT
+%state ST_IN_SHORT_ECHO
 %{
     private final List commentList = new LinkedList();
     private String heredoc = null;
@@ -308,6 +309,11 @@ HEREDOC_CHARS=("{"*([^$\n\r\\{]|("\\"[^\n\r]))|{HEREDOC_LITERAL_DOLLAR}|({HEREDO
 NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 
 %%
+
+<ST_IN_SHORT_ECHO>"=" {
+    yybegin(ST_IN_SCRIPTING);
+    return createSymbol(ASTPHP5Symbols.T_ECHO);
+}
 
 <ST_IN_SCRIPTING>"exit" {
 	return createFullSymbol(ASTPHP5Symbols.T_EXIT);
@@ -849,9 +855,8 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
         || (text.charAt(1)=='?' && short_tags_allowed)) {
-        yybegin(ST_IN_SCRIPTING);
-        //return T_OPEN_TAG_WITH_ECHO;
-        //return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
+        yypushback(1);
+        yybegin(ST_IN_SHORT_ECHO);
     } else {
         return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
     }
