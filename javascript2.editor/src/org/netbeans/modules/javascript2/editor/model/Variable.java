@@ -47,4 +47,5 @@ package org.netbeans.modules.javascript2.editor.model;
  */
 public interface Variable extends Parameter, ModelElement {
     public boolean isGlobal();
+    public boolean isImplicit();
 }

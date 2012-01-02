@@ -51,14 +51,21 @@ import org.netbeans.modules.javascript2.editor.model.Variable;
  */
 public class VariableImpl extends ParameterImpl implements Variable {
     private final boolean isGlobal;
+    private final boolean isImplicit;
 
-    public VariableImpl(Scope in, Identifier declaration, boolean isGlobal) {
+    public VariableImpl(Scope in, Identifier declaration, boolean isGlobal, boolean isImplicit) {
         super (in, declaration);
         this.isGlobal = isGlobal;
+        this.isImplicit = isImplicit;
     }
 
     @Override
     public boolean isGlobal() {
         return isGlobal;
+    }
+
+    @Override
+    public boolean isImplicit() {
+        return isImplicit;
     }
 }

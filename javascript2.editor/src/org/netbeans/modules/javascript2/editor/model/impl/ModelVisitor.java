@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.FileScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Scope;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -156,7 +157,7 @@ public class ModelVisitor extends PathNodeVisitor {
     public FileScopeImpl getFileScope() {
         return fileScope;
     }
-
+    
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
         if (onset) {
@@ -202,6 +203,22 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return super.visit(referenceNode, onset);
+    }
+    
+    @Override
+    public Node visit(VarNode varNode, boolean onset) {
+        if (onset) {
+            ScopeImpl scope = modelBuilder.getCurrentScope();
+            boolean isGlobal = false;
+            if (scope instanceof FileScope) {
+                isGlobal = true;
+            }
+            scope.addElement(new VariableImpl(scope, 
+                    new IdentifierImpl(varNode.getName().getName(), 
+                    new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish())), 
+                    isGlobal, false));
+        }
+        return super.visit(varNode, onset);
     }
     
     private List<Identifier> getName(PropertyNode propertyNode) {
