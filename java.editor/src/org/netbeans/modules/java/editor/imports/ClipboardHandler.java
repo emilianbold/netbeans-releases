@@ -213,6 +213,7 @@ public class ClipboardHandler {
             @Override public void actionPerformed(ActionEvent e) {
                 cancel.set(true);
                 d[0].setVisible(false);
+                d[0].dispose();
             }
         });
 
