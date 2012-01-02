@@ -50,6 +50,7 @@ import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.model.FunctionScope;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.ObjectScope;
+import org.netbeans.modules.javascript2.editor.model.Parameter;
 import org.netbeans.modules.javascript2.editor.model.Scope;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -137,5 +138,21 @@ public class ModelTest extends JsTestBase {
             }
         }
         assertTrue(checked);
+    }
+    
+    public void testParameters01() throws Exception {
+        Model model = getModel("testfiles/model/simpleFunction.js");
+        assertNotNull(model);
+        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
+        assertEquals(1, elements.size());
+        FunctionScope function = (FunctionScope)elements.iterator().next();
+        assertEquals(3, function.getParameters().size());
+        final Iterator<? extends Parameter> iterator = function.getParameters().iterator();
+        Parameter param = iterator.next();
+        assertEquals("text", param.getDeclaration().getName());
+        param = iterator.next();
+        assertEquals("name", param.getDeclaration().getName());
+        param = iterator.next();
+        assertEquals("description", param.getDeclaration().getName());
     }
 }
