@@ -16,7 +16,6 @@
          <ant dir="${basedir}/../nbi/infra/lib/registries-management" target="jar" inheritAll="false">
             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
             <property name="no.dependencies" value="true"/>
-            <property name="libs.Ant1.6.5.classpath" value="${ant.core.lib}"/>
             <property name="reference.NBI_Engine.jar" location="${build.dir}/engine/dist/nbi-engine.jar"/>
             <property name="build.dir" location="${build.dir}/registries-management/build"/>
             <property name="dist.dir" location="${build.dir}/registries-management/dist"/>
@@ -25,7 +24,6 @@
          <ant dir="${basedir}/../nbi/infra/build/.ant-lib" target="jar" inheritAll="false">
             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
             <property name="no.dependencies" value="true"/>
-            <property name="libs.Ant1.6.5.classpath" value="${ant.core.lib}"/>
             <property name="reference.NBI_Engine.jar" location="${build.dir}/engine/dist/nbi-engine.jar"/>
             <property name="reference.NBI_Library__Registries_Management.jar" location="${build.dir}/registries-management/dist/registries-management.jar"/>
             <property name="build.dir" location="${build.dir}/ant-lib/build"/>
