@@ -47,7 +47,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
