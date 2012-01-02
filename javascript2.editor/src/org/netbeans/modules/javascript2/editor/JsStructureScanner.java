@@ -291,7 +291,19 @@ public class JsStructureScanner implements StructureScanner {
                 return;
             }
             formatter.appendText(getFunctionScope().getDeclarationName().getName());
-            formatter.appendText("()");   //NOI18N
+            formatter.appendText("(");   //NOI18N
+            formatter.parameters(true);
+            boolean addComma = false;
+            for(Parameter param : function.getParameters()) {
+                if (addComma) {
+                    formatter.appendText(", "); //NOI8N
+                } else {
+                    addComma = true;
+                }
+                formatter.appendText(param.getDeclaration().getName());
+            }
+            formatter.parameters(false);
+            formatter.appendText(")");   //NOI18N
         }
 
         @Override
