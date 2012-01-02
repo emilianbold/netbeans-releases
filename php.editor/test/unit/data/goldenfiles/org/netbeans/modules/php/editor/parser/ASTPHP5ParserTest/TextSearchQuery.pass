@@ -13176,6 +13176,14 @@
             </PHPDocBlock>
             <PHPDocBlock start='21247' end='21414'>
                 <Tags>
+                    <PHPDocVarTypeTag start='21255' end='21329' kind='PARAM'>
+                        <Variable>
+                            <PHPDocNode start='21255' end='21255' value=''/>
+                        </Variable>
+                        <Types>
+                            <PHPDocTypeNode start='21262' end='21266' value='bool' isArray='false'/>
+                        </Types>
+                    </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='21337' end='21406' kind='RETURN'>
                         <Types>
                             <PHPDocTypeNode start='21345' end='21350' value='array' isArray='false'/>
@@ -13557,6 +13565,14 @@
             </PHPDocBlock>
             <PHPDocBlock start='21247' end='21414'>
                 <Tags>
+                    <PHPDocVarTypeTag start='21255' end='21329' kind='PARAM'>
+                        <Variable>
+                            <PHPDocNode start='21255' end='21255' value=''/>
+                        </Variable>
+                        <Types>
+                            <PHPDocTypeNode start='21262' end='21266' value='bool' isArray='false'/>
+                        </Types>
+                    </PHPDocVarTypeTag>
                     <PHPDocTypeTag start='21337' end='21406' kind='RETURN'>
                         <Types>
                             <PHPDocTypeNode start='21345' end='21350' value='array' isArray='false'/>
