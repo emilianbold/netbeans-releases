@@ -59,10 +59,10 @@ import org.openide.util.NbBundle;
  */
 class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
     
-    private final Icon iconPrevious = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/diff/diff-prev.png", false); // NOI18N
-    private final Icon iconNext = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/diff/diff-next.png", false); // NOI18N
-    private final Icon iconDiff = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/diff/diff.png", false); // NOI18N
-    private final Icon iconRollback = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/diff/rollback.png", false); // NOI18N
+    private final Icon iconPrevious = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/ui/diff/diff-prev.png", false); // NOI18N
+    private final Icon iconNext = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/ui/diff/diff-next.png", false); // NOI18N
+    private final Icon iconDiff = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/ui/diff/diff.png", false); // NOI18N
+    private final Icon iconRollback = ImageUtilities.loadImageIcon("org/netbeans/modules/versioning/ui/diff/rollback.png", false); // NOI18N
 
     private final DiffActionTooltipWindow master;
     private final Difference              diff;
