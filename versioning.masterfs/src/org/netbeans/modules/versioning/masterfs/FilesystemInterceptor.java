@@ -252,7 +252,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         String name = fe.getName();
         String ext = fe.getExt();
         if(ext != null && !ext.isEmpty()) {
-            name += ext;
+            name += "." + ext;
         }
         VCSFilesystemInterceptor.afterMove(
             VCSFileProxy.createFileProxy(VCSFileProxy.createFileProxy(fe.getFile()).getParentFile(), name),
