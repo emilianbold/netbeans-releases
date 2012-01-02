@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
+
 
 /**
  *
@@ -48,19 +52,29 @@ package org.netbeans.modules.parsing.impl.indexing;
  */
 final class SuspendSupport implements SuspendStatus {
 
+    private final RequestProcessor worker;
     private final Object lock = new Object();
     //@GuardedBy("lock")
     private int suspedDepth;
 
-    SuspendSupport() {}
+    SuspendSupport(@NonNull final RequestProcessor rp) {
+        Parameters.notNull("rp", rp);   //NOI18N
+        this.worker = rp;
+    }
 
     public void suspend() {
+        if (worker.isRequestProcessorThread()) {
+            return;
+        }
         synchronized(lock) {
             suspedDepth++;
         }
     }
 
     public void resume() {
+        if (worker.isRequestProcessorThread()) {
+            return;
+        }
         synchronized(lock) {
             assert suspedDepth > 0;
             suspedDepth--;
@@ -70,12 +84,14 @@ final class SuspendSupport implements SuspendStatus {
         }
     }
 
+    @Override
     public boolean isSuspended() {
         synchronized(lock) {
             return suspedDepth > 0;
         }
     }
 
+    @Override
     public void parkWhileSuspended() throws InterruptedException {
         synchronized(lock) {
             while (suspedDepth > 0) {

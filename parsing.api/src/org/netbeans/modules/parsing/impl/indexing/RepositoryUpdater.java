@@ -1186,7 +1186,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             refreshAll(false, false, true, visibilityLogCtx.getAndSet(null));
         }
     });
-   private final SuspendSupport suspendSupport = new SuspendSupport();
+   private final SuspendSupport suspendSupport = new SuspendSupport(WORKER);
 
     private RepositoryUpdater () {
         LOGGER.log(Level.FINE, "netbeans.indexing.notInterruptible={0}", notInterruptible); //NOI18N
