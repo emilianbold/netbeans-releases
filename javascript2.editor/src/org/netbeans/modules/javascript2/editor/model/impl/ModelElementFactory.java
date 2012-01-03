@@ -43,12 +43,11 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.ObjectNode;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.javascript2.editor.model.FileScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.Scope;
+import org.netbeans.modules.javascript2.editor.model.*;
 
 
 /**
@@ -98,7 +97,89 @@ public final class ModelElementFactory {
     
     static ObjectScopeImpl create(final ObjectNode object, List<Identifier> fqName, final ModelBuilder context) {
         final Scope currentScope = context.getCurrentScope();
-        ObjectScopeImpl result = new ObjectScopeImpl(currentScope, object, fqName);
+        ObjectScopeImpl result = ModelUtils.findObjectWithName(currentScope, fqName.get(0).getName());
+        
+        if (fqName.size() == 1) {
+            ObjectScopeImpl newObject;
+            if (result != null) {
+                ((ScopeImpl)result.getInElement()).removeElement(result);
+                if (result.getInElement() instanceof FileScopeImpl) {
+                    ((FileScopeImpl)result.getInElement()).getLogicalElements().remove(result);
+                }
+                newObject =  new ObjectScopeImpl((Scope)result.getInElement(), object, fqName);
+                for (ModelElement element : result.getElements()) {
+                    newObject.addElement((ModelElementImpl)element);
+                }
+            } else {
+                newObject = new ObjectScopeImpl(currentScope, object, fqName);
+            }
+            result = newObject;
+            if (currentScope instanceof FileScope) {
+                ((FileScopeImpl)currentScope).addObject(result);
+            }
+        } else {
+            List<Identifier> fqNameOfCreated = new ArrayList<Identifier>(fqName.size());
+            fqNameOfCreated.add(fqName.get(0));
+            if (result == null) {
+                FileScope fScope = ModelUtils.getFileScope(currentScope); 
+                result = new ObjectScopeImpl(fScope, fqNameOfCreated,fqNameOfCreated.get(0).getOffsetRange());
+                ((FileScopeImpl)fScope).addObject(result);
+            }
+            for(int i = 1; i < fqName.size(); i++) {
+                ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(result.getElements(), fqName.get(i).getName()));
+                fqNameOfCreated.add(fqName.get(i));
+                if (me == null) {
+                    result = new ObjectScopeImpl(result, fqNameOfCreated, fqName.get(i).getOffsetRange()); 
+                } else {
+                    result = (ObjectScopeImpl)me;
+                    if (result.isLogical() && (i == fqName.size() - 1)) {
+                        ((ScopeImpl)result.getInElement()).removeElement(result);
+                        if (result.getInElement() instanceof FileScopeImpl) {
+                            ((FileScopeImpl) result.getInElement()).getLogicalElements().remove(result);
+                        }
+                        ObjectScopeImpl newObject =  new ObjectScopeImpl((Scope)result.getInElement(), object, fqName);
+                        for (ModelElement element : result.getElements()) {
+                            newObject.addElement((ModelElementImpl)element);
+                        }
+                        result = newObject;
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    static Field createField(List<Identifier> fqName, final ModelBuilder context) {
+        FieldImpl result;
+        final Scope currentScope = context.getCurrentScope();
+
+        ObjectScope object = ModelUtils.findObjectWithName(currentScope, fqName.get(0).getName());
+        List<Identifier> fqNameOfCreated = new ArrayList<Identifier>(fqName.size() - 1);
+        fqNameOfCreated.add(fqName.get(0));
+        if (object == null) {
+            FileScope fScope = ModelUtils.getFileScope(currentScope);
+            object = new ObjectScopeImpl(fScope, fqNameOfCreated, fqNameOfCreated.get(0).getOffsetRange());
+            ((FileScopeImpl) fScope).addObject(object);
+        }
+        for (int i = 1; i < fqName.size() - 1; i++) {
+            ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), fqName.get(i).getName()));
+            fqNameOfCreated.add(fqName.get(i));
+            if (me == null) {
+                object = new ObjectScopeImpl(object, fqNameOfCreated, fqName.get(i).getOffsetRange());
+            } else {
+                object = (ObjectScopeImpl) me;
+            }
+        }
+        
+        Identifier fieldName = fqName.get(fqName.size() - 1);
+        ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), fieldName.getName()));
+        if (me == null) {
+            result = new FieldImpl(object, fieldName);
+            ((ObjectScopeImpl)object).addElement(result);
+        } else {
+            result = (FieldImpl)me;
+        }
         return result;
     }
 }

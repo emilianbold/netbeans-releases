@@ -84,6 +84,10 @@ public class ScopeImpl extends ModelElementImpl implements Scope {
     void addElement(ModelElementImpl element) {
         elements.add(element);
     }
+    
+    boolean removeElement(ModelElementImpl element) {
+        return elements.remove(element);
+    }
 
     static interface ElementFilter<T extends ModelElement> {
         boolean isAccepted(ModelElement element);

@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.*;
@@ -62,7 +61,7 @@ public class ObjectScopeImpl extends ScopeImpl implements ObjectScope {
     
     public ObjectScopeImpl(Scope inScope, ObjectNode node, List<Identifier> fqName) {
         super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), 
-                "object", 
+                fqName.get(fqName.size() - 1).getName(), 
                 new OffsetRange(node.getStart(), node.getFinish()),
                 // TODO bug in parser. The end position is not returned correctly now
 //                Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken())), 
@@ -73,7 +72,7 @@ public class ObjectScopeImpl extends ScopeImpl implements ObjectScope {
     }
     
     public ObjectScopeImpl(Scope inScope, List<Identifier> fqName, OffsetRange range) {
-        super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), "object", range,
+        super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), fqName.get(fqName.size() - 1).getName(), range,
                 EnumSet.of(Modifier.PUBLIC));
         ((ScopeImpl)inScope).addElement(this);
         this.isLogical = true;

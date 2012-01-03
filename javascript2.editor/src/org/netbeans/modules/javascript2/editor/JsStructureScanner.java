@@ -339,15 +339,7 @@ public class JsStructureScanner implements StructureScanner {
             if (object == null) {
                 return;
             }
-            StringBuilder name = new StringBuilder();
-            int identCount = object.getFQDeclarationName().size();
-            for (int i = 0; i < identCount; i++){
-                name.append(object.getFQDeclarationName().get(i).getName());
-                if (i < (identCount - 1)) {
-                    name.append(".");
-                }
-            }
-            formatter.appendText(name.toString());
+            formatter.appendText(object.getName());
         }
 
     }
