@@ -118,12 +118,13 @@ class RenderKitImpl extends IdentifiableDescriptionGroupImpl implements
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.RenderKit#getRenderKitClass()
+    /**
+     * Gets render-kit-class of the faces-config-render-kitType.
+     * @return trimmed render-kit-class if any, {@code null} otherwise
      */
     public String getRenderKitClass() {
-        return getChildElementText(
-                JSFConfigQNames.RENDER_KIT_CLASS.getQName(getNamespaceURI()));
+        String kitClass = getChildElementText(JSFConfigQNames.RENDER_KIT_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(kitClass);
     }
 
     /* (non-Javadoc)
@@ -133,12 +134,13 @@ class RenderKitImpl extends IdentifiableDescriptionGroupImpl implements
         return getChildren(RenderKitExtension.class) ;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.RenderKit#getRenderKitId()
+    /**
+     * Gets render-kit-id of the faces-config-render-kitType.
+     * @return trimmed render-kit-id if any, {@code null} otherwise
      */
     public String getRenderKitId() {
-        return getChildElementText(
-                JSFConfigQNames.RENDER_KIT_ID.getQName(getNamespaceURI()));
+        String kitId = getChildElementText(JSFConfigQNames.RENDER_KIT_ID.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(kitId);
     }
 
     /* (non-Javadoc)

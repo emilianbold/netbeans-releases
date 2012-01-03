@@ -43,7 +43,6 @@ package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -55,12 +54,7 @@ import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
@@ -69,7 +63,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * Tests for New REST web services from Entity Classes wizard
  *
- * Duration of this test suite: aprox. 3min
+ * Duration of this test suite: approx. 3min
  *
  * @author lukas
  */
@@ -81,7 +75,7 @@ public class CRUDTest extends RestTestBase {
      * @param testName name of particular test case
      */
     public CRUDTest(String name) {
-        super(name);
+        super(name, Server.GLASSFISH);
     }
 
     /** Constructor
@@ -92,6 +86,7 @@ public class CRUDTest extends RestTestBase {
         super(name, server);
     }
 
+    @Override
     protected String getProjectName() {
         return "FromEntities"; //NOI18N
     }
@@ -228,7 +223,7 @@ public class CRUDTest extends RestTestBase {
         if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
             assertEquals("Some files were not generated", 3, files.size()); //NOI18N
         } else {
-            assertEquals("Some files were not generated", 8, files.size()); //NOI18N
+            assertEquals("Some files were not generated", 7, files.size()); //NOI18N
         }
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view

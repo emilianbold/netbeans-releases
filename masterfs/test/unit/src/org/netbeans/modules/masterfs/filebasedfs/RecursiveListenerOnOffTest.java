@@ -44,20 +44,31 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeListener;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
+import org.openide.filesystems.*;
 
 /**
  * @author Jaroslav Tulach
  */
 public class RecursiveListenerOnOffTest extends NbTestCase {
+
+    private static final long TIMEOUT = 5;
+
     static {
         System.getProperties().put("org.netbeans.modules.masterfs.watcher.disable", "true");
         MockServices.setServices(ProvidedExtensionsTest.AnnotationProviderImpl.class);
@@ -114,5 +125,68 @@ public class RecursiveListenerOnOffTest extends NbTestCase {
         assertFalse("No Listener anymore", obj.hasRecursiveListener());
 
         LOG.info("OK");
+    }
+
+    public void testRecursiveListenerInsideRenamedFolder() throws Exception {
+
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject prj = wd.createFolder("prj");          //NOI18N
+        final FileObject src = prj.createFolder("src");         //NOI18N
+        final FileObject pkg = src.createFolder("pkg");         //NOI18N
+        final FileObject file = pkg.createData("Test","java");  //NOI18N
+
+        class FL extends FileChangeAdapter {
+
+            private final Semaphore sem = new Semaphore(0);
+            private final Queue<File> waitFor = new ArrayDeque<File>();
+
+            public synchronized void expect(final File... files) {
+                waitFor.addAll(Arrays.asList(files));
+            }
+
+            public boolean await() throws InterruptedException {
+                final int size;
+                synchronized (this) {
+                    size = waitFor.size();
+                }
+                return sem.tryAcquire(size, TIMEOUT, TimeUnit.SECONDS);
+            }
+
+            @Override
+            public void fileChanged(FileEvent fe) {
+                final File f = FileUtil.toFile(fe.getFile());
+                final boolean remove;
+                synchronized (this) {
+                    remove = waitFor.remove(f);
+                }
+                if (remove) {
+                    sem.release();
+                }
+            }
+
+        }
+
+        final FL fl = new FL();
+        final File srcDir = FileUtil.toFile(src);
+        FileUtil.addRecursiveListener(fl, srcDir);
+        FileLock lck = prj.lock();
+        try {
+            prj.rename(lck, "prj2", null);      //NOI18N
+        } finally {
+            lck.releaseLock();
+        }
+        FileUtil.removeRecursiveListener(fl, srcDir);
+        final File newSrcDir = FileUtil.toFile(src);
+        FileUtil.addRecursiveListener(fl, newSrcDir);
+        fl.expect(FileUtil.toFile(file));
+        lck = file.lock();
+        try {
+            final OutputStream out = file.getOutputStream(lck);
+            out.write(1);
+            out.close();
+        } finally {
+            lck.releaseLock();
+        }
+        assertTrue(fl.await());
     }
 }

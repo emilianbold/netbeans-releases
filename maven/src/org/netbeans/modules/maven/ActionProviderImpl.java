@@ -83,6 +83,7 @@ import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -93,6 +94,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -106,11 +108,12 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author  Milos Kleint
  */
+@ProjectServiceProvider(service={ActionProvider.class, ActionProviderImpl.class}, projectType="org-netbeans-modules-maven")
 public class ActionProviderImpl implements ActionProvider {
 
     public static final String BUILD_WITH_DEPENDENCIES = "build-with-dependencies"; // NOI18N
 
-    private final NbMavenProjectImpl project;
+    private final Project proj;
     private static String[] supported = new String[]{
         COMMAND_BUILD,
         BUILD_WITH_DEPENDENCIES,
@@ -135,9 +138,8 @@ public class ActionProviderImpl implements ActionProvider {
     
     Lookup.Result<? extends MavenActionsProvider> result;
 
-    /** Creates a new instance of ActionProviderImpl */
-    public ActionProviderImpl(NbMavenProjectImpl proj) {
-        project = proj;
+    public ActionProviderImpl(Project proj) {
+        this.proj = proj;
         result = Lookup.getDefault().lookupResult(MavenActionsProvider.class);
     }
 
@@ -151,20 +153,18 @@ public class ActionProviderImpl implements ActionProvider {
                 supp.addAll( added);
             }
         }
-        if (RunUtils.hasTestCompileOnSaveEnabled(project) || (usingSurefire28() && usingJUnit4())) {
-            supp.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
-            supp.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
-        }
+        supp.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
+        supp.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
         return supp.toArray(new String[0]);
     }
 
     private boolean usingSurefire28() {
-        String v = PluginPropertyUtils.getPluginVersion(project.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+        String v = PluginPropertyUtils.getPluginVersion(proj.getLookup().lookup(NbMavenProject.class).getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
         return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.8")) >= 0;
     }
 
     private boolean usingJUnit4() { // SUREFIRE-724
-        for (Artifact a : project.getOriginalMavenProject().getArtifacts()) {
+        for (Artifact a : proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts()) {
             if ("junit".equals(a.getGroupId()) && "junit".equals(a.getArtifactId())) {
                 String version = a.getVersion();
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
@@ -175,23 +175,33 @@ public class ActionProviderImpl implements ActionProvider {
         return false;
     }
 
-    @Override
-    public void invokeAction(final String action, final Lookup lookup) {
+    boolean runSingleMethodEnabled() {
+        return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && usingJUnit4());
+    }
+
+    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4 needed to run a single test method without Compile on Save.")
+    @Override public void invokeAction(final String action, final Lookup lookup) {
+        if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+            if (!runSingleMethodEnabled()) {
+                StatusDisplayer.getDefault().setStatusText(run_single_method_disabled());
+                return;
+            }
+        }
         if (COMMAND_DELETE.equals(action)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            DefaultProjectOperations.performDefaultDeleteOperation(proj);
             return;
         }
         if (COMMAND_COPY.equals(action)) {
-            DefaultProjectOperations.performDefaultCopyOperation(project);
+            DefaultProjectOperations.performDefaultCopyOperation(proj);
             return;
         }
         if (COMMAND_MOVE.equals(action)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
+            DefaultProjectOperations.performDefaultMoveOperation(proj);
             return;
         }
 
         if (COMMAND_RENAME.equals(action)) {
-            Operations.renameProject(project);
+            Operations.renameProject(proj.getLookup().lookup(NbMavenProjectImpl.class));
             return;
         }
 
@@ -206,7 +216,7 @@ public class ActionProviderImpl implements ActionProvider {
             return;
         }
         //TODO if order is important, use the lookupmerger
-        Collection<? extends ActionConvertor> convertors = project.getLookup().lookupAll(ActionConvertor.class);
+        Collection<? extends ActionConvertor> convertors = proj.getLookup().lookupAll(ActionConvertor.class);
         String convertedAction = null;
         for (ActionConvertor convertor : convertors) {
             convertedAction = convertor.convert(action, lookup);
@@ -220,7 +230,7 @@ public class ActionProviderImpl implements ActionProvider {
 
         Lookup enhanced = new ProxyLookup(lookup, Lookups.fixed(replacements(convertedAction, lookup)));
         
-        RunConfig rc = ActionToGoalUtils.createRunConfig(convertedAction, project, enhanced);
+        RunConfig rc = ActionToGoalUtils.createRunConfig(convertedAction, proj.getLookup().lookup(NbMavenProjectImpl.class), enhanced);
         if (rc == null) {
             Logger.getLogger(ActionProviderImpl.class.getName()).log(Level.INFO, "No handling for action: {0}. Ignoring.", action); //NOI18N
 
@@ -232,7 +242,7 @@ public class ActionProviderImpl implements ActionProvider {
 
     private Map<String,String> replacements(String action, Lookup lookup) {
         Map<String,String> replacements = new HashMap<String,String>();
-        for (ReplaceTokenProvider prov : project.getLookup().lookupAll(ReplaceTokenProvider.class)) {
+        for (ReplaceTokenProvider prov : proj.getLookup().lookupAll(ReplaceTokenProvider.class)) {
             replacements.putAll(prov.createReplacements(action, lookup));
         }
         return replacements;
@@ -279,8 +289,11 @@ public class ActionProviderImpl implements ActionProvider {
                 COMMAND_MOVE.equals(action)) {
             return true;
         }
+        if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
+            return true;
+        }
         //TODO if order is important, use the lookupmerger
-        Collection<? extends ActionConvertor> convertors = project.getLookup().lookupAll(ActionConvertor.class);
+        Collection<? extends ActionConvertor> convertors = proj.getLookup().lookupAll(ActionConvertor.class);
         String convertedAction = null;
         for (ActionConvertor convertor : convertors) {
             convertedAction = convertor.convert(action, lookup);
@@ -291,7 +304,7 @@ public class ActionProviderImpl implements ActionProvider {
         if (convertedAction == null) {
             convertedAction = action;
         }
-        return ActionToGoalUtils.isActionEnable(convertedAction, project, lookup);
+        return ActionToGoalUtils.isActionEnable(convertedAction, proj.getLookup().lookup(NbMavenProjectImpl.class), lookup);
     }
 
     public Action createCustomMavenAction(String name, NetbeansActionMapping mapping, boolean showUI) {
@@ -318,9 +331,9 @@ public class ActionProviderImpl implements ActionProvider {
             }
 
             if (!showUI) {
-                ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null, Lookup.EMPTY);
+                ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
                 rc.setShowDebug(MavenSettings.getDefault().isShowDebug());
-                rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
+                rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
                 RunUtils.run(rc);
@@ -329,8 +342,8 @@ public class ActionProviderImpl implements ActionProvider {
             }
             RunGoalsPanel pnl = new RunGoalsPanel();
             DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Run_Maven());
-            ActionToGoalMapping maps = ActionToGoalUtils.readMappingsFromFileAttributes(project.getProjectDirectory());
-            pnl.readMapping(mapping, project, maps);
+            ActionToGoalMapping maps = ActionToGoalUtils.readMappingsFromFileAttributes(proj.getProjectDirectory());
+            pnl.readMapping(mapping, proj.getLookup().lookup(NbMavenProjectImpl.class), maps);
             pnl.setShowDebug(MavenSettings.getDefault().isShowDebug());
             pnl.setOffline(MavenSettings.getDefault().isOffline() != null ? MavenSettings.getDefault().isOffline() : false);
             pnl.setRecursive(true);
@@ -341,25 +354,25 @@ public class ActionProviderImpl implements ActionProvider {
                     maps.getActions().remove(0);
                 }
                 maps.getActions().add(mapping);
-                ActionToGoalUtils.writeMappingsToFileAttributes(project.getProjectDirectory(), maps);
+                ActionToGoalUtils.writeMappingsToFileAttributes(proj.getProjectDirectory(), maps);
                 if (pnl.isRememberedAs() != null) {
                     try {
-                        M2ConfigProvider conf = project.getLookup().lookup(M2ConfigProvider.class);
+                        M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
                         String tit = "CUSTOM-" + pnl.isRememberedAs(); //NOI18N
                         mapping.setActionName(tit);
                         mapping.setDisplayName(pnl.isRememberedAs());
                         //TODO shall we write to configuration based files or not?
-                        ModelHandle.putMapping(mapping, project, conf.getDefaultConfig());
+                        ModelHandle.putMapping(mapping, proj, conf.getDefaultConfig());
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 }
-                ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null, Lookup.EMPTY);
+                ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
                 rc.setOffline(Boolean.valueOf(pnl.isOffline()));
                 rc.setShowDebug(pnl.isShowDebug());
                 rc.setRecursive(pnl.isRecursive());
                 rc.setUpdateSnapshots(pnl.isUpdateSnapshots());
-                rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
+                rc.setTaskDisplayName(TXT_Build(proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
                 RunUtils.run(rc);
@@ -394,7 +407,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.customPopup", category = "Project")
-    @ActionRegistration(displayName = "#LBL_Custom_Run")
+    @ActionRegistration(displayName = "#LBL_Custom_Run", lazy=false)
     @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("LBL_Custom_Run=Custom")
     public static ContextAwareAction customPopupActions() {
@@ -431,7 +444,7 @@ public class ActionProviderImpl implements ActionProvider {
 
                 @Override
                 public void run() {
-                    NetbeansActionMapping[] maps = ActionToGoalUtils.getActiveCustomMappings(project);
+                    NetbeansActionMapping[] maps = ActionToGoalUtils.getActiveCustomMappings(proj.getLookup().lookup(NbMavenProjectImpl.class));
                     for (int i = 0; i < maps.length; i++) {
                         NetbeansActionMapping mapp = maps[i];
                         Action act = createCustomMavenAction(mapp.getActionName(), mapp, false);
@@ -459,7 +472,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.closeSubprojects", category = "Project")
-    @ActionRegistration(displayName = "#ACT_CloseRequired")
+    @ActionRegistration(displayName = "#ACT_CloseRequired", lazy=false)
     @ActionReference(position = 2000, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_CloseRequired=Close Required Projects")
     public static ContextAwareAction closeSubprojectsAction() {
@@ -489,7 +502,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.showProblems", category = "Project")
-    @ActionRegistration(displayName = "#ACT_ShowProblems")
+    @ActionRegistration(displayName = "#ACT_ShowProblems", lazy=false)
     @ActionReference(position = 3100, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_ShowProblems=Show and Resolve Problems...")
     public static ContextAwareAction showProblemsAction() {
@@ -526,7 +539,7 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @ActionID(id = "org.netbeans.modules.maven.buildWithDependencies", category = "Project")
-    @ActionRegistration(displayName = "#ACT_Build_Deps")
+    @ActionRegistration(displayName = "#ACT_Build_Deps", lazy=false)
     @ActionReference(position = 500, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_Build_Deps=Build with Dependencies")
     public static ContextAwareAction buildWithDependenciesAction() {

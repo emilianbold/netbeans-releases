@@ -59,22 +59,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
-import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
@@ -119,7 +114,7 @@ public class PathRegistryTest extends NbTestCase {
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
 
-        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, DeadLockSFBQImpl.class, OpenProject.class);
+        MockServices.setServices(FooPathRecognizer.class, SFBQImpl.class, DeadLockSFBQImpl.class);
 
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
@@ -478,7 +473,20 @@ public class PathRegistryTest extends NbTestCase {
         }
         assertEquals(2, l.ids.size());
     }
-    
+
+    public void testURLNoHostPart() throws Exception {
+        URL url = new URL ("file:///tmp/foo/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("jar:file:///tmp/foo.zip!/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("nbfs://nbhost/SystemFileSystem/PHP/RuntimeLibraries/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("jar:nbfs://nbhost/SystemFileSystem/PHP/RuntimeLibraries.zip!/");     //NOI18N
+        assertTrue(PathRegistry.noHostPart(url));
+        url = new URL ("http://myhost/foo/");     //NOI18N
+        assertFalse(PathRegistry.noHostPart(url));
+    }
+
     private static Collection<URL> collectResults () {
         final PathRegistry pr = PathRegistry.getDefault();
         final List<URL> result = new LinkedList<URL>();
@@ -753,63 +761,6 @@ public class PathRegistryTest extends NbTestCase {
                 latch.countDown();
             }
         }
-    }
-
-    public static class OpenProject implements  OpenProjectsTrampoline {
-
-        public Project[] getOpenProjectsAPI() {
-            return new Project[0];
-        }
-
-        public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-
-        }
-
-        public void closeAPI(Project[] projects) {
-
-        }
-
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-            
-        }
-
-        public Future<Project[]> openProjectsAPI() {
-            return new Future<Project[]>() {
-
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return true;
-                }
-
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                public boolean isDone() {
-                    return true;
-                }
-
-                public Project[] get() throws InterruptedException, ExecutionException {
-                    return new Project[0];
-                }
-
-                public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return new Project[0];
-                }
-            };
-        }
-
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-            
-        }
-
-        public Project getMainProject() {
-            return null;
-        }
-
-        public void setMainProject(Project project) {
-            
-        }
-
     }
 
 }

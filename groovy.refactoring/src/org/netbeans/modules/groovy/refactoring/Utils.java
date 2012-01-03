@@ -82,20 +82,26 @@ public class Utils {
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
         assert files.length >0;
         Set<URL> dependentRoots = new HashSet<URL>();
-        for (FileObject fo: files) {
-            Project p = null;
-            if (fo!=null)
-                p=FileOwnerQuery.getOwner(fo);
-            if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
-                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
-                }
-            } else {
-                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root:cp.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+        for (FileObject fo : files) {
+            if (fo != null) {
+                Project p = FileOwnerQuery.getOwner(fo);
+
+                if (p != null) {
+                    ClassPath sourceClasspath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                    if (sourceClasspath != null) {
+                        URL sourceRoot = URLMapper.findURL(sourceClasspath.findOwnerRoot(fo), URLMapper.INTERNAL);
+                        dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                    }
+
+                    for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                    }
+                    
+                } else {
+                    for(ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                        for (FileObject root : cp.getRoots()) {
+                            dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+                        }
                     }
                 }
             }

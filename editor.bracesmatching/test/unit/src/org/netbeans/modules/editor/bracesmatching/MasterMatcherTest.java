@@ -175,7 +175,8 @@ public class MasterMatcherTest extends NbTestCase {
         
         second.breakOutFromTheLoop = true; // stop the matchers loop
         }
-        
+        Thread.sleep(300);
+        bag.clear();
         {
         BlockingMatcher.blockInFindOrigin = false;
         
@@ -195,6 +196,8 @@ public class MasterMatcherTest extends NbTestCase {
         assertFalse("There should be no highlights", bag.getHighlights(0, Integer.MAX_VALUE).moveNext());
 
         second.breakOutFromTheLoop = true; // stop the matchers loop
+        Thread.sleep(300);
+        bag.clear();
         }
     }
 
@@ -237,18 +240,21 @@ public class MasterMatcherTest extends NbTestCase {
     }
 
     private static final class BlockingMatcher implements BracesMatcher, BracesMatcherFactory {
-
-        public static BlockingMatcher lastMatcher = null; 
+        private static volatile int counter;
         
-        public static boolean blockInFindOrigin = false;
+        public volatile static BlockingMatcher lastMatcher = null; 
         
-        public static int [] origin = null;
-        public static int [] matches = null;
+        public volatile static boolean blockInFindOrigin = false;
+        
+        public volatile static int [] origin = null;
+        public volatile static int [] matches = null;
         
         public final MatcherContext context;
         
         public volatile boolean breakOutFromTheLoop = false;
         public volatile boolean blocking;
+        
+        private int matcherId = counter++;
         
         public BlockingMatcher() {
             this(null);
@@ -259,30 +265,37 @@ public class MasterMatcherTest extends NbTestCase {
         }
         
         public int[] findOrigin() throws InterruptedException, BadLocationException {
+            System.out.println(matcherId + ": findOrigin");
             if (blockInFindOrigin) {
                 block();
             }
+            System.out.println(matcherId + ": findOrigin return");
             return origin;
         }
 
         public int[] findMatches() throws InterruptedException, BadLocationException {
+            System.out.println(matcherId + ": findMatches");
             if (!blockInFindOrigin) {
                 block();
             }
+            System.out.println(matcherId + ": findMatches return");
             return matches;
         }
 
         private void block() throws InterruptedException {
             blocking = true;
+            System.out.println(matcherId + ": blocking");
             try {
                 //System.out.println("!!! Blocking: " + this + ", offset = " + context.getCaretOffset());
                 for( ; !breakOutFromTheLoop; ) {
                     if (MatcherContext.isTaskCanceled()) {
+                        System.out.println(matcherId + ": cancelled");
                         return;
                     }
                 }
             } finally {
                 //System.out.println("!!! Not Blocking: " + this + ", offset = " + context.getCaretOffset());
+                System.out.println(matcherId + ": block terminated");
                 blocking = false;
             }
         }

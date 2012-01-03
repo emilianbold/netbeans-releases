@@ -662,7 +662,7 @@ public final class WLPluginProperties {
         }
 
         // we will add weblogic.server.modules jar manually as the path is hardcoded
-        // and may not be valid see #189537
+        // and may not be valid see #189537 and #206259
         String serverModulesJar = null;
         try {
             // JarInputStream cannot be used due to problem in weblogic.jar in Oracle Weblogic Server 10.3

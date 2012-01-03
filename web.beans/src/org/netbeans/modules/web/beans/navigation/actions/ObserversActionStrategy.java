@@ -103,8 +103,9 @@ final class ObserversActionStrategy implements ModelActionStrategy {
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model,
                 subject);
-        final List<ExecutableElement> observers = model.getObservers( var , null );
-        if ( observers.size() == 0 ){
+        final List<ExecutableElement> observers = 
+            var==null?null:model.getObservers( var , null );
+        if ( var==null || observers.size() == 0 ){
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
                             "LBL_ObserversNotFound"), // NOI18N

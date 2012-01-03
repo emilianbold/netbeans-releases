@@ -51,9 +51,9 @@ import org.w3c.dom.Element;
  * @author Petr Pisl, ads
  */
 public interface JSFConfigComponentFactory {
-    
+
     JSFConfigComponent create(Element element, JSFConfigComponent context);
-    
+
     FacesConfig createFacesConfig();
     ManagedBean createManagedBean();
     NavigationRule createNavigationRule();
@@ -92,6 +92,7 @@ public interface JSFConfigComponentFactory {
     ExceptionHandlerFactory createExceptionHandlerFactory();
     ExternalContextFactory createExternalContextFactory( );
     FacesContextFactory createFacesContextFactory();
+    FaceletCacheFactory createFaceletCacheFactory();
     PartialViewContextFactory createPartialViewContextFactory( );
     LifecycleFactory createLifecycleFactory();
     ViewDeclarationLanguageFactory createViewDeclarationLanguageFactory( );

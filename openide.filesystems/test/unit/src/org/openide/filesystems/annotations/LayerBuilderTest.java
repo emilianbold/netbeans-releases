@@ -47,8 +47,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -65,7 +63,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import javax.tools.ToolProvider;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.XMLFileSystem;
@@ -312,7 +309,7 @@ public class LayerBuilderTest extends NbTestCase {
         boolean status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
         String msgs = err.toString();
         assertTrue(msgs, status);
-        // JDK 7: assertTrue(msgs, msgs.contains("r1=x1"));
+        assertTrue(msgs, msgs.contains("r1=x1") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
         assertTrue(msgs, msgs.contains("r2=x2"));
         FileObject f = new XMLFileSystem(new File(dest, "META-INF/generated-layer.xml").toURI().toURL()).findResource("f");
         assertNotNull(f);
@@ -331,17 +328,13 @@ public class LayerBuilderTest extends NbTestCase {
         String msgs = err.toString();
         assertFalse(msgs, status);
         assertTrue(msgs, msgs.contains("resourcez"));
-        if (new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null) {
-            System.err.println("#196933: second half of testValidateResourceNonexistent will only pass when using JDK 7 javac, skipping");
-            return;
-        }
-        assertTrue(msgs, msgs.contains("r1=x1"));
+        assertTrue(msgs, msgs.contains("r1=x1") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"othr/x1\", r2=\"resources/x2\") public class C {}");
         err = new ByteArrayOutputStream();
         status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
         msgs = err.toString();
-        assertFalse(msgs, status);
-        assertTrue(msgs, msgs.contains("othr"));
+        assertFalse(msgs, status ^ AnnotationProcessorTestUtils.searchClasspathBroken());
+        assertTrue(msgs, msgs.contains("othr") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
     }
 
     // XXX verify that CLASS_OUTPUT may be used as well

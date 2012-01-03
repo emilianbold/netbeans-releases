@@ -51,7 +51,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate.Result;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -106,12 +105,6 @@ public class FetchTest extends AbstractGitTestCase {
         cfg.addURI(new URIish(otherWT.toURI().toURL().toString()));
         cfg.update(repository.getConfig());
         repository.getConfig().save();
-    }
-
-    public void testUpdateResult () {
-        for (Result result : Result.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(result.name()));
-        }
     }
 
     public void testFetchAllBranches () throws Exception {
@@ -288,12 +281,6 @@ public class FetchTest extends AbstractGitTestCase {
         assertEquals(tag.getId(), tags.get(tag.getTagName()).getTarget().getObjectId());
         assertEquals(1, updates.size());
         assertUpdate(updates.get(tag.getTagName()), tag.getTagName(), tag.getTagName(), tag.getId().getName(), null, new URIish(otherWT.toURI().toURL()).toString(), Type.TAG, GitRefUpdateResult.NEW);
-    }
-    
-    public void testConsistentReferenceUpdateResult () {
-        for (Result result : Result.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(result.name()));
-        }
     }
 
     private void setupRemoteSpec (String remote, String fetchSpec) throws URISyntaxException, IOException {

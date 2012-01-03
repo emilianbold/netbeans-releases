@@ -45,7 +45,9 @@ package org.netbeans.modules.java.hints.jdk;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +64,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.introduce.CopyFinder;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
@@ -116,7 +120,10 @@ public class JoinCatches {
             duplicates.put(mainVarType, i);
 
             for (int j = i + 1; j < catches.size(); j++) {
-                if (CopyFinder.isDuplicate(ctx.getInfo(), new TreePath(toTestPath, toTest.getBlock()), new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock()), true, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), false, Collections.singleton(excVar), new AtomicBoolean())) {
+                Pattern pattern = Pattern.createPatternWithRemappableVariables(new TreePath(toTestPath, toTest.getBlock()), Collections.singleton(excVar), false);
+                Iterable<? extends OccurrenceDescription> found = Matcher.create(ctx.getInfo(), new AtomicBoolean()).setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).setSearchRoot(new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock())).setTreeTopSearch().match(pattern);
+
+                if (found.iterator().hasNext()) {
                     TreePath catchPath = new TreePath(ctx.getPath(), catches.get(j));
                     TreePath var = new TreePath(catchPath, ((CatchTree)catches.get(j)).getParameter());
                     Collection<TreePath> statements = new ArrayList<TreePath>();
@@ -171,6 +178,15 @@ public class JoinCatches {
             return NbBundle.getMessage(JoinCatches.class, "FIX_JoinCatches");
         }
 
+        private void addDisjointType(List<Tree> to, Tree type) {
+            if (type == null) return;
+            if (type.getKind() == Kind.UNION_TYPE) {
+                to.addAll(((UnionTypeTree) type).getTypeAlternatives());
+            } else {
+                to.add(type);
+            }
+        }
+
         @Override
         protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             List<Tree> disjointTypes = new LinkedList<Tree>();
@@ -178,10 +194,10 @@ public class JoinCatches {
             int first = duplicates.iterator().next();
 
             duplicates.remove(first);
-            disjointTypes.add(tt.getCatches().get(first).getParameter().getType());
+            addDisjointType(disjointTypes, tt.getCatches().get(first).getParameter().getType());
 
             for (Integer d : duplicates) {
-                disjointTypes.add(tt.getCatches().get((int) d).getParameter().getType());
+                addDisjointType(disjointTypes, tt.getCatches().get((int) d).getParameter().getType());
             }
 
             List<CatchTree> newCatches = new LinkedList<CatchTree>();

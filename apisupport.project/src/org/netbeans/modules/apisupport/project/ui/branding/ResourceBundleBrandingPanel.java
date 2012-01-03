@@ -164,8 +164,6 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             }
         });
 
-        view.setUseSubstringInQuickSearch(true);
-
         searchLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         searchLabel.setLabelFor(searchField);
         org.openide.awt.Mnemonics.setLocalizedText(searchLabel, org.openide.util.NbBundle.getMessage(ResourceBundleBrandingPanel.class, "ResourceBundleBrandingPanel.searchLabel.text")); // NOI18N

@@ -79,6 +79,7 @@ import org.openide.util.RequestProcessor;
 public class LanguagesManager extends org.netbeans.api.languages.LanguagesManager {
     
     private static LanguagesManager languagesManager;
+   private static final RequestProcessor RP = new RequestProcessor(LanguagesManager.class.getName(), 1);
     
     public static LanguagesManager getDefault () {
         if (languagesManager == null)
@@ -140,7 +141,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                     }
                 });
                 final String mimeType2 = mimeType;
-                RequestProcessor.getDefault ().post (new Runnable () {
+                RP.post(new Runnable() {
                     public void run () {
                         try {
                             language.read ();

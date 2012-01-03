@@ -94,6 +94,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     private JLabel createErrorLabel() {
         ErrorLabel.Validator validator = new ErrorLabel.Validator() {
 
+            @Override
             public String validate(String text) {
                 if( null == text 
                     || text.length() == 0 ) return "";
@@ -105,6 +106,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         
         final ErrorLabel eLabel = new ErrorLabel( name.getDocument(), validator );
         eLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent e) {
                 btnOk.setEnabled(eLabel.isInputTextValid());
             }

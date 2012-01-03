@@ -48,6 +48,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -161,6 +162,31 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         performTest(SOURCE, 126, 25);
         clearWorkDir();
         performTest(SOURCE, 141, 35);
+        clearWorkDir();
+    }
+    
+    public void test206416_1() throws Exception {
+        if (!Utilities.isWindows()) { // somehow it is failing on windows due to not removed file
+            // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
+            performTest(SOURCE, 148, 14);
+            clearWorkDir();
+            performTest(SOURCE, 152, 10);
+        }
+    }
+    
+    public void test206416_2() throws Exception {
+        // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
+        performTest(SOURCE, 149, 19);
+        clearWorkDir();
+        performTest(SOURCE, 150, 20);
+    }
+    
+    public void test206416_3() throws Exception {
+        // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
+        performTest(SOURCE, 155, 14);
+        clearWorkDir();
+        performTest(SOURCE, 156, 10);
+        clearWorkDir();
     }
     
     public void testAddSymbolMoreParams() throws Exception {
@@ -169,6 +195,7 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         performTest(SOURCE, 132, 25);
         clearWorkDir();
         performTest(SOURCE, 140, 35);
+        clearWorkDir();
     }
     
     @Override

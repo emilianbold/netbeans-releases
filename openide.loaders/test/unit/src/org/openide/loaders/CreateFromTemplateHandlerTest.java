@@ -34,23 +34,15 @@
 
 package org.openide.loaders;
 
-import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
@@ -76,7 +68,7 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         Hand.name = null;
         Hand.parameters = null;
         
-        MockServices.setServices(Hand.class, Attr.class, DD.class, Pool.class);
+        MockServices.setServices(Hand.class, Attr.class, Pool.class);
     }
 
     protected void tearDown() throws Exception {
@@ -173,7 +165,9 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         
         TemplateWizard t = new TemplateWizard();
         t.putProperty("type", "empty");
-        Set<DataObject> created = t.instantiate(obj, folder);
+        t.setTemplate(obj);
+        t.setTargetFolder(folder);
+        Set<DataObject> created = t.handleInstantiate();
         assertNotNull(created);
         assertEquals("One is created: " + created, 1, created.size());
         
@@ -238,31 +232,6 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
             String name
         ) {
             return Collections.singletonMap("name", name);
-        }
-    }
-    
-    public static final class DD extends DialogDisplayer {
-        public Object notify(NotifyDescriptor descriptor) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Dialog createDialog(final DialogDescriptor descriptor) {
-            return new JDialog() {
-                @Deprecated
-                public void show() {
-                    for (Object object : descriptor.getOptions()) {
-                        if (object instanceof JButton) {
-                            JButton b = (JButton)object;
-                            if (b.getText().equals("Finish")) {
-                                descriptor.setValue(WizardDescriptor.FINISH_OPTION);
-                                b.doClick();
-                                return;
-                            }
-                        }
-                    }
-                    fail("Cannot find Finish button: " + Arrays.asList(descriptor.getOptions()));
-                }
-            };
         }
     }
     

@@ -90,5 +90,6 @@ public class ProjectPropertyNames {
     public static final String PROJECT_PROP_CLASSIC_USE_MY_PROXIES = "use.my.proxies"; //NOI18N
     public static final String PROJECT_PROP_PROXY_SRC_DIR = "src.proxies.dir";
     public static final String PROJECT_PROP_PROCESSOR_PATH = "javac.processorpath";
+    public static final String PROJECT_PROP_USE_PREPROCESSOR = "compile.use.preprocessor"; //NOI18N
     private ProjectPropertyNames(){}
 }

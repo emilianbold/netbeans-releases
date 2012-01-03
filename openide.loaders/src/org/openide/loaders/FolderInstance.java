@@ -49,7 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -462,13 +461,10 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         return cookie;
     }
     private void revertProblematicFile(DataObject dob) {
-        Object rw = dob.getPrimaryFile().getAttribute("removeWritables"); // NOI18N
-        if (rw instanceof Callable) {
-            try {
-                ((Callable<?>) rw).call();
-            } catch (Exception x) {
-                err.log(Level.INFO, null, x);
-            }
+        try {
+            dob.getPrimaryFile().revert();
+        } catch (IOException x) {
+            err.log(Level.INFO, null, x);
         }
     }
     

@@ -420,13 +420,6 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    public static class AccessibleParentEditor extends ComponentChooserEditor {
-        public AccessibleParentEditor() {
-            super();
-            setBeanTypes(new Class[] { Accessible.class });
-        }
-    }
-    
     /**
      * Preferred size of the component in the layout.
      */

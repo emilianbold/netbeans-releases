@@ -291,6 +291,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = SUBROUTINE_IMPL;
         } else if (object instanceof ModuleImpl) {
             aHandler = MODULE_IMPL;
+        } else if (object instanceof ReferencesIndex) {
+            aHandler = MODEL_INDEX;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -562,6 +564,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new ModuleImpl(stream);
                 break;
 
+            case MODEL_INDEX:
+                obj = ReferencesIndex.create(stream);
+                break;
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
         }
@@ -673,7 +678,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
     private static final int MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
 
+    private static final int MODEL_INDEX                   = MODULE_IMPL + 1;
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = MODULE_IMPL;
+    public static final int LAST_INDEX = MODEL_INDEX;
 }

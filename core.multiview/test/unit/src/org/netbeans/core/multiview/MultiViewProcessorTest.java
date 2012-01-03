@@ -49,6 +49,8 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -136,8 +138,11 @@ public class MultiViewProcessorTest extends NbTestCase {
         
         CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
         assertNotNull("MultiViewComponent created", cmv);
+        cmv.open();
         TopComponent mvc = cmv.cloneTopComponent();
         doCheck(mvc, ic);
+        
+        assertTrue("First component can be closed without any questions", cmv.close());
         
         CntAction accept = new CntAction();
         CntAction discard = new CntAction();
@@ -205,6 +210,41 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
     }
     
+    
+    public void testLookupInitializedForCloneable() {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        ic.add(10);
+
+        CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
+        assertEquals("10 now", Integer.valueOf(10), cmv.getLookup().lookup(Integer.class));
+        
+        assertNotNull("MultiViewComponent created", cmv);
+        TopComponent mvc = cmv.cloneTopComponent();
+        
+        assertNotNull("MultiViewComponent cloned", mvc);
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(mvc);
+        assertNotNull("Handler found", handler);
+        
+        assertEquals("10 now", Integer.valueOf(10), mvc.getLookup().lookup(Integer.class));
+        ic.remove(10);
+        ic.add(1);
+        assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+    }
+    
+    public void testLookupInitialized() {
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        ic.add(10);
+
+        TopComponent mvc = MultiViews.createMultiView("text/context", new LP(lookup));
+        assertEquals("10 now", Integer.valueOf(10), mvc.getLookup().lookup(Integer.class));
+        ic.remove(10);
+        ic.add(1);
+        assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
+    }
+    
+    
     public void testNotSourceView() {
         int cnt = 0;
         for (MultiViewDescription d : MimeLookup.getLookup("text/context").lookupAll(MultiViewDescription.class)) {
@@ -225,7 +265,6 @@ public class MultiViewProcessorTest extends NbTestCase {
                 + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
                 + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
         + "@MultiViewElement.Registration(displayName = \"Testing\","
-        + "iconBase = \"none\","
         + "mimeType = \"text/ble\","
         + "persistenceType = 0,"
         + "preferredID = \"bleple\")"
@@ -237,6 +276,60 @@ public class MultiViewProcessorTest extends NbTestCase {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertTrue("Compilation should succeed:\n" + os.toString(), res);
+    }
+    
+    public void testCompileInAptFullPath() throws Exception {
+        clearWorkDir();
+        String src = "\n"
+                + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
+                + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
+        + "@MultiViewElement.Registration(displayName = \"Testing\","
+        + "iconBase = \"pkg/one.png\","
+        + "mimeType = \"text/ble\","
+        + "persistenceType = 0,"
+        + "preferredID = \"bleple\")"
+                + "  public static MultiViewElement create() {\n"
+                + "    return new Test();\n"
+                + "  }\n"
+                + "}\n";
+        generateIcon("one.png");
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "pkg.Test", src);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertTrue("Compilation should succeed:\n" + os.toString(), res);
+    }
+
+    private void generateIcon(String icon) throws IOException {
+        File pkg = new File(getWorkDir(), "pkg");
+        pkg.mkdirs();
+        File f = new File(pkg, icon);
+        f.createNewFile();
+    }
+
+    public void testFailsWithoutAnIcon() throws Exception {
+        clearWorkDir();
+        String src = "\n"
+                + "import org.netbeans.core.spi.multiview.MultiViewElement;\n"
+                + "public class Test extends org.netbeans.core.multiview.MultiViewProcessorTest.MVE {\n"
+        + "@MultiViewElement.Registration(displayName = \"Testing\","
+        + "iconBase = \"pkg/none-existing.png\","
+        + "mimeType = \"text/ble\","
+        + "persistenceType = 0,"
+        + "preferredID = \"bleple\")"
+                + "  public static MultiViewElement create() {\n"
+                + "    return new Test();\n"
+                + "  }\n"
+                + "}\n";
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "pkg.Test", src);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        if (AnnotationProcessorTestUtils.searchClasspathBroken()) {
+            assertTrue("Alas, compilation succeded", res);
+            return;
+        }
+        assertFalse("Compilation should fail:\n" + os.toString(), res);
+        assertTrue("because of missing icon:\n" + os.toString(), os.toString().contains("iconBase"));
+        assertTrue("because of missing icon:\n" + os.toString(), os.toString().contains("Cannot find resource pkg/none-existing.png"));
     }
     
     public void testIsSourceView() {
@@ -334,7 +427,7 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="org.netbeans.core.multiview.TestBundle#FIGARO",
-        iconBase="none",
+        iconBase="empty.png",
         mimeType="text/figaro",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="figaro"
@@ -411,7 +504,7 @@ public class MultiViewProcessorTest extends NbTestCase {
     
     @MultiViewElement.Registration(
         displayName="Contextual",
-        iconBase="none",
+        iconBase="empty.png",
         mimeType="text/context",
         persistenceType=TopComponent.PERSISTENCE_ALWAYS,
         preferredID="context"
@@ -435,7 +528,7 @@ public class MultiViewProcessorTest extends NbTestCase {
 
     @MultiViewElement.Registration(
         displayName="Source",
-        iconBase="none",
+        iconBase="empty.png",
         mimeType="text/plaintest",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="source"

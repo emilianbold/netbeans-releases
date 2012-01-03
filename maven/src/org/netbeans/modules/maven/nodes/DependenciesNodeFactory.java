@@ -71,11 +71,13 @@ public class DependenciesNodeFactory implements NodeFactory {
         private DependenciesNode.DependenciesChildren compile;
         private DependenciesNode.DependenciesChildren runtime;
         private DependenciesNode.DependenciesChildren test;
+        private DependenciesNode.DependenciesChildren noncp;
         NList(NbMavenProjectImpl prj) {
             project = prj;
-            compile = new DependenciesNode.DependenciesChildren(project, DependenciesNode.TYPE_COMPILE);
-            runtime = new DependenciesNode.DependenciesChildren(project, DependenciesNode.TYPE_RUNTIME);
-            test = new DependenciesNode.DependenciesChildren(project, DependenciesNode.TYPE_TEST);
+            compile = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.COMPILE);
+            runtime = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.RUNTIME);
+            test = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.TEST);
+            noncp = new DependenciesNode.DependenciesChildren(project, DependenciesNode.Type.NONCP);
         }
         
         @Override public void propertyChange(PropertyChangeEvent evt) {
@@ -96,28 +98,17 @@ public class DependenciesNodeFactory implements NodeFactory {
             if (test.regenerateKeys() > 0) {
                 list.add(test);
             }
+            if (noncp.regenerateKeys() > 0) {
+                list.add(noncp);
+            }
             return list;
         }
         
         @Override public Node node(DependenciesNode.DependenciesChildren key) {
-            if (key == compile) {
-                if (key.getParentNode() != null) {
-                    return key.getParentNode();
-                }
-                return  new DependenciesNode(compile, project, DependenciesNode.TYPE_COMPILE);
-            } else if (key == test) {
-                if (key.getParentNode() != null) {
-                    return key.getParentNode();
-                }
-                return  new DependenciesNode(test, project, DependenciesNode.TYPE_TEST);
-            } else if (key == runtime) {
-                if (key.getParentNode() != null) {
-                    return key.getParentNode();
-                }
-                return  new DependenciesNode(runtime, project, DependenciesNode.TYPE_RUNTIME);
+            if (key.getParentNode() != null) {
+                return key.getParentNode();
             }
-            assert false: "Wrong key for Dependencies NodeFactory: " + key; //NOI18N
-            return null;
+            return new DependenciesNode(key, project, key.type);
         }
         
         @Override

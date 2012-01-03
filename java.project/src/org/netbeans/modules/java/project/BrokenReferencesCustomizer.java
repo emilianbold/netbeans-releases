@@ -51,10 +51,10 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.File;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.StaticResource;
 
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
@@ -342,8 +342,8 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
 
-    private static Icon brokenRef = ImageUtilities.loadImageIcon("org/netbeans/modules/java/project/resources/broken-reference.gif", false); // NOI18N
-    private static Icon resolvedRef = ImageUtilities.loadImageIcon("org/netbeans/modules/java/project/resources/resolved-reference.gif", false); // NOI18N
+    private static final @StaticResource String BROKEN_REF = "org/netbeans/modules/java/project/resources/broken-reference.gif";
+    private static final @StaticResource String RESOLVED_REF = "org/netbeans/modules/java/project/resources/resolved-reference.gif";
 
     private static class ListCellRendererImpl extends DefaultListCellRenderer {
 
@@ -356,9 +356,9 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         public @Override Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );            
             if (model.isBroken(index)) {
-                setIcon(brokenRef);
+                setIcon(ImageUtilities.loadImageIcon(BROKEN_REF, false));
             } else {
-                setIcon(resolvedRef);
+                setIcon(ImageUtilities.loadImageIcon(RESOLVED_REF, false));
             }
             
             return this;

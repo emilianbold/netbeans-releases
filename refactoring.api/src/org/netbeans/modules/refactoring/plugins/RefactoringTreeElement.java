@@ -61,6 +61,7 @@ public class RefactoringTreeElement implements TreeElement {
         this.element = element;
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
             Object composite = element.getLookup().lookup(Object.class);
@@ -71,14 +72,17 @@ public class RefactoringTreeElement implements TreeElement {
         return TreeElementFactory.getTreeElement(element.getParentFile());
     }
     
+    @Override
     public Icon getIcon() {
         return null;
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return element.getDisplayText();
     }
 
+    @Override
     public Object getUserObject() {
         return element;
     }

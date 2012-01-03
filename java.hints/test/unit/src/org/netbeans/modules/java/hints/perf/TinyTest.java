@@ -230,6 +230,42 @@ public class TinyTest extends TestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void testLengthOneStringIndexOf206141a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private boolean test(String aa) {\n" +
+                       "         return aa.indexOf(\"\\\\\", 2) != 0;\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:27-3:31:verifier:indexOf(\"\\\\\")",
+                       "indexOf('.')",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private boolean test(String aa) {\n" +
+                        "         return aa.indexOf(\'\\\\\', 2) != 0;\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testLengthOneStringIndexOf206141b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private boolean test(String aa) {\n" +
+                       "         return aa.indexOf(\"\\n\", 2) != 0;\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:27-3:31:verifier:indexOf(\"\\n\")",
+                       "indexOf('.')",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private boolean test(String aa) {\n" +
+                        "         return aa.indexOf(\'\\n\', 2) != 0;\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
     public void testGetClassInsteadOfDotClass1() throws Exception {
         performFixTest("test/Test.java",
                        "package test;\n" +

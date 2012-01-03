@@ -64,5 +64,6 @@ public final class ProjectTemplateWizardKeys {
     public static final String PROJECT_TEMPLATE_INSTANCE_AID = "instanceaid"; //NOI18N
     public static final String PROJECT_TEMPLATE_APPLET_AID = "appletaid"; //NOI18N
     public static final String PROJECT_TEMPLATE_PROJECT_NAME_SPACES = "projectnamespaces"; //NOI18N
+    public static final String PROJECT_TEMPLATE_USE_PREPROCESSOR = "usepreprocessor"; //NOI18N
     private ProjectTemplateWizardKeys(){}
 }

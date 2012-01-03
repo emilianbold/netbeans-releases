@@ -49,7 +49,11 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.text.*;
 import javax.swing.Icon;
@@ -57,13 +61,18 @@ import javax.swing.Icon;
 import org.netbeans.editor.*;
 import javax.swing.JLabel;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.xml.api.model.GrammarResult;
+import org.netbeans.modules.xml.api.model.DescriptionSource;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  * This class carries result information required by NetBeans Editor module.
@@ -72,6 +81,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  * @author  Sandeep Randhawa
  */
 class XMLResultItem implements CompletionItem {
+    private static final Logger LOG = Logger.getLogger(XMLResultItem.class.getName());
     
     // text to be diplayed to user
     public final String displayText;
@@ -304,25 +314,160 @@ class XMLResultItem implements CompletionItem {
     protected CompletionTask doCreateDocumentationTask(final GrammarResult res) {
         return new CompletionTask() {
             public void query(CompletionResultSet resultSet) {
-                if (res != null && res.getDescription() != null) {
-                    resultSet.setDocumentation(new Docum(res.getDescription()));
-    
+                CompletionDocumentation cd = create();
+                if (cd != null) {
+                    resultSet.setDocumentation(cd);
                 }
                 resultSet.finish();
             }
             public void refresh(CompletionResultSet resultSet) {
-                if (res != null && res.getDescription() != null) {
-                    resultSet.setDocumentation(new Docum(res.getDescription()));
-                }
-                resultSet.finish();
+                query(resultSet);
             }
             public void cancel() {}
+
+            
+            private CompletionDocumentation create() {
+                String doc;
+                
+                doc = res.getDescription();
+                if (!(res instanceof DescriptionSource)) {
+                    if (doc == null) {
+                        return null;
+                    }
+                    return new Docum(doc);
+                } else {
+                    DescriptionSource ds = (DescriptionSource)res;
+                    if (doc == null && ds.getContentURL() == null) {
+                        return null;
+                    }
+                    return new ExtDocum(ds,  doc);
+                }
+            }
         };
+    }
+
+    /**
+     * Extended documentation, based on the {@link DescriptionSource} SPI.
+     */
+    private static class ExtDocum extends URLDocum implements CompletionDocumentation {
+        private DescriptionSource src;
+        private String doc;
+
+        ExtDocum(DescriptionSource src, String doc) {
+            super(src.getContentURL(), src.isExternal());
+            this.src = src;
+            this.doc = doc;
+        }
+
+        @Override
+        public String getText() {
+            if (doc == null) {
+                doc = src.getDescription();
+                if (doc == null) {
+                    doc = super.getText();
+                }
+            }
+            return doc;
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            try {
+                DescriptionSource target = src.resolveLink(link);
+                if (target != null) {
+                    return new ExtDocum(target, null);
+                }
+                
+                URL base = src.getContentURL();
+                if (base == null) {
+                    // sorry, cannot resolve.
+                    return null;
+                }
+                
+                URL targetURL = new URL(base, link);
+                
+                // leave the VM as soon as possible. This hack uses URLMappers
+                // to find out whether URL (converted to FO and back) can be
+                // represented outside the VM
+                boolean external = true;
+                FileObject f = URLMapper.findFileObject(targetURL);
+                if (f != null) {
+                    external = URLMapper.findURL(f, URLMapper.EXTERNAL) != null;
+                }
+                return new URLDocum(targetURL, external);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    }
+    
+    /**
+     * Pure URL documentation item. Resolves links, if original URL was able
+     * to open externally, the derived URLs do it as well.
+     */
+    private static class URLDocum implements CompletionDocumentation {
+        URL content;
+        boolean external;
+        
+        URLDocum(URL content, boolean external) {
+            this.content = content;
+            this.external = external;
+        }
+        
+        URLDocum(boolean external) {
+            this.external = external;
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+
+        @Override
+        public String getText() {
+            if (content == null) {
+                return null;
+            }
+            FileObject f = URLMapper.findFileObject(content);
+            if (f != null) {
+                try {
+                    return new String(f.asBytes(), FileEncodingQuery.getEncoding(f));
+                } catch (IOException x) {
+                    LOG.log(Level.INFO, "Could not load " + content, x);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public URL getURL() {
+            return external ? content : null;
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            if (content == null) {
+                return null;
+            }
+            try {
+                return new URLDocum(new URL(content, link), external);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+        
     }
     
     private static class Docum implements CompletionDocumentation {
         private String doc;
-
+        
         private Docum(String doc) {
             this.doc = doc;
         }

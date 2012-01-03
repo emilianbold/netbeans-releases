@@ -1,0 +1,1 @@
+token #0 T_TWIG_OTHER [FOO\n{% include foo %}\n\nBAR\n\nFOOBAR\n]

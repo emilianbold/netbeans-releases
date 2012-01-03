@@ -89,7 +89,7 @@ public class ByteStreamReader implements DataInput {
         return fileName;
     }
     
-    public void setDataEncoding(int encoding) {
+    public void setDataEncoding(int encoding) throws IOException {
         if (encoding == LSB || encoding == MSB) {
             dataEncoding = encoding;
             if (encoding == LSB) {

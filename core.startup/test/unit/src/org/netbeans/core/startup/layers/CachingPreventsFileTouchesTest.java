@@ -47,6 +47,7 @@ package org.netbeans.core.startup.layers;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
@@ -80,7 +81,8 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
                 CachingPreventsFileTouchesTest.class
-            ).reuseUserDir(false).enableModules("platform\\d*", ".*").enableClasspathModules(false);
+            ).reuseUserDir(false).enableModules("platform\\d*", ".*").enableClasspathModules(false)
+            .honorAutoloadEager(true);
             conf = conf.addTest("testInitUserDir").gui(false);
             suite.addTest(conf.suite());
         }
@@ -90,7 +92,8 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
                 CachingPreventsFileTouchesTest.class
-            ).reuseUserDir(true).enableModules("platform\\d*", ".*").enableClasspathModules(false);
+            ).reuseUserDir(true).enableModules("platform\\d*", ".*").enableClasspathModules(false)
+            .honorAutoloadEager(true);
             conf = conf.addTest("testReadAccess").gui(false);
             suite.addTest(conf.suite());
         }
@@ -100,7 +103,11 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
 
     public void testInitUserDir() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-        Class<?> c = Class.forName("javax.help.HelpSet", true, l);
+        try {
+            Class<?> c = Class.forName("javax.help.HelpSet", true, l);
+        } catch (ClassNotFoundException ex) {
+            LOG.log(Level.FINE, "Can't pre-load JavaHelp", ex);
+        }
         FileObject fo = FileUtil.getConfigFile("Services/Browsers");
         fo.delete();
         // will be reset next time the system starts
@@ -116,7 +123,11 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
 
     public void testReadAccess() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-        Class<?> c = Class.forName("javax.help.HelpSet", true, l);
+        try {
+            Class<?> c = Class.forName("javax.help.HelpSet", true, l);
+        } catch (ClassNotFoundException ex) {
+            LOG.log(Level.FINE, "Can't pre-load JavaHelp", ex);
+        }
         try {
             if (CountingSecurityManager.isEnabled()) {
                 CountingSecurityManager.assertCounts("No reads during startup", 0);

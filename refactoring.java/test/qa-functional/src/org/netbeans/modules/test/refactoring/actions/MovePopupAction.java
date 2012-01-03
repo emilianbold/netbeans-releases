@@ -54,12 +54,13 @@ public class MovePopupAction implements TestAction {
     
     public static final String popupPath = "Refactor|Move...";
 
+    @Override
     public void perform(Object parameter) {
         perform((EditorOperator)parameter);
     }
        
     public void perform(EditorOperator editor) {
-        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);
+        editor.clickForPopup();
         JPopupMenuOperator jpmo = new JPopupMenuOperator();
         jpmo.pushMenuNoBlock(new String[]{"Refactor","Move..."});
     }

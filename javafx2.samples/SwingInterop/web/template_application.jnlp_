@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="6.0" xmlns:jfx="http://javafx.com" href="@NAME@_application.jnlp">
+  <information>
+    <title>@TITLE@</title>
+    <vendor>@VENDOR@</vendor>
+    <description>Swing application embedding JavaFX components.</description>
+    <offline-allowed/>
+  </information>
+  <security>
+      <all-permissions/>
+  </security>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jfx:javafx-runtime version="2.0+" href="http://javafx.com/jfx-20.exe"/>
+    <jar href="@NAME@.jar" size="@FILESIZE@" download="eager" />
+  </resources>
+  <application-desc main-class="@MAINCLASS@"/>
+  <update check="background"/>
+</jnlp>

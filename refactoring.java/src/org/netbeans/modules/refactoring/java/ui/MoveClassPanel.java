@@ -50,23 +50,13 @@ import java.awt.event.ActionListener;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -112,6 +102,7 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         if (initialized)
             return ;
@@ -136,6 +127,7 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         // Determine the extension
     }
     
+    @Override
     public void requestFocus() {
         packageComboBox.requestFocus();
     }
@@ -285,6 +277,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
 
     // ActionListener implementation -------------------------------------------
         
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (projectsComboBox == e.getSource()) {
             project = (Project) projectsComboBox.getSelectedItem();
@@ -300,14 +293,17 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     
     // DocumentListener implementation -----------------------------------------
     
+    @Override
     public void changedUpdate(DocumentEvent e) {                
         fireChange();        
     }    
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         fireChange();        
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         fireChange();        
     }
@@ -367,6 +363,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         }
         
         // #89393: GTK needs name to render cell renderer "natively"
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
@@ -376,6 +373,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     /** Groups combo renderer, used also in CopyClassPanel */
     static class GroupCellRenderer extends BaseCellRenderer {
         
+        @Override
         public Component getListCellRendererComponent(
             JList list,
             Object value,
@@ -411,6 +409,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     /** Projects combo renderer, used also in CopyClassPanel */
     static class ProjectCellRenderer extends BaseCellRenderer {
         
+        @Override
         public Component getListCellRendererComponent(
             JList list,
             Object value,
@@ -445,6 +444,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         
         private static Comparator COLLATOR = Collator.getInstance();
         
+        @Override
         public int compare(Object o1, Object o2) {
             
             if ( !( o1 instanceof Project ) ) {
@@ -461,6 +461,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         }
     }    
 
+    @Override
     public Component getComponent() {
         return this;
     }

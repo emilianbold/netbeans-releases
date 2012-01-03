@@ -131,8 +131,10 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
             int fileStart = toByteIndex(start);
             int byteCount = toByteIndex(end - start);
+            BufferResource<ByteBuffer> br = null;
             try {
-                CharBuffer chb = getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer();
+                br = getStorage().getReadBuffer(fileStart, byteCount);
+                CharBuffer chb = br.getBuffer().asCharBuffer();
                 //#68386 satisfy the request as much as possible, but if there's not enough remaining
                 // content, not much we can do..
                 int len = Math.min(end - start, chb.remaining());
@@ -141,11 +143,15 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             } catch (Exception e) {
                 handleException (e);
                 return new char[0];
+            } finally {
+                if (br != null) {
+                    br.releaseBuffer();
+                }
             }
         }
     }
 
-    CharBuffer getCharBuffer(int start, int len) {
+    private BufferResource<CharBuffer> getCharBuffer(int start, int len) {
         if (len < 0 || start < 0) {
             throw new IllegalArgumentException ("Illogical text range from " + start + " to " + (start + len));
         }
@@ -161,17 +167,31 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     fileStart + " to " + (fileStart + byteCount) + " requested, " +
                     "but storage is only " + available + " bytes long");
             }
+            BufferResource<ByteBuffer> readBuffer = null;
             try {
-                return getStorage().getReadBuffer(fileStart, byteCount).asCharBuffer();
+                readBuffer = getStorage().getReadBuffer(fileStart, byteCount);
+                return new CharBufferResource(readBuffer);
             } catch (Exception e) {
+                if (readBuffer != null) {
+                    readBuffer.releaseBuffer();
+                }
                 return null;
             }
         }
     }
 
-    public String getText (int start, int end) {
-        CharBuffer cb = getCharBuffer(start, end - start);
-        return cb != null ? cb.toString() : new String(new char[end - start]);
+    @Override
+    public String getText(int start, int end) {
+        BufferResource<CharBuffer> br = getCharBuffer(start, end - start);
+        try {
+            CharBuffer cb = br.getBuffer();
+            String s = cb != null ? cb.toString() : new String(new char[end - start]);
+            return s;
+        } finally {
+            if (br != null) {
+                br.releaseBuffer();
+            }
+        }
     }
 
     void onDispose(int lastStorageSize) {
@@ -783,12 +803,20 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             for (int i = 0; i < getLineCount(); i++) {
                 int lineStart = getCharLineStart(i);
                 int lineLength = length(i);
-                CharBuffer cb = getCharBuffer(lineStart, lineLength);
-                ByteBuffer bb = encoder.encode(cb);
-                ch.write(bb);
-                if (i != getLineCount() - 1) {
-                    lsbb.rewind();
-                    ch.write(lsbb);
+                BufferResource<CharBuffer> br = getCharBuffer(lineStart,
+                        lineLength);
+                try {
+                    CharBuffer cb = br.getBuffer();
+                    ByteBuffer bb = encoder.encode(cb);
+                    ch.write(bb);
+                    if (i != getLineCount() - 1) {
+                        lsbb.rewind();
+                        ch.write(lsbb);
+                    }
+                } finally {
+                    if (br != null) {
+                        br.releaseBuffer();
+                    }
                 }
             }
             ch.close();
@@ -875,6 +903,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             pattern = pattern.toLowerCase();
         }
         while (true) {
+            BufferResource<ByteBuffer> br = null;
             int size = getCharCount() - start;
             if (size > MAX_FIND_SIZE) {
                 int l = getLineAt(start + MAX_FIND_SIZE);
@@ -884,29 +913,39 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             }
             CharBuffer buff = null;
             try {
-                buff = storage.getReadBuffer(toByteIndex(start), toByteIndex(size)).asCharBuffer();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (buff == null) {
-                break;
-            }
-            if (regExp) {
-                if (this.pattern == null) {
-                    this.pattern =  matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                try {
+                    br = storage.getReadBuffer(toByteIndex(start), toByteIndex(size));
+                    buff = br.getBuffer().asCharBuffer();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                Matcher matcher = this.pattern.matcher(buff);
-                if (matcher.find()) {
-                    return new int[]{start + matcher.start(), start + matcher.end()};
+                if (buff == null) {
+                    break;
                 }
-            } else {
-                int idx = matchCase ? buff.toString().indexOf(pattern)
-                        : buff.toString().toLowerCase().indexOf(pattern);
-                if (idx != -1) {
-                    return new int[] {start + idx, start + idx + pattern.length()};
+                if (regExp) {
+                    if (this.pattern == null) {
+                        this.pattern = matchCase
+                                ? Pattern.compile(pattern)
+                                : Pattern.compile(pattern,
+                                Pattern.CASE_INSENSITIVE);
+                    }
+                    Matcher matcher = this.pattern.matcher(buff);
+                    if (matcher.find()) {
+                        return new int[]{start + matcher.start(), start + matcher.end()};
+                    }
+                } else {
+                    int idx = matchCase ? buff.toString().indexOf(pattern)
+                            : buff.toString().toLowerCase().indexOf(pattern);
+                    if (idx != -1) {
+                        return new int[]{start + idx, start + idx + pattern.length()};
+                    }
+                }
+                start += buff.length();
+            } finally {
+                if (br != null) {
+                    br.releaseBuffer();
                 }
             }
-            start += buff.length();
         }
         return null;
     }
@@ -934,34 +973,44 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             if (start == end) {
                 break;
             }
-            CharBuffer buff = null;
+            BufferResource<ByteBuffer> br = null;
             try {
-                buff = storage.getReadBuffer(toByteIndex(start), toByteIndex(end - start)).asCharBuffer();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (buff == null) {
-                break;
-            }
-            if (regExp) {
-                if (this.pattern == null) {
-                    this.pattern =  matchCase ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                CharBuffer buff = null;
+                try {
+                    br = storage.getReadBuffer(toByteIndex(start), toByteIndex(end - start));
+                    buff = br.getBuffer().asCharBuffer();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                Matcher matcher = this.pattern.matcher(buff);
-                int mStart = -1;
-                int mEnd = -1;
-                while (matcher.find()) {
-                    mStart = matcher.start();
-                    mEnd = matcher.end();
+                if (buff == null) {
+                    break;
                 }
-                if (mStart != -1) {
-                    return new int[]{start + mStart, start + mEnd};
+                if (regExp) {
+                    if (this.pattern == null) {
+                        this.pattern = matchCase
+                                ? Pattern.compile(pattern)
+                                : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                    }
+                    Matcher matcher = this.pattern.matcher(buff);
+                    int mStart = -1;
+                    int mEnd = -1;
+                    while (matcher.find()) {
+                        mStart = matcher.start();
+                        mEnd = matcher.end();
+                    }
+                    if (mStart != -1) {
+                        return new int[]{start + mStart, start + mEnd};
+                    }
+                } else {
+                    int idx = matchCase ? buff.toString().lastIndexOf(pattern)
+                            : buff.toString().toLowerCase().lastIndexOf(pattern);
+                    if (idx != -1) {
+                        return new int[]{start + idx, start + idx + pattern.length()};
+                    }
                 }
-            } else {
-                int idx = matchCase ? buff.toString().lastIndexOf(pattern)
-                        : buff.toString().toLowerCase().lastIndexOf(pattern);
-                if (idx != -1) {
-                    return new int[] {start + idx, start + idx + pattern.length()};
+            } finally {
+                if (br != null) {
+                    br.releaseBuffer();
                 }
             }
         }
@@ -1085,6 +1134,32 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 tabLength += tabLengthSums.get(n - 1);
             }
             tabLengthSums.add(tabLength);
+        }
+    }
+
+    /**
+     * Character buffer resource for a Byte buffer resource. At most one
+     * CharBufferResource can exists for a ByteBufferResource.
+     */
+    private class CharBufferResource implements BufferResource<CharBuffer> {
+
+        private BufferResource<ByteBuffer> parentResource;
+        private CharBuffer cb;
+
+        public CharBufferResource(BufferResource<ByteBuffer> parentResource) {
+            this.parentResource = parentResource;
+            this.cb = parentResource.getBuffer().asCharBuffer();
+        }
+
+        @Override
+        public CharBuffer getBuffer() {
+            return cb;
+        }
+
+        @Override
+        public void releaseBuffer() {
+            cb = null;
+            parentResource.releaseBuffer();
         }
     }
 }

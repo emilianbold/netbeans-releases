@@ -163,8 +163,8 @@ public class CssIndexer extends EmbeddingIndexer {
 
     public static class Factory extends EmbeddingIndexerFactory {
 
-        static final String NAME = "css"; //NOI18N
-        static final int VERSION = 1;
+        public static final String NAME = "css"; //NOI18N
+        public static final int VERSION = 1;
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {

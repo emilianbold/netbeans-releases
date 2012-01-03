@@ -126,7 +126,7 @@ class NamedStereotypeObjectProvider extends AbstractObjectProvider<NamedStereoty
         for (AnnotationMirror annotationMirror : stereotypes) {
             TypeElement annotation = (TypeElement)annotationMirror.
                 getAnnotationType().asElement();
-            if (AnnotationObjectProvider.hasAnnotation(annotation, 
+            if (annotation!= null && AnnotationObjectProvider.hasAnnotation(annotation, 
                     FieldInjectionPointLogic.NAMED_QUALIFIER_ANNOTATION, helper))
             {
                 return true; 

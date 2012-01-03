@@ -53,25 +53,32 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
+import org.netbeans.junit.NbModuleSuite;
 
-/** Test WidgetOperator, LabelWidgetOperator and ConnectionWidgetOperator.
+/**
+ * Test WidgetOperator, LabelWidgetOperator and ConnectionWidgetOperator.
  *
  * @author Jiri Skrivanek
  */
 public class WidgetOperatorTest extends JellyTestCase {
 
-    /** Creates test case with given name.
+    /**
+     * Creates test case with given name.
+     *
      * @param testName name of test case
      */
     public WidgetOperatorTest(String testName) {
         super(testName);
     }
 
-    /** Define test suite.
+    /**
+     * Define test suite.
+     *
      * @return suite.
      */
     public static Test suite() {
-        return createModuleTest(WidgetOperatorTest.class,
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WidgetOperatorTest.class);
+        return conf.clusters(".*").enableModules(".*").gui(false).addTest(
                 // test cases have to be in particular order
                 "testShowScene",
                 "testConstructors",
@@ -90,10 +97,12 @@ public class WidgetOperatorTest extends JellyTestCase {
                 // must be after testDragNDrop
                 "testConnectionWidgetOperator",
                 "testLabelWidgetOperator",
-                "testCloseScene");
+                "testCloseScene").suite();
     }
 
-    /** Print out test name. */
+    /**
+     * Print out test name.
+     */
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -102,13 +111,17 @@ public class WidgetOperatorTest extends JellyTestCase {
     protected static TopComponentOperator tco;
     protected static Scene scene;
 
-    /** Creates and shows test scene. */
+    /**
+     * Creates and shows test scene.
+     */
     public static void testShowScene() {
         scene = new Utils.TestScene();
         tco = new TopComponentOperator(Utils.showScene(scene));
     }
 
-    /** Tests varios constructors. */
+    /**
+     * Tests various constructors.
+     */
     public static void testConstructors() {
         WidgetOperator wo = new WidgetOperator(tco, 0);
         assertEquals("First widget should be returned.", wo.getWidget(), scene.getChildren().get(0));
@@ -118,17 +131,23 @@ public class WidgetOperatorTest extends JellyTestCase {
         assertEquals("Secondt widget should be returned.", new WidgetOperator(parentWO, 1).getWidget(), scene.getChildren().get(1));
     }
 
-    /** Tests getSceneOperator method. */
+    /**
+     * Tests getSceneOperator method.
+     */
     public void testGetSceneOperator() {
         assertEquals("Scene operator should hold Scene instance", scene, new WidgetOperator(tco, 0).getSceneOperator().getWidget());
     }
 
-    /** Tests getParent method. */
+    /**
+     * Tests getParent method.
+     */
     public void testGetParent() {
         assertEquals("getParent() should hold Scene instance for the first widget", scene, new WidgetOperator(tco, 0).getParent().getWidget());
     }
 
-    /** Tests getChildren method. */
+    /**
+     * Tests getChildren method.
+     */
     public void testGetChildren() {
         List<WidgetOperator> children = new WidgetOperator(scene).getChildren();
         new WidgetOperator(scene).printDump();
@@ -138,18 +157,24 @@ public class WidgetOperatorTest extends JellyTestCase {
         assertEquals("Wrong third child.", new WidgetOperator(tco, 2).getWidget(), children.get(2).getWidget());
     }
 
-    /** Tests getCenter method. */
+    /**
+     * Tests getCenter method.
+     */
     public void testGetCenter() {
         // remember center will change if you change label
         assertTrue("Wrong center of widget calculated.", new Point(120, 95).distance(new LabelWidgetOperator(tco, "Label 0").getCenter()) < 5.0);
     }
 
-    /** Tests getLocation method. */
+    /**
+     * Tests getLocation method.
+     */
     public void testGetLocation() {
         assertEquals("Wrong location of widget calculated.", new Point(100, 100), new LabelWidgetOperator(tco, "Label 0").getLocation());
     }
 
-    /** Tests getBounds method. */
+    /**
+     * Tests getBounds method.
+     */
     public void testGetBounds() {
         // bounds can slightly differ on some platforms => we check it with some tolerance
         Rectangle bounds = new LabelWidgetOperator(tco, "Label 0").getBounds();
@@ -159,7 +184,9 @@ public class WidgetOperatorTest extends JellyTestCase {
 
     }
 
-    /** Tests printDump method. */
+    /**
+     * Tests printDump method.
+     */
     public void testPrintDump() {
         StringWriter stringWriter = new StringWriter();
         WidgetOperator sceneOper = new WidgetOperator(scene);
@@ -168,42 +195,52 @@ public class WidgetOperatorTest extends JellyTestCase {
         assertTrue("Dump of widgets should contain LabelWidget", stringWriter.toString().contains("LabelWidget"));
     }
 
-    /** Tests createOperator method. */
+    /**
+     * Tests createOperator method.
+     */
     public void testCreateOperator() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         assertTrue("Should create LabelWidgetOperator instance.",
                 WidgetOperator.createOperator(lwo.getWidget()) instanceof LabelWidgetOperator);
     }
 
-    /** Test performPopupAction method. */
+    /**
+     * Test performPopupAction method.
+     */
     public void testPerformPopupAction() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         lwo.performPopupAction("Open");
         new JDialogOperator("Open").close();
     }
 
-    /** Test performPopupActionNoBlock method. */
+    /**
+     * Test performPopupActionNoBlock method.
+     */
     public void testPerformPopupActionNoBlock() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         lwo.performPopupActionNoBlock("Modal");
         new JDialogOperator("Modal").close();
     }
 
-    /** Tests clickMouse method. */
+    /**
+     * Tests clickMouse method.
+     */
     public void testClickMouse() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         lwo.clickMouse(1);
         new JDialogOperator("Mouse Clicked 1").close();
     }
 
-    /** Tests dragNDrop method. */
+    /**
+     * Tests dragNDrop method.
+     */
     public void testDragNDrop() {
         LabelWidgetOperator lwo0 = new LabelWidgetOperator(tco, "Label 0");
         LabelWidgetOperator lwo1 = new LabelWidgetOperator(tco, "Label 1");
         // drag from one widget to another
         lwo0.dragNDrop(lwo1);
         // check connection is created
-        new ConnectionWidgetOperator(tco);
+        ConnectionWidgetOperator oper = new ConnectionWidgetOperator(tco);
         LabelWidgetOperator lwoMovable = new LabelWidgetOperator(tco, "Movable Widget");
         Point location1 = lwoMovable.getLocation();
         lwoMovable.dragNDrop(30, 30);
@@ -215,7 +252,9 @@ public class WidgetOperatorTest extends JellyTestCase {
         assertFalse("Movable Widget not moved by drag and drop.", location3.equals(location2));
     }
 
-    /** Tests ConnectionWidgetOperator. */
+    /**
+     * Tests ConnectionWidgetOperator.
+     */
     public void testConnectionWidgetOperator() {
         ConnectionWidgetOperator cwo = new ConnectionWidgetOperator(tco);
         LabelWidgetOperator lwo0 = new LabelWidgetOperator(tco, "Label 0");
@@ -228,13 +267,17 @@ public class WidgetOperatorTest extends JellyTestCase {
         assertEquals("Wrong number of control points.", 2, cwo.getControlPoints().size());
     }
 
-    /** Tests LabelWidgetOperator. */
+    /**
+     * Tests LabelWidgetOperator.
+     */
     public void testLabelWidgetOperator() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         assertEquals("Wrong widget found.", "Label 0", lwo.getLabel());
     }
 
-    /** Close scene. */
+    /**
+     * Close scene.
+     */
     public static void testCloseScene() {
         new JFrameOperator("Test Scene").close();
     }

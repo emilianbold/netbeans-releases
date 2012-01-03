@@ -169,10 +169,8 @@ public class CompileSupport extends CompileOptionsProvider {
         FileObject properties = projectDirectory.getFileObject("nbproject/private/"+confName+"."+STORAGE_SUFFIX); // NOI18N
         if (properties != null && properties.isValid()) {
             Properties p = new Properties();
-            FileLock lock = null;
             BufferedReader in = null;
             try {
-                lock = properties.lock();
                 in = new BufferedReader(new InputStreamReader(properties.getInputStream(), "UTF-8")); // NOI18N
                 String line = null;
                 while (true) {
@@ -205,9 +203,6 @@ public class CompileSupport extends CompileOptionsProvider {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-                }
-                if (lock != null) {
-                    lock.releaseLock();
                 }
             }
         }

@@ -45,6 +45,8 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.modules.java.hints.jackpot.impl.TestBase;
 
@@ -84,6 +86,26 @@ public class MatcherUtilitiesTest extends TestBase {
         HintContext ctx = HintContext.create(info, null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
 
         assertTrue(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), "$1 $0 = $_;"));
+    }
+
+    public void testOutVariables1() throws Exception {
+        String code = "package test; public class Test { private int test() { int i = test(|); } }";
+        int pos = code.indexOf("|");
+
+        code = code.replaceAll(Pattern.quote("|"), "");
+
+        prepareTest("test/Test.java", code);
+
+        TreePath tp = info.getTreeUtilities().pathFor(pos);
+        HintContext ctx = HintContext.create(info, null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+
+        Map<String, TreePath> outVariables = new HashMap<String, TreePath>();
+        Map<String, Collection<? extends TreePath>> outMultiVariables = new HashMap<String, Collection<? extends TreePath>>();
+        Map<String, String> outVariables2Names = new HashMap<String, String>();
+
+        assertTrue(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), "$1 $0 = $_;", outVariables, outMultiVariables, outVariables2Names));
+        assertEquals("int", outVariables.get("$1").getLeaf().toString());
+        assertEquals("i", outVariables2Names.get("$0"));
     }
 
 }

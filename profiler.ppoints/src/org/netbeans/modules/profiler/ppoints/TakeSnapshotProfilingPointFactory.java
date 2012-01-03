@@ -52,7 +52,7 @@ import java.text.MessageFormat;
 import java.util.Properties;
 import javax.swing.Icon;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsIcons;
 import org.openide.util.Lookup;
 
 
@@ -60,26 +60,19 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TakeSnapshotProfilingPointFactory_PpType=Take Snapshot",
+    "TakeSnapshotProfilingPointFactory_PpDescr=Takes snapshot of currently collected profiling results similarly to Take Snapshot action in Profiler UI. You may use this Profiling Point for collecting results deltas when combined with Reset Results Profiling Point or by setting appropriate flag.",
+//# Take Snapshot at Anagrams.java:32
+    "TakeSnapshotProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String PP_TYPE = NbBundle.getMessage(TakeSnapshotProfilingPointFactory.class,
-                                                              "TakeSnapshotProfilingPointFactory_PpType"); // NOI18N
-    private static final String PP_DESCR = NbBundle.getMessage(TakeSnapshotProfilingPointFactory.class,
-                                                               "TakeSnapshotProfilingPointFactory_PpDescr"); // NOI18N
-    private static final String PP_DEFAULT_NAME = NbBundle.getMessage(TakeSnapshotProfilingPointFactory.class,
-                                                                      "TakeSnapshotProfilingPointFactory_PpDefaultName"); // NOI18N
-                                                                                                                          // -----
-    public static final String TAKE_SNAPSHOT_PP_TYPE = PP_TYPE;
-    public static final String TAKE_SNAPSHOT_PP_DESCR = PP_DESCR;
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getDescription() {
-        return TAKE_SNAPSHOT_PP_DESCR;
+        return Bundle.TakeSnapshotProfilingPointFactory_PpDescr();
     }
 
     public Icon getIcon() {
@@ -95,7 +88,7 @@ public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory
     }
 
     public String getType() {
-        return TAKE_SNAPSHOT_PP_TYPE;
+        return Bundle.TakeSnapshotProfilingPointFactory_PpType();
     }
 
     public TakeSnapshotProfilingPoint create(Lookup.Provider project) {
@@ -114,8 +107,7 @@ public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory
             File file = FileUtil.normalizeFile(new File(location.getFile()));
             String filename = FileUtil.toFileObject(file).getName();
             String name = Utils.getUniqueName(getType(),
-                                              MessageFormat.format(PP_DEFAULT_NAME,
-                                                                   new Object[] { "", filename, location.getLine() }), project); // NOI18N
+                                              Bundle.TakeSnapshotProfilingPointFactory_PpDefaultName("", filename, location.getLine()), project); // NOI18N
 
             return new TakeSnapshotProfilingPoint(name, location, project, this);
         }

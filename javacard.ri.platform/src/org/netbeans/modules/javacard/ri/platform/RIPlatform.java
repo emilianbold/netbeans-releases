@@ -449,8 +449,12 @@ public class RIPlatform extends JavacardPlatform {
 
     @Override
     public SpecificationVersion getJavacardVersion() {
-        String ver = props.getProperty(JavacardDeviceKeyNames.DEVICE_JAVACARD_VERSION);
-        return ver == null ? new SpecificationVersion("3.0") : new SpecificationVersion(ver);
+        // first determine "javacard.version"
+        String ver = props.getProperty(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION);
+        if (ver == null) {
+            ver = props.getProperty(JavacardDeviceKeyNames.DEVICE_JAVACARD_VERSION);
+        }
+        return ver == null ? new SpecificationVersion("3.0") : new SpecificationVersion(ver); //NOI18N
     }
 
     @Override

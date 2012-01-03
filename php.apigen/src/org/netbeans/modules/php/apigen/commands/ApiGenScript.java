@@ -1,0 +1,321 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.php.apigen.commands;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.apigen.options.ApiGenOptions;
+import org.netbeans.modules.php.apigen.ui.ApiGenPreferences;
+import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+
+/**
+ * Represents <a href="http://apigen.org/">apigen</a> command line tool.
+ */
+public final class ApiGenScript extends PhpProgram {
+
+    public static final String SCRIPT_NAME = "apigen"; // NOI18N
+    public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
+
+    public static final String ACCESS_LEVEL_PUBLIC = "public"; // NOI18N
+    public static final String ACCESS_LEVEL_PROTECTED = "protected"; // NOI18N
+    public static final String ACCESS_LEVEL_PRIVATE = "private"; // NOI18N
+
+    public static final String DEFAULT_CONFIG_NAME = "apigen.neon"; // NOI18N
+    public static final String DEFAULT_ACCESS_LEVELS = ACCESS_LEVEL_PUBLIC + "," + ACCESS_LEVEL_PROTECTED; // NOI18N
+    public static final boolean DEFAULT_INTERNAL = false;
+    public static final boolean DEFAULT_PHP = true;
+    public static final boolean DEFAULT_TREE = true;
+    public static final boolean DEFAULT_DEPRECATED = false;
+    public static final boolean DEFAULT_TODO = false;
+    public static final boolean DEFAULT_DOWNLOAD = false;
+    public static final boolean DEFAULT_SOURCE_CODE = true;
+
+    private static final String SOURCE_PARAM = "--source"; // NOI18N
+    private static final String DESTINATION_PARAM = "--destination"; // NOI18N
+    private static final String TITLE_PARAM = "--title"; // NOI18N
+    private static final String CONFIG_PARAM = "--config"; // NOI18N
+    private static final String CHARSET_PARAM = "--charset"; // NOI18N
+    private static final String EXCLUDE_PARAM = "--exclude"; // NOI18N
+    private static final String ACCESS_LEVELS_PARAM = "--access-levels"; // NOI18N
+    private static final String INTERNAL_PARAM = "--internal"; // NOI18N
+    private static final String PHP_PARAM = "--php"; // NOI18N
+    private static final String TREE_PARAM = "--tree"; // NOI18N
+    private static final String DEPRECATED_PARAM = "--deprecated"; // NOI18N
+    private static final String TODO_PARAM = "--todo"; // NOI18N
+    private static final String DOWNLOAD_PARAM = "--download"; // NOI18N
+    private static final String SOURCE_CODE_PARAM = "--source-code"; // NOI18N
+    private static final String PROGRESSBAR_PARAM = "--progressbar"; // NOI18N
+    private static final String COLORS_PARAM = "--colors"; // NOI18N
+    private static final String UPDATE_CHECK_PARAM = "--update-check"; // NOI18N
+
+    private static final String LIST_SEPARATOR = ","; // NOI18N
+
+    // check for update just once
+    private static boolean updateChecked = false;
+
+
+    private ApiGenScript(String command) {
+        super(command);
+    }
+
+    /**
+     * Get the default, <b>valid only</b> ApiGen script.
+     * @return the default, <b>valid only</b> ApiGen script.
+     * @throws InvalidPhpProgramException if ApiGen script is not valid.
+     */
+    public static ApiGenScript getDefault() throws InvalidPhpProgramException {
+        String apiGen = ApiGenOptions.getInstance().getApiGen();
+        String error = validate(apiGen);
+        if (error != null) {
+            throw new InvalidPhpProgramException(error);
+        }
+        return new ApiGenScript(apiGen);
+    }
+
+    public static String validate(String command) {
+        return new ApiGenScript(command).validate();
+    }
+
+    @NbBundle.Messages("ApiGenScript.prefix=ApiGen script: {0}")
+    @Override
+    public String validate() {
+        String error = FileUtils.validateFile(getProgram(), false);
+        if (error == null) {
+            return null;
+        }
+        return Bundle.ApiGenScript_prefix(error);
+    }
+
+    @NbBundle.Messages({
+        "ApiGenScript.api.generating=Generating API documentation for {0}",
+        "ApiGenScript.error.generating=Generating API documentation for {0} failed, review Output window for details."
+    })
+    public void generateDocumentation(final PhpModule phpModule) {
+        String target = ApiGenPreferences.getTarget(phpModule, true);
+        if (target == null) {
+            // canceled
+            return;
+        }
+
+        // XXX can be removed once #206254 is fixed
+        final String ioTitle = Bundle.ApiGenScript_api_generating(phpModule.getDisplayName());
+        final InputOutput output = IOProvider.getDefault().getIO(ioTitle, false);
+        ExternalProcessBuilder processBuilder = getProcessBuilder()
+                .workingDirectory(FileUtil.toFile(phpModule.getProjectDirectory()));
+        for (String param : getParams(phpModule)) {
+            processBuilder = processBuilder
+                    .addArgument(param);
+        }
+        ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
+                .inputOutput(output)
+                .frontWindow(true)
+                .optionsPath(ApiGenOptionsPanelController.getOptionsPath());
+
+        try {
+            int status = executeAndWait(
+                    processBuilder,
+                    executionDescriptor,
+                    ioTitle);
+            File targetDir = new File(target);
+            if (status == 0) {
+                if (targetDir.isDirectory()) {
+                    File index = new File(target, "index.html"); // NOI18N
+                    if (index.isFile()) {
+                        // false for pdf e.g.
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
+                    }
+                }
+            } else {
+                // error?
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                        Bundle.ApiGenScript_error_generating(phpModule.getDisplayName()), NotifyDescriptor.ERROR_MESSAGE));
+                output.select();
+            }
+            // refresh fs
+            if (targetDir.isDirectory()) {
+                FileUtil.refreshFor(targetDir);
+            }
+        } catch (CancellationException ex) {
+            // canceled
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, ApiGenOptionsPanelController.OPTIONS_SUBPATH);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    private List<String> getParams(PhpModule phpModule) {
+        List<String> params = new ArrayList<String>();
+        addSource(phpModule, params);
+        addDestination(phpModule, params);
+        addTitle(phpModule, params);
+        addConfig(phpModule, params);
+        addCharsets(phpModule, params);
+        addExcludes(phpModule, params);
+        addAccessLevels(phpModule, params);
+        addInternal(phpModule, params);
+        addPhp(phpModule, params);
+        addTree(phpModule, params);
+        addDeprecated(phpModule, params);
+        addTodo(phpModule, params);
+        addDownload(phpModule, params);
+        addSourceCode(phpModule, params);
+        addColors(phpModule, params);
+        addProgressBar(phpModule, params);
+        addUpdateCheck(phpModule, params);
+        return params;
+    }
+
+    private void addSource(PhpModule phpModule, List<String> params) {
+        params.add(SOURCE_PARAM);
+        params.add(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath());
+    }
+
+    private void addDestination(PhpModule phpModule, List<String> params) {
+        params.add(DESTINATION_PARAM);
+        params.add(ApiGenPreferences.getTarget(phpModule, false));
+    }
+
+    private void addTitle(PhpModule phpModule, List<String> params) {
+        params.add(TITLE_PARAM);
+        params.add(ApiGenPreferences.get(phpModule, ApiGenPreferences.TITLE));
+    }
+
+    private void addConfig(PhpModule phpModule, List<String> params) {
+        String config = ApiGenPreferences.get(phpModule, ApiGenPreferences.CONFIG);
+        if (StringUtils.hasText(config)) {
+            params.add(CONFIG_PARAM);
+            params.add(config);
+        }
+    }
+
+    private void addCharsets(PhpModule phpModule, List<String> params) {
+        for (String charset : ApiGenPreferences.getMore(phpModule, ApiGenPreferences.CHARSETS)) {
+            params.add(CHARSET_PARAM);
+            params.add(charset);
+        }
+    }
+
+    private void addExcludes(PhpModule phpModule, List<String> params) {
+        for (String exclude : ApiGenPreferences.getMore(phpModule, ApiGenPreferences.EXCLUDES)) {
+            params.add(EXCLUDE_PARAM);
+            params.add(exclude);
+        }
+    }
+
+    private void addAccessLevels(PhpModule phpModule, List<String> params) {
+        params.add(ACCESS_LEVELS_PARAM);
+        params.add(StringUtils.implode(ApiGenPreferences.getMore(phpModule, ApiGenPreferences.ACCESS_LEVELS), LIST_SEPARATOR));
+    }
+
+    private void addInternal(PhpModule phpModule, List<String> params) {
+        addBoolean(params, INTERNAL_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.INTERNAL));
+    }
+
+    private void addPhp(PhpModule phpModule, List<String> params) {
+        addBoolean(params, PHP_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.PHP));
+    }
+
+    private void addTree(PhpModule phpModule, List<String> params) {
+        addBoolean(params, TREE_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.TREE));
+    }
+
+    private void addDeprecated(PhpModule phpModule, List<String> params) {
+        addBoolean(params, DEPRECATED_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.DEPRECATED));
+    }
+
+    private void addTodo(PhpModule phpModule, List<String> params) {
+        addBoolean(params, TODO_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.TODO));
+    }
+
+    private void addDownload(PhpModule phpModule, List<String> params) {
+        addBoolean(params, DOWNLOAD_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.DOWNLOAD));
+    }
+
+    private void addSourceCode(PhpModule phpModule, List<String> params) {
+        addBoolean(params, SOURCE_CODE_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.SOURCE_CODE));
+    }
+
+    // disable progress bar (does not work in output window)
+    private void addProgressBar(PhpModule phpModule, List<String> params) {
+        addBoolean(params, PROGRESSBAR_PARAM, false);
+    }
+
+    // always set colors since output windows supports ANSI coloring
+    private void addColors(PhpModule phpModule, List<String> params) {
+        addBoolean(params, COLORS_PARAM, true);
+    }
+
+    private void addUpdateCheck(PhpModule phpModule, List<String> params) {
+        addBoolean(params, UPDATE_CHECK_PARAM, !updateChecked);
+        if (!updateChecked) {
+            updateChecked = true;
+        }
+    }
+
+    private void addBoolean(List<String> params, String param, boolean value) {
+        params.add(param);
+        params.add(value ? "yes" : "no"); // NOI18N
+    }
+
+}

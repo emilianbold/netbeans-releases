@@ -2169,6 +2169,7 @@ final class Central implements ControllerHandler {
         if( draggable.isTopComponentTransfer() ) {
             ModeImpl newMode = createFloatingMode( bounds, draggable.getKind() );
             moveTopComponentIntoMode( newMode, draggable.getTopComponent() );
+            newMode.setSelectedTopComponent( draggable.getTopComponent() );
         } else {
             userUndockedMode( draggable.getMode(), bounds );
         }

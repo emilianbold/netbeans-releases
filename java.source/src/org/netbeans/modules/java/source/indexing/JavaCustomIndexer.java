@@ -73,6 +73,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
@@ -93,6 +94,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
+import org.netbeans.modules.java.source.util.Iterators;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
@@ -556,7 +558,8 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
         if (!active.virtual) {
-            ErrorsCache.setErrors(context.getRootURI(), active.indexable, errors.getDiagnostics(active.jfo), active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
+            Iterable<Diagnostic<? extends JavaFileObject>> filteredErrorsList = Iterators.filter(errors.getDiagnostics(active.jfo), new FilterOutDiamondWarnings());
+            ErrorsCache.setErrors(context.getRootURI(), active.indexable, filteredErrorsList, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
         }
     }
 
@@ -1002,8 +1005,8 @@ public class JavaCustomIndexer extends CustomIndexer {
         public String getMessage(Diagnostic<?> t) {
             return t.getMessage(null);
         }
-    };
-    
+    }
+
     private static List<? extends URL> getSrcRootPeers(final Map<URL,List<URL>> root2Peers, final URL rootURL) {        
         List<URL> result = root2Peers.get(rootURL);
         if (result == null) {
@@ -1015,5 +1018,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                 result
             });
         return result;
+    }
+
+    private static final Set<String> DIAMOND_KINDS = new HashSet<String>(Arrays.asList("compiler.warn.diamond.redundant.args", "compiler.warn.diamond.redundant.args.1"));
+
+    private static class FilterOutDiamondWarnings implements Comparable<Diagnostic<? extends JavaFileObject>> {
+        @Override public int compareTo(Diagnostic<? extends JavaFileObject> o) {
+            return DIAMOND_KINDS.contains(o.getCode()) ? 0 : -1;
+        }
     }
 }

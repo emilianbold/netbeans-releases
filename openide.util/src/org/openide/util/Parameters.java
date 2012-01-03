@@ -79,7 +79,7 @@ public class Parameters {
 
     /**
      * Asserts the parameter value is not <code>null</code>.
-     *
+     * <p>Use {@code java.util.Objects.requireNonNull} in JDK 7.
      * @param  name the parameter name.
      * @param  value the parameter value.
      * @throws NullPointerException if the parameter value is <code>null</code>.

@@ -141,7 +141,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
 
     /** Test of getToolbar(String) method. */
     public void testGetToolbarString() {
-        mainWindowOper.getToolbar("Memory"); // NOI18N
+        mainWindowOper.getToolbar("File"); // NOI18N
     }
 
     /** Test of getToolbarCount method. */

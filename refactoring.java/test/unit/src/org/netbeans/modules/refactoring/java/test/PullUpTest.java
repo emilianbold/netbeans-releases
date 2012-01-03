@@ -55,7 +55,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.openide.filesystems.FileObject;
@@ -676,7 +676,7 @@ public class PullUpTest extends RefactoringTestBase {
                 
                 MemberInfo[] members = new MemberInfo[1];
                 TypeMirror implementedInterface = classEl.getInterfaces().get(position);
-                members[0] = MemberInfo.create(RetoucheUtils.typeToElement(implementedInterface, info), info, MemberInfo.Group.IMPLEMENTS);
+                members[0] = MemberInfo.create(RefactoringUtils.typeToElement(implementedInterface, info), info, MemberInfo.Group.IMPLEMENTS);
 
                 r[0] = new PullUpRefactoring(TreePathHandle.create(classEl, info));
                 r[0].setTargetType(ElementHandle.create(superEl));

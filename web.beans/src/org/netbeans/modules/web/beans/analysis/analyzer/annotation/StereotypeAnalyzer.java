@@ -63,6 +63,7 @@ import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 import org.openide.util.NbBundle;
+import org.netbeans.spi.editor.hints.Severity;
 
 
 /**
@@ -106,6 +107,47 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
             return;
         }
         checkTransitiveStereotypes( element , targets, model , result );
+        if ( cancel.get() ){
+            return;
+        }
+        checkTyped( element , model , result );
+        if ( cancel.get() ){
+            return;
+        }
+        checkQualifers( element , model, result );
+    }
+
+    private void checkQualifers( TypeElement element, WebBeansModel model,
+            Result result )
+    {
+        List<AnnotationMirror> qualifiers = model.getQualifiers(element, true);
+        for (AnnotationMirror annotationMirror : qualifiers) {
+            Element annotation = annotationMirror.getAnnotationType().asElement();
+            if ( annotation instanceof TypeElement && 
+                    ((TypeElement)annotation).getQualifiedName().contentEquals( 
+                            AnnotationUtil.NAMED))
+            {
+                continue;
+            }
+            else {
+                result.addNotification( Severity.WARNING , element, model,  
+                        NbBundle.getMessage(StereotypeAnalyzer.class, 
+                                "WARN_QualifiedStereotype"));            // NOI18N
+                break;
+            }
+        }        
+    }
+
+    private void checkTyped( TypeElement element, WebBeansModel model,
+            Result result )
+    {
+        AnnotationMirror typed = AnnotationUtil.getAnnotationMirror(element, 
+                model.getCompilationController(), AnnotationUtil.TYPED);
+        if ( typed != null ){
+            result.addNotification( Severity.WARNING , element, model,  
+                    NbBundle.getMessage(StereotypeAnalyzer.class, 
+                            "WARN_TypedStereotype"));            // NOI18N
+        }
     }
 
     private void checkTransitiveStereotypes( TypeElement element,

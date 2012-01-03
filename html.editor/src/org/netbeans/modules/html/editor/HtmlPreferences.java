@@ -66,6 +66,7 @@ public class HtmlPreferences {
     private static boolean autocompleQuotes;
     public static boolean completionOffersEndTagAfterLt;
     private static boolean autoPopupCompletionWindow;
+    private static boolean autoPopupEndTagAutoCompletion;
 
     //extract inlined style panel preferences
     private static SelectorType selectorType;
@@ -98,6 +99,9 @@ public class HtmlPreferences {
             }
             if (settingName == null || HtmlCompletionOptionsPanel.HTML_COMPLETION_AUTOPOPUP_WINDOW.equals(settingName)) {
                 autoPopupCompletionWindow = preferences.getBoolean(HtmlCompletionOptionsPanel.HTML_COMPLETION_AUTOPOPUP_WINDOW, HtmlCompletionOptionsPanel.HTML_COMPLETION_AUTOPOPUP_WINDOW_DEFAULT);
+            }
+            if (settingName == null || HtmlCompletionOptionsPanel.HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP.equals(settingName)) {
+                autoPopupEndTagAutoCompletion = preferences.getBoolean(HtmlCompletionOptionsPanel.HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP, HtmlCompletionOptionsPanel.HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP_DEFAULT);
             }
             if (settingName == null || SELECTOR_TYPE_PROPERTY_NAME.equals(settingName)) {
                 selectorType = SelectorType.valueOf(preferences.get(SELECTOR_TYPE_PROPERTY_NAME, SELECTOR_TYPE_DEFAULT.name()));
@@ -156,6 +160,11 @@ public class HtmlPreferences {
     public static boolean autoPopupCompletionWindow() {
         lazyIntialize();
         return autoPopupCompletionWindow;
+    }
+    
+    public static boolean autoPopupEndTagAutoCompletion() {
+        lazyIntialize();
+        return autoPopupEndTagAutoCompletion;
     }
 
     public static SelectorType extractInlinedStylePanelSelectorType() {

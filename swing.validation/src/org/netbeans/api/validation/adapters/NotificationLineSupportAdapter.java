@@ -63,7 +63,7 @@ public final class NotificationLineSupportAdapter implements ValidationUI {
     }
 
     @Override
-    public void setProblem(Problem p) {
+    public void showProblem(Problem p) {
         switch (p.severity()) {
             case INFO :
                 nls.setInformationMessage(p.getMessage());

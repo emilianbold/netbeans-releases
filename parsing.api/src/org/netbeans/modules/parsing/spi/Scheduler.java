@@ -116,7 +116,7 @@ public abstract class Scheduler {
      * Reschedule all tasks registered for <code>this</code> Scheduler (see
      * {@link ParserResultTask#getSchedulerClass()}.
      */
-    protected final void schedule (
+    protected final synchronized void schedule (
         SchedulerEvent      event
     ) {
         if (source != null)

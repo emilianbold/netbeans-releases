@@ -42,21 +42,29 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.openide.util.NbBundle;
+import org.netbeans.spi.editor.hints.Severity;
 
 
 /**
  * @author ads
  *
  */
-public class QualifierAnalyzer implements AnnotationAnalyzer {
+public class QualifierAnalyzer extends InterceptorBindingMembersAnalyzer {
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
@@ -81,6 +89,12 @@ public class QualifierAnalyzer implements AnnotationAnalyzer {
                             NbBundle.getMessage(QualifierTargetAnalyzer.class, 
                                     "ERR_IncorrectQualifierTarget"));  // NOI18N
             }
+            if ( cancel.get() ){
+                return;
+            }
+            checkMembers( element, result , NbBundle.getMessage(
+                    QualifierAnalyzer.class,  
+                        "WARN_ArrayAnnotationValuedQualifierMember"));  // NOI18N
         }
     }
     

@@ -66,6 +66,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbCollections;
@@ -75,6 +76,7 @@ import org.openide.windows.OutputWriter;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service={LateBoundPrerequisitesChecker.class, ExecutionResultChecker.class, PrerequisitesChecker.class}, projectType="org-netbeans-modules-maven")
 public class DebuggerChecker implements LateBoundPrerequisitesChecker, ExecutionResultChecker, PrerequisitesChecker {
     private static final String ARGLINE = "argLine"; //NOI18N
     private static final String MAVENSUREFIREDEBUG = "maven.surefire.debug"; //NOI18N

@@ -59,8 +59,12 @@ abstract class FullyQualifiedClassTypeImpl extends JSFConfigComponentImpl {
         super(model, element);
     }
 
+    /**
+     * Gets fully qualified class type.
+     * @return trimmed fully qualified class type or {@code null}
+     */
     public String getFullyQualifiedClassType() {
-        return getText().trim();
+        return ElementTypeHelper.pickFullyQualifiedClassType(getText());
     }
 
     public void setFullyQualifiedClassType(String type) {

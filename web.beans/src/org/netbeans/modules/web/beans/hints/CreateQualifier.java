@@ -191,7 +191,7 @@ public class CreateQualifier implements ErrorRule<Void> {
             Kind leafKind = leaf.getKind();
             if ( TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) ){
                 Element clazz = compilationInfo.getTrees().getElement(path);
-                if ( clazz.getKind() == ElementKind.CLASS )
+                if ( clazz != null && clazz.getKind() == ElementKind.CLASS )
                 {
                     return analyzeClass( compilationInfo , (TypeElement)clazz , 
                             annotation );
@@ -199,6 +199,9 @@ public class CreateQualifier implements ErrorRule<Void> {
             }
             else if ( leafKind == Kind.VARIABLE){
                 Element var = compilationInfo.getTrees().getElement(path);
+                if ( var == null ){
+                    return null;
+                }
                 Element parent = var.getEnclosingElement();
                 if ( var.getKind() == ElementKind.FIELD && 
                         (parent instanceof TypeElement))
@@ -209,7 +212,7 @@ public class CreateQualifier implements ErrorRule<Void> {
             }
             else if ( leafKind == Kind.METHOD ){
                 Element method = compilationInfo.getTrees().getElement(path);
-                if ( method.getKind() == ElementKind.METHOD){
+                if ( method != null && method.getKind() == ElementKind.METHOD){
                     return analyzeMethodParameter( compilationInfo , 
                             (ExecutableElement)method , annotation );
                 }
@@ -233,7 +236,7 @@ public class CreateQualifier implements ErrorRule<Void> {
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
             TypeElement annotationElement = (TypeElement)annotationMirror.
                 getAnnotationType().asElement();
-            if ( annotationElement.getQualifiedName().
+            if ( annotationElement != null && annotationElement.getQualifiedName().
                     contentEquals(INJECT_ANNOTATION) || 
                     annotationElement.getQualifiedName().
                         contentEquals(PRODUCER_ANNOTATION))
@@ -250,15 +253,17 @@ public class CreateQualifier implements ErrorRule<Void> {
                 compilationInfo.getElements().getAllAnnotationMirrors(variableElement);
             for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
                 TypeElement annotationElement = (TypeElement)annotationMirror.
-                getAnnotationType().asElement();
-                if ( annotationElement.getQualifiedName().
+                    getAnnotationType().asElement();
+                if ( annotationElement != null && annotationElement.getQualifiedName().
                         contentEquals( OBSERVES_ANNOTATION ) || 
                         annotationElement.getQualifiedName().
                             contentEquals( DISPOSES_ANNOTATION ))
                 {
                         hasDisposesObserves= true;
                 }
-                else if ( annotationElement.equals( annotation )){
+                else if ( annotationElement != null && 
+                        annotationElement.equals( annotation ))
+                {
                     parameterHasAnnotation = true;
                 }
             }
@@ -313,10 +318,11 @@ public class CreateQualifier implements ErrorRule<Void> {
             {
                 hasRequiredAnnotation = true;
             }
-            else if ( annotationTypeElement.getQualifiedName().
-                    contentEquals(INJECT_ANNOTATION) || 
-                        annotationTypeElement.getQualifiedName().
-                        contentEquals(PRODUCER_ANNOTATION))
+            else if ( annotationTypeElement!= null && 
+                    annotationTypeElement.getQualifiedName().contentEquals(
+                            INJECT_ANNOTATION) || 
+                                annotationTypeElement.getQualifiedName().
+                                    contentEquals(PRODUCER_ANNOTATION))
             {
                 isInjectionPoint = true;
             }
@@ -336,7 +342,7 @@ public class CreateQualifier implements ErrorRule<Void> {
         boolean hasAnnotation = false;
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
             Element annotationElement = annotationMirror.getAnnotationType().asElement();
-            if ( annotationElement.equals( annotation)){
+            if ( annotationElement!= null && annotationElement.equals( annotation)){
                 hasAnnotation = true;
             }
             if ( annotationElement instanceof TypeElement && 

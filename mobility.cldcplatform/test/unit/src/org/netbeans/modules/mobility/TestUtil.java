@@ -44,12 +44,9 @@
 
 package org.netbeans.modules.mobility;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import junit.framework.Assert;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -104,34 +101,10 @@ public class TestUtil extends ProxyLookup {
     public static EntityCatalog testEntityCatalog() {
         return new MyEntityCatalog();
     }
-    
-    public static ProjectChooserFactory testProjectChooserFactory() {
-        return new TestProjectChooserFactory();
-    }
 
     public static class MyEntityCatalog extends EntityCatalog {
         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             return new InputSource(new StringReader(""));
-        }
-    }
-
-    private static final class TestProjectChooserFactory implements ProjectChooserFactory {
-        private File file;
-        
-        public javax.swing.JFileChooser createProjectChooser() {
-            return null;
-        }
-        
-        public org.openide.WizardDescriptor.Panel createSimpleTargetChooser(Project project, org.netbeans.api.project.SourceGroup[] folders, org.openide.WizardDescriptor.Panel bottomPanel, boolean freeFileExtension) {
-            return null;
-        }
-        
-        public File getProjectsFolder() {
-            return file;
-        }
-        
-        public void setProjectsFolder(File file) {
-            this.file = file;
         }
     }
 }

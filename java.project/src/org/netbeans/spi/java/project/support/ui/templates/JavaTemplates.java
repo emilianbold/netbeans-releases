@@ -134,6 +134,6 @@ public class JavaTemplates {
      * @see #createJavaTemplateIterator
      * @since 1.40
      */
-    public static final String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png";
+    public static final /* XXX #7116293 @StaticResource */ String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png";
     
 }

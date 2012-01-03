@@ -46,9 +46,11 @@ package org.netbeans.modules.javaee.specs.support.bridge;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -57,6 +59,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -93,29 +96,13 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
         if (swdpLibrary == null) {
             return false;
         }
+        JaxRsStackSupport support = JaxRsStackSupport.getInstance(project);
+        if ( support != null ){
+            support.configureCustomJersey(project);
+        }
         return addSwdpLibrary( project , swdpLibrary);
     }
     
-    private boolean addSwdpLibrary( Project project , Library lib)  {
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).
-            getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sourceGroups == null || sourceGroups.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sourceGroups[0].getRootFolder();
-        try {
-            ProjectClassPathModifier.addLibraries(new Library[] { lib },
-                    sourceRoot, ClassPath.COMPILE);
-        }
-        catch (UnsupportedOperationException ex) {
-            return false;
-        }
-        catch (IOException ex) {
-            return false;
-        }
-        return true;
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#removeJaxRsLibraries(org.netbeans.api.project.Project)
      */
@@ -150,5 +137,29 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
             }
         }        
     }
-
+    
+    @Override
+    public void configureCustomJersey(Project project) {
+    }
+    
+    private boolean addSwdpLibrary( Project project , Library lib)  {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).
+            getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups == null || sourceGroups.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sourceGroups[0].getRootFolder();
+        try {
+            ProjectClassPathModifier.addLibraries(new Library[] { lib },
+                    sourceRoot, ClassPath.COMPILE);
+        }
+        catch (UnsupportedOperationException ex) {
+            return false;
+        }
+        catch (IOException ex) {
+            return false;
+        }
+        return true;
+    }
+    
 }

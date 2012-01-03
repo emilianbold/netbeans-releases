@@ -75,8 +75,10 @@ final class JumpAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         if (node instanceof TestsuiteNode){
             OutputUtils.openTestsuite((TestsuiteNode)node);
-        } else {
+        } else if (node instanceof JUnitCallstackFrameNode){
             OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+        } else if (node instanceof JUnitTestMethodNode){
+            OutputUtils.openTestMethod((JUnitTestMethodNode)node);
         }
     }
 

@@ -69,6 +69,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
 
     private static final Logger LOGGER = Logger.getLogger(CoherenceInstanceProvider.class.getName());
     private static final Map<Integer, ServerInstance> instances = new HashMap<Integer, ServerInstance>();
+    private static final List<CoherenceInstance> coherenceInstances = new ArrayList<CoherenceInstance>();
     private static volatile CoherenceInstanceProvider provider;
 
     private static volatile boolean initialized = false;
@@ -89,6 +90,17 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
             }
 
             return result;
+        }
+    }
+
+    public List<CoherenceInstance> getCoherenceInstances() {
+        synchronized (instances) {
+            if (!initialized) {
+                initialized = true;
+                init();
+            }
+
+            return coherenceInstances;
         }
     }
 
@@ -135,6 +147,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
             List<InstanceProperties> properties = InstancePropertiesManager.getInstance().getProperties(COHERENCE_INSTANCES_NS);
             for (InstanceProperties instanceProperties : properties) {
                 CoherenceInstance coherenceInstance = CoherenceInstance.create(instanceProperties);
+                coherenceInstances.add(coherenceInstance);
                 instances.put(coherenceInstance.getId(), coherenceInstance.getServerInstance());
             }
         }
@@ -146,6 +159,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
     public void addServerInstance(CoherenceInstance coherenceInstance) {
         synchronized (instances) {
             instances.put(coherenceInstance.getId(), coherenceInstance.getServerInstance());
+            coherenceInstances.add(coherenceInstance);
             changeSupport.fireChange();
         }
     }
@@ -156,6 +170,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
     public void removeServerInstance(CoherenceInstance coherenceInstance) {
         synchronized (instances) {
             instances.remove(coherenceInstance.getId());
+            coherenceInstances.remove(coherenceInstance);
             coherenceInstance.getProperties().remove();
             changeSupport.fireChange();
         }
@@ -176,12 +191,29 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
     /**
      * Checks if the given id is unique across all already registered instances.
      *
-     * @param id id checked for unique value across instances
+     * @param id id checked for unique value across all instances
      * @return {@code true} if the id is unique; {@code false} otherwise
      */
-    public static boolean isUniqueAcrossInstances(Integer id) {
+    public static boolean isUniqueIdAcrossInstances(Integer id) {
         synchronized (instances) {
             return !instances.containsKey(id);
+        }
+    }
+
+    /**
+     * Checks if the given display name is unique across all already registered instances.
+     *
+     * @param displayName display name checked for unique value across all instances
+     * @return {@code true} if the display name is unique; {@code false} otherwise
+     */
+    public static boolean isUniqueDisplayNameAcrossInstances(String displayName) {
+        synchronized (instances) {
+            for (Entry<Integer, ServerInstance> entry : instances.entrySet()) {
+                if (displayName.equals(entry.getValue().getDisplayName())) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

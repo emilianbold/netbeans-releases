@@ -168,6 +168,7 @@ public class BinaryAnalyser {
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LowMemoryWatcher lmListener;
     private Continuation cont;
+    //@NotThreadSafe
     private Pair<LongHashMap<String>,Set<String>> timeStamps;
 
     BinaryAnalyser (final @NonNull ClassIndexImpl.Writer writer, final @NonNull File cacheRoot) {
@@ -213,7 +214,7 @@ public class BinaryAnalyser {
         if (cont == null) {
             return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
         }
-        if (!cont.hasChanges() && timeStamps.second.isEmpty()) {
+        if (!cont.hasChanges() && timeStampsEmpty()) {
             assert refs.isEmpty();
             assert toDelete.isEmpty();
             return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
@@ -224,8 +225,7 @@ public class BinaryAnalyser {
         cont = null;
         store();
         storeCRCs(cacheRoot, newState);
-        storeTimeStamps(cacheRoot,timeStamps);
-        timeStamps = null;
+        storeTimeStamps();
         return diff(oldState,newState, preBuildArgs);
     }
 
@@ -233,14 +233,13 @@ public class BinaryAnalyser {
     private Result start (final URL root, final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
         Parameters.notNull("ctx", ctx); //NOI18N
         assert cont == null;
-        timeStamps = loadTimeStamps(this.cacheRoot);
         final String mainP = root.getProtocol();
         if ("jar".equals(mainP)) {          //NOI18N
-            URL innerURL = FileUtil.getArchiveFile(root);
+            final URL innerURL = FileUtil.getArchiveFile(root);
             if ("file".equals(innerURL.getProtocol())) {  //NOI18N
                 //Fast way
-                File archive = new File (URI.create(innerURL.toExternalForm()));
-                if (archive.exists() && archive.canRead()) {
+                final File archive = new File (URI.create(innerURL.toExternalForm()));
+                if (archive.canRead()) {
                     if (!isUpToDate(ROOT,archive.lastModified())) {
                         writer.clear();
                         try {
@@ -252,13 +251,11 @@ public class BinaryAnalyser {
                             LOGGER.log(Level.WARNING, "Broken zip file: {0}", archive.getAbsolutePath());
                         }
                     }
-                }
-                else {
+                } else {
                     return deleted();
                 }
-            }
-            else {
-                FileObject rootFo =  URLMapper.findFileObject(root);
+            } else {
+                final FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
                     if (!isUpToDate(ROOT,rootFo.lastModified().getTime())) {
                         writer.clear();
@@ -266,33 +263,28 @@ public class BinaryAnalyser {
                         cont = new FileObjectContinuation (todo, rootFo, ctx);
                         return cont.execute();
                     }
-                }
-                else {
+                } else {
                     return deleted();
                 }
             }
-        }
-        else if ("file".equals(mainP)) {    //NOI18N
+        } else if ("file".equals(mainP)) {    //NOI18N
             //Fast way
-            File rootFile = new File (URI.create(root.toExternalForm()));
+            final File rootFile = new File (URI.create(root.toExternalForm()));
             if (rootFile.isDirectory()) {
                 String path = rootFile.getAbsolutePath ();
                 if (path.charAt(path.length()-1) != File.separatorChar) {
                     path = path + File.separatorChar;
                 }
                 LinkedList<File> todo = new LinkedList<File> ();
-                if (rootFile.isDirectory() && rootFile.canRead()) {
-                    File[] children = rootFile.listFiles();
-                    if (children != null) {
-                        todo.addAll(Arrays.asList(children));
-                    }
+                File[] children = rootFile.listFiles();
+                if (children != null) {
+                    todo.addAll(Arrays.asList(children));
                 }
                 cont = new FolderContinuation (todo, path, ctx);
                 return cont.execute();
             }
-        }
-        else {
-            FileObject rootFo =  URLMapper.findFileObject(root);
+        } else {
+            final FileObject rootFo =  URLMapper.findFileObject(root);
             if (rootFo != null) {
                 writer.clear();
                 Enumeration<? extends FileObject> todo = rootFo.getData(true);
@@ -335,65 +327,82 @@ public class BinaryAnalyser {
 
     private void storeCRCs(final File indexFolder, final List<Pair<ElementHandle<TypeElement>,Long>> state) throws IOException {
         final File file = new File (indexFolder,CRC);
-        PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
-        try {
-            for (Pair<ElementHandle<TypeElement>,Long> pair : state) {
-                StringBuilder sb = new StringBuilder(pair.first.getBinaryName());
-                sb.append('='); //NOI18N
-                sb.append(pair.second.longValue());
-                out.println(sb.toString());
+        if (state.isEmpty()) {
+            file.delete();
+        } else {
+            final PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
+            try {
+                for (Pair<ElementHandle<TypeElement>,Long> pair : state) {
+                    StringBuilder sb = new StringBuilder(pair.first.getBinaryName());
+                    sb.append('='); //NOI18N
+                    sb.append(pair.second.longValue());
+                    out.println(sb.toString());
+                }
+            } finally {
+                out.close();
             }
-        } finally {
-            out.close();
         }
     }
     
-    private static Pair<LongHashMap<String>,Set<String>> loadTimeStamps(final File indexFolder) throws IOException {
-        final LongHashMap<String> timestamps = new LongHashMap<String>();        
-        final File f = new File (indexFolder, TIME_STAMPS); //NOI18N
-        if (f.exists()) {
-            final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
-            try {
-                String line;
-                while (null != (line = in.readLine())) {
-                    int idx = line.indexOf('='); //NOI18N
-                    if (idx != -1) {
-                        try {
-                            long ts = Long.parseLong(line.substring(idx + 1));
-                            timestamps.put(line.substring(0, idx), ts);
-                        } catch (NumberFormatException nfe) {
-                            LOGGER.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
+    private Pair<LongHashMap<String>,Set<String>> getTimeStamps() throws IOException {
+        if (timeStamps == null) {
+            final LongHashMap<String> map = new LongHashMap<String>();
+            final File f = new File (cacheRoot, TIME_STAMPS); //NOI18N
+            if (f.exists()) {
+                final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
+                try {
+                    String line;
+                    while (null != (line = in.readLine())) {
+                        int idx = line.indexOf('='); //NOI18N
+                        if (idx != -1) {
+                            try {
+                                long ts = Long.parseLong(line.substring(idx + 1));
+                                map.put(line.substring(0, idx), ts);
+                            } catch (NumberFormatException nfe) {
+                                LOGGER.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
+                            }
                         }
                     }
-                }            
+                } finally {
+                    in.close();
+                }
+            }
+            timeStamps = Pair.<LongHashMap<String>,Set<String>>of(map,new HashSet<String>(map.keySet()));
+        }
+        return timeStamps;
+    }
+
+    private void storeTimeStamps() throws IOException {
+        final File f = new File (cacheRoot, TIME_STAMPS);
+        if (timeStamps == null) {
+            f.delete();
+        } else {
+            timeStamps.first.keySet().removeAll(timeStamps.second);
+            final BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8")); //NOI18N
+            try {
+                // write data
+                for(LongHashMap.Entry<String> entry : timeStamps.first.entrySet()) {
+                    out.write(entry.getKey());
+                    out.write('='); //NOI18N
+                    out.write(Long.toString(entry.getValue()));
+                    out.newLine();
+                }
+                out.flush();
             } finally {
-                in.close();
+                timeStamps = null;
+                out.close();
             }
         }
-        return Pair.<LongHashMap<String>,Set<String>>of(timestamps,new HashSet<String>(timestamps.keySet()));
     }
-    
-    private static void storeTimeStamps(final File indexFolder, Pair<LongHashMap<String>,Set<String>> timestamps) throws IOException {
-        timestamps.first.keySet().removeAll(timestamps.second);
-        final File f = new File (indexFolder, TIME_STAMPS);
-        final BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8")); //NOI18N
-        try {                    
-            // write data
-            for(LongHashMap.Entry<String> entry : timestamps.first.entrySet()) {
-                out.write(entry.getKey());
-                out.write('='); //NOI18N
-                out.write(Long.toString(entry.getValue()));
-                out.newLine();
-            }
-            out.flush();
-        } finally {
-            out.close();
-        }
+
+    private boolean timeStampsEmpty() {
+        return timeStamps == null || timeStamps.second.isEmpty();
     }
-    
-    private boolean isUpToDate(final String resourceName, final long timeStamp) {
-        long oldTime = timeStamps.first.put(resourceName,timeStamp);
-        timeStamps.second.remove(resourceName);
+
+    private boolean isUpToDate(final String resourceName, final long timeStamp) throws IOException {
+        final Pair<LongHashMap<String>,Set<String>> ts = getTimeStamps();
+        long oldTime = ts.first.put(resourceName,timeStamp);
+        ts.second.remove(resourceName);
         return oldTime == timeStamp;
     }
 
@@ -896,13 +905,12 @@ public class BinaryAnalyser {
         public Result doExecute () throws IOException {
             while (!todo.isEmpty()) {
                 File file = todo.removeFirst();
-                if (file.isDirectory() && file.canRead()) {
+                if (file.isDirectory()) {
                     File[] c = file.listFiles();
                     if (c!= null) {
                         todo.addAll(Arrays.asList (c));
                     }
-                }
-                else if (accepts(file.getName())) {
+                } else if (accepts(file.getName())) {
                     String filePath = file.getAbsolutePath();
                     long fileMTime = file.lastModified();
                     int dotIndex = filePath.lastIndexOf('.');

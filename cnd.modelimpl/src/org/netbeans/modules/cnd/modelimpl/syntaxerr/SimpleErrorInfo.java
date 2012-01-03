@@ -65,18 +65,22 @@ public class SimpleErrorInfo implements CsmErrorInfo {
         this.severity = severity;
     }
 
+    @Override
     public int getStartOffset() {
         return startOffset;
     }
 
+    @Override
     public int getEndOffset() {
         return endOffset;
     }
 
+    @Override
     public String getMessage() {
         return text;
     }
 
+    @Override
     public Severity getSeverity() {
         return severity;
     }

@@ -63,7 +63,8 @@ public abstract class CsmParserProvider {
 
     public interface CsmParser {
         enum ConstructionKind {
-            TRANSLATION_UNIT,
+            TRANSLATION_UNIT, 
+            TRANSLATION_UNIT_WITH_COMPOUND, // do not skip compound statements
             CLASS_BODY,
             TRY_BLOCK,
             COMPOUND_STATEMENT,

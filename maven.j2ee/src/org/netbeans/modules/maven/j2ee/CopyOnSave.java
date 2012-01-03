@@ -49,12 +49,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -65,19 +67,18 @@ import org.openide.util.Exceptions;
  * @author mkleint - copied and adjusted from netbeans.org web project until it gets rewritten there to
  *  be generic.
  */
+@ProjectServiceProvider(service = {CopyOnSave.class, AdditionalDestination.class, J2eeModuleProvider.DeployOnSaveSupport.class}, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+})
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
-    private Project project;
-    private J2eeModuleProvider provider;
-    boolean active = false;
-    private NbMavenProject mavenproject;
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
+    private Project project;
 
-    /** Creates a new instance of CopyOnSaveSupport */
-    public CopyOnSave(Project prj, J2eeModuleProvider prov) {
-        project = prj;
-        provider = prov;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
+
+    public CopyOnSave(Project project) {
+        this.project = project;
     }
 
     public void initialize() throws FileStateInvalidException {
@@ -85,7 +86,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
 
     public void cleanup() throws FileStateInvalidException {
     }
-    
+
     protected void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {
         if (destFile != null && !srcFile.isFolder()) {
             InputStream is = null;
@@ -110,12 +111,18 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
         }
     }
 
+    @CheckForNull
     protected J2eeModule getJ2eeModule() {
-        return provider.getJ2eeModule();
+        J2eeModuleProvider provider = getJ2eeModuleProvider();
+        if (provider != null) {
+            return provider.getJ2eeModule();
+        }
+        return null;
     }
-    
+
+    @CheckForNull
     protected J2eeModuleProvider getJ2eeModuleProvider() {
-        return provider;
+        return project.getLookup().lookup(J2eeModuleProvider.class);
     }
 
     protected Project getProject() {
@@ -153,7 +160,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
             FileObject contentDir = getJ2eeModule().getContentDirectory();
             if (contentDir != null) {
                 // project was built
-                FileObject destFile = ensureDestinationFileExists(contentDir, 
+                FileObject destFile = ensureDestinationFileExists(contentDir,
                         (getDestinationSubFolderName().length() > 0 ? getDestinationSubFolderName() + "/" : "") + path, fo.isFolder());
                 File fil = FileUtil.toFile(destFile);
                 copySrcToDest(fo, destFile);
@@ -163,7 +170,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     protected String getDestinationSubFolderName() {
         return ""; // NOI18N
     }
@@ -177,7 +184,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
             FileObject contentDir = getJ2eeModule().getContentDirectory();
             if (contentDir != null) {
                 // project was built
-                FileObject classes = getDestinationSubFolderName().length() > 0 ? 
+                FileObject classes = getDestinationSubFolderName().length() > 0 ?
                         contentDir.getFileObject(getDestinationSubFolderName()) :
                         contentDir;
                 if (classes != null) {
@@ -227,6 +234,6 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
     @Override
     public boolean containsIdeArtifacts() {
-        return new File(mavenproject.getOutputDirectory(false), NB_COS).exists();
+        return new File(project.getLookup().lookup(NbMavenProject.class).getOutputDirectory(false), NB_COS).exists();
     }
 }

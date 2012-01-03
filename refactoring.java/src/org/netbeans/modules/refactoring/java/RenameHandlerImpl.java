@@ -63,6 +63,7 @@ import org.openide.util.lookup.InstanceContent;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.loaders.RenameHandler.class)
 public class RenameHandlerImpl implements RenameHandler {
 
+    @Override
     public void handleRename(Node node, String newName) {
         InstanceContent ic = new InstanceContent();
         ic.add(node);

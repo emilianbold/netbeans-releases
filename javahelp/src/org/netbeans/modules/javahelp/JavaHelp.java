@@ -95,6 +95,7 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.openide.windows.WindowManager;
 
 // [PENDING] should event dispatch thread be used thruout?
@@ -102,8 +103,11 @@ import org.openide.windows.WindowManager;
 /** Help implementation using the JavaHelp 1.x system.
 * @author Jesse Glick, Richard Gregor
 */
-@ServiceProvider(service=Help.class)
-public final class JavaHelp extends AbstractHelp implements AWTEventListener {
+@ServiceProviders({
+    @ServiceProvider(service=Help.class),
+    @ServiceProvider(service=HelpCtx.Displayer.class)
+})
+public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, AWTEventListener {
 
     /** Make a JavaHelp implementation of the Help.Impl interface.
      *Or, use {@link #getDefaultJavaHelp}.
@@ -509,6 +513,27 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             }
         }
         return jh;
+    }
+
+    @Override public boolean display(HelpCtx help) {
+        String id = help.getHelpID();
+        if (id != null) {
+            if (isValidID(id, true)) {
+                showHelp(help, true);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            URL u = help.getHelp();
+            if (u != null) {
+                // or use URLDisplayer?
+                showHelp(u);
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     /** Handle modal dialogs opening and closing. Note reparentToFrameLater state = rTFL.

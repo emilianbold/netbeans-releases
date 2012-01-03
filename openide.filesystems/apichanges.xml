@@ -49,6 +49,41 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.revert">
+            <api name="filesystems"/>
+            <summary>Introduced <code>FileObject.revert</code></summary>
+            <version major="7" minor="55"/>
+            <date year="2011" month="11" day="29"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    The previous SPI has been kept. Only a more convenient API has been introduced,
+                    so it is no longer necessary for callers to look for a <code>removeWritables</code> attribute.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added <code>revert</code> and <code>canRevert</code> to <code>FileObject</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="162526"/>
+        </change>
+        <change id="FileEvent.4.constructor">
+            <api name="filesystems"/>
+            <summary>Detailed FileEvent constructor</summary>
+            <version major="7" minor="54"/>
+            <date day="22" month="11" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>New <code>FileEvent</code> constructor allowing specification
+                of expected state as well as time.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileEvent"/>
+            <issue number="203477"/>
+        </change>
         <change id="FileObject.getMIMEType...">
             <api name="filesystems"/>
             <summary>FileObject.getMIMEType(String... withinMIMETypes)</summary>

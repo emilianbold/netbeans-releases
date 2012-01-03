@@ -70,7 +70,7 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
-    private void doTestListeners2(FileObject baseDirFO, File log, boolean recursive) throws Exception {
+    private void doTestListenersRename2(FileObject baseDirFO, File log, boolean recursive) throws Exception {
         PrintStream out = new PrintStream(log);
         try {
             String prefix = baseDirFO.getPath();
@@ -104,14 +104,40 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             
             // baseDirFO.refresh() will break the test. TODO: investigate.
             baseDirFO.refresh();
+
+        } finally {
+            out.close();
+        }
+    }
+
+    private void doTestListenersDelete2(FileObject baseDirFO, File log, boolean recursive) throws Exception {
+        PrintStream out = new PrintStream(log);
+        try {
+            String prefix = baseDirFO.getPath();
+            FCL fcl = new FCL("baseDir", prefix, out, true);
+            if (recursive) {
+                FileSystemProvider.addRecursiveListener(fcl, baseDirFO.getFileSystem(), baseDirFO.getPath());
+            } else {
+                baseDirFO.addFileChangeListener(fcl);
+            }
+            FileObject childFO = baseDirFO.createData("child_file_1");
+            FileObject subdirFO = baseDirFO.createFolder("child_folder");
+            if (!recursive) {
+                subdirFO.addFileChangeListener(new FCL(subdirFO.getNameExt(), prefix, out, true));
+            }
+            FileObject grandChildFO = subdirFO.createData("grand_child_file");
+            FileObject grandChildDirFO = subdirFO.createFolder("grand_child_dir");
+            FileObject grandGrandChildFO = grandChildDirFO.createData("grand_grand_child_file");
+            baseDirFO.refresh();
             grandGrandChildFO.delete();
             grandChildDirFO.delete();
         } finally {
             out.close();
         }
     }
-    
-    private void doTestListeners1(boolean recursive) throws Throwable {
+
+
+    private void doTestListenersRename1(boolean recursive) throws Throwable {
         File localTmpDir = createTempFile(getClass().getSimpleName(), ".tmp", true);
         String remoteBaseDir = null;
         try {            
@@ -121,8 +147,39 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             File workDir = getWorkDir();
             File remoteLog = new File(workDir, "remote.dat");
             File localLog = new File(workDir, "local.dat");
-            doTestListeners2(remoteBaseDirFO, remoteLog, recursive);
-            doTestListeners2(localBaseDirFO, localLog, recursive);
+            doTestListenersRename2(remoteBaseDirFO, remoteLog, recursive);
+            doTestListenersRename2(localBaseDirFO, localLog, recursive);
+            printFile(localLog, "LOCAL ", System.out);
+            printFile(remoteLog, "REMOTE", System.out);
+            File diff = new File(workDir, "diff.diff");
+            try {
+                assertFile("Remote and local events differ, see diff " + remoteLog.getAbsolutePath() + " " + localLog.getAbsolutePath(), remoteLog, localLog, diff);
+            } catch (Throwable ex) {
+                if (diff.exists()) {
+                    printFile(diff, null, System.err);
+                }
+                throw ex;
+            }
+        } finally {
+            removeRemoteDirIfNotNull(remoteBaseDir);
+            if (localTmpDir != null && localTmpDir.exists()) {
+                removeDirectory(localTmpDir);
+            }
+        }    
+    }
+
+    private void doTestListenersDelete1(boolean recursive) throws Throwable {
+        File localTmpDir = createTempFile(getClass().getSimpleName(), ".tmp", true);
+        String remoteBaseDir = null;
+        try {            
+            remoteBaseDir = mkTempAndRefreshParent(true);
+            FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
+            FileObject localBaseDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(localTmpDir));            
+            File workDir = getWorkDir();
+            File remoteLog = new File(workDir, "remote.dat");
+            File localLog = new File(workDir, "local.dat");
+            doTestListenersDelete2(remoteBaseDirFO, remoteLog, recursive);
+            doTestListenersDelete2(localBaseDirFO, localLog, recursive);
             printFile(localLog, "LOCAL ", System.out);
             printFile(remoteLog, "REMOTE", System.out);
             File diff = new File(workDir, "diff.diff");
@@ -143,13 +200,23 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
     }
     
     @ForAllEnvironments
-    public void testListeners() throws Throwable {                
-        doTestListeners1(false);
+    public void testListenersRename() throws Throwable {                
+        doTestListenersRename1(false);
     }
 
     @ForAllEnvironments
-    public void testRecursiveListeners() throws Throwable {                
-        doTestListeners1(true);
+    public void testRecursiveListenersRename() throws Throwable {                
+        doTestListenersRename1(true);
+    }
+
+    @ForAllEnvironments
+    public void testListenersDelete() throws Throwable {                
+        doTestListenersDelete1(false);
+    }
+
+    @ForAllEnvironments
+    public void testRecursiveListenersDelete() throws Throwable {                
+        doTestListenersDelete1(true);
     }
 
     public static Test suite() {

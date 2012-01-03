@@ -110,6 +110,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="validate.icon">
+        <api name="multiview_spi"/>
+        <summary>Validate icons</summary>
+        <version major="1" minor="28"/>
+        <date day="9" month="12" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" semantic="compatible" source="incompatible">
+            A code specifying icon that does not exist may no longer compile.
+        </compatibility>
+        <description>
+            The processor for <a href="@TOP@org/netbeans/core/spi/multiview/MultiViewElement.Registration.html">
+            MultiViewElement.Registration</a> now checks validity of
+            provided <code>iconBase</code> (not on JDK6 due to bug in <code>javac</code>).
+            Also the attribute was made optional.
+        </description>
+        <class package="org.netbeans.core.spi.multiview" name="MultiViewElement"/>
+        <issue number="204174"/>
+    </change>
     <change id="tab.switching.action.in.popup">
         <api name="multiview_api"/>
         <summary>Tab switching action in popup</summary>

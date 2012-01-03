@@ -131,7 +131,7 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
 
     // -J-Dorg.netbeans.modules.editor.impl.highlighting.AnnotationsHighlighting.level=FINE
     private static final Logger LOG = Logger.getLogger(AnnotationsHighlighting.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID);
+    private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID, 1, false, false);
 
     private final BaseDocument document;
     private final Annotations annotations;

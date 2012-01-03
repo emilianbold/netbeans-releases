@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.beans.hints;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.UsageLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 

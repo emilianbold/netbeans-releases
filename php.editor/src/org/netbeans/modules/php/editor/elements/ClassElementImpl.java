@@ -71,17 +71,18 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
 
     private final QualifiedName superClass;
     private Collection<QualifiedName> possibleFQSuperClassNames;
-    
+
     private ClassElementImpl(
             final QualifiedName qualifiedName,
             final int offset,
             final QualifiedName superClsName,
             final Collection<QualifiedName> possibleFQSuperClassNames,
             final Set<QualifiedName> ifaceNames,
+            final Collection<QualifiedName> fqSuperInterfaces,
             final int flags,
             final String fileUrl,
             final ElementQuery elementQuery) {
-        super(qualifiedName, offset, ifaceNames, flags, fileUrl, elementQuery);
+        super(qualifiedName, offset, ifaceNames, fqSuperInterfaces, flags, fileUrl, elementQuery);
         this.superClass = superClsName;
         this.possibleFQSuperClassNames = possibleFQSuperClassNames;
     }
@@ -112,8 +113,8 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         ClassElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new ClassElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
-                    signParser.getSuperClassName(), signParser.getPossibleFQSuperClassName(), 
-                    signParser.getSuperInterfaces(), signParser.getFlags(),
+                    signParser.getSuperClassName(), signParser.getPossibleFQSuperClassName(),
+                    signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(), signParser.getFlags(),
                     indexResult.getUrl().toString(), indexScopeQuery);
         }
         return retval;
@@ -127,7 +128,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new ClassElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
-                info.getSuperClassName(), Collections.<QualifiedName>emptySet(), info.getInterfaceNames(), info.getAccessModifiers().toFlags(),
+                info.getSuperClassName(), Collections.<QualifiedName>emptySet(), info.getInterfaceNames(), Collections.<QualifiedName>emptySet(), info.getAccessModifiers().toFlags(),
                 fileQuery.getURL().toExternalForm(), fileQuery);
     }
 
@@ -135,7 +136,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         Parameters.notNull("clz", clz);
         Parameters.notNull("elementQuery", clz);
         ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(clz.getFullyQualifiedName()),
-                clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, null, elementQuery);
+                clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, null, elementQuery);
         retval.fileObject = clz.getFile();
         return retval;
     }
@@ -155,7 +156,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     public final QualifiedName getSuperClassName() {
         return superClass;
     }
-    
+
     @Override
     public Collection<QualifiedName> getPossibleFQSuperClassNames() {
         return this.possibleFQSuperClassNames;
@@ -277,7 +278,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             }
             return name.trim().length() == 0 ? null : QualifiedName.create(name);
         }
-        
+
         Collection<QualifiedName> getPossibleFQSuperClassName(){
             String field = signature.string(3);
             Collection<QualifiedName> retval = Collections.emptyList();
@@ -296,14 +297,31 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         public Set<QualifiedName> getSuperInterfaces() {
             Set<QualifiedName> ifaces = Collections.emptySet();
             String separatedIfaces = signature.string(5);
-            if (separatedIfaces != null && separatedIfaces.length() > 0) {
+            int index = 0;
+            if (separatedIfaces != null && separatedIfaces.length() > 0 && (index = separatedIfaces.indexOf('|')) > 0) { //NOI18N
+                String field = separatedIfaces.substring(0, index);
                 ifaces = new HashSet<QualifiedName>();
-                final String[] ifaceNames = separatedIfaces.split(SEPARATOR.COMMA.toString());
+                final String[] ifaceNames = field.split(SEPARATOR.COMMA.toString());
                 for (String ifName : ifaceNames) {
                     ifaces.add(QualifiedName.create(ifName));
                 }
             }
             return ifaces;
+        }
+
+        public Collection<QualifiedName> getFQSuperInterfaces() {
+            Collection<QualifiedName> retval = Collections.<QualifiedName>emptySet();
+            String separatedIfaces = signature.string(5);
+            int index = 0;
+            if (separatedIfaces != null && (index = separatedIfaces.indexOf('|')) > 0) { //NOI18N
+                String field = separatedIfaces.substring(index + 1);
+                retval = new ArrayList<QualifiedName>();
+                for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) { //NOI18N
+                    String token = st.nextToken();
+                    retval.add(QualifiedName.create(token));
+                }
+            }
+            return retval;
         }
 
         int getOffset() {

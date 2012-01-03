@@ -48,20 +48,12 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -110,6 +102,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         if (initialized)
             return ;
@@ -123,6 +116,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         
         EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 newNameTextField.setText(newName);
                 newNameTextField.setSelectionStart(0);
@@ -146,6 +140,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         // Determine the extension
     }
     
+    @Override
     public void requestFocus() {
         newNameTextField.requestFocus();
     }
@@ -309,6 +304,7 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
 
     // ActionListener implementation -------------------------------------------
         
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (projectsComboBox == e.getSource()) {
             project = (Project) projectsComboBox.getSelectedItem();
@@ -324,14 +320,17 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
     
     // DocumentListener implementation -----------------------------------------
     
+    @Override
     public void changedUpdate(DocumentEvent e) {                
         fireChange();        
     }    
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         fireChange();        
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         fireChange();        
     }
@@ -393,6 +392,7 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
     
+    @Override
     public Component getComponent() {
         return this;
     }

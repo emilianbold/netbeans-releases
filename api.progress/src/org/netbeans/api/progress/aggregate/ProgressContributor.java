@@ -44,6 +44,10 @@
 
 package org.netbeans.api.progress.aggregate;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.progress.module.LoggingUtils;
+
 /**
  * A contributor to the aggragete progress indication.
  * <b> This class is not threadsafe, you should access the contributor from
@@ -53,6 +57,9 @@ package org.netbeans.api.progress.aggregate;
  * @author mkleint
  */
 public final class ProgressContributor {
+
+    private static final Logger LOG = Logger.getLogger(ProgressContributor.class.getName());
+
     private String id;
     private int workunits;
     private int current;
@@ -148,7 +155,10 @@ public final class ProgressContributor {
         if (parent == null) {
             return;
         }
-        assert unit >= current && unit <= workunits;
+        if (unit < current || unit > workunits) {
+            LOG.log(Level.WARNING, "logged ''{0}'' @{1} <{2} or >{3} in {4} at {5}", new Object[] {message, unit, current, workunits, parent.displayName, LoggingUtils.findCaller()});
+            return;
+        }
         if (message != null && unit == current) {
             // we need to process the message in any case..
             parent.processContributorStep(this, message, 0);

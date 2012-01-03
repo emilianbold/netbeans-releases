@@ -1,5 +1,0 @@
-ant \
--Dismp.home=$IS_HOME \
--Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_09-windows-i586-p.exe \
--Dbundled.jvm=$JVM_PATH/is-jre1_5_0_06-windows-i586.exe \
-build-windows

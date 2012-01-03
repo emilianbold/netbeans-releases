@@ -157,6 +157,21 @@ public class ELSanitizerTest {
     }
 
     @Test
+    public void testSanitizeFunctions() {
+        String sanitized = ELSanitizer.sanitize("#{foo:}");
+        assertEquals("#{foo:x()}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo: ");
+        assertEquals("#{foo:x() }", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo:te");
+        assertEquals("#{foo:te()}", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo:te ");
+        assertEquals("#{foo:te() }", sanitized);
+    }
+
+    @Test
     public void testFindLastNonWhiteSpace() {
         assertEquals(2, ELSanitizer.findLastNonWhiteSpace("foo "));
         assertEquals(2, ELSanitizer.findLastNonWhiteSpace("foo     "));

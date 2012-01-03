@@ -110,13 +110,11 @@ public class EndTagResultItem extends CompletionResultItem {
             @Override
             public void run() {
                 try {
-                    if (len > 0) doc.remove(offset, len);
-                    
                     // we cannot rely on the stored one - see #181711. Performance suffers a little.
                     TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                     tokenSequence = tokenHierarchy.tokenSequence();
-
-                    String insertingText = getInsertingText(component, text);
+                    String insertingText = getInsertingText(component, text, len);
+                    if (len > 0) doc.remove(offset, len);
                     doc.insertString(offset, insertingText, null);
                     // fix for issue #186916
                     if ((! text.isEmpty()) && (! insertingText.isEmpty())) {

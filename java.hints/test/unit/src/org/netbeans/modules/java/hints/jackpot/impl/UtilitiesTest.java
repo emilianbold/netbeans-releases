@@ -408,6 +408,18 @@ public class UtilitiesTest extends TestBase {
         assertTrue(errors.toString(), errors.isEmpty());
     }
 
+    public void DtestMultiStatementVarWithModifiers() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$mods$ $type $name; $name = $init;", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.BLOCK);
+
+        String golden = "{ $$1$; $mods$$type $name; $name = $init; $$2$; }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+
     public void testToHumanReadableTime() {
         long time = 202;
         assertEquals(    "5s", Utilities.toHumanReadableTime(time +=           5 * 1000));

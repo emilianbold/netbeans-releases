@@ -476,6 +476,9 @@ public class TopSecurityManager extends SecurityManager {
     private void checkSetSecurityManager(Permission perm) {
         if (runtimePermissionClass.isInstance(perm)) {
             if (perm.getName().equals("setSecurityManager")) { // NOI18N - hardcoded in java.lang
+                if (!check) {
+                    return;
+                }
                 Class[] arr = getClassContext();
                 boolean seenJava = false;
                 for (int i = 0; i < arr.length; i++) {

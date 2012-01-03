@@ -82,11 +82,13 @@ public final class FileInfo {
     private FileObject fObject = null;
 
     public FileInfo(final File file, int exists) {
+        assert file != null;
         this.file = file;
         this.exists = exists; 
     }
 
     public FileInfo(final File file) {
+        assert file != null;
         this.file = file;
     }
 

@@ -53,7 +53,8 @@ import org.netbeans.modules.javacard.ri.platform.installer.DevicePropertiesPanel
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
-import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.Problem;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 
 /**
  * Implementation of CardCustomizerProvider for RI cards.  Registered in
@@ -95,13 +96,17 @@ public class CustomizerProvider implements CardCustomizerProvider {
             pnl.write(new KeysAndValues.PropertiesAdapter(props));
         }
 
-        public ValidationGroup getValidationGroup() {
+        @Override public SwingValidationGroup getValidationGroup() {
             getComponent();
             return pnl.getValidationGroup();
         }
 
         public boolean isContentValid() {
-            return pnl != null && !pnl.getValidationGroup().validateAll().isFatal();
+            if (pnl == null) {
+                return false;
+            }
+            Problem problem = pnl.getValidationGroup().performValidation();
+            return problem != null && problem.isFatal();
         }
 
         public Component getComponent() {

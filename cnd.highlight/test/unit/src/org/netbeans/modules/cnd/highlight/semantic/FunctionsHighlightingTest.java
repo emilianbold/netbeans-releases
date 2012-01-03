@@ -60,6 +60,7 @@ public class FunctionsHighlightingTest extends SemanticHighlightingTestBase {
         performTest("functions_hl.cpp"); // NOI18N
     }
 
+    @Override
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         List<? extends CsmOffsetable> list = ModelUtils.collect(
                 testFile, new ModelUtils.FunctionReferenceCollector());
