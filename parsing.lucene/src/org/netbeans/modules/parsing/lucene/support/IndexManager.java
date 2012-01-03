@@ -59,6 +59,8 @@ import org.netbeans.modules.parsing.lucene.DocumentIndexImpl;
 import org.netbeans.modules.parsing.lucene.IndexDocumentImpl;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -69,9 +71,10 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 public final class IndexManager {
-    
+
     private static final ReentrantReadWriteLock lock  = new ReentrantReadWriteLock();
-    
+    private static final Lookup.Result<? extends ScanSuspendImplementation> res = Lookup.getDefault().lookupResult(ScanSuspendImplementation.class);
+
     static IndexFactory factory = new LuceneIndexFactory();    //Unit tests overrides the factory
     
     private IndexManager() {}
@@ -134,27 +137,32 @@ public final class IndexManager {
      */
     public static <R> R readAccess (final Action<R> action) throws IOException, InterruptedException {
         assert action != null;
-        lock.readLock().lock();                                    
+        suspend();
         try {
-            return ProvidedExtensions.priorityIO(new Callable<R>() {
-                @Override
-                public R call() throws Exception {
-                    return action.run();
-                }
-            });
-        } catch (IOException ioe) {
-            //rethrow ioe
-            throw ioe;
-        } catch (InterruptedException ie) {
-            //rethrow ioe
-            throw ie;
-        } catch (RuntimeException re) {
-            //rethrow ioe
-            throw re;
-        } catch (Exception e) {
-            throw new IOException(e);
+            lock.readLock().lock();
+            try {
+                return ProvidedExtensions.priorityIO(new Callable<R>() {
+                    @Override
+                    public R call() throws Exception {
+                        return action.run();
+                    }
+                });
+            } catch (IOException ioe) {
+                //rethrow ioe
+                throw ioe;
+            } catch (InterruptedException ie) {
+                //rethrow ioe
+                throw ie;
+            } catch (RuntimeException re) {
+                //rethrow ioe
+                throw re;
+            } catch (Exception e) {
+                throw new IOException(e);
+            } finally {
+                lock.readLock().unlock();
+            }
         } finally {
-            lock.readLock().unlock();
+            resume();
         }
     }
 
@@ -257,6 +265,18 @@ public final class IndexManager {
         @Override
         public void run() {
             indexes.remove(folder);
+        }
+    }
+
+    private static void suspend() {
+        for (ScanSuspendImplementation impl : res.allInstances()) {
+            impl.suspend();
+        }
+    }
+
+    private static void resume() {
+        for (ScanSuspendImplementation impl : res.allInstances()) {
+            impl.resume();
         }
     }
 
