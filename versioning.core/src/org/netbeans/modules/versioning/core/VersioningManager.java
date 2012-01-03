@@ -50,8 +50,6 @@ import java.lang.reflect.Method;
 import java.util.Map.Entry;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import java.io.File;
 import java.util.*;
@@ -68,10 +66,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.util.*;
@@ -265,7 +261,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         refreshAllAnnotations();
     }
 
-    private void fireFileStatusChanged(Set<File> files) {
+    private void fireFileStatusChanged(Set<VCSFileProxy> files) {
         // pushing the change ... DiffSidebarManager may as well listen for changes
         propertyChangeSupport.firePropertyChange(EVENT_STATUS_CHANGED, files, null);
     }
@@ -277,7 +273,6 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         synchronized(fileOwners) {
             fileOwners.clear();
         }
-        
     }
 
     public void flushNullOwners() {
@@ -552,12 +547,12 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-            Set<File> files = (Set<File>) evt.getNewValue();
-            // XXX: cannot work on files anyway VersioningAnnotationProvider.instance.refreshAnnotations(files);
+            Set<VCSFileProxy> files = (Set<VCSFileProxy>) evt.getNewValue();
+            VersioningAnnotationProvider.getDefault().refreshAnnotations(files);
             fireFileStatusChanged(files);
         } else if (EVENT_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
-            Set<File> files = (Set<File>) evt.getNewValue();
-            // XXX: cannot work on files anyway VersioningAnnotationProvider.instance.refreshAnnotations(files);
+            Set<VCSFileProxy> files = (Set<VCSFileProxy>) evt.getNewValue();
+            VersioningAnnotationProvider.getDefault().refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
             if(evt.getSource() instanceof VersioningSystem) {
                 versionedRootsChanged((VersioningSystem) evt.getSource());

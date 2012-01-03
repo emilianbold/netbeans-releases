@@ -60,7 +60,6 @@ import java.util.logging.Level;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -299,11 +298,11 @@ public class VersioningAnnotationProvider {
      *
      * @param filesToRefresh files to refresh
      */
-    void refreshAnnotations(Set<File> files) {
+    void refreshAnnotations(Set<VCSFileProxy> files) {
         refreshAnnotations(files, true);
     }
 
-    void refreshAnnotations(Set<File> files, boolean removeFromCache) {
+    void refreshAnnotations(Set<VCSFileProxy> files, boolean removeFromCache) {
         if (files == null) {            
             LOG.log(Level.FINE, "refreshing all annotations"); //NOI18N
             refreshAllAnnotationsTask.schedule(2000);
@@ -317,10 +316,10 @@ public class VersioningAnnotationProvider {
             }
         }
         
-        for (File file : files) {
+        for (VCSFileProxy file : files) {
             // try to limit the number of normalizeFile calls:
             // let's find the closest existent FO, then list it's parents with FileObject.getParent();
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            FileObject fo = file.toFileObject();
             if (fo == null) {
                 fo = getExistingParent(file);
             } else {
@@ -472,12 +471,11 @@ public class VersioningAnnotationProvider {
      * @param file file to get an ancestor for
      * @return an ancestor fileobject or null if no such exist
      */
-    private FileObject getExistingParent (File file) {
+    private FileObject getExistingParent (VCSFileProxy file) {
         FileObject fo = null;
-        for (File parent = file; parent != null && fo == null; parent = parent.getParentFile()) {
+        for (VCSFileProxy parent = file; parent != null && fo == null; parent = parent.getParentFile()) {
             // find the fileobject
-            parent = FileUtil.normalizeFile(parent);
-            fo = FileUtil.toFileObject(parent);
+            fo = file.toFileObject();
         }
         return fo;
     }
@@ -761,11 +759,11 @@ public class VersioningAnnotationProvider {
                     files = new HashSet<FileObject>(files);
                     boolean fireEvent = setValue(new ItemKey<T, KEY>(files, refreshCandidate.keyPart, initialValue), newValue);
                     if (fireEvent) {
-                        Set<File> filesToRefresh = new HashSet<File>(files.size());
+                        Set<VCSFileProxy> filesToRefresh = new HashSet<VCSFileProxy>(files.size());
                         for (FileObject fo : files) {
-                            File file = FileUtil.toFile(fo);
-                            if (file != null) {
-                                filesToRefresh.add(file);
+                            VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
+                            if(proxy != null) {
+                                filesToRefresh.add(proxy);
                             }
                         }
                         if (LOG.isLoggable(Level.FINEST)) {

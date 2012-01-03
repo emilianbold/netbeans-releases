@@ -54,6 +54,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.*;
 import org.netbeans.modules.versioning.Accessor;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -237,16 +238,16 @@ public abstract class VersioningSystem {
      * @param files set of files whose annotations changed or null if the change affects all files 
      */ 
     protected final void fireAnnotationsChanged(Set<File> files) {
-        support.firePropertyChange(Utils.EVENT_ANNOTATIONS_CHANGED, null, files);
+        support.firePropertyChange(Utils.EVENT_ANNOTATIONS_CHANGED, null, toProxies(files));
     }
-    
+
     /**
      * Helper method to signal that status of a set of files changed. Status change event will refresh annotations automatically.
      *  
      * @param files set of files whose status changed or null if all files changed status 
      */ 
     protected final void fireStatusChanged(Set<File> files) {
-        support.firePropertyChange(Utils.EVENT_STATUS_CHANGED, null, files);
+        support.firePropertyChange(Utils.EVENT_STATUS_CHANGED, null, toProxies(files));
     }
 
     /**
@@ -282,6 +283,17 @@ public abstract class VersioningSystem {
         }
     }    
     
+    private Set<VCSFileProxy> toProxies(Set<File> files) {
+        if(files == null) {
+            return null;
+        }
+        Set<VCSFileProxy> proxies = new HashSet<VCSFileProxy>(files.size());
+        for (File file : files) {
+            proxies.add(VCSFileProxy.createFileProxy(file));
+        }
+        return proxies;
+    }
+
     /**
      * <p>
      * Register a VersioningSystem in the IDE.<br> 

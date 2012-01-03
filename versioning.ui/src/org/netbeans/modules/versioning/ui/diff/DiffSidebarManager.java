@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbPreferences;
 
 /**
@@ -108,13 +109,13 @@ public class DiffSidebarManager implements PreferenceChangeListener, PropertyCha
         getPreferences().addPreferenceChangeListener(this);
     }
 
-    public void refreshSidebars(final Set<File> files) {
+    public void refreshSidebars(final Set<VCSFileProxy> proxies) {
         // pushing the change ... we may as well listen for changes in versioning manager
         Set<FileObject> fileObjects = null;
-        if (files != null) {
-            fileObjects = new HashSet<FileObject>(files.size());
-            for (File file : files) {
-                fileObjects.add(FileUtil.toFileObject(FileUtil.normalizeFile(file)));
+        if (proxies != null) {
+            fileObjects = new HashSet<FileObject>(proxies.size());
+            for (VCSFileProxy file : proxies) {
+                fileObjects.add(file.toFileObject());
             }
             fileObjects.remove(null);
         }
@@ -247,7 +248,7 @@ public class DiffSidebarManager implements PreferenceChangeListener, PropertyCha
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Utils.EVENT_STATUS_CHANGED)) {
-            refreshSidebars((Set<File>)evt.getNewValue());
+            refreshSidebars((Set<VCSFileProxy>)evt.getNewValue());
         }
     }
 }
