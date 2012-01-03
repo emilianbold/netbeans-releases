@@ -92,10 +92,6 @@ public class JsStructureScanner implements StructureScanner {
                     collectedItems.add(new JsFunctionStructureItem(function, children));
                 } else if (function.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                     collectedItems.add(new JsFunctionStructureItem(function, null));
-                    Collection<? extends Field> fields = function.getFields();
-                    for (Field field : fields) {
-                        collectedItems.add(new JsSimpleStructureItem(field, "field-")); //NOI18N
-                    }
                     List<StructureItem> children = new ArrayList<StructureItem>();
                     children = getEmbededItems((Scope) element, children);
                     collectedItems.addAll(children);
@@ -105,6 +101,10 @@ public class JsStructureScanner implements StructureScanner {
                 List<StructureItem> children = new ArrayList<StructureItem>();
                 children = getEmbededItems((Scope) element, children);
                 collectedItems.add(new JsObjectStructureItem((ObjectScope)element, children));
+            } else if (element instanceof Variable) {
+                collectedItems.add(new JsSimpleStructureItem(element, "var-"));     //NOI18N
+            } else if (element instanceof Field) {
+                collectedItems.add(new JsSimpleStructureItem(element, "field-"));   //NOI18N
             }
         }
         return collectedItems;
