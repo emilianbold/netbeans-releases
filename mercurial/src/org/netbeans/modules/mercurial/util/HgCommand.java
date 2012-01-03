@@ -149,6 +149,7 @@ public class HgCommand {
     private static final String HG_REVERT_CMD = "revert"; // NOI18N
     private static final String HG_REVERT_NOBACKUP_CMD = "--no-backup"; // NOI18N
     private static final String HG_PURGE_CMD = "purge"; // NOI18N
+    private static final String HG_EXT_PURGE = "extensions.purge="; //NOI18N
     private static final String HG_ADD_CMD = "add"; // NOI18N
 
     private static final String HG_TIP_CONST = "tip"; // NOI18N
@@ -2349,6 +2350,8 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_PURGE_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_EXT_PURGE);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
 
