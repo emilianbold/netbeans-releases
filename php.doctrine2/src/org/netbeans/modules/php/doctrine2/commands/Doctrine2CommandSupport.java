@@ -135,9 +135,12 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
+        // validate
+        if (getProcessBuilder(true) == null) {
+            return null;
+        }
         File output = redirectScriptOutput(Doctrine2Script.LIST_COMMAND, Doctrine2Script.XML_PARAM); // NOI18N
         if (output == null) {
-            getProcessBuilder(true); // validate script
             return null;
         }
         Reader reader;
