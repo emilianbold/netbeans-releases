@@ -80,7 +80,7 @@ public class CreateProjectTest extends JellyTestCase {
         String mainClass = "MyMain" + projName; // NOI18N
         File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null, false);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null, true);
         assertNotNull(Utilities.openProject(projectDir));
     }
     
@@ -94,7 +94,7 @@ public class CreateProjectTest extends JellyTestCase {
         String mainClass = "MyMain" + projName; // NOI18N
         File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null, false);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null, true);
         Utilities.openProject(projectDir);
         assertNotNull(Utilities.closeProject(projName));
     }
@@ -142,7 +142,7 @@ public class CreateProjectTest extends JellyTestCase {
         File f = createProject(prjName);
         assertTrue("File is folder",f.isDirectory());
         Utilities.openProject(f);
-        
+        new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         assertTrue(Utilities.closeProject(prjName));
     }
 
@@ -169,6 +169,7 @@ public class CreateProjectTest extends JellyTestCase {
         
         J2SEProjectGenerator.createProject(projectDir, prjName, sourceFolders, testFolders, null, null, null);
         Utilities.openProject(projectDir);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         assertTrue(Utilities.closeProject(prjName));
 
     }
