@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -503,8 +504,7 @@ public class ModuleDependencies extends Task {
             Set<String> deps = new TreeSet<String>();
             depsAll.put(m.codebasename, deps);
             for (Dependency d : m.depends) {
-                ModuleInfo m2 = findModuleInfo(d, m);
-                if (m2 != null) {
+                for (ModuleInfo m2 : findModuleInfo(d, m)) {
                     deps.add(m2.codebasename);
                 }
             }
@@ -669,11 +669,9 @@ public class ModuleDependencies extends Task {
             TreeSet<String> deps = new TreeSet<String>();
             moduleDepsAll.put(m.codebasename, deps);
             for (Dependency d : m.depends) {
-                ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                if (theModuleOneIsDependingOn == null) {
-                    continue;
+                for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                    deps.add(theModuleOneIsDependingOn.codebasename);
                 }
-                deps.add(theModuleOneIsDependingOn.codebasename);
             }
         }
         transitiveClosure(moduleDepsAll);
@@ -689,12 +687,10 @@ public class ModuleDependencies extends Task {
                 TreeSet<String> deps = new TreeSet<String>();
                 kitDepsAll.put(m.getName(false), deps);
                 for (Dependency d : m.depends) {
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    if (theModuleOneIsDependingOn == null) {
-                        continue;
-                    }
-                    if (theModuleOneIsDependingOn.showInAutoupdate) {
-                        deps.add(theModuleOneIsDependingOn.getName(false));
+                    for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                        if (theModuleOneIsDependingOn.showInAutoupdate) {
+                            deps.add(theModuleOneIsDependingOn.getName(false));
+                        }
                     }
                 }
             }
@@ -739,13 +735,11 @@ public class ModuleDependencies extends Task {
                     if (regexp != null && !regexp.matcher(m.group).matches()) {
                         continue;
                     }
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    if (theModuleOneIsDependingOn == null) {
-                        continue;
-                    }
-                    if (theModuleOneIsDependingOn.showInAutoupdate) {
-                        w.print("  REQUIRES " + theModuleOneIsDependingOn.getName(false));
-                        w.println();
+                    for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                        if (theModuleOneIsDependingOn.showInAutoupdate) {
+                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName(false));
+                            w.println();
+                        }
                     }
                 }
             }
@@ -810,15 +804,13 @@ public class ModuleDependencies extends Task {
                     if (d.type != Dependency.Type.requires) {
                         continue;
                     }
-                    ModuleInfo o = findModuleInfo(d, m);
-                    if (o == null) {
-                        continue;
-                    }
-                    if (o.codebasename.equals("org.netbeans.libs.junit4")) {
-                        continue; // special case
-                    }
-                    if (!allowed.contains(o.group)) {
-                        w.println(m.getName(false) + " -> " + o.getName(false));
+                    for (ModuleInfo o : findModuleInfo(d, m)) {
+                        if (o.codebasename.equals("org.netbeans.libs.junit4")) {
+                            continue; // special case
+                        }
+                        if (!allowed.contains(o.group)) {
+                            w.println(m.getName(false) + " -> " + o.getName(false));
+                        }
                     }
                 }
             }
@@ -934,10 +926,11 @@ public class ModuleDependencies extends Task {
                     w.print(print);
                     w.println(d.getName ());
                 } else {
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    if (theModuleOneIsDependingOn != null && written.add(theModuleOneIsDependingOn)) {
-                        w.print(print);
-                        w.println(theModuleOneIsDependingOn.getName(false));
+                    for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                        if (written.add(theModuleOneIsDependingOn)) {
+                            w.print(print);
+                            w.println(theModuleOneIsDependingOn.getName(false));
+                        }
                     }
                 }
             }
@@ -991,43 +984,41 @@ public class ModuleDependencies extends Task {
                 String print = d.type == Dependency.Type.requires ? "  REQUIRES " : "  RECOMMENDS ";
                 // dependencies within one group are not important
                 Set<ModuleInfo> r = referrers.get(d);
-                ModuleInfo ref = findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null);
-                if (ref == null) {
-                    continue;
-                }
-                if (groupName.equals (ref.group)) {
-                    continue;
-                }
-                
-                if (first) {
-                    w.print ("GROUP ");
-                    w.print (groupName);
+                for (ModuleInfo ref : findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null)) {
+                    if (groupName.equals (ref.group)) {
+                        continue;
+                    }
+                    if (first) {
+                        w.print ("GROUP ");
+                        w.print (groupName);
+                        w.println ();
+                        first = false;
+                    }
+                    w.print (print);
+                    w.print (ref.getName (false));
                     w.println ();
-                    first = false;
                 }
-                w.print (print);
-                w.print (ref.getName (false));
-                w.println ();
             }
         }
         w.close ();
     }
     
-    /** For a given dependency finds the module that this dependency refers to.
+    /** For a given dependency finds the module(s) that this dependency refers to.
      */
-    private ModuleInfo findModuleInfo(Dependency dep, ModuleInfo referrer) throws BuildException {
+    private Set<ModuleInfo> findModuleInfo(Dependency dep, ModuleInfo referrer) throws BuildException {
         if (dep.isSpecial()) {
-            return null;
+            return Collections.emptySet();
         }
+        Set<ModuleInfo> result = new LinkedHashSet<ModuleInfo>();
         for (ModuleInfo info : modules) {
             if (dep.isDependingOn (info)) {
-                return info;
+                result.add(info);
             }
         }
-        if (dep.type == Dependency.Type.recommends) {
-            return null;
+        if (dep.type != Dependency.Type.recommends && result.isEmpty()) {
+            throw new BuildException ("Cannot find module that satisfies dependency: " + dep + (referrer != null ? " from: " + referrer : ""));
         }
-        throw new BuildException ("Cannot find module that satisfies dependency: " + dep + (referrer != null ? " from: " + referrer : ""));
+        return result;
     }
     /** For a given codebasename finds module that we depend on
      */
