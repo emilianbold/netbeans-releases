@@ -712,6 +712,7 @@
               dir="${cvs.dir}/${nbproject.path}" 
               failonerror="true"
               failifexecutionfails="true"
+              logerror="true"
               errorproperty="error.property">
             <env key="JAVA_HOME" value="${java.home}"/>
             <arg value="clean"/>

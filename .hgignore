@@ -182,3 +182,4 @@ derby\.log
 \.chg\..*$
 \.conflict\~$
 ^nbbuild/jna\.keystore$
+^nbi/engine/testData$

@@ -619,7 +619,7 @@ final class BasicSearchCriteria {
             compileRegexpFileNamePattern();
             return fileNamePattern != null;
         } else {
-            if (fileNamePatternExpr.length() == 0) {
+            if (fileNamePatternExpr == null || fileNamePatternExpr.isEmpty()) {
                 return false;                               //trivial case
             }
 

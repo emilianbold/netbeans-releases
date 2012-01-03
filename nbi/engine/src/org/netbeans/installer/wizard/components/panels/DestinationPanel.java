@@ -50,22 +50,13 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.*;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.utils.helper.swing.NbiButton;
-import org.netbeans.installer.utils.helper.swing.NbiLabel;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
-import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
-import org.netbeans.installer.utils.helper.swing.NbiPanel;
-import org.netbeans.installer.utils.helper.swing.NbiTextField;
+import org.netbeans.installer.utils.helper.swing.*;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
