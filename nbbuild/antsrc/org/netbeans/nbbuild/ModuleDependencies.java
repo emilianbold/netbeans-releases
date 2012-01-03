@@ -707,14 +707,14 @@ public class ModuleDependencies extends Task {
      * 
      * @param deps the dependency map, will contain the transitive closure when the method exits
      */
-    private void transitiveClosure(Map<String,? extends Set<String>> allDeps) {
+    private <T> void transitiveClosure(Map<T,? extends Set<T>> allDeps) {
         boolean needAnotherIteration = true;
         while (needAnotherIteration) {
             needAnotherIteration = false;
-            for (Map.Entry<String,? extends Set<String>> entry : allDeps.entrySet()) {
-                Set<String> deps = entry.getValue();
-                for (String d : new TreeSet<String>(deps)) {
-                    for (String d2: allDeps.get(d)) {
+            for (Map.Entry<T,? extends Set<T>> entry : allDeps.entrySet()) {
+                Set<T> deps = entry.getValue();
+                for (T d : new TreeSet<T>(deps)) {
+                    for (T d2: allDeps.get(d)) {
                         if (deps.add(d2)) {
                             log("transitive closure: need to add " + d2 + " to " + entry.getKey(), Project.MSG_DEBUG);
                             needAnotherIteration = true;
