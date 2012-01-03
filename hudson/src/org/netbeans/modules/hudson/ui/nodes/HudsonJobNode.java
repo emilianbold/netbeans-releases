@@ -46,7 +46,6 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.io.CharConversionException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -94,24 +93,15 @@ public class HudsonJobNode extends AbstractNode {
         }
         return Children.create(new ChildFactory<Object>() {
             final Object WORKSPACE = new Object();
-            LinkedList<HudsonJobBuild> builds;
             protected @Override boolean createKeys(List<Object> toPopulate) {
-                if (Thread.interrupted()) {
-                    return true;
-                } else if (builds == null) {
-                    // XXX would be nicer to avoid adding this in case there is no remote workspace...
-                    toPopulate.add(WORKSPACE);
-                    builds = new LinkedList<HudsonJobBuild>(job.getBuilds());
-                    return false;
-                } else if (builds.isEmpty()) {
-                    return true;
-                } else {
+                // XXX would be nicer to avoid adding this in case there is no remote workspace...
+                toPopulate.add(WORKSPACE);
+                for (HudsonJobBuild b : job.getBuilds()) {
                     // Processing one build at a time, make sure its result is known (blocking call).
-                    HudsonJobBuild b = builds.removeFirst();
                     b.getResult();
                     toPopulate.add(b);
-                    return false;
                 }
+                return true;
             }
             protected @Override Node createNodeForKey(Object key) {
                 if (key == WORKSPACE) {

@@ -164,6 +164,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     volatile boolean cancelled = false;
     volatile boolean notified;
     private final Object notifyLock = new Object();
+    private static final class Stop extends RuntimeException {}
     public void run() {
         boolean fail = cancelled || Thread.interrupted();
         logger.log (Level.FINE, "Running background children creation on " + //NOI18N
@@ -172,7 +173,22 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
             setKeys (Collections.<T>emptyList());
             return;
         }
-        List <T> keys = new LinkedList <T> ();
+        List <T> keys = new LinkedList <T> () {
+            @Override public boolean add(T e) {
+                if (cancelled || Thread.interrupted()) {
+                    throw new Stop();
+                }
+                super.add(e);
+                LinkedList<Object> newKeys = new LinkedList<Object>(this);
+                Node n = factory.getWaitNode();
+                if (n != null) {
+                    newKeys.add(n);
+                }
+                setKeys(newKeys);
+                return true;
+            }
+            // #206556 Y02 - could override other mutator methods if ever needed
+        };
         boolean done;
         do {
             synchronized (notifyLock) {
@@ -185,12 +201,23 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
                 setKeys (Collections.<T>emptyList());
                 return;
             }
-            done = factory.createKeys (keys);
+            try {
+                done = factory.createKeys(keys);
+            } catch (Stop stop) {
+                done = true;
+            }
             if (cancelled || Thread.interrupted()) {
                 setKeys (Collections.<T>emptyList());
                 return;
             }
-            setKeys (new LinkedList <T> (keys));
+            LinkedList<Object> newKeys = new LinkedList<Object>(keys);
+            if (!done) {
+                Node n = factory.getWaitNode();
+                if (n != null) {
+                    newKeys.add(n);
+                }
+            }
+            setKeys (newKeys);
         } while (!done && !Thread.interrupted() && !cancelled);
         initialized = done;
     }

@@ -264,19 +264,18 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
 
     // private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
 
-    private enum Visibility {HIDE, LEAF, CATEGORY}
     private final class TemplateKey {
         final DataObject d;
-        final Visibility visibility;
-        TemplateKey(DataObject d, Visibility visibility) {
+        final boolean leaf;
+        TemplateKey(DataObject d, boolean leaf) {
             this.d = d;
-            this.visibility = visibility;
+            this.leaf = leaf;
         }
         @Override public boolean equals(Object o) {
             if (!(o instanceof TemplateKey)) {
                 return false;
             }
-            return d == ((TemplateKey) o).d && visibility == ((TemplateKey) o).visibility;
+            return d == ((TemplateKey) o).d && leaf == ((TemplateKey) o).leaf;
         }
         @Override public int hashCode() {
             return d.hashCode();
@@ -299,37 +298,23 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
 
         @Override protected boolean createKeys(List<TemplateKey> keys) {
-            DataObject[] kids = folder.getChildren();
-            int alreadyAdded = keys.size();
-            if (alreadyAdded >= kids.length) {
-                return true;
-            }
-            DataObject d = kids[alreadyAdded];
-            Visibility v;
-            if (isFolderOfTemplates(d)) {
-                v = Visibility.LEAF;
-                for (DataObject child : ((DataFolder) d).getChildren()) {
-                    if (isFolderOfTemplates(child)) {
-                        v = Visibility.CATEGORY;
-                        break;
+            for (DataObject d : folder.getChildren()) {
+                if (isFolderOfTemplates(d)) {
+                    boolean leaf = true;
+                    for (DataObject child : ((DataFolder) d).getChildren()) {
+                        if (isFolderOfTemplates(child)) {
+                            leaf = false;
+                            break;
+                        }
                     }
+                    keys.add(new TemplateKey(d, leaf));
                 }
-            } else {
-                v = Visibility.HIDE;
             }
-            keys.add(new TemplateKey(d, v));
-            return false;
+            return true;
         }
         
         @Override protected Node createNodeForKey(TemplateKey k) {
-            switch (k.visibility) {
-            case CATEGORY:
-                return new FilterNode(k.d.getNodeDelegate(), Children.create(new TemplateChildren((DataFolder) k.d), true));
-            case LEAF:
-                return new FilterNode(k.d.getNodeDelegate(), Children.LEAF);
-            default:
-                return null;
-            }
+            return new FilterNode(k.d.getNodeDelegate(), k.leaf ? Children.LEAF : Children.create(new TemplateChildren((DataFolder) k.d), true));
         }
         
         @Override public void actionPerformed (ActionEvent event) {
@@ -356,24 +341,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
     }
     
-    private final class FileKey {
-        final DataObject d;
-        final boolean visible;
-        FileKey(DataObject d, boolean visible) {
-            this.d = d;
-            this.visible = visible;
-        }
-        @Override public boolean equals(Object o) {
-            if (!(o instanceof FileKey)) {
-                return false;
-            }
-            return d == ((FileKey) o).d && visible == ((FileKey) o).visible;
-        }
-        @Override public int hashCode() {
-            return d.hashCode();
-        }
-    }
-    private final class FileChildren extends ChildFactory<FileKey> {
+    private final class FileChildren extends ChildFactory<DataObject> {
         
         private DataFolder root;
                 
@@ -382,26 +350,20 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             assert this.root != null : "Root can not be null";  //NOI18N
         }
         
-        @Override protected boolean createKeys(List<FileKey> keys) {
-            DataObject[] kids = root.getChildren();
-            int alreadyAdded = keys.size();
-            if (alreadyAdded >= kids.length) {
-                return true;
-            }
-            DataObject dobj = kids[alreadyAdded];
-            if (isTemplate(dobj) && OpenProjectList.isRecommended(projectRecommendedTypes, dobj.getPrimaryFile())) {
-                if (dobj instanceof DataShadow) {
-                    dobj = ((DataShadow) dobj).getOriginal();
+        @Override protected boolean createKeys(List<DataObject> keys) {
+            for (DataObject dobj : root.getChildren()) {
+                if (isTemplate(dobj) && OpenProjectList.isRecommended(projectRecommendedTypes, dobj.getPrimaryFile())) {
+                    if (dobj instanceof DataShadow) {
+                        dobj = ((DataShadow) dobj).getOriginal();
+                    }
+                    keys.add(dobj);
                 }
-                keys.add(new FileKey(dobj, true));
-            } else {
-                keys.add(new FileKey(dobj, false));
             }
-            return false;
+            return true;
         }
 
-        @Override protected Node createNodeForKey(FileKey key) {
-            return key.visible ? new FilterNode(key.d.getNodeDelegate(), Children.LEAF) : null;
+        @Override protected Node createNodeForKey(DataObject d) {
+            return new FilterNode(d.getNodeDelegate(), Children.LEAF);
         }
         
     }
