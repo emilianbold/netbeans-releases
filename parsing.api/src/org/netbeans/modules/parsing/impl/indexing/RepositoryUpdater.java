@@ -1896,6 +1896,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         return sb;
     }
 
+            String indexerName, String root,
+            @NonNull final DocumentIndex docIndex,
+            final boolean optimize,
+            @NullAllowed final Iterable<? extends Indexable> indexables) throws IOException {
+        if (TEST_LOGGER.isLoggable(Level.FINEST)) {
+            TEST_LOGGER.log(Level.FINEST, "indexCommit:{0}:{1}", 
+                    new Object[] { indexerName, root });
+        }
+        storeChanges(docIndex, optimize, indexables);
+    }
+
+    private static void storeChanges(
     private static final Comparator<URL> C = new Comparator<URL>() {
         public @Override int compare(URL o1, URL o2) {
             return o1.toString().compareTo(o2.toString());
@@ -2047,6 +2059,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                     ctxToFinish.put(key,value);
                 }
+                if (TEST_LOGGER.isLoggable(Level.FINEST)) {
+                    TEST_LOGGER.log(Level.FINEST, "scanStarting:{0}:{1}", 
+                            new Object[] { factory.getIndexerName(), root.toString() });
+                }
                 boolean vote = factory.scanStarted(value.second);
                 votes.put(factory,vote);
             }
@@ -2082,13 +2098,21 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             try {
                 for (Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
                     parkWhileSuspended();
+                        TEST_LOGGER.log(Level.FINEST, "scanFinishing:{0}:{1}", 
+                                new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
+                    }
                     entry.first.scanFinished(entry.second);
+                    if (TEST_LOGGER.isLoggable(Level.FINEST)) {
+                        TEST_LOGGER.log(Level.FINEST, "scanFinished:{0}:{1}", 
+                                new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
+                    }
                 }
             } finally {
                 for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
                     DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(entry.second).getIndex(entry.second.getIndexFolder());
                     if (index != null) {
-                        storeChanges(index, isSteady(), null);
+                        storeChanges(entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm(), 
+                                index, isSteady(), null);
                     }
                 }
             }
@@ -2111,7 +2135,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 for(Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
                     DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
                     if (index != null) {
-                        storeChanges(index, isSteady(), ci.getIndexablesFor(null));
+                        storeChanges(null, ctx.getRootURI().toExternalForm(), index, isSteady(), ci.getIndexablesFor(null));
                     }
                 }
             }
@@ -2375,7 +2399,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 for(Context ctx : contexts.values()) {
                     DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                     if (index != null) {
-                        storeChanges(index, isSteady(), null);
+                        storeChanges(null, ctx.getRootURI().toExternalForm(), index, isSteady(), null);
                     }
                 }
             }
@@ -3213,7 +3237,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     for(Pair<SourceIndexerFactory,Context> pair : transactionContexts.values()) {
                                         DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
                                         if (index != null) {
-                                            storeChanges(index, isSteady(), proxyIterable);
+                                            storeChanges(pair.first.getIndexerName(), 
+                                                    pair.second.getRootURI().toExternalForm(), 
+                                                    index, isSteady(), proxyIterable);
                                         }
                                     }
                                 }
@@ -3366,7 +3392,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     for(Pair<SourceIndexerFactory,Context> pair : transactionContexts.values()) {
                                         DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
                                         if (index != null) {
-                                            storeChanges(index, isSteady(), proxyIterable);
+                                            storeChanges(pair.first.getIndexerName(), 
+                                                    pair.second.getRootURI().toExternalForm(), 
+                                                    index, isSteady(), proxyIterable);
                                         }
                                     }
                                 }
@@ -4288,7 +4316,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     for(Pair<SourceIndexerFactory,Context> ctx : transactionContexts.values()) {
                         DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx.second).getIndex(ctx.second.getIndexFolder());
                         if (index != null) {
-                            storeChanges(index, isSteady(), null);
+                            storeChanges(ctx.first.getIndexerName(), 
+                                ctx.second.getRootURI().toExternalForm(), index, isSteady(), null);
                         }
                     }
                 }
