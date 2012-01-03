@@ -45,19 +45,15 @@
 package org.netbeans.modules.openfile;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.sendopts.CommandException;
-import org.netbeans.spi.sendopts.Env;
-import org.netbeans.spi.sendopts.Option;
-import org.netbeans.spi.sendopts.OptionProcessor;
+import static org.netbeans.modules.openfile.Bundle.*;
 import org.netbeans.spi.sendopts.Arg;
-import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.ArgsProcessor;
+import org.netbeans.spi.sendopts.Description;
+import org.netbeans.spi.sendopts.Env;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Processor for command line options.
@@ -69,16 +65,21 @@ public final class Handler implements ArgsProcessor {
         displayName="#MSG_OpenOptionDisplayName", 
         shortDescription="#MSG_OpenOptionDescription"
     )
+    @Messages({
+        "MSG_OpenOptionDisplayName=--open file1[:line1]...",
+        "MSG_OpenOptionDescription=open specified file(s), possibly at given location; can also pass project directories"
+    })
     public String[] files;
 
     public Handler() {
     }
 
+    @Messages("EXC_MissingArgOpen=Missing arguments to --open")
     @Override
     public void process(Env env) throws CommandException {
         String[] argv = files;
         if (argv == null || argv.length == 0) {
-            throw new CommandException(2, NbBundle.getMessage(Handler.class, "EXC_MissingArgOpen")); 
+            throw new CommandException(2, EXC_MissingArgOpen());
         }
         
         File curDir = env.getCurrentDirectory ();
