@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.php.doctrine2.options;
 
+import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.doctrine2.commands.Doctrine2Script;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -63,6 +66,8 @@ public final class Doctrine2Options {
     private static final String SCRIPT = "script"; // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private volatile boolean scriptSearched = false;
 
 
     private Doctrine2Options() {
@@ -87,7 +92,16 @@ public final class Doctrine2Options {
     }
 
     public String getScript() {
-        return getPreferences().get(SCRIPT, null);
+        String script = getPreferences().get(SCRIPT, null);
+        if (script == null && !scriptSearched) {
+            scriptSearched = true;
+            List<String> scripts = FileUtils.findFileOnUsersPath(Doctrine2Script.SCRIPT_NAME, Doctrine2Script.SCRIPT_NAME_LONG);
+            if (!scripts.isEmpty()) {
+                script = scripts.get(0);
+                setScript(script);
+            }
+        }
+        return script;
     }
 
     public void setScript(String script) {
