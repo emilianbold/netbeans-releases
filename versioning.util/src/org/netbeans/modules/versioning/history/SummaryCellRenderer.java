@@ -607,7 +607,13 @@ class SummaryCellRenderer implements ListCellRenderer {
                 linkerSupport.add(new ShowRemainingFilesLink(((AbstractSummaryView.ShowAllEventsItem) value).getParent()), id);
             }
             StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
-            sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
+            if (isSelected) {
+                Component c = dlcr.getListCellRendererComponent(list, "<html><a href=\"expand\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
+                sb.append("<font color=\"").append(getColorString(c.getForeground())).append("\">") //NOI18N
+                        .append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")).append("</font>"); //NOI18N
+            } else {
+                sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
+            }
             sb.append("</a></html>"); //NOI18N
             comp = dlcr.getListCellRendererComponent(list, sb.toString(), index, isSelected, cellHasFocus);
             removeAll();
@@ -647,7 +653,7 @@ class SummaryCellRenderer implements ListCellRenderer {
             Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"action\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
             setBackground(comp.getBackground());
             for (Action a : actions) {
-                JLabel label = getLabelFor((String) a.getValue(Action.NAME));
+                JLabel label = getLabelFor((String) a.getValue(Action.NAME), isSelected ? comp.getForeground() : null);
                 label.setForeground(comp.getForeground());
                 label.setBackground(comp.getBackground());
                 label.setBorder(BorderFactory.createEmptyBorder());
@@ -669,15 +675,20 @@ class SummaryCellRenderer implements ListCellRenderer {
             }
         }
 
-        private JLabel getLabelFor (String actionName) {
+        private JLabel getLabelFor (String actionName, Color fontColor) {
             JLabel lbl = ACTION_LABELS.get(actionName);
             if (lbl== null) {
-                StringBuilder sb = new StringBuilder("<html><a href=\"action\">"); //NOI18N
-                sb.append(actionName);
-                sb.append("</a></html>"); //NOI18N
-                lbl = new JLabel(sb.toString());
+                lbl = new JLabel();
                 ACTION_LABELS.put(actionName, lbl);
             }
+            StringBuilder sb = new StringBuilder("<html><a href=\"action\">"); //NOI18N
+            if (fontColor == null) {
+                sb.append(actionName);
+            } else {
+                sb.append("<font color=\"").append(getColorString(fontColor)).append("\">").append(actionName).append("</font>"); //NOI18N
+            }
+            sb.append("</a></html>"); //NOI18N
+            lbl.setText(sb.toString());
             return lbl;
         }
         
@@ -699,13 +710,13 @@ class SummaryCellRenderer implements ListCellRenderer {
             setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("List.background"))); //NOI18N
             labels = new ArrayList<JLabel>();
             labels.add(new JLabel(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMore"))); //NOI18N
-            labels.add(more10Label = createLinkLabel("10")); //NOI18N
+            labels.add(more10Label = new JLabel());
             labels.add(new JLabel("/")); //NOI18N
-            labels.add(more50Label = createLinkLabel("50")); //NOI18N
+            labels.add(more50Label = new JLabel());
             labels.add(new JLabel("/")); //NOI18N
-            labels.add(more100Label = createLinkLabel("100")); //NOI18N
+            labels.add(more100Label = new JLabel());
             labels.add(new JLabel("/")); //NOI18N
-            labels.add(allLabel = createLinkLabel(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_AllRevisions")));
+            labels.add(allLabel = new JLabel());
             labels.add(new JLabel(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMoreSuffix"))); //NOI18N
             for (JLabel lbl : labels) {
                 lbl.setBorder(BorderFactory.createEmptyBorder());
@@ -734,6 +745,10 @@ class SummaryCellRenderer implements ListCellRenderer {
                 linkerSupport.add(new MoreRevisionsHyperlink(), id);
             }
             Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"more\">MORE</a>", index, isSelected, cellHasFocus); //NOI18N
+            setLabelLinkText(more10Label, "10", isSelected ? comp.getForeground() : null); //NOI18N
+            setLabelLinkText(more50Label, "50", isSelected ? comp.getForeground() : null); //NOI18N
+            setLabelLinkText(more100Label, "100", isSelected ? comp.getForeground() : null); //NOI18N
+            setLabelLinkText(allLabel, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_AllRevisions"), isSelected ? comp.getForeground() : null); //NOI18N
             for (JLabel lbl : labels) {
                 lbl.setForeground(comp.getForeground());
                 lbl.setBackground(isSelected ? comp.getBackground() : backgroundColor);
@@ -751,11 +766,15 @@ class SummaryCellRenderer implements ListCellRenderer {
             }
         }
 
-        private JLabel createLinkLabel (String text) {
+        private JLabel setLabelLinkText (JLabel lbl, String text, Color fgColor) {
             StringBuilder sb = new StringBuilder("<html><a href=\"more\">"); //NOI18N
-            sb.append(text);
+            if (fgColor == null) {
+                sb.append(text);
+            } else {
+                sb.append("<font color=\"").append(getColorString(fgColor)).append("\">").append(text).append("</font>"); //NOI18N
+            }
             sb.append("</a></html>"); //NOI18N
-            JLabel lbl = new JLabel(sb.toString());
+            lbl.setText(sb.toString());
             return lbl;
         }
 
