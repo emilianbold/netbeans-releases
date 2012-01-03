@@ -59,6 +59,7 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.openide.filesystems.FileObject;
@@ -117,7 +118,7 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
             script = Doctrine2Script.getDefault();
         } catch (InvalidPhpProgramException ex) {
             if (warnUser) {
-                UiUtils.invalidScriptProvided(ex.getMessage());
+                UiUtils.invalidScriptProvided(ex.getMessage(), Doctrine2OptionsPanelController.OPTIONS_SUBPATH);
             }
             return null;
         }
@@ -136,6 +137,7 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
         File output = redirectScriptOutput(Doctrine2Script.LIST_COMMAND, Doctrine2Script.XML_PARAM); // NOI18N
         if (output == null) {
+            getProcessBuilder(true); // validate script
             return null;
         }
         Reader reader;
@@ -153,7 +155,7 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
         Doctrine2CommandsXmlParser.parse(reader, commandsVO);
         if (commandsVO.isEmpty()) {
             // ??? try to read them from output
-            LOGGER.info("Symfony commands from XML should be parsed");
+            LOGGER.info("Doctrine2 commands from XML should be parsed");
             return null;
         }
         List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>(commandsVO.size());

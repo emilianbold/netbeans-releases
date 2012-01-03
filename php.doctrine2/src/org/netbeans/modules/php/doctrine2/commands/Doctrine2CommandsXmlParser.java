@@ -85,7 +85,7 @@ public final class Doctrine2CommandsXmlParser extends DefaultHandler {
             parser.xmlReader.setContentHandler(parser);
             parser.xmlReader.parse(new InputSource(reader));
         } catch (SAXException ex) {
-            // incorrect xml provided by symfony?
+            // incorrect xml provided by doctrine?
             LOGGER.log(Level.INFO, null, ex);
         } catch (Throwable ex) {
             LOGGER.log(Level.WARNING, null, ex);
