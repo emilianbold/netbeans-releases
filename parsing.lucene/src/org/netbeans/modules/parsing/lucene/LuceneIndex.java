@@ -820,7 +820,9 @@ public class LuceneIndex implements Index.Transactional {
             checkPreconditions();
             hit();
             if (this.reader == null) {
-                if (validCache != Status.VALID) {
+                if (validCache != Status.VALID &&
+                    validCache != Status.WRITING &&
+                    validCache != null) {
                     return null;
                 }
                 //Issue #149757 - logging
@@ -840,7 +842,11 @@ public class LuceneIndex implements Index.Transactional {
                 } catch (final FileNotFoundException fnf) {
                     //pass - returns null
                 } catch (IOException ioe) {
-                    throw annotateException (ioe);
+                    if (validCache == null) {
+                        return null;
+                    } else {
+                        throw annotateException (ioe);
+                    }
                 }
             }
             return this.reader;
