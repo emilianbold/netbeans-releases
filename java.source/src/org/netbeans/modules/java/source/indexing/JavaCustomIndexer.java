@@ -782,12 +782,13 @@ public class JavaCustomIndexer extends CustomIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
+            JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
             TransactionContext.beginTrans().
                     register(
                         FileManagerTransaction.class,
                         JavaIndex.hasSourceCache(
                             context.getRootURI(), false)?
-                            FileManagerTransaction.writeBack():
+                            FileManagerTransaction.writeBack(context.getRoot()):
                             FileManagerTransaction.writeThrough()).
                     register(
                         ClassIndexEventsTransaction.class,
