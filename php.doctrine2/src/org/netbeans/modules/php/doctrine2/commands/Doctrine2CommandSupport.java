@@ -62,7 +62,6 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
@@ -95,15 +94,11 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected String getOptionsPath() {
-        return null;
+        return UiUtils.OPTIONS_PATH + "/" + Doctrine2OptionsPanelController.OPTIONS_SUBPATH; // NOI18N
     }
 
     @Override
     protected File getPluginsDirectory() {
-        FileObject vendor = phpModule.getSourceDirectory().getFileObject("vendor"); // NOI18N
-        if (vendor != null && vendor.isFolder()) {
-            return FileUtil.toFile(vendor);
-        }
         return null;
     }
 
