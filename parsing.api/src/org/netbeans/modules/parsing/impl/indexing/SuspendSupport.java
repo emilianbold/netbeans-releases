@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -51,6 +54,8 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Zezula
  */
 final class SuspendSupport implements SuspendStatus {
+
+    private static final Logger LOG = Logger.getLogger(SuspendSupport.class.getName());
 
     private final RequestProcessor worker;
     private final Object lock = new Object();
@@ -68,6 +73,12 @@ final class SuspendSupport implements SuspendStatus {
         }
         synchronized(lock) {
             suspedDepth++;
+            if (LOG.isLoggable(Level.FINE) && suspedDepth == 1) {
+                LOG.log(
+                    Level.FINE,
+                    "SUSPEND: {0}", //NOI18N
+                    Arrays.toString(Thread.currentThread().getStackTrace()));
+            }
         }
     }
 
@@ -80,6 +91,7 @@ final class SuspendSupport implements SuspendStatus {
             suspedDepth--;
             if (suspedDepth == 0) {
                 lock.notifyAll();
+                LOG.fine("RESUME"); //NOI18N
             }
         }
     }
@@ -94,8 +106,14 @@ final class SuspendSupport implements SuspendStatus {
     @Override
     public void parkWhileSuspended() throws InterruptedException {
         synchronized(lock) {
+            boolean parked = false;
             while (suspedDepth > 0) {
+                LOG.fine("PARK");   //NOI18N
                 lock.wait();
+                parked = true;
+            }
+            if (LOG.isLoggable(Level.FINE) && parked) {
+                LOG.fine("UNPARK");   //NOI18N
             }
         }
     }
