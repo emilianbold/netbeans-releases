@@ -523,10 +523,8 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
         @SuppressWarnings("unchecked")
         @Override
         public int compare(ETable.RowMapping rm1, ETable.RowMapping rm2) {
-            Object obj1 = rm1.getModelObject(column);
-            Object obj2 = rm2.getModelObject(column);
-            obj1 = table.transformValue(obj1);
-            obj2 = table.transformValue(obj2);
+            Object obj1 = rm1.getTransformedValue(column);
+            Object obj2 = rm2.getTransformedValue(column);
             if (obj1 == null && obj2 == null) {
                 return 0;
             }
