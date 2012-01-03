@@ -247,9 +247,9 @@ public class LayerBuilderTest extends NbTestCase {
         TestFileUtils.writeFile(new File(dest, "p/Bundle.properties"), "label=hello");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         File layer = new File(dest, "META-INF/generated-layer.xml");
-        assertEquals("<filesystem><folder name='whatever'><file name='p-C.instance'>" +
+        assertEquals("<filesystem><file name='whatever'>" +
                 "<!--p.C--><attr bundlevalue='p.Bundle#label' name='displayName'/>" +
-                "</file></folder></filesystem>",
+                "</file></filesystem>",
                 clean(TestFileUtils.readFile(layer)));
     }
 
@@ -277,6 +277,8 @@ public class LayerBuilderTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#k\") @org.openide.util.NbBundle.Messages(\"k=v\") public class C {}");
         File dest = new File(getWorkDir(), "dest");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C2", "public class C2 {@" + A.class.getCanonicalName() + "(displayName=\"#k2\") @org.openide.util.NbBundle.Messages(\"k2=v\") String f = null;}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, null));
     }
 
     public @interface A {String displayName();}
@@ -293,7 +295,7 @@ public class LayerBuilderTest extends NbTestCase {
             }
             for (Element e : roundEnv.getElementsAnnotatedWith(A.class)) {
                 A a = e.getAnnotation(A.class);
-                layer(e).instanceFile("whatever", null).bundlevalue("displayName", a.displayName()).write();
+                layer(e).file("whatever").bundlevalue("displayName", a.displayName()).write();
             }
             return true;
         }

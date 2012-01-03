@@ -51,29 +51,29 @@ import org.netbeans.spi.sendopts.Arg;
 import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.ArgsProcessor;
 
-@Messages({
-    "GroupOptionProcessor.open.name=--open-group NAME",
-    "GroupOptionProcessor.open.desc=open a project group by name",
-    "GroupOptionProcessor.close.desc=close any open project group",
-    "GroupOptionProcessor.list.desc=list available project groups"
-})
 public class GroupOptionProcessor implements ArgsProcessor {
     @Arg(longName="open-group")
     @Description(
         displayName="#GroupOptionProcessor.open.name",
         shortDescription="#GroupOptionProcessor.open.desc"
     )
+    @Messages({
+        "GroupOptionProcessor.open.name=--open-group NAME",
+        "GroupOptionProcessor.open.desc=open a project group by name"
+    })
     public String openOption;
     @Arg(longName="close-group")
     @Description(
         shortDescription="#GroupOptionProcessor.close.desc"
     )
+    @Messages("GroupOptionProcessor.close.desc=close any open project group")
     public boolean closeOption;
 
     @Arg(longName="list-groups")
     @Description(
         shortDescription="#GroupOptionProcessor.list.desc"
     )
+    @Messages("GroupOptionProcessor.list.desc=list available project groups")
     public boolean listOption;
 
     @Messages({

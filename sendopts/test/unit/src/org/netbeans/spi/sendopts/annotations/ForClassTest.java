@@ -138,10 +138,6 @@ public class ForClassTest extends NbTestCase {
         assertEquals("Set to value string", "value", methodCalled.defaultValue);
     }
 
-        @NbBundle.Messages({
-            "NAME2=MyParams", 
-            "SHORT2=ShorterHelp"
-        })
     public static final class SampleOptions2 implements ArgsProcessor {
         @Arg(longName="on")
         public boolean enabled;
@@ -151,6 +147,10 @@ public class ForClassTest extends NbTestCase {
 
         @Description(displayName="#NAME2", shortDescription="#SHORT2")
         @Arg(shortName='m', longName="more")
+        @NbBundle.Messages({
+            "NAME2=MyParams",
+            "SHORT2=ShorterHelp"
+        })
         public String[] additionalParams;
 
         @Arg(longName = "optional", defaultValue = "")

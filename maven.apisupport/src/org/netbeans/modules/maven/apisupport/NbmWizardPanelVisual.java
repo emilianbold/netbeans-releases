@@ -68,11 +68,11 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
-@Messages("NbmWizardPanelVisual.wait=Searching...")
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(NbmWizardPanelVisual.class);
 
+    @Messages("NbmWizardPanelVisual.wait=Searching...")
     private static final String SEARCHING = NbmWizardPanelVisual_wait();
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
