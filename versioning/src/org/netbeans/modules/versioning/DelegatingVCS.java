@@ -112,12 +112,10 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 Utils.flushNullOwners();   
                 delegate = (org.netbeans.modules.versioning.spi.VersioningSystem) map.get("delegate");                  // NOI18N
                 if(delegate != null) {
-                    synchronized(support) {
-                        PropertyChangeListener[] listeners = support.getPropertyChangeListeners();
-                        for (PropertyChangeListener l : listeners) {
-                            delegate.addPropertyChangeListener(l);
-                            support.removePropertyChangeListener(l);
-                        }
+                    PropertyChangeListener[] listeners = support.getPropertyChangeListeners();
+                    for (PropertyChangeListener l : listeners) {
+                        delegate.addPropertyChangeListener(l);
+                        support.removePropertyChangeListener(l);
                     }
                 } else {
                     LOG.log(Level.WARNING, "Couldn't create delegate for : {0}", map.get("displayName")); // NOI18N
@@ -195,15 +193,23 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
 
     @Override
     public final void addPropertyCL(PropertyChangeListener listener) {
-        synchronized(support) {
-            support.addPropertyChangeListener(listener);
+        synchronized(DELEGATE_LOCK) {
+            if(delegate == null) {
+                support.addPropertyChangeListener(listener);
+            } else {
+                delegate.addPropertyChangeListener(listener);
+            }
         }
     }
     
     @Override
     public final void removePropertyCL(PropertyChangeListener listener) {
-        synchronized(support) {
-            support.removePropertyChangeListener(listener);
+        synchronized(DELEGATE_LOCK) {
+            if(delegate == null) {
+                support.removePropertyChangeListener(listener);
+            } else {
+                delegate.removePropertyChangeListener(listener);
+            }
         }
     }
     
