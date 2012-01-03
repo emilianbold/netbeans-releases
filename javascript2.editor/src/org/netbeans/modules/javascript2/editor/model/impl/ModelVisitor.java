@@ -81,7 +81,7 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node visit(BinaryNode binaryNode, boolean onset) {
         if (onset) {            
             if (binaryNode.tokenType() == TokenType.ASSIGN 
-                    && !(binaryNode.rhs() instanceof ReferenceNode)
+                    && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
                     && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
                 // TODO probably not only assign                
                 ScopeImpl scope = modelBuilder.getCurrentScope();
@@ -103,8 +103,8 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     } else {
                         // probably a property of an object
-                        System.out.println("test: " + getName(aNode));
-                        
+                        List<Identifier> fqName = getName(aNode);
+                        ModelElementFactory.createField(fqName, modelBuilder);
                     }
                     
                 } else {
