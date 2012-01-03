@@ -100,12 +100,18 @@ public final class ModelElementFactory {
         ObjectScopeImpl result = ModelUtils.findObjectWithName(currentScope, fqName.get(0).getName());
         
         if (fqName.size() == 1) {
-            ObjectScopeImpl newObject =  new ObjectScopeImpl(currentScope, object, fqName);
+            ObjectScopeImpl newObject;
             if (result != null) {
-                ((Scope)result.getInElement()).getElements().remove(result);
+                ((ScopeImpl)result.getInElement()).removeElement(result);
+                if (result.getInElement() instanceof FileScopeImpl) {
+                    ((FileScopeImpl)result.getInElement()).getLogicalElements().remove(result);
+                }
+                newObject =  new ObjectScopeImpl((Scope)result.getInElement(), object, fqName);
                 for (ModelElement element : result.getElements()) {
                     newObject.addElement((ModelElementImpl)element);
                 }
+            } else {
+                newObject = new ObjectScopeImpl(currentScope, object, fqName);
             }
             result = newObject;
             if (currentScope instanceof FileScope) {
@@ -126,6 +132,17 @@ public final class ModelElementFactory {
                     result = new ObjectScopeImpl(result, fqNameOfCreated, fqName.get(i).getOffsetRange()); 
                 } else {
                     result = (ObjectScopeImpl)me;
+                    if (result.isLogical() && (i == fqName.size() - 1)) {
+                        ((ScopeImpl)result.getInElement()).removeElement(result);
+                        if (result.getInElement() instanceof FileScopeImpl) {
+                            ((FileScopeImpl) result.getInElement()).getLogicalElements().remove(result);
+                        }
+                        ObjectScopeImpl newObject =  new ObjectScopeImpl((Scope)result.getInElement(), object, fqName);
+                        for (ModelElement element : result.getElements()) {
+                            newObject.addElement((ModelElementImpl)element);
+                        }
+                        result = newObject;
+                    }
                 }
             }
         }

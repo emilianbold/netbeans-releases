@@ -205,7 +205,8 @@ public class ModelTest extends JsTestBase {
         ObjectScope myApp = (ObjectScope) element;
         assertEquals("MyApp", myApp.getFQDeclarationName().get(0).getName());
         
-        
+        field = (Field)ModelUtils.getFirst(ModelUtils.getFirst(myApp.getElements(), "country"));
+        assertEquals("country", field.getDeclaration().getName());
     }
     
 }
