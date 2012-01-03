@@ -92,9 +92,14 @@ public class JsStructureScanner implements StructureScanner {
                     collectedItems.add(new JsFunctionStructureItem(function, children));
                 } else if (function.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                     collectedItems.add(new JsFunctionStructureItem(function, null));
+                    Collection<? extends Field> fields = function.getFields();
+                    for (Field field : fields) {
+                        collectedItems.add(new JsSimpleStructureItem(field, "field-")); //NOI18N
+                    }
                     List<StructureItem> children = new ArrayList<StructureItem>();
                     children = getEmbededItems((Scope) element, children);
                     collectedItems.addAll(children);
+                    
                 }
             } else  if (element instanceof ObjectScope) {
                 List<StructureItem> children = new ArrayList<StructureItem>();
@@ -345,6 +350,22 @@ public class JsStructureScanner implements StructureScanner {
             formatter.appendText(name.toString());
         }
 
+    }
+    
+    private class JsSimpleStructureItem extends JsStructureItem {
+
+        public JsSimpleStructureItem(ModelElement elementHandle, String sortPrefix) {
+            super(elementHandle, null, sortPrefix);
+        }
+
+        
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getElementHandle().getName());
+            return formatter.getText();
+        }
+        
     }
     
 }
