@@ -89,7 +89,7 @@ class DiffSidebarDiffPanel extends javax.swing.JPanel implements PropertyChangeL
 
         contentPanel.setLayout(new java.awt.BorderLayout());
 
-        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/diff/diff-next.png"))); // NOI18N
+        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/diff/diff-prev.png"))); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(DiffSidebarDiffPanel.class, "TT_GoToNextDifference")); // NOI18N
         nextButton.setBorderPainted(false);
         nextButton.setFocusable(false);
@@ -102,7 +102,7 @@ class DiffSidebarDiffPanel extends javax.swing.JPanel implements PropertyChangeL
             }
         });
 
-        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/diff/diff-prev.png"))); // NOI18N
+        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/diff/diff-next.png"))); // NOI18N
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(DiffSidebarDiffPanel.class, "TT_GoToPreviousDifference")); // NOI18N
         prevButton.setBorderPainted(false);
         prevButton.setFocusable(false);
@@ -120,11 +120,11 @@ class DiffSidebarDiffPanel extends javax.swing.JPanel implements PropertyChangeL
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(267, Short.MAX_VALUE)
+                .addContainerGap(311, Short.MAX_VALUE)
                 .addComponent(nextButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(prevButton)
-                .addContainerGap(269, Short.MAX_VALUE))
+                .addContainerGap(311, Short.MAX_VALUE))
             .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -134,7 +134,7 @@ class DiffSidebarDiffPanel extends javax.swing.JPanel implements PropertyChangeL
                     .addComponent(nextButton)
                     .addComponent(prevButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
+                .addComponent(contentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
