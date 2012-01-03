@@ -59,7 +59,7 @@ import org.netbeans.modules.git.FileStatusCache.ChangedEvent;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitVCS;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
