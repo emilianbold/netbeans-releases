@@ -43,31 +43,25 @@
  */
 package org.netbeans.modules.refactoring.plugins;
 
-import java.io.IOException;
 import java.net.URL;
-import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
+import java.util.Collection;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.CopyRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.text.PositionBounds;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Jan Becicka
+ * @author Ralph Ruijs
  */
-public class FileCopyPlugin implements RefactoringPlugin {
-    private SingleCopyRefactoring refactoring;
+public class FilesCopyPlugin implements RefactoringPlugin {
+    private AbstractRefactoring refactoring;
     
     /** Creates a new instance of WhereUsedQuery */
-    public FileCopyPlugin(SingleCopyRefactoring refactoring) {
+    public FilesCopyPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
     }
     
@@ -78,7 +72,21 @@ public class FileCopyPlugin implements RefactoringPlugin {
     
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
-        elements.add(refactoring, new CopyFile(refactoring.getRefactoringSource().lookup(FileObject.class), elements.getSession()));
+        URL target = null;
+        String newName = null;
+        if(refactoring instanceof SingleCopyRefactoring) {
+            SingleCopyRefactoring scr = (SingleCopyRefactoring) refactoring;
+            target = scr.getTarget().lookup(URL.class);
+            newName = scr.getNewName();
+        } else if(refactoring instanceof CopyRefactoring) {
+            CopyRefactoring scr = (CopyRefactoring) refactoring;
+            target = scr.getTarget().lookup(URL.class);
+        }
+        
+        Collection<? extends FileObject> fileObjects = refactoring.getRefactoringSource().lookupAll(FileObject.class);
+        for (FileObject fileObject : fileObjects) {
+            elements.add(refactoring, new CopyFile(fileObject, target, newName, refactoring.getContext()));
+        }
         return null;
     }
     
@@ -94,65 +102,5 @@ public class FileCopyPlugin implements RefactoringPlugin {
     
     @Override
     public void cancelRequest() {
-    }
-    
-    private class CopyFile extends SimpleRefactoringElementImplementation {
-        
-        private FileObject fo;
-        private RefactoringSession session;
-        private DataObject newOne;
-        public CopyFile(FileObject fo, RefactoringSession session) {
-            this.fo = fo;
-            this.session = session;
-        }
-        @Override
-        public String getText() {            
-            return NbBundle.getMessage(FileCopyPlugin.class, "TXT_CopyFile", fo.getNameExt());
-        }
-        
-        @Override
-        public String getDisplayText() {
-            return getText();
-        }
-        
-        @Override
-        public void performChange() {
-            try {
-                FileObject fo = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
-                FileObject source = refactoring.getRefactoringSource().lookup(FileObject.class);
-                DataObject dob = DataObject.find(source);
-                newOne = dob.copy(DataFolder.findFolder(fo));
-                newOne.rename(refactoring.getNewName());
-                refactoring.getContext().add(newOne.getPrimaryFile());
-            } catch (IOException ex) {
-                throw new IllegalStateException(ex);
-            }
-        }
-        
-        @Override
-        public void undoChange() {
-            try {
-                if (newOne != null) {
-                    newOne.delete();
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-        
-        @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-        
-        @Override
-        public FileObject getParentFile() {
-            return fo;
-        }
-        
-        @Override
-        public PositionBounds getPosition() {
-            return null;
-        }
     }
 }

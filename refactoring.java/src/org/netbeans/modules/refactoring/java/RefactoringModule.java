@@ -44,7 +44,6 @@
 package org.netbeans.modules.refactoring.java;
 
 import java.util.prefs.Preferences;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.NbPreferences;
 
 /**
@@ -53,7 +52,7 @@ import org.openide.util.NbPreferences;
  * @author Jan Becicka
  * @author Pavel Flaska
  */
-public final class RefactoringModule extends ModuleInstall {
+public final class RefactoringModule {
 
     /** Holds the file objects whose attributes represents options */
     private static Preferences preferences = NbPreferences.forModule(RefactoringModule.class);
@@ -92,9 +91,6 @@ public final class RefactoringModule extends ModuleInstall {
         return preferences.getInt(key, defaultValue);
     }
 
-    @Override
-    public void restored() {
-        CopyHandler.getInstance().register();
+    private RefactoringModule() {
     }
-
 }
