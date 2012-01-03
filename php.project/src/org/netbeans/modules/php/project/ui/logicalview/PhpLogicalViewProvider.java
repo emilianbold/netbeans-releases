@@ -279,8 +279,10 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
+            actions.add(null);
 
             // frameworks
+            boolean hasFrameworkActions = false;
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
                 if (actionsExtender != null) {
@@ -296,12 +298,15 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                         }
                         allActions.addAll(frameworkActions);
                         actions.add(new FrameworkMenu(actionsExtender.getMenuName(), allActions));
+                        hasFrameworkActions = true;
                     }
                 }
             }
+            if (hasFrameworkActions) {
+                actions.add(null);
+            }
 
             // honor 57874 contract
-            actions.add(null);
             actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
