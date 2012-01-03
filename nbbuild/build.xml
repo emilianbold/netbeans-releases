@@ -45,10 +45,10 @@ made subject to such option by the copyright holder.
 -->
 <project name="nbbuild" default="build-nozip" basedir=".">
 
-  <fail message="Please build using Ant 1.7.1 or higher.">
+  <fail message="Please build using Ant 1.8.0 or higher.">
     <condition>
       <not>
-        <antversion atleast="1.7.1"/>
+        <antversion atleast="1.8.0"/>
       </not>
     </condition>
   </fail>

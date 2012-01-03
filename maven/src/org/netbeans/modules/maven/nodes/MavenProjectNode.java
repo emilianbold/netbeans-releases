@@ -73,9 +73,9 @@ import org.openide.xml.XMLUtil;
  *
  * @author Milos Kleint
  */
-@Messages("ICON_BrokenProjectBadge=Project loading failed or was not complete")
 public class MavenProjectNode extends AbstractNode {
     static final String BADGE_ICON = "org/netbeans/modules/maven/brokenProjectBadge.png";//NOI18N
+    @Messages("ICON_BrokenProjectBadge=Project loading failed or was not complete")
     private static final String toolTipBroken = "<img src=\"" + MavenProjectNode.class.getClassLoader().getResource(BADGE_ICON) + "\">&nbsp;" + ICON_BrokenProjectBadge();
 
      private NbMavenProjectImpl project;

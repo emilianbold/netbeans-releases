@@ -96,6 +96,17 @@ public class NbBundleProcessorTest extends NbTestCase {
         assertEquals("&Build 2 Projects", LBL_BuildMainProjectAction_Name(2, "whatever"));
     }
 
+    public void testFieldUsage() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "public class C {",
+                "@org.openide.util.NbBundle.Messages(\"k=v\")",
+                "public static final Object X = new Object() {public String toString() {return Bundle.k();}};",
+                "}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        assertEquals("v", l.loadClass("p.C").getField("X").get(null).toString());
+    }
+
     @Messages({
         "s1=Don't worry",
         "s2=Don''t worry about {0}",

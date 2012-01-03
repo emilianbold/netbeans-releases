@@ -148,12 +148,12 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
         return true;
     }
 
-    private static void writeBundle(File f, String key, String value, Element e) throws LayerGenerationException {
+    private void writeBundle(File f, String key, String value, Element e) throws LayerGenerationException {
         if (value.isEmpty()) {
             return;
         }
-        // test first
-        f.bundlevalue(key, value);
+        // test first; note that cannot call bundlevalue on f since its originatingElement is wrong
+        layer(e).file("dummy/file").bundlevalue(key, value);
         
         if (value.startsWith("#")) {
             Element referenceElement = e;
