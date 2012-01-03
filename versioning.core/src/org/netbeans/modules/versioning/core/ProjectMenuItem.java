@@ -245,8 +245,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
         private LazyMenu(Node[] nodes, VersioningSystem owner) {
             // owner == null ? 'default versioning menu' : 'specific menu of a versioning system'
-            super();
-            Mnemonics.setLocalizedText(this, owner == null ? NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu") : owner.getMenuLabel());
+            super(owner == null ? NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu") : owner.getDisplayName());
             this.nodes = nodes;
             this.owner = owner;
         }
