@@ -289,7 +289,9 @@ public abstract class VersioningSystem {
         }
         Set<VCSFileProxy> proxies = new HashSet<VCSFileProxy>(files.size());
         for (File file : files) {
-            proxies.add(VCSFileProxy.createFileProxy(file));
+            if(file != null) {
+                proxies.add(VCSFileProxy.createFileProxy(file));
+            }
         }
         return proxies;
     }
