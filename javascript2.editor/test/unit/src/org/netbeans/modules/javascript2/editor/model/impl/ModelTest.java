@@ -47,11 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.model.FunctionScope;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ObjectScope;
-import org.netbeans.modules.javascript2.editor.model.Parameter;
-import org.netbeans.modules.javascript2.editor.model.Scope;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -155,4 +151,45 @@ public class ModelTest extends JsTestBase {
         param = iterator.next();
         assertEquals("description", param.getDeclaration().getName());
     }
+    
+    
+    public void testVariables01() throws Exception {
+        Model model = getModel("testfiles/model/variables01.js");
+        assertNotNull(model);
+        FileScope fScope = model.getFileScope();
+        Collection<? extends Variable> variables = fScope.getDeclaredVariables();
+        assertEquals(4, variables.size());
+        
+        Variable variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "address"));
+        assertEquals("address", variable.getDeclaration().getName());
+        assertEquals(true, variable.isGlobal());
+        assertEquals(false, variable.isImplicit());
+        
+        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "country"));
+        assertEquals("country", variable.getDeclaration().getName());
+        assertEquals(true, variable.isGlobal());
+        assertEquals(true, variable.isImplicit());
+        
+        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "telefon"));
+        assertEquals("telefon", variable.getDeclaration().getName());
+        assertEquals(true, variable.isGlobal());
+        assertEquals(true, variable.isImplicit());
+        
+        ModelElement element = ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "Address"));
+        FunctionScope object = (FunctionScope)element;
+        assertEquals("Address", object.getName());
+        variables = object.getDeclaredVariables();
+        assertEquals(2, variables.size());
+        
+        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "city"));
+        assertEquals("city", variable.getDeclaration().getName());
+        assertEquals(false, variable.isGlobal());
+        assertEquals(false, variable.isImplicit());
+        
+        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "zip"));
+        assertEquals("zip", variable.getDeclaration().getName());
+        assertEquals(false, variable.isGlobal());
+        assertEquals(false, variable.isImplicit());
+    }
+    
 }

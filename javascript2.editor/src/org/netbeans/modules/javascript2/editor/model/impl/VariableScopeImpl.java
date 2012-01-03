@@ -63,7 +63,12 @@ public class VariableScopeImpl extends ScopeImpl implements VariableScope {
 
     @Override
     public Collection<? extends Variable> getDeclaredVariables() {
-        return null;
+        return filter(getElements(), new ElementFilter() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(JsElement.Kind.VARIABLE);
+            }
+        });
     }
     
     

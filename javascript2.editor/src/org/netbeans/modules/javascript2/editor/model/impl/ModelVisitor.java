@@ -42,12 +42,13 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.parser.TokenType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.FileScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -73,6 +74,41 @@ public class ModelVisitor extends PathNodeVisitor {
         this.unvisitedFn = new ArrayList<FunctionNode>();
         this.visitedProperties = new ArrayList<String>();
         this.functionStack = new ArrayList<List<FunctionNode>>();
+    }
+
+    @Override
+    public Node visit(BinaryNode binaryNode, boolean onset) {
+        if (onset) {
+            System.out.println("Binary node " + binaryNode.tokenType());
+            System.out.println("    rhs: " + binaryNode.rhs().getClass().getName() );
+            
+            if (binaryNode.tokenType() == TokenType.ASSIGN 
+                    && !(binaryNode.rhs() instanceof ReferenceNode)
+                    && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
+                // TODO probably not only assign                
+                ScopeImpl scope = modelBuilder.getCurrentScope();
+                if (binaryNode.lhs() instanceof AccessNode) {
+                    List<Identifier> name = getName(binaryNode);
+                    AccessNode aNode = (AccessNode)binaryNode.lhs();
+                    if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
+                        // field
+                    }
+                    System.out.println("     name: " + ModelUtils.getNameWithoutPrototype(name));
+                } else {
+                    IdentNode ident = (IdentNode)binaryNode.lhs();
+                    final Identifier name = new IdentifierImpl(ident.getName(), new OffsetRange(ident.getStart(), ident.getFinish()));
+                    final String newVarName = name.getName();
+                    Variable variable = findVarWithName(scope, newVarName);
+                    if (variable == null) {
+                        // variable was not found -> it's not declared and it has to be
+                        // added to the global scope (filescope) as implicit variable
+                        FileScopeImpl fScope = ModelUtils.getFileScope(scope);
+                        fScope.addElement(new VariableImpl(scope, name, true, true));
+                    }
+                }
+            }
+        }
+        return super.visit(binaryNode, onset);
     }
 
     @Override
@@ -258,5 +294,27 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         Collections.reverse(name);
         return name;
+    }
+    
+    private Variable findVarWithName(final Scope scope, final String name) {
+        Variable result = null;
+        Collection<Variable> variables = ScopeImpl.filter(scope.getElements(), new ScopeImpl.ElementFilter() {
+
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(JsElement.Kind.VARIABLE)
+                        && element.getName().equals(name);
+            }
+        });
+        
+        if (!variables.isEmpty()) {
+            result = variables.iterator().next();
+        } else {
+            if (!(scope instanceof FileScope)) {
+                result = findVarWithName((Scope)scope.getInElement(), name);
+            }
+        }
+        
+        return result;
     }
 }

@@ -45,23 +45,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.FileScope;
-import org.netbeans.modules.javascript2.editor.model.FunctionScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.ObjectScope;
-import org.netbeans.modules.javascript2.editor.model.Scope;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
  * @author Petr Pisl
  */
-public class FileScopeImpl extends ScopeImpl implements FileScope {
-    Hashtable<String, Scope> logicalElements;
+public class FileScopeImpl extends VariableScopeImpl implements FileScope {
+    private Hashtable<String, Scope> logicalElements;
     
     public FileScopeImpl(JsParserResult result, String name) {
         super(null, JsElement.Kind.FILE, 

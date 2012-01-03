@@ -45,10 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ScopeImpl.ElementFilter;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  *
@@ -128,6 +126,16 @@ public class ModelUtils {
             return all.size() > 0 ? ((List<T>)all).get(0) : null;
         }
         return all.size() > 0 ? all.iterator().next() : null;
+    }
+    
+    @CheckForNull
+    public static <T extends ModelElement> List<? extends T>  getFirst(Collection<? extends T> elements, final String name) {
+        return filter(elements, new ElementFilter() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getName().equals(name);
+            }
+        });
     }
     
     public static <T extends ModelElement> List<? extends T> filter(final Collection<? extends T> instances, final ElementFilter<T> filter) {

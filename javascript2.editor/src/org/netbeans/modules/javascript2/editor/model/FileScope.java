@@ -47,6 +47,6 @@ import java.util.Collection;
  *
  * @author Petr Pisl
  */
-public interface FileScope extends Scope {
+public interface FileScope extends VariableScope {
     Collection<? extends Scope> getLogicalElements();
 }

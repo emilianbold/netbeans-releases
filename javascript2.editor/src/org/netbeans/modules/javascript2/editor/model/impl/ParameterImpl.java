@@ -56,7 +56,11 @@ public class ParameterImpl extends ModelElementImpl implements Parameter {
     private final Identifier declaration;
 
     public ParameterImpl(Scope scope, Identifier declaration) {
-        super(scope, JsElement.Kind.PARAMETER, scope.getFileObject(), 
+        this(scope, declaration, JsElement.Kind.PARAMETER);
+    }
+    
+    public ParameterImpl(Scope scope, Identifier declaration, JsElement.Kind kind) {
+        super(scope, kind, scope.getFileObject(), 
                 declaration.getName(), declaration.getOffsetRange(), Collections.EMPTY_SET);
         this.declaration = declaration;
     }
