@@ -62,4 +62,9 @@ class APIAccessorImpl extends APIAccessor {
     public boolean isFlat(VCSFileProxy file) {
         return file.isFlat();
     }
+    
+    @Override
+    public VCSFileProxy createFileProxy(File file, boolean isDirectory) {
+        return VCSFileProxy.createFileProxy(file, isDirectory);
+    }
 }

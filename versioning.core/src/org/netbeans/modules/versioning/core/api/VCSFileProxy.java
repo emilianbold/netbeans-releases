@@ -137,7 +137,7 @@ public final class VCSFileProxy {
         return new VCSFileProxy(fileObject.getPath(), null);
     }
 
-    private static VCSFileProxy createFileProxy(File file, boolean isDirectory) {
+    static VCSFileProxy createFileProxy(File file, boolean isDirectory) {
         VCSFileProxy p = createFileProxy(file);
         p.isDirectory = isDirectory;
         return p;
