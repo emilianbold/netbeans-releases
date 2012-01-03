@@ -235,17 +235,17 @@ public class ModuleDependencies extends Task {
 
                 TreeSet<Dependency> depends = new TreeSet<Dependency>();
                 TreeSet<Dependency> provides = new TreeSet<Dependency>();
-                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Requires");
-                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Needs");
-                addDependencies (depends, file.getManifest (), Dependency.Type.recommends, "OpenIDE-Module-Recommends");
-                addDependencies (provides, file.getManifest (), Dependency.Type.provides, "OpenIDE-Module-Provides");
+                addDependencies (depends, file.getManifest (), Dependency.Type.REQUIRES, "OpenIDE-Module-Requires");
+                addDependencies (depends, file.getManifest (), Dependency.Type.REQUIRES, "OpenIDE-Module-Needs");
+                addDependencies (depends, file.getManifest (), Dependency.Type.RECOMMENDS, "OpenIDE-Module-Recommends");
+                addDependencies (provides, file.getManifest (), /*irrelevant*/Dependency.Type.REQUIRES, "OpenIDE-Module-Provides");
                 {
                     String ideDeps = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-IDE-Dependencies"); // IDE/1 > 4.25
                     if (ideDeps != null) {
                         throw new BuildException("OpenIDE-Module-IDE-Dependencies is obsolete in " + f);
                     }
                 }
-                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Module-Dependencies");
+                addDependencies (depends, file.getManifest (), Dependency.Type.DIRECT, "OpenIDE-Module-Module-Dependencies");
                 /* org.netbeans.api.java/1,org.netbeans.modules.queries/0,
                  org.netbeans.modules.javacore/1,org.netbeans.jmi.javamodel/1 > 1.11,org.netbeans.api.mdr/1,
                  org.netbeans.modules.mdr/1= 1.0.0,org.netbeans.modules.
@@ -253,7 +253,10 @@ public class ModuleDependencies extends Task {
                  org.openide.loaders,org.openide.src > 1.0
                  */
                 m.depends = depends;
-                m.provides = provides;
+                m.provides = new HashSet<String>();
+                for (Dependency d : provides) {
+                    m.provides.add(d.getName());
+                }
                 {
                     String friends = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Friends"); 
                     if (friends != null) {
@@ -801,7 +804,7 @@ public class ModuleDependencies extends Task {
                     allowed.add(piece.replaceFirst("^nb[.]cluster[.]", ""));
                 }
                 for (Dependency d : m.depends) {
-                    if (d.type != Dependency.Type.requires) {
+                    if (d.type == Dependency.Type.RECOMMENDS) {
                         continue;
                     }
                     for (ModuleInfo o : findModuleInfo(d, m)) {
@@ -905,7 +908,7 @@ public class ModuleDependencies extends Task {
                 if (d.getName().startsWith("org.openide.modules.ModuleFormat")) {
                     continue; // just clutter
                 }
-                String print = d.type == Dependency.Type.requires ? "  REQUIRES " : "  RECOMMENDS ";
+                String print = d.type == Dependency.Type.RECOMMENDS ? "  RECOMMENDS " : "  REQUIRES ";
                 if (d.exact && d.compare != null) {
                     // ok, impl deps
                 } else {
@@ -981,7 +984,7 @@ public class ModuleDependencies extends Task {
             
             boolean first = true;
             for (Dependency d : depends) {
-                String print = d.type == Dependency.Type.requires ? "  REQUIRES " : "  RECOMMENDS ";
+                String print = d.type == Dependency.Type.RECOMMENDS ? "  RECOMMENDS ": "  REQUIRES ";
                 // dependencies within one group are not important
                 Set<ModuleInfo> r = referrers.get(d);
                 for (ModuleInfo ref : findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null)) {
@@ -1015,7 +1018,7 @@ public class ModuleDependencies extends Task {
                 result.add(info);
             }
         }
-        if (dep.type != Dependency.Type.recommends && result.isEmpty()) {
+        if (dep.type != Dependency.Type.RECOMMENDS && result.isEmpty()) {
             throw new BuildException ("Cannot find module that satisfies dependency: " + dep + (referrer != null ? " from: " + referrer : ""));
         }
         return result;
@@ -1143,7 +1146,7 @@ public class ModuleDependencies extends Task {
         public String specificationVersion;
         public String implementationVersion;
         public Set<Dependency> depends;
-        public Set<Dependency> provides;
+        public Set<String> provides;
         public boolean showInAutoupdate;
         public boolean isEssential;
         public boolean isAutoload;
@@ -1186,7 +1189,7 @@ public class ModuleDependencies extends Task {
     } // end of ModuleInfo
     
     private static final class Dependency extends Object implements Comparable<Dependency> {
-        enum Type {provides, requires, recommends}
+        enum Type {DIRECT, REQUIRES, RECOMMENDS}
         
         public final String token;
         public final int majorVersionFrom;
@@ -1244,17 +1247,20 @@ public class ModuleDependencies extends Task {
         }
         
         public boolean isDependingOn (ModuleInfo info) {
-            if (info.codebasename.equals (token)) {
-                return (majorVersionFrom == -1 || majorVersionFrom <= info.majorVersion) &&
-                        (majorVersionTo == -1 || info.majorVersion <= majorVersionTo);
-            } 
-            
-            for (Dependency d : info.provides) {
-                if (d.equals (this)) {
-                    return true;
+            switch (type) {
+            case DIRECT:
+                if (info.codebasename.equals (token)) {
+                    return (majorVersionFrom == -1 || majorVersionFrom <= info.majorVersion) &&
+                            (majorVersionTo == -1 || info.majorVersion <= majorVersionTo);
+                } 
+                break;
+            default:
+                for (String d : info.provides) {
+                    if (d.equals(token)) {
+                        return true;
+                    }
                 }
             }
-            
             return false;
         }
         
