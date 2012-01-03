@@ -53,7 +53,7 @@ public final class Doctrine2Script extends PhpProgram {
 
     public static final String SCRIPT_NAME = "doctrine"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
-    public static final String HELP_COMMAND = "help"; // NOI18N
+    public static final String LIST_COMMAND = "list"; // NOI18N
     public static final String XML_PARAM = "--xml"; // NOI18N
 
 
