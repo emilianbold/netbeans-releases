@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.hudson.ui;
 
-import java.io.CharConversionException;
+import java.util.Locale;
 import org.netbeans.modules.hudson.Installer;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -53,7 +53,6 @@ import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import static org.netbeans.modules.hudson.ui.Bundle.*;
 import org.openide.util.NbBundle.Messages;
-import org.openide.xml.XMLUtil;
 
 @Messages("quicksearch=Hudson") // QuickSearch/Hudson#displayName
 public class SearchProviderImpl implements SearchProvider {
@@ -71,32 +70,20 @@ public class SearchProviderImpl implements SearchProvider {
 
     @Messages({"# {0} - server label", "# {1} - job name", "search_response=Hudson job {1} on {0}"})
     private void work(String text, SearchResponse response) {
-        for (HudsonInstance instance : HudsonManagerImpl.getDefault().getInstances()) {
+        for (final HudsonInstance instance : HudsonManagerImpl.getDefault().getInstances()) {
             for (HudsonJob job : instance.getJobs()) {
                 final String name = job.getName();
                 // XXX could also search for text in instance name, and/or Maven modules
-                int index = name.indexOf(text);
-                if (index != -1) {
-                    final String instanceURL = instance.getUrl();
-                    String label = search_response(safeEscape(instance.getName()), name.substring(0, index) + "<b>" + text + "</b>" + name.substring(index + text.length()));
+                if (name.toLowerCase(Locale.ENGLISH).contains(text.toLowerCase(Locale.ENGLISH))) {
                     if (!response.addResult(new Runnable() {
                         @Override public void run() {
-                            UI.selectNode(instanceURL, name);
+                            UI.selectNode(instance.getUrl(), name);
                         }
-                    }, label)) {
+                    }, search_response(instance.getName(), name))) {
                         return;
                     }
                 }
             }
-        }
-    }
-
-    // XXX need API in XMLUtil
-    private static String safeEscape(String raw) {
-        try {
-            return XMLUtil.toElementContent(raw);
-        } catch (CharConversionException x) {
-            return raw;
         }
     }
 

@@ -44,13 +44,11 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
 

@@ -144,6 +144,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         
         Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     if (TRACE) {

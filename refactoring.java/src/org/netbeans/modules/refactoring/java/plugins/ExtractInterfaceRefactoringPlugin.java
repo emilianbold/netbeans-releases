@@ -43,53 +43,21 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
+import java.util.*;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
+import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -509,7 +477,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         private ClassTree findInterface(CompilationInfo javac, String name) {
             for (Tree tree : javac.getCompilationUnit().getTypeDecls()) {
                 if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())
-                        && javac.getTreeUtilities().isInterface((ClassTree) tree)
+                        && tree.getKind() == Tree.Kind.INTERFACE
                         && name.contentEquals(((ClassTree) tree).getSimpleName())) {
                     return (ClassTree) tree;
                 }

@@ -214,6 +214,9 @@ class InterceptorGenerator implements CodeGenerator {
                     
                     TreeMaker maker = copy.getTreeMaker();
                     ClassTree tree = getTopLevelClassTree(copy);
+                    if ( tree ==null ){
+                        return;
+                    }
                     Element element = copy.getTrees().getElement( 
                             copy.getTrees().getPath(copy.getCompilationUnit(), tree) );
 

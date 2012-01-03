@@ -56,13 +56,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.*;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -737,8 +733,7 @@ public class ProjectBridge {
             } else {
                 compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
-            for(Object o :compiler.getSystemIncludeDirectories()){
-                String path = (String)o;
+            for(String path :compiler.getSystemIncludeDirectories()){
                 systemIncludePaths.add(fixWindowsPath(path));
             }
             if (isCPP) {
@@ -750,6 +745,48 @@ public class ProjectBridge {
         return systemIncludePaths;
     }
 
+    private Map<String, List<String>> optionToMacrosC;
+    private Map<String, List<String>> optionToMacrosCpp;
+    public List<String> getOptionToMacros(String option, boolean isCPP) {
+        Map<String, List<String>> macros;
+        if (isCPP) {
+            macros = optionToMacrosCpp;
+        } else {
+            macros = optionToMacrosC;
+        }
+        if (macros == null) {
+            macros = new HashMap<String,List<String>>();
+            CompilerSet compilerSet = getCompilerSet();
+            AbstractCompiler compiler;
+            if (isCPP) {
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            } else {
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+            }
+            for(ToolchainManager.PredefinedMacro macro :compiler.getDescriptor().getPredefinedMacros()){
+                if (macro.getFlags() != null) {
+                    if (macro.isHidden()) {
+                        // TODO remove macro
+                    } else {
+                        // add macro
+                        List<String> list = macros.get(macro.getFlags());
+                        if (list == null) {
+                            list = new ArrayList<String>();
+                            macros.put(option, list);
+                        }
+                        list.add(macro.getMacro());
+                    }
+                }
+            }
+            if (isCPP) {
+                optionToMacrosCpp = macros;
+            } else {
+                optionToMacrosC = macros;
+            }
+        }
+        return macros.get(option);
+    }
+    
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
     private String fixWindowsPath(String path){
         if (Utilities.isWindows()) {

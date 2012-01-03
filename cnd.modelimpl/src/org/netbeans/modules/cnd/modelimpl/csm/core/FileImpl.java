@@ -521,7 +521,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             time = System.currentTimeMillis();
                             try {
                                 for (APTPreprocHandler preprocHandler : handlers) {
-                                    _parse(preprocHandler, fullAPT);
+                                    _parse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND);
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
                                     }
@@ -547,10 +547,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             try {
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     if (first) {
-                                        _reparse(preprocHandler, fullAPT);
+                                        _reparse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND);
                                         first = false;
                                     } else {
-                                        _parse(preprocHandler, fullAPT);
+                                        _parse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND);
                                     }
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
@@ -725,7 +725,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileAPT;
     }
 
-    private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
         }
@@ -741,7 +741,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
-        CsmParserResult parsing = doParse(preprocHandler, aptFull);
+        CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound);
         if (parsing != null) {
             if (isValid()) {
                 disposeAll(false);
@@ -828,7 +828,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         final APTFile fullAPT = getFileAPT(true);
         synchronized (stateLock) {
-            CsmParserResult parsing = _parse(handlers.iterator().next(), fullAPT);
+            CsmParserResult parsing = _parse(handlers.iterator().next(), fullAPT, false);
             Object ast = parsing.getAST();
             if (ast instanceof AST) {
                 return (AST) ast;
@@ -838,14 +838,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
 
-    private CsmParserResult _parse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private CsmParserResult _parse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound) {
         inParse.get().set(true);
         try {
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (reportParse || logState || TraceFlags.DEBUG) {
                 logParse("Parsing", preprocHandler); //NOI18N
             }
-            CsmParserResult parsing = doParse(preprocHandler, aptFull);
+            CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound);
             if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
                 sw.stopAndReport("Parsing of " + fileBuffer.getUrl() + " took \t"); // NOI18N
             }
@@ -1138,7 +1138,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
-    private CsmParserResult doParse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private CsmParserResult doParse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound) {
 
         if (reportErrors) {
             if (!ParserThreadManager.instance().isParserThread() && !ParserThreadManager.instance().isStandalone()) {
@@ -1194,7 +1194,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             assert parser != null : "no parser for " + this;
 
             parser.init(this, filteredTokenStream);
-            parseResult = parser.parse(CsmParser.ConstructionKind.TRANSLATION_UNIT);
+            parseResult = parser.parse(lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
                 setAPTCacheEntry(preprocHandler, aptCacheEntry, false);

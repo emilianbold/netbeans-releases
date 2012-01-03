@@ -42,6 +42,7 @@
 package org.netbeans.modules.mercurial.ui.queues;
 
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -105,7 +106,10 @@ public class QGoToPatchAction extends ContextAction {
                         HgCommand.qPopPatches(root, null, logger);
                     } else {
                         logger.output(NbBundle.getMessage(QGoToPatchAction.class, "MSG_GOTO_INFO_SEP", patchName, root.getAbsolutePath())); //NOI18N
-                        HgCommand.qGoToPatch(root, patchName, logger);
+                        List<String> output = HgCommand.qGoToPatch(root, patchName, logger);
+                        FailedPatchResolver resolver = new FailedPatchResolver(root, output, logger);
+                        resolver.resolveFailure();
+                        logger.output(output);
                     }
                     Mercurial.getInstance().refreshOpenedFiles(root);
                     HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);

@@ -93,7 +93,7 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new LegalCombinationOfAnnotations());
         classRules.add(new JPAAnnotsOnlyOnAccesor());
         classRules.add(new QueriesProperlyDefined());
-        //classRules.add(new JPQLValidation());
+        classRules.add(new JPQLValidation());
         classRules.add(new OnlyEntityOrMappedSuperclassCanUseIdClass());
     }
     

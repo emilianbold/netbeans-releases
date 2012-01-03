@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.*;
+import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
-import com.sun.source.tree.*;
-import javax.lang.model.element.*;
 
 /**
  *

@@ -221,6 +221,9 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         for (AnnotationMirror annotationMirror : stereotypes) {
             DeclaredType annotationType = annotationMirror.getAnnotationType();
             Element annotationElement = annotationType.asElement();
+            if ( annotationElement == null ){
+                continue;
+            }
             String declaredScope = getDeclaredScope(annotationElement, helper);
             if (declaredScope == null) {
                 continue;
@@ -327,7 +330,9 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         if ( elementType instanceof DeclaredType ){
             DeclaredType declaredType = (DeclaredType)elementType;
             Element elementDeclaredType = declaredType.asElement();
-            if ( elementDeclaredType.getKind() == ElementKind.INTERFACE ){
+            if ( elementDeclaredType!= null && 
+                    elementDeclaredType.getKind() == ElementKind.INTERFACE )
+            {
                 String typeFqn = ((TypeElement)elementDeclaredType).
                     getQualifiedName().toString();
                 for (String interfaceFqn : interfaceFqns) {

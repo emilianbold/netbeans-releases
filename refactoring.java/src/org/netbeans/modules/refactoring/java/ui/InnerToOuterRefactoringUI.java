@@ -52,8 +52,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
-import org.netbeans.modules.refactoring.java.ui.InnerToOuterAction;
-import org.netbeans.modules.refactoring.java.ui.InnerToOuterPanel;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;

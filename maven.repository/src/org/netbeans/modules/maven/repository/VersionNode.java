@@ -142,12 +142,12 @@ public class VersionNode extends AbstractNode {
         hasJavadoc = javadoc;
         hasSources = source;
         this.record = versionInfo;
+        setName(versionInfo.getVersion());
         if (dispNameShort) {
-            setName(versionInfo.getVersion());
             setDisplayName(versionInfo.getVersion() + " [ " + (versionInfo.getType() != null ? versionInfo.getType() : "jar") //NOI18N
                     + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ]");//NOI18N
         } else {
-            setName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
+            setDisplayName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
         }
         setIconBaseWithExtension(DEPENDENCY_JAR);
         setLocalArtifact(localArtifact);

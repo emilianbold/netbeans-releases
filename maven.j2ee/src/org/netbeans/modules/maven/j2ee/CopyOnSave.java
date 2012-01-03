@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
@@ -72,9 +73,8 @@ import org.openide.util.Exceptions;
 })
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
-    private Project project;
-    boolean active = false;
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
+    private Project project;
 
 
     public CopyOnSave(Project project) {
@@ -86,7 +86,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
 
     public void cleanup() throws FileStateInvalidException {
     }
-    
+
     protected void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {
         if (destFile != null && !srcFile.isFolder()) {
             InputStream is = null;
@@ -111,10 +111,16 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
         }
     }
 
+    @CheckForNull
     protected J2eeModule getJ2eeModule() {
-        return project.getLookup().lookup(J2eeModuleProvider.class).getJ2eeModule();
+        J2eeModuleProvider provider = getJ2eeModuleProvider();
+        if (provider != null) {
+            return provider.getJ2eeModule();
+        }
+        return null;
     }
-    
+
+    @CheckForNull
     protected J2eeModuleProvider getJ2eeModuleProvider() {
         return project.getLookup().lookup(J2eeModuleProvider.class);
     }
@@ -154,7 +160,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
             FileObject contentDir = getJ2eeModule().getContentDirectory();
             if (contentDir != null) {
                 // project was built
-                FileObject destFile = ensureDestinationFileExists(contentDir, 
+                FileObject destFile = ensureDestinationFileExists(contentDir,
                         (getDestinationSubFolderName().length() > 0 ? getDestinationSubFolderName() + "/" : "") + path, fo.isFolder());
                 File fil = FileUtil.toFile(destFile);
                 copySrcToDest(fo, destFile);
@@ -164,7 +170,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     protected String getDestinationSubFolderName() {
         return ""; // NOI18N
     }
@@ -178,7 +184,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
             FileObject contentDir = getJ2eeModule().getContentDirectory();
             if (contentDir != null) {
                 // project was built
-                FileObject classes = getDestinationSubFolderName().length() > 0 ? 
+                FileObject classes = getDestinationSubFolderName().length() > 0 ?
                         contentDir.getFileObject(getDestinationSubFolderName()) :
                         contentDir;
                 if (classes != null) {

@@ -108,6 +108,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     public final static String MACRO_EXPANSION_STOP_ON_OFFSET_PARSE_FILE_WALKER_CACHE = "macro-expansion-stop-on-offset-parse-file-walker-cache"; // NOI18N
 
+    @Override
     public synchronized int expand(final Document inDoc, final int startOffset, final int endOffset, final Document outDoc) {
         if (inDoc == null || outDoc == null) {
             return 0;
@@ -128,6 +129,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 // Init token sequences
                 TokenSequence<TokenId> docTS = CndLexerUtilities.getCppTokenSequence(inDoc, inDoc.getLength(), false, true);
@@ -213,6 +215,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return calcExpansionNumber(tt);
     }
 
+    @Override
     public int getOffsetInExpandedText(Document expandedDoc, int originalOffset) {
         Object o = expandedDoc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
         if (o != null && o instanceof TransformationTable) {
@@ -222,6 +225,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return originalOffset;
     }
 
+    @Override
     public int getOffsetInOriginalText(Document expandedDoc, int expandedOffset) {
         Object o = expandedDoc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
         if (o != null && o instanceof TransformationTable) {
@@ -231,6 +235,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return expandedOffset;
     }
 
+    @Override
     public int getNextMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
         Object o = expandedDoc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
         if (o != null && o instanceof TransformationTable) {
@@ -240,6 +245,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return expandedOffset;
     }
 
+    @Override
     public int getPrevMacroExpansionStartOffset(Document expandedDoc, int expandedOffset) {
         Object o = expandedDoc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
         if (o != null && o instanceof TransformationTable) {
@@ -298,6 +304,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return new String[]{"", ""}; // NOI18N
     }
 
+    @Override
     public String expand(Document doc, int startOffset, int endOffset) {
         if(doc == null) {
             return null;
@@ -305,11 +312,13 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return expand(doc, CsmUtilities.getCsmFile(doc, true, false), startOffset, endOffset);
     }
 
+    @Override
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
         TransformationTable tt = updateMacroTableIfNeeded(doc, file);
         return tt == null ? null : expandInterval(doc, tt, startOffset, endOffset);
     }
 
+    @Override
     public int[] getMacroExpansionSpan(Document doc, int offset, boolean wait) {
         int[] span = new int[]{offset, offset};
         TransformationTable tt;
@@ -361,6 +370,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return span;
     }
 
+    @Override
     public int[][] getUsages(Document expandedDoc, int offset) {
         Object o = expandedDoc.getProperty(MACRO_EXPANSION_OFFSET_TRANSFORMER);
         if (o != null && o instanceof TransformationTable) {
@@ -400,6 +410,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return null;
     }
 
+    @Override
     public String expand(Document doc, int offset, String code) {
         if (doc == null) {
             return code;
@@ -515,6 +526,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 // Init document token sequence
                 TokenSequence<TokenId> docTS = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
@@ -1238,6 +1250,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return Collections.binarySearch(intervals, createIntervalCorrespondence(new Interval(offset, offset)),
                     new Comparator<IntervalCorrespondence>() {
 
+                @Override
                         public int compare(IntervalCorrespondence o1, IntervalCorrespondence o2) {
                             if (o1.getInInterval().end < o2.getInInterval().start) {
                                 return -1;

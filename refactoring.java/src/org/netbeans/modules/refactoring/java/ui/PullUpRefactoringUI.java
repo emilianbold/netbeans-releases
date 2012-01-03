@@ -50,7 +50,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;

@@ -311,6 +311,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     @Override
     protected boolean isValid(FileEvent fileEvent) {
-        return !fileEvent.firedFrom(RemoteClient.DOWNLOAD_ATOMIC_ACTION);
+        boolean valid = !fileEvent.firedFrom(RemoteClient.DOWNLOAD_ATOMIC_ACTION);
+        if (valid) {
+            // #202673
+            LOGGER.log(Level.FINE, "FS event fired from thread: {0}", Thread.currentThread().getName());
+        }
+        return valid;
     }
+
 }

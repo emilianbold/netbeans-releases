@@ -284,6 +284,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     private boolean inSync;
     
+    @Override
     public synchronized void insertUpdate(DocumentEvent e) {
 	if (inSync)
 	    return ;
@@ -294,6 +295,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	target.repaint();
     }
 
+    @Override
     public synchronized void removeUpdate(DocumentEvent e) {
 	if (inSync)
 	    return ;
@@ -311,15 +313,18 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	target.repaint();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
     public void caretUpdate(CaretEvent e) {
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
 	if (   (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0) 
             || (e.getKeyCode() == KeyEvent.VK_ENTER  && e.getModifiers() == 0)) {
@@ -328,6 +333,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	}
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
     }
 

@@ -281,7 +281,18 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
                 <attr name="position" intvalue="1300"/>
             </file>
-
+            <folder name="Import">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Menu/File/Import"/>
+                <attr name="position" intvalue="1426"/>
+            </folder>
+            <folder name="Export">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Menu/File/Export"/>
+                <attr name="position" intvalue="1428"/>
+            </folder>
+            <file name="import-export-sep.instance">
+                <attr name="position" intvalue="1430"/>
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
         </folder>
 
         <folder name="BuildProject">

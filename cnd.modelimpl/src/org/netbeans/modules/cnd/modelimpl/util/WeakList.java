@@ -91,6 +91,7 @@ public class WeakList<T> implements Iterable<T> {
      * Returns an iterator of non-null references.
      * NB: it iterates over a snapshot made at the moment of the call
      */
+    @Override
     public synchronized Iterator<T> iterator() {
         List<T> result = new ArrayList<T>();
         addTo(result);

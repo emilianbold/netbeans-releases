@@ -62,10 +62,12 @@ public final class LazyOffsPositionImpl implements CsmOffsetable.Position {
         this.file = file;
     }
 
+    @Override
     public int getOffset() {
         return offset;
     }
 
+    @Override
     public int getLine() {
         if (line == -1) {
             int[] res = file.getLineColumn(offset);
@@ -75,6 +77,7 @@ public final class LazyOffsPositionImpl implements CsmOffsetable.Position {
         return line;
     }
 
+    @Override
     public int getColumn() {
         if (col == -1) {
             int[] res = file.getLineColumn(offset);

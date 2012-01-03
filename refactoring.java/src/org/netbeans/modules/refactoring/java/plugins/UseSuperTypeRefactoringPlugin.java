@@ -44,24 +44,27 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
-import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
+import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;

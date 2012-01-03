@@ -60,7 +60,9 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -108,26 +110,29 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             for(PackageConfiguration pc : getPackages(options, makeConfiguration)) {
                 res.addAll(pc.getMacros());
             }
-            convertOptionsToMacros(options, res);
+            convertOptionsToMacros(compiler, options, res);
         }
         return res;
     }
 
-    private void convertOptionsToMacros(String options, List<String> res) {
-        if (options.indexOf("-fopenmp") >= 0) { // NOI18N
-            res.add("_OPENMP=200505"); // NOI18N
-        } else if (options.indexOf("-xopenmp") >= 0) { // NOI18N
-            int i = options.indexOf("-xopenmp"); // NOI18N
-            String rest = options.substring(i+8);
-            if (rest.length()==0 || rest.charAt(0)==' ' || rest.startsWith("=parallel") || rest.startsWith("=noopt")) { // NOI18N
-                res.add("_OPENMP"); // NOI18N
+    private void convertOptionsToMacros(AbstractCompiler compiler, String options, List<String> res) {
+        String[] split = options.split(" "); //NOI18N
+        for(String s : split) {
+            if (s.startsWith("-")) { //NOI18N
+                for(ToolchainManager.PredefinedMacro macro :compiler.getDescriptor().getPredefinedMacros()){
+                    if (macro.getFlags() != null && macro.getFlags().equals(s)) {
+                        if (macro.isHidden()) {
+                            // TODO remove macro
+                        } else {
+                            // add macro
+                            res.add(macro.getMacro());
+                        }
+                    }
+                }
             }
         }
-        if (options.indexOf("-xc99") >= 0) { // NOI18N
-            res.add("__STDC_VERSION__=199901L"); // NOI18N
-        }
     }
-
+    
     @Override
     public LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){

@@ -53,6 +53,10 @@ made subject to such option by the copyright holder.
         <system_macros flags="-xdryrun -E" parser="Sun">
             <macro stringvalue="__STDC__=0"/>
             <macro stringvalue="__STDC_VERSION__=199409L"/>
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-xc99"/>
+            <macro stringvalue="_OPENMP" flags="-xopenmp"/>
+            <macro stringvalue="_OPENMP" flags="-xopenmp=parallel"/>
+            <macro stringvalue="_OPENMP" flags="-xopenmp=noopt"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>

@@ -65,6 +65,8 @@ import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
+import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
@@ -146,13 +148,20 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new RevertMenu(ActionDestination.MainMenu, null));
                 IgnoreAction ia = SystemAction.get(IgnoreAction.class);
                 UnignoreAction uia = SystemAction.get(UnignoreAction.class);
-                if (ia.isEnabled() || uia.isEnabled()) {
+                ExcludeFromCommitAction efca = SystemAction.get(ExcludeFromCommitAction.class);
+                IncludeInCommitAction iica = SystemAction.get(IncludeInCommitAction.class);
+                if (ia.isEnabled() || uia.isEnabled() || efca.isEnabled() || iica.isEnabled()) {
                     actions.add(null);
                     if (ia.isEnabled()) {
                         actions.add(ia);
                     }
                     if (uia.isEnabled()) {
                         actions.add(uia);
+                    }
+                    if (efca.isEnabled()) {
+                        actions.add(efca);
+                    } else if (iica.isEnabled()) {
+                        actions.add(iica);
                     }
                 }
                 actions.add(null);
@@ -191,13 +200,20 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
                 SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
                 SystemActionBridge uia = SystemActionBridge.createAction(SystemAction.get(UnignoreAction.class), NbBundle.getMessage(UnignoreAction.class, "LBL_UnignoreAction_PopupName"), lkp);
-                if (ia.isEnabled() || uia.isEnabled()) {
+                SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
+                SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
+                if (ia.isEnabled() || uia.isEnabled() || efca.isEnabled() || iica.isEnabled()) {
                     actions.add(null);
                     if (ia.isEnabled()) {
                         actions.add(ia);
                     }
                     if (uia.isEnabled()) {
                         actions.add(uia);
+                    }
+                    if (efca.isEnabled()) {
+                        actions.add(efca);
+                    } else if (iica.isEnabled()) {
+                        actions.add(iica);
                     }
                 }
                 actions.add(null);
@@ -365,9 +381,9 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             return null;
         }
         Image badge = null;
-        if (cache.containsFiles(context, EnumSet.of(Status.IN_CONFLICT), true)) {
+        if (cache.containsFiles(context, EnumSet.of(Status.IN_CONFLICT), false)) {
             badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
-        } else if (cache.containsFiles(context, FileInformation.STATUS_LOCAL_CHANGES, true)) {
+        } else if (cache.containsFiles(context, FileInformation.STATUS_LOCAL_CHANGES, false)) {
             badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipModified);
         }
         if (badge != null) {

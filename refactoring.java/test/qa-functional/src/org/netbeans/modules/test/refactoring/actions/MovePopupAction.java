@@ -60,7 +60,7 @@ public class MovePopupAction implements TestAction {
     }
        
     public void perform(EditorOperator editor) {
-        editor.pushKey(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK);
+        editor.clickForPopup();
         JPopupMenuOperator jpmo = new JPopupMenuOperator();
         jpmo.pushMenuNoBlock(new String[]{"Refactor","Move..."});
     }

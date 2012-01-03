@@ -377,30 +377,35 @@ public final class CsmProjectContentResolver {
     }
     private static final NsContentResultsFilter NS_VARIABLE_FILTER = new NsContentResultsFilter() {
 
+        @Override
         public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceVariables(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_FUNCTION_FILTER = new NsContentResultsFilter() {
 
+        @Override
         public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceFunctions(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_CLASS_ENUM_FILTER = new NsContentResultsFilter() {
 
+        @Override
         public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceClassesEnums(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_ENUMERATOR_FILTER = new NsContentResultsFilter() {
 
+        @Override
         public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getNamespaceEnumerators(ns, strPrefix, match, searchNested);
         }
     };
     private static final NsContentResultsFilter NS_NAMESPACES_FILTER = new NsContentResultsFilter() {
 
+        @Override
         public Collection<? extends CsmObject> getResults(CsmProjectContentResolver resolver, CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
             return resolver.getGlobalNamespaces(strPrefix, match);
         }

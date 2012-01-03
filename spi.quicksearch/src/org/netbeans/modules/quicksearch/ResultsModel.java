@@ -44,12 +44,15 @@ package org.netbeans.modules.quicksearch;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.CharConversionException;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.AbstractListModel;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import org.netbeans.spi.quicksearch.SearchRequest;
+import org.openide.xml.XMLUtil;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
@@ -201,23 +204,32 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
             }
             // try to find substring
             String searchedText = sRequest.getText();
-            int index = text.toLowerCase().indexOf(searchedText.toLowerCase());
+            int index = text.toLowerCase(Locale.ENGLISH).indexOf(searchedText.toLowerCase(Locale.ENGLISH));
             if (index == -1) {
-                return text;
+                return HTML + safeEscape(text);
             }
             // found, bold it
             int endIndex = index + searchedText.length();
             StringBuilder sb = new StringBuilder(HTML);
             if (index > 0) {
-                sb.append(text.substring(0, index));
+                sb.append(safeEscape(text.substring(0, index)));
             }
             sb.append("<b>");
-            sb.append(text.substring(index, endIndex));
+            sb.append(safeEscape(text.substring(index, endIndex)));
             sb.append("</b>");
             if (endIndex < text.length()) {
-                sb.append(text.substring(endIndex, text.length()));
+                sb.append(safeEscape(text.substring(endIndex, text.length())));
             }
             return sb.toString();
+        }
+
+        // XXX need API in XMLUtil
+        private static String safeEscape(String raw) {
+            try {
+                return XMLUtil.toElementContent(raw);
+            } catch (CharConversionException x) {
+                return raw;
+            }
         }
 
     }

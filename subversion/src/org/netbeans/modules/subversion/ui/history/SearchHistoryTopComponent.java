@@ -84,8 +84,6 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         this();
         initComponents(new File[] {file}, null, null, null, null);
         shp.setDiffResultsViewFactory(fac);
-        // showing only one file - so disable the show all changepaths options
-        shp.disableFileChangesOption(false);
     }
 
     public SearchHistoryTopComponent(SVNUrl repositoryUrl, File localRoot, long revision) {
@@ -123,7 +121,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
     
     protected void componentClosed() {
-//       ((DiffMainPanel) getComponent(0)).componentClosed();
+       shp.windowClosed();
        super.componentClosed();
     }
     

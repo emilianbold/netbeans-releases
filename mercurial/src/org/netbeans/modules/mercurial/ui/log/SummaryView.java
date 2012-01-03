@@ -45,38 +45,30 @@ package org.netbeans.modules.mercurial.ui.log;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import javax.swing.*;
-import javax.swing.text.*;
 import java.awt.event.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
-import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
-import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Maros Sandor
@@ -86,198 +78,329 @@ import org.openide.util.Lookup;
  * 
  * @author Maros Sandor
  */
-class SummaryView implements MouseListener, ComponentListener, MouseMotionListener, DiffSetupSource {
-
-    private static final String SUMMARY_DIFF_PROPERTY = "Summary-Diff-";
-    private static final String SUMMARY_REVERT_PROPERTY = "Summary-Revert-";
-    private static final String HLINK_ISSUE_PROPERTY = "Hyperlink-Issue-";
-    private static final String SUMMARY_EXPORTDIFFS_PROPERTY = "Summary-ExportDiffs-";
+final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private final SearchHistoryPanel master;
     
-    private JList       resultsList;
-    private JScrollPane scrollPane;
-
-    private final List  dispResults;
-    private String      message;
-    private AttributeSet searchHiliteAttrs;
-    private List<RepositoryRevision> results;
-
-    private Map<String, KenaiUser> kenaiUsersMap = null;
-    private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
+    private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+    private static final Color HIGHLIGHT_BRANCH_FG = Color.BLACK;
+    private static final Color HIGHLIGHT_TAG_FG = Color.BLACK;
+    private static final Color HIGHLIGHT_BRANCH_BG = Color.decode("0xd5dde6"); //NOI18N
+    private static final Color HIGHLIGHT_BRANCH_HEAD_BG = Color.decode("0xaaffaa"); //NOI18N
+    private static final Color HIGHLIGHT_TAG_BG = Color.decode("0xffffaa"); //NOI18N
     
-    public SummaryView(SearchHistoryPanel master, List<RepositoryRevision> results) {
-        this.master = master;
-        this.results = results;
-        this.dispResults = expandResults(results);
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class); // NOI18N
-        searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
-        message = master.getCriteria().getCommitMessage();
-        resultsList = new JList(new SummaryListModel());
-        resultsList.setFixedCellHeight(-1);
-        resultsList.addMouseListener(this);
-        resultsList.addMouseMotionListener(this);
-        resultsList.setCellRenderer(new SummaryCellRenderer());
-        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SummaryView.class, "ACSN_SummaryView_List")); // NOI18N
-        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SummaryView.class, "ACSD_SummaryView_List")); // NOI18N
-        scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        master.addComponentListener(this);
-        resultsList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
-        resultsList.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList));
-            }
-        });
+    static class HgLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
-        if(results.size() > 0) {
-            String url = HgUtils.getRemoteRepository(results.get(0).getRepositoryRoot());
-            boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
-            if(isKenaiRepository) {
-                kenaiUsersMap = new HashMap<String, KenaiUser>();
-                for (RepositoryRevision repositoryRevision : results) {
-                    String author = repositoryRevision.getLog().getAuthor();
-                    String username = repositoryRevision.getLog().getUsername();
-                    if(author != null && !author.equals("") && username != null && !"".equals(username)) {
-                        if(!kenaiUsersMap.keySet().contains(author)) {
-                            KenaiUser kenaiUser = HgKenaiAccessor.getInstance().forName(username, url);
-                            if(kenaiUser != null) {
-                                kenaiUsersMap.put(author, kenaiUser);
-                            }
-                        }
+        private RepositoryRevision revision;
+        private List events = new ArrayList<HgLogEvent>(10);
+        private SearchHistoryPanel master;
+        private String complexRevision;
+        private final PropertyChangeListener list;
+        private Collection<RevisionHighlight> complexRevisionHighlights;
+    
+        public HgLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
+            this.revision = revision;
+            this.master = master;
+            revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+        }
+
+        @Override
+        public Collection<Event> getEvents () {
+            return events;
+        }
+
+        @Override
+        public String getAuthor () {
+            return revision.getLog().getAuthor();
+        }
+
+        @Override
+        public String getDate () {
+            Date date = revision.getLog().getDate();
+            return date != null ? defaultFormat.format(date) : null;
+        }
+
+        @Override
+        public String getRevision () {
+            if (complexRevision == null) {
+                complexRevisionHighlights = new ArrayList<RevisionHighlight>(revision.getLog().getBranches().length + revision.getLog().getTags().length + 1);
+                StringBuilder sb = new StringBuilder(revision.getLog().getRevisionNumber()).append(" ("); //NOI18N
+                int pos = sb.length();
+                StringBuilder labelBuilder = new StringBuilder();
+                // add branch labels
+                if (revision.getLog().getBranches().length == 0 && revision.isHeadOfBranch(HgBranch.DEFAULT_NAME)) {
+                    complexRevisionHighlights.add(new RevisionHighlight(pos + labelBuilder.length(), HgBranch.DEFAULT_NAME.length(), HIGHLIGHT_BRANCH_FG, HIGHLIGHT_BRANCH_HEAD_BG));
+                    labelBuilder.append(HgBranch.DEFAULT_NAME).append(' ');
+                } else {
+                    for (String s : revision.getLog().getBranches()) {
+                        complexRevisionHighlights.add(new RevisionHighlight(pos + labelBuilder.length(), s.length(), HIGHLIGHT_BRANCH_FG, 
+                                revision.isHeadOfBranch(s) ? HIGHLIGHT_BRANCH_HEAD_BG : HIGHLIGHT_BRANCH_BG));
+                        labelBuilder.append(s).append(' ');
                     }
                 }
+                // add tag labels
+                for (String s : revision.getLog().getTags()) {
+                    complexRevisionHighlights.add(new RevisionHighlight(pos + labelBuilder.length(), s.length(), HIGHLIGHT_TAG_FG, HIGHLIGHT_TAG_BG));
+                    labelBuilder.append(s).append(' ');
+                }
+                if (labelBuilder.length() == 0) {
+                    labelBuilder.append(revision.getLog().getCSetShortID());
+                } else {
+                    labelBuilder.append(revision.getLog().getCSetShortID().substring(0, 7));
+                }
+                complexRevision = sb.append(labelBuilder).append(")").toString(); //NOI18N
+            }
+            return complexRevision;
+        }
+
+        @Override
+        protected Collection<RevisionHighlight> getRevisionHighlights () {
+            getRevision();
+            return complexRevisionHighlights;
+        }
+
+        @Override
+        public String getMessage () {
+            return revision.getLog().getMessage();
+        }
+
+        @Override
+        public Action[] getActions () {
+            List<Action> actions = new ArrayList<Action>();
+            if (!master.isIncomingSearch()) {
+                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffRevision")) { //NOI18N
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        diffPrevious(master, revision);
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_BackoutRevision")) { //NOI18N
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        backout(revision);
+                    }
+                });
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+
+        @Override
+        public String toString () {
+            return revision.toString();
+        }
+
+        @Override
+        protected void expand () {
+            revision.expandEvents();
+        }
+
+        @Override
+        protected void cancelExpand () {
+            revision.cancelExpand();
+        }
+
+        @Override
+        protected boolean isEventsInitialized () {
+            return revision.isEventsInitialized();
+        }
+
+        @Override
+        public boolean isVisible () {
+            boolean visible = true;
+            // can apply filter criteria here
+            return visible;
+        }
+
+        @Override
+        protected boolean isLessInteresting () {
+            return getRepositoryRevision().getLog().isMerge();
+        }
+
+        RepositoryRevision getRepositoryRevision () {
+            return revision;
+        }
+
+        void refreshEvents () {
+            ArrayList<HgLogEvent> evts = new ArrayList<HgLogEvent>(revision.getEvents().size());
+            for (RepositoryRevision.Event event : revision.getEvents()) {
+                evts.add(new HgLogEvent(master, event));
+            }
+            List<HgLogEvent> oldEvents = new ArrayList<HgLogEvent>(events);
+            List<HgLogEvent> newEvents = new ArrayList<HgLogEvent>(evts);
+            events = evts;
+            eventsChanged(oldEvents, newEvents);
+        }
+
+        @Override
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (RepositoryRevision.PROP_EVENTS_CHANGED.equals(evt.getPropertyName()) && revision == evt.getSource()) {
+                refreshEvents();
             }
         }
     }
-
-    @Override
-    public void componentResized(ComponentEvent e) {
-        int [] selection = resultsList.getSelectedIndices();
-        resultsList.setModel(new SummaryListModel());
-        resultsList.setSelectedIndices(selection);
-    }
-
-    @Override
-    public void componentHidden(ComponentEvent e) {
-        // not interested
-    }
-
-    @Override
-    public void componentMoved(ComponentEvent e) {
-        // not interested
-    }
-
-    @Override
-    public void componentShown(ComponentEvent e) {
-        // not interested
-    }
     
-    @SuppressWarnings("unchecked")
-    private List expandResults(List<RepositoryRevision> results) {
-        ArrayList newResults = new ArrayList(results.size());
-        for (RepositoryRevision repositoryRevision : results) {
-            newResults.add(repositoryRevision);
-            List<RepositoryRevision.Event> events = repositoryRevision.getEvents();
-            for (RepositoryRevision.Event event : events) {
-                newResults.add(event);
+    static class HgLogEvent extends AbstractSummaryView.LogEntry.Event {
+
+        private final RepositoryRevision.Event event;
+        private final SearchHistoryPanel master;
+
+        HgLogEvent (SearchHistoryPanel master, RepositoryRevision.Event event) {
+            this.master = master;
+            this.event = event;
+        }
+
+        @Override
+        public String getPath () {
+            return event.getChangedPath().getPath();
+        }
+
+        @Override
+        public String getOriginalPath () {
+            return event.getChangedPath().getCopySrcPath();
+        }
+
+        @Override
+        public File getFile () {
+            return event.getFile();
+        }
+
+        @Override
+        public String getAction () {
+            return Character.toString(event.getChangedPath().getAction());
+        }
+        
+        public RepositoryRevision.Event getEvent() {
+            return event;
+        }
+
+        @Override
+        public Action[] getUserActions () {
+            List<Action> actions = new ArrayList<Action>();
+            if (!master.isIncomingSearch()) {
+                boolean viewEnabled = event.getFile() != null && event.getChangedPath().getAction() != HgLogMessage.HgDelStatus;
+                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious")) { // NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        diffPrevious(master, event);
+                    }
+                });
+                if (event.getFile() != null) {
+                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", event.getLogInfoHeader().getLog().getRevisionNumber())) { // NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            revertModifications(event);
+                        }                
+                    });
+                }
+                if (viewEnabled) {
+                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { //NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    view(event, false);
+                                }
+                            });
+                        }
+                    });
+                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    view(event, true);
+                                }
+                            });
+                        }
+                        });
+                    actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            exportFileDiff(event);
+                        }
+                    });
+                }
             }
+            return actions.toArray(new Action[actions.size()]);
         }
-        return newResults;
-    }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        int idx = resultsList.locationToIndex(e.getPoint());
-        if (idx == -1) return;
-        Rectangle rect = resultsList.getCellBounds(idx, idx);
-        Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_DIFF_PROPERTY + idx); // NOI18N
-        if (diffBounds != null && diffBounds.contains(p)) {
-            diffPrevious(idx);
+        @Override
+        public boolean isVisibleByDefault () {
+            return master.isShowInfo() || event.isUnderRoots();
         }
-        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_REVERT_PROPERTY + idx); // NOI18N
-        if (diffBounds != null && diffBounds.contains(p)) {
-            revertModifications(new int [] { idx });
-        }
-        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + idx); // NOI18N
-        if (diffBounds != null && diffBounds.contains(p)) {
-            exportDiffs(idx);
-        }
-        linkerSupport.mouseClicked(p, idx);
 
+        @Override
+        public String toString () {
+            return event.toString();
+        }
     }
     
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        // not interested
+    public SummaryView (SearchHistoryPanel master, List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUserMap) {
+        super(createViewSummaryMaster(master), results, kenaiUserMap);
+        this.master = master;
     }
 
-    @Override
-    public void mouseExited(MouseEvent e) {
-        // not interested
-    }
+    private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
+        final Map<String, String> colors = new HashMap<String, String>();
+        colors.put("A", "#008000"); //NOI18N
+        colors.put("C", "#008000"); //NOI18N
+        colors.put("R", "#008000"); //NOI18N
+        colors.put("M", "#0000ff"); //NOI18N
+        colors.put("D", "#999999"); //NOI18N
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
-            onPopup(e);
-        }
-    }
+        return new SummaryViewMaster() {
 
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
-            onPopup(e);
-        }
-    }
+            @Override
+            public JComponent getComponent () {
+                return master;
+            }
 
-    @Override
-    public void mouseDragged(MouseEvent e) {
-    }
+            @Override
+            public File[] getRoots () {
+                return master.getRoots();
+            }
 
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        int idx = resultsList.locationToIndex(e.getPoint());
-        if (idx == -1) return;
+            @Override
+            public String getMessage () {
+                return master.getCriteria().getCommitMessage();
+            }
 
-        resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        resultsList.setToolTipText("");
+            @Override
+            public Map<String, String> getActionColors () {
+                return colors;
+            }
 
-        Rectangle rect = resultsList.getCellBounds(idx, idx);
-        Point p = new Point(e.getX() - rect.x, e.getY() - rect.y);
-        Rectangle diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_DIFF_PROPERTY + idx); // NOI18N
-        if (diffBounds != null && diffBounds.contains(p)) {
-            resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            return;
-        }
-        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_REVERT_PROPERTY + idx); // NOI18N
-        if (diffBounds != null && diffBounds.contains(p)) {
-            resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            return;
-        }
-        diffBounds = (Rectangle) resultsList.getClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + idx); // NOI18N
-        if (diffBounds != null && diffBounds.contains(p)) {
-            resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            return;
-        }
-        linkerSupport.mouseMoved(p, resultsList, idx);
+            @Override
+            public void getMoreResults (PropertyChangeListener callback, int count) {
+                master.getMoreRevisions(callback, count);
+            }
+
+            @Override
+            public boolean hasMoreResults () {
+                return master.hasMoreResults();
+            }
+            
+        };
+    
     }
 
     @Override
     public Collection getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
+            List<RepositoryRevision> results = master.getResults();
             return master.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
         }
     
         Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
         Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
 
-        int [] sel = resultsList.getSelectedIndices();
-        for (int i : sel) {
-            Object revCon = dispResults.get(i);            
+        Object [] sel = getSelection();
+        for (Object revCon : sel) {
             if (revCon instanceof RepositoryRevision) {
                 revisions.add((RepositoryRevision) revCon);
             } else {
@@ -292,37 +415,27 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         return null;
     }
 
-    private void onPopup(MouseEvent e) {
-        onPopup(e.getPoint());
-    }
-    
-    private void onPopup(Point p) {
-        int [] sel = resultsList.getSelectedIndices();
-        if (sel.length == 0) {
-            int idx = resultsList.locationToIndex(p);
-            if (idx == -1) return;
-            resultsList.setSelectedIndex(idx);
-            sel = new int [] { idx };
+    @Override
+    protected void onPopup (JComponent invoker, Point p, final Object[] selection) {
+        if (master.isIncomingSearch()) {
+            return;
         }
-        final int [] selection = sel;
-
         JPopupMenu menu = new JPopupMenu();
         
         String previousRevision = null;
-        RepositoryRevision container = null;
+        final RepositoryRevision container;
         final RepositoryRevision.Event[] drev;
 
-        Object revCon = dispResults.get(selection[0]);
-        
+        Object revCon = selection[0];
         
         boolean noExDeletedExistingFiles = true;        
         boolean revisionSelected;
         boolean missingFile = false;        
         boolean oneRevisionMultiselected = true;
         
-        if (revCon instanceof RepositoryRevision) {
+        if (revCon instanceof HgLogEntry && selection.length == 1) {
             revisionSelected = true;
-            container = (RepositoryRevision) dispResults.get(selection[0]);
+            container = ((HgLogEntry) selection[0]).revision;
             drev = new RepositoryRevision.Event[0];
             oneRevisionMultiselected = true;
             noExDeletedExistingFiles = true;
@@ -331,7 +444,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             drev = new RepositoryRevision.Event[selection.length];
 
             for(int i = 0; i < selection.length; i++) {
-                drev[i] = (RepositoryRevision.Event) dispResults.get(selection[i]);
+                if (!(selection[i] instanceof HgLogEvent)) {
+                    return;
+                }
+                drev[i] = ((HgLogEvent) selection[i]).getEvent();
                 
                 if(!missingFile && drev[i].getFile() == null) {
                     missingFile = true;
@@ -351,8 +467,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
         final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
-        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && !drev[0].getFile().isDirectory();
-        final boolean annotationsEnabled = viewEnabled && drev[0].getChangedPath().getAction() != HgLogMessage.HgDelStatus;
+        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getChangedPath().getAction() != HgLogMessage.HgDelStatus;
+        final boolean annotationsEnabled = viewEnabled;
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
@@ -362,7 +478,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    diffPrevious(selection[0]);
+                    diffPrevious(master, selection[0]);
                 }
             }));
         }
@@ -376,7 +492,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    backout(selection[0]);
+                    backout(container);
                 }
             }));
         }else{
@@ -399,7 +515,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            view(selection[0], false);
+                            view(drev[0], false);
                         }
                     });
                 }
@@ -413,7 +529,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            view(selection[0], true);
+                            view(drev[0], true);
                         }
                     });
                 }
@@ -424,12 +540,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    exportFileDiff(selection[0]);
+                    exportFileDiff(drev[0]);
                 }
             }));
         }
 
-        menu.show(resultsList, p.x, p.y);
+        menu.show(invoker, p.x, p.y);
     }
     
     /**
@@ -437,15 +553,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
      *
      * @param event
      */
-    private void backout(int idx) {
-        Object o = dispResults.get(idx);
-        if (o instanceof RepositoryRevision) {
-            RepositoryRevision repoRev = (RepositoryRevision) o;
-            BackoutAction.backout(repoRev);
-        }        
+    private static void backout (RepositoryRevision repoRev) {
+        BackoutAction.backout(repoRev);
     }
     
-    static void backout(final RepositoryRevision.Event event) {
+    static void backout (final RepositoryRevision.Event event) {
         RepositoryRevision repoRev = event.getLogInfoHeader();
         BackoutAction.backout(repoRev);
     }
@@ -456,13 +568,16 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         revert(null, (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
-    public void revertModifications(int[] selection) {
+    public void revertModifications(Object[] selection) {
         Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
         Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
-        for (int idx : selection) {
-            Object o = dispResults.get(idx);
+        for (Object o : selection) {
             if (o instanceof RepositoryRevision) {
                 revisions.add((RepositoryRevision) o);
+            } else if (o instanceof HgLogEntry) {
+                revisions.add(((HgLogEntry) o).getRepositoryRevision());
+            } else if (o instanceof HgLogEntry.Event) {
+                events.add(((HgLogEvent) o).getEvent());
             } else {
                 events.add((RepositoryRevision.Event) o);
             }
@@ -540,369 +655,34 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
     }
 
-    private void view (int idx, boolean showAnnotations) {
-        Object o = dispResults.get(idx);
-        if (o instanceof RepositoryRevision.Event) {
-            try {
-                final RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-                HgUtils.openInRevision(drev.getFile(), -1, drev.getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
-            } catch (IOException ex) {
-                // Ignore if file not available in cache
-            }
+    private static void view (RepositoryRevision.Event drev, boolean showAnnotations) {
+        try {
+            HgUtils.openInRevision(drev.getFile(), -1, drev.getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
+        } catch (IOException ex) {
+            // Ignore if file not available in cache
         }
     }
-    private void diffPrevious(int idx) {
-        Object o = dispResults.get(idx);
+    private static void diffPrevious (SearchHistoryPanel master, Object o) {
         if (o instanceof RepositoryRevision.Event) {
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
             master.showDiff(drev);
+        } else if (o instanceof HgLogEntry.Event) {
+            RepositoryRevision.Event drev = ((HgLogEvent) o).getEvent();
+            master.showDiff(drev);
+        } else if (o instanceof HgLogEntry) {
+            RepositoryRevision container = ((HgLogEntry) o).getRepositoryRevision();
+            master.showDiff(container);
         } else {
             RepositoryRevision container = (RepositoryRevision) o;
             master.showDiff(container);
         }
     }
 
-    private void exportDiffs(int idx) {
-        Object o = dispResults.get(idx);
-        if (o instanceof RepositoryRevision) {
-            RepositoryRevision repoRev = (RepositoryRevision) o;
-            ExportDiffAction.exportDiffRevision(repoRev, master.getRoots());
-        }        
+    private void exportDiffs (RepositoryRevision repoRev) {
+        ExportDiffAction.exportDiffRevision(repoRev, master.getRoots());
     }
     
-    private void exportFileDiff(int idx) {
-        Object o = dispResults.get(idx);
-        if (o instanceof RepositoryRevision.Event) {
-            RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-            ExportDiffAction.exportDiffFileRevision(drev);
-        }
-    }
-
-    public JComponent getComponent() {
-        return scrollPane;
-    }
-
-    private class SummaryListModel extends AbstractListModel {
-
-        @Override
-        public int getSize() {
-            return dispResults.size();
-        }
-
-        @Override
-        public Object getElementAt(int index) {
-            return dispResults.get(index);
-        }
-    }
-    
-    private class SummaryCellRenderer implements ListCellRenderer {
-
-        private static final String FIELDS_SEPARATOR = "        "; // NOI18N
-
-        private RevisionRenderer rr = new RevisionRenderer();
-        private ChangepathRenderer cpr = new ChangepathRenderer();
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof RepositoryRevision) {
-                return rr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            } else {
-                return cpr.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            }
-        }
-
-        private class RevisionRenderer extends JPanel implements ListCellRenderer {
-            private static final double DARKEN_FACTOR = 0.95;
-
-            private Style selectedStyle;
-            private Style normalStyle;
-            private Style filenameStyle;
-            private Style indentStyle;
-            private Style noindentStyle;
-            private Style hiliteStyle;
-            private Style issueHyperlinkStyle;
-            private final Style authorStyle;
-
-            private Color selectionBackground;
-            private Color selectionForeground;
-
-            private JTextPane textPane = new JTextPane();
-            private JPanel    actionsPane = new JPanel();
-
-            private DateFormat defaultFormat;
-
-            private int             index;
-            private HyperlinkLabel  diffLink;
-            private HyperlinkLabel  revertLink;
-            private HyperlinkLabel  exportDiffsLink;
-
-            public RevisionRenderer() {
-                selectionBackground = new JList().getSelectionBackground();
-                selectionForeground = new JList().getSelectionForeground();
-
-                selectedStyle = textPane.addStyle("selected", null); // NOI18N
-                StyleConstants.setForeground(selectedStyle, selectionForeground);
-                StyleConstants.setBackground(selectedStyle, selectionBackground);
-                normalStyle = textPane.addStyle("normal", null); // NOI18N
-                StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); // NOI18N
-                filenameStyle = textPane.addStyle("filename", normalStyle); // NOI18N
-                StyleConstants.setBold(filenameStyle, true);
-                indentStyle = textPane.addStyle("indent", null); // NOI18N
-                StyleConstants.setLeftIndent(indentStyle, 50);
-                noindentStyle = textPane.addStyle("noindent", null); // NOI18N
-                StyleConstants.setLeftIndent(noindentStyle, 0);
-                defaultFormat = DateFormat.getDateTimeInstance();
-
-                issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
-                StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
-                StyleConstants.setUnderline(issueHyperlinkStyle, true);
-
-                authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
-                StyleConstants.setForeground(authorStyle, Color.BLUE);
-
-                hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
-                Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
-                if (c != null) StyleConstants.setBackground(hiliteStyle, c);
-                c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
-                if (c != null) StyleConstants.setForeground(hiliteStyle, c);
-
-                setLayout(new BorderLayout());
-                add(textPane);
-                add(actionsPane, BorderLayout.PAGE_END);
-                actionsPane.setLayout(new FlowLayout(FlowLayout.TRAILING, 2, 5));
-
-                diffLink = new HyperlinkLabel();
-                diffLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-                actionsPane.add(diffLink);
-
-                revertLink = new HyperlinkLabel();
-                revertLink.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
-                actionsPane.add(revertLink);
-
-                exportDiffsLink = new HyperlinkLabel();
-                actionsPane.add(exportDiffsLink);
-
-                textPane.setBorder(null);
-            }
-
-            public Color darker(Color c) {
-                return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0),
-                     Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
-                     Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
-            }
-
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                renderContainer(list, (RepositoryRevision) value, index, isSelected);
-                return this;
-            }
-
-            private void renderContainer(JList list, RepositoryRevision container, int index, boolean isSelected) {
-
-                StyledDocument sd = textPane.getStyledDocument();
-
-                Style style;
-                Color backgroundColor;
-                Color foregroundColor;
-
-                if (isSelected) {
-                    foregroundColor = selectionForeground;
-                    backgroundColor = selectionBackground;
-                    style = selectedStyle;
-                } else {
-                    foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
-                    backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                    backgroundColor = darker(backgroundColor);
-                    style = normalStyle;
-                }
-                textPane.setBackground(backgroundColor);
-                actionsPane.setBackground(backgroundColor);
-
-                this.index = index;
-
-                // XXX cache
-                Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
-                Collection<VCSHyperlinkProvider> hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
-
-                try {
-                    // clear document
-                    sd.remove(0, sd.getLength());
-                    sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
-
-                    // add revision
-                    StringBuilder labelBuilder = new StringBuilder();
-                    // add branch labels
-                    for (String s : container.getLog().getBranches()) {
-                        labelBuilder.append(s).append(' ');
-                    }
-                    // add tag labels
-                    for (String s : container.getLog().getTags()) {
-                        labelBuilder.append(s).append(' ');
-                    }
-                    sd.insertString(0, container.getLog().getRevisionNumber() +
-                            " (" + (labelBuilder.length() == 0 ? //NOI18N
-                            container.getLog().getCSetShortID() :
-                            labelBuilder.toString() + "- " + container.getLog().getCSetShortID().substring(0, 7)) + ")", null); //NOI18N
-                    sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
-
-                    // add author
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
-                    String author = container.getLog().getAuthor();
-                    StyledDocumentHyperlink l = linkerSupport.getLinker(AuthorLinker.class, index);
-                    if(l == null) {
-                        if(kenaiUsersMap != null && author != null && !author.equals("")) {
-                            KenaiUser kenaiUser = kenaiUsersMap.get(author);
-                            if(kenaiUser != null) {
-                                l = new AuthorLinker(kenaiUser, authorStyle, sd, author);
-                                linkerSupport.add(l, index);
-                            }
-                        }
-                    }
-                    if(l != null) {
-                        l.insertString(sd, isSelected ? style : null);
-                    } else {
-                        sd.insertString(sd.getLength(), author, style);
-                    }
-
-                    // add date
-                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(container.getLog().getDate()), null);
-
-                    // add commit msg
-                    String commitMessage = container.getLog().getMessage();
-                    if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); // NOI18N
-                    sd.insertString(sd.getLength(), "\n", null);
-
-                    // compute issue hyperlinks
-                    l = linkerSupport.getLinker(IssueLinker.class, index);
-                    if(l == null) {
-                        for (VCSHyperlinkProvider hp : hpInstances) {
-                            l = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
-                            if(l != null) {
-                                linkerSupport.add(l, index);
-                                break; // get the first one
-                            }
-                        }
-                    }
-                    if(l != null) {
-                        l.insertString(sd, style);
-                    } else {
-                        sd.insertString(sd.getLength(), commitMessage, style);
-                    }
-
-                    int msglen = commitMessage.length();
-                    int doclen = sd.getLength();
-                    if (message != null && !isSelected) {
-                        int idx = commitMessage.indexOf(message);
-                        if (idx != -1) {
-                            sd.setCharacterAttributes(doclen - msglen + idx, message.length(), hiliteStyle, true);
-                        }
-                    }
-
-                    resizePane(commitMessage, list.getFontMetrics(list.getFont()));
-                    if(isSelected) {
-                        sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
-                    }
-                } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-
-                actionsPane.setVisible(true);
-                if(!master.isIncomingSearch()){
-                    diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);// NOI18N
-                    revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
-                    exportDiffsLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_ExportDiffs"), foregroundColor, backgroundColor); // NOI18N
-                }
-            }
-
-            @SuppressWarnings("empty-statement")
-            private void resizePane(String text, FontMetrics fm) {
-                if(text == null) {
-                    text = "";
-                }
-                int width = master.getWidth();
-                if (width > 0) {
-                    Rectangle2D rect = fm.getStringBounds(text, textPane.getGraphics());
-                    int nlc, i;
-                    for (nlc = -1, i = 0; i != -1 ; i = text.indexOf('\n', i + 1), nlc++);
-                    nlc++;
-                    int lines = (int) (rect.getWidth() / (width - 80) + 1);
-                    int ph = fm.getHeight() * (lines + nlc) + 0;
-                    textPane.setPreferredSize(new Dimension(width - 50, ph));
-                }
-            }
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (index == -1) return;
-                Rectangle apb = actionsPane.getBounds();
-
-                {
-                    Rectangle bounds = diffLink.getBounds();
-                    bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                    resultsList.putClientProperty(SUMMARY_DIFF_PROPERTY + index, bounds); // NOI18N
-                }
-
-                Rectangle bounds = revertLink.getBounds();
-                bounds.setBounds(bounds.x, bounds.y + apb.y, bounds.width, bounds.height);
-                resultsList.putClientProperty(SUMMARY_REVERT_PROPERTY + index, bounds); // NOI18N
-
-                Rectangle edBounds = exportDiffsLink.getBounds();
-                edBounds.setBounds(edBounds.x, edBounds.y + apb.y, edBounds.width, edBounds.height);
-                resultsList.putClientProperty(SUMMARY_EXPORTDIFFS_PROPERTY + index, edBounds); // NOI18N
-
-                linkerSupport.computeBounds(textPane, index);
-            }
-        }
-
-        private class ChangepathRenderer extends DefaultListCellRenderer {
-            @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                RepositoryRevision.Event revisionEvent = (RepositoryRevision.Event) value;
-                StringBuilder sb = new StringBuilder();
-                sb.append(FIELDS_SEPARATOR);
-                sb.append(String.valueOf(revisionEvent.getChangedPath().getAction()));
-                sb.append(FIELDS_SEPARATOR);
-                sb.append(revisionEvent.getChangedPath().getPath());
-                Component renderer = super.getListCellRendererComponent(list, sb.toString(), index, isSelected, isSelected);
-                if(renderer instanceof JLabel) {
-                    if (revisionEvent.getChangedPath().getAction() == HgLogMessage.HgCopyStatus) {
-                        sb.append(" (").append(revisionEvent.getChangedPath().getCopySrcPath()).append(")"); //NOI18N
-                    }
-                    ((JLabel) renderer).setToolTipText(sb.toString());
-                }
-                return renderer;
-            }
-        }
-    }
-
-    private static class HyperlinkLabel extends JLabel {
-
-        public HyperlinkLabel() {
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
-
-        public void set(String text, Color foreground, Color background) {
-            StringBuilder sb = new StringBuilder(100);
-            if (foreground.equals(UIManager.getColor("List.foreground"))) { // NOI18N
-                sb.append("<html><a href=\"\">"); // NOI18N
-                sb.append(text);
-                sb.append("</a>"); // NOI18N
-            } else {
-                sb.append("<html><a href=\"\" style=\"color:"); // NOI18N
-                sb.append("rgb("); // NOI18N
-                sb.append(foreground.getRed());
-                sb.append(","); // NOI18N
-                sb.append(foreground.getGreen());
-                sb.append(","); // NOI18N
-                sb.append(foreground.getBlue());
-                sb.append(")"); // NOI18N
-                sb.append("\">"); // NOI18N
-                sb.append(text);
-                sb.append("</a>"); // NOI18N
-            }
-            setText(sb.toString());
-            setBackground(background);
-        }
+    private static void exportFileDiff(RepositoryRevision.Event drev) {
+        ExportDiffAction.exportDiffFileRevision(drev);
     }
 }

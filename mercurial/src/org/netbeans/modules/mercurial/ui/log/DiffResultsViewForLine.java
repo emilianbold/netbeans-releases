@@ -62,6 +62,7 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.ui.log.RepositoryRevision.Event;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -90,15 +91,15 @@ final class DiffResultsViewForLine extends DiffResultsView {
     @Override
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
-        showDiff(rev, null, rev.getLogInfoHeader().getLog().getHgRevision(), showLastDifference);
+        showDiff(rev.getLogInfoHeader().getRepositoryRoot(), null, rev, showLastDifference);
     }
 
     @Override
-    protected HgProgressSupport createShowDiffTask(RepositoryRevision.Event header, HgRevision revision1, HgRevision revision2, boolean showLastDifference) {
+    protected HgProgressSupport createShowDiffTask (Event revision1, Event revision2, boolean showLastDifference) {
         if (revision1 == null) {
-            return new ShowDiffTask(header, revision2, showLastDifference);
+            return new ShowDiffTask(revision2, revision2.getLogInfoHeader().getLog().getHgRevision(), showLastDifference);
         } else {
-            return super.createShowDiffTask(header, revision1, revision2, showLastDifference);
+            return super.createShowDiffTask(revision1, revision2, showLastDifference);
         }
     }
 

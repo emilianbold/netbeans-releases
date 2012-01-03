@@ -83,14 +83,17 @@ public class DocOffsPositionImpl implements CsmOffsetable.Position {
         this.doc = doc;
     }
 
+    @Override
     public int getOffset() {
         return offset;
     }
 
+    @Override
     public int getLine() {
         return getLine(true);
     }
 
+    @Override
     public int getColumn() {
         return getColumn(true);
     }

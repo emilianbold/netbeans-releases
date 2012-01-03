@@ -44,11 +44,21 @@
 
 package org.netbeans.modules.maven.junit.nodes;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -57,6 +67,10 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.Trees;
+import javax.lang.model.util.ElementFilter;
 
 /**
  *
@@ -143,6 +157,44 @@ final class OutputUtils {
                 FileObject fo = ((JUnitTestMethodNode)child).getTestcaseFileObject();
                 openFile(fo, 1);
             }
+        }
+    }
+
+    static void openTestMethod(final JUnitTestMethodNode node) {
+        final FileObject fo = node.getTestcaseFileObject();
+        if (fo != null){
+            final long[] line = new long[]{0};
+            JavaSource javaSource = JavaSource.forFileObject(fo);
+            if (javaSource != null) {
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                            public void run(CompilationController compilationController) throws Exception {
+                                compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+                                Trees trees = compilationController.getTrees();
+                                CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+                                List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+                                for (Tree tree : typeDecls) {
+                                    Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+                                    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
+                                        List<? extends ExecutableElement> methodElements = ElementFilter.methodsIn(element.getEnclosedElements());
+                                        for(Element child: methodElements){
+                                            if (child.getSimpleName().contentEquals(node.getTestcase().getName())){
+                                                long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, trees.getTree(child));
+                                                line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+                                                break;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }, true);
+
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
+            }
+            openFile(fo, (int)line[0]);
         }
     }
 

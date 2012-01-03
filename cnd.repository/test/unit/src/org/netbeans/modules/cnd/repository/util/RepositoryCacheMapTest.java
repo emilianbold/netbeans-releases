@@ -63,6 +63,7 @@ public class RepositoryCacheMapTest extends CndBaseTestCase {
 
         Filter<String> filter = new Filter<String>() {
 
+            @Override
             public boolean accept(String value) {
                 return true;
             }

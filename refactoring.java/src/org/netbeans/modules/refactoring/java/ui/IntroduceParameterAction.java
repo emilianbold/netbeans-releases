@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.IntroduceParameterAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_IntroduceParameterAction")
+@ActionRegistration(displayName = "#LBL_IntroduceParameterAction", lazy = false)
 @ActionReferences({
     @ActionReference(path = "Shortcuts", name = "OS-P"),
     @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "IntroduceParameterAction", position = 1750)

@@ -86,12 +86,15 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         //parent.setPreviewEnabled(false);
         nameField.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
@@ -99,6 +102,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
         if (initialized) {
             return;
@@ -111,6 +115,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         
         final RenamePanel panel = this;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.setName(title);
             }            
@@ -279,6 +284,7 @@ textCheckBox.addItemListener(new java.awt.event.ItemListener() {
         return true;
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }
