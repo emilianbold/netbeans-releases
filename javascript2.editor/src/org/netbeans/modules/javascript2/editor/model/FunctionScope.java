@@ -50,4 +50,5 @@ import java.util.Collection;
 public interface FunctionScope extends VariableScope, FullQualifiedName {
     public Identifier getDeclarationName();
     public Collection<? extends Parameter> getParameters();
+    public Collection<? extends Field> getFields();
 }

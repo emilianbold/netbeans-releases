@@ -98,6 +98,12 @@ public abstract class JsElementImpl implements JsElement {
             case PARAMETER:
                 result = ElementKind.PARAMETER;
                 break;
+            case VARIABLE:
+                result = ElementKind.VARIABLE;
+                break;
+            case FIELD:
+                result = ElementKind.FIELD;
+                break;
         }
         return result;
     }

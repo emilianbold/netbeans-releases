@@ -62,6 +62,7 @@ public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScop
     private Identifier name;
     private List<Identifier> fullName;
     private final List<Parameter> parameters;
+    
     /**
      * This offset range is created to navigator navigate to the name of the function.
      */
@@ -122,5 +123,17 @@ public class FunctionScopeImpl extends VariableScopeImpl implements FunctionScop
     @Override
     public Collection<? extends Parameter> getParameters() {
         return parameters;
+    }
+
+    @Override
+    public Collection<? extends Field> getFields() {
+        return filter(getElements(), new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(JsElement.Kind.FIELD);
+            }
+            
+        });
     }
 }

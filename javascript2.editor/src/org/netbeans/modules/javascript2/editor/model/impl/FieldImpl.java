@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.javascript2.editor.model.Field;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.Scope;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsElement extends ElementHandle {
-    public enum Kind {
-        FUNCTION,
-        METHOD,
-        CONSTRUCTOR,
-        OBJECT, 
-        PROPERTY, 
-        VARIABLE,
-        FIELD,
-        FILE,
-        PARAMETER
+public class FieldImpl extends ParameterImpl implements Field {
+
+    public FieldImpl(Scope scope, Identifier declaration) {
+        super(scope, declaration, JsElement.Kind.FIELD);
     }
     
-    int getOffset();
-    Kind getJSKind();
 }

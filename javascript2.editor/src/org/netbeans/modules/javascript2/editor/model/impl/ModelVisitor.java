@@ -91,7 +91,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     List<Identifier> name = getName(binaryNode);
                     AccessNode aNode = (AccessNode)binaryNode.lhs();
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
-                        // field
+                        // a usage of field
+                        String fieldName = aNode.getProperty().getName();
+                        Field field = findFieldWithName((FunctionScope)scope, fieldName);
+                        if (field == null) {
+                            // needs to decide, whether it belongs to this function or the parent one
+                            Scope whereToAdd = scope;
+                            if (scope.getInElement() instanceof FunctionScope) {
+                                whereToAdd = (Scope)scope.getInElement();
+                            }
+                            ((FunctionScopeImpl)whereToAdd).addElement(new FieldImpl(whereToAdd, 
+                                    new IdentifierImpl(fieldName, new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish()))));
+                        }
                     }
                     System.out.println("     name: " + ModelUtils.getNameWithoutPrototype(name));
                 } else {
@@ -315,6 +326,18 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         
+        return result;
+    }
+    
+    private Field findFieldWithName(FunctionScope function, final String name) {
+        Field result = null;
+        Collection<? extends Field> fields = function.getFields();
+        result = ModelUtils.getFirst(ModelUtils.getFirst(fields, name));
+        if (result == null && function.getInElement() instanceof FunctionScope) {
+            FunctionScope parent = (FunctionScope)function.getInElement();
+            fields = parent.getFields();
+            result = ModelUtils.getFirst(ModelUtils.getFirst(fields, name));
+        }
         return result;
     }
 }

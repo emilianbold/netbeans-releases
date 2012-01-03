@@ -190,6 +190,16 @@ public class ModelTest extends JsTestBase {
         assertEquals("zip", variable.getDeclaration().getName());
         assertEquals(false, variable.isGlobal());
         assertEquals(false, variable.isImplicit());
+        
+        // testing fields
+        Collection<? extends Field> fields = object.getFields();
+        assertEquals(2, fields.size());
+        
+        Field field = ModelUtils.getFirst(ModelUtils.getFirst(fields, "street"));
+        assertEquals("street", field.getDeclaration().getName());
+        
+        field = ModelUtils.getFirst(ModelUtils.getFirst(fields, "id"));
+        assertEquals("id", field.getDeclaration().getName());
     }
     
 }

@@ -16,7 +16,7 @@ function Address (town, state, number) {
         if (zip == 16000) {
             zip = 15000;
         }
-        
+        this.id = 123;
         var result = city + " "  + this.street + " " + zip + " "  + country;
         return result;
     }
@@ -30,4 +30,4 @@ telefon = "5648965";
 formatter.println("Telefon: " + telefon);
 formatter.println("Global Country: " + country);
 formatter.println("MyApp.country: " + MyApp.country);
-
+formatter.println("address id: " + address.id);
