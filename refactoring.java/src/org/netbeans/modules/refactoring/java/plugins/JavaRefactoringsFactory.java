@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import java.util.Collection;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.*;
@@ -101,6 +102,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         } else if (refactoring instanceof SingleCopyRefactoring) {
             if (checkCopy(refactoring.getRefactoringSource())) {
                 return new CopyClassRefactoringPlugin((SingleCopyRefactoring) refactoring);
+            }
+        } else if (refactoring instanceof CopyRefactoring) {
+            if (checkCopy(refactoring.getRefactoringSource())) {
+                return new CopyClassesRefactoringPlugin((CopyRefactoring) refactoring);
             }
         } else if (handle!=null) {
             if (refactoring instanceof ExtractInterfaceRefactoring) {
@@ -165,9 +170,12 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
     }
     
     private boolean checkCopy(Lookup object) {
-        FileObject f=object.lookup(FileObject.class);
-        if (f!=null && RefactoringUtils.isJavaFile(f))
-            return true;
+        Collection<? extends FileObject> fileObjects = object.lookupAll(FileObject.class);
+        for (FileObject f : fileObjects) {
+            if (f != null && RefactoringUtils.isJavaFile(f)) {
+                return true;
+            }
+        }
         return false;
     }
 

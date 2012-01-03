@@ -44,13 +44,16 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Vector;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -60,13 +63,16 @@ import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.awt.Mnemonics;
+import org.openide.explorer.view.NodeRenderer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Asks where to move a class to.
  * @author Jan Becicka, Jesse Glick
  */
-public class MoveClassPanel extends JPanel implements ActionListener, DocumentListener,CustomRefactoringPanel {
+public final class MoveClassPanel extends JPanel implements ActionListener, DocumentListener,CustomRefactoringPanel {
   
     private final ListCellRenderer GROUP_CELL_RENDERER = new GroupCellRenderer();
     private final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
@@ -76,38 +82,86 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
     private FileObject fo;
     private SourceGroup[] groups;
     private String startPackage;
+    private String newName;
+    private String bypassLine;
     
-    public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, FileObject f) {
+    public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, String bypassLine, FileObject f, boolean disable, Vector nodes) {
+        this(parent, startPackage, headLine, bypassLine, f);
+        setCombosEnabled(!disable);
+        JList list = new JList(nodes);
+        list.setCellRenderer(new NodeRenderer()); 
+        list.setVisibleRowCount(5);
+        JScrollPane pane = new JScrollPane(list);
+        bottomPanel.setBorder(new EmptyBorder(8,0,0,0));
+        bottomPanel.setLayout(new BorderLayout());
+        bottomPanel.add(pane, BorderLayout.CENTER);
+        JLabel listOf = new JLabel();
+        Mnemonics.setLocalizedText(listOf, NbBundle.getMessage(MoveClassesUI.class, "LBL_ListOfClasses"));
+        bottomPanel.add(listOf, BorderLayout.NORTH);
+    }
+    
+    public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, String bypassLine, FileObject f) {
+        this(parent, startPackage, headLine, bypassLine, f, null);
+    }
+    
+    public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, String bypassLine, FileObject f, String newName) {
         this.fo = f;
         this.parent = parent;
+        this.newName = newName;
+        this.bypassLine = bypassLine;
         initComponents();
         setCombosEnabled(true);
+        
         labelHeadLine.setText(headLine);
+        
         rootComboBox.setRenderer(GROUP_CELL_RENDERER);
         packageComboBox.setRenderer(PackageView.listRenderer());
-        projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );
-                
-        rootComboBox.addActionListener( this );
-        packageComboBox.addActionListener( this );
-        projectsComboBox.addActionListener( this );
-        
-        Object textField = packageComboBox.getEditor().getEditorComponent();
-        if (textField instanceof JTextField) {
-            ((JTextField) textField).getDocument().addDocumentListener(this); 
-        }
-        
-        project = fo != null ? FileOwnerQuery.getOwner(fo):OpenProjects.getDefault().getOpenProjects()[0];
+        projectsComboBox.setRenderer(PROJECT_CELL_RENDERER);
+        Project fileOwner = fo != null ? FileOwnerQuery.getOwner(fo) : null;
+        project = fileOwner != null ? fileOwner : OpenProjects.getDefault().getOpenProjects()[0];
         this.startPackage = startPackage;
         
+        if(newName != null) {
+            labelHeadLine.setVisible(false);
+        } else {
+            labelNewName.setVisible(false);
+            newNameField.setVisible(false);
+        }
+    }
+
+    private String getBypassLine() {
+        return bypassLine;
     }
     
     private boolean initialized = false;
     @Override
     public void initialize() {
-        if (initialized)
+        if (initialized) {
             return ;
+        }
         //put initialization code here
         initValues(startPackage);
+        
+        if (newName != null) {
+            FileObject fob;
+            do {
+                fob = fo.getFileObject(newName + ".java"); //NOI18N
+                if (fob != null) {
+                    newName += "1"; // NOI18N
+                }
+            } while (fob != null);
+            newNameField.setText(newName);
+            newNameField.setSelectionStart(0);
+            newNameField.setSelectionEnd(newNameField.getText().length());
+        }
+        rootComboBox.addActionListener( this );
+        packageComboBox.addActionListener( this );
+        projectsComboBox.addActionListener( this );
+        Object textField = packageComboBox.getEditor().getEditorComponent();
+        if (textField instanceof JTextField) {
+            ((JTextField) textField).getDocument().addDocumentListener(this); 
+        }
+        newNameField.getDocument().addDocumentListener(this);
         initialized = true;
     }
     
@@ -161,8 +215,10 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         labelPackage = new javax.swing.JLabel();
         packageComboBox = new javax.swing.JComboBox();
         bottomPanel = new javax.swing.JPanel();
+        bypassRefactoringCheckBox = new javax.swing.JCheckBox();
         labelHeadLine = new javax.swing.JLabel();
-        updateReferencesCheckBox = new javax.swing.JCheckBox();
+        labelNewName = new javax.swing.JLabel();
+        newNameField = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -232,20 +288,12 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.weighty = 1.0;
         add(bottomPanel, gridBagConstraints);
 
-        labelHeadLine.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 6, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        add(labelHeadLine, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(MoveClassPanel.class).getString("LBL_MoveWithoutReferences")); // NOI18N
-        updateReferencesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
-        updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
-        updateReferencesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(bypassRefactoringCheckBox, getBypassLine());
+        bypassRefactoringCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
+        bypassRefactoringCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
+        bypassRefactoringCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                updateReferencesCheckBoxItemStateChanged(evt);
+                bypassRefactoringCheckBoxItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -253,26 +301,56 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(updateReferencesCheckBox, gridBagConstraints);
-        updateReferencesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MoveClassPanel.class, "MoveClassPanel.updateReferencesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        add(bypassRefactoringCheckBox, gridBagConstraints);
+        bypassRefactoringCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MoveClassPanel.class, "MoveClassPanel.updateReferencesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
+        labelHeadLine.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 6, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(labelHeadLine, gridBagConstraints);
+
+        labelNewName.setLabelFor(newNameField);
+        org.openide.awt.Mnemonics.setLocalizedText(labelNewName, org.openide.util.NbBundle.getMessage(MoveClassPanel.class, "LBL_NewName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        add(labelNewName, gridBagConstraints);
+
+        newNameField.setText(org.openide.util.NbBundle.getMessage(MoveClassPanel.class, "CopyClassPanel.newNameTextField.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
+        add(newNameField, gridBagConstraints);
+        newNameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MoveClassPanel.class, "CopyClassPanel.newNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_updateReferencesCheckBoxItemStateChanged
+private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_bypassRefactoringCheckBoxItemStateChanged
     parent.stateChanged(null);
-}//GEN-LAST:event_updateReferencesCheckBoxItemStateChanged
+}//GEN-LAST:event_bypassRefactoringCheckBoxItemStateChanged
 
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JPanel bottomPanel;
+    private javax.swing.JCheckBox bypassRefactoringCheckBox;
     private javax.swing.JLabel labelHeadLine;
     private javax.swing.JLabel labelLocation;
+    private javax.swing.JLabel labelNewName;
     private javax.swing.JLabel labelPackage;
     private javax.swing.JLabel labelProject;
+    private javax.swing.JTextField newNameField;
     private javax.swing.JComboBox packageComboBox;
     private javax.swing.JComboBox projectsComboBox;
     private javax.swing.JComboBox rootComboBox;
-    private javax.swing.JCheckBox updateReferencesCheckBox;
     // End of variables declaration//GEN-END:variables
 
     // ActionListener implementation -------------------------------------------
@@ -312,29 +390,29 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
         
     private void updatePackages() {
         SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
-        packageComboBox.setModel(PackageView.createListView(g));
+        packageComboBox.setModel(g != null
+                ? PackageView.createListView(g)
+                : new DefaultComboBoxModel());
     }
     
     void setCombosEnabled(boolean enabled) {
         packageComboBox.setEnabled(enabled);
         rootComboBox.setEnabled(enabled);
         projectsComboBox.setEnabled(enabled);
-        updateReferencesCheckBox.setVisible(!enabled);
+        bypassRefactoringCheckBox.setVisible(!enabled);
         this.setEnabled(enabled);
     }
 
-    public boolean isUpdateReferences() {
-        if (updateReferencesCheckBox.isVisible() && updateReferencesCheckBox.isSelected())
-            return false;
-        return true;
+    public boolean isRefactoringBypassRequired() {
+        return bypassRefactoringCheckBox.isVisible() && bypassRefactoringCheckBox.isSelected();
     }
     
     private void updateRoots() {
         Sources sources = ProjectUtils.getSources(project);
         groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        // XXX why?? This is probably wrong. If the project has no Java groups,
+        // you cannot move anything into it.
         if (groups.length == 0) {
-            // XXX why?? This is probably wrong. If the project has no Java groups,
-            // you cannot move anything into it.
             groups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
         }
 
@@ -353,7 +431,13 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
                 
         // Setup comboboxes 
         rootComboBox.setModel(new DefaultComboBoxModel(groups));
-        rootComboBox.setSelectedIndex(preselectedItem);
+        if(groups.length > 0) {
+            rootComboBox.setSelectedIndex(preselectedItem);
+        }
+    }
+
+    public String getNewName() {
+        return newNameField.getText();
     }
     
     private abstract static class BaseCellRenderer extends JLabel implements ListCellRenderer, UIResource {
