@@ -121,9 +121,27 @@ public class FieldForUnusedParamTest extends TreeRuleTestBase {
                        "package test; public class Test { private int a; private final int b; private int c; public Test(int a, int b, int c) { this.a = a; this.b = b; this.c = c; } } ");
     }
     
+    public void test206367() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     public Test(String|) {}\n" +
+                            "}\n");
+    }
+
     @Override
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path, int offset) {
-        return new FieldForUnusedParam().run(info, path, offset);
+        FieldForUnusedParam h = new FieldForUnusedParam();
+
+        if ("test206367".equals(getName())) {
+            while (path != null && !h.getTreeKinds().contains(path.getLeaf().getKind())) {
+                path = path.getParentPath();
+            }
+
+            assertNotNull(path);
+        }
+
+        return h.run(info, path, offset);
     }
 
     @Override

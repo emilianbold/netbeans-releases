@@ -150,7 +150,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             }
                         }
                     } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
-                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
+                        ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement)selected);
+                        FileObject f = SourceUtils.getFile(handle, info.getClasspathInfo());
                         if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
                             return wrap(new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info));
                         } else {
@@ -430,7 +431,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return null;
                     }
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-                        FileObject file = SourceUtils.getFile(selected, info.getClasspathInfo());
+                        ElementHandle<Element> handle = ElementHandle.create(selected);
+                        FileObject file = SourceUtils.getFile(handle, info.getClasspathInfo());
                         if (file==null) {
                             return null;
                         }

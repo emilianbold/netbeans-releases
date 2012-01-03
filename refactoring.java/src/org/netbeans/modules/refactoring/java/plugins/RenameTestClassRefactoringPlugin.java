@@ -51,7 +51,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.JavaRenameProperties;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;

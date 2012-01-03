@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.InlineAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_InlineAction")
+@ActionRegistration(displayName = "#LBL_InlineAction", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "InlineAction", position = 420)
 public class InlineAction extends JavaRefactoringGlobalAction {
 

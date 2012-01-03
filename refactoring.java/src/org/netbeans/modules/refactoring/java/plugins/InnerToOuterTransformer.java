@@ -44,26 +44,20 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import java.io.IOException;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 import javax.lang.model.element.*;
-import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;

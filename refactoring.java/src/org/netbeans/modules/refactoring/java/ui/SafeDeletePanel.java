@@ -62,10 +62,10 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 

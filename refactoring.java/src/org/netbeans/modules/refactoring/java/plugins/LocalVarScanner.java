@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePathScanner;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 
 /**
