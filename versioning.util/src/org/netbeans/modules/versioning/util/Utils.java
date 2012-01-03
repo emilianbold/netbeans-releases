@@ -96,6 +96,7 @@ import org.openide.awt.AcceleratorBinding;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -799,9 +800,15 @@ public final class Utils {
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
-                OpenCookie oc = dao.getCookie(OpenCookie.class);
+                final OpenCookie oc = dao.getLookup().lookup(OpenCookie.class);
                 if (oc != null) {
-                    oc.open();
+                    Mutex.EVENT.readAccess(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            oc.open();
+                        }
+                    });
                 }
             } catch (DataObjectNotFoundException e) {
                 // nonexistent DO, do nothing

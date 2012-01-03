@@ -125,7 +125,7 @@ public class RepositoryRevision {
         Search s = currentSearch;
         if (s == null && !eventsInitialized) {
             currentSearch = new Search();
-            currentSearch.start(Mercurial.getInstance().getParallelRequestProcessor());
+            currentSearch.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot));
             return true;
         }
         return false;

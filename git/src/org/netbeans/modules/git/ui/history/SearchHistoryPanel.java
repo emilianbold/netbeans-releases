@@ -292,7 +292,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         setResults(null, null, true, -1);
         GitModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
         currentSearch = new SearchExecutor(this);
-        currentSearch.start(Git.getInstance().getRequestProcessor(), repository, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress", repository)); //NOI18N
+        currentSearch.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress", repository)); //NOI18N
     }
     
     void cancelBackgroundTasks () {
@@ -356,7 +356,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/git/ui/history/Bundle"); // NOI18N
         bSearch.setToolTipText(bundle.getString("TT_Search")); // NOI18N
 
-        searchCriteriaPanel.setPreferredSize(new java.awt.Dimension(10, 6));
         searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
 
         jToolBar1.setFloatable(false);
@@ -438,11 +437,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(expandCriteriaButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 10, Short.MAX_VALUE)
+                .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(bSearch)
                 .addGap(9, 9, 9))
@@ -549,7 +548,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             count += showingResults;
         }
         currentAdditionalSearch = new Search(count);
-        currentAdditionalSearch.start(Git.getInstance().getRequestProcessor(), repository,
+        currentAdditionalSearch.start(Git.getInstance().getRequestProcessor(repository), repository,
                 NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SearchHistoryPanel.GettingMoreRevisions")); //NOI18N
     }
 

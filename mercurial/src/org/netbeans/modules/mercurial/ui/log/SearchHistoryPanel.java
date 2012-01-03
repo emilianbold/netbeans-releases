@@ -562,12 +562,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(expandCriteriaButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
+                .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(bSearch)
                 .addContainerGap())
         );
@@ -648,8 +648,9 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             count += showingResults;
         }
         currentAdditionalSearch = new Search(count);
-        currentAdditionalSearch.start(Mercurial.getInstance().getParallelRequestProcessor(), 
-                Mercurial.getInstance().getRepositoryRoot(roots[0]), 
+        File repoRoot = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        currentAdditionalSearch.start(Mercurial.getInstance().getRequestProcessor(repoRoot), 
+                repoRoot, 
                 NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SearchHistoryPanel.GettingMoreRevisions")); //NOI18N
     }
 
