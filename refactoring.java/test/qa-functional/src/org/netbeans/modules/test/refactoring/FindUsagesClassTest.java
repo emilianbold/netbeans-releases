@@ -73,6 +73,28 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         super(name);
     }
     
+    public static Test suite() {
+         return NbModuleSuite.create(
+                 NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(
+                    "testFUClass",
+                    "testSearchInComments",
+                    "testFUDirectSubClass",
+                    "testFUSubClass",
+                    "testPersistence",
+                    "testCollapseTree",
+                    "testShowLogical",
+                    "testNext",
+                    "testPrev",
+                    "testOpenOnSelecting",
+                    "testCancel",
+                    "testTabNamesClass"
+                    
+                 )
+                 .enableModules(".*")
+                 .clusters(".*")
+        );
+     }
+    
     public void testFUClass() {
         findUsages("fu","FUClass", 12, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
     }
@@ -259,8 +281,5 @@ public class FindUsagesClassTest extends FindUsagesTestCase{
         
     }
     
-    public static Test suite() {
-      return NbModuleSuite.create(
-              NbModuleSuite.createConfiguration(FindUsagesClassTest.class).enableModules(".*").clusters(".*"));
-   }
+    
 }

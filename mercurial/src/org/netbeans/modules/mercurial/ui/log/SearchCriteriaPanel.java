@@ -106,7 +106,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_IncomingFrom"));
         tfFrom.setEnabled(false);
-        tfLimit.setEnabled(false);
     }
     
     void setForOut() {
@@ -120,7 +119,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         
         tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_OutFrom"));
         tfFrom.setEnabled(false);
-        tfLimit.setEnabled(false);
     }
     
     public String getCommitMessage() {
