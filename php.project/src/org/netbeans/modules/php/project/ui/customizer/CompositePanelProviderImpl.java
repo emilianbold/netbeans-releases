@@ -50,6 +50,7 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
+import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -227,7 +228,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
         final PhpModule phpModule = project.getPhpModule();
         int i = 0;
-        for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
+        for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
             PhpModuleCustomizerExtender extender = frameworkProvider.createPhpModuleCustomizerExtender(phpModule);
             if (extender != null) {
                 String categoryName = extender.getDisplayName();
