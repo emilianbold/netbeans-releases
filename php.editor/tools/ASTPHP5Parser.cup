@@ -275,6 +275,7 @@ non terminal List echo_expr_list;
 non terminal List for_expr;
 non terminal List non_empty_for_expr;
 non terminal Expression expr_without_variable;
+non terminal Expression expr_without_variable_and_class_instance;
 non terminal VariableBase function_call;
 non terminal Expression exit_expr;
 non terminal List ctor_arguments;
@@ -285,6 +286,7 @@ non terminal List static_array_pair_list;
 non terminal possible_comma;
 non terminal List non_empty_static_array_pair_list;
 non terminal Expression expr;
+non terminal Expression expr_without_class_instance;
 non terminal Variable reference_variable;
 non terminal Variable variable_class_name;
 non terminal Variable compound_variable;
@@ -2023,6 +2025,19 @@ non_empty_for_expr:exprList T_COMMA expr:expr
 ;
 
 expr_without_variable ::=
+expr_without_variable_and_class_instance:ex
+{:
+    RESULT = ex;
+:}
+
+| T_NEW:start class_name_reference:className ctor_arguments:ctor
+{:
+	ClassInstanceCreation classInstanceCreation = new ClassInstanceCreation(startleft, ctorright, /*parser.ast,*/ className, ctor);
+	RESULT = classInstanceCreation;
+:}
+;
+
+expr_without_variable_and_class_instance ::=
 T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close T_EQUAL expr:expr
 {:
 	ListVariable vars = new ListVariable(startleft, closeright, /*parser.ast,*/ varList);
@@ -2046,12 +2061,6 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	Reference reference = new Reference(reftokenleft, ctorright, /*parser.ast,*/ classInstanceCreation);
 	Assignment assignment = new Assignment(varleft, ctorright, /*parser.ast,*/ var, Assignment.Type.EQUAL, reference);
 	RESULT = assignment;
-:}
-
-| T_NEW:start class_name_reference:className ctor_arguments:ctor
-{:
-	ClassInstanceCreation classInstanceCreation = new ClassInstanceCreation(startleft, ctorright, /*parser.ast,*/ className, ctor);
-	RESULT = classInstanceCreation;
 :}
 
 | T_CLONE:start expr:expr
@@ -2280,10 +2289,10 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = new InstanceOfExpression(exprleft, classNameright, /*parser.ast,*/ expr , className);
 :}
 
-| T_OPEN_PARENTHESE:start expr:expr T_CLOSE_PARENTHESE:end
+| T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
 {:
-	ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, /*parser.ast,*/ expr);
-	RESULT = parenthesisExpression;
+    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, /*parser.ast,*/ expr);
+    RESULT = parenthesisExpression;
 :}
 
 | expr:condition T_QUESTION_MARK expr:ifTrue T_NEKUDOTAIM expr:ifFalse
@@ -2868,6 +2877,14 @@ non_empty_static_array_pair_list:list T_COMMA static_scalar:key T_DOUBLE_ARROW s
 :}
 ;
 
+expr_without_class_instance ::=
+r_variable:var
+{: RESULT = var; :}
+
+| expr_without_variable_and_class_instance:ewv
+{: RESULT = ewv; :}
+;
+
 expr ::=
 r_variable:var
 {: RESULT = var; :}
@@ -3014,6 +3031,12 @@ base_variable ::=
 reference_variable:var
 {:
 	RESULT = var;
+:}
+
+| T_OPEN_PARENTHESE:start T_NEW:n class_name_reference:className ctor_arguments:ctor T_CLOSE_PARENTHESE:end
+{:
+    ClassInstanceCreation classInstanceCreation = new ClassInstanceCreation(nleft, ctorright, className, ctor);
+    RESULT = new AnonymousObjectVariable(startleft, endright, classInstanceCreation);
 :}
 
 | simple_indirect_reference:ref_count reference_variable:var

@@ -537,4 +537,10 @@ public class DefaultVisitor implements Visitor {
     public void visit(UseTraitStatementPart useTraitStatementPart) {
         scan(useTraitStatementPart.getName());
     }
+
+    @Override
+    public void visit(AnonymousObjectVariable node) {
+        scan(node.getName());
+    }
+
 }

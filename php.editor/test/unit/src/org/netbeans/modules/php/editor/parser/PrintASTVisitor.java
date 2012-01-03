@@ -882,4 +882,11 @@ public class PrintASTVisitor implements Visitor {
         printNode.addChild("Name", useTraitStatementPart.getName());
         printNode.print(this);
     }
+
+    @Override
+    public void visit(AnonymousObjectVariable node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "AnonymousObjectVariable");
+        printNode.addChild(node.getName());
+        printNode.print(this);
+    }
 }

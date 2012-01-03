@@ -18698,7 +18698,7 @@
                                                     <Variable start='26531' end='26536' isDollared='true'>
                                                         <Identifier start='26532' end='26536' name='node'/>
                                                     </Variable>
-                                                    <ParenthesisExpression start='26539' end='26630'>
+                                                    <AnonymousObjectVariable start='26539' end='26630'>
                                                         <ClassInstanceCreation start='26541' end='26628'>
                                                             <ClassName start='26545' end='26569'>
                                                                 <NamespaceName start='26545' end='26569' isCurrent='false' isGlobal='false'>
@@ -18720,7 +18720,7 @@
                                                                 </ClassInstanceCreation>
                                                             </Parameters>
                                                         </ClassInstanceCreation>
-                                                    </ParenthesisExpression>
+                                                    </AnonymousObjectVariable>
                                                 </Assignment>
                                             </ExpressionStatement>
                                             <ExpressionStatement start='26644' end='26692'>

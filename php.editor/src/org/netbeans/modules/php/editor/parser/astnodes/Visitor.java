@@ -283,4 +283,6 @@ public interface Visitor {
     ////public void endVisit(WhileStatement whileStatement);
     public void visit(ASTNode node);
     ////public void endVisit(ASTNode node);
+
+    public void visit(AnonymousObjectVariable node);
 }

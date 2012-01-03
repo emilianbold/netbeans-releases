@@ -47,6 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
@@ -541,6 +542,11 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
 
     @Override
     public void visit(UseTraitStatementPart node) {
+        path.addFirst(node);super.visit(node);path.removeFirst();
+    }
+
+    @Override
+    public void visit(AnonymousObjectVariable node) {
         path.addFirst(node);super.visit(node);path.removeFirst();
     }
 
