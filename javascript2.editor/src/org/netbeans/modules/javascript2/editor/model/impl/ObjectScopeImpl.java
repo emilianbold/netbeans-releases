@@ -62,7 +62,7 @@ public class ObjectScopeImpl extends ScopeImpl implements ObjectScope {
     
     public ObjectScopeImpl(Scope inScope, ObjectNode node, List<Identifier> fqName) {
         super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), 
-                "object", 
+                fqName.get(fqName.size() - 1).getName(), 
                 new OffsetRange(node.getStart(), node.getFinish()),
                 // TODO bug in parser. The end position is not returned correctly now
 //                Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken())), 

@@ -176,9 +176,9 @@ public class ModelTest extends JsTestBase {
         assertEquals(true, variable.isImplicit());
         
         ModelElement element = ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "Address"));
-        FunctionScope object = (FunctionScope)element;
-        assertEquals("Address", object.getName());
-        variables = object.getDeclaredVariables();
+        FunctionScope addressObject = (FunctionScope)element;
+        assertEquals("Address", addressObject.getName());
+        variables = addressObject.getDeclaredVariables();
         assertEquals(2, variables.size());
         
         variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "city"));
@@ -192,7 +192,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(false, variable.isImplicit());
         
         // testing fields
-        Collection<? extends Field> fields = object.getFields();
+        Collection<? extends Field> fields = addressObject.getFields();
         assertEquals(2, fields.size());
         
         Field field = ModelUtils.getFirst(ModelUtils.getFirst(fields, "street"));
@@ -200,6 +200,12 @@ public class ModelTest extends JsTestBase {
         
         field = ModelUtils.getFirst(ModelUtils.getFirst(fields, "id"));
         assertEquals("id", field.getDeclaration().getName());
+        
+        element = ModelUtils.getFirst(ModelUtils.getFirst(fScope.getLogicalElements(), "MyApp"));
+        ObjectScope myApp = (ObjectScope) element;
+        assertEquals("MyApp", myApp.getFQDeclarationName().get(0).getName());
+        
+        
     }
     
 }
