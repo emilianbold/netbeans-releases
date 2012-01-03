@@ -648,8 +648,9 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             count += showingResults;
         }
         currentAdditionalSearch = new Search(count);
-        currentAdditionalSearch.start(Mercurial.getInstance().getParallelRequestProcessor(), 
-                Mercurial.getInstance().getRepositoryRoot(roots[0]), 
+        File repoRoot = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        currentAdditionalSearch.start(Mercurial.getInstance().getRequestProcessor(repoRoot), 
+                repoRoot, 
                 NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SearchHistoryPanel.GettingMoreRevisions")); //NOI18N
     }
 
