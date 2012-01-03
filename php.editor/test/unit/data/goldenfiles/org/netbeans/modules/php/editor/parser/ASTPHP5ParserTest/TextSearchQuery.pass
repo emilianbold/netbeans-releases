@@ -17456,9 +17456,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='20981' end='20984' isDollared='true'>
-                                <Identifier start='20982' end='20984' name='op'/>
-                            </Variable>
+                            <Scalar start='20987' end='20993' type='STRING' value='&apos;VOID&apos;'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='21081' end='21130' modifiers='public'>
@@ -17530,9 +17528,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='21634' end='21637' isDollared='true'>
-                                <Identifier start='21635' end='21637' name='op'/>
-                            </Variable>
+                            <Scalar start='21640' end='21646' type='STRING' value='"WORD"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='21657' end='21735' modifiers='public'>
@@ -17665,9 +17661,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='22251' end='22254' isDollared='true'>
-                                <Identifier start='22252' end='22254' name='op'/>
-                            </Variable>
+                            <Scalar start='22257' end='22262' type='STRING' value='"ALL"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='22268' end='22306' modifiers='public'>
@@ -17709,9 +17703,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='22430' end='22433' isDollared='true'>
-                                <Identifier start='22431' end='22433' name='op'/>
-                            </Variable>
+                            <Scalar start='22436' end='22449' type='STRING' value='"STARTS_WITH"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='22455' end='22531' modifiers='public'>
@@ -17753,9 +17745,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='22685' end='22688' isDollared='true'>
-                                <Identifier start='22686' end='22688' name='op'/>
-                            </Variable>
+                            <Scalar start='22691' end='22702' type='STRING' value='"ENDS_WITH"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='22708' end='22784' modifiers='public'>
@@ -17797,9 +17787,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='22934' end='22937' isDollared='true'>
-                                <Identifier start='22935' end='22937' name='op'/>
-                            </Variable>
+                            <Scalar start='22940' end='22947' type='STRING' value='"EXACT"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='22953' end='23029' modifiers='public'>
@@ -17841,9 +17829,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='23199' end='23202' isDollared='true'>
-                                <Identifier start='23200' end='23202' name='op'/>
-                            </Variable>
+                            <Scalar start='23205' end='23212' type='STRING' value='"REGEX"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='23249' end='23310' modifiers='public'>
@@ -17885,9 +17871,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='23462' end='23465' isDollared='true'>
-                                <Identifier start='23463' end='23465' name='op'/>
-                            </Variable>
+                            <Scalar start='23468' end='23480' type='STRING' value='"REGEX_GLOB"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='23486' end='23561' modifiers='public'>
@@ -17920,9 +17904,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='23684' end='23687' isDollared='true'>
-                                <Identifier start='23685' end='23687' name='op'/>
-                            </Variable>
+                            <Scalar start='23690' end='23702' type='STRING' value='"REGEX_PCRE"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='23708' end='23749' modifiers='public'>
@@ -17955,9 +17937,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='23835' end='23838' isDollared='true'>
-                                <Identifier start='23836' end='23838' name='op'/>
-                            </Variable>
+                            <Scalar start='23841' end='23852' type='STRING' value='"REGEX_SQL"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='23872' end='23963' modifiers='public'>
@@ -17999,9 +17979,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='24112' end='24115' isDollared='true'>
-                                <Identifier start='24113' end='24115' name='op'/>
-                            </Variable>
+                            <Scalar start='24118' end='24123' type='STRING' value='"NOT"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='24134' end='24220' modifiers='public'>
@@ -18582,9 +18560,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='25908' end='25911' isDollared='true'>
-                                <Identifier start='25909' end='25911' name='op'/>
-                            </Variable>
+                            <Scalar start='25914' end='25919' type='STRING' value='"AND"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='25930' end='26871' modifiers='public'>
@@ -18738,7 +18714,7 @@
                                                     <Variable start='26531' end='26536' isDollared='true'>
                                                         <Identifier start='26532' end='26536' name='node'/>
                                                     </Variable>
-                                                    <ParenthesisExpression start='26539' end='26630'>
+                                                    <AnonymousObjectVariable start='26539' end='26630'>
                                                         <ClassInstanceCreation start='26541' end='26628'>
                                                             <ClassName start='26545' end='26569'>
                                                                 <NamespaceName start='26545' end='26569' isCurrent='false' isGlobal='false'>
@@ -18760,7 +18736,7 @@
                                                                 </ClassInstanceCreation>
                                                             </Parameters>
                                                         </ClassInstanceCreation>
-                                                    </ParenthesisExpression>
+                                                    </AnonymousObjectVariable>
                                                 </Assignment>
                                             </ExpressionStatement>
                                             <ExpressionStatement start='26644' end='26692'>
@@ -18952,9 +18928,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <Variable start='27368' end='27371' isDollared='true'>
-                                <Identifier start='27369' end='27371' name='op'/>
-                            </Variable>
+                            <Scalar start='27374' end='27378' type='STRING' value='"OR"'/>
                         </InitialValues>
                     </FieldsDeclaration>
                     <MethodDeclaration start='27385' end='27978' modifiers='public'>
