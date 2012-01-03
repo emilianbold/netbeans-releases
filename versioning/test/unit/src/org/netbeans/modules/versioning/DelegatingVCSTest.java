@@ -189,7 +189,8 @@ public class DelegatingVCSTest extends NbTestCase {
         }
         
         for (Method method : VersioningSystem.class.getDeclaredMethods()) {
-            if(!overridenMethods.contains(method.getName()) && 
+            if(method.getModifiers() == Method.PUBLIC &&
+               !overridenMethods.contains(method.getName()) && 
                !ignoredMethods.contains(method.getName())) 
             {
                 fail(" method '" + method.getName() + "' should be overriden in " + DelegatingVCS.class.getName());
