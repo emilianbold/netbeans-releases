@@ -44,21 +44,11 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.ErrorType;
@@ -69,7 +59,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.ui.ScanDialog;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
@@ -82,7 +71,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import sun.awt.windows.ThemeReader;
 
 /**
  *
@@ -406,7 +394,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     Element selected = selectedElement.resolveElement(info);
                     TreePathHandle s = selectedElement;
                     if (selected == null || !(selected.getKind().isClass() || selected.getKind().isInterface())) {
-                        TreePath classTreePath = RefactoringUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
+                        TreePath classTreePath = JavaRefactoringUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
 
                         if (classTreePath == null) {
                             return null;
@@ -730,7 +718,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     TreePath resolved = selectedElement.resolve(info);
                     TreePath enclosing = resolved == null
                             ? null
-                            : RefactoringUtils.findEnclosingClass(info, resolved, true, true, true, true, false);
+                            : JavaRefactoringUtils.findEnclosingClass(info, resolved, true, true, true, true, false);
                     if (enclosing != null && enclosing != resolved) {
                         selectedElement = TreePathHandle.create(enclosing, info);
                     }

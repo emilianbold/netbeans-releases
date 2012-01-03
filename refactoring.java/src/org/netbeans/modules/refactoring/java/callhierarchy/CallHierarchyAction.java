@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * @author Jan Pokorsky
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.callhierarchy.CallHierarchyAction", category = "Window")
-@ActionRegistration(displayName = "#CTL_CallHierarchyAction")
+@ActionRegistration(displayName = "#CTL_CallHierarchyAction", lazy = false)
 @ActionReference(path = "Editors/text/x-java/Popup" , name = "CallHierarchyAction", position = 1420)
 public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
 

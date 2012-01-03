@@ -68,8 +68,8 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visibility;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.elements.ElementNode.Description;
 import org.netbeans.modules.refactoring.java.ui.elements.SortActionSupport.SortByNameAction;
 import org.netbeans.modules.refactoring.java.ui.elements.SortActionSupport.SortBySourceAction;
@@ -669,7 +669,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             Description rootDescription = null;
 
             final Map<Element, Long> pos = new HashMap<Element, Long>();
-            TreePath typeElementPath = RefactoringUtils.findEnclosingClass(info, selectedElements[0].resolve(info), true, true, true, true, false);
+            TreePath typeElementPath = JavaRefactoringUtils.findEnclosingClass(info, selectedElements[0].resolve(info), true, true, true, true, false);
 
             if (!canceled.get()) {
                 Trees trees = info.getTrees();
