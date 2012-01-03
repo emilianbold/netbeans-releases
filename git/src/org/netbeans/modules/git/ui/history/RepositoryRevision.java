@@ -150,7 +150,7 @@ public class RepositoryRevision {
         Search s = currentSearch;
         if (s == null && !eventsInitialized) {
             currentSearch = new Search();
-            currentSearch.start(Git.getInstance().getRequestProcessor(), repositoryRoot);
+            currentSearch.start(Git.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot);
             return true;
         }
         return false;
