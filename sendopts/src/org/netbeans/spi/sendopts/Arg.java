@@ -76,7 +76,7 @@ import java.lang.annotation.Target;
  * To define an option with {@link org.netbeans.spi.sendopts.Option#optionalArgument(char, java.lang.String) optional argument}
  * one can annotate string field and provide its default value:
  * <pre>
- * {@code @}{@link Arg}(shortName='o', longName="", defaultValue="no-arg-provided") public String optionArg;
+ * {@code @}{@link Arg}(shortName='o', longName="", defaultValue="used-but-no-argument-provided") public String optionArg;
  * </pre>
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 2.20
