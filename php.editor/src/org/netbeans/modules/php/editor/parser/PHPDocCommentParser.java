@@ -178,9 +178,14 @@ public class PHPDocCommentParser {
             docTypes = findTypes(description, start, originalComment, originalCommentStart);
             if (PHPDocVarTypeTags.contains(type)) {
                 String variable = getVaribleName(description);
+                PHPDocNode varibaleNode = null;
                 if (variable != null) {
                     int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, variable, start);
-                    PHPDocNode varibaleNode = new PHPDocNode(startOfVariable, startOfVariable + variable.length(), variable);
+                    varibaleNode = new PHPDocNode(startOfVariable, startOfVariable + variable.length(), variable);
+                } else if (type.equals(PHPDocTag.Type.PARAM)) {
+                    varibaleNode = new PHPDocNode(start, start, ""); //NOI18N
+                }
+                if (varibaleNode != null) {
                     return new PHPDocVarTypeTag(start, end, type, description, docTypes, varibaleNode);
                 }
                 return null;

@@ -48,8 +48,11 @@ import java.io.IOException;
 import org.netbeans.api.java.source.CompilationInfo;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -256,6 +259,20 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "package test; import test.Test.t|t; public class Test { }",
                        "CreateInnerClass:test.Test.tt:[static]:CLASS",
                        "package test; import test.Test.tt; public class Test { static class tt { public tt() { } } }");
+    }
+
+    public void testNPE206374() throws Exception {
+        FileObject workFO = FileUtil.toFileObject(getWorkDir());
+
+        assertNotNull(workFO);
+
+        FileObject aux = FileUtil.createData(workFO, "src/test/Aux.java");
+
+        TestUtilities.copyStringToFile(aux, "package test; public class Aux {}");
+        
+        performAnalysisTest("Test.java",
+                            "import test.Aux.t|t; public class Test { }",
+                            "CreateInnerClass:test.Aux.tt:[public, static]:CLASS");
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {

@@ -44,7 +44,6 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -55,12 +54,14 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -186,7 +187,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     if (method.getModifiers().contains(Modifier.NATIVE)) {
                         preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_RenameNative", method));
                     }
-                    if (RefactoringUtils.isFromLibrary(method, info.getClasspathInfo())) {
+                    ElementHandle<ExecutableElement> handle = ElementHandle.create(method);
+                    if (RefactoringUtils.isFromLibrary(handle, info.getClasspathInfo())) {
                         fatal = true;
                         break;
                     }
@@ -265,7 +267,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         
         if ((kind.isClass() || kind.isInterface()) && !((TypeElement) element).getNestingKind().isNested()) {
             TypeElement typeElement = (TypeElement) element;
-            FileObject primFile = SourceUtils.getFile(typeElement, info.getClasspathInfo());
+            ElementHandle<TypeElement> handle = ElementHandle.create(typeElement);
+            FileObject primFile = SourceUtils.getFile(handle, info.getClasspathInfo());
             FileObject folder = primFile.getParent();
             if (doCheckName) {
                 String oldfqn = typeElement.getQualifiedName().toString();
@@ -447,10 +450,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     private void addMethods(ExecutableElement e, Set set, CompilationInfo info, ClassIndex idx) {
-        set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+        ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+        set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
         ElementHandle<TypeElement> encl = ElementHandle.create(info.getElementUtilities().enclosingTypeElement(e));
         set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-        allMethods.add(ElementHandle.create(e));
+        allMethods.add(handle);
     }
     
     

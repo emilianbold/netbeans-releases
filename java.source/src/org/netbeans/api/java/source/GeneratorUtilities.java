@@ -772,7 +772,7 @@ public final class GeneratorUtilities {
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
-            AssignComments translator = new AssignComments(info, original, false, seq, unit);
+            AssignComments translator = new AssignComments(info, original, seq, unit);
             
             translator.scan(toMap, null);
 

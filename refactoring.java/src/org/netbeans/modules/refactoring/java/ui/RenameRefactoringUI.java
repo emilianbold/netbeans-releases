@@ -45,7 +45,6 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.EnumSet;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;

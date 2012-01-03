@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.EncapsulateFieldAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_EncapsulateFieldsAction")
+@ActionRegistration(displayName = "#LBL_EncapsulateFieldsAction", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "EncapsulateFieldAction", position = 1800)
 public final class EncapsulateFieldAction extends JavaRefactoringGlobalAction {
 
