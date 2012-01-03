@@ -45,6 +45,7 @@ import java.io.File;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.doctrine2.commands.Doctrine2CommandSupport;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -113,7 +114,7 @@ public final class Doctrine2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
-        return null;
+        return new Doctrine2CommandSupport(phpModule);
     }
 
     @Override
