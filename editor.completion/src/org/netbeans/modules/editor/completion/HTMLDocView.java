@@ -128,6 +128,11 @@ public class HTMLDocView extends JEditorPane {
         return positionOffset;
     }
 
+    @Override
+    public boolean isFocusable() {
+        return false;
+    }
+
     /** Sets the javadoc content as HTML document */
     public void setContent(final String content, final String reference) {
         SwingUtilities.invokeLater(new Runnable(){
