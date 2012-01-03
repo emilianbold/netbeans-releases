@@ -48,14 +48,13 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Hashtable;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
@@ -67,6 +66,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -232,26 +232,25 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
         return null;
     }
     
-    private void findJavaClass(final String fqn, javax.swing.text.Document doc){
+    private void findJavaClass(final String fqn, javax.swing.text.Document doc) {
         FileObject fo = NbEditorUtilities.getFileObject(doc);
-        if (fo != null){
+        if (fo != null) {
             WebModule wm = WebModule.getWebModule(fo);
-            if (wm != null){
+            if (wm != null) {
                 try {
                     final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
                     JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
-                    
                     js.runUserActionTask(new Task<CompilationController>() {
-                        
+
+                        @Override
                         public void run(CompilationController cc) throws Exception {
-                            Elements elements = cc.getElements();
-                            TypeElement element = elements.getTypeElement(fqn.trim());
+                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TypeElement element = cc.getElements().getTypeElement(fqn.trim());
                             if (element != null) {
-                                if (!UiUtils.open(cpi, element)){
-                                    String key = "goto_source_not_found"; // NOI18N
-                                    String msg = NbBundle.getBundle(StrutsConfigHyperlinkProvider.class).getString(key);
-                                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
-                                    
+                                if (!ElementOpen.open(cpi, element)) {
+                                    String key = "goto_source_not_found"; //NOI18N
+                                    String msg = NbBundle.getMessage(StrutsConfigHyperlinkProvider.class, key);
+                                    StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object []{fqn}));
                                 }
                             }
                         }
@@ -259,7 +258,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                 } catch (IOException ex) {
                     java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                             ex.getMessage(), ex);
-                };
+                }
             }
         }
     }
