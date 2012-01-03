@@ -169,4 +169,29 @@ public class ModelUtils {
         });
         return result;
     }
+    
+    public static ObjectScopeImpl findObjectWithName(final Scope scope, final String name) {
+        ObjectScope result = null;
+        Collection<? extends ObjectScope> objects = ModelUtils.filter(scope.getElements(), new ScopeImpl.ElementFilter() {
+
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                boolean accept = false;
+                if (element.getJSKind() == JsElement.Kind.OBJECT) {
+                    List<Identifier> fqName = ((ObjectScope) element).getFQDeclarationName();
+                    accept = fqName.get(0).getName().equals(name);
+                }
+                return accept;
+            }
+        });
+
+        if (!objects.isEmpty()) {
+            result = objects.iterator().next();
+        } else {
+            if (!(scope instanceof FileScope)) {
+                result = findObjectWithName((Scope) scope.getInElement(), name);
+            }
+        }
+        return (ObjectScopeImpl) result;
+    }
 }

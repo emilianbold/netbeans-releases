@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.ScopeImpl.ElementFilter;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -78,10 +79,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node visit(BinaryNode binaryNode, boolean onset) {
-        if (onset) {
-            System.out.println("Binary node " + binaryNode.tokenType());
-            System.out.println("    rhs: " + binaryNode.rhs().getClass().getName() );
-            
+        if (onset) {            
             if (binaryNode.tokenType() == TokenType.ASSIGN 
                     && !(binaryNode.rhs() instanceof ReferenceNode)
                     && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
@@ -103,8 +101,12 @@ public class ModelVisitor extends PathNodeVisitor {
                             ((FunctionScopeImpl)whereToAdd).addElement(new FieldImpl(whereToAdd, 
                                     new IdentifierImpl(fieldName, new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish()))));
                         }
+                    } else {
+                        // probably a property of an object
+                        System.out.println("test: " + getName(aNode));
+                        
                     }
-                    System.out.println("     name: " + ModelUtils.getNameWithoutPrototype(name));
+                    
                 } else {
                     IdentNode ident = (IdentNode)binaryNode.lhs();
                     final Identifier name = new IdentifierImpl(ident.getName(), new OffsetRange(ident.getStart(), ident.getFinish()));
@@ -220,6 +222,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         new OffsetRange(objectNode.getStart(), objectNode.getFinish())));
             }
             ScopeImpl scope = modelBuilder.getCurrentScope();
+            
             ObjectScopeImpl objectScope = ModelElementFactory.create(objectNode, name, modelBuilder);
 
             modelBuilder.setCurrentScope(scope = objectScope);
@@ -285,23 +288,26 @@ public class ModelVisitor extends PathNodeVisitor {
         List<Identifier> name = new ArrayList();
         Node lhs = binaryNode.lhs();
         if (lhs instanceof AccessNode) {
-
-            AccessNode aNode = (AccessNode) lhs;
-            name.add(new IdentifierImpl(aNode.getProperty().getName() ,
+            name = getName((AccessNode)lhs);
+        }
+        return name;
+    }
+    
+    private List<Identifier> getName(AccessNode aNode) {
+        List<Identifier> name = new ArrayList();
+        name.add(new IdentifierImpl(aNode.getProperty().getName(),
+                new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
+        while (aNode.getBase() instanceof AccessNode) {
+            aNode = (AccessNode) aNode.getBase();
+            name.add(new IdentifierImpl(aNode.getProperty().getName(),
                     new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
-            while (aNode.getBase() instanceof AccessNode) {
-                aNode =(AccessNode)aNode.getBase();
-                name.add(new IdentifierImpl(aNode.getProperty().getName() ,
-                    new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
+        }
+        if (name.size() > 0 && aNode.getBase() instanceof IdentNode) {
+            IdentNode ident = (IdentNode) aNode.getBase();
+            if (!"this".equals(ident.getName())) {
+                name.add(new IdentifierImpl(ident.getName(),
+                        new OffsetRange(ident.getStart(), ident.getFinish())));
             }
-            if(name.size() > 0 && aNode.getBase() instanceof IdentNode) {
-                IdentNode ident = (IdentNode)aNode.getBase();
-                if (!"this".equals(ident.getName())) {
-                    name.add(new IdentifierImpl(ident.getName(), 
-                            new OffsetRange(ident.getStart(), ident.getFinish())));
-                }
-            }
-
         }
         Collections.reverse(name);
         return name;
@@ -340,4 +346,5 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return result;
     }
+    
 }

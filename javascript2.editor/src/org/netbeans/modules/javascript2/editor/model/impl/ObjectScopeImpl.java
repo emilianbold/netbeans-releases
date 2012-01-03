@@ -73,7 +73,7 @@ public class ObjectScopeImpl extends ScopeImpl implements ObjectScope {
     }
     
     public ObjectScopeImpl(Scope inScope, List<Identifier> fqName, OffsetRange range) {
-        super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), "object", range,
+        super(inScope, JsElement.Kind.OBJECT, inScope.getFileObject(), fqName.get(fqName.size() - 1).getName(), range,
                 EnumSet.of(Modifier.PUBLIC));
         ((ScopeImpl)inScope).addElement(this);
         this.isLogical = true;

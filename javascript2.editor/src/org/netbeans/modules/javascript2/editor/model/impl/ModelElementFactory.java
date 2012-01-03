@@ -43,12 +43,11 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.ObjectNode;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.javascript2.editor.model.FileScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.Scope;
+import org.netbeans.modules.javascript2.editor.model.*;
 
 
 /**
@@ -98,10 +97,32 @@ public final class ModelElementFactory {
     
     static ObjectScopeImpl create(final ObjectNode object, List<Identifier> fqName, final ModelBuilder context) {
         final Scope currentScope = context.getCurrentScope();
-        ObjectScopeImpl result = new ObjectScopeImpl(currentScope, object, fqName);
-        if (currentScope instanceof FileScope) {
-            ((FileScopeImpl)currentScope).addObject(result);
+        ObjectScopeImpl result;
+        if (fqName.size() == 1) {
+            result = new ObjectScopeImpl(currentScope, object, fqName);
+            if (currentScope instanceof FileScope) {
+               ((FileScopeImpl)currentScope).addObject(result);
+            }
+        } else {
+            result = ModelUtils.findObjectWithName(currentScope, fqName.get(0).getName());
+            List<Identifier> fqNameOfCreated = new ArrayList<Identifier>(fqName.size());
+            fqNameOfCreated.add(fqName.get(0));
+            if (result == null) {
+                FileScope fScope = ModelUtils.getFileScope(currentScope); 
+                result = new ObjectScopeImpl(fScope, fqNameOfCreated,fqNameOfCreated.get(0).getOffsetRange());
+                ((FileScopeImpl)fScope).addObject(result);
+            }
+            for(int i = 1; i < fqName.size(); i++) {
+                ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(result.getElements(), fqName.get(i).getName()));
+                fqNameOfCreated.add(fqName.get(i));
+                if (me == null) {
+                    result = new ObjectScopeImpl(result, fqNameOfCreated, fqName.get(i).getOffsetRange()); 
+                } else {
+                    result = (ObjectScopeImpl)me;
+                }
+            }
         }
+        
         return result;
     }
 }
