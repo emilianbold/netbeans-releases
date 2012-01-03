@@ -292,7 +292,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         setResults(null, null, true, -1);
         GitModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
         currentSearch = new SearchExecutor(this);
-        currentSearch.start(Git.getInstance().getRequestProcessor(), repository, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress", repository)); //NOI18N
+        currentSearch.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress", repository)); //NOI18N
     }
     
     void cancelBackgroundTasks () {
@@ -549,7 +549,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             count += showingResults;
         }
         currentAdditionalSearch = new Search(count);
-        currentAdditionalSearch.start(Git.getInstance().getRequestProcessor(), repository,
+        currentAdditionalSearch.start(Git.getInstance().getRequestProcessor(repository), repository,
                 NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SearchHistoryPanel.GettingMoreRevisions")); //NOI18N
     }
 
