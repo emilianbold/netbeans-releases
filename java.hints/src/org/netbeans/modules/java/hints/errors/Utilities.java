@@ -77,6 +77,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -832,6 +833,10 @@ public class Utilities {
                 return simpleName(((ArrayTypeTree)t).getType());
             }
 
+            if (t.getKind() == Kind.PRIMITIVE_TYPE) {
+                return ((PrimitiveTypeTree) t).getPrimitiveTypeKind().name().toLowerCase();
+            }
+            
             throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N
         }
     }

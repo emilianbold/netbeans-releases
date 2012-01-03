@@ -128,10 +128,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-time">
   <p>
-   Currently NetBeans offer a friend API in form of <code>CLIHandler</code>s.
-   We can live with it, but if the command line options cooperation between
-   modules is going to grow, it would be desirable to have more stable API. 
-   So let's target this for inclusion in in promotion G (4.1 + 2 releases).
+   Delivered for NetBeans 5.0.
   </p>
  </answer>
 
@@ -163,12 +160,30 @@ made subject to such option by the copyright holder.
        The correct way to achieve this is to call 
         <code><a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html">CommandLine</a>.getDefault().process(args)</code>.
    </usecase>
+   <usecase id="cli-own-parse" name="Parse the Command Line with Own Options" >
+       Since version 2.20 one can define own classes with fields and annotate
+       them with <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">@Arg</a>
+       annotation. Those classes can then be passed into a 
+       <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create(java.lang.Class...)">
+       factory method
+       </a>
+       that creates new <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create(java.lang.Class...)">command line</a>.
+       One can then process the arguments as many times as needed via the
+        <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#process(java.lang.String...)">process</a>
+        method.
+   </usecase>
    <usecase id="cli-types-of-options" name="Short and Long options with or without an argument" >
        The standard <code>getopts</code> supports short form of options - e.g. a dash
        followed with one letter - or long form using two dashes followed with a word. 
        Moreover the long form is optimized for abbrevations. If there are no 
        conflicts between multiple options, then one can only use double dash followed
        with a prefix of a long option.
+       <p></p>
+       When using the <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">declarative annotation style</a>
+       one can always specify 
+       <code><a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">@Arg</a>(longName="text", shortName='t')</code>.
+       The <code>longName</code> attribute is required, but if there is supposed to be
+       no long version of the argument, it can be set to empty string.
        <p></p>
        One can create an <a href="@TOP@org/netbeans/spi/sendopts/Option.html">Option</a>
        by calling any of its factory methods 
@@ -182,6 +197,10 @@ made subject to such option by the copyright holder.
        a required one and those with optional one. Each one can be created
        by appropriate factory method in the 
        <a href="@TOP@org/netbeans/spi/sendopts/Option.html">Option</a> class.
+       <p></p>
+       When using the <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">declarative annotation style</a>
+       one needs to annotate a field of type <code>boolean</code> to create
+       an option without an argument.
    </usecase>
    <usecase id="cli-double-dash" name="Support for --" >
        The getopts compliant command line parsers support <q>--</q>. If 
@@ -194,9 +213,10 @@ made subject to such option by the copyright holder.
        have to be able to process the command line successfully. Any module
        which wishes to provide its own options can register its 
        <a href="@TOP@org/netbeans/spi/sendopts/OptionProcessor.html">OptionProcessor</a>
-       into a file <code>META-INF/services/org.netbeans.spi.sendopts.OptionProcessor</code> 
-       in its 
-       JAR file.
+       with <a href="@org-openide-util-lookup@/org/openide/util/lookup/ServiceProvider.html">@ServiceProvider</a>
+       annotation. Alternatively the module can use the
+       <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">@Arg</a> annotation
+       of its fields and it will be registered as well.
    </usecase>
    <usecase id="cli-extensible-options-set" name="Extensible Options Set" >
        <p>
@@ -340,7 +360,12 @@ made subject to such option by the copyright holder.
        about what it is useful for using
        <a href="@TOP@/org/netbeans/spi/sendopts/Option.html#shortDescription(org.netbeans.spi.sendopts.Option,%20java.lang.String,%20java.lang.String)">
            Option.shortDescription
-       </a> method. To get the description for all available options one 
+       </a> method. When using the 
+       <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">@Arg</a> style, there
+       is an additional <a href="@TOP@/org/netbeans/spi/sendopts/Description.html">@Description</a>
+       annotation which can be used to declaratively associate a localized display name
+       and short description with the option.
+       To get such descriptions for all available options one 
        can use 
        <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#usage(java.io.PrintWriter)">
         CommandLine.getDefault().usage(java.io.PrintWriter)</a>.
@@ -369,6 +394,11 @@ made subject to such option by the copyright holder.
            Option.additionalArgument
        </a>
        </code> factory method.
+       <p></p>
+       When using the 
+       <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">declarative annotation style</a>
+       one may annotate a field of type <code>String[]</code> which then means
+       this field should be filled with all additional arguments.
    </usecase>
    <usecase id="cli-io" name="Handling Input and Output" >
        Handler's shall not use the input and output streams directly for their execution, they should 
@@ -396,15 +426,20 @@ made subject to such option by the copyright holder.
        handler is around to handle them. One can create such option by 
        using <code>
        <a href="@TOP@org/netbeans/spi/sendopts/Option.html#defaultArguments()">Option.defaultArguments</a>
-       </code> factory method.
+       </code> factory method. With the
+       <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">declarative annotation style</a>
+       one can annotate a field of type <code>String[]</code> and specify that
+       it is supposed to be <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html#implicit()">implicit</a>.
    </usecase>
    <usecase id="cli-lazy-handler-initiliazation" name="Only those processor need to process the options are created" >
-       For purposes of usage in NetBeans, it is needed to non initialize those
+       For purposes of usage in NetBeans, it is needed to not-initialize those
        handlers that are not really needed to process certain command line. 
-       The infrastracture decides which of them are going to be needed and 
-       instantiates only those.
-       <!-- JST-PENDING --> Given the amount of providers in current NetBeans IDE, this
-       is not supported yet.
+       The infrastructure decides which of them are going to be needed and 
+       instantiates only those. This is supported only when using the
+       <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">declarative annotation style</a> -
+       information about these options is recorded in declarative way and the
+       system can decide without loading the provider classes whether they are
+       present on the command line or not.
    </usecase>
    <usecase id="cli-complex-options" name="Complex Option Relations" >
        Certain CLI processors may need more than one option before they 
@@ -438,6 +473,10 @@ When the two options are registered and command line like
 <q>--tune 91.9 --stream radio1.mp3</q> is being processed, the 
 <code>PP</code>'s <code>process</code> method is going to get 
 called with values <q>91.9</q> and <q>radio1.mp3</q>.
+<p></p>
+This kind of grouping is not currently supported with the 
+<a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">declarative annotation style</a>
+registration.
    </usecase>
    
    

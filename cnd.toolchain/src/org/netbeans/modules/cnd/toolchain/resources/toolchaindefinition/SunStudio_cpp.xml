@@ -55,6 +55,9 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__FILE__" hide="true"/>
             <macro stringvalue="__DATE__" hide="true"/>
             <macro stringvalue="__TIME__" hide="true"/>
+            <macro stringvalue="_OPENMP" flags="-xopenmp"/>
+            <macro stringvalue="_OPENMP" flags="-xopenmp=parallel"/>
+            <macro stringvalue="_OPENMP" flags="-xopenmp=noopt"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>

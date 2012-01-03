@@ -480,7 +480,7 @@ public class Outline extends ETable {
                     for (int i = 0; i < noRows; i++) {
                         if (acceptByQuickFilter(model, i)) {
                             TreePath tp = getLayoutCache().getPathForRow(i);
-                            RowMapping rm = new RowMapping(i, model);
+                            RowMapping rm = new RowMapping(i, model, this);
                             tsm.put(tp, rm);
                             rows.add(rm);
                         }

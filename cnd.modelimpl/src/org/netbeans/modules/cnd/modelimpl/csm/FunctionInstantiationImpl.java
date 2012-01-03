@@ -146,6 +146,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         return l;
     }
     
+    @Override
     public Collection<CsmParameter>  getParameters() {
         return _getParameters();
     }

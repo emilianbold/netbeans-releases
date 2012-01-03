@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.problems;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -57,8 +56,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
@@ -78,23 +75,21 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbArtifactFixer;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.actions.OpenPOMAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import static org.netbeans.modules.maven.problems.Bundle.*;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -382,7 +377,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                             ERR_SystemScope(),
                             MSG_SystemScope(),
-                            new OpenPomAction(nbproject));
+                            OpenPOMAction.instance().createContextAwareInstance(Lookups.fixed(nbproject)));
                     addReport(report);
                 } else {
                     if (file == null) {
@@ -440,42 +435,6 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
 
     
-    static class OpenPomAction extends AbstractAction {
-        
-        private NbMavenProjectImpl project;
-        private String filepath;
-        
-        @Messages("ACT_OpenPom=Open pom.xml")
-        OpenPomAction(NbMavenProjectImpl proj) {
-            putValue(Action.NAME, ACT_OpenPom());
-            project = proj;
-        }
-        
-        OpenPomAction(NbMavenProjectImpl project, String filePath) {
-            this(project);
-            filepath = filePath;
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            FileObject fo = null;
-            if (filepath != null) {
-                fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filepath)));
-            } else {
-                fo = FileUtil.toFileObject(project.getPOMFile());
-            }
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getCookie(EditCookie.class);
-                    edit.edit();
-                } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-    }
-
     @Messages({
         "TXT_Artifact_Resolution_problem=Artifact Resolution problem",
         "TXT_Artifact_Not_Found=Artifact Not Found",

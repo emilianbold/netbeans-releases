@@ -546,8 +546,10 @@ public final class CreateElement implements ErrorRule<Void> {
 
         if (outterMostSource != null) {
             sourcePackage = outterMostSource.getEnclosingElement();
-        } else {
+        } else if (info.getCompilationUnit().getPackageName() != null) {
             sourcePackage = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), info.getCompilationUnit().getPackageName()));
+        } else {
+            sourcePackage = info.getElements().getPackageElement("");
         }
 
         Element targetPackage = outterMostTarget.getEnclosingElement();

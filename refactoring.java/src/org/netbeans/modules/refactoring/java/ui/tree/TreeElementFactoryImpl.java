@@ -49,7 +49,8 @@ import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.spi.ui.*;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
 import org.openide.filesystems.FileObject;
 
 /**

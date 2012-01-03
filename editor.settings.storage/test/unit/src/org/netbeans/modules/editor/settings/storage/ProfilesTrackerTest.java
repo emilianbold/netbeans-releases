@@ -113,6 +113,9 @@ public class ProfilesTrackerTest extends NbTestCase {
         // which is needed by Nb EntityCatalog (org.netbeans.core).
         // Also see the test dependencies in project.xml
         Main.initializeURLFactory();
+
+        ProfilesTracker.synchronous = true;
+        MimeTypesTracker.synchronous = true;
     }
     
     protected @Override void tearDown() {

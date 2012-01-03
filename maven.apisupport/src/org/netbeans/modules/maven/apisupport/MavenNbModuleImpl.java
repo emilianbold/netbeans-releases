@@ -534,7 +534,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             NbMavenProject mp2 = p.getLookup().lookup(NbMavenProject.class);
             if (mp2 != null && NbMavenProject.TYPE_NBM_APPLICATION.equals(mp2.getPackagingType())) {
-                for (Dependency dep : mp2.getMavenProject().getDependencies()) {
+                for (Artifact dep : mp2.getMavenProject().getArtifacts()) {
                     if (dep.getGroupId().equals(groupId) && dep.getArtifactId().equals(artifactId)) {
                         if (candidate != null) {
                             // multiple candidates

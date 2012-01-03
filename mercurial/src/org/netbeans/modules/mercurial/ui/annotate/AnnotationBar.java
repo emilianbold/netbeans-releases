@@ -760,7 +760,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         String key = getPreviousRevisionKey(file.getAbsolutePath(), revision);
         File originalFile = getOriginalFiles().get(key);
         if (originalFile == null) {
-            HgLogMessage[] msg = HgCommand.getLogMessages(repositoryRoot, Collections.singleton(file), revision, revision, true, true, 1, 
+            HgLogMessage[] msg = HgCommand.getLogMessages(repositoryRoot, Collections.singleton(file), revision, revision, true, true, false, 1, 
                     Collections.<String>emptyList(), OutputLogger.getLogger(null), true);
             if (msg.length > 0) {
                 originalFile = msg[0].getOriginalFile(repositoryRoot, file);

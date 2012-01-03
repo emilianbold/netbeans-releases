@@ -59,6 +59,7 @@ public abstract class BaseErrorMaker implements ErrorMaker  {
     private BaseDocument document;
     private CsmFile csmFile;
     
+    @Override
     public void init(BaseDocument document, CsmFile csmFile) {
         this.document = document;
         this.csmFile = csmFile;
@@ -72,6 +73,7 @@ public abstract class BaseErrorMaker implements ErrorMaker  {
         return csmFile;
     }
 
+    @Override
     public void undone() {
     }
 
@@ -79,6 +81,7 @@ public abstract class BaseErrorMaker implements ErrorMaker  {
         final BaseDocument doc = getDocument();
         final BadLocationException ex[] = new BadLocationException[] { null };
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
                 try {
                     doc.remove(offs, len);
@@ -96,6 +99,7 @@ public abstract class BaseErrorMaker implements ErrorMaker  {
         final BaseDocument doc = getDocument();
         final BadLocationException ex[] = new BadLocationException[] { null };
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
                 try {
                     doc.insertString(offset, text, null);

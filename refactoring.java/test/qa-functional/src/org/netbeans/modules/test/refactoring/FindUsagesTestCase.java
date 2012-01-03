@@ -55,6 +55,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.modules.test.refactoring.actions.FindUsagesAction;
+import org.netbeans.modules.test.refactoring.actions.FindUsagesMenuAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
 import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
 
@@ -77,8 +78,6 @@ public class FindUsagesTestCase extends RefactoringTestCase {
     public static final int FIND_USAGES_METHOD = 1 << 9;
     public static final int NOT_FIND_USAGES_METHOD = 1 << 10;
     public static final int NOT_SEARCH_FROM_BASECLASS = 1 << 11;
-    
-    
     private static boolean browseChild = true;
 
     public FindUsagesTestCase(String name) {
@@ -89,39 +88,61 @@ public class FindUsagesTestCase extends RefactoringTestCase {
     public String getProjectName() {
         return projectName;
     }
-        
-    protected void findUsages(String packName,String fileName, int row, int col, int modifiers) {
+
+    protected void findUsages(String packName, String fileName, int row, int col, int modifiers) {
         openSourceFile(packName, fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(row, col);
-        new FindUsagesAction().perform(editor);
+        new EventTool().waitNoEvent(500);
+        editor.select(row, col, col);
         new EventTool().waitNoEvent(1000);
+        new FindUsagesAction().perform(editor);
+        new EventTool().waitNoEvent(3000);
+        if(fileName.equals("FUClass")){
+            new EventTool().waitNoEvent(8000);
+        }
+        
         FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
+        if(fileName.equals("FUClass")){
+            new EventTool().waitNoEvent(8000);
+        }
         findUsagesClassOperator.getOpenInNewTab().setSelected(true);
-        if ((modifiers & SEARCH_IN_COMMENTS) != 0)
+        if ((modifiers & SEARCH_IN_COMMENTS) != 0) {
             findUsagesClassOperator.getSearchInComments().setSelected(true);
-        if ((modifiers & NOT_SEARCH_IN_COMMENTS) != 0)
+        }
+        if ((modifiers & NOT_SEARCH_IN_COMMENTS) != 0) {
             findUsagesClassOperator.getSearchInComments().setSelected(false);
-        if ((modifiers & FIND_USAGES) != 0)
+        }
+        if ((modifiers & FIND_USAGES) != 0) {
             findUsagesClassOperator.getFindUsages().setSelected(true);
-        if ((modifiers & FIND_USAGES_METHOD) != 0)
+        }
+        if ((modifiers & FIND_USAGES_METHOD) != 0) {
             findUsagesClassOperator.getFindMethodUsage().setSelected(true);
-        if ((modifiers & NOT_FIND_USAGES_METHOD) != 0)
+        }
+        if ((modifiers & NOT_FIND_USAGES_METHOD) != 0) {
             findUsagesClassOperator.getFindMethodUsage().setSelected(false);
-        if ((modifiers & FIND_ALL_SUBTYPES) != 0)
+        }
+        if ((modifiers & FIND_ALL_SUBTYPES) != 0) {
             findUsagesClassOperator.getFindAllSubtypes().setSelected(true);
-        if ((modifiers & FIND_DIRECT_SUBTYPES) != 0)
+        }
+        if ((modifiers & FIND_DIRECT_SUBTYPES) != 0) {
             findUsagesClassOperator.getFindDirectSubtypes().setSelected(true);
-        if ((modifiers & FIND_OVERRIDING) != 0)
+        }
+        if ((modifiers & FIND_OVERRIDING) != 0) {
             findUsagesClassOperator.getFindOverridding().setSelected(true);
-        if ((modifiers & SEARCH_FROM_BASECLASS) != 0)
+        }
+        if ((modifiers & SEARCH_FROM_BASECLASS) != 0) {
             findUsagesClassOperator.getFindFromBaseClass().setSelected(true);
-        if ((modifiers & NOT_SEARCH_FROM_BASECLASS) != 0)
+        }
+        if ((modifiers & NOT_SEARCH_FROM_BASECLASS) != 0) {
             findUsagesClassOperator.getFindFromBaseClass().setSelected(false);
-        if ((modifiers & SEARCH_IN_ALL_PROJ) != 0)
+        }
+        if ((modifiers & SEARCH_IN_ALL_PROJ) != 0) {
             findUsagesClassOperator.setScope(null);
-        if ((modifiers & SEARCH_ACTUAL_PROJ) != 0)
+        }
+        if ((modifiers & SEARCH_ACTUAL_PROJ) != 0) {
             findUsagesClassOperator.setScope(projectName);
+        }
 
         findUsagesClassOperator.getFind().pushNoBlock();
         new EventTool().waitNoEvent(2000);
@@ -133,25 +154,24 @@ public class FindUsagesTestCase extends RefactoringTestCase {
             browseChildren(model, root, 0);
         }
     }
-    
+
     protected void refMap(Map<String, List<String>> map) {
         String[] keys = map.keySet().toArray(new String[]{""});
         Arrays.sort(keys);
-        
+
         for (String key : keys) {
-            ref("File: "+key+"\n");
+            ref("File: " + key + "\n");
             List<String> list = map.get(key);
             for (String row : list) {
-                ref(row+"\n");
+                ref(row + "\n");
             }
-        }                
+        }
     }
 
     /**
      * @param browseChild the browseChild to set
-     */    
-    public static void setBrowseChild(boolean browseChild) {        
+     */
+    public static void setBrowseChild(boolean browseChild) {
         FindUsagesTestCase.browseChild = browseChild;
     }
-    
 }

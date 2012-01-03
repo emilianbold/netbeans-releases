@@ -116,44 +116,44 @@ abstract public class ManagedType implements IManagedType {
         ManyToMany[] mms = atrs.getManyToMany();
         if(mms != null){
             for(ManyToMany mm1:mms){
-                mappings.put(mm1.getName(), new Mapping(this, new JPAAttribute(mm1)));
+                mappings.put(mm1.getName(), new Mapping(this, new JPAAttribute(element, mm1)));
             }
         }
         ManyToOne[] mos = atrs.getManyToOne();
         if(mos != null){
             for(ManyToOne mo1:mos){
-                mappings.put(mo1.getName(), new Mapping(this, new JPAAttribute(mo1)));
+                mappings.put(mo1.getName(), new Mapping(this, new JPAAttribute(element, mo1)));
             }
         }
         OneToOne[] oos = atrs.getOneToOne();
         if(oos != null){
             for(OneToOne oo1:oos){
-                mappings.put(oo1.getName(), new Mapping(this, new JPAAttribute(oo1)));
+                mappings.put(oo1.getName(), new Mapping(this, new JPAAttribute(element, oo1)));
             }
         }
         OneToMany[] oms = atrs.getOneToMany();
         if(oms != null){
             for(OneToMany om1:oms){
-                mappings.put(om1.getName(), new Mapping(this, new JPAAttribute(om1)));
+                mappings.put(om1.getName(), new Mapping(this, new JPAAttribute(element, om1)));
             }
         }
         Basic[] bs = atrs.getBasic();
         if(bs != null){
             for(Basic b1:bs){
-                mappings.put(b1.getName(), new Mapping(this, new JPAAttribute(b1)));
+                mappings.put(b1.getName(), new Mapping(this, new JPAAttribute(element, b1)));
             }
         }
         Id[] ids = atrs.getId();
         if(ids != null){
             for(Id id1:ids){
-                mappings.put(id1.getName(), new Mapping(this, new JPAAttribute(id1)));
+                mappings.put(id1.getName(), new Mapping(this, new JPAAttribute(element, id1)));
             }
         }
         try {
             Embedded[] es = atrs.getEmbedded();
             if(es != null){
                 for(Embedded e1:es){
-                    mappings.put(e1.getName(), new Mapping(this, new JPAAttribute(e1)));
+                    mappings.put(e1.getName(), new Mapping(this, new JPAAttribute(element, e1)));
                 }
             }
         } catch (UnsupportedOperationException ex){
@@ -162,7 +162,7 @@ abstract public class ManagedType implements IManagedType {
         try {
             EmbeddedId eds = atrs.getEmbeddedId();
             if(eds != null){
-                mappings.put(eds.getName(), new Mapping(this, new JPAAttribute(eds)));
+                mappings.put(eds.getName(), new Mapping(this, new JPAAttribute(element, eds)));
             }
         } catch (UnsupportedOperationException ex){
             //TODO: implements embedded in attributes

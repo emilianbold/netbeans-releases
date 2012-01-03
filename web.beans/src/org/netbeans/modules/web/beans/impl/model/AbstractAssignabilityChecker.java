@@ -110,7 +110,8 @@ abstract class AbstractAssignabilityChecker  implements Checker {
     public boolean checkAssignability( ReferenceType variableType , 
             ReferenceType refType , Element originalElement ) 
     {
-        boolean isDeclaredType = variableType instanceof DeclaredType ;
+        boolean isDeclaredType = variableType instanceof DeclaredType && 
+            variableType.getKind()!=TypeKind.ERROR ;
         if ( !isDeclaredType ){
             return checkParameter(refType, variableType);
         }
@@ -119,7 +120,9 @@ abstract class AbstractAssignabilityChecker  implements Checker {
             return false;
         }
         
-        if ( !( refType instanceof DeclaredType ) ){
+        if ( !( refType instanceof DeclaredType ) || 
+                refType.getKind() == TypeKind.ERROR)
+        {
             return false;
         }
         DeclaredType type = (DeclaredType)refType;
@@ -209,6 +212,9 @@ abstract class AbstractAssignabilityChecker  implements Checker {
     
     protected boolean checkParameter( TypeMirror argType, TypeMirror varTypeArg )
     {
+        if ( argType == null || varTypeArg == null ){
+            return false;
+        }
         Types types = getImplementation().getHelper().getCompilationController().
             getTypes();
 

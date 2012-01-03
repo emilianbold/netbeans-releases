@@ -45,7 +45,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -55,6 +54,7 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -65,8 +65,9 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -95,13 +96,12 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     private static final int RIGHT_TOP = 3;
     private static final int RIGHT_BOTTOM = 4;
 
-    private static final Image lockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock.png");
-    private static final Image brokenLockImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/lock-broken.png");
-    private static final Image bulbImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/bulb.gif");
-    private static final Image bulbHighlightImg = ImageUtilities.loadImage("org/netbeans/modules/maven/graph/bulb-highlight.gif");
+    private static final @StaticResource String LOCK_ICON = "org/netbeans/modules/maven/graph/lock.png";
+    private static final @StaticResource String LOCK_BROKEN_ICON = "org/netbeans/modules/maven/graph/lock-broken.png";
+    private static final @StaticResource String BULB_ICON = "org/netbeans/modules/maven/graph/bulb.gif";
+    private static final @StaticResource String BULB_HIGHLIGHT_ICON = "org/netbeans/modules/maven/graph/bulb-highlight.gif";
 
     private ArtifactGraphNode node;
-    private String currentSearchTerm;
     private List<String> scopes;
     private boolean readable = false;
     private boolean enlargedFromHover = false;
@@ -139,11 +139,13 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
     }
 
-    void hightlightText(String searchTerm) {
-        this.currentSearchTerm = searchTerm;
-        doHightlightText(searchTerm);
-    }
-
+    @Messages({
+        "TIP_SingleConflict=Conflict with <b>{0}</b> version required by <b>{1}</b>",
+        "TIP_SingleWarning=Warning, older version <b>{0}</b> requested by <b>{1}</b>",
+        "TIP_MultipleConflict=Conflicts with:<table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>",
+        "TIP_MultipleWarning=Warning, older versions requested:<table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>",
+        "TIP_Artifact=<html><i>GroupId:</i><b> {0}</b><br><i>ArtifactId:</i><b> {1} </b><br><i>Version:</i><b> {2}</b><br><i>Scope:</i><b> {3}</b><br><i>Type:</i><b> {4}</b><br>{5}</html>"
+    })
     private void updateTooltip () {
         StringBuilder tooltip = new StringBuilder();
         int conflictCount = 0;
@@ -162,13 +164,11 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
         if (conflictCount == 1) {
             DependencyNode parent = firstConflict.getParent();
-            tooltip.append(NbBundle.getMessage(ArtifactWidget.class, 
-                    conflictType == ArtifactGraphNode.CONFLICT ? "TIP_SingleConflict" : "TIP_SingleWarning",
-                    firstConflict.getArtifact().getVersion(),
-                    parent != null ? parent.getArtifact().getArtifactId() : "???"));
+            String version = firstConflict.getArtifact().getVersion();
+            String requester = parent != null ? parent.getArtifact().getArtifactId() : "???";
+            tooltip.append(conflictType == ArtifactGraphNode.CONFLICT ? TIP_SingleConflict(version, requester) : TIP_SingleWarning(version, requester));
         } else if (conflictCount > 1) {
-            tooltip.append(NbBundle.getMessage(ArtifactWidget.class,
-                    conflictType == ArtifactGraphNode.CONFLICT ? "TIP_MultipleConflict" : "TIP_MultipleWarning"));
+            tooltip.append(conflictType == ArtifactGraphNode.CONFLICT ? TIP_MultipleConflict() : TIP_MultipleWarning());
             for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
                 if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
                     tooltip.append("<tr><td>");
@@ -188,14 +188,11 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         Artifact artifact = node.getArtifact().getArtifact();
-        tooltipText = NbBundle.getMessage(DependencyGraphScene.class,
-                "TIP_Artifact", new Object[]{artifact.getGroupId(),
-                    artifact.getArtifactId(), artifact.getVersion(),
-                    artifact.getScope(), artifact.getType(), tooltip.toString()});
+        tooltipText = TIP_Artifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), artifact.getScope(), artifact.getType(), tooltip.toString());
         setToolTipText(tooltipText);
     }
 
-    private void doHightlightText(String searchTerm) {
+    void highlightText(String searchTerm) {
         if (searchTerm != null && node.getArtifact().getArtifact().getArtifactId().contains(searchTerm)) {
             artifactW.setBackground(HIGHTLIGHT);
             artifactW.setOpaque(true);
@@ -275,6 +272,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         contentW.repaint();
     }
 
+    @Messages("ACT_FixVersionConflict=Fix Version Conflict...")
     private void initContent (DependencyGraphScene scene, Artifact artifact) {
         contentW = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
         contentW.setBorder(BorderFactory.createLineBorder(10));
@@ -294,7 +292,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         int mngState = node.getManagedState();
         if (mngState != ArtifactGraphNode.UNMANAGED) {
              lockW = new ImageWidget(scene,
-                    mngState == ArtifactGraphNode.MANAGED ? lockImg : brokenLockImg);
+                    mngState == ArtifactGraphNode.MANAGED ? ImageUtilities.loadImage(LOCK_ICON) : ImageUtilities.loadImage(LOCK_BROKEN_ICON));
         }
         versionDetW.addChild(versionW);
         if (lockW != null) {
@@ -305,9 +303,9 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         if (scene.isEditable() && DependencyGraphScene.isFixCandidate(node)) {
             Widget rootW = new Widget(scene);
             rootW.setLayout(LayoutFactory.createOverlayLayout());
-            fixHintW = new ImageWidget(scene, bulbImg);
+            fixHintW = new ImageWidget(scene, ImageUtilities.loadImage(BULB_ICON));
             fixHintW.setVisible(false);
-            fixHintW.setToolTipText(NbBundle.getMessage(ArtifactWidget.class, "ACT_FixVersionConflict"));
+            fixHintW.setToolTipText(ACT_FixVersionConflict());
             fixHintW.getActions().addAction(scene.hoverAction);
             fixHintW.getActions().addAction(ActionFactory.createSelectAction(this));
             Widget panelW = new Widget(scene);
@@ -478,9 +476,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     }
 
-    /*** ActionListener ***/
-
-    public void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         enlargedFromHover = true;
         updateContent();
     }
@@ -549,27 +545,27 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         return original;
     }
 
-    public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+    @Override public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
         return false;
     }
 
-    public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+    @Override public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
         return true;
     }
 
-    public void select(Widget widget, Point localLocation, boolean invertSelection) {
+    @Override public void select(Widget widget, Point localLocation, boolean invertSelection) {
         ((DependencyGraphScene)getScene()).invokeFixConflict(node);
     }
 
     void bulbHovered () {
         if (fixHintW != null) {
-            fixHintW.setImage(bulbHighlightImg);
+            fixHintW.setImage(ImageUtilities.loadImage(BULB_HIGHLIGHT_ICON));
         }
     }
 
     void bulbUnhovered () {
         if (fixHintW != null) {
-            fixHintW.setImage(bulbImg);
+            fixHintW.setImage(ImageUtilities.loadImage(BULB_ICON));
         }
     }
 

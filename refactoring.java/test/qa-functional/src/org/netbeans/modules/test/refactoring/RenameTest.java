@@ -174,13 +174,16 @@ public class RenameTest extends ModifyingRefactoring {
 
     private void performRename(String className,String pkgName, String newName, int row, int col) {
         openSourceFile(pkgName, className);
+        new EventTool().waitNoEvent(1000);
         EditorOperator editor = new EditorOperator(className);
         editor.setCaretPosition(row, col);
+        editor.select(row, col, col+1);
+        new EventTool().waitNoEvent(1000);
         new RenamePopupAction().perform(editor);
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         RenameOperator ro = new RenameOperator();
         ro.getNewName().typeText(newName);
         ro.getPreview().push();
         dumpRefactoringResults();
-    }    
+    }  
 }

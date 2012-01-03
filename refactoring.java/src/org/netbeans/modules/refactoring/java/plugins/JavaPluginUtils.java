@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -53,11 +53,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.WildcardType;
+import javax.lang.model.type.*;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;

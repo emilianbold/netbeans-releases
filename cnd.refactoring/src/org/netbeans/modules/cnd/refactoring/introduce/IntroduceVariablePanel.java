@@ -110,6 +110,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     private JLabel createErrorLabel() {
         ErrorLabel.Validator validator = new ErrorLabel.Validator() {
 
+            @Override
             public String validate(String text) {
                 if (null == text || text.length() == 0) {
                     return ""; // NOI18N
@@ -124,6 +125,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         final ErrorLabel label = new ErrorLabel(name.getDocument(), validator);
         label.addPropertyChangeListener(ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent e) {
                 btnOk.setEnabled(label.isInputTextValid());
             }

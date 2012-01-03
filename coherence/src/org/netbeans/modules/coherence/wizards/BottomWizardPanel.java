@@ -57,6 +57,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.server.CommonServerUIs;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.coherence.library.LibraryUtils;
 import org.netbeans.modules.coherence.project.CoherenceProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -222,7 +224,11 @@ public class BottomWizardPanel extends javax.swing.JPanel {
                     initLibrariesPanel();
                 }
             } else {
-                // waiting for new API for new server creation
+                ServerInstance serverInstance = CommonServerUIs.showAddServerInstanceWizard();
+                if (serverInstance != null) {
+                    cleanInitialized();
+                    initLibrariesPanel();
+                }
             }
         }
     }

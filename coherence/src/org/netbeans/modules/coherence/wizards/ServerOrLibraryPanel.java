@@ -52,8 +52,6 @@ public class ServerOrLibraryPanel extends javax.swing.JPanel {
      */
     public ServerOrLibraryPanel() {
         initComponents();
-        // waiting for new API for new server creation
-        platformRadioButton.setEnabled(false);
     }
 
     public boolean getLibraryChecked() {

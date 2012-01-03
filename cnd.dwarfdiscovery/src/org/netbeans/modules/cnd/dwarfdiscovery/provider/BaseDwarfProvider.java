@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
@@ -610,87 +611,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         ArrayList<String> includes = new ArrayList<String>();
         String firstMacro = null;
         int firstMacroLine = -1;
-    }
-
-    public static class CompilerSettings{
-        private final List<String> systemIncludePathsC;
-        private final List<String> systemIncludePathsCpp;
-        private final Map<String,String> systemMacroDefinitionsC;
-        private final Map<String,String> systemMacroDefinitionsCpp;
-        private Map<String,String> normalizedPaths = new ConcurrentHashMap<String, String>();
-        private final CompilerFlavor compileFlavor;
-        private final String cygwinDriveDirectory;
-        private final boolean isWindows;
-        
-        public CompilerSettings(ProjectProxy project){
-            systemIncludePathsCpp = DiscoveryUtils.getSystemIncludePaths(project, true);
-            systemIncludePathsC = DiscoveryUtils.getSystemIncludePaths(project,false);
-            systemMacroDefinitionsCpp = DiscoveryUtils.getSystemMacroDefinitions(project, true);
-            systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(project,false);
-            compileFlavor = DiscoveryUtils.getCompilerFlavor(project);
-            isWindows = Utilities.isWindows();
-            if (isWindows) {
-                cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(project);
-            } else {
-                cygwinDriveDirectory = null;
-            }
-        }
-        
-        public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {
-            if (lang == ItemProperties.LanguageKind.CPP) {
-                return systemIncludePathsCpp;
-            } else if (lang == ItemProperties.LanguageKind.C) {
-                return systemIncludePathsC;
-            }
-            return Collections.<String>emptyList();
-        }
-        
-        public Map<String,String> getSystemMacroDefinitions(ItemProperties.LanguageKind lang) {
-            if (lang == ItemProperties.LanguageKind.CPP) {
-                return systemMacroDefinitionsCpp;
-            } else if (lang == ItemProperties.LanguageKind.C) {
-                return systemMacroDefinitionsC;
-            }
-            return Collections.<String,String>emptyMap();
-        }
-        
-        public String getNormalizedPath(String path){
-            String res = normalizedPaths.get(path);
-            if (res == null) {
-                res = PathCache.getString(normalizePath(path));
-                normalizedPaths.put(PathCache.getString(path),res);
-            }
-            return res;
-        }
-
-        protected String normalizePath(String path){
-            path = DiscoveryUtils.normalizeAbsolutePath(path);
-            if (Utilities.isWindows()) {
-                path = path.replace('\\', '/');
-            }
-            return path;
-        }
-
-        public CompilerFlavor getCompileFlavor() {
-            return compileFlavor;
-        }
-
-        public String getCygwinDrive() {
-            return cygwinDriveDirectory;
-        }
-
-        public boolean isWindows(){
-            return isWindows;
-        }
-
-        private void dispose(){
-            systemIncludePathsC.clear();
-            systemIncludePathsCpp.clear();
-            systemMacroDefinitionsC.clear();
-            systemMacroDefinitionsCpp.clear();
-            normalizedPaths.clear();
-            normalizedPaths = new ConcurrentHashMap<String, String>();
-        }
     }
 
     private class MyRunnable implements Runnable {

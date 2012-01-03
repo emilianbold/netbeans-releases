@@ -92,6 +92,7 @@ public class IncludedChildren extends Children.Keys<CsmFile> {
         setKeys(new CsmFile[0]);
     }
     
+    @Override
     protected Node[] createNodes(CsmFile file) {
         Node node = null;
         Set<CsmFile> set = model.getModel().get(file);
@@ -135,6 +136,7 @@ public class IncludedChildren extends Children.Keys<CsmFile> {
     }
     
     private static class MyComparator implements Comparator<CsmFile> {
+        @Override
         public int compare(CsmFile o1, CsmFile o2) {
             String n1 = o1.getName().toString();
             String n2 = o2.getName().toString();

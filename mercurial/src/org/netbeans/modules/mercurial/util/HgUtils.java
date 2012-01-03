@@ -45,6 +45,7 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -87,6 +88,7 @@ import java.util.LinkedHashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
@@ -109,6 +111,7 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.openide.text.Line;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
 /**
@@ -1401,6 +1404,21 @@ itor tabs #66700).
             }
         }
         return openFiles;
+    }
+
+    /**
+     * Opens the output window for a given logger.
+     */
+    public static void openOutput (final OutputLogger logger) {
+        final Action a = logger.getOpenOutputAction();
+        if (a != null) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run () {
+                    a.actionPerformed(new ActionEvent(logger, ActionEvent.ACTION_PERFORMED, null));
+                }
+            });
+        }
     }
 
     /**

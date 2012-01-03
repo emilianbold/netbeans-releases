@@ -195,7 +195,7 @@ public final class NbMavenProjectImpl implements Project {
      * @param properties
      * @return
      */
-    public MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
+    public @NonNull MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
         try {
             MavenExecutionRequest req = embedder.createMavenExecutionRequest();
             req.addActiveProfiles(activeProfiles);

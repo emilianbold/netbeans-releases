@@ -424,7 +424,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     public static NbPlatform addPlatform(final String id, final File destdir, final File harness, final String label) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
+                @Override public Void run() throws IOException {
                     if (getPlatformByID(id) != null) {
                         throw new IOException("ID " + id + " already taken");
                     }
@@ -456,19 +456,22 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             // Common case.
             String plafDestDir = PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX;
             props.setProperty(harnessDirKey, "${" + plafDestDir + "}/" + harness.getName()); // NOI18N
-        } else if (getDefaultPlatform() != null && harness.equals(getDefaultPlatform().getHarnessLocation())) {
-            // Also common.
-            props.setProperty(harnessDirKey, "${" + PLATFORM_PREFIX + PLATFORM_ID_DEFAULT + PLATFORM_HARNESS_DIR_SUFFIX + "}"); // NOI18N
         } else {
-            // Some random location.
-            props.setProperty(harnessDirKey, harness.getAbsolutePath());
+            NbPlatform plaf = getDefaultPlatform();
+            if (plaf != null && harness.equals(plaf.getHarnessLocation())) {
+                // Also common.
+                props.setProperty(harnessDirKey, "${" + PLATFORM_PREFIX + PLATFORM_ID_DEFAULT + PLATFORM_HARNESS_DIR_SUFFIX + "}"); // NOI18N
+            } else {
+                // Some random location.
+                props.setProperty(harnessDirKey, harness.getAbsolutePath());
+            }
         }
     }
     
     public static void removePlatform(final NbPlatform plaf) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
+                @Override public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     props.remove(PLATFORM_PREFIX + plaf.getID() + PLATFORM_DEST_DIR_SUFFIX);
                     props.remove(PLATFORM_PREFIX + plaf.getID() + PLATFORM_HARNESS_DIR_SUFFIX);
@@ -501,14 +504,14 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         pcs = new PropertyChangeSupport(this);
         srs = new SourceRootsSupport(sources, this);
         srs.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            @Override public void propertyChange(PropertyChangeEvent evt) {
                 // re-fire
                 pcs.firePropertyChange(evt);
             }
         });
         jrs = new JavadocRootsSupport(javadoc, this);
         jrs.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            @Override public void propertyChange(PropertyChangeEvent evt) {
                 // re-fire
                 pcs.firePropertyChange(evt);
             }
@@ -597,7 +600,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                 if (m.matches()) {
                     String trunkSpec = m.group(1);
                     try {
-                        String loc = NbBundle.getBundle(NbPlatform.class).getString("NbPlatform.web.javadoc." + trunkSpec);
+                        String loc = NbBundle.getMessage(NbPlatform.class, "NbPlatform.web.javadoc." + trunkSpec);
                         return new URL[] {new URL(loc)};
                     } catch (MissingResourceException x) {
                         // fine, some other trunk version, ignore
@@ -610,27 +613,27 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         return null;
     }
 
-    public void addJavadocRoot(URL root) throws IOException {
+    @Override public void addJavadocRoot(URL root) throws IOException {
         jrs.addJavadocRoot(root);
     }
 
-    public URL[] getJavadocRoots() {
+    @Override public URL[] getJavadocRoots() {
         return jrs.getJavadocRoots();
     }
 
-    public void moveJavadocRootDown(int indexToDown) throws IOException {
+    @Override public void moveJavadocRootDown(int indexToDown) throws IOException {
         jrs.moveJavadocRootDown(indexToDown);
     }
 
-    public void moveJavadocRootUp(int indexToUp) throws IOException {
+    @Override public void moveJavadocRootUp(int indexToUp) throws IOException {
         jrs.moveJavadocRootUp(indexToUp);
     }
 
-    public void removeJavadocRoots(URL[] urlsToRemove) throws IOException {
+    @Override public void removeJavadocRoots(URL[] urlsToRemove) throws IOException {
         jrs.removeJavadocRoots(urlsToRemove);
     }
 
-    public void setJavadocRoots(URL[] roots) throws IOException {
+    @Override public void setJavadocRoots(URL[] roots) throws IOException {
         putGlobalProperty(
                 PLATFORM_PREFIX + getID() + PLATFORM_JAVADOC_SUFFIX,
                 ApisupportAntUtils.urlsToAntPath(roots));
@@ -648,7 +651,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         }
         // location of platform won't change, safe to cache
         if (defaultSourceRoots != null) {
-            return defaultSourceRoots;
+            return defaultSourceRoots.clone();
         }
         defaultSourceRoots = new URL[0];
         File loc = getDestDir();
@@ -659,7 +662,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                 assert false : e;
             }
         }
-        return defaultSourceRoots;
+        return defaultSourceRoots.clone();
     }
 
     /**
@@ -667,7 +670,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * Each root could be a netbeans.org source checkout or a module suite project directory.
      * @return a list of source root URLs (may be empty but not null)
      */
-    public URL[] getSourceRoots() {
+    @Override public URL[] getSourceRoots() {
         return srs.getSourceRoots();
     }
     
@@ -676,7 +679,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * result into the global properties in the <em>userdir</em> (see {@link
      * PropertyUtils#putGlobalProperties})
      */
-    public void addSourceRoot(URL root) throws IOException {
+    @Override public void addSourceRoot(URL root) throws IOException {
         srs.addSourceRoot(root);
     }
     
@@ -685,19 +688,19 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * result into the global properties in the <em>userdir</em> (see {@link
      * PropertyUtils#putGlobalProperties})
      */
-    public void removeSourceRoots(URL[] urlsToRemove) throws IOException {
+    @Override public void removeSourceRoots(URL[] urlsToRemove) throws IOException {
         srs.removeSourceRoots(urlsToRemove);
     }
     
-    public void moveSourceRootUp(int indexToUp) throws IOException {
+    @Override public void moveSourceRootUp(int indexToUp) throws IOException {
         srs.moveSourceRootUp(indexToUp);
     }
     
-    public void moveSourceRootDown(int indexToDown) throws IOException {
+    @Override public void moveSourceRootDown(int indexToDown) throws IOException {
         srs.moveSourceRootDown(indexToDown);
     }
     
-    public void setSourceRoots(URL[] roots) throws IOException {
+    @Override public void setSourceRoots(URL[] roots) throws IOException {
         putGlobalProperty(
                 PLATFORM_PREFIX + getID() + PLATFORM_SOURCES_SUFFIX,
                 ApisupportAntUtils.urlsToAntPath(roots));
@@ -715,7 +718,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     private void putGlobalProperty(final String key, final String value) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
+                @Override public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     if ("".equals(value)) { // NOI18N
                         props.remove(key);
@@ -736,7 +739,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * @param jar a JAR file in the destination directory
      * @return the directory of sources for this module (a project directory), or null
      */
-    public File getSourceLocationOfModule(File jar) {
+    @Override public File getSourceLocationOfModule(File jar) {
         return srs.getSourceLocationOfModule(jar);
     }
     
@@ -1004,7 +1007,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         }
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
+                @Override public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     storeHarnessLocation(id, nbdestdir, harness, props);
                     PropertyUtils.putGlobalProperties(props);

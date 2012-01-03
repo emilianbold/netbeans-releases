@@ -61,15 +61,9 @@ public class ArtifactGraphNode {
     public static final int CONFLICT = 2;
 
     private DependencyNode artifact, parentAfterFix;
-    //for the layout
-    double locX;
-    double locY;
-    double dispX;
-    double dispY;
+    public double locX, locY, dispX, dispY; // for use from FruchtermanReingoldLayout
     private boolean fixed;
     private ArtifactWidget widget;
-    
-    private boolean root;
     private HashSet<DependencyNode> dupl;
     private int level;
     private int managedState = UNMANAGED;

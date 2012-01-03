@@ -95,7 +95,7 @@ import org.openide.util.Lookup;
  */
 @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="", // no icon
+        // no icon
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="text.history", 
         mimeType="",

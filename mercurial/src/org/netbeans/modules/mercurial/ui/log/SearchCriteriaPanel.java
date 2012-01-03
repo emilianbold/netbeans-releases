@@ -45,6 +45,7 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import javax.swing.*;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,6 +58,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     /** Creates new form SearchCriteriaPanel */
     public SearchCriteriaPanel() {
         initComponents();
+        showMergesChkBox.setSelected(HgModuleConfig.getDefault().getShowHistoryMerges());
     }
 
     public String getFrom() {
@@ -100,6 +102,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         usernameLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingUsername"));
         fromLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingFrom"));
         toLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingTo"));
+        showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingShowMerges"));
 
         tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_IncomingFrom"));
         tfFrom.setEnabled(false);
@@ -113,6 +116,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         usernameLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutUsername"));
         fromLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutFrom"));
         toLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutTo"));
+        showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowMerges"));
         
         tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_OutFrom"));
         tfFrom.setEnabled(false);
@@ -148,6 +152,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         if (username == null) username = ""; // NOI18N
         tfUsername.setText(username);
     }
+    
+    void setLimit (int limit) {
+        if (limit > 0) {
+            tfLimit.setText(Integer.toString(limit));
+        }
+    }
 
     public String getBranch () {
         return tfBranch.getText().trim();
@@ -155,6 +165,10 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     
     public void setBranch (String branchName) {
         tfBranch.setText(branchName);
+    }
+    
+    boolean isIncludeMerges() {
+        return showMergesChkBox.isSelected();
     }
     
     @Override
@@ -186,6 +200,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         toInfoLabel = new javax.swing.JLabel();
         toLabel1 = new javax.swing.JLabel();
         toLabel2 = new javax.swing.JLabel();
+        showMergesChkBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
 
@@ -223,11 +238,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         toLabel1.setToolTipText(bundle.getString("TT_Limit")); // NOI18N
 
         tfLimit.setColumns(10);
-        tfLimit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfLimitActionPerformed(evt);
-            }
-        });
 
         toLabel2.setLabelFor(tfBranch);
         org.openide.awt.Mnemonics.setLocalizedText(toLabel2, bundle.getString("CTL_UseBranch")); // NOI18N
@@ -238,37 +248,44 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(btnSelectBranch, org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_SelectBranch")); // NOI18N
         btnSelectBranch.setToolTipText(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "TT_SelectBranch")); // NOI18N
 
+        showMergesChkBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(showMergesChkBox, org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_ShowMerge")); // NOI18N
+        showMergesChkBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "TT_ShowMerges")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(fromLabel)
-            .addComponent(commitMessageLabel)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(usernameLabel)
-                    .addComponent(toLabel)
-                    .addComponent(toLabel2)
-                    .addComponent(toLabel1))
+                    .addComponent(commitMessageLabel)
+                    .addComponent(usernameLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(toLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(toLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tfLimit)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(showMergesChkBox))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(tfBranch)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnSelectBranch))
+                    .addComponent(tfUsername, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
+                    .addComponent(tfCommitMessage))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(fromLabel)
+                    .addComponent(toLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tfUsername, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-                    .addComponent(tfCommitMessage, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(tfTo, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                            .addComponent(tfFrom, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(tfBranch, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnSelectBranch)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(fromInfoLabel, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(toInfoLabel, javax.swing.GroupLayout.Alignment.TRAILING)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(tfLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                    .addComponent(toInfoLabel)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(tfFrom)
+                        .addComponent(fromInfoLabel)
+                        .addComponent(tfTo)))
+                .addGap(14, 14, 14))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -276,49 +293,45 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
                 .addGap(2, 2, 2)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(commitMessageLabel)
-                    .addComponent(tfCommitMessage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(8, 8, 8)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(usernameLabel)
-                    .addComponent(tfUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tfCommitMessage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fromLabel)
+                    .addComponent(tfFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tfUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(usernameLabel))
+                    .addComponent(fromInfoLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(fromLabel)
-                        .addGap(2, 2, 2))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(fromInfoLabel)
-                        .addComponent(tfFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(tfTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(toInfoLabel))
-                    .addComponent(toLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSelectBranch)
-                    .addComponent(tfBranch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(toLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(toLabel1)
-                    .addComponent(tfLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(toLabel2)
+                            .addComponent(btnSelectBranch)
+                            .addComponent(tfBranch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(showMergesChkBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(toLabel1)
+                            .addComponent(tfLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tfTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(toLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(toInfoLabel)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         commitMessageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_UseCommitMessage")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void tfLimitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfLimitActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_tfLimitActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton btnSelectBranch = new javax.swing.JButton();
     private javax.swing.JLabel commitMessageLabel;
     private javax.swing.JLabel fromInfoLabel;
     private javax.swing.JLabel fromLabel;
+    private javax.swing.JCheckBox showMergesChkBox;
     final javax.swing.JTextField tfBranch = new javax.swing.JTextField();
     private javax.swing.JTextField tfCommitMessage;
     final javax.swing.JTextField tfFrom = new javax.swing.JTextField();

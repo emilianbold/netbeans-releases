@@ -240,7 +240,9 @@ class DelegateAssignabilityChecker  extends AbstractAssignabilityChecker {
                     return false;
                 }
                 TypeMirror upperBound = ((TypeVariable)typeParam).getUpperBound();
-                if ( upperBound != null && upperBound.getKind() != TypeKind.NULL ){
+                if ( upperBound != null && upperBound.getKind() != TypeKind.NULL 
+                        && objectElement!= null )
+                {
                     return types.isSameType(upperBound, objectElement.asType());
                 }
             }

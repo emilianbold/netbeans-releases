@@ -141,7 +141,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         assertNotNull(workFO);
         
-        sourceRoot = workFO.createFolder("src");
+        sourceRoot = FileUtil.createFolder(workFO, "src");
         
         FileObject buildRoot  = workFO.createFolder("build");
         

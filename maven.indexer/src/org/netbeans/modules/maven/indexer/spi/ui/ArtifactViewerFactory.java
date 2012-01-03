@@ -50,17 +50,17 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-/**
- *
- * @author mkleint
- */
 public interface ArtifactViewerFactory {
 
-    @NonNull TopComponent createTopComponent(@NonNull NBVersionInfo info);
+    @NonNull Lookup createLookup(@NonNull NBVersionInfo info);
 
-    @NonNull TopComponent createTopComponent(@NonNull Artifact artifact, @NullAllowed List<ArtifactRepository> repos);
+    @NonNull Lookup createLookup(@NonNull Artifact artifact, @NullAllowed List<ArtifactRepository> repos);
 
-    @CheckForNull TopComponent createTopComponent(@NonNull Project prj);
+    @CheckForNull Lookup createLookup(@NonNull Project prj);
+
+    @NonNull TopComponent createTopComponent(@NonNull Lookup lookup);
+
 }
