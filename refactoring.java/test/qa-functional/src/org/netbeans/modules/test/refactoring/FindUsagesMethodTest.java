@@ -63,6 +63,22 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
     public FindUsagesMethodTest(String name) {
         super(name);
     }
+    
+    public static Test suite() {
+      return NbModuleSuite.create(
+              NbModuleSuite.createConfiguration(FindUsagesMethodTest.class).addTest(
+                    "testFUMethod",
+                    "testFUMethodInComment",
+                    "testFUOverriding",
+                    "testFUFromBaseClass",
+                    "testFUAllOptions",
+                    "testNoOptions",
+                    "testCheckboxavailable",
+                    "testCheckboxavailableStatic",
+                    "testTabName",
+                    "testFUConstructor"                    
+                 ).enableModules(".*").clusters(".*"));
+   }
 
     public void testFUMethod() {
         findUsages("fumethod", "Test", 6, 19, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS | NOT_SEARCH_FROM_BASECLASS);
@@ -188,8 +204,5 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         findUsages("fumethod", "Test", 18, 13, FIND_USAGES_METHOD | NOT_SEARCH_IN_COMMENTS);
     }
     
-    public static Test suite() {
-      return NbModuleSuite.create(
-              NbModuleSuite.createConfiguration(FindUsagesMethodTest.class).enableModules(".*").clusters(".*"));
-   }
+    
 }

@@ -60,6 +60,19 @@ public class RenameTest extends ModifyingRefactoring {
     public RenameTest(String name) {
         super(name);
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(RenameTest.class).addTest(
+                "testRenameClass",
+                "testRenamePackage",
+                "testRenameMethod",
+                //"testRenameGenerics",
+                //"testRenameVariable",
+                //"testRenameParameter",
+                "testRenameCtor"
+                ).enableModules(".*").clusters(".*"));
+    }
 
     public void testRenameClass() {
         performRename("Rename", "renameClass", "Renamed", 3, 17);        
@@ -72,7 +85,7 @@ public class RenameTest extends ModifyingRefactoring {
     public void testRenameMethod() {
         performRename("RenameMethod", "renameClass", "renamedMethod", 5, 18);        
     }
-/*
+
     public void testRenameGenerics() {
         performRename("RenameGenerics","renameClass","A",3,30);
     }
@@ -83,7 +96,7 @@ public class RenameTest extends ModifyingRefactoring {
     
     public void testRenameParameter() {
         performRename("RenameParameter","renameClass","renamned",5,34);
-    }*/
+    }
 
     public void testRenameCtor() {
         performRename("RenameCtor","renameClass","RenamedCtor",5,34);
@@ -167,10 +180,7 @@ public class RenameTest extends ModifyingRefactoring {
 //
 //    }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(RenameTest.class).enableModules(".*").clusters(".*"));
-    }
+    
 
     private void performRename(String className,String pkgName, String newName, int row, int col) {
         openSourceFile(pkgName, className);

@@ -67,6 +67,15 @@ public class MoveTest extends ModifyingRefactoring {
     public MoveTest(String name) {
         super(name);
     }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(MoveTest.class).addTest(
+                "testMoveClass",
+                "testMoveToTest",
+                "testMoveToNewPackage",
+                "performMove"
+                ).enableModules(".*").clusters(".*"));
+    }
 
     public void testMoveClass() {
         performMove("Move.java", "moveSource", "modeDest", false, MoveTest.TargetDestination.SOURCE);
@@ -118,8 +127,5 @@ public class MoveTest extends ModifyingRefactoring {
         dumpRefactoringResults();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MoveTest.class).enableModules(".*").clusters(".*"));
-    }
+    
 }
