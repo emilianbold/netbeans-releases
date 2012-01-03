@@ -99,6 +99,9 @@ public final class ModelElementFactory {
     static ObjectScopeImpl create(final ObjectNode object, List<Identifier> fqName, final ModelBuilder context) {
         final Scope currentScope = context.getCurrentScope();
         ObjectScopeImpl result = new ObjectScopeImpl(currentScope, object, fqName);
+        if (currentScope instanceof FileScope) {
+            ((FileScopeImpl)currentScope).addObject(result);
+        }
         return result;
     }
 }

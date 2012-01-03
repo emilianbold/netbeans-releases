@@ -73,7 +73,9 @@ public class FileScopeImpl extends VariableScopeImpl implements FileScope {
         return logicalElements.values();
     }
     
-    protected void addObject(String fqName, Scope object){
+    protected void addObject(ObjectScope object){
+        List<Identifier> identifiers = object.getFQDeclarationName();
+        String fqName = ModelUtils.getNameWithoutPrototype(identifiers);
         logicalElements.put(fqName, object);
     }
     
