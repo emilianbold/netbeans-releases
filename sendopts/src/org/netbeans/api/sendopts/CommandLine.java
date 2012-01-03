@@ -85,7 +85,7 @@ public final class CommandLine {
 
     /** Creates new command line processor based on options defined in
      * the provided <code>classes</code>. These classes are scanned for
-     * fields annotated with {@code @}{@link org.netbeans.spi.sendopts.annotations.Arg} 
+     * fields annotated with {@code @}{@link org.netbeans.spi.sendopts.Arg} 
      * annotation.
      * 
      * @param classes classes that declare the options
