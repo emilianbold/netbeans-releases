@@ -49,6 +49,29 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="ChildFactory.incremental">
+        <api name="nodes"/>
+        <summary><code>ChildFactory.createKeys</code> better supports incremental display</summary>
+        <version major="7" minor="27"/>
+        <date year="2012" month="1" day="3"/>
+        <author login="jglick"/>
+        <compatibility modification="yes" semantic="compatible">
+            <p>
+                Existing factories which returned false from <code>createKeys</code>
+                may continue to do so with the same behavior, but should consider
+                just producing all keys within the body of the loop instead.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                An implementation of <code>ChildFactory.createKeys</code> may now
+                use <code>List.add</code> a number of times and return true at the
+                end, while still displaying keys incrementally.
+            </p>
+        </description>
+        <class package="org.openide.nodes" name="ChildFactory"/>
+        <issue number="206556"/>
+    </change>
     <change id="NodeOperation.showCustomEditorDialog">
         <api name="nodes"/>
         <summary>A way to show a custom editor dialog for a property</summary>

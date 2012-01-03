@@ -153,12 +153,7 @@ public class ModulesNode extends AbstractNode {
          
         @Override
         protected boolean createKeys(final List<Wrapper> modules) {
-            List<String> all = project.getOriginalMavenProject().getModules();
-            int alreadyAdded = modules.size();
-            if (alreadyAdded >= all.size()) {
-                return true;
-            }
-            String module = all.get(alreadyAdded);
+            for (String module : project.getOriginalMavenProject().getModules()) {
             File base = project.getOriginalMavenProject().getBasedir();
                 File projDir = FileUtil.normalizeFile(new File(base, module));
                 FileObject fo = FileUtil.toFileObject(projDir);
@@ -172,7 +167,6 @@ public class ModulesNode extends AbstractNode {
                             wr.isAggregator = NbMavenProject.TYPE_POM.equals(mp.getPackaging()) && !mp.getModules().isEmpty();
                             wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
                             modules.add(wr);
-                            return false;
                         }
                     } catch (IllegalArgumentException ex) {
                         ex.printStackTrace();//TODO log ?
@@ -182,15 +176,12 @@ public class ModulesNode extends AbstractNode {
                 } else {
                     //TODO broken module reference.. show as such..
                 }
-            modules.add(new Wrapper()); // broken submodule ref
-            return false;
+            }
+            return true;
         }
 
         @Override
         protected Node createNodeForKey(Wrapper wr) {
-            if (wr.proj == null) {
-                return null;
-            }
              return new ProjectFilterNode(project, wr.proj, wr.provider.createLogicalView(), wr.isAggregator);
         }
         
