@@ -49,6 +49,7 @@ import org.netbeans.modules.php.doctrine2.commands.Doctrine2CommandSupport;
 import org.netbeans.modules.php.doctrine2.preferences.Doctrine2Preferences;
 import org.netbeans.modules.php.doctrine2.ui.actions.Doctrine2PhpModuleActionsExtender;
 import org.netbeans.modules.php.doctrine2.ui.customizer.Doctrine2PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.doctrine2.ui.wizards.Doctrine2PhpModuleExtender;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -103,7 +104,7 @@ public final class Doctrine2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
-        return null;
+        return new Doctrine2PhpModuleExtender();
     }
 
     @Override
