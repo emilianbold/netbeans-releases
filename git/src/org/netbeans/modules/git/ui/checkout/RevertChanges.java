@@ -45,7 +45,9 @@ package org.netbeans.modules.git.ui.checkout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.JButton;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -58,8 +60,10 @@ import org.openide.util.NbBundle;
  */
 public class RevertChanges implements ActionListener {
     private RevertChangesPanel panel;
+    private final File[] roots;
 
-    RevertChanges () {        
+    RevertChanges (File[] roots) {
+        this.roots = roots;
         panel = new RevertChangesPanel();
         loadSettings();
         
@@ -91,7 +95,15 @@ public class RevertChanges implements ActionListener {
     boolean show() {        
         JButton okButton = new JButton(NbBundle.getMessage(RevertChanges.class, "LBL_RevertChanges.OKButton.text")); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(RevertChanges.class, "CTL_RevertChanges.title"), true,  //NOI18N
+        String label;
+        if (roots.length != 1) {
+            label = NbBundle.getMessage(RevertChanges.class, "CTL_RevertChanges.title.files", roots.length); //NOI18N
+        } else if (Git.getInstance().getFileStatusCache().getStatus(roots[0]).isDirectory()) {
+            label = NbBundle.getMessage(RevertChanges.class, "CTL_RevertChanges.title.dir", roots[0].getName()); //NOI18N
+        } else {
+            label = NbBundle.getMessage(RevertChanges.class, "CTL_RevertChanges.title.file", roots[0].getName()); //NOI18N
+        }
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(RevertChanges.class, "CTL_RevertChanges.title", label), true,  //NOI18N
                 new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RevertChanges.class), null);
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.setVisible(true);

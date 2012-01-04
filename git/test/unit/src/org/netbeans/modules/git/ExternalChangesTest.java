@@ -166,7 +166,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         assertEquals(GitBranch.NO_BRANCH, info.getActiveBranch().getName());
-        assertEquals("", info.getActiveBranch().getId());
+        assertEquals(AbstractGitTestCase.NULL_OBJECT_ID, info.getActiveBranch().getId());
         String newHead = Git.getInstance().getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
         for (int i = 0; i < 100; ++i) {
             Thread.sleep(100);
@@ -184,7 +184,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         assertEquals(GitBranch.NO_BRANCH, info.getActiveBranch().getName());
-        assertEquals("", info.getActiveBranch().getId());
+        assertEquals(AbstractGitTestCase.NULL_OBJECT_ID, info.getActiveBranch().getId());
         String newHead = getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
         waitForRefresh();
         for (int i = 0; i < 100; ++i) {
