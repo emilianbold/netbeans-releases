@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,7 +51,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -73,6 +76,7 @@ import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
@@ -86,7 +90,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
- * This test checks isolation of java custom indexer
+ * This test checks isolation of java custom indexer.
+ * 
+ * Note - semaphores are used instead of plain wait(), so that premature notify()
+ * is not missed by the observer.
  * 
  * @author sdedic
  */
@@ -106,6 +113,17 @@ public class IndexerTransactionTest extends NbTestCase {
     private static ClassPath bootPath;
     private static MutableCp spiCp;
     private static MutableCp spiSrc;
+    
+    /**
+     * Simple semaphore, which will block the parser thread until the test allows
+     * the inspected parsing process to continue
+     */
+    private Semaphore   parserBlocker = new Semaphore(0);
+    
+    /**
+     * Blocker for the test, to wait until the parser does something interesting.
+     */
+    private Semaphore   testBlocker = new Semaphore(0);
     
     private Object blocker = new String("blocker");
     
@@ -186,8 +204,36 @@ public class IndexerTransactionTest extends NbTestCase {
     }
     
     /**
-     * Checks that during the initial scan, source root is hidden, unless it is scanned,
-     * and resources for it are committed
+     * Finds the segment, which was generated for the source directory 'dirName'.
+     * 
+     * @param dirName
+     * @return
+     * @throws IOException 
+     */
+    private File findSegmentDir(String dirName) throws IOException {
+        // check that files do not exist in the classes dir:
+        File cache = new File(getWorkDir(), "cache");
+        File segments = new File(cache, "segments");
+        Properties p = new Properties();
+        p.load(new FileInputStream(segments));
+        for (Object o : p.keySet()) {
+            String v = p.getProperty(o.toString());
+            if (v.endsWith(dirName + "/")) {
+                String dir = o.toString();
+                return new File(cache, dir + "/java/" + 
+                        JavaIndex.VERSION + "/classes".replaceAll("/", File.separator));
+            }
+        }
+        throw new IOException("Could not found segment for: " + dirName);
+    }
+    
+    /**
+     * Checks that during the initial scan, types from the source root are hidden,
+     * until the source root is fully scanned.
+     * 
+     * Also check that files are not visible until the source root finishes.
+     * 
+     * Enforce flush of memory cache after each file, and each added document.
      * 
      * @throws Exception 
      */
@@ -201,6 +247,11 @@ public class IndexerTransactionTest extends NbTestCase {
         // make the initial scan, with 'src'
         logHandler.waitForInitialScan();
 
+        // ensure the cache will flush after each file:
+        WriteBackTransaction.disableCache = true;
+        // force Lucene index to fluhs after each document
+        System.setProperty("test.org.netbeans.modules.parsing.lucene.cacheDisable", Boolean.TRUE.toString());
+        
         final ClassPath scp = ClassPathSupport.createClassPath(srcRoot, srcRoot2);
         
         final ClasspathInfo cpInfo = ClasspathInfo.create(
@@ -208,6 +259,7 @@ public class IndexerTransactionTest extends NbTestCase {
             ClassPathSupport.createClassPath(new URL[0]),
             scp);
         final ClassIndex ci = cpInfo.getClassIndex();
+        
         
         Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes("TestFile", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
                 SearchScope.SOURCE));
@@ -234,16 +286,13 @@ public class IndexerTransactionTest extends NbTestCase {
                     return;
                 }
                 
-                synchronized (signal) {
-                    signal.notifyAll();
-                }
-                // block only at src2
-                synchronized (blocker) {
-                    try {
-                        blocker.wait();
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                // notify the test to proceeed, wait for 
+                testBlocker.release();
+                try {
+                    // wait for the test to inspect
+                    parserBlocker.acquire();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         };
@@ -254,9 +303,7 @@ public class IndexerTransactionTest extends NbTestCase {
         spiSrc.setImpls(ll);
         
         // wait till src2
-        synchronized (signal) {
-            signal.wait();
-        }
+        testBlocker.acquire();
 
         // check that SuperClass is STILL not present
         handles = ci.getDeclaredTypes("TestFile", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
@@ -266,36 +313,32 @@ public class IndexerTransactionTest extends NbTestCase {
         
         handles = ci.getDeclaredTypes("SuperClass", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
                 SearchScope.SOURCE));
-        assertTrue(handles.isEmpty());    
+        assertTrue(handles.isEmpty());
         
-        // resume parsing, commence work
-        synchronized (blocker) {
-            blocker.notifyAll();
-        }
+
+        Semaphore ss = new Semaphore(0);
+        ci.addClassIndexListener(new RootWatcher(ss));
         
-        ci.addClassIndexListener(new RootWatcher(signal));
-        
-        synchronized (signal) {
-            signal.wait();
-        }
-        
+        parserBlocker.release();
+        ss.acquire();
         
         handles = ci.getDeclaredTypes("SuperClass", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
                 SearchScope.SOURCE));
         assertEquals(1, handles.size());    
     }
     
+    /**
+     * Will signal the semaphore when a root is added.
+     */
     private static class RootWatcher implements ClassIndexListener {
-        private Object signal;
+        private Semaphore signal;
 
-        public RootWatcher(Object signal) {
+        public RootWatcher(Semaphore signal) {
             this.signal = signal;
         }
             @Override
             public void rootsAdded(RootsEvent event) {
-                synchronized(signal) {
-                    signal.notifyAll();
-                }
+                signal.release();
             }
 
             @Override
@@ -314,7 +357,8 @@ public class IndexerTransactionTest extends NbTestCase {
     
     /**
      * Checks that added files are not visible until their source root is added,
-     * even if the memcache is flushed during the scan (will be flushed after each file)
+     * even if the memcache with file contents 
+     * is flushed during the scan (will be flushed after each file)
      */
     public void testAddedClassesNotVisible() throws Exception {
         Logger l = Logger.getLogger(WriteBackTransaction.class.getName());
@@ -323,6 +367,11 @@ public class IndexerTransactionTest extends NbTestCase {
         
         TEST_LOGGER.setLevel(Level.ALL);
         
+        List ll = new ArrayList<PathResourceImplementation>();
+        ll.add(ClassPathSupport.createResource(srcRoot.getURL()));
+        ll.add(ClassPathSupport.createResource(srcRoot2.getURL()));
+        spiSrc.setImpls(ll);
+
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
@@ -336,36 +385,16 @@ public class IndexerTransactionTest extends NbTestCase {
         final ClassIndex ci = cpInfo.getClassIndex();
         
         RepositoryUpdater.getDefault().start(true);
-        
+
         // make the initial scan, with 'src' and 'src2'
-        logHandler.waitForInitialScan();
+        logHandler.waitForInitialScan(2);
 
         // ensure the cache will flush after each file:
         WriteBackTransaction.disableCache = true;
         
-        final Object signal = new String("signal");
+        final Semaphore signal = new Semaphore(0);
 
-        logHandler.beforeCommitCallback = new ScanCallback() {
-            @Override
-            public void scanned(String indexer, String root) {
-                if (!root.endsWith("src")) {
-                    return;
-                }
-                synchronized (signal) {
-                    signal.notifyAll();
-                    System.err.println("Unblocked");
-                }
-                synchronized (blocker) {
-                    try {
-                        System.err.println("Blocking Updater, waiting for test...");
-                        blocker.wait();
-                        System.err.println("Updater released");
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        };
+        logHandler.beforeFinishCallback = new RootScannedCallback("java", "src/", signal);
         
         // copy over some files
         TestUtil.copyFiles(
@@ -373,34 +402,71 @@ public class IndexerTransactionTest extends NbTestCase {
                 new File(FileUtil.toFile(srcRoot), "org/netbeans/parsing/source1".replaceAll("/", File.separator)), 
                         "ConstructorTest.java", "EmptyClass.java");
 
-        synchronized(signal) {
-            try {
-                System.err.println("Test is waiting for the Updater");
-                signal.wait();
-            } catch (InterruptedException ex) {
-                fail("Should rescan the added files");
-            }
+        // must force rescan, indexer does not notice the file-copy ?
+        RepositoryUpdater.getDefault().refreshAll(false, false, true, null, 
+                srcRoot, srcRoot2);
+        try {
+            signal.acquire();
+            signal.drainPermits();
+        } catch (InterruptedException ex) {
+            fail("Should rescan the added files");
         }
 
         Set<ElementHandle<TypeElement>> handles;
 
         handles = ci.getDeclaredTypes("ConstructorTest", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
                 SearchScope.SOURCE));
-        assertEquals(0, handles.size());    
-
-        Thread.sleep(100);
-        synchronized (blocker) {
-            System.err.println("Releasing Updater");
-            blocker.notifyAll();
-        }
+        //assertEquals(0, handles.size());    
         
-        // now wait on scan finish
-        System.err.println("Waiting for signal");
+        // check that files STILL do not exist
+        File dir = findSegmentDir("src");
+        File targetDir = new File(dir, "org/netbeans/parsing/source1".replaceAll("/", File.separator));
+        
+        assertFalse(new File(targetDir, "ConstructorTest.sig").exists());
+        assertFalse(new File(targetDir, "EmptyClass.sig").exists());
+        
+        parserBlocker.release();
+        
         logHandler.waitForInitialScan();
         
         handles = ci.getDeclaredTypes("ConstructorTest", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
                 SearchScope.SOURCE));
         assertEquals(1, handles.size());    
+
+        assertTrue(new File(targetDir, "ConstructorTest.sig").exists());
+        assertTrue(new File(targetDir, "EmptyClass.sig").exists());
+        
+}
+    
+    private class RootScannedCallback implements ScanCallback {
+        private String indexerName;
+        private String rootSuffix;
+        private Semaphore signal;
+
+        public RootScannedCallback(String indexerName, String rootSuffix, Semaphore signal) {
+            this.indexerName = indexerName;
+            this.rootSuffix = rootSuffix;
+            this.signal = signal;
+        }
+        
+        
+        @Override
+        public void scanned(String indexer, String root) {
+            if (indexerName != null && !indexerName.equals(indexer)) {
+                return;
+            }
+            if (!root.endsWith(rootSuffix)) {
+                return;
+            }
+            signal.release();
+            try {
+                parserBlocker.acquire();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        
     }
     
     /**
@@ -416,22 +482,39 @@ public class IndexerTransactionTest extends NbTestCase {
         public void scanned(String indexer, String root);
     }
     
+    /**
+     * This is a log handler overloaded for various hook loggers
+     */
     class TxLogHandler extends Handler {
         int flushed;
         int committed;
         int memory;
         int reference;
-        Object signal = new String();
+        int rootsToGo;
+        Semaphore signal = new Semaphore(0);
         
+        /**
+         * Callback called by indexer's scanFinished(), before the actual action is invoked
+         */
         ScanCallback beforeFinishCallback;
+        
+        /**
+         * Called just before indexes are committed (storeChanges called)
+         */
         ScanCallback beforeCommitCallback;
+        
+        /**
+         * Called just before files are committed. Indexer will be always null for the callback.
+         */
         ScanCallback beforeFileWriteCallback;
         
         
         public void waitForInitialScan() throws Exception {
-            synchronized (signal) {
-                signal.wait();
-            }
+            waitForInitialScan(1);
+        }
+        public void waitForInitialScan(int count) throws Exception {
+            signal.acquire();
+            signal.drainPermits();
         }
         
         @Override
@@ -445,9 +528,7 @@ public class IndexerTransactionTest extends NbTestCase {
         private void handleTestLogger(LogRecord record) {
             String msg = record.getMessage();
             if (msg.contains("scanSources")) {
-                synchronized(signal) {
-                    signal.notifyAll();
-                }
+                signal.release();
             } else if (msg.contains("scanFinishing:")) {
                 if (beforeFinishCallback != null) {
                     beforeFinishCallback.scanned((String)record.getParameters()[0], (String)record.getParameters()[1]);

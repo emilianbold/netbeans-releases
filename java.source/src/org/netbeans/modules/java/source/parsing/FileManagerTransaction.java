@@ -113,11 +113,6 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         
     }
     
-
-            chain.add(deleted.isEmpty()?
-                res:
-                Iterators.filter (
-                            return deleted.contains(f) ? 0 : -1;
     private static class WriteThrogh extends FileManagerTransaction {
 
         @Override

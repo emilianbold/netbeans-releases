@@ -106,7 +106,7 @@ import org.openide.windows.TopComponent;
  */
 public class DependencyGraphTopComponent extends TopComponent implements LookupListener, MultiViewElement {
 
-    static final /* XXX not actually in CP: @StaticResource */ String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
+    static final /* XXX not actually in CP: @StaticResource */ String DEPENDENCY_JAR = "org/netbeans/modules/maven/graph/DependencyJar.gif";
     private static final @StaticResource String ZOOM_IN_ICON = "org/netbeans/modules/maven/graph/zoomin.gif";
     private static final @StaticResource String ZOOM_OUT_ICON = "org/netbeans/modules/maven/graph/zoomout.gif";
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N

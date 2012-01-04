@@ -1896,18 +1896,20 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         return sb;
     }
 
-            String indexerName, String root,
+    private static void storeChanges(
             @NonNull final DocumentIndex docIndex,
             final boolean optimize,
             @NullAllowed final Iterable<? extends Indexable> indexables) throws IOException {
-        if (TEST_LOGGER.isLoggable(Level.FINEST)) {
-            TEST_LOGGER.log(Level.FINEST, "indexCommit:{0}:{1}", 
-                    new Object[] { indexerName, root });
+        if (indexables != null) {
+            final List<String> keysToRemove = new ArrayList<String>();
+            for (Indexable indexable : indexables) {
+                keysToRemove.add(indexable.getRelativePath());
+            }
+            docIndex.removeDirtyKeys(keysToRemove);
         }
-        storeChanges(docIndex, optimize, indexables);
+        docIndex.store(optimize);
     }
 
-    private static void storeChanges(
     private static final Comparator<URL> C = new Comparator<URL>() {
         public @Override int compare(URL o1, URL o2) {
             return o1.toString().compareTo(o2.toString());
@@ -2098,6 +2100,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             try {
                 for (Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
                     parkWhileSuspended();
+                    if (TEST_LOGGER.isLoggable(Level.FINEST)) {
                         TEST_LOGGER.log(Level.FINEST, "scanFinishing:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
                     }
@@ -2135,7 +2138,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 for(Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
                     DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
                     if (index != null) {
-                        storeChanges(null, ctx.getRootURI().toExternalForm(), index, isSteady(), ci.getIndexablesFor(null));
+                        storeChanges(null, pair.second.getRootURI().toExternalForm(), index, isSteady(), ci.getIndexablesFor(null));
                     }
                 }
             }
@@ -2855,6 +2858,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 result[i+2] = countTimePair[1];
             }
             return result;
+        }
+
+        protected final void storeChanges(
+                String indexerName, String root,
+                @NonNull final DocumentIndex docIndex,
+                final boolean optimize,
+                @NullAllowed final Iterable<? extends Indexable> indexables) throws IOException {
+            if (TEST_LOGGER.isLoggable(Level.FINEST)) {
+                TEST_LOGGER.log(Level.FINEST, "indexCommit:{0}:{1}", 
+                        new Object[] { indexerName, root });
+            }
+            storeChanges(docIndex, optimize, indexables);
         }
 
         protected final void storeChanges(

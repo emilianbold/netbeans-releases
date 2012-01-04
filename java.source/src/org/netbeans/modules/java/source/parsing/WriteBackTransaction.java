@@ -66,11 +66,10 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
- *
+ * 
  * @author sdedic
  */
 class WriteBackTransaction extends FileManagerTransaction {
@@ -106,10 +105,7 @@ class WriteBackTransaction extends FileManagerTransaction {
      * the files might be already flushed to shadow storage
      */
     private Map<String, Map<File, CachedFileObject>> contentCache = new HashMap<String, Map<File, CachedFileObject>>();
-    /**
-     * Files that should be moved upon commit
-     */
-    private Collection<CachedFileObject> filesToMove = new ArrayList<CachedFileObject>();
+
     /**
      * Flag to indicate that the memory storage should be flushed; the flag is set
      * from CacheRef, and reset by flush()
@@ -192,14 +188,18 @@ class WriteBackTransaction extends FileManagerTransaction {
         Collection<JavaFileObject> toAdd = getFileObjects(packageName);
         Collection<Iterable<JavaFileObject>> chain = new ArrayList<Iterable<JavaFileObject>>(2);
         chain.add(toAdd);
-        chain.add(Iterators.filter(res, new Comparable<JavaFileObject>() {
-
-            public int compareTo(@NonNull final JavaFileObject o) {
-                final File f = toFile(o);
-                // we must also remove the added files, so the Iterator does not contain duplicates
-                return deleted.contains(f) || added.contains(f) ? 0 : -1;
-            }
-        }));
+        
+        chain.add(deleted.isEmpty()?
+            res:
+            Iterators.filter (
+                res,
+                new Comparable<JavaFileObject>() {
+                    public int compareTo(@NonNull final JavaFileObject o) {
+                        final File f = toFile(o);
+                        return deleted.contains(f) ? 0 : -1;
+                    }
+                }
+        ));
         return Iterators.chained(chain);
     }
 
@@ -237,15 +237,6 @@ class WriteBackTransaction extends FileManagerTransaction {
                 f.delete();
             }
             flushFiles(true);
-            contentCache.clear();
-            for (CachedFileObject cfo : filesToMove) {
-                try {
-                    cfo.commit();
-                } catch (IOException ex) {
-                    // log & continue
-                    Exceptions.printStackTrace(ex);
-                }
-            }
         } finally {
             clean();
         }
@@ -256,7 +247,9 @@ class WriteBackTransaction extends FileManagerTransaction {
         for (Map<File, CachedFileObject> dirContent : contentCache.values()) {
             for (CachedFileObject cfo : dirContent.values()) {
                 cfo.flush(inCommit);
-                filesToMove.add(cfo);
+                if (inCommit) {
+                    cfo.commit();
+                }
             }
         }
     }
@@ -273,7 +266,6 @@ class WriteBackTransaction extends FileManagerTransaction {
         }
         deleted.clear();
         contentCache.clear();
-        filesToMove.clear();
     }
 
     @Override
@@ -359,7 +351,7 @@ class WriteBackTransaction extends FileManagerTransaction {
             if (wasCommitted()) {
                 delegate = (FileObjects.FileBase)FileObjects.fileFileObject(f, getRootFile(getFile(), getPackage()), filter, encoding);
             } else if (wasFlushed()) {
-                delegate = (FileObjects.FileBase)FileObjects.fileFileObject(shadowFile, getRootFile(getFile(), getPackage()), filter, encoding);
+                delegate = (FileObjects.FileBase)FileObjects.fileFileObject(shadowFile, getRootFile(shadowFile, getPackage()), filter, encoding);
             }
             return delegate;
         }
@@ -374,11 +366,15 @@ class WriteBackTransaction extends FileManagerTransaction {
          * @throws IOException if file cannot be written, or the target directory created
          */
         void flush(boolean inCommit) throws IOException {
+            if (wasFlushed()) {
+                return;
+            }
+
             // create directories up to the parent
             if (inCommit) {
                 shadowFile = this.f;
             }
-
+            
             File f = getCurrentFile();
             if (!f.getParentFile().mkdirs() && !f.getParentFile().exists()) {
                 throw new IOException();
@@ -405,11 +401,10 @@ class WriteBackTransaction extends FileManagerTransaction {
         }
         
         void commit() throws IOException {
-            if (!wasFlushed()) {
-                // write immediately to the final storage
-                shadowFile = f;
-                flush(true);
+            if (wasCommitted()) {
+                return;
             }
+            flush(true);
             File cur = getCurrentFile();
             if (f.equals(cur)) {
                 return;
@@ -436,7 +431,9 @@ class WriteBackTransaction extends FileManagerTransaction {
             if (delegate != null) {
                 return delegate.delete();
             } else {
-                writer.delete(toFile(this));
+                if (writer != null) {
+                    writer.delete(toFile(this));
+                }
                 return true;
             }
         }
@@ -459,13 +456,16 @@ class WriteBackTransaction extends FileManagerTransaction {
                 return delegate.openOutputStream();
             } else {
                 return new ByteArrayOutputStream() {
+                    boolean closed;
+                    
                     @Override
                     public void close() throws IOException {
                         // prevent work when close() called multiple times
-                        if (content != null) {
+                        if (closed) {
                             return;
                         }
                         super.close();
+                        closed = true;
                         content = toByteArray();
                         writer.maybeFlush();
                     }
