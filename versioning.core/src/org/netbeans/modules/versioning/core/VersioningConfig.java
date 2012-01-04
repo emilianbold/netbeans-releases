@@ -80,7 +80,7 @@ public class VersioningConfig {
     }
     
     public Preferences getPreferences() {
-        return NbPreferences.forModule(VersioningConfig.class);
+        return NbPreferences.root().node("org/netbeans/modules/versioning"); // NOI18N
     }
 
     /**

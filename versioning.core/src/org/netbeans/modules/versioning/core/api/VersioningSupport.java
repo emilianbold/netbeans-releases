@@ -44,12 +44,9 @@
 package org.netbeans.modules.versioning.core.api;
 
 import org.netbeans.modules.versioning.core.VersioningManager;
-import org.openide.util.NbPreferences;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.versioning.core.APIAccessor;
-import org.netbeans.modules.versioning.core.DelegatingVCS;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.*;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 
@@ -78,7 +75,7 @@ public final class VersioningSupport {
      * @see #PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE
      */
     public static Preferences getPreferences() {
-        return NbPreferences.forModule(VersioningSupport.class);
+        return VersioningConfig.getDefault().getPreferences();
     }
         
     /**

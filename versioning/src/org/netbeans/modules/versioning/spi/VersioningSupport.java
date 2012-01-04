@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import org.openide.util.NbPreferences;
-
 import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -76,7 +74,7 @@ public final class VersioningSupport {
      * @see #PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE
      */
     public static Preferences getPreferences() {
-        return NbPreferences.forModule(VersioningSupport.class);
+        return org.netbeans.modules.versioning.core.api.VersioningSupport.getPreferences();
     }
         
     /**
