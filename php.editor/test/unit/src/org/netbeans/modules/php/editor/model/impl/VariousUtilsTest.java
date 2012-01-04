@@ -228,4 +228,16 @@ public class VariousUtilsTest extends ModelTestBase{
         Collection<? extends FunctionScope> functions = ModelUtils.getDeclaredFunctions(topScope);
         assertEquals(2, functions.size());
     }
+
+    public void testIssue206727() throws Exception {
+        QualifiedName testName = QualifiedName.create("Nette\\Configurator");
+        Model model = getModel(prepareTestFile("testfiles/model/issue206727.php"));
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), 1);
+        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(testName, 1, namespaceScope);
+        assertEquals(2, fullyQualifiedName.getSegments().size());
+        assertEquals("Nette", fullyQualifiedName.getNamespaceName());
+        assertEquals("Configurator", fullyQualifiedName.getName());
+        assertEquals(QualifiedNameKind.FULLYQUALIFIED, fullyQualifiedName.getKind());
+    }
+    
 }
