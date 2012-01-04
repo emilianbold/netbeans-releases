@@ -144,11 +144,6 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     // ======================================================================================================
 
     /**
-     * Result of Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-     */
-//    private final Lookup.Result<VersioningSystem> systemsLookupResult;
-    
-    /**
      * Holds all registered versioning systems.
      */
     private final List<VCSSystemProvider.VersioningSystem> versioningSystems = new ArrayList<VCSSystemProvider.VersioningSystem>(5);

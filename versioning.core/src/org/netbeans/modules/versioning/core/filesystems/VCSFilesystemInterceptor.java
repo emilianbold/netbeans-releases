@@ -445,44 +445,10 @@ public final class VCSFilesystemInterceptor {
         }
     }
 
-    /*
-    private DelegatingInterceptor getInterceptor(FileEvent fe, String... forMethods) {
-        if (master == null) return nullDelegatingInterceptor;
-        FileObject fo = fe.getFile();
-        if (fo == null) return nullDelegatingInterceptor;
-        VCSFileProxy file = VCSFileProxy.createFileProxy(fo);
-        if (file == null) return nullDelegatingInterceptor;
-        
-        VersioningSystem lh = null; // XXX: needsLH(forMethods) ? master.getLocalHistory(file, !fo.isFolder()) : null;
-        VersioningSystem vs = master.getOwner(file, !fo.isFolder());
-
-        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : null;
-        VCSInterceptor lhInterceptor = lh != null ? lh.getInterceptor() : null;
-
-        if (vsInterceptor == null && lhInterceptor == null) return nullDelegatingInterceptor;
-
-        if (fe instanceof FileRenameEvent) {
-            FileRenameEvent fre = (FileRenameEvent) fe;
-            VCSFileProxy parent = file.getParentFile();
-            if (parent != null) {
-                String name = fre.getName();
-                String ext = fre.getExt();
-                if (ext != null && ext.length() > 0) {  // NOI18N
-                    name += "." + ext;  // NOI18N
-                }
-                VCSFileProxy from = VCSFileProxy.createFileProxy(parent, name);
-                return new DelegatingInterceptor(vsInterceptor, lhInterceptor, from, file, false);
-            }
-            return nullDelegatingInterceptor;
-        } else {
-            return new DelegatingInterceptor(vsInterceptor, lhInterceptor, file, null, false);
-        }
-    }
-*/
-    
     private static DelegatingInterceptor getInterceptor(VCSFileProxy file, String... forMethods) {
         return getInterceptor(file, file.isDirectory(), forMethods);
     }
+    
     private static DelegatingInterceptor getInterceptor(VCSFileProxy file, Boolean isDirectory, String... forMethods) {
         if (file == null || master == null) return nullDelegatingInterceptor;
 
@@ -767,16 +733,6 @@ public final class VCSFilesystemInterceptor {
          */
         @Override
         public void handle() throws IOException {
-//            VCSFileProxy[] children = file.listFiles();
-//            if (children != null) {
-//                synchronized (deletedFiles) {
-//                    for (VCSFileProxy child : children) {
-//                        if (!deletedFiles.contains(child)) {
-//                            throw new IOException();
-//                        }
-//                    }
-//                }
-//            }
             lhInterceptor.doDelete(file);
             interceptor.doDelete(file);
             synchronized (deletedFiles) {
