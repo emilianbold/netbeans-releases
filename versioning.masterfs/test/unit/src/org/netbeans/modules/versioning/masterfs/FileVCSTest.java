@@ -45,7 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.versioning.GetOwnerTestCase;
+import org.netbeans.modules.versioning.VCSOwnerTestCase;
 import org.netbeans.modules.versioning.VCSInterceptorTestCase;
 import org.netbeans.modules.versioning.VCSAnnotationProviderTestCase;
 import org.netbeans.modules.versioning.VCSFilesystemTestFactory;
@@ -84,7 +84,7 @@ public class FileVCSTest extends VCSFilesystemTestFactory {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(GetOwnerTestCase.class);
+        suite.addTestSuite(VCSOwnerTestCase.class);
         suite.addTestSuite(VCSInterceptorTestCase.class);
         suite.addTestSuite(VCSAnnotationProviderTestCase.class);
         return new FileVCSTest(suite);

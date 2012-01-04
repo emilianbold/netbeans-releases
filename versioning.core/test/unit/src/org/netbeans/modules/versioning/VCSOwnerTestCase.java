@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 
-public class GetOwnerTestCase extends NbTestCase {
+public class VCSOwnerTestCase extends NbTestCase {
     
     protected File dataRootDir;
     private StatFiles accessMonitor;
@@ -69,7 +69,7 @@ public class GetOwnerTestCase extends NbTestCase {
     protected File versionedFolder;
     protected File unversionedFolder;
 
-    public GetOwnerTestCase(String testName) {
+    public VCSOwnerTestCase(String testName) {
         super(testName);
         accessMonitor = new StatFiles();
     }
