@@ -235,6 +235,13 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node visit(PropertyNode propertyNode, boolean onset) {
+        if (onset && propertyNode.getKey() instanceof IdentNode) {
+            ScopeImpl scope = modelBuilder.getCurrentScope();
+            IdentNode key = (IdentNode)propertyNode.getKey();
+            scope.addElement(new FieldImpl(scope, 
+                    new IdentifierImpl(key.getName(), 
+                    new OffsetRange(key.getStart(), key.getFinish()))));
+        }
         return super.visit(propertyNode, onset);
     }
 
