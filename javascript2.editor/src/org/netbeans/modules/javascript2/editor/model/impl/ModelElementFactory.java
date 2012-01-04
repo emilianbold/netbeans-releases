@@ -125,6 +125,7 @@ public final class ModelElementFactory {
                 result = new ObjectScopeImpl(fScope, fqNameOfCreated,fqNameOfCreated.get(0).getOffsetRange());
                 ((FileScopeImpl)fScope).addObject(result);
             }
+            ModelElement inElement = result;
             for(int i = 1; i < fqName.size(); i++) {
                 ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(result.getElements(), fqName.get(i).getName()));
                 fqNameOfCreated.add(fqName.get(i));
@@ -133,17 +134,18 @@ public final class ModelElementFactory {
                 } else {
                     result = (ObjectScopeImpl)me;
                     if (result.isLogical() && (i == fqName.size() - 1)) {
-                        ((ScopeImpl)result.getInElement()).removeElement(result);
+                        ((ScopeImpl)inElement).removeElement(result);
                         if (result.getInElement() instanceof FileScopeImpl) {
                             ((FileScopeImpl) result.getInElement()).getLogicalElements().remove(result);
                         }
-                        ObjectScopeImpl newObject =  new ObjectScopeImpl((Scope)result.getInElement(), object, fqName);
+                        ObjectScopeImpl newObject =  new ObjectScopeImpl((Scope)inElement, object, fqName);
                         for (ModelElement element : result.getElements()) {
                             newObject.addElement((ModelElementImpl)element);
                         }
                         result = newObject;
                     }
                 }
+                inElement = result;
             }
         }
         
