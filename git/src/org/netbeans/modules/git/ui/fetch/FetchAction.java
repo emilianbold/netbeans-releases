@@ -102,7 +102,7 @@ public class FetchAction extends GetRemoteChangesAction {
             protected void perform () {
                 try {
                     GitClient client = getClient();
-                    Map<String, GitTransportUpdate> updates = client.fetch(remote, fetchRefSpecs, this);
+                    Map<String, GitTransportUpdate> updates = client.fetch(remote, fetchRefSpecs, getProgressMonitor());
                     log(updates, getLogger());
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);

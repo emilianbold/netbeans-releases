@@ -247,9 +247,9 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         } else {
                             client = getClient();
                         }
-                        remoteBranches = client.listRemoteBranches(uri, this);
+                        remoteBranches = client.listRemoteBranches(uri, getProgressMonitor());
                         if (!isCanceled() && mode == Mode.PUSH) {
-                            remoteTags = client.listRemoteTags(uri, this);
+                            remoteTags = client.listRemoteTags(uri, getProgressMonitor());
                         }
                     } catch (GitException ex) {
                         if (panel.rbCreateNew.isSelected()) {

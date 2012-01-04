@@ -55,6 +55,7 @@ import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -121,25 +122,25 @@ class SearchExecutor extends GitProgressSupport {
             return;
         }
         try {
-            List<RepositoryRevision> results = search(limitRevisions, getClient(), this);
+            List<RepositoryRevision> results = search(limitRevisions, getClient(), getProgressMonitor());
             setResults(results);
         } catch (GitException ex) {
             GitClientExceptionHandler.notifyException(ex, true);
         }
     }
 
-    List<RepositoryRevision> search (int limit, GitClient client, GitProgressSupport support) throws GitException {
+    List<RepositoryRevision> search (int limit, GitClient client, ProgressMonitor monitor) throws GitException {
         sc.setLimit(limit);
         List<RepositoryRevision> retval = Collections.<RepositoryRevision>emptyList();
-        GitRevisionInfo[] messages = client.log(sc, support);
-        if (!support.isCanceled()) {
+        GitRevisionInfo[] messages = client.log(sc, monitor);
+        if (!monitor.isCanceled()) {
             RepositoryInfo info = RepositoryInfo.getInstance(getRepositoryRoot());
-            retval = appendResults(messages, info.getBranches().values(), info.getTags().values(), support);
+            retval = appendResults(messages, info.getBranches().values(), info.getTags().values(), monitor);
         }
         return retval;
     }
 
-    private List<RepositoryRevision> appendResults (GitRevisionInfo[] logMessages, Collection<GitBranch> allBranches, Collection<GitTag> allTags, GitProgressSupport support) {
+    private List<RepositoryRevision> appendResults (GitRevisionInfo[] logMessages, Collection<GitBranch> allBranches, Collection<GitTag> allTags, ProgressMonitor monitor) {
         List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
         File dummyFile = null;
         String dummyFileRelativePath = null;
@@ -148,7 +149,7 @@ class SearchExecutor extends GitProgressSupport {
             dummyFile = master.getRoots()[0];
             dummyFileRelativePath = GitUtils.getRelativePath(getRepositoryRoot(), dummyFile);
         }
-        for (int i = 0; i < logMessages.length && !support.isCanceled(); ++i) {
+        for (int i = 0; i < logMessages.length && !monitor.isCanceled(); ++i) {
             GitRevisionInfo logMessage = logMessages[i];
             RepositoryRevision rev;
             Set<GitBranch> branches = new HashSet<GitBranch>();

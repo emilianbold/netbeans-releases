@@ -82,6 +82,7 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
@@ -656,7 +657,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        final java.util.Map<String, GitBranch> branches = client.getBranches(true, this);
+                        final java.util.Map<String, GitBranch> branches = client.getBranches(true, getProgressMonitor());
                         if (!isCanceled()) {
                             refreshBranches(branches);
                         }
@@ -990,7 +991,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        final java.util.Map<String, GitTag> tags = client.getTags(NULL_PROGRESS_MONITOR, false);
+                        final java.util.Map<String, GitTag> tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, false);
                         if (!isCanceled()) {
                             refreshTags(tags);
                         }

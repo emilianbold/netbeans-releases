@@ -161,18 +161,18 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        client.init(this);
-                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, this);
+                        client.init(getProgressMonitor());
+                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, getProgressMonitor());
                         log(updates);
                         
                         if(isCanceled()) {
                             return;
                         }
 
-                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), this);
+                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), getProgressMonitor());
                         org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
-                        client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
-                        client.checkoutRevision(branch.getName(), true, this);
+                        client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
+                        client.checkoutRevision(branch.getName(), true, getProgressMonitor());
 
                         Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
                         Git.getInstance().versionedFilesChanged();                       

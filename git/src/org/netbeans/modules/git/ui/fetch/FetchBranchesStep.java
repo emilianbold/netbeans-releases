@@ -197,8 +197,8 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                             final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
                             try {
                                 GitClient client = getClient();
-                                client.init(this);
-                                branches.putAll(client.listRemoteBranches(uri, this));
+                                client.init(getProgressMonitor());
+                                branches.putAll(client.listRemoteBranches(uri, getProgressMonitor()));
                                 if (repository != null) {
                                     RepositoryInfo info = RepositoryInfo.getInstance(repository);
                                     info.refresh();

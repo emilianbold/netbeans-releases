@@ -565,7 +565,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         protected void perform () {
             final List<RepositoryRevision> newResults;
             try {
-                newResults = executor.search(count, getClient(), this);
+                newResults = executor.search(count, getClient(), getProgressMonitor());
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
                 return;

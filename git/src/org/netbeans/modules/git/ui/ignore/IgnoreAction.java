@@ -139,7 +139,7 @@ public class IgnoreAction extends MultipleRepositoryAction {
                                 notifiedFiles.add(file);
                             }
                         });
-                        modifiedIgnores = client.ignore(toIgnore, this);
+                        modifiedIgnores = client.ignore(toIgnore, getProgressMonitor());
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {
