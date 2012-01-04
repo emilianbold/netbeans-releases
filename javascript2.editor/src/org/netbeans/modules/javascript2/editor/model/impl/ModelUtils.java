@@ -121,7 +121,7 @@ public class ModelUtils {
     }
     
     @CheckForNull
-    public static <T> T getFirst(Collection<? extends T> all) {
+    public static <T extends ModelElement> T getFirst(Collection<? extends T> all) {
         if (all instanceof List) {
             return all.size() > 0 ? ((List<T>)all).get(0) : null;
         }
@@ -147,6 +147,16 @@ public class ModelUtils {
             }
         }
         return retval;
+    }
+    
+    public static ModelElement find(final Collection<? extends ModelElement> instances, final JsElement.Kind kind, final String name) {
+        return getFirst(filter(instances, new ElementFilter() {
+            
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getJSKind().equals(kind) && element.getName().equals(name);
+            }
+        }));
     }
     
     public static Collection<? extends ObjectScope> getObjects(FileScope fileScope) {

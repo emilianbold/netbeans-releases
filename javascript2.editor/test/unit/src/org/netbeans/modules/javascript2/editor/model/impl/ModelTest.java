@@ -260,4 +260,24 @@ public class ModelTest extends JsTestBase {
         assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "size")));
         assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "quality")));
     }
+    
+    public void testPrivateMethod01() throws Exception {
+        Model model = getModel("testfiles/model/privateMethod.js");
+        assertNotNull(model);
+        
+        FileScope fScope = model.getFileScope();
+        assertEquals(3, fScope.getElements().size());
+        
+        ObjectScope object = (ObjectScope)ModelUtils.find(fScope.getElements(), JsElement.Kind.OBJECT, "MyClass");
+        assertEquals("MyClass", object.getName());
+        assertEquals(1, object.getElements().size());
+        FunctionScope constructor = (FunctionScope)ModelUtils.find(object.getElements(), JsElement.Kind.CONSTRUCTOR, "MyClass");
+        assertEquals(3, constructor.getElements().size());
+        FunctionScope method = (FunctionScope)ModelUtils.find(constructor.getElements(), JsElement.Kind.METHOD, "method1");
+        assertTrue(method.getModifiers().contains(Modifier.PUBLIC));
+        method = (FunctionScope)ModelUtils.find(constructor.getElements(), JsElement.Kind.METHOD, "method2");
+        assertTrue(method.getModifiers().contains(Modifier.PRIVATE));
+        
+        assertNotNull(ModelUtils.find(constructor.getElements(), JsElement.Kind.FIELD, "method2"));
+    }
 }
