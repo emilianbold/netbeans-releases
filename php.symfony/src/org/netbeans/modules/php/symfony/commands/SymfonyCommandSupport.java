@@ -225,7 +225,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected File getPluginsDirectory() {
-        FileObject plugins = SymfonyPhpFrameworkProvider.locate(phpModule, "plugins", true);
+        FileObject plugins = SymfonyPhpFrameworkProvider.locate(phpModule, "plugins", true); // NOI18N
         if (plugins != null && plugins.isFolder()) {
             return FileUtil.toFile(plugins);
         }
