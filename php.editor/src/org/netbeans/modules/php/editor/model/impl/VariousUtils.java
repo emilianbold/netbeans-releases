@@ -392,7 +392,11 @@ public class VariousUtils {
                         recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag),varScope);
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
                         //new FooImpl()-> not allowed in php
-                        return Collections.emptyList();
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(frag, varScope), offset, varScope);
+                        newRecentTypes.addAll(IndexScopeImpl.getClasses(fullyQualifiedName, varScope));
+                        recentTypes = newRecentTypes;
+                        operation = null;
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
@@ -833,6 +837,7 @@ public class VariousUtils {
 
     public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
         int commasCount = 0;
+        String possibleClassName = null;
         int anchor = -1;
         int leftBraces = 0;
         int rightBraces = State.PARAMS.equals(state) ? 1 : 0;
@@ -905,6 +910,8 @@ public class VariousUtils {
                             leftBraces++;
                         } else if (isRightBracket(token)) {
                             rightBraces++;
+                        } else if (isString(token)) {
+                            possibleClassName = token.text().toString();
                         }
                         if (leftBraces == rightBraces) {
                             state = State.FUNCTION;
@@ -971,6 +978,10 @@ public class VariousUtils {
                     } else {
                         metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
+                    break;
+                } else if (state.equals(State.PARAMS) && possibleClassName != null && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
+                    state = State.STOP;
+                    metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
                     break;
                 }
             }

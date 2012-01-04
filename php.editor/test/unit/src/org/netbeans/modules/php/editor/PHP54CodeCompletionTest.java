@@ -88,6 +88,14 @@ public class PHP54CodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/php54/shortArrays.php", "$xxxAr^r;", false);
     }
 
+    public void testAnonymousObjectVariables_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/php54/anonymousObjectVariables.php", "(new AnonymousObject)->^bar;", false);
+    }
+
+    public void testAnonymousObjectVariables_02() throws Exception {
+        checkCompletion("testfiles/completion/lib/php54/anonymousObjectVariables.php", "(new AnonymousObject(new Bar($baz, $bat)))->^baz();", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
