@@ -73,7 +73,13 @@ public class WLServerLibraryManager implements ServerLibraryManager {
 
     private static final Version JSF2_SPEC_VERSION = Version.fromJsr277OrDottedNotationWithFallback("2.0"); // NOI18N
 
+    private static final String JAX_RS_SPEC_TITLE_START = "JAX-RS"; // NOI18N
+
+    private static final Version JAX_RS_SPEC_VERSION = Version.fromJsr277OrDottedNotationWithFallback("1.1"); // NOI18N
+
     private static final Version JSF2_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
+
+    private static final Version JAX_RS_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
     private final WLDeploymentManager manager;
 
@@ -119,11 +125,11 @@ public class WLServerLibraryManager implements ServerLibraryManager {
     // this handles only archives
     @Override
     public Set<ServerLibrary> getDeployableLibraries() {
+        Map<ServerLibrary, File> deployable = support.getDeployableFiles();
         if (JSF2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(manager.getServerVersion())) {
             // we are handling jsf 2 in dummy library here - it should not be offered
             // via this API method, but for legacy apps the missing/deploy machinery
             // has to be available
-            Map<ServerLibrary, File> deployable = support.getDeployableFiles();
             for (Iterator<Map.Entry<ServerLibrary, File>> it = deployable.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<ServerLibrary, File> entry = it.next();
                 ServerLibrary lib = entry.getKey();
@@ -135,9 +141,27 @@ public class WLServerLibraryManager implements ServerLibraryManager {
                     break;
                 }
             }
-            return deployable.keySet();
         }
-        return support.getDeployableFiles().keySet();
+        if (JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(manager.getServerVersion())) {
+            // we are handling jersey in dummy library here - it should not be offered
+            // via this API method, but for legacy apps the missing/deploy machinery
+            // has to be available
+            // TODO perhaps we should filter out the jersey based on modules on classpath
+            // rather than constant
+            for (Iterator<Map.Entry<ServerLibrary, File>> it = deployable.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<ServerLibrary, File> entry = it.next();
+                ServerLibrary lib = entry.getKey();
+                if (lib.getSpecificationTitle() != null &&
+                        lib.getSpecificationTitle().startsWith(JAX_RS_SPEC_TITLE_START)
+                        && JAX_RS_SPEC_VERSION.isBelowOrEqual(lib.getSpecificationVersion())
+                        // defensive check on size
+                        && entry.getValue().length() < 10240) {
+                    it.remove();
+                    break;
+                }
+            }
+        }
+        return deployable.keySet();
     }
 
     @Override
