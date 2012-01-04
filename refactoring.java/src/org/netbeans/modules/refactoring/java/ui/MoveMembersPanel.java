@@ -318,7 +318,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                     JavaSource javaSource = JavaSource.forFileObject(fileObject);
                     if (javaSource != null) {
                         try {
-                            javaSource.runWhenScanFinished(new ElementScanningTask(), true);
+                            javaSource.runUserActionTask(new ElementScanningTask(), true);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }

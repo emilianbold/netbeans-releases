@@ -882,8 +882,8 @@ public class FileObjects {
 
         private static final boolean isWindows = Utilities.isWindows();
         protected final File f;
-        private final JavaFileFilterImplementation filter;
-        private final Charset encoding;
+        protected final JavaFileFilterImplementation filter;
+        protected final Charset encoding;
         private URI uriCache;
 
         protected FileBase (final File file,

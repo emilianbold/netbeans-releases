@@ -59,6 +59,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -92,15 +93,10 @@ class JavaParsingContext {
     final SourceAnalyser sa;
     private final Iterable<? extends JavaIndexerPlugin> pluginsCache;
 
-    public JavaParsingContext(final Context context) throws IOException, NoSuchAlgorithmException {
-        this(context, false);
-    }
-    
     JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException, NoSuchAlgorithmException {
         final FileObject root = context.getRoot();
         final URL rootURL = context.getRootURI();
         final boolean rootNotNeeded = allowNonExistentRoot && root == null;
-        cpInfo = rootNotNeeded ? null : ClasspathInfo.create(root);
         sourceLevel = rootNotNeeded ? null : SourceLevelQuery.getSourceLevel(root);
         filter = rootNotNeeded ? null : JavaFileFilterQuery.getFilter(root);
         encoding = rootNotNeeded ? null : FileEncodingQuery.getEncoding(root);
@@ -109,6 +105,31 @@ class JavaParsingContext {
         checkSums = CheckSums.forContext(context);
         fqn2Files = FQN2Files.forRoot(rootURL);
         pluginsCache = createPlugins(rootURL, context.getIndexFolder());
+        if (!rootNotNeeded) {
+            ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+            if (bootPath == null) {
+                bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+            }
+            ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+            if (compilePath == null) {
+                compilePath = ClassPath.EMPTY;
+            }
+            ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+            if (srcPath == null) {
+                srcPath = ClassPath.EMPTY;
+            }
+            cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
+                bootPath,
+                compilePath,
+                srcPath,
+                null,
+                true,
+                context.isSourceForBinaryRootIndexing(),
+                false,
+                context.checkForEditorModifications());
+        } else {
+            cpInfo = null;
+        }
     }
 
     public JavaParsingContext(final Context context, final ClassPath bootPath, final ClassPath compilePath, final ClassPath sourcePath,

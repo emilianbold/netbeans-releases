@@ -926,24 +926,23 @@ public final class ClassIndex {
                         //trying to access javac lock in this thread may cause deadlock with Java Worker Thread
                         //because the classpath events are fired under the project mutex and it's legal to
                         //aquire project mutex in the CancellableTask.run()
-                        JavaSourceAccessor.getINSTANCE().runSpecialTask(new Mutex.ExceptionAction<Void>() {
-                            
-                            public Void run() {
+                        fireByWorker(new Runnable() {
+                            @Override
+                            public void run() {
                                 assertParserEventThread();
                                 if (ae != null) {
                                     for (ClassIndexListener l : listeners) {
                                         l.rootsAdded(ae);
-                                    }                        
+                                    }
                                 }
                                 if (re != null) {
                                     for (ClassIndexListener l : listeners) {
                                         l.rootsRemoved(re);
                                     }
                                 }
-                                return null;
-                            }                            
-                        }, JavaSource.Priority.MAX);                        
-                    }                    
+                            }
+                        });
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
@@ -955,31 +954,8 @@ public final class ClassIndex {
         assert action != null;
         if (Utilities.isTaskProcessorThread(Thread.currentThread())) {
             action.run();
-        }
-        else {
-            Utilities.scheduleSpecialTask(
-                new ParserResultTask() {
-                    @Override
-                    public int getPriority() {
-                        return 0;
-                    }
-
-                    @Override
-                    public Class<? extends Scheduler> getSchedulerClass() {
-                        return null;
-                    }
-
-                    @Override
-                    public void cancel() {
-                        //Firing not cancallable
-                    }
-
-                    @Override
-                    public void run(Result _null, SchedulerEvent event) {
-                        action.run();
-                    }
-
-                });
+        } else {
+            Utilities.scheduleSpecialTask(action, 0);
         }
     }
 
