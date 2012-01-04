@@ -61,6 +61,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramExcept
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
@@ -112,12 +113,13 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
         if (processBuilder == null) {
             return null;
         }
-        Symfony2Script symfony2Script = null;
+
+        Symfony2Script symfony2Script;
         try {
             symfony2Script = Symfony2Script.forPhpModule(phpModule, warnUser);
         } catch (InvalidPhpProgramException ex) {
             if (warnUser) {
-                UiUtils.invalidScriptProvided(ex.getMessage());
+                UiUtils.invalidScriptProvided(ex.getMessage(), Symfony2OptionsPanelController.OPTIONS_SUBPATH);
             }
             return null;
         }
@@ -134,6 +136,10 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
+        // validate
+        if (getProcessBuilder(true) == null) {
+            return null;
+        }
         File output = redirectScriptOutput("list", "--xml"); // NOI18N
         if (output == null) {
             return null;

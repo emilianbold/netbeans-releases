@@ -261,7 +261,7 @@ public class ApiGenOptionsPanel extends JPanel {
         "ApiGenOptionsPanel.search.scripts.notFound=No ApiGen scripts found."
     })
     private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        String ppwScript = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+        String script = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
             @Override
             public List<String> detect() {
                 return FileUtils.findFileOnUsersPath(ApiGenScript.SCRIPT_NAME, ApiGenScript.SCRIPT_NAME_LONG);
@@ -283,8 +283,8 @@ public class ApiGenOptionsPanel extends JPanel {
                 return Bundle.ApiGenOptionsPanel_search_scripts_notFound();
             }
         });
-        if (ppwScript != null) {
-            apiGenTextField.setText(ppwScript);
+        if (script != null) {
+            apiGenTextField.setText(script);
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
