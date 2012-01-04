@@ -77,9 +77,9 @@ public class GetOwnerTestCase extends NbTestCase {
     protected File getVersionedFolder() {
         if (versionedFolder == null) {
             versionedFolder = new File(dataRootDir, "workdir/root-" + TestAnnotatedVCS.VERSIONED_FOLDER_SUFFIX);
-            versionedFolder.mkdirs();
-            new File(versionedFolder, TestAnnotatedVCS.TEST_VCS_METADATA).mkdirs();
-        }
+                versionedFolder.mkdirs();
+                new File(versionedFolder, TestAnnotatedVCS.TEST_VCS_METADATA).mkdirs();
+            }
         return versionedFolder;
     }
     
@@ -95,14 +95,34 @@ public class GetOwnerTestCase extends NbTestCase {
         super.setUp();
         MockLookup.setLayersAndInstances();
         dataRootDir = getWorkDir();
-        File userdir = new File(getWorkDir(), "userdir");
+        File userdir = new File(dataRootDir, "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        if(!dataRootDir.exists()) dataRootDir.mkdirs();
         if(accessMonitor != null) {
             if(defaultSecurityManager == null) {
                 defaultSecurityManager = System.getSecurityManager();
             }
             System.setSecurityManager(accessMonitor);
+        }
+        File f = new File(dataRootDir, "workdir");
+        deleteRecursively(f);
+        f.mkdirs();
+        getVersionedFolder();
+        getUnversionedFolder();
+    }
+    
+    private void deleteRecursively(File f) {
+        if(f.isFile()) {
+            f.delete();
+        } else {
+            File[] files = f.listFiles();
+            if(files != null) {
+                for (File file : files) {
+                    deleteRecursively(file);
+                    file.delete();
+                }
+            }
         }
     }
 
@@ -175,13 +195,13 @@ public class GetOwnerTestCase extends NbTestCase {
     }
     
     public void testGetOwnerUnversioned() throws IOException {
-        File aRoot = File.listRoots()[0];
-        VCSFileProxy rootProxy = toVCSFileProxy(aRoot);
-        assertNull(VersioningSupport.getOwner(rootProxy));
-        aRoot = dataRootDir;
-        assertNull(VersioningSupport.getOwner(rootProxy));
+//        File aRoot = File.listRoots()[0];
+//        VCSFileProxy rootProxy = toVCSFileProxy(aRoot);
+//        assertNull(VersioningSupport.getOwner(rootProxy));
+        File aRoot = dataRootDir;
+        assertNull(VersioningSupport.getOwner(toVCSFileProxy(aRoot)));
         aRoot = new File(dataRootDir, "workdir");
-        assertNull(VersioningSupport.getOwner(rootProxy));               
+        assertNull(VersioningSupport.getOwner(toVCSFileProxy(aRoot)));               
         
         assertNull(VersioningSupport.getOwner(toVCSFileProxy(getUnversionedFolder())));        
 
@@ -190,7 +210,10 @@ public class GetOwnerTestCase extends NbTestCase {
         assertNull(VersioningSupport.getOwner(toVCSFileProxy(f)));
         
         f = new File(getUnversionedFolder(), "notexistent.txt");
-        assertNull(VersioningSupport.getOwner(toVCSFileProxy(f)));        
+        f.createNewFile();
+        VCSFileProxy proxy = toVCSFileProxy(f);
+        f.delete();
+        assertNull(VersioningSupport.getOwner(proxy));        
     }
     
     public void testFileOwnerCache() throws IOException {
@@ -208,18 +231,18 @@ public class GetOwnerTestCase extends NbTestCase {
         f.setAccessible(true);
         f.set(Utils.class, (File[]) null);
 
-        File a = new File(getWorkDir(), "a");
-        File b = new File(getWorkDir(), "b");
+        File a = new File(getWorkDir(), "a"); a.createNewFile();
+        File b = new File(getWorkDir(), "b"); b.createNewFile();
         System.setProperty("versioning.unversionedFolders", a.getAbsolutePath() + ";" + b.getAbsolutePath() + ";");
-        File c = new File(getWorkDir(), "c");
+        File c = new File(dataRootDir, "c"); c.createNewFile();
         VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
         File userdir = new File(getWorkDir(), "userdir");
-        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(a)));
         assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(b)));
         assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(c)));
         assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(userdir)));
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(new File(userdir, "ffff"))));
+        File userDirFile = new File(userdir, "ffff"); userDirFile.createNewFile();
+        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(userDirFile)));
         assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userdir.getParentFile())));
 
         assertEquals(4, ((VCSFileProxy[]) f.get(Utils.class)).length);
@@ -233,7 +256,7 @@ public class GetOwnerTestCase extends NbTestCase {
         assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(b)));
         assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(c)));
         assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userdir)));
-        assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(new File(userdir, "ffff"))));
+        assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userDirFile)));
         assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userdir.getParentFile())));
 
         assertEquals(3, ((VCSFileProxy[]) f.get(Utils.class)).length);
@@ -298,7 +321,12 @@ public class GetOwnerTestCase extends NbTestCase {
     }    
 
     protected VCSFileProxy toVCSFileProxy(File file) throws IOException {
+        refreshWorkdir();        
         return VCSTestFactory.getInstance(this).toVCSFileProxy(file);
+    }
+
+    private void refreshWorkdir() throws IOException {
+        VCSTestFactory.getInstance(this).toVCSFileProxy(new File(dataRootDir, "workdir")).toFileObject().refresh();
     }
 
     private Class getVCS() {

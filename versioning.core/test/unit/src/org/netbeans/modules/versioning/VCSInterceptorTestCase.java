@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.masterfs;
+package org.netbeans.modules.versioning;
 
 
 import java.io.File;
@@ -67,12 +67,12 @@ import org.openide.util.test.MockLookup;
  * 
  * @author Maros Sandor
  */
-public class VCSInterceptorTest extends NbTestCase {
+public class VCSInterceptorTestCase extends NbTestCase {
     
     private File dataRootDir;
     private TestVCSInterceptor inteceptor;
 
-    public VCSInterceptorTest(String testName) {
+    public VCSInterceptorTestCase(String testName) {
         super(testName);
     }
 
@@ -108,33 +108,35 @@ public class VCSInterceptorTest extends NbTestCase {
     }
 
     public void testIsMutable() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        FileObject fo = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
+        FileObject fo = proxy.toFileObject();
         fo = fo.createData("checkme.txt");
-        File file = FileUtil.toFile(fo);
         fo.canWrite();
-        assertTrue(inteceptor.getBeforeCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getDoCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getCreatedFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertFalse(inteceptor.getIsMutableFiles().contains(VCSFileProxy.createFileProxy(file)));
+        proxy = VCSFileProxy.createFileProxy(fo);
         
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getCreatedFiles().contains(proxy));
+        assertFalse(inteceptor.getIsMutableFiles().contains(proxy));
+        
+        File file = new File(dataRootDir, "workdir/root-test-versioned/checkme.txt");
         file.setReadOnly();
+        refreshWorkdir();
         fo.canWrite();
-        assertTrue(inteceptor.getIsMutableFiles().contains(VCSFileProxy.createFileProxy(file)));
+        assertTrue(inteceptor.getIsMutableFiles().contains(proxy));
     }
 
     public void testGetAttribute() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        FileObject folder = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
+        FileObject folder = proxy.toFileObject();
         FileObject fo = folder.createData("gotattr.txt");
-        File file = FileUtil.toFile(fo);
         
         String attr = (String) fo.getAttribute("whatever");
         assertNull(attr);
 
         attr = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
         assertNotNull(attr);
-        assertTrue(attr.endsWith(file.getName()));
+        assertTrue(attr.endsWith("gotattr.txt"));
 
 
         attr = (String) fo.getAttribute("whatever");
@@ -146,8 +148,8 @@ public class VCSInterceptorTest extends NbTestCase {
         assertTrue(battr);
 
 
-        f = new File(dataRootDir, "workdir");
-        folder = FileUtil.toFileObject(f);
+        proxy = createProxy(new File(dataRootDir, "workdir"));
+        folder = proxy.toFileObject();
         fo = folder.createData("unversioned.txt");
 
         fo = folder.createData("versioned.txt");
@@ -157,78 +159,81 @@ public class VCSInterceptorTest extends NbTestCase {
     }
 
     public void testRefreshRecursively() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        f.mkdirs();
-        FileObject fo = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
+        FileObject fo = proxy.toFileObject();
         fo = fo.createFolder("folder");
         fo.addRecursiveListener(new FileChangeAdapter());
-        assertTrue(inteceptor.getRefreshRecursivelyFiles().contains(VCSFileProxy.createFileProxy(FileUtil.toFile(fo))));     
+        assertTrue(inteceptor.getRefreshRecursivelyFiles().contains(VCSFileProxy.createFileProxy(fo)));     
     }
 
     public void testChangedFile() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        FileObject fo = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
+        FileObject fo = proxy.toFileObject();
         fo = fo.createData("deleteme.txt");
-        File file = FileUtil.toFile(fo);
+        
         OutputStream os = fo.getOutputStream();
         os.close();
-        assertTrue(inteceptor.getBeforeCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getDoCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getCreatedFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getBeforeChangeFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getAfterChangeFiles().contains(VCSFileProxy.createFileProxy(file)));
+        
+        proxy = VCSFileProxy.createFileProxy(fo);
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getCreatedFiles().contains(proxy));
+        assertTrue(inteceptor.getBeforeChangeFiles().contains(proxy));
+        assertTrue(inteceptor.getAfterChangeFiles().contains(proxy));
     }
     
     public void testFileProtectedAndNotDeleted() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        FileObject fo = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
+        FileObject fo = proxy.toFileObject();
         fo = fo.createData("deleteme.txt-do-not-delete");
-        File file = FileUtil.toFile(fo);
         fo.delete();
-        assertTrue(file.isFile());
-        assertTrue(inteceptor.getBeforeCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getDoCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getCreatedFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getBeforeDeleteFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getDoDeleteFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getDeletedFiles().contains(VCSFileProxy.createFileProxy(file)));
+        
+        proxy = VCSFileProxy.createFileProxy(fo);
+        assertTrue(proxy.isFile());
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getCreatedFiles().contains(proxy));
+        assertTrue(inteceptor.getBeforeDeleteFiles().contains(proxy));
+        assertTrue(inteceptor.getDoDeleteFiles().contains(proxy));
+        assertTrue(inteceptor.getDeletedFiles().contains(proxy));
     }
 
     public void testFileCreatedLockedRenamedDeleted() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        FileObject fo = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
+        FileObject fo = proxy.toFileObject();
         fo = fo.createData("deleteme.txt");
-        File file = FileUtil.toFile(fo);
+        proxy = VCSFileProxy.createFileProxy(fo);
         FileLock lock = fo.lock();
         fo.rename(lock, "deleteme", "now");
         lock.releaseLock();
-        File file2 = FileUtil.toFile(fo);
+        VCSFileProxy proxy2 = VCSFileProxy.createFileProxy(fo);
         fo.delete();
-        assertTrue(inteceptor.getBeforeCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getDoCreateFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getCreatedFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getBeforeEditFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getBeforeMoveFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getAfterMoveFiles().contains(VCSFileProxy.createFileProxy(file)));
-        assertTrue(inteceptor.getBeforeDeleteFiles().contains(VCSFileProxy.createFileProxy(file2)));
-        assertTrue(inteceptor.getDoDeleteFiles().contains(VCSFileProxy.createFileProxy(file2)));
-        assertTrue(inteceptor.getDeletedFiles().contains(VCSFileProxy.createFileProxy(file2)));
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
+        assertTrue(inteceptor.getCreatedFiles().contains(proxy));
+        assertTrue(inteceptor.getBeforeEditFiles().contains(proxy));
+        assertTrue(inteceptor.getBeforeMoveFiles().contains(proxy));
+        assertTrue(inteceptor.getAfterMoveFiles().contains(proxy));
+        assertTrue(inteceptor.getBeforeDeleteFiles().contains(proxy2));
+        assertTrue(inteceptor.getDoDeleteFiles().contains(proxy2));
+        assertTrue(inteceptor.getDeletedFiles().contains(proxy2));
     }
 
     public void testFileCopied() throws IOException {
-        File f = new File(dataRootDir, "workdir/root-test-versioned");
-        FileObject fo = FileUtil.toFileObject(f);
+        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
+        FileObject fo = proxy.toFileObject();
         fo = fo.createData("copyme.txt");
-        File from = FileUtil.toFile(fo);
 
         FileObject fto = fo.copy(fo.getParent(), "copymeto", "txt");
+        VCSFileProxy fromProxy = VCSFileProxy.createFileProxy(fo);
+        VCSFileProxy toProxy = VCSFileProxy.createFileProxy(fto);
 
-        assertTrue(inteceptor.getBeforeCopyFiles().contains(VCSFileProxy.createFileProxy(from)));
-        assertTrue(inteceptor.getBeforeCopyFiles().contains(VCSFileProxy.createFileProxy(FileUtil.toFile(fo))));
-        assertTrue(inteceptor.getDoCopyFiles().contains(VCSFileProxy.createFileProxy(from)));
-        assertTrue(inteceptor.getDoCopyFiles().contains(VCSFileProxy.createFileProxy(FileUtil.toFile(fo))));
-        assertTrue(inteceptor.getAfterCopyFiles().contains(VCSFileProxy.createFileProxy(from)));
-        assertTrue(inteceptor.getAfterCopyFiles().contains(VCSFileProxy.createFileProxy(FileUtil.toFile(fo))));
+        assertTrue(inteceptor.getBeforeCopyFiles().contains(fromProxy));
+        assertTrue(inteceptor.getBeforeCopyFiles().contains(toProxy));
+        assertTrue(inteceptor.getDoCopyFiles().contains(fromProxy));
+        assertTrue(inteceptor.getDoCopyFiles().contains(toProxy));
+        assertTrue(inteceptor.getAfterCopyFiles().contains(fromProxy));
+        assertTrue(inteceptor.getAfterCopyFiles().contains(toProxy));
     }
 
     public void testDeleteRecursively() throws IOException {
@@ -244,7 +249,7 @@ public class VCSInterceptorTest extends NbTestCase {
         f = new File(deepestFolder.getParentFile().getParentFile().getParentFile(), "file");
         f.createNewFile();
         
-        FileObject fo = FileUtil.toFileObject(deleteFolder);
+        FileObject fo = createProxy(deleteFolder).toFileObject();
         fo.delete();
         
         assertTrue(inteceptor.getDeletedFiles().contains(VCSFileProxy.createFileProxy(deleteFolder)));
@@ -264,4 +269,13 @@ public class VCSInterceptorTest extends NbTestCase {
             }
         }
     }
+    
+    private VCSFileProxy createProxy(File f) throws IOException {
+        refreshWorkdir();
+        return VCSTestFactory.getInstance(this).createVCSFileProxy(f.getAbsolutePath());
+    }
+    
+    private void refreshWorkdir() throws IOException {
+        VCSTestFactory.getInstance(this).toVCSFileProxy(new File(dataRootDir, "workdir")).toFileObject().refresh();
+    }    
 }

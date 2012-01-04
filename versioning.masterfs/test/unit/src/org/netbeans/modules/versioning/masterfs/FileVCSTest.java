@@ -39,12 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning;
+package org.netbeans.modules.versioning.masterfs;
 
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.versioning.GetOwnerTestCase;
+import org.netbeans.modules.versioning.VCSInterceptorTestCase;
+import org.netbeans.modules.versioning.VCSTestFactory;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +76,7 @@ public class FileVCSTest extends VCSTestFactory {
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(GetOwnerTestCase.class);
-//        suite.addTestSuite(GetAnnotatedOwnerTest.class);
+        suite.addTestSuite(VCSInterceptorTestCase.class);
         return new FileVCSTest(suite);
     }
     
