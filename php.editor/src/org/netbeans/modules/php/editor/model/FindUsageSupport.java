@@ -139,7 +139,7 @@ public final class FindUsageSupport {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         Result parameter = resultIterator.getParserResult();
-                        if (parameter instanceof PHPParseResult) {
+                        if (parameter != null && parameter instanceof PHPParseResult) {
                             Model model = ModelFactory.getModel((PHPParseResult)parameter);
                             ModelVisitor modelVisitor = model.getModelVisitor();
                             retval.addAll(modelVisitor.getOccurence(element));
@@ -163,7 +163,7 @@ public final class FindUsageSupport {
                 String name = element.getName();
                 final PhpElementKind kind = element.getPhpElementKind();
                 if (kind.equals(PhpElementKind.VARIABLE) || kind.equals(PhpElementKind.FIELD)) {
-                  name = name.startsWith("$") ? name.substring(1) : name;  
+                  name = name.startsWith("$") ? name.substring(1) : name;
                 } else if (kind.equals(PhpElementKind.METHOD) && MethodElement.CONSTRUCTOR_NAME.equalsIgnoreCase(name)) {
                     name = element.getInScope().getName();
                 }

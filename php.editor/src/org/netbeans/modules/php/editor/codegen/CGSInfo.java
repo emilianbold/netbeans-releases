@@ -169,54 +169,56 @@ public class CGSInfo {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ParserResult info = (ParserResult) resultIterator.getParserResult();
-                    int caretOffset = textComp.getCaretPosition();
-                    ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
-                    if (classDecl != null) {
-                        className = classDecl.getName().getName();
-                        if (info != null && className != null) {
-                            FileObject fileObject = info.getSnapshot().getSource().getFileObject();
-                            Index index = ElementQueryFactory.getIndexQuery(info);
-                            final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
-                            Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(className)));
-                            for (ClassElement classElement : classes) {
-                                ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
-                                final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
-                                accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
-                                accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
-                                accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
-                                final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
-                                final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
-                                final List<MethodProperty> properties = new ArrayList<MethodProperty>();
-                                final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
-                                for (final MethodElement methodElement : methods) {
-                                    if (!methodElement.isFinal()) {
-                                        properties.add(new MethodProperty(methodElement, enclosingType));
+                    if (info != null) {
+                        int caretOffset = textComp.getCaretPosition();
+                        ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
+                        if (classDecl != null) {
+                            className = classDecl.getName().getName();
+                            if (info != null && className != null) {
+                                FileObject fileObject = info.getSnapshot().getSource().getFileObject();
+                                Index index = ElementQueryFactory.getIndexQuery(info);
+                                final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
+                                Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(className)));
+                                for (ClassElement classElement : classes) {
+                                    ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
+                                    final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
+                                    accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
+                                    accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
+                                    accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
+                                    final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
+                                    final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
+                                    final List<MethodProperty> properties = new ArrayList<MethodProperty>();
+                                    final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
+                                    for (final MethodElement methodElement : methods) {
+                                        if (!methodElement.isFinal()) {
+                                            properties.add(new MethodProperty(methodElement, enclosingType));
+                                        }
                                     }
+                                    Collections.<MethodProperty>sort(properties, MethodProperty.getComparator());
+                                    getPossibleMethods().addAll(properties);
                                 }
-                                Collections.<MethodProperty>sort(properties, MethodProperty.getComparator());
-                                getPossibleMethods().addAll(properties);
                             }
-                        }
 
-                        List<String> existingGetters = new ArrayList<String>();
-                        List<String> existingSetters = new ArrayList<String>();
+                            List<String> existingGetters = new ArrayList<String>();
+                            List<String> existingSetters = new ArrayList<String>();
 
-                        PropertiesVisitor visitor = new PropertiesVisitor(getProperties(), existingGetters, existingSetters);
-                        visitor.scan(classDecl);
-                        String propertyName;
-                        boolean existGetter, existSetter;
-                        for (Property property : getProperties()) {
-                            propertyName = property.getName().toLowerCase();
-                            existGetter = existingGetters.contains(propertyName);
-                            existSetter = existingSetters.contains(propertyName);
-                            if (!existGetter && !existSetter) {
-                                getPossibleGettersSetters().add(property);
-                                getPossibleGetters().add(property);
-                                getPossibleSetters().add(property);
-                            } else if (!existGetter) {
-                                getPossibleGetters().add(property);
-                            } else if (!existSetter) {
-                                getPossibleSetters().add(property);
+                            PropertiesVisitor visitor = new PropertiesVisitor(getProperties(), existingGetters, existingSetters);
+                            visitor.scan(classDecl);
+                            String propertyName;
+                            boolean existGetter, existSetter;
+                            for (Property property : getProperties()) {
+                                propertyName = property.getName().toLowerCase();
+                                existGetter = existingGetters.contains(propertyName);
+                                existSetter = existingSetters.contains(propertyName);
+                                if (!existGetter && !existSetter) {
+                                    getPossibleGettersSetters().add(property);
+                                    getPossibleGetters().add(property);
+                                    getPossibleSetters().add(property);
+                                } else if (!existGetter) {
+                                    getPossibleGetters().add(property);
+                                } else if (!existSetter) {
+                                    getPossibleSetters().add(property);
+                                }
                             }
                         }
                     }

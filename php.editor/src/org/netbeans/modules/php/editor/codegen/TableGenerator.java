@@ -131,16 +131,18 @@ public class TableGenerator implements CodeGenerator {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ParserResult info = (ParserResult) resultIterator.getParserResult();
-                    ASTNodeUtilities.getVariablesInScope(info, component.getCaretPosition(), new VariableAcceptor() {
+                    if (info != null) {
+                        ASTNodeUtilities.getVariablesInScope(info, component.getCaretPosition(), new VariableAcceptor() {
 
-                        @Override
-                        public boolean acceptVariable(String variableName) {
-                            if (variableName.contains("conn")) { // NOI18N
-                                connVariables.add(variableName);
+                            @Override
+                            public boolean acceptVariable(String variableName) {
+                                if (variableName.contains("conn")) { // NOI18N
+                                    connVariables.add(variableName);
+                                }
+                                return false;
                             }
-                            return false;
-                        }
-                    });
+                        });
+                    }
                 }
             });
         } catch (ParseException ex) {

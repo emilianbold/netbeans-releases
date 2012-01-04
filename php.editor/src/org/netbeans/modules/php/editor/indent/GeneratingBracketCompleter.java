@@ -111,89 +111,91 @@ public class GeneratingBracketCompleter {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     final ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
-                    //find coresponding ASTNode:
-                    //TODO: slow and ugly:
-                    class Result extends Error {
+                    if (parserResult != null) {
+                        //find coresponding ASTNode:
+                        //TODO: slow and ugly:
+                        class Result extends Error {
 
-                        private ASTNode node;
+                            private ASTNode node;
 
-                        public Result(ASTNode node) {
-                            this.node = node;
-                        }
-                    }
-                    ASTNode n = null;
-                    try {
-                        new DefaultVisitor() {
-
-                            @Override
-                            public void scan(ASTNode node) {
-                                if (node != null) {
-                                    Comment c = Utils.getCommentForNode(Utils.getRoot(parserResult), node);
-
-                                    if (c != null && c.getStartOffset() <= offset && offset <= c.getEndOffset()) {
-                                        //found:
-                                        throw new Result(node);
-                                    }
-                                }
-                                super.scan(node);
+                            public Result(ASTNode node) {
+                                this.node = node;
                             }
-                        }.scan(Utils.getRoot(parserResult));
-                    } catch (Result r) {
-                        n = r.node;
-                    }
+                        }
+                        ASTNode n = null;
+                        try {
+                            new DefaultVisitor() {
 
-                    if (n == null) {
-                        //no found
-                        return;
-                    }
+                                @Override
+                                public void scan(ASTNode node) {
+                                    if (node != null) {
+                                        Comment c = Utils.getCommentForNode(Utils.getRoot(parserResult), node);
 
-                    if (n instanceof FunctionDeclaration) {
-                        generateFunctionDoc(doc, offset, indent, parserResult, (FunctionDeclaration) n);
-                    }
-
-                    if (n instanceof MethodDeclaration) {
-                        generateFunctionDoc(doc, offset, indent, parserResult, ((MethodDeclaration) n).getFunction());
-                    }
-
-                    if (n instanceof ExpressionStatement) {
-                        if (((ExpressionStatement)n).getExpression() instanceof Assignment) {
-                            Assignment assignment = (Assignment)((ExpressionStatement) n).getExpression();
-                            if (assignment.getLeftHandSide() instanceof ArrayAccess) {
-                                ArrayAccess arrayAccess = (ArrayAccess)assignment.getLeftHandSide();
-                                if (arrayAccess.getName() instanceof Variable) {
-                                    Variable variable = (Variable)arrayAccess.getName();
-                                    if (variable.isDollared()
-                                            && variable.getName() instanceof Identifier
-                                            && "GLOBALS".equals(((Identifier)variable.getName()).getName())
-                                            && arrayAccess.getIndex() instanceof Scalar) {
-                                        String index = ((Scalar)arrayAccess.getIndex()).getStringValue().trim();
-                                        if(index.length() > 0
-                                                && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
-                                            index = index.substring(1, index.length() - 1);
+                                        if (c != null && c.getStartOffset() <= offset && offset <= c.getEndOffset()) {
+                                            //found:
+                                            throw new Result(node);
                                         }
-                                        String type = null;
-                                        if (assignment.getRightHandSide() instanceof Scalar) {
-                                            switch(((Scalar)assignment.getRightHandSide()).getScalarType()) {
-                                                case INT:
-                                                    type = "integer";   //NOI18N
-                                                    break;
-                                                case REAL:
-                                                    type = "float";     //NOI18N
-                                                    break;
-                                                case STRING:
-                                                    type = "string";    //NOI18N
-                                                    break;
+                                    }
+                                    super.scan(node);
+                                }
+                            }.scan(Utils.getRoot(parserResult));
+                        } catch (Result r) {
+                            n = r.node;
+                        }
+
+                        if (n == null) {
+                            //no found
+                            return;
+                        }
+
+                        if (n instanceof FunctionDeclaration) {
+                            generateFunctionDoc(doc, offset, indent, parserResult, (FunctionDeclaration) n);
+                        }
+
+                        if (n instanceof MethodDeclaration) {
+                            generateFunctionDoc(doc, offset, indent, parserResult, ((MethodDeclaration) n).getFunction());
+                        }
+
+                        if (n instanceof ExpressionStatement) {
+                            if (((ExpressionStatement)n).getExpression() instanceof Assignment) {
+                                Assignment assignment = (Assignment)((ExpressionStatement) n).getExpression();
+                                if (assignment.getLeftHandSide() instanceof ArrayAccess) {
+                                    ArrayAccess arrayAccess = (ArrayAccess)assignment.getLeftHandSide();
+                                    if (arrayAccess.getName() instanceof Variable) {
+                                        Variable variable = (Variable)arrayAccess.getName();
+                                        if (variable.isDollared()
+                                                && variable.getName() instanceof Identifier
+                                                && "GLOBALS".equals(((Identifier)variable.getName()).getName())
+                                                && arrayAccess.getIndex() instanceof Scalar) {
+                                            String index = ((Scalar)arrayAccess.getIndex()).getStringValue().trim();
+                                            if(index.length() > 0
+                                                    && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
+                                                index = index.substring(1, index.length() - 1);
                                             }
+                                            String type = null;
+                                            if (assignment.getRightHandSide() instanceof Scalar) {
+                                                switch(((Scalar)assignment.getRightHandSide()).getScalarType()) {
+                                                    case INT:
+                                                        type = "integer";   //NOI18N
+                                                        break;
+                                                    case REAL:
+                                                        type = "float";     //NOI18N
+                                                        break;
+                                                    case STRING:
+                                                        type = "string";    //NOI18N
+                                                        break;
+                                                }
+                                            }
+                                            generateGlobalVariableDoc(doc, offset, indent, index, type);
                                         }
-                                        generateGlobalVariableDoc(doc, offset, indent, index, type);
                                     }
                                 }
                             }
                         }
-                    }
 
-                    if (n instanceof FieldsDeclaration) {
-                        generateFieldDoc(doc, offset, indent, parserResult, (FieldsDeclaration) n);
+                        if (n instanceof FieldsDeclaration) {
+                            generateFieldDoc(doc, offset, indent, parserResult, (FieldsDeclaration) n);
+                        }
                     }
                 }
             });

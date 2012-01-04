@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import static org.junit.Assert.*;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 
 /**
@@ -72,7 +73,7 @@ public class VariousUtilsTest extends ModelTestBase{
         super(testName);
     }
 
-    
+
 
     /**
      * Test of getPossibleNamespaces method, of class VariousUtils.
@@ -87,12 +88,12 @@ public class VariousUtilsTest extends ModelTestBase{
         assertEquals(expResult.size(), result.size());
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testGetPossibleNamespaces02() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/namespaces01.php"));
         FileScope topScope = model.getFileScope();
-        
+
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
         ClassScope classScope = ModelUtils.getFirst(classes);
         NamespaceScope contextNamespace = (NamespaceScope)classScope.getInScope();
@@ -102,12 +103,12 @@ public class VariousUtilsTest extends ModelTestBase{
         Collection<QualifiedName> result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testGetPossibleNamespaces03() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/namespaces02.php"));
         FileScope topScope = model.getFileScope();
-        
+
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
         ClassScope classScope = ModelUtils.getFirst(classes);
         NamespaceScope contextNamespace = (NamespaceScope)classScope.getInScope();
@@ -117,12 +118,12 @@ public class VariousUtilsTest extends ModelTestBase{
         Collection<QualifiedName> result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testGetPossibleNamespaces04() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/namespaces03.php"));
         FileScope topScope = model.getFileScope();
-        
+
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
         ClassScope classScope = ModelUtils.getFirst(classes);
         NamespaceScope contextNamespace = (NamespaceScope)classScope.getInScope();
@@ -132,12 +133,12 @@ public class VariousUtilsTest extends ModelTestBase{
         Collection<QualifiedName> result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testGetPossibleNamespaces05() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/namespaces04.php"));
         FileScope topScope = model.getFileScope();
-        
+
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
         ClassScope classScope = ModelUtils.getFirst(classes);
         NamespaceScope contextNamespace = (NamespaceScope)classScope.getInScope();
@@ -147,12 +148,12 @@ public class VariousUtilsTest extends ModelTestBase{
         Collection<QualifiedName> result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testGetPossibleNamespaces06() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/namespaces05.php"));
         FileScope topScope = model.getFileScope();
-        
+
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
         ClassScope classScope = ModelUtils.getFirst(classes);
         NamespaceScope contextNamespace = (NamespaceScope)classScope.getInScope();
@@ -162,14 +163,14 @@ public class VariousUtilsTest extends ModelTestBase{
         Collection<QualifiedName> result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testGetPossibleNamespaces07() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/namespaces06.php"));
         FileScope topScope = model.getFileScope();
-        
+
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
-        
+
         ClassScope classScope = ModelUtils.getFirst(ModelUtils.filter(classes, "Foo"));
         NamespaceScope contextNamespace = (NamespaceScope)classScope.getInScope();
         Collection<QualifiedName> expResult = new HashSet<QualifiedName>();
@@ -177,7 +178,7 @@ public class VariousUtilsTest extends ModelTestBase{
         QualifiedName name = classScope.getSuperClassName();
         Collection<QualifiedName> result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
-        
+
         classScope = ModelUtils.getFirst(ModelUtils.filter(classes, "Foo2"));
         contextNamespace = (NamespaceScope)classScope.getInScope();
         expResult.clear();
@@ -185,7 +186,7 @@ public class VariousUtilsTest extends ModelTestBase{
         name = classScope.getSuperClassName();
         result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
-        
+
         classScope = ModelUtils.getFirst(ModelUtils.filter(classes, "Foo3"));
         contextNamespace = (NamespaceScope)classScope.getInScope();
         expResult.clear();
@@ -193,7 +194,7 @@ public class VariousUtilsTest extends ModelTestBase{
         name = classScope.getSuperClassName();
         result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
-        
+
         classScope = ModelUtils.getFirst(ModelUtils.filter(classes, "Foo4"));
         contextNamespace = (NamespaceScope)classScope.getInScope();
         expResult.clear();
@@ -201,7 +202,7 @@ public class VariousUtilsTest extends ModelTestBase{
         name = classScope.getSuperClassName();
         result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
-        
+
         classScope = ModelUtils.getFirst(ModelUtils.filter(classes, "Foo5"));
         contextNamespace = (NamespaceScope)classScope.getInScope();
         expResult.clear();
@@ -209,7 +210,7 @@ public class VariousUtilsTest extends ModelTestBase{
         name = classScope.getSuperClassName();
         result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
-        
+
         classScope = ModelUtils.getFirst(ModelUtils.filter(classes, "Foo6"));
         contextNamespace = (NamespaceScope)classScope.getInScope();
         expResult.clear();
@@ -218,14 +219,25 @@ public class VariousUtilsTest extends ModelTestBase{
         result = VariousUtils.getPossibleFQN(name, classScope.getOffset(), contextNamespace);
         assertEquals(expResult, result);
     }
-    
+
     @Test
     public void testGetPossibleNamespaces08() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/namespaces07.php"));
         FileScope topScope = model.getFileScope();
-        
+
         Collection<? extends FunctionScope> functions = ModelUtils.getDeclaredFunctions(topScope);
-        assertEquals(2, functions.size());        
+        assertEquals(2, functions.size());
     }
 
+    public void testIssue206727() throws Exception {
+        QualifiedName testName = QualifiedName.create("Nette\\Configurator");
+        Model model = getModel(prepareTestFile("testfiles/model/issue206727.php"));
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), 1);
+        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(testName, 1, namespaceScope);
+        assertEquals(2, fullyQualifiedName.getSegments().size());
+        assertEquals("Nette", fullyQualifiedName.getNamespaceName());
+        assertEquals("Configurator", fullyQualifiedName.getName());
+        assertEquals(QualifiedNameKind.FULLYQUALIFIED, fullyQualifiedName.getKind());
+    }
+    
 }
