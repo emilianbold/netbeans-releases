@@ -158,7 +158,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         FileScope fScope = model.getFileScope();
         Collection<? extends Variable> variables = fScope.getDeclaredVariables();
-        assertEquals(4, variables.size());
+        assertEquals(3, variables.size());
         
         Variable variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "address"));
         assertEquals("address", variable.getDeclaration().getName());
@@ -209,4 +209,41 @@ public class ModelTest extends JsTestBase {
         assertEquals("country", field.getDeclaration().getName());
     }
     
+    
+    public void testNamesapces01() throws Exception {
+        Model model = getModel("testfiles/model/namespaces01.js");
+        assertNotNull(model);
+        
+        FileScope fScope = model.getFileScope();
+        assertEquals(3, fScope.getLogicalElements().size());
+        
+        ObjectScope object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "MyContext"));
+        assertEquals("MyContext", object.getName());
+        assertEquals(3, object.getElements().size());
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "test")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "id")));
+        assertEquals(146, object.getOffset());
+        
+        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "User"));
+        assertEquals(4, object.getElements().size());
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "session")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "firstName")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "lastName")));
+        assertEquals(187, object.getOffset());
+        
+        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "Address"));
+        assertEquals(2, object.getElements().size());
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "street")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "town")));
+        assertEquals(278, object.getOffset());
+        
+        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "Ns1"));
+        assertEquals(1, object.getElements().size());
+        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "Ns2"));
+        assertEquals(1, object.getElements().size());
+        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "Ns3"));
+        assertEquals(1, object.getElements().size());
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "fix")));
+        assertEquals(771, object.getOffset());
+    }
 }

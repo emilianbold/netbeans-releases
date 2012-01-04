@@ -253,7 +253,7 @@ public class ModelVisitor extends PathNodeVisitor {
     
     @Override
     public Node visit(VarNode varNode, boolean onset) {
-        if (onset) {
+        if (onset && !(varNode.getInit() instanceof ObjectNode)) {
             ScopeImpl scope = modelBuilder.getCurrentScope();
             boolean isGlobal = false;
             if (scope instanceof FileScope) {
