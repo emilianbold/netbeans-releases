@@ -61,7 +61,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
@@ -93,12 +93,15 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         if(editable) nameField.requestFocus();
         else textCheckBox.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 RenamePanel.this.parent.stateChanged(null);
             }
@@ -110,27 +113,30 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     
     private boolean initialized = false;
     
+    @Override
     public void initialize() {
         if (initialized) {
             return;
         }
 
-        if (handle!=null && (RetoucheUtils.getElementKind(handle) == ElementKind.FIELD
-                || RetoucheUtils.getElementKind(handle) == ElementKind.CLASS)) {
+        if (handle!=null && (handle.getElementHandle().getKind() == ElementKind.FIELD
+                || handle.getElementHandle().getKind() == ElementKind.CLASS)) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
+                @Override
                 public void cancel() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
 
+                @Override
                 public void run(CompilationController info) throws Exception {
-                    if(RetoucheUtils.getElementKind(handle) == ElementKind.FIELD) {
+                    if(handle.getElementHandle().getKind() == ElementKind.FIELD) {
                         VariableElement element = (VariableElement) handle.resolveElement(info);
                         TypeElement parent = (TypeElement) element.getEnclosingElement();
                     boolean hasGetters = false;
                         for (ExecutableElement method : ElementFilter.methodsIn(parent.getEnclosedElements())) {
-                            if (RetoucheUtils.isGetter(method, element) || RetoucheUtils.isSetter(method, element)) {
+                            if (RefactoringUtils.isGetter(method, element) || RefactoringUtils.isSetter(method, element)) {
                                 hasGetters = true;
                                 break;
                             }
@@ -139,6 +145,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         if (hasGetters) {
                             SwingUtilities.invokeLater(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     renameGettersAndCheckersCheckBox.setVisible(true);
                                 }
@@ -146,7 +153,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                         }
                     }
                     
-                    if(RetoucheUtils.getElementKind(handle) == ElementKind.CLASS) {
+                    if(handle.getElementHandle().getKind() == ElementKind.CLASS) {
                         final FileObject fileObject = handle.getFileObject();
                         Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
                         for (final TestLocator testLocator : testLocators) {
@@ -183,6 +190,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                 if(locator.getFileType(location.getFileObject()) == TestLocator.FileType.TEST) {
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             renameTestClassCheckBox.setVisible(true);
                         }
@@ -192,6 +200,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         }
     }
     
+    @Override
     public void requestFocus() {
         if(nameField.isEnabled()) nameField.requestFocus();
         else textCheckBox.requestFocus();
@@ -346,6 +355,7 @@ private void renameTestClassCheckBoxStateChanged(javax.swing.event.ChangeEvent e
         return renameGettersAndCheckersCheckBox.isSelected();
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }

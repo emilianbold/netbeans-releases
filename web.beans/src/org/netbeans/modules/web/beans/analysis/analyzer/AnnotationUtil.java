@@ -148,6 +148,12 @@ public final class AnnotationUtil {
     
     public static final String CONVERSATION = "javax.enterprise.context.Conversation";// NOI18N
     
+    public static final String ALTERNATVE = "javax.enterprise.inject.Alternative";   // NOI18N
+    
+    public static final String TYPED = "javax.enterprise.inject.Typed";              // NOI18N
+    
+    public static final String NON_BINDING = "javax.enterprise.util.Nonbinding";    // NOI18N
+    
     private AnnotationUtil(){
     }
     

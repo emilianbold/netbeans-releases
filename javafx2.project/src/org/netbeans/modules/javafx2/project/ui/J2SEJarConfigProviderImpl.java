@@ -45,11 +45,8 @@
 package org.netbeans.modules.javafx2.project.ui;
 
 import java.util.Map;
-
 import javax.swing.JComponent;
-
 import org.netbeans.api.project.Project;
-
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;

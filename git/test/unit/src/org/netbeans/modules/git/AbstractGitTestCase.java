@@ -151,7 +151,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     }
 
     protected GitClient getClient (File repositoryLocation) throws GitException {
-        return GitClientFactory.getInstance(null).getClient(repositoryLocation);
+        return GitClientFactory.getInstance().getClient(repositoryLocation);
     }
 
     protected void add (File... files) throws GitException {

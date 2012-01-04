@@ -37,14 +37,12 @@
   option applies only if the new code is made subject to such option by the copyright
   holder.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>NBI Library: Ant Tasks</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
-            <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.dir" name="Source Packages: Common"/>
                 <root id="src.src-registries-management.dir" name="Source Packages: Registries Management"/>
@@ -53,7 +51,7 @@
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1">
             <reference>
-                <foreign-project>Core_NBI_Engine</foreign-project>
+                <foreign-project>NBI_Engine</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>

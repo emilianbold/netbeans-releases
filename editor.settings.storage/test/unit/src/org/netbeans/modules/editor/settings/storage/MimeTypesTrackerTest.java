@@ -78,6 +78,8 @@ public class MimeTypesTrackerTest extends NbTestCase {
             new Object[] {},
             getClass().getClassLoader()
         );
+
+        MimeTypesTracker.synchronous = true;
     }
     
     public void testBasic() throws Exception {

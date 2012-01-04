@@ -213,7 +213,7 @@ public final class ConstantsImpl implements Constants {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "*** APH-I1 : generateIdxConstants() Returning {0} Constants {1}",
-                    new Object[]{new Integer(idxConstants.size()), idxConstants.toString()});
+                    new Object[]{Integer.valueOf(idxConstants.size()), idxConstants.toString()});
         }
         return idxConstants;
     }

@@ -169,9 +169,6 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
     /** Flag indicating the user has cancelled drag operation by pressing ESC key. */
     private boolean hackESC;
 
-    /** Weak set of componens on which we listen for ESC key. */
-    private final Set keyObservers = new WeakSet(4);
-
     private Point startingPoint;
     private Component startingComponent;
     private long startingTime;
@@ -381,7 +378,9 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             debugLog("doStartDrag"); // NOI18N
         }
         
-        canCopy = transfer.getTopComponent() instanceof TopComponent.Cloneable;
+        TopComponent tc = transfer.getTopComponent();
+        canCopy = tc instanceof TopComponent.Cloneable
+                && !Boolean.TRUE.equals( tc.getClientProperty( TopComponent.PROP_DND_COPY_DISABLED ) );
         
         // Inform window sys there is DnD about to start.
         // XXX Using the firstTC in DnD manager is a hack.

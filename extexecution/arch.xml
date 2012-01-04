@@ -51,7 +51,8 @@ Microsystems, Inc. All Rights Reserved.
    <api group="java" name="ExternalExecutionAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/package-summary.html"/>
    that contains support for execution of external processes in the IDE. It also
    provide support class for the actual creation of the external process
-   and support for destroying the process tree.
+   and support for destroying the process tree. There is also abstraction of
+   process builder.
   </p>
   <p>
    Another exported API
@@ -64,6 +65,11 @@ Microsystems, Inc. All Rights Reserved.
    <api group="java" name="ExternalExecutionInputPrintingAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/print/package-summary.html"/>
    that defines interfaces transforming lines to lines printed to
    <code>org.openide.windows.OutputWriter</code>. API provides common implementations too.
+  </p>
+  <p>
+   The SPI
+   <api group="java" name="ExternalExecutionSPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/package-summary.html"/>
+   allows different implementations of process builder.
   </p>
   <p>
    There is also SPI allowing to register support for destroying the process tree
@@ -204,6 +210,21 @@ Microsystems, Inc. All Rights Reserved.
     Common convertors (file, http) are provided in factory class
     <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertors.html">LineConvertors</a>.
    </p>
+  </usecase>
+  <usecase id="process-builder" name="Custom process builder">
+    <p>
+      Third party wants to implement custom process builder to provide
+      additional functionality, such as remote execution.
+    </p>
+    <p>
+      In order to do so it will implement
+      <a href="@TOP@org/netbeans/spi/extexecution/ProcessBuilderImplementation.html">
+       ProcessBuilderImplementation</a> and pass
+      <a href="@TOP@org/netbeans/api/extexecution/ProcessBuilder.html">
+       ProcessBuilder</a> to its clients. The API instances are created with
+      help of
+      <a href="@TOP@org/netbeans/spi/extexecution/ProcessBuilderFactory.html">ProcessBuilderFactory</a>.
+    </p>
   </usecase>
   <usecase id="destroy-process" name="Destroying a process">
     <p>

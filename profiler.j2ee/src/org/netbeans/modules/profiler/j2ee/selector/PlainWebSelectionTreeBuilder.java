@@ -75,9 +75,9 @@ public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
         this(project, true);
     }
     
+    @NbBundle.Messages("PlainWebSelectionTreeBuilder_DisplayName=Web Application View")
     public PlainWebSelectionTreeBuilder(Project project, boolean isPreferred) {
-        super(new Type("web-application", NbBundle.getMessage(PlainWebSelectionTreeBuilder.class, // NOI18N
-                "PlainWebSelectionTreeBuilder_DisplayName")), isPreferred, project); // NOI18N
+        super(new Type("web-application", Bundle.PlainWebSelectionTreeBuilder_DisplayName()), isPreferred, project); // NOI18N
     }
     
     @Override

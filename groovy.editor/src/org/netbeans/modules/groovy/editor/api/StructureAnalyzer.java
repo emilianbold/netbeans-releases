@@ -73,6 +73,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -189,51 +190,54 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     private void scan(GroovyParserResult result, ASTNode node, AstPath path, String in, Set<String> includes, AstElement parent) {
+        if (node instanceof AnnotatedNode
+                && !((AnnotatedNode) node).hasNoRealSourcePosition()) {
 
-        if (node instanceof ClassNode) {
-            AstClassElement co = new AstClassElement(result, node);
-            co.setFqn(((ClassNode) node).getName());
+            if (node instanceof ClassNode) {
+                AstClassElement co = new AstClassElement(result, node);
+                co.setFqn(((ClassNode) node).getName());
 
-            if (parent != null) {
-                parent.addChild(co);
-            } else {
-                structure.add(co);
-            }
-
-            parent = co;
-        } else if (node instanceof FieldNode) {
-            if (parent instanceof AstClassElement) {
-                // We don't have unique declarations, only assignments (possibly many)
-                // so stash these in a map and extract unique fields when we're done
-                Set<FieldNode> assignments = fields.get(parent);
-
-                if (assignments == null) {
-                    assignments = new HashSet<FieldNode>();
-                    fields.put((AstClassElement) parent, assignments);
+                if (parent != null) {
+                    parent.addChild(co);
+                } else {
+                    structure.add(co);
                 }
 
-                assignments.add((FieldNode) node);
-            }
-        } else if (node instanceof MethodNode) {
-            AstMethodElement co = new AstMethodElement(result, node);
-            methods.add(co);
-            co.setIn(in);
+                parent = co;
+            } else if (node instanceof FieldNode) {
+                if (parent instanceof AstClassElement) {
+                    // We don't have unique declarations, only assignments (possibly many)
+                    // so stash these in a map and extract unique fields when we're done
+                    Set<FieldNode> assignments = fields.get(parent);
 
-            // TODO - don't add this to the top level! Make a nested list
-            if (parent != null) {
-                parent.addChild(co);
-            } else {
-                structure.add(co);
-            }
-        } else if (node instanceof PropertyNode) {
-            Set<PropertyNode> declarations = properties.get(parent);
+                    if (assignments == null) {
+                        assignments = new HashSet<FieldNode>();
+                        fields.put((AstClassElement) parent, assignments);
+                    }
 
-            if (declarations == null) {
-                declarations = new HashSet<PropertyNode>();
-                properties.put((AstClassElement) parent, declarations);
-            }
+                    assignments.add((FieldNode) node);
+                }
+            } else if (node instanceof MethodNode) {
+                AstMethodElement co = new AstMethodElement(result, node);
+                methods.add(co);
+                co.setIn(in);
 
-            declarations.add((PropertyNode) node);
+                // TODO - don't add this to the top level! Make a nested list
+                if (parent != null) {
+                    parent.addChild(co);
+                } else {
+                    structure.add(co);
+                }
+            } else if (node instanceof PropertyNode) {
+                Set<PropertyNode> declarations = properties.get(parent);
+
+                if (declarations == null) {
+                    declarations = new HashSet<PropertyNode>();
+                    properties.put((AstClassElement) parent, declarations);
+                }
+
+                declarations.add((PropertyNode) node);
+            }
         }
 
         @SuppressWarnings("unchecked")

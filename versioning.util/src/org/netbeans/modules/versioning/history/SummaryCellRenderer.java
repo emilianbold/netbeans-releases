@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,583 +37,814 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.versioning.history;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.io.File;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.WeakHashMap;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
-import javax.swing.border.MatteBorder;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.plaf.TextUI;
-import javax.swing.plaf.TreeUI;
-import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.Element;
 import javax.swing.text.Position;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreePath;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.versioning.history.AbstractSummaryView.ActionNode;
-import org.netbeans.modules.versioning.history.AbstractSummaryView.EventNode;
-import org.netbeans.modules.versioning.history.AbstractSummaryView.LogEntry;
-import org.netbeans.modules.versioning.history.AbstractSummaryView.LogEntryNode;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.LogEntry.Event;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.RevisionItem;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Hyperlink;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Tomas Stupka
+ * @author ondra
  */
-public class SummaryCellRenderer implements TreeCellRenderer {
+class SummaryCellRenderer implements ListCellRenderer {
     private static final double DARKEN_FACTOR = 0.95;
+    private static final double DARKEN_FACTOR_UNINTERESTING = 0.975;
 
-    private final AbstractSummaryView master;
-    private final Map<String, KenaiUser> kenaiUsersMap;
+    private final AbstractSummaryView summaryView;
+    private final Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap;
     private final VCSHyperlinkSupport linkerSupport;
 
     private Color selectionBackgroundColor = new JList().getSelectionBackground();
-    private String selectionBackground = getColorString(selectionBackgroundColor);
-    private String selectionForeground = getColorString(new JList().getSelectionForeground());
+    private Color selectionBackground = selectionBackgroundColor;
+    private Color selectionForeground = new JList().getSelectionForeground();
 
-    private final Color normalBackgroundColor = darker(UIManager.getColor("List.background"));
-    private final String normalForeground = getColorString(UIManager.getColor("List.foreground"));
-    private final String normalBackground = getColorString(normalBackgroundColor);
-    private final String authorColor = getColorString(UIManager.getColor("TextPane.inactiveForeground"));
-    private final String dateColor = authorColor;
-    private final String pathColor = authorColor;
-    private final String linkColor = getColorString(Color.BLUE);
-
-    private RevisionRenderer cr = new RevisionRenderer();
-    private EventRenderer rr = new EventRenderer();
     private ActionRenderer ar = new ActionRenderer();
-    private DefaultTreeCellRenderer dtcr = new DefaultTreeCellRenderer();
+    private MoreRevisionsRenderer mr = new MoreRevisionsRenderer();
+    private DefaultListCellRenderer dlcr = new DefaultListCellRenderer();
+    private ListCellRenderer remainingFilesRenderer = new RemainingFilesRenderer();
 
-    private int handleWidth = -1;
-    private int oneLineHeight;
     private AttributeSet searchHiliteAttrs;
 
     private final String hiliteMessage;
 
-    private double authorMaxWidth;
-    private double dateMaxWidth;
-    private double revisionMaxWidth;
+    private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
+    private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
+    private static final int INDENT = ICON_EXPANDED.getIconWidth() + 3;
+    private static final JLabel EMPTY_SPACE_LABEL = new JLabel();
+    private static final String PREFIX_PATH_FROM = NbBundle.getMessage(SummaryCellRenderer.class, "MSG_SummaryCellRenderer.pathPrefixFrom"); //NOI18N
+    private Collection<VCSHyperlinkProvider> hpInstances;
+    
+    Map<Object, ListCellRenderer> renderers = new WeakHashMap<Object, ListCellRenderer>();
 
-    public SummaryCellRenderer(AbstractSummaryView master, final VCSHyperlinkSupport linkerSupport, List<LogEntry> results, Map<String, KenaiUser> kenaiUsersMap) {
-        this.master = master;
-        this.hiliteMessage = master.getMessage();
+    public SummaryCellRenderer(AbstractSummaryView summaryView, final VCSHyperlinkSupport linkerSupport, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap) {
+        this.summaryView = summaryView;
+        this.hiliteMessage = summaryView.getMessage();
         this.kenaiUsersMap = kenaiUsersMap;
         this.linkerSupport = linkerSupport;
-
-        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
-        searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
-
-        computeFieldSizes(results);
-        master.getList().addTreeExpansionListener(new TreeExpansionListener() {
-
-            @Override
-            public void treeExpanded(TreeExpansionEvent event) {}
-
-            @Override
-            public void treeCollapsed(TreeExpansionEvent event) {
-                TreePath path = event.getPath();
-                Object o = path.getLastPathComponent();
-                if(o instanceof LogEntryNode) {
-                    LogEntry le = (LogEntry) ((LogEntryNode)o).getUserObject();
-                    linkerSupport.remove(ActionHyperlink.class, le.getRevision());
-                }
-            }
-        });
+        searchHiliteAttrs = ((FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class)).getFontColors("highlight-search"); //NOI18N
     }
 
-    private void computeFieldSizes(List<LogEntry> results) {
-        ArrayList newResults = new ArrayList(results.size());
-        JTree t = new JTree();
-        FontMetrics fm =t.getFontMetrics(t.getFont());
-        for (LogEntry entry : results) {
-            newResults.add(entry);
-            double w = SwingUtilities.computeStringWidth(fm, entry.getAuthor());
-            if(w > authorMaxWidth) authorMaxWidth = w;
-            w = SwingUtilities.computeStringWidth(fm, entry.getDate());
-            if(w > dateMaxWidth) dateMaxWidth = w;
-            w = SwingUtilities.computeStringWidth(fm, entry.getRevision());
-            if(w > revisionMaxWidth) revisionMaxWidth = w;
-        }
+    private static Color darker (Color c) {
+        return darker(c, DARKEN_FACTOR);
     }
 
+    private static Color darkerUninteresting (Color c) {
+        return darker(c, DARKEN_FACTOR_UNINTERESTING);
+    }
 
-    private Color darker(Color c) {
-        return new Color(Math.max((int)(c.getRed() * DARKEN_FACTOR), 0),
-             Math.max((int)(c.getGreen() * DARKEN_FACTOR), 0),
-             Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
+    private static Color darker (Color c, double factor) {
+        return new Color(Math.max((int)(c.getRed() * factor), 0),
+             Math.max((int)(c.getGreen() * factor), 0),
+             Math.max((int)(c.getBlue() * factor), 0));
     }
 
     private static String getColorString(Color c) {
-        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); // NOI18N
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
     }
 
     private static String getHex(int i) {
         String hex = Integer.toHexString(i & 0x000000FF);
         if (hex.length() == 1) {
-            hex = "0" + hex; // NOI18N
+            hex = "0" + hex; //NOI18N
         }
         return hex;
     }
 
     @Override
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        if(handleWidth < 0) {
-            TreeUI tvui = tree.getUI();
-            if(tvui instanceof BasicTreeUI) {
-                Icon icon = ((BasicTreeUI) tvui).getCollapsedIcon();
-                handleWidth = icon != null ? icon.getIconWidth() : 0;
+    public Component getListCellRendererComponent (JList list, Object value, int index, boolean selected, boolean hasFocus) {
+        if (value instanceof AbstractSummaryView.RevisionItem) {
+            ListCellRenderer ren = renderers.get(value);
+            if (ren == null) {
+                ren = new RevisionRenderer();
+                renderers.put(value, ren);
             }
+            return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
+        } else if (value instanceof AbstractSummaryView.EventItem) {
+            ListCellRenderer ren = renderers.get(value);
+            if (ren == null) {
+                ren = new EventRenderer();
+                renderers.put(value, ren);
+            }
+            return ren.getListCellRendererComponent(list, value, index, selected, hasFocus);
+        } else if (value instanceof AbstractSummaryView.LoadingEventsItem) {
+            Component comp = dlcr.getListCellRendererComponent(list, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_LoadingEvents"), index, selected, hasFocus); //NOI18N
+            if (comp instanceof JComponent) {
+                ((JComponent) comp).setBorder(BorderFactory.createEmptyBorder(0, INDENT, 0, 0));
+            }
+            return comp;
+        } else if (value instanceof AbstractSummaryView.ShowAllEventsItem) {
+            return remainingFilesRenderer.getListCellRendererComponent(list, value, index, selected, hasFocus);
+        } else if (value instanceof AbstractSummaryView.ActionsItem) {
+            return ar.getListCellRendererComponent(list, value, index, selected, hasFocus);
+        } else if (value instanceof AbstractSummaryView.MoreRevisionsItem) {
+            return mr.getListCellRendererComponent(list, value, index, selected, hasFocus);
         }
-
-        if (value instanceof LogEntryNode) {
-            return cr.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-        } else if(value instanceof EventNode) {
-            return rr.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-        } else if(value instanceof ActionNode) {
-            return ar.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-        } else {
-            Component r = dtcr.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-            if(r instanceof JLabel) ((JLabel)r).setIcon(null);
-            return r;
-        }
+        return EMPTY_SPACE_LABEL;
     }
 
-    private class RevisionRenderer implements TreeCellRenderer {
-        private String revision;
+    private static final String FIELDS_SEPARATOR = "      "; //NOI18N
 
-        private JTextPane textPane = new Pane();
-        private Collection<VCSHyperlinkProvider> hpInstances;
+    private int getMaxPathWidth (JList list, RevisionItem revision, Graphics g) {
+        assert revision.revisionExpanded;
+        assert EventQueue.isDispatchThread();
+        
+        Collection<AbstractSummaryView.LogEntry.Event> events = revision.getUserData().getEvents();
+        int maxWidth = -1;
+        for (AbstractSummaryView.LogEntry.Event event : events) {
+            int i = 0;
+            for (String path : getInterestingPaths(event)) {
+                if (++i == 2) {
+                    if (path == null) {
+                        break;
+                    } else {
+                        path = PREFIX_PATH_FROM + path;
+                    }
+                }
+                StringBuilder sb = new StringBuilder(event.getAction()).append(" ").append(path);
+                FontMetrics fm = list.getFontMetrics(list.getFont());
+                Rectangle2D rect = fm.getStringBounds(sb.toString(), g);
+                maxWidth = Math.max(maxWidth, (int) rect.getWidth() + 1);
+            }
+        }
+        return maxWidth;
+    }
+    
+    public Collection<VCSHyperlinkProvider> getHyperlinkProviders() {
+        if (hpInstances == null) {
+            Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+            hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
+        }
+        return hpInstances;
+    }
+
+    public VCSKenaiAccessor.KenaiUser getKenaiUser(String author) {
+        VCSKenaiAccessor.KenaiUser kenaiUser = null;
+        if (kenaiUsersMap != null && author != null && !author.isEmpty()) {
+            kenaiUser = kenaiUsersMap.get(author);
+        }
+        return kenaiUser;
+    }
+
+    private class RevisionRenderer extends JPanel implements ListCellRenderer {
+
+        private String id;
+        private final Style selectedStyle;
+        private final Style normalStyle;
+        private final Style indentStyle;
+        private final Style noindentStyle;
+        private final Style issueHyperlinkStyle;
+        private final Style linkStyle;
+        private final Style authorStyle;
+        private final Style hiliteStyle;
+        private boolean lastSelection = false;
+        private final JTextPane textPane;
+        private final JButton expandButton;
+        private String commitMessage = ""; //NOI18N
+        private boolean lastMessageExpanded;
+        private boolean lastRevisionExpanded;
+        private int lastWidth;
 
         public RevisionRenderer() {
-            textPane.setBorder(new MatteBorder(3, 0, 0, 0, Color.WHITE));
-            textPane.setContentType("text/html");
-            oneLineHeight = textPane.getPreferredSize().height + 3;
-        }
+            selectionForeground = new JList().getSelectionForeground();
+            textPane = new JTextPane();
+            expandButton = new LinkButton(ICON_COLLAPSED);
+            expandButton.setBorder(BorderFactory.createEmptyBorder());
 
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            LogEntry entry = (LogEntry) ((LogEntryNode) value).getUserObject();
+            selectedStyle = textPane.addStyle("selected", null); //NOI18N
+            StyleConstants.setForeground(selectedStyle, selectionForeground);
+            StyleConstants.setBackground(selectedStyle, selectionBackground);
+            normalStyle = textPane.addStyle("normal", null); //NOI18N
+            StyleConstants.setForeground(normalStyle, UIManager.getColor("List.foreground")); //NOI18N
+            indentStyle = textPane.addStyle("indent", null); //NOI18N
+            StyleConstants.setLeftIndent(indentStyle, 50);
+            noindentStyle = textPane.addStyle("noindent", null); //NOI18N
+            StyleConstants.setLeftIndent(noindentStyle, 0);
 
-            Color backgroundColor;
-            String background;
-            String foreground;
+            issueHyperlinkStyle = textPane.addStyle("issuehyperlink", normalStyle); //NOI18N
+            StyleConstants.setForeground(issueHyperlinkStyle, Color.BLUE);
+            StyleConstants.setUnderline(issueHyperlinkStyle, true);
 
-            if (selected) {
-                foreground = selectionForeground;
-                background = selectionBackground;
-                backgroundColor = selectionBackgroundColor;
-            } else {
-                foreground = normalForeground;
-                background = normalBackground;
-                backgroundColor = normalBackgroundColor;
-            }
-            textPane.setBackground(backgroundColor);
+            linkStyle = textPane.addStyle("link", normalStyle); //NOI18N
+            StyleConstants.setForeground(linkStyle, Color.BLUE);
+            StyleConstants.setBold(linkStyle, true);
 
-            revision = entry.getRevision();
-            String author = entry.getAuthor() != null ? entry.getAuthor() : "";
-            String date = entry.getDate();
-            String messageValue = escapeHTML(entry.getMessage());
+            authorStyle = textPane.addStyle("author", normalStyle); //NOI18N
+            StyleConstants.setForeground(authorStyle, Color.BLUE);
 
-            // message
-            // XXX trim leading and tailing empty lines
-            int nlc, i;
-            for (i = 0, nlc = -1; i != -1 ; i = messageValue.indexOf('\n', i + 1), nlc++);
-            messageValue =
-                    nlc == 0 || entry.messageExpanded ? messageValue.replace("\n", "<br>")
-                                                      : messageValue.substring(0, messageValue.indexOf("\n"));
-            // compute issue hyperlinks
-            int[] issuespans = null;
-            VCSHyperlinkProvider hyperlinkProvider = null;
-            String issuesMsgValue = null;
-
-            for (VCSHyperlinkProvider hp : getHyperlinkProviders()) {
-                issuespans = hp.getSpans(entry.getMessage()); // compute spans from untouched message text
-                if (issuespans == null) {
-                    continue;
-                }
-                if(issuespans.length % 2 != 0) {
-                    // XXX more info and log only _ONCE_
-                    AbstractSummaryView.LOG.log(Level.WARNING, "Hyperlink provider {0} returns wrong spans", hp.getClass().getName());
-                    continue;
-                }
-                StringBuilder sb = new StringBuilder();
-                int pos = 0;
-                if(issuespans.length > 0) {
-                    issuesMsgValue = messageValue;
-                    hyperlinkProvider = hp;
-                    boolean linked = true;
-                    for (i = 0; i < issuespans.length;) {
-                        int issueidx = i / 2;
-                        int start = issuespans[i++];
-                        int end = issuespans[i++];
-                        if(pos >= messageValue.length() || start >= messageValue.length()) {
-                            linked = false;
-                            break;
-                        }
-                        sb.append(messageValue.substring(pos, start));
-                        sb.append("<font color=\"");
-                        sb.append(selected ? selectionForeground : linkColor);
-                        sb.append("\" id=\"issue");
-                        sb.append(issueidx);
-                        sb.append("\">");
-                        if(start >= messageValue.length() || end > messageValue.length()) {
-                            linked = false;
-                            break;
-                        }
-                        sb.append(messageValue.substring(start, end));
-                        sb.append("</font>");
-                        pos = end;
-                    }
-                    if(linked) {
-                        sb.append(messageValue.substring(pos));
-                        messageValue = sb.toString();
-                    }
-                }
-
-            }
-            if(nlc > 0 && !entry.messageExpanded) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(messageValue);
-                sb.append(" <font color=\"");
-                sb.append((selected ? selectionForeground : linkColor));
-                sb.append("\" id=\"expandmsg\">...</font>");
-                messageValue = sb.toString();
-            }
+            hiliteStyle = textPane.addStyle("hilite", normalStyle); //NOI18N
             
-            KenaiUser kenaiUser = getKenaiUser(author);
-            textPane.setText(formatValue(background, foreground, selected, kenaiUser, author, messageValue, date));
+            Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
+            if (c != null) StyleConstants.setBackground(hiliteStyle, c);
+            c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
+            if (c != null) StyleConstants.setForeground(hiliteStyle, c);
 
-            HTMLDocument document = (HTMLDocument) textPane.getDocument();
+            textPane.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("List.background"))); //NOI18N
+            
+            add(expandButton);
+            expandButton.setMaximumSize(expandButton.getPreferredSize());
+            expandButton.setMinimumSize(expandButton.getPreferredSize());
+            add(textPane);
+        }
 
-            // hilite search results
-            hiliteSearch(document, selected);
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean selected, boolean hasFocus) {
+            AbstractSummaryView.RevisionItem item = (AbstractSummaryView.RevisionItem) value;
+            AbstractSummaryView.LogEntry entry = item.getUserData();
 
-            Element  e = document.getElement("author");
-            if(e != null) {
-                if(kenaiUser != null) {
-                    Hyperlink l = linkerSupport.getLinker(AuthorHyperlink.class, revision);
-                    if(l == null) {
-                        l = new AuthorHyperlink(kenaiUser, author, e.getStartOffset(), e.getEndOffset());
-                        linkerSupport.add(l, revision);
-                    }
-                    // XXX handle icon
-                }
-            }
+            StyledDocument sd = textPane.getStyledDocument();
+            if (sd.getLength() == 0 || selected != lastSelection || item.messageExpanded != lastMessageExpanded || item.revisionExpanded != lastRevisionExpanded) {
+                lastSelection = selected;
+                lastMessageExpanded = item.messageExpanded;
+                lastRevisionExpanded = item.revisionExpanded;
 
-            e = document.getElement("expandmsg");
-            if(e != null) {
-                Hyperlink l = linkerSupport.getLinker(ExpandMsgHyperlink.class, revision);
-                if(l == null) {
-                    l = new ExpandMsgHyperlink(entry, e.getStartOffset(), revision);
-                    linkerSupport.add(l, revision);
-                }
-            }
+                Style style;
+                Color backgroundColor;
+                Color foregroundColor;
 
-            if(issuespans != null && issuespans.length % 2 == 0) {
-                Hyperlink l = linkerSupport.getLinker(IssueHyperlink.class, revision);
-                if(l == null) {
-                    i = 0;
-                    int[] offsets = new int[issuespans.length];
-                    while((e = document.getElement("issue" + (i / 2))) != null) {
-                        offsets[i++] = e.getStartOffset();
-                        offsets[i++] = e.getEndOffset();
-                    }
-                    l = new IssueHyperlink(hyperlinkProvider, master.getRoot(), issuesMsgValue, issuespans, offsets);
-                    linkerSupport.add(l, revision);
-                }
-            }
-            int width = getItemWidth(tree);
-            if (width > 0) {
-                int ph;
-                if (nlc > 0) {
-                    int lines = entry.messageExpanded ? nlc + 1 : 1;
-                    ph = oneLineHeight * lines;
+                if (selected) {
+                    foregroundColor = selectionForeground;
+                    backgroundColor = selectionBackground;
+                    style = selectedStyle;
+                    textPane.setOpaque(false);
                 } else {
-                    ph = oneLineHeight;
+                    foregroundColor = UIManager.getColor("List.foreground"); //NOI18N
+                    backgroundColor = UIManager.getColor("List.background"); //NOI18N
+                    backgroundColor = entry.isLessInteresting() ? darkerUninteresting(backgroundColor) : darker(backgroundColor);
+                    style = normalStyle;
+                    textPane.setOpaque(true);
                 }
-                textPane.setPreferredSize(new Dimension(width, ph));
-            }
-            return textPane;
-        }
+                textPane.setBackground(backgroundColor);
+                setBackground(backgroundColor);
+                if (item.revisionExpanded) {
+                    expandButton.setIcon(ICON_EXPANDED);
+                } else {
+                    expandButton.setIcon(ICON_COLLAPSED);
+                }
 
-        public String formatValue(String background, String foreground, boolean selected, KenaiUser kenaiUser, String author, String messageValue, String date) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<html><body><table width=\"100%\" height=\"100%\" border=\"0\"><tr>");
-            sb.append("<td bgcolor=\"");
-            sb.append("<td bgcolor=\"");
-            sb.append(background);
-            sb.append("\" valign=\"top\" width=\"");
-            sb.append(revisionMaxWidth);
-            sb.append("\" border=\"0\"><font color=\"");
-            sb.append(foreground);
-            sb.append("\">");
-            sb.append(revision);
-            sb.append("</font></td><td bgcolor=\"");
-            sb.append(background);
-            sb.append("\" valign=\"top\" width=\"");
-            sb.append(authorMaxWidth);
-            sb.append("\" border=\"0\" ><center><font color=\"");
-            sb.append((selected ? selectionForeground : (kenaiUser != null ? "#0000FF" : authorColor)));
-            sb.append("\" id=\"author\">(");
-            sb.append(author);
-            sb.append(")</font></center></td><td bgcolor=\"");
-            sb.append(background);
-            sb.append("\" valign=\"top\" border=\"0\"><font color=\"");
-            sb.append(foreground);
-            sb.append("\">");
-            sb.append(messageValue);
-            sb.append("</font></td><td bgcolor=\"");
-            sb.append(background);
-            sb.append("\" valign=\"top\" width=\"");
-            sb.append(dateMaxWidth);
-            sb.append("\" border=\"0\"><font color=\"");
-            sb.append((selected ? selectionForeground : dateColor));
-            sb.append("\">");
-            sb.append(date);
-            sb.append("</font></td></tr></table></body></html>");
-            return sb.toString();
-        }
+                id = item.getItemId();
+                if (linkerSupport.getLinker(ExpandLink.class, id) == null) {
+                    linkerSupport.add(new ExpandLink(item), id);
+                }
 
-        public KenaiUser getKenaiUser(String author) {
-            KenaiUser kenaiUser = null;
-            if (kenaiUsersMap != null && author != null && !author.equals("")) {
-                kenaiUser = kenaiUsersMap.get(author);
-            }
-            return kenaiUser;
-        }
-
-        public void hiliteSearch(HTMLDocument document, boolean selected) {
-            if (hiliteMessage != null && !selected) {
-                String message = null;
                 try {
-                    message = document.getText(0, document.getLength());
-                } catch (BadLocationException ex) {
-                    AbstractSummaryView.LOG.log(Level.OFF, null, ex);
-                    return;
-                }
-                int idx = message.indexOf(hiliteMessage);
-                if (idx != -1) {
-                    document.setCharacterAttributes(idx, hiliteMessage.length(), searchHiliteAttrs, true);
+                    // clear document
+                    sd.remove(0, sd.getLength());
+                    sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
+
+                    // add revision
+                    sd.insertString(0, item.getUserData().getRevision(), null);
+                    sd.setCharacterAttributes(0, sd.getLength(), normalStyle, false);
+                    if (!selected) {
+                        for (AbstractSummaryView.LogEntry.RevisionHighlight highlight : item.getUserData().getRevisionHighlights()) {
+                            Style s = textPane.addStyle(null, normalStyle);
+                            StyleConstants.setForeground(s, highlight.getForeground());
+                            StyleConstants.setBackground(s, highlight.getBackground());
+                            sd.setCharacterAttributes(highlight.getStart(), highlight.getLength(), s, false);
+                        }
+                    }
+
+                    // add author
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR, style);
+                    String author = entry.getAuthor();
+                    VCSHyperlinkSupport.StyledDocumentHyperlink l = linkerSupport.getLinker(VCSHyperlinkSupport.AuthorLinker.class, id);
+                    if(l == null) {
+                        VCSKenaiAccessor.KenaiUser kenaiUser = getKenaiUser(author);
+                        if (kenaiUser != null) {
+                            l = new VCSHyperlinkSupport.AuthorLinker(kenaiUser, authorStyle, sd, author);
+                            linkerSupport.add(l, id);
+                        }
+                    }
+                    if(l != null) {
+                        l.insertString(sd, selected ? style : null);
+                    } else {
+                        sd.insertString(sd.getLength(), author, style);
+                    }
+
+                    // add date
+                    sd.insertString(sd.getLength(), FIELDS_SEPARATOR + entry.getDate(), null);
+
+                    // add commit msg
+                    boolean messageChanged = !entry.getMessage().equals(commitMessage);
+                    commitMessage = entry.getMessage();
+                    if (commitMessage.endsWith("\n")) commitMessage = commitMessage.substring(0, commitMessage.length() - 1); //NOI18N
+                    sd.insertString(sd.getLength(), "\n", null); //NOI18N
+                    int nlc, i;
+                    for (i = 0, nlc = -1; i != -1 ; i = commitMessage.indexOf('\n', i + 1), nlc++);
+                    if (nlc > 0 && !item.messageExpanded) {
+                        commitMessage = commitMessage.substring(0, commitMessage.indexOf("\n")); //NOI18N
+                    }
+
+                    // compute issue hyperlinks
+                    l = linkerSupport.getLinker(VCSHyperlinkSupport.IssueLinker.class, id);
+                    if (messageChanged) {
+                        lastWidth = -1;
+                        if (l != null) {
+                            // must reinitialize issue linker to paint the new message
+                            linkerSupport.remove(l, id);
+                            l = null;
+                        }
+                    }
+                    if(l == null) {
+                        for (VCSHyperlinkProvider hp : getHyperlinkProviders()) {
+                            l = VCSHyperlinkSupport.IssueLinker.create(hp, issueHyperlinkStyle, summaryView.getRoot(), sd, commitMessage);
+                            if(l != null) {
+                                linkerSupport.add(l, id);
+                                break; // get the first one
+                            }
+                        }
+                    }
+                    int pos = sd.getLength();
+                    if(l != null) {
+                        l.insertString(sd, style);
+                    } else {
+                        sd.insertString(sd.getLength(), commitMessage, style);
+                    }
+                    // paint first line of commit message bold
+                    int lineEnd = sd.getText(pos, sd.getLength() - pos).indexOf("\n");
+                    if (lineEnd == -1) {
+                        lineEnd = sd.getLength() - pos;
+                    }
+                    Style s = textPane.addStyle(null, style);
+                    StyleConstants.setBold(s, true);
+                    sd.setCharacterAttributes(pos, lineEnd, s, false);
+                    if (nlc > 0 && !item.messageExpanded) {
+                        l = linkerSupport.getLinker(ExpandMsgHyperlink.class, id);
+                        if (l == null) {
+                            l = new ExpandMsgHyperlink(item, sd.getLength(), id);
+                            linkerSupport.add(l, id);
+                        }
+                        l.insertString(sd, linkStyle);
+                    }
+                    
+
+                    int msglen = commitMessage.length();
+                    int doclen = sd.getLength();
+                    if (hiliteMessage != null && !selected) {
+                        int idx = commitMessage.indexOf(hiliteMessage);
+                        if (idx != -1) {
+                            sd.setCharacterAttributes(doclen - msglen + idx, hiliteMessage.length(), hiliteStyle, true);
+                        }
+                    }
+
+                    if (selected) {
+                        sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
+                    }
+                } catch (BadLocationException e) {
+                    ErrorManager.getDefault().notify(e);
                 }
             }
-        }
+            lastWidth = resizePane(textPane.getText(), list, lastWidth);
 
-        public Collection<VCSHyperlinkProvider> getHyperlinkProviders() {
-            if(hpInstances == null) {
-                Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
-                hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
+            return this;
+        }
+        
+        @SuppressWarnings("empty-statement")
+        private int resizePane(String text, JList list, int lastWidth) {
+            if(text == null) {
+                text = ""; //NOI18N
             }
-            return hpInstances;
+            int width = summaryView.getMaster().getComponent().getWidth();
+            if (width > 0 && width != lastWidth) {
+                String[] rows = text.split("\n"); //NOI18N
+                FontMetrics fm = list.getFontMetrics(list.getFont());
+                int lines = 0;
+                for (String row : rows) {
+                    Rectangle2D rect = fm.getStringBounds(row, textPane.getGraphics());
+                    lines += (int) (rect.getWidth() / (width - 80) + 1);
+                }
+                int ph = fm.getHeight() * lines + 9;
+                textPane.setPreferredSize(new Dimension(width - 50 - ICON_COLLAPSED.getIconWidth(), ph));
+                setPreferredSize(textPane.getPreferredSize());
+            }
+            return width;
         }
-
-        private class Pane extends JTextPane {
-            @Override
-            public void paint(Graphics g) {
-                super.paint(g);
-                linkerSupport.computeBounds(textPane, revision);
+        
+        @Override
+        public void paint(Graphics g) {
+            super.paint(g);
+            linkerSupport.computeBounds(textPane, id);
+            ExpandLink link = linkerSupport.getLinker(ExpandLink.class, id);
+            if (link != null) {
+                link.computeBounds(expandButton);
             }
         }
     }
 
-    private class EventRenderer extends DefaultTreeCellRenderer {
+    private class EventRenderer extends JPanel implements ListCellRenderer {
+        
+        private boolean lastSelection = false;
+        private final JLabel pathLabel;
+        private final JLabel actionLabel;
+        private final JButton actionButton;
+        private String id;
+        private final String PATH_COLOR = getColorString(UIManager.getColor("TextField.inactiveForeground")); //NOI18N
+
+        public EventRenderer () {
+            pathLabel = new JLabel();
+            actionLabel = new JLabel();
+            actionButton = new LinkButton("..."); //NOI18N
+            actionButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+
+            FlowLayout l = new FlowLayout(FlowLayout.LEFT, 0, 0);
+            l.setAlignOnBaseline(true);
+            setLayout(l);
+            add(actionLabel);
+            actionLabel.setBorder(BorderFactory.createEmptyBorder(0, INDENT, 0, 10));
+            add(pathLabel);
+            add(actionButton);
+        }
+        
         @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            LogEntry.Event revisionEvent = (LogEntry.Event) ((EventNode) value).getUserObject();
-            StringBuilder sb = new StringBuilder();
-            sb.append("<html><body>");
-            String color = master.getActionColors().get(revisionEvent.getAction());
-            if(color != null) {
-                sb.append("<font color=\"");
-                sb.append(selected ? selectionForeground : color);
-                sb.append("\">");
-                sb.append(String.valueOf(revisionEvent.getAction()));
-                sb.append("</font>");
-            } else {
-                sb.append(String.valueOf(revisionEvent.getAction()));
-            }
-            sb.append("\t");
-            String path = revisionEvent.getPath();
-            int idx = path.lastIndexOf("/");
-            if(idx < 0) {
-                sb.append(path);
-            } else {
-                sb.append("<font color=\"");
-                sb.append(selected ? selectionForeground : pathColor);
-                sb.append("\">");
-                sb.append(path.substring(0, idx));
-                sb.append("</font>");
-                sb.append(path.substring(idx, path.length()));
-            }
-            sb.append("</body></html>");
-            Component renderer = super.getTreeCellRendererComponent(tree, sb.toString(), selected, expanded, leaf, row, hasFocus);
-            if(renderer instanceof JLabel) {
-                JLabel l = (JLabel) renderer;
-                l.setToolTipText(sb.toString());
-                l.setIcon(null);
-            }
-            return renderer;
-        }
-    }
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean selected, boolean hasFocus) {
+            AbstractSummaryView.EventItem item = (AbstractSummaryView.EventItem) value;
+            if (pathLabel.getText().isEmpty() || lastSelection != selected) {
+                lastSelection = selected;
+                Color foregroundColor, backgroundColor;
+                if (selected) {
+                    foregroundColor = selectionForeground;
+                    backgroundColor = selectionBackground;
+                } else {
+                    foregroundColor = UIManager.getColor("List.foreground"); //NOI18N
+                    backgroundColor = UIManager.getColor("List.background"); //NOI18N
+                }
+                id = item.getItemId();
+                if (linkerSupport.getLinker(ExpandLink.class, id) == null) {
+                    linkerSupport.add(new EventActionsLink(item), id);
+                }
+                pathLabel.setFont(list.getFont());
+                pathLabel.setForeground(foregroundColor);
+                pathLabel.setBackground(backgroundColor);
+                actionLabel.setBackground(backgroundColor);
+                setBackground(backgroundColor);
 
-    private class ActionRenderer implements TreeCellRenderer {
+                StringBuilder sb = new StringBuilder("<html><body>"); //NOI18N
+                sb.append("<b>"); //NOI18N
+                String action = item.getUserData().getAction();
+                String color = summaryView.getActionColors().get(action);
+                if (color != null && !selected) {
+                    sb.append("<font color=\"").append(color).append("\">").append(action).append("</font>"); //NOI18N
+                } else  {
+                    actionLabel.setForeground(foregroundColor);
+                    sb.append(action);
+                }
+                sb.append("</b></body></html>"); //NOI18N
+                actionLabel.setText(sb.toString());
 
-        private String revision;
-        private JTextPane textPane = new Pane();
-        private class Pane extends JTextPane {
-            @Override
-            public void paint(Graphics g) {
-                super.paint(g);
-                linkerSupport.computeBounds(textPane, revision);
-            }
-        }
-
-        public ActionRenderer() {
-            textPane.setBorder(new MatteBorder(3, 0, 0, 0, Color.WHITE));
-            textPane.setContentType("text/html");
-        }
-
-        @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            LogEntry entry = (LogEntry) ((LogEntryNode)((ActionNode) value).getParent()).getUserObject();
-
-            textPane.setBackground(tree.getBackground());
-            revision = entry.getRevision();
-            Action[] actions = entry.getActions();
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("<html><body><table><tr>");
-            for (Action action : actions) {
-                sb.append("<td id=\"");
-                sb.append(action.getValue(Action.NAME));
-                sb.append("\" color=\"");
-                sb.append(linkColor);
-                sb.append("\">");
-                sb.append(action.getValue(Action.NAME));
-                sb.append("</td>");
-                sb.append("<td>&nbsp;&nbsp;</td>");
-            }
-            sb.append("</tr></table></body></html>");
-            textPane.setText(sb.toString());
-
-            Hyperlink l = linkerSupport.getLinker(ActionHyperlink.class, revision);
-            if(l == null) {
-                int[] offsets = new int[actions.length * 2];
-                int idx = 0;
-                HTMLDocument document = (HTMLDocument) textPane.getDocument();
-                for (Action action : actions) {
-                    Element e = document.getElement((String) action.getValue(Action.NAME));
-                    if(e != null) {
-                        offsets[idx++] = e.getStartOffset();
-                        offsets[idx++] = e.getEndOffset();
+                sb = new StringBuilder("<html><body>"); //NOI18N
+                int i = 0;
+                for (String path : getInterestingPaths(item.getUserData())) {
+                    if (++i == 2 && path == null) {
+                        continue;
+                    }
+                    int idx = path.lastIndexOf("/"); //NOI18N
+                    if (i == 2) {
+                        // additional path information (like replace from, copied from, etc.)
+                        sb.append("<br>").append(PREFIX_PATH_FROM); //NOI18N
+                    }
+                    if (idx < 0 || selected) {
+                        sb.append(path);
+                    } else {
+                        ++idx;
+                        sb.append("<font color=\"").append(PATH_COLOR).append("\">").append(path.substring(0, idx)).append("</font>"); //NOI18N
+                        sb.append(path.substring(idx, path.length()));
                     }
                 }
-                l = new ActionHyperlink(actions, offsets);
-                linkerSupport.add(l, revision);
+                pathLabel.setText(sb.append("</body></html>").toString()); //NOI18N
+                int width = getMaxPathWidth(list, item.getParent(), pathLabel.getGraphics());
+                width = width + 15 + INDENT - actionLabel.getPreferredSize().width;
+                pathLabel.setPreferredSize(new Dimension(width, pathLabel.getPreferredSize().height));
             }
-            textPane.setPreferredSize(new Dimension(textPane.getPreferredSize().width, oneLineHeight));
-            return textPane;
-        }
-    }
-
-    private String escapeHTML(String text) {
-        StringBuilder sb = new StringBuilder();
-        for (int i=0; i<text.length(); i++) {
-            char c = text.charAt(i);
-            switch (c) {
-                case '<': sb.append("&lt;"); break; // NOI18N
-                case '>': sb.append("&gt;"); break; // NOI18N
-                default: sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    public int getItemWidth(JTree tree) {
-        int width = tree.getWidth();
-        if (width <= 0) {
-            width = master.getComponent().getWidth();
-        }
-        width = width - handleWidth;
-        return width;
-    }
-
-   private class ActionHyperlink extends Hyperlink {
-        private Rectangle[] bounds;
-        private final int[] offsets;
-        private final Action[] actions;
-
-
-        public ActionHyperlink(Action[] actions, int offsets[]) {
-            assert offsets.length / 2 == actions.length;
-            this.offsets = offsets;
-            this.actions = actions;
+            return this;
         }
 
         @Override
-        public void computeBounds(JTextPane textPane) {
-            Rectangle tpBounds = textPane.getBounds();
-            TextUI tui = textPane.getUI();
-            this.bounds = new Rectangle[actions.length];
-            int aidx = 0;
-            for (int i = 0; i < bounds.length; i++) {
-                try {
-                    Rectangle mtv = tui.modelToView(textPane, offsets[aidx++], Position.Bias.Forward);
-                    if(mtv == null) return;
-                    Rectangle startr = mtv.getBounds();
-                    mtv = tui.modelToView(textPane, offsets[aidx++], Position.Bias.Backward);
-                    if(mtv == null) return;
-                    Rectangle endr = mtv.getBounds();
-                    this.bounds[i] = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
-                } catch (BadLocationException ex) { }
+        public void paint(Graphics g) {
+            super.paint(g);
+            EventActionsLink link = linkerSupport.getLinker(EventActionsLink.class, id);
+            if (link != null) {
+                link.computeBounds(actionButton);
+            }
+        }
+
+    }
+
+    private static String[] getInterestingPaths (Event event) {
+        List<String> paths = new ArrayList<String>(2);
+        String path = event.getPath();
+        String original = event.getOriginalPath();
+        paths.add(path);
+        if (original != null && !path.equals(original)) {
+            paths.add(original);
+        }
+        return paths.toArray(new String[paths.size()]);
+    }
+    
+    private class RemainingFilesRenderer extends JPanel implements ListCellRenderer{
+        private String id;
+        private Component comp;
+
+        public RemainingFilesRenderer () {
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            setBorder(BorderFactory.createEmptyBorder(0, INDENT, 3, 0));
+        }
+
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            id = ((AbstractSummaryView.ShowAllEventsItem) value).getItemId();
+            if (linkerSupport.getLinker(ShowRemainingFilesLink.class, id) == null) {
+                linkerSupport.add(new ShowRemainingFilesLink(((AbstractSummaryView.ShowAllEventsItem) value).getParent()), id);
+            }
+            StringBuilder sb = new StringBuilder("<html><a href=\"expand\">"); //NOI18N
+            if (isSelected) {
+                Component c = dlcr.getListCellRendererComponent(list, "<html><a href=\"expand\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
+                sb.append("<font color=\"").append(getColorString(c.getForeground())).append("\">") //NOI18N
+                        .append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")).append("</font>"); //NOI18N
+            } else {
+                sb.append(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
+            }
+            sb.append("</a></html>"); //NOI18N
+            comp = dlcr.getListCellRendererComponent(list, sb.toString(), index, isSelected, cellHasFocus);
+            removeAll();
+            add(comp);
+            comp.setMaximumSize(comp.getPreferredSize());
+            setBackground(comp.getBackground());
+            return this;
+        }
+
+        @Override
+        public void paint (Graphics g) {
+            super.paint(g);
+            ShowRemainingFilesLink link = linkerSupport.getLinker(ShowRemainingFilesLink.class, id);
+            if (link != null) {
+                link.computeBounds(comp);
+            }
+        }
+        
+    }
+
+    private class ActionRenderer extends JPanel implements ListCellRenderer{
+        private String id;
+        private Map<Component, Action> labels;
+        private final Map<String, JLabel> ACTION_LABELS = new HashMap<String, JLabel>();
+
+        public ActionRenderer () {
+            setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
+            setBorder(BorderFactory.createEmptyBorder(3, INDENT - 5, 5, 0));
+        }
+        
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Action[] actions = ((AbstractSummaryView.ActionsItem) value).getParent().getUserData().getActions();
+            id = ((AbstractSummaryView.ActionsItem) value).getItemId();
+            removeAll();
+            labels = new HashMap<Component, Action>(actions.length);
+            Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"action\">ACTION_NAME</a>", index, isSelected, cellHasFocus); //NOI18N
+            setBackground(comp.getBackground());
+            for (Action a : actions) {
+                JLabel label = getLabelFor((String) a.getValue(Action.NAME), isSelected ? comp.getForeground() : null);
+                label.setForeground(comp.getForeground());
+                label.setBackground(comp.getBackground());
+                label.setBorder(BorderFactory.createEmptyBorder());
+                labels.put(label, a);
+                add(label);
+            }
+            if (linkerSupport.getLinker(ActionHyperlink.class, id) == null) {
+                linkerSupport.add(new ActionHyperlink(), id);
+            }
+            return this;
+        }
+
+        @Override
+        public void paint (Graphics g) {
+            super.paint(g);
+            ActionHyperlink link = linkerSupport.getLinker(ActionHyperlink.class, id);
+            if (link != null) {
+                link.computeBounds(labels);
+            }
+        }
+
+        private JLabel getLabelFor (String actionName, Color fontColor) {
+            JLabel lbl = ACTION_LABELS.get(actionName);
+            if (lbl== null) {
+                lbl = new JLabel();
+                ACTION_LABELS.put(actionName, lbl);
+            }
+            StringBuilder sb = new StringBuilder("<html><a href=\"action\">"); //NOI18N
+            if (fontColor == null) {
+                sb.append(actionName);
+            } else {
+                sb.append("<font color=\"").append(getColorString(fontColor)).append("\">").append(actionName).append("</font>"); //NOI18N
+            }
+            sb.append("</a></html>"); //NOI18N
+            lbl.setText(sb.toString());
+            return lbl;
+        }
+        
+    }
+
+    private class MoreRevisionsRenderer extends JPanel implements ListCellRenderer{
+        private String id;
+        private final List<JLabel> labels;
+        private final Color backgroundColor;
+        private final JLabel more10Label;
+        private final JLabel allLabel;
+        private final JLabel more100Label;
+        private final JLabel more50Label;
+        private final Map<Component, String> tooltips;
+        private final Map<Component, Integer> moreLabelValues;
+
+        public MoreRevisionsRenderer () {
+            setLayout(new FlowLayout(FlowLayout.LEFT, 0, 3));
+            setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("List.background"))); //NOI18N
+            labels = new ArrayList<JLabel>();
+            labels.add(new JLabel(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMore"))); //NOI18N
+            labels.add(more10Label = new JLabel());
+            labels.add(new JLabel("/")); //NOI18N
+            labels.add(more50Label = new JLabel());
+            labels.add(new JLabel("/")); //NOI18N
+            labels.add(more100Label = new JLabel());
+            labels.add(new JLabel("/")); //NOI18N
+            labels.add(allLabel = new JLabel());
+            labels.add(new JLabel(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMoreSuffix"))); //NOI18N
+            for (JLabel lbl : labels) {
+                lbl.setBorder(BorderFactory.createEmptyBorder());
+                add(lbl);
+            }
+            labels.get(0).setBorder(BorderFactory.createEmptyBorder(0, INDENT, 0, 0));
+            backgroundColor = darker(UIManager.getColor("List.background")); //NOI18N
+            
+            moreLabelValues = new HashMap<Component, Integer>(4);
+            moreLabelValues.put(more10Label, 10);
+            moreLabelValues.put(more50Label, 50);
+            moreLabelValues.put(more100Label, 100);
+            moreLabelValues.put(allLabel, -1);
+            
+            tooltips = new HashMap<Component, String>(4);
+            tooltips.put(more10Label, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_Show10MoreRevisions")); //NOI18N
+            tooltips.put(more50Label, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_Show50MoreRevisions")); //NOI18N
+            tooltips.put(more100Label, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_Show100MoreRevisions")); //NOI18N
+            tooltips.put(allLabel, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowMoreRevisionsAll")); //NOI18N
+        }
+        
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            id = ((AbstractSummaryView.MoreRevisionsItem) value).getItemId();
+            if (linkerSupport.getLinker(MoreRevisionsHyperlink.class, id) == null) {
+                linkerSupport.add(new MoreRevisionsHyperlink(), id);
+            }
+            Component comp = dlcr.getListCellRendererComponent(list, "<html><a href=\"more\">MORE</a>", index, isSelected, cellHasFocus); //NOI18N
+            setLabelLinkText(more10Label, "10", isSelected ? comp.getForeground() : null); //NOI18N
+            setLabelLinkText(more50Label, "50", isSelected ? comp.getForeground() : null); //NOI18N
+            setLabelLinkText(more100Label, "100", isSelected ? comp.getForeground() : null); //NOI18N
+            setLabelLinkText(allLabel, NbBundle.getMessage(SummaryCellRenderer.class, "MSG_AllRevisions"), isSelected ? comp.getForeground() : null); //NOI18N
+            for (JLabel lbl : labels) {
+                lbl.setForeground(comp.getForeground());
+                lbl.setBackground(isSelected ? comp.getBackground() : backgroundColor);
+            }
+            setBackground(isSelected ? comp.getBackground() : backgroundColor);
+            return this;
+        }
+
+        @Override
+        public void paint (Graphics g) {
+            super.paint(g);
+            MoreRevisionsHyperlink link = linkerSupport.getLinker(MoreRevisionsHyperlink.class, id);
+            if (link != null) {
+                link.computeBounds();
+            }
+        }
+
+        private JLabel setLabelLinkText (JLabel lbl, String text, Color fgColor) {
+            StringBuilder sb = new StringBuilder("<html><a href=\"more\">"); //NOI18N
+            if (fgColor == null) {
+                sb.append(text);
+            } else {
+                sb.append("<font color=\"").append(getColorString(fgColor)).append("\">").append(text).append("</font>"); //NOI18N
+            }
+            sb.append("</a></html>"); //NOI18N
+            lbl.setText(sb.toString());
+            return lbl;
+        }
+
+        private class MoreRevisionsHyperlink extends VCSHyperlinkSupport.Hyperlink {
+            private Map<Component, Rectangle> bounds;
+
+            @Override
+            public void computeBounds (JTextPane textPane) {
+
+            }
+
+            public void computeBounds () {
+                bounds = new HashMap<Component, Rectangle>(labels.size());
+                for (JLabel lbl : new JLabel[] { more10Label, more50Label, more100Label, allLabel }) {
+                    bounds.put(lbl, lbl.getBounds());
+                }
+            }
+
+            @Override
+            public boolean mouseMoved (Point p, JComponent component) {
+                for (Map.Entry<Component, Rectangle> e : bounds.entrySet()) {
+                    if (e.getValue().contains(p)) {
+                        component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                        component.setToolTipText(tooltips.get(e.getKey()));
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean mouseClicked (Point p) {
+                for (Map.Entry<Component, Rectangle> e : bounds.entrySet()) {
+                    if (e.getValue().contains(p)) {
+                        summaryView.moreRevisions(moreLabelValues.get(e.getKey()));
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
+    private class ActionHyperlink extends VCSHyperlinkSupport.Hyperlink {
+        private Map<Component, Rectangle> bounds;
+        private Map<Component, Action> labels;
+
+
+        public ActionHyperlink () {
+        }
+
+        @Override
+        public void computeBounds (JTextPane textPane) {
+            
+        }
+        
+        public void computeBounds (Map<Component, Action> labels) {
+            this.labels = labels;
+            bounds = new HashMap<Component, Rectangle>(labels.size());
+            for (Map.Entry<Component, Action> e : labels.entrySet()) {
+                bounds.put(e.getKey(), e.getKey().getBounds());
             }
         }
 
         @Override
-        public boolean mouseMoved(Point p, JComponent component) {
-            for (int i = 0; i < bounds.length; i++) {
-                if (bounds != null && bounds[i] != null && bounds[i].contains(p)) {
+        public boolean mouseMoved (Point p, JComponent component) {
+            for (Map.Entry<Component, Rectangle> e : bounds.entrySet()) {
+                if (e.getValue().contains(p)) {
                     component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    component.setToolTipText((String) actions[i].getValue(Action.NAME)); // XXX
+                    component.setToolTipText((String) labels.get(e.getKey()).getValue(Action.NAME));
                     return true;
                 }
             }
@@ -621,12 +852,12 @@ public class SummaryCellRenderer implements TreeCellRenderer {
         }
 
         @Override
-        public boolean mouseClicked(Point p) {
-            for (int i = 0; i < bounds.length; i++) {
-                if (bounds != null && bounds[i] != null && bounds[i].contains(p)) {
+        public boolean mouseClicked (Point p) {
+            for (Map.Entry<Component, Rectangle> e : bounds.entrySet()) {
+                if (e.getValue().contains(p)) {
                     Utils.setWaitCursor(true);
                     try {
-                        actions[i].actionPerformed(new ActionEvent(actions[i], 0, ""));
+                        labels.get(e.getKey()).actionPerformed(new ActionEvent(labels.get(e.getKey()), ActionEvent.ACTION_PERFORMED, null));
                     } finally {
                         Utils.setWaitCursor(false);
                     }
@@ -637,23 +868,25 @@ public class SummaryCellRenderer implements TreeCellRenderer {
         }
     }
 
-    private class ExpandMsgHyperlink extends Hyperlink {
+    private static final String LINK_STRING = "..."; //NOI18N
+    private static final int LINK_STRING_LEN = LINK_STRING.length();
+    private class ExpandMsgHyperlink extends VCSHyperlinkSupport.StyledDocumentHyperlink {
         private Rectangle bounds;
         private final int startoffset;
-        private final LogEntry entry;
+        private final AbstractSummaryView.RevisionItem item;
         private final String revision;
 
-        public ExpandMsgHyperlink(LogEntry entry, int startoffset, String revision) {
+        public ExpandMsgHyperlink (AbstractSummaryView.RevisionItem item, int startoffset, String revision) {
             this.startoffset = startoffset;
             this.revision = revision;
-            this.entry = entry;
+            this.item = item;
         }
 
         @Override
         public boolean mouseMoved(Point p, JComponent component) {
             if (bounds != null && bounds.contains(p)) {
                 component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                component.setToolTipText("Expand Commit Message"); // XXX
+                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ExpandCommitMessage")); //NOI18N
                 return true;
             }
             return false;
@@ -662,14 +895,9 @@ public class SummaryCellRenderer implements TreeCellRenderer {
         @Override
         public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
-                entry.messageExpanded = true;
+                item.messageExpanded = true;
                 linkerSupport.remove(this, revision);
-                Utils.setWaitCursor(true);
-                try {
-                    master.fireNodeChanged(revision);
-                } finally {
-                    Utils.setWaitCursor(false);
-                }
+                summaryView.itemChanged(p);
                 return true;
             }
             return false;
@@ -684,144 +912,139 @@ public class SummaryCellRenderer implements TreeCellRenderer {
                 Rectangle mtv = tui.modelToView(textPane, startoffset, Position.Bias.Forward);
                 if(mtv == null) return;
                 Rectangle startr = mtv.getBounds();
-                mtv = tui.modelToView(textPane, startoffset + 3, Position.Bias.Backward);
+                mtv = tui.modelToView(textPane, startoffset + LINK_STRING_LEN, Position.Bias.Backward);
                 if(mtv == null) return;
                 Rectangle endr = mtv.getBounds();
 
-                bounds = new Rectangle(tpBounds.x + startr.x - handleWidth, startr.y, endr.x - startr.x, startr.height);
+                bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
             } catch (BadLocationException ex) {
                 throw new RuntimeException(ex);
             }
         }
+
+        @Override
+        public void insertString (StyledDocument sd, Style style) throws BadLocationException {
+            sd.insertString(startoffset, LINK_STRING, style);
+        }
     }
 
-    public class AuthorHyperlink extends Hyperlink {
+    public class ExpandLink extends VCSHyperlinkSupport.Hyperlink {
 
         private Rectangle bounds;
-        private final int startoffset;
-        private final int endoffset;
-        private final KenaiUser kenaiUser;
-        private final String author;
-        private int handleWidth;
+        private final AbstractSummaryView.RevisionItem item;
 
-        public AuthorHyperlink(KenaiUser kenaiUser, String author, int startoffset, int endoffset) {
-            this.kenaiUser = kenaiUser;
-            this.author = author;
-
-            this.startoffset = startoffset;
-            this.endoffset = endoffset;
+        private ExpandLink (AbstractSummaryView.RevisionItem item) {
+            this.item = item;
         }
 
         @Override
-        public void computeBounds(JTextPane textPane) {
-            Rectangle tpBounds = textPane.getBounds();
-            TextUI tui = textPane.getUI();
-            this.bounds = new Rectangle();
-            try {
-                Rectangle startr = tui.modelToView(textPane, startoffset, Position.Bias.Forward).getBounds();
-                Rectangle endr = tui.modelToView(textPane, endoffset, Position.Bias.Backward).getBounds();
-                if(kenaiUser.getIcon() != null) {
-                    endr.x += kenaiUser.getIcon().getIconWidth();
-                }
-                this.bounds = new Rectangle(tpBounds.x + startr.x - handleWidth, startr.y, endr.x - startr.x, startr.height);
-            } catch (BadLocationException ex) {
-                AbstractSummaryView.LOG.log(Level.OFF, null, ex);
-            }
+        public void computeBounds (JTextPane textPane) {
+            
         }
 
-        @Override
-        public boolean mouseClicked(Point p) {
-            if (bounds != null && bounds.contains(p)) {
-                kenaiUser.startChat();
-                return true;
-            }
-            return false;
+        public void computeBounds (JButton button) {
+            bounds = button.getBounds();
         }
 
         @Override
         public boolean mouseMoved(Point p, JComponent component) {
             if (bounds != null && bounds.contains(p)) {
                 component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                component.setToolTipText(NbBundle.getMessage(VCSHyperlinkSupport.class, "LBL_StartChat", author));
+                if (item.revisionExpanded) {
+                    component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_CollapseRevision")); //NOI18N
+                } else {
+                    component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ExpandRevision")); //NOI18N
+                }
                 return true;
-            }
-            return false;
-        }
-    }
-
-    public static class IssueHyperlink extends Hyperlink {
-
-        private Rectangle bounds[];
-        private final int offsetstart[];
-        private final int offsetend[];
-        private final int spanstart[];
-        private final int spanend[];
-        private final String text;
-        private final VCSHyperlinkProvider hp;
-        private final File root;
-        private final int length;
-
-        private IssueHyperlink(VCSHyperlinkProvider hp, File root, String text, int[] spans, int[] offsets) {
-            assert spans.length == offsets.length;
-
-            this.length = spans.length / 2;
-            this.offsetstart = new int[length];
-            this.offsetend = new int[length];
-            this.spanstart = new int[length];
-            this.spanend = new int[length];
-            this.hp = hp;
-            this.root = root;
-            this.text = text;
-
-            for (int i = 0; i < spans.length;) {
-                int linkeridx = i / 2;
-                this.spanstart[linkeridx] = spans[i];
-                this.offsetstart[linkeridx] = offsets[i++];
-                this.spanend[linkeridx] = spans[i];
-                this.offsetend[linkeridx] = offsets[i++];
-                if(spanend[linkeridx] < spanstart[linkeridx]) {
-                    AbstractSummaryView.LOG.log(Level.WARNING, "Hyperlink provider {0} returns wrong spans [{1},{2}]", new Object[]{hp.getClass().getName(), spanstart, spanend});
-                    continue;
-                }
-            }
-        }
-
-        @Override
-        public void computeBounds(JTextPane textPane) {
-            Rectangle tpBounds = textPane.getBounds();
-            TextUI tui = textPane.getUI();
-            this.bounds = new Rectangle[length];
-            for (int i = 0; i < length; i++) {
-                try {
-                    Rectangle mtv = tui.modelToView(textPane, offsetstart[i], Position.Bias.Forward);
-                    if(mtv == null) return;
-                    Rectangle startr = mtv.getBounds();
-                    mtv = tui.modelToView(textPane, offsetend[i], Position.Bias.Backward);
-                    if(mtv == null) return;
-                    Rectangle endr = mtv.getBounds();
-                    this.bounds[i] = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
-                } catch (BadLocationException ex) { }
-            }
-        }
-
-        @Override
-        public boolean mouseMoved(Point p, JComponent component) {
-            for (int i = 0; i < spanstart.length; i++) {
-                if (bounds != null && bounds[i] != null && bounds[i].contains(p)) {
-                    component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    return true;
-                }
             }
             return false;
         }
 
         @Override
         public boolean mouseClicked(Point p) {
-            for (int i = 0; i < spanstart.length; i++) {
-                if (bounds != null && bounds[i] != null && bounds[i].contains(p)) {
-                    hp.onClick(root, text, spanstart[i], spanend[i]);
-                    return true;
+            if (bounds != null && bounds.contains(p)) {
+                item.getUserData().cancelExpand();
+                if (item.revisionExpanded = !item.revisionExpanded) {
+                    item.getUserData().expand();
                 }
+                summaryView.itemChanged(p);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public class EventActionsLink extends VCSHyperlinkSupport.Hyperlink {
+
+        private Rectangle bounds;
+        private final AbstractSummaryView.EventItem item;
+
+        private EventActionsLink (AbstractSummaryView.EventItem item) {
+            this.item = item;
+        }
+
+        @Override
+        public void computeBounds (JTextPane textPane) {
+            
+        }
+
+        public void computeBounds (JButton button) {
+            bounds = button.getBounds();
+        }
+
+        @Override
+        public boolean mouseMoved(Point p, JComponent component) {
+            if (bounds != null && bounds.contains(p)) {
+                component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowActions")); //NOI18N
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked(Point p) {
+            if (bounds != null && bounds.contains(p)) {
+                item.actionsToPopup(p);
+                return true;
+            }
+            return false;
+        }
+    }
+    
+    public class ShowRemainingFilesLink extends VCSHyperlinkSupport.Hyperlink {
+
+        private Rectangle bounds;
+        private final AbstractSummaryView.RevisionItem item;
+
+        private ShowRemainingFilesLink (AbstractSummaryView.RevisionItem item) {
+            this.item = item;
+        }
+
+        @Override
+        public void computeBounds (JTextPane textPane) {
+            
+        }
+
+        public void computeBounds (Component component) {
+            bounds = component.getBounds();
+        }
+
+        @Override
+        public boolean mouseMoved(Point p, JComponent component) {
+            if (bounds != null && bounds.contains(p)) {
+                component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                component.setToolTipText(NbBundle.getMessage(SummaryCellRenderer.class, "MSG_ShowAllFiles")); //NOI18N
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked(Point p) {
+            if (bounds != null && bounds.contains(p)) {
+                summaryView.showRemainingFiles(item);
+                return true;
             }
             return false;
         }

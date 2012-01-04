@@ -91,6 +91,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Configuration;
 import org.netbeans.modules.java.hints.jackpot.impl.refactoring.ConfigurationRenderer;
 import org.netbeans.modules.java.hints.jackpot.impl.refactoring.ConfigurationsComboModel;
 import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.ClassPathBasedHintWrapper;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -120,6 +121,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private HintsPanelLogic logic;
     private DefaultTreeModel errorTreeModel;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final ClassPathBasedHintWrapper cpBased;
     //AWT only:
     private HintMetadata toSelect = null;
     
@@ -129,6 +131,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     
     @Messages("LBL_Loading=Loading...")
     HintsPanel(@NullAllowed final OptionsFilter filter) {
+        this.cpBased = null;
         WORKER.post(new Runnable() {
 
             @Override
@@ -152,11 +155,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
         add(new JLabel(Bundle.LBL_Loading()), new GridBagConstraints());
     }
 
-    public HintsPanel(Configuration preselected) {
+    public HintsPanel(Configuration preselected, ClassPathBasedHintWrapper cpBased) {
+        this.cpBased = cpBased;
         init(null, false, true);
         configCombo.setSelectedItem(preselected);
     }
-    public HintsPanel(HintMetadata preselected) {
+    public HintsPanel(HintMetadata preselected, ClassPathBasedHintWrapper cpBased) {
+        this.cpBased = cpBased;
         init(null, false, false);
         select(preselected);
         configurationsPanel.setVisible(false);
@@ -239,7 +244,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         toProblemCheckBox.setVisible(false);
         
-        errorTreeModel = constructTM(allHints?filterCustom(RulesManager.getInstance().allHints.keySet()):Utilities.getBatchSupportedHints(), allHints);
+        errorTreeModel = constructTM(allHints?filterCustom(RulesManager.getInstance().allHints.keySet()):Utilities.getBatchSupportedHints(cpBased).keySet(), allHints);
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
@@ -647,7 +652,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             DataObject template = DataObject.find(tempFO);
             DataObject newIfcDO = template.createFromTemplate(folder, "Inspection");
             RulesManager.getInstance().reload();
-            errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+            errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
             errorTree.setModel(errorTreeModel);
             logic.errorTreeModel = errorTreeModel;
             select(getHintByName(newIfcDO.getPrimaryFile().getNameExt()));
@@ -717,7 +722,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         RulesManager.getInstance().allHints.clear();
         RulesManager.getInstance().reload();
-        errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+        errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
         errorTree.setModel(errorTreeModel);
         select(getHintByName(selectedHintId));
         cancelEditActionPerformed(evt);
@@ -728,8 +733,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
         getRootPane().getParent().setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
     
-    public static HintMetadata getHintByName(String name) {
-        for (HintMetadata meta:Utilities.getBatchSupportedHints()) {
+    private HintMetadata getHintByName(String name) {
+        for (HintMetadata meta:Utilities.getBatchSupportedHints(cpBased).keySet()) {
             if (meta.id.startsWith(name)) {
                 return meta;
             }
@@ -938,7 +943,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 
         if (allHints)
-        root.add(extraNode);
+            root.add(extraNode);
         DefaultTreeModel defaultTreeModel = new DefaultTreeModel(root) {
 
             @Override
@@ -950,7 +955,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         getDataObject(hint).rename((String) newValue);
                         RulesManager.getInstance().allHints.clear();
                         RulesManager.getInstance().reload();
-                        errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+                        errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
                         errorTree.setModel(errorTreeModel);
                         select(getHintByName((String) newValue));
                         hasNewHints = true;
@@ -961,7 +966,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 }
             }
         };
-        
+
         return defaultTreeModel;
     }
 
@@ -1085,7 +1090,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     RulesManager.getInstance().allHints.clear();
                     RulesManager.getInstance().reload();
                     //errorTreeModel.removeNodeFromParent(node);
-                    errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+                    errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
                     errorTree.setModel(errorTreeModel);
                     hasNewHints = true;
                 }

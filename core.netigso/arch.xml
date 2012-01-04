@@ -643,6 +643,14 @@ made subject to such option by the copyright holder.
    Only modules with lower or equal start level than value of this 
    key will be started.
    </api>
+   <api category="devel" group="branding" name="org.netbeans.core.netigso.DEFAULT_BUNDLE_START_LEVEL"
+   type="export">
+   Bundles that don't provide own start level (via config/Modules/*.xml files),
+   get no start level by default in the NetBeans Platform, 
+   however that can be changed by branding the <code>DEFAULT_BUNDLE_START_LEVEL</code> key in 
+   <code>org/netbeans/core/netigso/Bundle.properties</code>. NetBeans IDE 
+   brands it to 4.
+   </api>
   </p>
  </answer>
 

@@ -181,9 +181,11 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         });
 
         NamedEntity overridesEntity = new NamedEntity() {
+            @Override
             public String getName() {
                 return "overrides-annotations"; //NOI18N
             }
+            @Override
             public boolean isEnabledByDefault() {
                 return true;
             }

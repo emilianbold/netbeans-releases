@@ -44,23 +44,23 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import java.io.IOException;
-import javax.lang.model.util.Types;
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.util.Exceptions;
 
 /**
@@ -159,11 +159,11 @@ public class PushDownTransformer extends RefactoringVisitor {
                     } else if (members[i].getGroup()==MemberInfo.Group.METHOD
                             && member.getModifiers().contains(Modifier.ABSTRACT) && el.getKind().isClass() && p.getKind().isInterface()) {
                         // moving abstract method from interface to class
-                        if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
+                        if (RefactoringUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
                         MethodTree methodTree = workingCopy.getTrees().getTree((ExecutableElement) member);
-                        ModifiersTree mods = RetoucheUtils.makeAbstract(make, methodTree.getModifiers());
+                        ModifiersTree mods = RefactoringUtils.makeAbstract(make, methodTree.getModifiers());
                         mods = make.addModifiersModifier(mods, Modifier.PUBLIC);
                         MethodTree njuMethod = make.Method(
                                 mods,
@@ -174,11 +174,11 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 methodTree.getThrows(),
                                 (BlockTree) null,
                                 null);
-                        RetoucheUtils.copyJavadoc(member, njuMethod, workingCopy);
+                        RefactoringUtils.copyJavadoc(member, njuMethod, workingCopy);
                         njuClass = genUtils.insertClassMember(njuClass, njuMethod);
                         makeClassAbstract = true;
                     } else {
-                        if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
+                        if (RefactoringUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
                         TreePath path = workingCopy.getTrees().getPath(member);
@@ -195,7 +195,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     oldOne.getThrows(),
                                     oldOne.getBody(),
                                     (ExpressionTree) oldOne.getDefaultValue());
-                            RetoucheUtils.copyJavadoc(member, m, workingCopy);
+                            RefactoringUtils.copyJavadoc(member, m, workingCopy);
                             njuClass = genUtils.insertClassMember(njuClass, m);
                         } else {
                             njuClass = genUtils.insertClassMember(njuClass, memberTree);
@@ -206,7 +206,7 @@ public class PushDownTransformer extends RefactoringVisitor {
 
                 if (makeClassAbstract && !njuClass.getModifiers().getFlags().contains(Modifier.ABSTRACT) && (njuClass.getKind() != Tree.Kind.INTERFACE)) {
                     // make enclosing class abstract if necessary
-                    njuClass = make.Class(RetoucheUtils.makeAbstract(make,
+                    njuClass = make.Class(RefactoringUtils.makeAbstract(make,
                             njuClass.getModifiers()), njuClass.getSimpleName(),
                             njuClass.getTypeParameters(), njuClass.getExtendsClause(),
                             njuClass.getImplementsClause(), njuClass.getMembers());
@@ -214,7 +214,7 @@ public class PushDownTransformer extends RefactoringVisitor {
 
                 try {
                     if (imports.size() > 0) {
-                        CompilationUnitTree newCut = RetoucheUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
+                        CompilationUnitTree newCut = RefactoringUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
                         rewrite(workingCopy.getCompilationUnit(), newCut);
                     }
                 } catch (IOException ex) {

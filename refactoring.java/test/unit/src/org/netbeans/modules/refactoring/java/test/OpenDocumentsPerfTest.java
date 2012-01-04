@@ -61,7 +61,7 @@ import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
@@ -96,13 +96,14 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         
         src.runWhenScanFinished(new Task<CompilationController>() {
 
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement klass = controller.getElements().getTypeElement("bsh.This");
                 TypeMirror mirror = klass.getInterfaces().get(1); // java.lang.Runnable
                 Element object = controller.getTypes().asElement(mirror);
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(TreePathHandle.create(object, controller)));
-                ClasspathInfo cpi = RetoucheUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
+                ClasspathInfo cpi = RefactoringUtils.getClasspathInfoFor(TreePathHandle.create(klass, controller));
                 wuq[0].getContext().add(cpi);
             }
         }, false).get();

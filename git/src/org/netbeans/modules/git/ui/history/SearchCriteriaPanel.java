@@ -57,6 +57,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     /** Creates new form SearchCriteriaPanel */
     public SearchCriteriaPanel() {
         initComponents();
+        showMergesChkBox.setSelected(GitModuleConfig.getDefault().getShowHistoryMerges());
     }
 
     public String getFrom() {
@@ -93,6 +94,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         return retval;
     }
 
+    public void setLimit (int limit) {
+        if (limit > 0) {
+            tfLimit.setText(Integer.toString(limit));
+        }
+    }
+
     public String getCommitMessage() {
         String s = tfCommitMessage.getText().trim();
         return s.isEmpty() ? null : s;
@@ -103,7 +110,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         return s.isEmpty() ? null : s;
     }
 
-    boolean isShowMerges() {
+    boolean isIncludeMerges() {
         return showMergesChkBox.isSelected();
     }
 
@@ -125,7 +132,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         commitMessageLabel = new javax.swing.JLabel();
         tfCommitMessage = new javax.swing.JTextField();
@@ -136,135 +142,116 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         toLabel = new javax.swing.JLabel();
         toInfoLabel = new javax.swing.JLabel();
         limitLabel = new javax.swing.JLabel();
+        showMergesChkBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
-        setLayout(new java.awt.GridBagLayout());
 
         commitMessageLabel.setLabelFor(tfCommitMessage);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/git/ui/history/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(commitMessageLabel, bundle.getString("CTL_UseCommitMessage")); // NOI18N
         commitMessageLabel.setToolTipText(bundle.getString("TT_CommitMessage")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(commitMessageLabel, gridBagConstraints);
 
         tfCommitMessage.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(tfCommitMessage, gridBagConstraints);
 
         usernameLabel.setLabelFor(tfUsername);
         org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, bundle.getString("CTL_UseUsername")); // NOI18N
         usernameLabel.setToolTipText(bundle.getString("TT_Username")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(usernameLabel, gridBagConstraints);
 
         tfUsername.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 4, 0, 0);
-        add(tfUsername, gridBagConstraints);
 
         fromLabel.setLabelFor(tfFrom);
         org.openide.awt.Mnemonics.setLocalizedText(fromLabel, bundle.getString("CTL_UseFrom")); // NOI18N
         fromLabel.setToolTipText(bundle.getString("TT_From")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(fromLabel, gridBagConstraints);
 
         tfFrom.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(tfFrom, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(fromInfoLabel, bundle.getString("CTL_FromToHint")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 4);
-        add(fromInfoLabel, gridBagConstraints);
 
         toLabel.setLabelFor(tfTo);
         org.openide.awt.Mnemonics.setLocalizedText(toLabel, bundle.getString("CTL_UseTo")); // NOI18N
         toLabel.setToolTipText(bundle.getString("TT_To")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(toLabel, gridBagConstraints);
 
         tfTo.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(tfTo, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(toInfoLabel, bundle.getString("CTL_FromToHint")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
-        gridBagConstraints.insets = new java.awt.Insets(3, 2, 0, 4);
-        add(toInfoLabel, gridBagConstraints);
 
         limitLabel.setLabelFor(tfLimit);
         org.openide.awt.Mnemonics.setLocalizedText(limitLabel, bundle.getString("CTL_UseLimit")); // NOI18N
         limitLabel.setToolTipText(bundle.getString("TT_Limit")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(limitLabel, gridBagConstraints);
 
         tfLimit.setColumns(10);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(tfLimit, gridBagConstraints);
 
         showMergesChkBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(showMergesChkBox, org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_ShowMerge")); // NOI18N
         showMergesChkBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "TT_ShowMerges")); // NOI18N
         showMergesChkBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-        showMergesChkBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                showMergesChkBoxStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        add(showMergesChkBox, gridBagConstraints);
-    }// </editor-fold>//GEN-END:initComponents
 
-private void showMergesChkBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_showMergesChkBoxStateChanged
-        GitModuleConfig.getDefault().setShowHistoryMerges( showMergesChkBox.isSelected());
-}//GEN-LAST:event_showMergesChkBoxStateChanged
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(limitLabel)
+                    .addComponent(commitMessageLabel)
+                    .addComponent(usernameLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tfLimit, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(showMergesChkBox))
+                    .addComponent(tfUsername, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tfCommitMessage, javax.swing.GroupLayout.Alignment.LEADING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(fromLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(fromInfoLabel)
+                            .addComponent(tfFrom)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addComponent(toLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(toInfoLabel)
+                            .addComponent(tfTo)))))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tfCommitMessage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(commitMessageLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tfUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(usernameLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(limitLabel)
+                            .addComponent(tfLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(showMergesChkBox)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(fromLabel)
+                            .addComponent(tfFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fromInfoLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tfTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(toLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(toInfoLabel)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -272,7 +259,7 @@ private void showMergesChkBoxStateChanged(javax.swing.event.ChangeEvent evt) {//
     private javax.swing.JLabel fromInfoLabel;
     private javax.swing.JLabel fromLabel;
     private javax.swing.JLabel limitLabel;
-    final javax.swing.JCheckBox showMergesChkBox = new javax.swing.JCheckBox();
+    private javax.swing.JCheckBox showMergesChkBox;
     private javax.swing.JTextField tfCommitMessage;
     final javax.swing.JTextField tfFrom = new javax.swing.JTextField();
     final javax.swing.JTextField tfLimit = new javax.swing.JTextField();

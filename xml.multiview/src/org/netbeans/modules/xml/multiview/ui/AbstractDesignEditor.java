@@ -56,8 +56,6 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.actions.SaveAction;
-import java.lang.reflect.Method;
-import org.openide.util.Lookup;
 
 /**
  * The ComponentPanel three pane editor. This is basically a container that implements the ExplorerManager
@@ -228,36 +226,9 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         
         public void actionPerformed(java.awt.event.ActionEvent e) {
             HelpCtx ctx = getContext();
-            if (ctx == null) {
+            if (ctx == null || !ctx.display()) {
                 java.awt.Toolkit.getDefaultToolkit().beep();
-                return;
             }
-            
-            try {
-                //Copied from original property sheet implementation
-                Class c = ((ClassLoader)Lookup.getDefault().lookup(
-                ClassLoader.class)).loadClass(
-                "org.netbeans.api.javahelp.Help"); // NOI18N
-                
-                Object o = Lookup.getDefault().lookup(c);
-                if (o != null) {
-                    Method m = c.getMethod("showHelp", // NOI18N
-                    new Class[] {HelpCtx.class});
-
-                    if (m != null) { //Unit tests
-                        m.invoke(o, new Object[] {ctx});
-                    }
-                    return;
-                }
-            } catch (ClassNotFoundException cnfe) {
-                // ignore - maybe javahelp module is not installed, not so strange
-            } catch (Exception ee) {
-                // potentially more serious
-                org.openide.ErrorManager.getDefault().notify(
-                    org.openide.ErrorManager.INFORMATIONAL, ee);
-            }
-            // Did not work.
-            java.awt.Toolkit.getDefaultToolkit().beep();
         }
         
         private HelpCtx getContext() {

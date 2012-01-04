@@ -69,11 +69,13 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -87,13 +89,13 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service = {ReplaceTokenProvider.class, ActionConvertor.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
 public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConvertor {
 
     private static final String WEB_PATH =          "webpagePath";      //NOI18N
+    private static final String IS_SERVLET_FILE = "org.netbeans.modules.web.IsServletFile";   //NOI18N
     public static final String ATTR_EXECUTION_URI = "execution.uri";    //NOI18N
     public static final String FILE_DD        =     "web.xml";          //NOI18N
-    private static final String IS_SERVLET_FILE = 
-        "org.netbeans.modules.web.IsServletFile";                       //NOI18N
     
     private static final Set<WebModule> SERVLET_SEARCH_MODULES = new HashSet<WebModule>();
     private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = 

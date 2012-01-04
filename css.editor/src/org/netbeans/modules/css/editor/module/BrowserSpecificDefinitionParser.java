@@ -53,6 +53,7 @@ import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.Property;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -160,24 +161,24 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
         private String delegateToPropertyName;
 
         public ProxyProperty(String name, String delegateToPropertyName) {
-            super(name, null, null);
+            super(name, null, module);
             this.delegateToPropertyName = delegateToPropertyName;
         }
 
         @Override
         public String getValueGrammar() {
             //try to get the normal property first
-            Property p = CssModuleSupport.getProperty(delegateToPropertyName);
+            Collection<Property> p = CssModuleSupport.getProperties(delegateToPropertyName);
             if(p == null) {
                 //the browser specific definition may address an invisible property
-                p = CssModuleSupport.getProperty(delegateToPropertyName, true);
+                p = CssModuleSupport.getProperties(delegateToPropertyName, true);
             }
             
             if (p == null) {
                 Logger.getAnonymousLogger().warning(String.format("Cannot fine property %s referred in %s", delegateToPropertyName, resourcePath)); //NOI18N
                 return ""; //return empty grammar definition
             }
-            return p.getValueGrammar();
+            return new PropertyModel(delegateToPropertyName, p).getGrammar();
         }
     }
 }

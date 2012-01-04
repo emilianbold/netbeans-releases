@@ -107,6 +107,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="willOpenProjects">
+            <api name="general"/>
+            <summary>Will open project notification</summary>
+            <version major="1" minor="55"/>
+            <date day="12" month="12" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    A <a href="@TOP@/architecture-summary.html#property-willOpenProjects">
+                    new friend contract</a> added for benefit of ide.ergonomics
+                    module.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <issue number="203220"/>
+        </change>
         <change id="Templates.definesMainProject">
             <api name="general"/>
             <summary>Added <code>definesMainProject</code> property to wizards</summary>

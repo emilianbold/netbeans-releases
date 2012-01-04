@@ -88,6 +88,16 @@ public class StringEditorTest extends TestCase {
         assertFalse("we've better than default 'null' string", "null".equals(defaultValue));
     }
 
+    public void testNoCustomEditorWithoutPropertyEnv() {
+        NP np = new NP();
+        PropertyEditor p = np.getPropertyEditor();
+        assertNotNull("There is some editor", p);
+        assertEquals("It is StringEditor", StringEditor.class, p.getClass());
+
+        assertFalse("Custom property editor not working without PropertyEnv, so should not be offered.",
+                    p.supportsCustomEditor());
+    }
+
     class NP extends Node.Property<String> {
         public String value;
         

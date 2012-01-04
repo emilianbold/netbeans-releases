@@ -70,17 +70,20 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
@@ -113,7 +116,7 @@ public class JavaFixAllImports {
     private JavaFixAllImports() {
     }
     
-    public void fixAllImports(FileObject fo) {
+    public void fixAllImports(final FileObject fo, final JTextComponent target) {
         final AtomicBoolean cancel = new AtomicBoolean();
         final JavaSource javaSource = JavaSource.forFileObject(fo);
         final AtomicReference<ImportData> id = new AtomicReference<ImportData>();
@@ -156,7 +159,8 @@ public class JavaFixAllImports {
 
                 public void run() {
                     try {
-                        javaSource.runModificationTask(task).commit();
+                        ModificationResult mr = javaSource.runModificationTask(task);
+                        GeneratorUtils.guardedCommit(target, mr);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -166,7 +170,7 @@ public class JavaFixAllImports {
             if (id.get() != null && !cancel.get()) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        showFixImportsDialog(javaSource, id.get());
+                        showFixImportsDialog(javaSource, target, id.get());
                     }
                 });
             }
@@ -358,7 +362,7 @@ public class JavaFixAllImports {
 
     private static final RequestProcessor WORKER = new RequestProcessor(JavaFixAllImports.class.getName(), 1);
     
-    private static void showFixImportsDialog(final JavaSource js, final ImportData data) {
+    private static void showFixImportsDialog(final JavaSource js, final JTextComponent target, final ImportData data) {
         final Preferences prefs = NbPreferences.forModule(JavaFixAllImports.class).node(PREFS_KEY);
         final FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
 
@@ -390,7 +394,7 @@ public class JavaFixAllImports {
                 WORKER.post(new Runnable() {
                     public void run() {
                         try {
-                            js.runModificationTask(new Task<WorkingCopy>() {
+                            ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                                 public void run(WorkingCopy wc) throws Exception {
                                     SwingUtilities.invokeLater(new Runnable() {
                                         public void run() {
@@ -402,7 +406,8 @@ public class JavaFixAllImports {
                                     if (stop.get()) return;
                                     performFixImports(wc, data, selections, removeUnusedImports);
                                 }
-                            }).commit();
+                            });
+                            GeneratorUtils.guardedCommit(target, mr);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }

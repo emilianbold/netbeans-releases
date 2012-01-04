@@ -43,6 +43,8 @@ package org.netbeans.api.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
@@ -56,6 +58,8 @@ import org.openide.util.Parameters;
  * @since 1.35
  */
 public final class SourceJavadocAttacher {
+
+    private static final Logger LOG = Logger.getLogger(SourceJavadocAttacher.class.getName());
 
     private SourceJavadocAttacher() {}
 
@@ -117,6 +121,13 @@ public final class SourceJavadocAttacher {
                     attacher.attachSources(root, listener) :
                     attacher.attachJavadoc(root, listener);
                 if (handles) {
+                    LOG.log(Level.FINE,
+                            "Attaching of {0} to root: {1} handled by: {2}",    //NOI18N
+                            new Object[]{
+                                (mode == 0) ? "sources" : "javadoc",
+                                root,
+                                attacher.getClass().getName()
+                            });
                     return;
                 }
             }
@@ -126,5 +137,12 @@ public final class SourceJavadocAttacher {
         if (listener != null) {
             listener.attachmentFailed();
         }
+        LOG.log(
+            Level.FINE,
+            "No provider handled attaching of {0} to root: {1}",    //NOI18N
+            new Object[]{
+                (mode == 0) ? "sources" : "javadoc",
+                root
+            });
     }
 }

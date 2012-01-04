@@ -1479,7 +1479,8 @@ public class BindingDesignSupportImpl implements BindingDesignSupport {
                 }
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
                                                  new ClassSourceResolver.LibraryEntry(lib));
-                return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
+                ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs, true);
+                return true;
             }
             catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

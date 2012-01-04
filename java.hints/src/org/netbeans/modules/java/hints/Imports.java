@@ -49,6 +49,7 @@ import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -67,7 +68,7 @@ public class Imports {
     private String IMPORTS_ID = "Imports_"; // NOI18N
     
 
-    @Hint(category="imports", id="Imports_STAR", enabled=false)
+    @Hint(category="imports", id="Imports_STAR", enabled=false, options=Options.QUERY)
     @TriggerTreeKind(Kind.IMPORT)
     public static ErrorDescription starImport(HintContext ctx) {
         ImportTree it = (ImportTree) ctx.getPath().getLeaf();
@@ -126,7 +127,7 @@ public class Imports {
         return result;
     }
 
-    @Hint(category="imports", id="Imports_EXCLUDED")
+    @Hint(category="imports", id="Imports_EXCLUDED", options=Options.QUERY)
     @TriggerTreeKind(Kind.IMPORT)
     public static ErrorDescription exlucded(HintContext ctx) throws IOException {
         ImportTree it = (ImportTree) ctx.getPath().getLeaf();

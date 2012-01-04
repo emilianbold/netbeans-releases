@@ -60,9 +60,9 @@ public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder
         this(project, false);
     }
 
+    @NbBundle.Messages("PackageSelectionTreeViewBuilder_PackageView=Package View")
     public PackageSelectionTreeViewBuilder(Lookup.Provider project, boolean isPreferred) {
-        super(new Type("package-view", NbBundle.getMessage(PackageSelectionTreeViewBuilder.class, // NOI18N
-                "PackageSelectionTreeViewBuilder_PackageView")), isPreferred, project); // NOI18N
+        super(new Type("package-view", Bundle.PackageSelectionTreeViewBuilder_PackageView()), isPreferred, project); // NOI18N
     }
 
     @Override

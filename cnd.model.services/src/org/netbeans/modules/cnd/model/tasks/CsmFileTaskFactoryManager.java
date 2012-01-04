@@ -73,6 +73,7 @@ public class CsmFileTaskFactoryManager implements LookupListener {
     private final RequestProcessor.Task updateTask;
     private CsmFileTaskFactoryManager() {
         updateTask = new RequestProcessor("CsmFileTaskFactoryManager Worker", 1).create(new Runnable() { //NOI18N
+            @Override
             public void run() {
                 update();
             }
@@ -85,6 +86,7 @@ public class CsmFileTaskFactoryManager implements LookupListener {
         }
         // postpone loading services (IZ164684)
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            @Override
             public void run() {
                 factories.addLookupListener(CsmFileTaskFactoryManager.this);
                 resultChanged(null);
@@ -92,6 +94,7 @@ public class CsmFileTaskFactoryManager implements LookupListener {
         });
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         updateTask.schedule(0);
     }

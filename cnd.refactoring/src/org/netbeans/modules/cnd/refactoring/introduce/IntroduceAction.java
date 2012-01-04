@@ -77,6 +77,7 @@ public final class IntroduceAction extends HintAction {
 //        return super.getValue(key);
 //    }
 
+    @Override
     protected void perform(CsmContext context) {
         String error = doPerformAction(context);
 

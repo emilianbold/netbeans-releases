@@ -56,6 +56,10 @@ public class EmbeddingUtil {
         int astFrom = e.getStartPosition();
         int astTo = e.getEndPosition();
 
+        return convertToDocumentOffsets(astFrom, astTo, snapshot);
+    }
+    
+    public static OffsetRange convertToDocumentOffsets(int astFrom, int astTo, Snapshot snapshot) {
         int from = snapshot.getOriginalOffset(astFrom);
         int to = snapshot.getOriginalOffset(astTo);
 

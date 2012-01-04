@@ -47,7 +47,9 @@ package org.netbeans.modules.search;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -300,6 +302,32 @@ final class ResultTreeModel implements TreeModel {
     }
     
     /**
+     * Fix tree expansion state after the tree structure was changed. Expand
+     * nodes that were expanded before updating.
+     */
+    private void fixTreeExpansionState() {
+
+        List<MatchingObject> expanded = new LinkedList<MatchingObject>();
+        synchronized (resultModel) {
+            for (MatchingObject mo : resultModel.getMatchingObjects()) {
+                if (mo.isExpanded()) {
+                    expanded.add(mo);
+                }
+            }
+        }
+        if (!expanded.isEmpty()) {
+            final JTree tree = resultModel.getResultView().tree;
+            resultModel.getResultView().setScrollControllerEnabled(false);
+            for (MatchingObject mo : expanded) {
+                TreePath tp = new TreePath(
+                        new Object[]{ResultTreeModel.this, mo});
+                tree.expandPath(tp);
+            }
+            resultModel.getResultView().setScrollControllerEnabled(true);
+        }
+    }
+
+    /**
      * 
      * @return  {@code true} if the selection changed, {@code false} otherwise
      */
@@ -432,9 +460,12 @@ final class ResultTreeModel implements TreeModel {
 
         assert EventQueue.isDispatchThread();
 
-        TreeModelEvent event = new TreeModelEvent(this, rootPath);
-        for (TreeModelListener l : treeModelListeners) {
-            l.treeStructureChanged(event);
+        if (treeModelListeners != null) {
+            TreeModelEvent event = new TreeModelEvent(this, rootPath);
+            for (TreeModelListener l : treeModelListeners) {
+                l.treeStructureChanged(event);
+            }
+            fixTreeExpansionState();
         }
         treeUIUpdateScheduled = false;
     }

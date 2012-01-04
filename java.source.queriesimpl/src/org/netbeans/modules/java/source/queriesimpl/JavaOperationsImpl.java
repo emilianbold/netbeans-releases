@@ -41,14 +41,7 @@
  */
 package org.netbeans.modules.java.source.queriesimpl;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -62,8 +55,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -367,12 +358,27 @@ class JavaOperationsImpl<T> implements ModelOperations {
             @Override
             public Void visitIdentifier(IdentifierTree node, Void p) {
                 super.visitIdentifier(node, p);
-                final TreePath path = getCurrentPath();
-                final Element e = trees.getElement(path);
-                if (fieldF.equals(e)) {
-                    wcopy.rewrite(path.getLeaf(),maker.Identifier(newName));
+                if (shouldRename()) {
+                    wcopy.rewrite(
+                        getCurrentPath().getLeaf(),
+                        maker.Identifier(newName));
                 }
                 return null;
+            }
+            @Override
+            public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                super.visitMemberSelect(node, p);
+                if (shouldRename()) {
+                    wcopy.rewrite(
+                        getCurrentPath().getLeaf(),
+                        maker.MemberSelect(node.getExpression(), newName));
+                }
+                return null;
+            }
+
+            private boolean shouldRename() {
+                final Element e = trees.getElement(getCurrentPath());
+                return fieldF.equals(e);
             }
         };
         scanner.scan(cu, null);

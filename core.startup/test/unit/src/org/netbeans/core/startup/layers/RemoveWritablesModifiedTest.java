@@ -50,14 +50,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.netbeans.Module;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -116,7 +114,7 @@ public class RemoveWritablesModifiedTest extends NbTestCase {
         
         existingFile.setAttribute( "myAttribute", "myAttributeValue" );
         
-        assertNull( "removeWritables does not work for file attributes", FileUtil.getConfigFile( "foo" ).getAttribute( "removeWritables" ) );
+        assertFalse("removeWritables does not work for file attributes", FileUtil.getConfigFile("foo").canRevert());
     }
 
 

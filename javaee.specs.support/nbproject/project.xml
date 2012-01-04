@@ -24,6 +24,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -95,10 +104,12 @@
             <friend-packages>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
+                <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
+                <friend>org.netbeans.modules.tomcat5</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.owsm</friend>

@@ -66,18 +66,14 @@ import org.openide.util.NbBundle;
  *
  * @author  Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "DirectorySelectorCombo_SelectActionString=Select action",
+    "DirectorySelectorCombo_NoneString=<None>",
+    "DirectorySelectorCombo_ActionString=Action...",
+    "DirectorySelectorCombo_DialogCaption=Browse",
+    "DirectorySelectorCombo_DialogFilter=Supported files"
+})
 public class DirectorySelectorCombo extends javax.swing.JPanel {
-  
-  // -----
-  // I18N String constants
-  private static final String SELECT_ACTION_STRING = NbBundle.getMessage(DirectorySelectorCombo.class, "DirectorySelectorCombo_SelectActionString"); // NOI18N
-  private static final String NONE_STRING = NbBundle.getMessage(DirectorySelectorCombo.class, "DirectorySelectorCombo_NoneString"); // NOI18N
-  private static final String ACTION_STRING = NbBundle.getMessage(DirectorySelectorCombo.class, "DirectorySelectorCombo_ActionString"); // NOI18N
-  private static final String DIALOG_CAPTION = NbBundle.getMessage(DirectorySelectorCombo.class, "DirectorySelectorCombo_DialogCaption"); // NOI18N
-  private static final String DIALOG_FILTER = NbBundle.getMessage(DirectorySelectorCombo.class, "DirectorySelectorCombo_DialogFilter"); // NOI18N
-  // -----
-  
-  
   public static final String PROPERTY_SELECTEDPATH = "selectedPath"; // NOI18N
   
   // <editor-fold defaultstate="collapsed" desc="Inner classes">
@@ -289,9 +285,9 @@ public class DirectorySelectorCombo extends javax.swing.JPanel {
   
   private void initCustom() {
     showWelcome = true;
-    welcomeText = SELECT_ACTION_STRING; 
-    noneText = NONE_STRING; 
-    actionText = ACTION_STRING; 
+    welcomeText = Bundle.DirectorySelectorCombo_SelectActionString(); 
+    noneText = Bundle.DirectorySelectorCombo_NoneString(); 
+    actionText = Bundle.DirectorySelectorCombo_ActionString(); 
     itemCountLimit = 2;
     supportedExtensions = new HashSet<String>();
   }
@@ -323,7 +319,7 @@ public class DirectorySelectorCombo extends javax.swing.JPanel {
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     
     chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-    chooser.setDialogTitle(DIALOG_CAPTION);
+    chooser.setDialogTitle(Bundle.DirectorySelectorCombo_DialogCaption());
     chooser.setSelectedFile(new File(lastSelectedPath));
     chooser.setFileFilter(new FileFilter() {
       public boolean accept(File f) {
@@ -334,7 +330,7 @@ public class DirectorySelectorCombo extends javax.swing.JPanel {
         return supportedExtensions.contains(ext);
       }
       public String getDescription() {
-        return DIALOG_FILTER;
+        return Bundle.DirectorySelectorCombo_DialogFilter();
       }
     });
     final int returnVal = chooser.showOpenDialog(this);

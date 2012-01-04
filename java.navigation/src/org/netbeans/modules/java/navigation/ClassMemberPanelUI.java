@@ -347,7 +347,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         public MyBeanTreeView() {
             toolTipManager = new ToolTipManagerEx( this );
-            setUseSubstringInQuickSearch(true);
         }
         
         public boolean getScrollOnExpand() {

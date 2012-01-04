@@ -26,15 +26,37 @@
             }
             -->
         </style>
-        <title>Java Code Completion</title>
+        <title>Java Code Completion Options</title>
     </head>
     <body>
         <h2>
-            Java Code Completion
+            Java Code Completion Options
         </h2>
-        <p>This page describes the options in Options: Editor: Code Completion if you select the Java language.</p>
-        
-        
+        <p>Set these options for Java code completion in the Options &gt; Editor &gt; Code Completion tab, when the Java language is selected. These options apply globally to Java, and only to Java.
+</p>
+        <ul>
+            <li><b>Guess Filled Method Arguments.</b> When selected, enables the editor to insert a variable available in the current context as the method argument. Enabled by default.</li>
+			  
+            <li><strong>Auto Popup Triggers for Java.</strong> Specify the patterns upon which code completion appears. For example, a new dot can trigger code completion, so that related method parameters are shown. </li>
+			
+			<li><b>Auto Popup on Typing Any Java Identifier Type.</b> If this option is enabled, code completion is shown when a new Java identifier part is entered.
+			  <ul>
+            <li><strong>Completion Selectors for Java.</strong> Specify the characters that confirm the current selection in the code completion box. When one of the selectors is pressed, the current item in the code completion box is selected and entered in the editor, with the selector appearing after it. </li>
+  </ul></li>
+			<li><b>Packages/classes.</b> Enables you to limit what is shown in the code completion box. 
+			  <ul>
+            <li><strong>Exclude.</strong> Define which packages, classes, or methods must be excluded from code completion. Click Add to specify,  Edit to modify, or Remove to delete an excluded pattern. </li>
+			<li><strong>Include.</strong> Define which packages, classes, or methods must be included into code completion. Click Add to specify,  Edit to modify, or Remove to delete an included pattern </li>
+			<li><strong>Apply rules to methods.</strong> When selected, enables the editor to apply the specified excluded and included patterns to methods. </li>
+			  </ul></li>
+			<li><b>Auto Popup Triggers for Javadoc.</b> Specify the patterns upon which the code completion box prompts inside Javadoc comments.</li>
+    </ul>
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd>
+                <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_options.html">Using the Options Window</a>
+            </dd>
+        </dl>
          <hr>
         <p>
             <small><a href="../../credits.html">Legal Notices</a></small>

@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -234,17 +235,17 @@ public class ModuleDependencies extends Task {
 
                 TreeSet<Dependency> depends = new TreeSet<Dependency>();
                 TreeSet<Dependency> provides = new TreeSet<Dependency>();
-                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Requires");
-                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Needs");
-                addDependencies (depends, file.getManifest (), Dependency.Type.recommends, "OpenIDE-Module-Recommends");
-                addDependencies (provides, file.getManifest (), Dependency.Type.provides, "OpenIDE-Module-Provides");
+                addDependencies (depends, file.getManifest (), Dependency.Type.REQUIRES, "OpenIDE-Module-Requires");
+                addDependencies (depends, file.getManifest (), Dependency.Type.REQUIRES, "OpenIDE-Module-Needs");
+                addDependencies (depends, file.getManifest (), Dependency.Type.RECOMMENDS, "OpenIDE-Module-Recommends");
+                addDependencies (provides, file.getManifest (), /*irrelevant*/Dependency.Type.REQUIRES, "OpenIDE-Module-Provides");
                 {
                     String ideDeps = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-IDE-Dependencies"); // IDE/1 > 4.25
                     if (ideDeps != null) {
                         throw new BuildException("OpenIDE-Module-IDE-Dependencies is obsolete in " + f);
                     }
                 }
-                addDependencies (depends, file.getManifest (), Dependency.Type.requires, "OpenIDE-Module-Module-Dependencies");
+                addDependencies (depends, file.getManifest (), Dependency.Type.DIRECT, "OpenIDE-Module-Module-Dependencies");
                 /* org.netbeans.api.java/1,org.netbeans.modules.queries/0,
                  org.netbeans.modules.javacore/1,org.netbeans.jmi.javamodel/1 > 1.11,org.netbeans.api.mdr/1,
                  org.netbeans.modules.mdr/1= 1.0.0,org.netbeans.modules.
@@ -252,7 +253,10 @@ public class ModuleDependencies extends Task {
                  org.openide.loaders,org.openide.src > 1.0
                  */
                 m.depends = depends;
-                m.provides = provides;
+                m.provides = new HashSet<String>();
+                for (Dependency d : provides) {
+                    m.provides.add(d.getName());
+                }
                 {
                     String friends = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Friends"); 
                     if (friends != null) {
@@ -503,8 +507,7 @@ public class ModuleDependencies extends Task {
             Set<String> deps = new TreeSet<String>();
             depsAll.put(m.codebasename, deps);
             for (Dependency d : m.depends) {
-                ModuleInfo m2 = findModuleInfo(d, m);
-                if (m2 != null) {
+                for (ModuleInfo m2 : findModuleInfo(d, m)) {
                     deps.add(m2.codebasename);
                 }
             }
@@ -669,11 +672,9 @@ public class ModuleDependencies extends Task {
             TreeSet<String> deps = new TreeSet<String>();
             moduleDepsAll.put(m.codebasename, deps);
             for (Dependency d : m.depends) {
-                ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                if (theModuleOneIsDependingOn == null) {
-                    continue;
+                for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                    deps.add(theModuleOneIsDependingOn.codebasename);
                 }
-                deps.add(theModuleOneIsDependingOn.codebasename);
             }
         }
         transitiveClosure(moduleDepsAll);
@@ -689,12 +690,10 @@ public class ModuleDependencies extends Task {
                 TreeSet<String> deps = new TreeSet<String>();
                 kitDepsAll.put(m.getName(false), deps);
                 for (Dependency d : m.depends) {
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    if (theModuleOneIsDependingOn == null) {
-                        continue;
-                    }
-                    if (theModuleOneIsDependingOn.showInAutoupdate) {
-                        deps.add(theModuleOneIsDependingOn.getName(false));
+                    for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                        if (theModuleOneIsDependingOn.showInAutoupdate) {
+                            deps.add(theModuleOneIsDependingOn.getName(false));
+                        }
                     }
                 }
             }
@@ -707,14 +706,14 @@ public class ModuleDependencies extends Task {
      * 
      * @param deps the dependency map, will contain the transitive closure when the method exits
      */
-    private void transitiveClosure(Map<String,? extends Set<String>> allDeps) {
+    private <T> void transitiveClosure(Map<T,? extends Set<T>> allDeps) {
         boolean needAnotherIteration = true;
         while (needAnotherIteration) {
             needAnotherIteration = false;
-            for (Map.Entry<String,? extends Set<String>> entry : allDeps.entrySet()) {
-                Set<String> deps = entry.getValue();
-                for (String d : new TreeSet<String>(deps)) {
-                    for (String d2: allDeps.get(d)) {
+            for (Map.Entry<T,? extends Set<T>> entry : allDeps.entrySet()) {
+                Set<T> deps = entry.getValue();
+                for (T d : new TreeSet<T>(deps)) {
+                    for (T d2: allDeps.get(d)) {
                         if (deps.add(d2)) {
                             log("transitive closure: need to add " + d2 + " to " + entry.getKey(), Project.MSG_DEBUG);
                             needAnotherIteration = true;
@@ -739,13 +738,11 @@ public class ModuleDependencies extends Task {
                     if (regexp != null && !regexp.matcher(m.group).matches()) {
                         continue;
                     }
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    if (theModuleOneIsDependingOn == null) {
-                        continue;
-                    }
-                    if (theModuleOneIsDependingOn.showInAutoupdate) {
-                        w.print("  REQUIRES " + theModuleOneIsDependingOn.getName(false));
-                        w.println();
+                    for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                        if (theModuleOneIsDependingOn.showInAutoupdate) {
+                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName(false));
+                            w.println();
+                        }
                     }
                 }
             }
@@ -807,18 +804,16 @@ public class ModuleDependencies extends Task {
                     allowed.add(piece.replaceFirst("^nb[.]cluster[.]", ""));
                 }
                 for (Dependency d : m.depends) {
-                    if (d.type != Dependency.Type.requires) {
+                    if (d.type == Dependency.Type.RECOMMENDS) {
                         continue;
                     }
-                    ModuleInfo o = findModuleInfo(d, m);
-                    if (o == null) {
-                        continue;
-                    }
-                    if (o.codebasename.equals("org.netbeans.libs.junit4")) {
-                        continue; // special case
-                    }
-                    if (!allowed.contains(o.group)) {
-                        w.println(m.getName(false) + " -> " + o.getName(false));
+                    for (ModuleInfo o : findModuleInfo(d, m)) {
+                        if (o.codebasename.equals("org.netbeans.libs.junit4")) {
+                            continue; // special case
+                        }
+                        if (!allowed.contains(o.group)) {
+                            w.println(m.getName(false) + " -> " + o.getName(false));
+                        }
                     }
                 }
             }
@@ -913,7 +908,7 @@ public class ModuleDependencies extends Task {
                 if (d.getName().startsWith("org.openide.modules.ModuleFormat")) {
                     continue; // just clutter
                 }
-                String print = d.type == Dependency.Type.requires ? "  REQUIRES " : "  RECOMMENDS ";
+                String print = d.type == Dependency.Type.RECOMMENDS ? "  RECOMMENDS " : "  REQUIRES ";
                 if (d.exact && d.compare != null) {
                     // ok, impl deps
                 } else {
@@ -934,10 +929,11 @@ public class ModuleDependencies extends Task {
                     w.print(print);
                     w.println(d.getName ());
                 } else {
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
-                    if (theModuleOneIsDependingOn != null && written.add(theModuleOneIsDependingOn)) {
-                        w.print(print);
-                        w.println(theModuleOneIsDependingOn.getName(false));
+                    for (ModuleInfo theModuleOneIsDependingOn : findModuleInfo(d, m)) {
+                        if (written.add(theModuleOneIsDependingOn)) {
+                            w.print(print);
+                            w.println(theModuleOneIsDependingOn.getName(false));
+                        }
                     }
                 }
             }
@@ -988,46 +984,44 @@ public class ModuleDependencies extends Task {
             
             boolean first = true;
             for (Dependency d : depends) {
-                String print = d.type == Dependency.Type.requires ? "  REQUIRES " : "  RECOMMENDS ";
+                String print = d.type == Dependency.Type.RECOMMENDS ? "  RECOMMENDS ": "  REQUIRES ";
                 // dependencies within one group are not important
                 Set<ModuleInfo> r = referrers.get(d);
-                ModuleInfo ref = findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null);
-                if (ref == null) {
-                    continue;
-                }
-                if (groupName.equals (ref.group)) {
-                    continue;
-                }
-                
-                if (first) {
-                    w.print ("GROUP ");
-                    w.print (groupName);
+                for (ModuleInfo ref : findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null)) {
+                    if (groupName.equals (ref.group)) {
+                        continue;
+                    }
+                    if (first) {
+                        w.print ("GROUP ");
+                        w.print (groupName);
+                        w.println ();
+                        first = false;
+                    }
+                    w.print (print);
+                    w.print (ref.getName (false));
                     w.println ();
-                    first = false;
                 }
-                w.print (print);
-                w.print (ref.getName (false));
-                w.println ();
             }
         }
         w.close ();
     }
     
-    /** For a given dependency finds the module that this dependency refers to.
+    /** For a given dependency finds the module(s) that this dependency refers to.
      */
-    private ModuleInfo findModuleInfo(Dependency dep, ModuleInfo referrer) throws BuildException {
+    private Set<ModuleInfo> findModuleInfo(Dependency dep, ModuleInfo referrer) throws BuildException {
         if (dep.isSpecial()) {
-            return null;
+            return Collections.emptySet();
         }
+        Set<ModuleInfo> result = new LinkedHashSet<ModuleInfo>();
         for (ModuleInfo info : modules) {
             if (dep.isDependingOn (info)) {
-                return info;
+                result.add(info);
             }
         }
-        if (dep.type == Dependency.Type.recommends) {
-            return null;
+        if (dep.type != Dependency.Type.RECOMMENDS && result.isEmpty()) {
+            throw new BuildException ("Cannot find module that satisfies dependency: " + dep + (referrer != null ? " from: " + referrer : ""));
         }
-        throw new BuildException ("Cannot find module that satisfies dependency: " + dep + (referrer != null ? " from: " + referrer : ""));
+        return result;
     }
     /** For a given codebasename finds module that we depend on
      */
@@ -1152,7 +1146,7 @@ public class ModuleDependencies extends Task {
         public String specificationVersion;
         public String implementationVersion;
         public Set<Dependency> depends;
-        public Set<Dependency> provides;
+        public Set<String> provides;
         public boolean showInAutoupdate;
         public boolean isEssential;
         public boolean isAutoload;
@@ -1195,7 +1189,7 @@ public class ModuleDependencies extends Task {
     } // end of ModuleInfo
     
     private static final class Dependency extends Object implements Comparable<Dependency> {
-        enum Type {provides, requires, recommends}
+        enum Type {DIRECT, REQUIRES, RECOMMENDS}
         
         public final String token;
         public final int majorVersionFrom;
@@ -1253,17 +1247,20 @@ public class ModuleDependencies extends Task {
         }
         
         public boolean isDependingOn (ModuleInfo info) {
-            if (info.codebasename.equals (token)) {
-                return (majorVersionFrom == -1 || majorVersionFrom <= info.majorVersion) &&
-                        (majorVersionTo == -1 || info.majorVersion <= majorVersionTo);
-            } 
-            
-            for (Dependency d : info.provides) {
-                if (d.equals (this)) {
-                    return true;
+            switch (type) {
+            case DIRECT:
+                if (info.codebasename.equals (token)) {
+                    return (majorVersionFrom == -1 || majorVersionFrom <= info.majorVersion) &&
+                            (majorVersionTo == -1 || info.majorVersion <= majorVersionTo);
+                } 
+                break;
+            default:
+                for (String d : info.provides) {
+                    if (d.equals(token)) {
+                        return true;
+                    }
                 }
             }
-            
             return false;
         }
         

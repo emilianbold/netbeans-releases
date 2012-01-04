@@ -245,15 +245,18 @@ public final class RefactoringSession {
     }
     
     private class ElementsCollection extends AbstractCollection<RefactoringElement> {
+        @Override
         public Iterator<RefactoringElement> iterator() {
             return new Iterator() {
                 private final Iterator<RefactoringElementImplementation> inner = internalList.iterator();
                 private final Iterator<RefactoringElementImplementation> inner2 = SPIAccessor.DEFAULT.getFileChanges(bag).iterator();
 
+                @Override
                 public void remove() {
                     throw new UnsupportedOperationException();
                 }
                 
+                @Override
                 public RefactoringElement next() {
                     if (inner.hasNext()) {
                         return new RefactoringElement(inner.next());
@@ -262,12 +265,14 @@ public final class RefactoringSession {
                     }
                 }
                 
+                @Override
                 public boolean hasNext() {
                     return (inner.hasNext() || inner2.hasNext());
                 }
             };
         }
 
+        @Override
         public int size() {
             return internalList.size() + SPIAccessor.DEFAULT.getFileChanges(bag).size();
         }

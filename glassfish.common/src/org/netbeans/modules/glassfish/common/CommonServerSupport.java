@@ -102,7 +102,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     private final Map<String, String> properties =
             Collections.synchronizedMap(new HashMap<String, String>(37));
 
-    private volatile ServerState serverState = ServerState.STOPPED;
+    private volatile ServerState serverState = ServerState.UNKNOWN;
     private final Object stateMonitor = new Object();
 
     private ChangeSupport changeSupport = new ChangeSupport(this);
@@ -146,8 +146,9 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
-
+        if (!isRemote) {
             refresh();
+        }
     }
 
     private static String updateString(Map<String, String> map, String key, String defaultValue) {
@@ -287,10 +288,19 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     File destdirFile = FileUtil.toFile(destdir);
                     properties.put(DOMAINS_FOLDER_ATTR, destdirFile.getAbsolutePath());
                     retVal = destdirFile.getAbsolutePath();
-                    CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
-                            new File(properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)),
-                            properties, GlassfishInstanceProvider.getEe6(), false, true, "INSTALL_ROOT_KEY"); // NOI18N
-                    cd.start();
+                    // getEe6() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
+                    //  forcing the call to happen after getDomainsRoot returns will 
+                    // prevent the deadlock.
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
+                                    new File(properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)),
+                                    properties, GlassfishInstanceProvider.getEe6(), false, true, "INSTALL_ROOT_KEY"); // NOI18N
+                            cd.start();
+                        }
+                    }, 100);
                 }
             }
         }
@@ -534,6 +544,9 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public ServerState getServerState() {
+        if (serverState == ServerState.UNKNOWN) {
+            refresh();
+        }
         return serverState;
     }
 
@@ -672,14 +685,20 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                 Future<OperationState> result = null;
 
                 if (isRemote) {
+                    final CommonServerSupport css = this;
                     result = execute(true, command, new OperationStateListener() {
-
                         @Override
                         public void operationStateChanged(OperationState newState, String message) {
-                            if (OperationState.FAILED == newState && !"".equals(message)) { // NOI18N
-                                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-                                DialogDisplayer.getDefault().notifyLater(nd);
-                                Logger.getLogger("glassfish").log(Level.INFO, message);
+                            synchronized (css) {
+                                long lastDisplayed = css.getLatestWarningDisplayTime();
+                                long currentTime = System.currentTimeMillis();
+                                if (OperationState.FAILED == newState && !"".equals(message)
+                                        && currentTime - lastDisplayed > 5000) { // NOI18N
+                                    NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                                    DialogDisplayer.getDefault().notifyLater(nd);
+                                    css.setLatestWarningDisplayTime(currentTime);
+                                    Logger.getLogger("glassfish").log(Level.INFO, message); // NOI18N
+                                }
                             }
                         }
                     });
@@ -764,10 +783,10 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                         isRunning = pingHttp(1);
                     }
                     ServerState currentState = getServerState();
-
-                    if(currentState == ServerState.STOPPED && isRunning) {
+                    
+                    if((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
                         setServerState(ServerState.RUNNING);
-                    } else if(currentState == ServerState.RUNNING && !isRunning) {
+                    } else if((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
                         setServerState(ServerState.STOPPED);
                     } else if(currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
                         setServerState(ServerState.RUNNING);
@@ -807,6 +826,16 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     @Override
     public boolean isWritable() {
         return (null == instanceFO) ? false : instanceFO.canWrite();
+    }
+
+    private long latestWarningDisplayTime = System.currentTimeMillis();
+    
+    private long getLatestWarningDisplayTime() {
+        return latestWarningDisplayTime;
+    }
+
+    private void setLatestWarningDisplayTime(long currentTime) {
+        latestWarningDisplayTime = currentTime;
     }
 
     class StartOperationStateListener implements OperationStateListener {

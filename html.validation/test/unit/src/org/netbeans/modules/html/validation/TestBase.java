@@ -45,17 +45,11 @@ package org.netbeans.modules.html.validation;
  */
 
 
-import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -118,69 +112,6 @@ public class TestBase extends NbTestCase {
 
         public String toString() {
             return "testproject:" + getProjectDirectory().getNameExt();
-        }
-    }
-
-
-    protected static class OpenProject implements OpenProjectsTrampoline {
-
-        public
-        @Override
-        Project[] getOpenProjectsAPI() {
-            return new Project[0];
-        }
-
-        public
-        @Override
-        void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-        }
-
-        public
-        @Override
-        void closeAPI(Project[] projects) {
-        }
-
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-        }
-
-        public Future<Project[]> openProjectsAPI() {
-            return new Future<Project[]>() {
-
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return true;
-                }
-
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                public boolean isDone() {
-                    return true;
-                }
-
-                public Project[] get() throws InterruptedException, ExecutionException {
-                    return new Project[0];
-                }
-
-                public Project[] get(long timeout, TimeUnit unit)
-                        throws InterruptedException, ExecutionException, TimeoutException {
-                    return new Project[0];
-                }
-            };
-        }
-
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-        }
-
-        public
-        @Override
-        Project getMainProject() {
-            return null;
-        }
-
-        public
-        @Override
-        void setMainProject(Project project) {
         }
     }
 }

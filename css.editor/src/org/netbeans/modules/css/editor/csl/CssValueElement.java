@@ -58,14 +58,10 @@ public class CssValueElement extends CssPropertyElement {
         super(property);
         this.value = value;
     }
-
-    public GrammarElement value() {
-        return value;
-    }
     
     @Override
     public String getName() {
-        return value().toString();
+        return value.toString();
     }
 
 }

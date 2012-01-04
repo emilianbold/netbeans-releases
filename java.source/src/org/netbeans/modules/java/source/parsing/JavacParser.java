@@ -58,14 +58,13 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Abort;
-import com.sun.tools.javac.util.CancelAbort;
-import com.sun.tools.javac.util.CancelService;
+import org.netbeans.modules.java.source.javac.CancelAbort;
+import org.netbeans.modules.java.source.javac.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Position.LineMapImpl;
 import com.sun.tools.javadoc.JavadocClassReader;
-import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -128,6 +127,12 @@ import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
+import org.netbeans.modules.java.source.javac.NBAttr;
+import org.netbeans.modules.java.source.javac.NBEnter;
+import org.netbeans.modules.java.source.javac.NBJavadocEnter;
+import org.netbeans.modules.java.source.javac.NBJavadocMemberEnter;
+import org.netbeans.modules.java.source.javac.NBMemberEnter;
+import org.netbeans.modules.java.source.javac.NBParserFactory;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -695,6 +700,8 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
+        options.add("-XDdiags=-source");  // NOI18N
+        options.add("-XDdiagsFormat=%L%m|%L%m|%L%m");  // NOI18N
         boolean aptEnabled = aptUtils != null && aptUtils.aptEnabledOnScan() && (backgroundCompilation || aptUtils.aptEnabledInEditor())
                 && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
         Collection<? extends Processor> processors = null;
@@ -735,11 +742,16 @@ public class JavacParser extends Parser {
             DefaultCancelService.preRegister(context, cancelService);
         }
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        NBAttr.preRegister(context);
+        NBParserFactory.preRegister(context);
         if (!backgroundCompilation) {
             JavacFlowListener.preRegister(context);
-            ErrorHandlingJavadocEnter.preRegister(context);
-            JavadocMemberEnter.preRegister(context);
+            NBJavadocEnter.preRegister(context);
+            NBJavadocMemberEnter.preRegister(context);
             JavadocEnv.preRegister(context, cpInfo);
+        } else {
+            NBEnter.preRegister(context);
+            NBMemberEnter.preRegister(context);
         }
         TIME_LOGGER.log(Level.FINE, "JavaC", context);
         return task;

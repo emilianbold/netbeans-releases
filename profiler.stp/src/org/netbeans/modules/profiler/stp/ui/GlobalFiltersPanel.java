@@ -67,6 +67,27 @@ import org.netbeans.lib.profiler.common.Profiler;
  * @author Tomas Hurka
  * @author  Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "GlobalFiltersPanel_DefaultFilterName=New Filter",
+    "GlobalFiltersPanel_ColumnNameName=Name",
+    "GlobalFiltersPanel_ColumnNameValue=Value",
+    "GlobalFiltersPanel_DefinedFiltersLabelText=Defined &Filters:",
+    "GlobalFiltersPanel_NewButtonText=&New",
+    "GlobalFiltersPanel_EditButtonText=Edit",
+    "GlobalFiltersPanel_DeleteButtonText=&Delete",
+    "GlobalFiltersPanel_MoveUpButtonText=Move &Up",
+    "GlobalFiltersPanel_MoveDownButtonText=Move Do&wn",
+    "GlobalFiltersPanel_OkButtonText=&OK",
+    "GlobalFiltersPanel_CancelButtonText=Cancel",
+//# HTML-formatted
+    "GlobalFiltersPanel_HintMsg=<strong>Example Filter:</strong> java.*, javax.swing., javax.xml.parsers.SAXParser<br><br>If you define more patterns within a single filter, they must be separated by space and/or comma. The '*' sign is not necessary, however, if you use it, it must be placed at end of filter value.",
+    "GlobalFiltersPanel_FilterTableAccessName=List of defined global filters.",
+    "GlobalFiltersPanel_NewButtonAccessDesc=Create new global filter.",
+    "GlobalFiltersPanel_EditButtonAccessDesc=Edit selected global filter.",
+    "GlobalFiltersPanel_DeleteButtonAccessDesc=Delete selected global filters.",
+    "GlobalFiltersPanel_MoveUpButtonAccessDesc=Move selected global filter up.",
+    "GlobalFiltersPanel_MoveDownButtonAccessDesc=Move selected global filter down."
+})
 public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -203,7 +224,18 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         public void keyPressed(final KeyEvent e) {
-            switch (e.getKeyCode()) {
+            int keyCode = e.getKeyCode();
+            int keyModifiers = e.getModifiers();
+            
+            // Workaround for #116514, handle keyboard shortcut for Edit action
+            if (keyCode == editButton.getMnemonic() &&
+                    keyModifiers == InputEvent.ALT_MASK) {
+                e.consume();
+                editSelectedCell();
+                return;
+            }
+            
+            switch (keyCode) {
                 case KeyEvent.VK_DELETE:
                     e.consume();
                     deleteSelectedFilters();
@@ -211,7 +243,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                     break;
                 case KeyEvent.VK_N:
 
-                    if (e.getModifiers() == InputEvent.CTRL_MASK) {
+                    if (keyModifiers == InputEvent.CTRL_MASK) {
                         e.consume();
                         addNewFilter();
 
@@ -219,7 +251,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                     }
                 case KeyEvent.VK_UP:
 
-                    if (e.getModifiers() == InputEvent.CTRL_MASK) {
+                    if (keyModifiers == InputEvent.CTRL_MASK) {
                         e.consume();
 
                         if ((filterTable.getSelectedRowCount() == 1) && (filterTable.getSelectedRow() > 0)) {
@@ -230,7 +262,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                     }
                 case KeyEvent.VK_DOWN:
 
-                    if (e.getModifiers() == InputEvent.CTRL_MASK) {
+                    if (keyModifiers == InputEvent.CTRL_MASK) {
                         e.consume();
 
                         if ((filterTable.getSelectedRowCount() == 1)
@@ -393,42 +425,6 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String DEFAULT_FILTER_NAME = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                          "GlobalFiltersPanel_DefaultFilterName"); //NOI18N
-    private static final String COLUMN_NAME_NAME = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                       "GlobalFiltersPanel_ColumnNameName"); //NOI18N
-    private static final String COLUMN_NAME_VALUE = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                        "GlobalFiltersPanel_ColumnNameValue"); //NOI18N
-    private static final String DEFINED_FILTERS_LABEL_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                                 "GlobalFiltersPanel_DefinedFiltersLabelText"); //NOI18N
-    private static final String NEW_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class, "GlobalFiltersPanel_NewButtonText"); //NOI18N
-    private static final String EDIT_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                       "GlobalFiltersPanel_EditButtonText"); //NOI18N
-    private static final String DELETE_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                         "GlobalFiltersPanel_DeleteButtonText"); //NOI18N
-    private static final String MOVE_UP_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                          "GlobalFiltersPanel_MoveUpButtonText"); //NOI18N
-    private static final String MOVE_DOWN_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                            "GlobalFiltersPanel_MoveDownButtonText"); //NOI18N
-    private static final String OK_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class, "GlobalFiltersPanel_OkButtonText"); //NOI18N
-    private static final String CANCEL_BUTTON_TEXT = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                         "GlobalFiltersPanel_CancelButtonText"); //NOI18N
-    private static final String HINT_MSG = NbBundle.getMessage(GlobalFiltersPanel.class, "GlobalFiltersPanel_HintMsg"); //NOI18N
-    private static final String FILTER_TABLE_ACCESS_NAME = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                               "GlobalFiltersPanel_FilterTableAccessName"); //NOI18N
-    private static final String NEW_BUTTON_ACCESS_DESC = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                             "GlobalFiltersPanel_NewButtonAccessDesc"); //NOI18N
-    private static final String EDIT_BUTTON_ACCESS_DESC = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                              "GlobalFiltersPanel_EditButtonAccessDesc"); //NOI18N
-    private static final String DELETE_BUTTON_ACCESS_DESC = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                                "GlobalFiltersPanel_DeleteButtonAccessDesc"); //NOI18N
-    private static final String MOVE_UP_BUTTON_ACCESS_DESC = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                                 "GlobalFiltersPanel_MoveUpButtonAccessDesc"); //NOI18N
-    private static final String MOVE_DOWN_BUTTON_ACCESS_DESC = NbBundle.getMessage(GlobalFiltersPanel.class,
-                                                                                   "GlobalFiltersPanel_MoveDownButtonAccessDesc"); //NOI18N
-                                                                                                                                   // -----
     private static final String HELP_CTX_KEY = "GlobalFiltersPanel.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     private static GlobalFiltersPanel defaultInstance;
@@ -460,7 +456,10 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     public GlobalFiltersPanel(final String[] filterNames, final String[] filterValues) {
         super(new BorderLayout());
 
-        columnNames = new String[] { COLUMN_NAME_NAME, COLUMN_NAME_VALUE };
+        columnNames = new String[] { 
+            Bundle.GlobalFiltersPanel_ColumnNameName(), 
+            Bundle.GlobalFiltersPanel_ColumnNameValue() 
+        };
         columnClasses = new Class[] { String.class, String.class };
 
         setFilterNamesFrom(filterNames);
@@ -473,7 +472,10 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     private GlobalFiltersPanel() {
         super(new BorderLayout());
 
-        columnNames = new String[] { COLUMN_NAME_NAME, COLUMN_NAME_VALUE };
+        columnNames = new String[] { 
+            Bundle.GlobalFiltersPanel_ColumnNameName(), 
+            Bundle.GlobalFiltersPanel_ColumnNameValue() 
+        };
         columnClasses = new Class[] { String.class, String.class };
 
         setFilterNamesFrom(new String[0]);
@@ -643,7 +645,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     }
 
     private String createUniqueFilterName() {
-        return createUniqueFilterName(DEFAULT_FILTER_NAME);
+        return createUniqueFilterName(Bundle.GlobalFiltersPanel_DefaultFilterName());
     }
 
     private String createUniqueFilterName(final String baseFilterName) {
@@ -708,9 +710,9 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
     private void initComponents() {
         // buttons to export
         OKButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(OKButton, OK_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(OKButton, Bundle.GlobalFiltersPanel_OkButtonText());
         CancelButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(CancelButton, CANCEL_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(CancelButton, Bundle.GlobalFiltersPanel_CancelButtonText());
 
         // listeners
         buttonsListener = new ButtonsListener();
@@ -718,7 +720,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
 
         // definedFiltersLabel
         definedFiltersLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(definedFiltersLabel, DEFINED_FILTERS_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(definedFiltersLabel, Bundle.GlobalFiltersPanel_DefinedFiltersLabelText());
         definedFiltersLabel.setOpaque(false);
         definedFiltersLabel.setBorder(BorderFactory.createEmptyBorder(15, 5, 0, 5));
         add(definedFiltersLabel, BorderLayout.NORTH);
@@ -775,7 +777,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                 }
             };
         definedFiltersLabel.setLabelFor(filterTable);
-        filterTable.getAccessibleContext().setAccessibleName(FILTER_TABLE_ACCESS_NAME);
+        filterTable.getAccessibleContext().setAccessibleName(Bundle.GlobalFiltersPanel_FilterTableAccessName());
         filterTable.setSurrendersFocusOnKeystroke(true);
         filterTable.setRowSelectionAllowed(true);
         filterTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -819,36 +821,36 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
 
         // newButton
         newButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(newButton, NEW_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(newButton, Bundle.GlobalFiltersPanel_NewButtonText());
         
-        newButton.getAccessibleContext().setAccessibleDescription(NEW_BUTTON_ACCESS_DESC);
+        newButton.getAccessibleContext().setAccessibleDescription(Bundle.GlobalFiltersPanel_NewButtonAccessDesc());
         newButton.addActionListener(buttonsListener);
 
         // editButton
         editButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, EDIT_BUTTON_TEXT); // Actually no mnemonics, see Issue 116514
-        editButton.getAccessibleContext().setAccessibleDescription(EDIT_BUTTON_ACCESS_DESC);
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, Bundle.GlobalFiltersPanel_EditButtonText());
+        editButton.getAccessibleContext().setAccessibleDescription(Bundle.GlobalFiltersPanel_EditButtonAccessDesc());
         editButton.setEnabled(false);
         editButton.addActionListener(buttonsListener);
 
         // deleteButton
         deleteButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(deleteButton, DELETE_BUTTON_TEXT);
-        deleteButton.getAccessibleContext().setAccessibleDescription(DELETE_BUTTON_ACCESS_DESC);
+        org.openide.awt.Mnemonics.setLocalizedText(deleteButton, Bundle.GlobalFiltersPanel_DeleteButtonText());
+        deleteButton.getAccessibleContext().setAccessibleDescription(Bundle.GlobalFiltersPanel_DeleteButtonAccessDesc());
         deleteButton.setEnabled(false);
         deleteButton.addActionListener(buttonsListener);
 
         // moveUpButton
         moveUpButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, MOVE_UP_BUTTON_TEXT);
-        moveUpButton.getAccessibleContext().setAccessibleDescription(MOVE_UP_BUTTON_ACCESS_DESC);
+        org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, Bundle.GlobalFiltersPanel_MoveUpButtonText());
+        moveUpButton.getAccessibleContext().setAccessibleDescription(Bundle.GlobalFiltersPanel_MoveUpButtonAccessDesc());
         moveUpButton.setEnabled(false);
         moveUpButton.addActionListener(buttonsListener);
 
         // moveDownButton
         moveDownButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, MOVE_DOWN_BUTTON_TEXT);
-        moveDownButton.getAccessibleContext().setAccessibleDescription(MOVE_DOWN_BUTTON_ACCESS_DESC);
+        org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, Bundle.GlobalFiltersPanel_MoveDownButtonText());
+        moveDownButton.getAccessibleContext().setAccessibleDescription(Bundle.GlobalFiltersPanel_MoveDownButtonAccessDesc());
         moveDownButton.setEnabled(false);
         moveDownButton.addActionListener(buttonsListener);
 
@@ -875,7 +877,7 @@ public final class GlobalFiltersPanel extends JPanel implements HelpCtx.Provider
                     return new Dimension(1, super.getPreferredSize().height);
                 }
             };
-        hintArea.setText(HINT_MSG); // NOI18N
+        hintArea.setText(Bundle.GlobalFiltersPanel_HintMsg()); // NOI18N
         hintArea.setEnabled(false);
         hintArea.setDisabledTextColor(Color.darkGray);
         hintArea.setBackground(hintBackground);

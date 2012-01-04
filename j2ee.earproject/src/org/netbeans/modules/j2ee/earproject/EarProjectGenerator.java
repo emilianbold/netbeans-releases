@@ -517,32 +517,23 @@ public final class EarProjectGenerator {
         if (dd != null) {
             return dd; // already created
         }
+        boolean create = force || EarProjectUtil.isDDCompulsory(earProject);
         FileObject template = null;
-        if (EarProjectUtil.isDDCompulsory(earProject)) {
-            template = FileUtil.getConfigFile(
-                    "org-netbeans-modules-j2ee-earproject/ear-1.4.xml"); // NOI18N
-        } else if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
-            if (force) {
+        if (create) {
+            if (Profile.J2EE_14.equals(j2eeProfile) || Profile.J2EE_13.equals(j2eeProfile)) {
+                template = FileUtil.getConfigFile(
+                        "org-netbeans-modules-j2ee-earproject/ear-1.4.xml"); // NOI18N
+            } else if (Profile.JAVA_EE_5.equals(j2eeProfile)) {
                 template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-5.xml"); // NOI18N
-            } else {
-                LOGGER.log(Level.FINE,
-                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 5."
-                        + "If it\'s *really* needed, set force param to true.");
-            }
-        } else if (Profile.JAVA_EE_6_FULL.equals(j2eeProfile) || Profile.JAVA_EE_6_WEB.equals(j2eeProfile)) {
-            if (force) {
+            } else if (Profile.JAVA_EE_6_FULL.equals(j2eeProfile) || Profile.JAVA_EE_6_WEB.equals(j2eeProfile)) {
                 template = FileUtil.getConfigFile(
                         "org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
             } else {
-                LOGGER.log(Level.FINE,
-                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 6."
-                        + "If it\'s *really* needed, set force param to true.");
+                assert false : "Unknown j2eeProfile: " + j2eeProfile;
             }
-
-        } else {
-            assert false : "Unknown j2eeProfile: " + j2eeProfile;
         }
+
         if (template != null) {
             dd = FileUtil.copyFile(template, docBase, "application"); // NOI18N
             Application app = DDProvider.getDefault().getDDRoot(dd);

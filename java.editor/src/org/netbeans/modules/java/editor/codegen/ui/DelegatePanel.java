@@ -47,6 +47,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ElementHandle;
@@ -61,12 +63,14 @@ import org.openide.util.NbBundle;
 public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeListener {
 
     private JTextComponent component;
+    private ElementHandle<TypeElement> handle;
     private ElementSelectorPanel delegateSelector;
     private ElementSelectorPanel methodSelector;
 
     /** Creates new form DelegatePanel */
-    public DelegatePanel(JTextComponent component, ElementNode.Description description) {
+    public DelegatePanel(JTextComponent component, ElementHandle<TypeElement> handle, ElementNode.Description description) {
         this.component = component;
+        this.handle = handle;
         initComponents();
         delegateSelector = new ElementSelectorPanel(description, false);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -144,8 +148,8 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         if ( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
             SwingUtilities.invokeLater(new Runnable() {                 
                 public void run() {
-                    ElementHandle<? extends Element> handle = getDelegateField();
-                    methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle), false);
+                    ElementHandle<? extends VariableElement> fieldHandle = (ElementHandle<? extends VariableElement>) getDelegateField();
+                    methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle, fieldHandle), false);
                     methodSelector.doInitialExpansion(-1);            
                 }
             });

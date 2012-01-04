@@ -113,18 +113,12 @@ public class JspsNode extends ContainerNode {
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String JSPS_STRING = NbBundle.getMessage(JspsNode.class, "JspsNode_JspsString"); // NOI18N
-                                                                                                          // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of JspsNode */
+    @NbBundle.Messages("JspsNode_JspsString=JSPs")
     public JspsNode(ContainerNode parent) {
-        super(JSPS_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
+        super(Bundle.JspsNode_JspsString(), Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

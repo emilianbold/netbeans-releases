@@ -60,6 +60,7 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
 
     private Map<Object, TreeElement> map = new WeakHashMap<Object, TreeElement>();
 
+    @Override
     public TreeElement getTreeElement(Object o) {
         TreeElement result = map.get(o);
         if (result!= null)
@@ -73,6 +74,7 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         return result;
     }
 
+    @Override
     public void cleanUp() {
         map.clear();
     }

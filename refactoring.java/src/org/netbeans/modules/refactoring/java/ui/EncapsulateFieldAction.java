@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.EncapsulateFieldAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_EncapsulateFieldsAction")
+@ActionRegistration(displayName = "#LBL_EncapsulateFieldsAction", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "EncapsulateFieldAction", position = 1800)
 public final class EncapsulateFieldAction extends JavaRefactoringGlobalAction {
 
@@ -60,18 +60,22 @@ public final class EncapsulateFieldAction extends JavaRefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         JavaActionsImplementationFactory.doEncapsulateFields(context);
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         return JavaActionsImplementationFactory.canEncapsulateFields(context);
     }

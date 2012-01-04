@@ -51,7 +51,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -78,6 +78,7 @@ public class PackageRename implements RefactoringPluginFactory{
     public PackageRename() {
     }
     
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring) {
             if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class)!=null) {
@@ -95,18 +96,21 @@ public class PackageRename implements RefactoringPluginFactory{
             this.refactoring = refactoring;
         }
         
+        @Override
         public Problem preCheck() {
             return null;
         }
         
+        @Override
         public Problem prepare(RefactoringElementsBag elements) {
             elements.addFileChange(refactoring, new RenameNonRecursiveFolder(refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class), elements));
             return null;
         }
         
+        @Override
         public Problem fastCheckParameters() {
             String newName = refactoring.getNewName();
-            if (!RetoucheUtils.isValidPackageName(newName)) {
+            if (!RefactoringUtils.isValidPackageName(newName)) {
                 String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage")).format(
                         new Object[] {newName}
                 );
@@ -128,10 +132,12 @@ public class PackageRename implements RefactoringPluginFactory{
             return null;
         }
         
+        @Override
         public Problem checkParameters() {
             return null;
         }
         
+        @Override
         public void cancelRequest() {
         }
         
@@ -155,18 +161,22 @@ public class PackageRename implements RefactoringPluginFactory{
                 
             }
             
+            @Override
             public String getText() {                
                 return NbBundle.getMessage(PackageRename.class, "TXT_RenamePackage") + folder.getNameExt();
             }
             
+            @Override
             public String getDisplayText() {
                 return getText();
             }
             
+            @Override
             public void performChange() {
                 atomicSetName(refactoring.getNewName());
             }
             
+            @Override
             public void undoChange() {
                 atomicSetName(oldName);
             }
@@ -174,6 +184,7 @@ public class PackageRename implements RefactoringPluginFactory{
             private void atomicSetName(final String name) {
                 try {
                     folder.getFileSystem().runAtomicAction(new AtomicAction() {
+                        @Override
                         public void run() throws IOException {
                             setName(name);
                         }
@@ -183,14 +194,17 @@ public class PackageRename implements RefactoringPluginFactory{
                 }
             }
             
+            @Override
             public Lookup getLookup() {
                 return Lookups.singleton(folder.getParent());
             }
             
+            @Override
             public FileObject getParentFile() {
                 return folder.getParent();
             }
             
+            @Override
             public PositionBounds getPosition() {
                 return null;
             }

@@ -112,7 +112,7 @@ final class LibrariesSourceGroup implements SourceGroup {
         return opened ? openIcon : icon;
     }
 
-    public boolean contains(FileObject file) throws IllegalArgumentException {
+    @Override public boolean contains(FileObject file) {
         return root.equals(file) || FileUtil.isParentOf(root,file);
     }
 

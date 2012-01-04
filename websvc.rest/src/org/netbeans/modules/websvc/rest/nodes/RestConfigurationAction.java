@@ -93,7 +93,7 @@ public class RestConfigurationAction extends NodeAction  {
             if (oldConfigType == null) {
                 oldConfigType = WebRestSupport.CONFIG_TYPE_DD;
             }
-            String oldApplicationPath = "/resources"; //NOI18N
+            String oldApplicationPath = "/webresources"; //NOI18N
             try {
                 if (oldConfigType.equals( WebRestSupport.CONFIG_TYPE_DD)) {
                     String oldPathFromDD = restSupport.getApplicationPathFromDD();

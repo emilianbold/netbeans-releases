@@ -47,28 +47,27 @@ package org.netbeans.modules.css.editor.properties.parser;
  */
 public class ValueGrammarElement extends GrammarElement {
 
-    public ValueGrammarElement(GroupGrammarElement parent) {
-        super(parent);
-    }
+    private boolean isUnit;
+    private String value;
     
-    boolean isUnit = false;
-    String value = null;
+    public ValueGrammarElement(GroupGrammarElement parent, String value, boolean isUnit) {
+        super(parent);
+        this.value = value;
+        this.isUnit = isUnit;
+    }
+
+    @Override
+    public GrammarElementKind getKind() {
+        return GrammarElementKind.VALUE;
+    }
 
     /** true for 'unit' values like length, angle etc. Simply for those which has no fixed value. */
     public boolean isUnit() {
         return isUnit;
     }
 
-    void setIsUnit(boolean isUnit) {
-        this.isUnit = isUnit;
-    }
-
     public String value() {
         return value;
-    }
-
-    void setValue(String value) {
-        this.value = value;
     }
 
     @Override

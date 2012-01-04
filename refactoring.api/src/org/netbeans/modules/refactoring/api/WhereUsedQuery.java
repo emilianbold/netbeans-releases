@@ -61,12 +61,12 @@ import org.openide.util.Parameters;
  */
 public final class WhereUsedQuery extends AbstractRefactoring {
     /**
-     * key for {@link getBooleanValue()}
+     * key for {@link #getBooleanValue()}
      * is search in comments requested?
      */
     public static final String SEARCH_IN_COMMENTS = "SEARCH_IN_COMMENTS"; // NOI18N
     /**
-     * key for {@link getBooleanValue()}
+     * key for {@link #getBooleanValue()}
      * is find references requested?
      */
     public static final String FIND_REFERENCES = "FIND_REFERENCES"; // NOI18N

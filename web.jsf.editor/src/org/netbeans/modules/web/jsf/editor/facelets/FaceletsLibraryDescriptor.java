@@ -56,6 +56,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Function;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -81,6 +82,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     private FileObject definitionFile;
     private String uri;
     private Map<String, Tag> tags = new HashMap<String, Tag>();
+    private Map<String, Function> functions = new HashMap<String, Function>();
 
     private FaceletsLibraryDescriptor(FileObject definitionFile) throws LibraryDescriptorException {
         this.definitionFile = definitionFile;
@@ -99,6 +101,10 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     @Override
     public Map<String, Tag> getTags() {
         return tags;
+    }
+
+    public Map<String, Function> getFunctions() {
+        return functions;
     }
 
     public static String parseNamespace(InputStream content) throws IOException {
@@ -153,6 +159,19 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
 
                     tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));
 
+                }
+            }
+
+            //scan the <function> nodes content - the function descriptions
+            NodeList functionNodes = doc.getElementsByTagName("function"); //NOI18N
+            if (functionNodes != null) {
+                for (int i = 0; i < functionNodes.getLength(); i++) {
+                    Node function = functionNodes.item(i);
+                    String funcName = getTextContent(function, "function-name"); //NOI18N
+                    String funcSignature = getTextContent(function, "function-signature"); //NOI18N
+                    String funcDescription = getTextContent(function, "description"); //NOI18N
+
+                    functions.put(funcName, new FunctionImpl(funcName, funcSignature, funcDescription));
                 }
             }
 

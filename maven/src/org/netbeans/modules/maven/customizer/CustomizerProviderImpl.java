@@ -90,6 +90,7 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
@@ -112,14 +113,15 @@ import org.openide.util.lookup.Lookups;
  *for panel creation depegates to M2CustomizerPanelProvider instances.
  * @author Milos Kleint 
  */
+@ProjectServiceProvider(service={CustomizerProvider.class, CustomizerProviderImpl.class}, projectType="org-netbeans-modules-maven")
 public class CustomizerProviderImpl implements CustomizerProvider {
     
-    private final NbMavenProjectImpl project;
+    private final Project project;
     private ModelHandle handle;
     
     private static final String BROKEN_NBACTIONS = "BROKENNBACTIONS";  //NOI18N
     
-    public CustomizerProviderImpl(NbMavenProjectImpl project) {
+    public CustomizerProviderImpl(Project project) {
         this.project = project;
     }
     
@@ -176,7 +178,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     private void init() throws XmlPullParserException, IOException {
-        FileObject pom = FileUtil.toFileObject(project.getPOMFile());
+        FileObject pom = FileUtil.toFileObject(project.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile());
         if (pom == null || !pom.isValid()) {
             throw new FileNotFoundException("No pom file exists."); //NOI18N
         }
@@ -229,8 +231,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
 
         handle = ACCESSOR.createHandle(model,
-                project.getOriginalMavenProject(), mapps, configs, active,
-                project.getAuxProps());
+                project.getLookup().lookup(NbMavenProject.class).getMavenProject(), mapps, configs, active,
+                project.getLookup().lookup(MavenProjectPropsImpl.class));
     }
     
     public static ModelAccessor ACCESSOR = null;
@@ -292,7 +294,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                             project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                                 public void run() throws IOException {
                                     project.getLookup().lookup(MavenProjectPropsImpl.class).commitTransaction();
-                                    writeAll(handle, project);
+                                    writeAll(handle, project.getLookup().lookup(NbMavenProjectImpl.class));
                                 }
                             });
                         } catch (IOException ex) {

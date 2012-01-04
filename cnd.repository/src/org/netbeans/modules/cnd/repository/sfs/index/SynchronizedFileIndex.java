@@ -66,6 +66,7 @@ class SynchronizedFileIndex implements FileIndex {
 	this.delegate = delegate;
     }
     
+    @Override
     public int size() {
 	indexLock.readLock().lock();
 	try {
@@ -83,6 +84,7 @@ class SynchronizedFileIndex implements FileIndex {
 	    this.delegate = delegate;
 	}
 
+        @Override
 	public void remove() {
 	    indexLock.writeLock().lock();
 	    try {
@@ -92,19 +94,23 @@ class SynchronizedFileIndex implements FileIndex {
 	    }
 	}
 	
+        @Override
 	public K next() {
 	    return delegate.next();
 	}
 	
+        @Override
 	public boolean hasNext() {
 	    return delegate.hasNext();
 	}
     }
     
+    @Override
     public Iterator<Key> getKeySetIterator() {
         return new SyncRemoveIterator<Key>(delegate.getKeySetIterator());
     }
     
+    @Override
     public Collection<Key> keySet() {
         indexLock.readLock().lock();
         try {
@@ -114,6 +120,7 @@ class SynchronizedFileIndex implements FileIndex {
         }
     }
     
+    @Override
     public int put(Key key, long offset, int size) {
         indexLock.writeLock().lock();
         try {
@@ -123,6 +130,7 @@ class SynchronizedFileIndex implements FileIndex {
         }
     }
     
+    @Override
     public int remove(Key key) {
         indexLock.writeLock().lock();
         try {
@@ -132,6 +140,7 @@ class SynchronizedFileIndex implements FileIndex {
         }
     }
     
+    @Override
     public ChunkInfo get(Key key) {
         indexLock.readLock().lock();
         try {

@@ -176,7 +176,7 @@ public class RestServicesImpl implements RestServices {
         public List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
             //System.out.println("createObjects() type = " + type);
             //(new Exception()).printStackTrace();
-            if (Utils.checkForJsr311Bootstrap(type, project, helper)) {
+            if (type== null || Utils.checkForJsr311Bootstrap(type, project, helper)) {
                 return Collections.emptyList();
             }
             if (Utils.isRest(type, helper)) {
@@ -187,7 +187,7 @@ public class RestServicesImpl implements RestServices {
         }
         
         public boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
-            if (Utils.checkForJsr311Bootstrap(type, project, helper)) {
+            if (type== null || Utils.checkForJsr311Bootstrap(type, project, helper)) {
                 return false;
             }
             //System.out.println("modifyObject type = " + type);
@@ -216,7 +216,7 @@ public class RestServicesImpl implements RestServices {
             helper.getAnnotationScanner().findAnnotations(annotationType, kinds,
                     new AnnotationHandler() {
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    if (Utils.checkForJsr311Bootstrap(type, project, helper)) {
+                    if (type== null || Utils.checkForJsr311Bootstrap(type, project, helper)) {
                         return;
                     }
                     if (!result.containsKey(type)) {

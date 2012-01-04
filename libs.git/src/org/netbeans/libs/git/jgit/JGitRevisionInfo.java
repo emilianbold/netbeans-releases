@@ -193,6 +193,7 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
                 for (DiffEntry e : entries) {
                     Status status;
                     File oldFile = null;
+                    String oldPath = null;
                     String path = e.getOldPath();
                     if (path == null) {
                         path = e.getNewPath();
@@ -205,6 +206,7 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
                         case COPY:
                             status = Status.COPIED;
                             oldFile = new File(repository.getWorkTree(), e.getOldPath());
+                            oldPath = e.getOldPath();
                             path = e.getNewPath();
                             break;
                         case DELETE:
@@ -218,19 +220,20 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
                         case RENAME:
                             status = Status.RENAMED;
                             oldFile = new File(repository.getWorkTree(), e.getOldPath());
+                            oldPath = e.getOldPath();
                             path = e.getNewPath();
                             break;
                         default:
                             status = Status.UNKNOWN;
                     }
                     if (status == Status.RENAMED) {
-                        result.add(new GitFileInfo(new File(repository.getWorkTree(), e.getOldPath()), e.getOldPath(), Status.REMOVED, null));
+                        result.add(new GitFileInfo(new File(repository.getWorkTree(), e.getOldPath()), e.getOldPath(), Status.REMOVED, null, null));
                     }
-                    result.add(new GitFileInfo(new File(repository.getWorkTree(), path), path, status, oldFile));
+                    result.add(new GitFileInfo(new File(repository.getWorkTree(), path), path, status, oldFile, oldPath));
                 }
             } else {
                 while (walk.next()) {
-                    result.add(new GitFileInfo(new File(repository.getWorkTree(), walk.getPathString()), walk.getPathString(), Status.ADDED, null));
+                    result.add(new GitFileInfo(new File(repository.getWorkTree(), walk.getPathString()), walk.getPathString(), Status.ADDED, null, null));
                 }
             }
             this.modifiedFiles = result.toArray(new GitFileInfo[result.size()]);

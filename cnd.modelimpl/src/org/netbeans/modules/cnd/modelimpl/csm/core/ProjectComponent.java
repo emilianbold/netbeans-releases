@@ -100,6 +100,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
 //	if( TraceFlags.TRACE_PROJECT_COMPONENT_RW ) System.err.printf("> ProjectComponent: Putting %s by key %s\n", this, key);
 //	RepositoryUtils.put(key, this);
 //    }
+    @Override
     public void write(RepositoryDataOutput out) throws IOException {
         if (TraceFlags.TRACE_PROJECT_COMPONENT_RW) {
             System.err.printf("> ProjectComponent: Writing %s by key %s\n", this, key);

@@ -50,6 +50,29 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="ActionRegistration.lazy">
+        <api name="awt"/>
+        <summary>Added <code>lazy</code> attribute to <code>ActionRegistration</code></summary>
+        <version major="7" minor="41"/>
+        <date year="2011" month="12" day="14"/>
+        <author login="jglick"/>
+        <compatibility addition="yes" source="compatible">
+            <p>
+                New warnings will be issued for existing eager registrations.
+                The warning can be suppressed by explicitly setting <code>lazy=false</code>,
+                but this is a good time to review whether the registration could
+                in fact be made lazy.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Added attribute explicitly controlling whether an action registration
+                uses a lazy factory method or not.
+            </p>
+        </description>
+        <class package="org.openide.awt" name="ActionRegistration"/>
+        <issue number="206093"/>
+    </change>
     <change id="closebutton.api">
         <api name="awt"/>
         <summary>Close Button API</summary>

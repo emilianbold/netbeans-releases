@@ -62,11 +62,11 @@ public class ServerPropertiesNode extends AbstractNode {
 
     private static final Logger LOGGER = Logger.getLogger(ServerPropertiesNode.class.getName());
 
-    public InstanceProperties instanceProperties;
+    private InstanceProperties instanceProperties;
 
-    public ServerPropertiesNode(InstanceProperties instanceProperties) {
+    public ServerPropertiesNode(CoherenceProperties coherenceProperties) {
         super(Children.LEAF);
-        this.instanceProperties = instanceProperties;
+        instanceProperties = coherenceProperties.getInstanceProperties();
     }
 
     @Override
@@ -108,13 +108,13 @@ public class ServerPropertiesNode extends AbstractNode {
 
         @Override
         public void setValue(Object nue) {
-            LOGGER.log(Level.FINEST, "*** APH-I3 : Class instanceof {0}", nue.getClass().getSimpleName()); //NOI18N
             if (nue == null || (nue instanceof String && nue.toString().length() == 0)
                     || (nue instanceof Integer && ((Integer) nue).intValue() <= 0)
                     || (nue instanceof Long && ((Long) nue).longValue() <= 0)) {
                 instanceProperties.removeKey(key.getPropertyName());
             } else {
                 try {
+                    LOGGER.log(Level.FINEST, "*** APH-I3 : Class instanceof {0}", nue.getClass().getSimpleName()); //NOI18N
                     if (key.getClazz() == Integer.class) {
                         Integer i = Integer.parseInt(nue.toString());
                     } else if (key.getClazz() == Long.class) {

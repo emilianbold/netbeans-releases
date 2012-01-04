@@ -42,11 +42,14 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.text.ParseException;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
@@ -70,7 +73,7 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
     }
 
     @Override
-    public String getRemoteMirror(ExecutionEnvironment executionEnvironment) {
+    public String getRemoteMirror(ExecutionEnvironment executionEnvironment) throws ConnectException, IOException, ConnectionManager.CancellationException {
         String root;
         root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
         if (root != null) {
@@ -80,10 +83,12 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
         if (root != null) {
             return root;
         }
-        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        if (home == null) {
+        
+        if (!HostInfoUtils.isHostInfoAvailable(executionEnvironment)) {
             return null;
         }
+        String home = HostInfoUtils.getHostInfo(executionEnvironment).getUserDir();
+        
         final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
         MacroExpander expander = MacroExpanderFactory.getExpander(local);
         String localHostID = local.getHost();

@@ -39,6 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.indexer;
 
 import java.io.IOException;
@@ -59,11 +60,9 @@ import org.openide.util.Cancellable;
 import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
-/**
- *
- * @author Anuradha G
- */
 public class RemoteIndexTransferListener implements TransferListener, Cancellable {
+
+    private static final Logger LOG = Logger.getLogger(RemoteIndexTransferListener.class.getName());
 
     private final @NonNull ProgressHandle handle;
     private final RepositoryInfo info;
@@ -90,13 +89,17 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         this.fetcher = fetcher;
     }
 
-    public @Override void transferInitiated(TransferEvent arg0) {
+    public @Override void transferInitiated(TransferEvent e) {
+        String u = e.getWagon().getRepository().getUrl() + e.getResource();
+        LOG.log(Level.FINE, "initiated transfer: {0}", u);
+        handle.progress(u);
         checkCancel();
     }
 
-    public @Override void transferStarted(TransferEvent arg0) {
+    public @Override void transferStarted(TransferEvent e) {
         checkCancel();
-        long contentLength = arg0.getResource().getContentLength();
+        long contentLength = e.getResource().getContentLength();
+        LOG.log(Level.FINE, "contentLength: {0}", contentLength);
         // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
         this.units = (int) contentLength / 1024;
         handle.switchToDeterminate(units);
@@ -108,7 +111,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
             try {
                 fetcher.disconnect();
             } catch (IOException x) {
-                Logger.getLogger(RemoteIndexTransferListener.class.getName()).log(Level.INFO, "closing " + info.getId(), x);
+                LOG.log(Level.INFO, "closing " + info.getId(), x);
             }
         }
         return canceled.compareAndSet(false, true);
@@ -120,22 +123,24 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         }
     }
 
-    public @Override void transferProgress(TransferEvent arg0, byte[] arg1, int arg2) {
+    public @Override void transferProgress(TransferEvent e, byte[] buffer, int length) {
         checkCancel();
-        int work = arg2 / 1024;
-        handle.progress(arg0.getResource().getName(), Math.min(units, lastunit += work));
+        LOG.log(Level.FINER, "progress: {0}", length);
+        int work = length / 1024;
+        handle.progress(Math.min(units, lastunit += work));
     }
 
-    public @Override void transferCompleted(TransferEvent arg0) {
+    public @Override void transferCompleted(TransferEvent e) {
+        LOG.fine("completed");
         handle.switchToIndeterminate();
     }
 
     public @Override void transferError(TransferEvent e) {
-        Logger.getLogger(RemoteIndexTransferListener.class.getName()).log(Level.FINE, "error transferring " + info.getIndexUpdateUrl(), e.getException());
+        LOG.log(Level.FINE, "error transferring", e.getException());
         handle.switchToIndeterminate();
     }
 
-    public @Override void debug(String arg0) {
+    public @Override void debug(String message) {
         checkCancel();
     }
 
@@ -143,9 +148,9 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         synchronized (TRANSFERS_LOCK) {
             Integer count = transfers.get(t);
             if (count == null) {
-                count = Integer.valueOf(1);
+                count = 1;
             } else {
-                count = Integer.valueOf(count + 1);
+                count = count + 1;
             }
             transfers.put(t, count);
         }
@@ -160,7 +165,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
             if (count <= 1) {
                 transfers.remove(t);
             } else {
-                count = Integer.valueOf(count - 1);
+                count = count - 1;
                 transfers.put(t, count);
             }
         }

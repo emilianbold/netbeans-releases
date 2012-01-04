@@ -43,19 +43,7 @@ package org.netbeans.modules.javafx2.project;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.TypeElement;
@@ -63,27 +51,16 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 
 /**
  * Utility class for JavaFX 2.0 Project
@@ -272,5 +249,112 @@ public final class JFXProjectUtils {
         }
         return ep.evaluator().getProperty(JFXProjectProperties.RUN_AS);
     }
-    
+
+    /**
+     * Finds the relative path to targetFO from sourceFO. 
+     * Unlike FileUtil.getRelativePath() does not require targetFO to be within sourceFO sub-tree
+     * Returns null if there is no shared parent directory except root.
+     * 
+     * @param sourceFO file/dir to which the relative path will be related
+     * @param targetFO file whose location will be determined with respect to sourceFO
+     * @return string relative path leading from sourceFO to targetFO
+     */
+    public static String getRelativePath(@NonNull final FileObject sourceFO, @NonNull final FileObject targetFO) {
+        String path = ""; //NOI18N
+        FileObject src = sourceFO;
+        FileObject tgt = targetFO;
+        String targetName = null;
+        if(!src.isFolder()) {
+            src = src.getParent();
+        }
+        if(!tgt.isFolder()) {
+            targetName = tgt.getNameExt();
+            tgt = tgt.getParent();
+        }
+        LinkedList<String> srcSplit = new LinkedList<String>();
+        LinkedList<String> tgtSplit = new LinkedList<String>();
+        while(!src.isRoot()) {
+            srcSplit.addFirst(src.getName());
+            src = src.getParent();
+        }
+        while(!tgt.isRoot()) {
+            tgtSplit.addFirst(tgt.getName());
+            tgt = tgt.getParent();
+        }
+        boolean share = false;
+        while(!srcSplit.isEmpty() && !tgtSplit.isEmpty()) {
+            if(srcSplit.getFirst().equals(tgtSplit.getFirst())) {
+                srcSplit.removeFirst();
+                tgtSplit.removeFirst();
+                share = true;
+            } else {
+                break;
+            }
+        }
+        if(!share) {
+            return null;
+        }
+        for(int left = 0; left < srcSplit.size(); left++) {
+            if(left == 0) {
+                path += ".."; //NOI18N
+            } else {
+                path += "/.."; //NOI18N
+            }
+        }
+        while(!tgtSplit.isEmpty()) {
+            if(path.isEmpty()) {
+                path += tgtSplit.getFirst();
+            } else {
+                path += "/" + tgtSplit.getFirst(); //NOI18N
+            }
+            tgtSplit.removeFirst();
+        }
+        if(targetName != null) {
+            if(!path.isEmpty()) {
+                path += "/" + targetName; //NOI18N
+            } else {
+                path += targetName;
+            }
+        }
+        return path;
+    }
+
+    /**
+     * Finds the file/dir represented by relPath with respect to sourceDir. 
+     * Returns null if the file does not exist.
+     * 
+     * @param sourceDir file/dir to which the relative path is related
+     * @param relPath relative path related to sourceDir
+     * @return FileObject or null
+     */
+    public static FileObject getFileObject(@NonNull final FileObject sourceDir, @NonNull final String relPath) {
+        String split[] = relPath.split("[\\\\/]+"); //NOI18N
+        FileObject src = sourceDir;
+        String path = ""; //NOI18N
+        boolean back = true;
+        if(split[0].equals("..")) {
+            for(int i = 0; i < split.length; i++) {
+                if(back && split[i].equals("..")) { //NOI18N
+                    src = src.getParent();
+                    if(src == null) {
+                        return null;
+                    }
+                } else {
+                    if(back) {
+                        back = false;
+                        path = src.getPath();
+                    }
+                    path += "/" + split[i]; //NOI18N
+                }
+            }
+        } else {
+            path = relPath;
+        }
+        File f = new File(path);
+        if(f.exists()) {
+            return FileUtil.toFileObject(f);
+        }
+        return null;
+    }
+
 }

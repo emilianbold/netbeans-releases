@@ -68,6 +68,14 @@ public class PreviewImpl implements Preview {
     /**
      * Returns a collection of schema components, all of which,
      * reference the same global schema component.
+     * @return a Map of usages to their path from their respective schema's root.<br/>
+     * Example: <br/>
+     * <pre>
+     * { 
+     *    myElement : [mySchema > myElement], 
+     *    myOtherElement : [myOtherSchema > myType > myOtherElement] 
+     * }
+     * </pre>
      */
     public Map<SchemaComponent, List<SchemaComponent>> getUsages() {
         return usages;

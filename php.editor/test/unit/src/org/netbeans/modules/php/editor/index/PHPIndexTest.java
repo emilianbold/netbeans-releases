@@ -272,7 +272,7 @@ public class PHPIndexTest extends TestBase {
         assertNotNull(firstCC.getFileObject());
         assertNotNull(secondCC.getFileObject());
         assertNotSame(secondCC.getFileObject(), firstCC.getFileObject());
-        
+
         if (firstCC.getFileObject().getName().endsWith("_1")) {
             final TypeElement tmpCC = firstCC;
             firstCC = secondCC;
@@ -333,7 +333,7 @@ public class PHPIndexTest extends TestBase {
         assertEquals("\"test\"", thirdParam.getDefaultValue());
         assertFalse(thirdParam.hasDeclaredType());
         assertEquals(0, thirdParam.getTypes().size());
-        
+
         final ParameterElement fourthParam = parameters.get(3);
         assertFalse(fourthParam.isMandatory());
         assertEquals("MY_CONST", fourthParam.getDefaultValue());
@@ -468,7 +468,7 @@ public class PHPIndexTest extends TestBase {
                 assertTrue(methodNames.contains(indexedMethod.getName()));
                 if (indexedMethod.getType().equals(clz)) {
                     assertTrue(allMethods.contains(indexedMethod));
-                } 
+                }
             }
         }
     }
@@ -557,6 +557,11 @@ public class PHPIndexTest extends TestBase {
      */
     @Test
     public void testGetDirectIncludes() {
+    }
+
+    @Test
+    public void testGetClassesWithNsInterfaces() throws Exception {
+        checkIndexer(getTestPath());
     }
 
     @Override

@@ -228,7 +228,7 @@ public class BootCPNodeFactory implements NodeFactory {
             @Override public Icon getIcon(boolean opened) {
                 return ImageUtilities.loadImageIcon("org/netbeans/modules/java/api/common/project/ui/resources/jar.gif", true);
             }
-            @Override public boolean contains(FileObject file) throws IllegalArgumentException {
+            @Override public boolean contains(FileObject file) {
                 return true;
             }
             @Override public void addPropertyChangeListener(PropertyChangeListener listener) {}

@@ -38,7 +38,7 @@
             <Component class="javax.swing.JButton" name="btnBigger">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="ImageUtilities.image2Icon(ImageUtilities.loadImage(&quot;org/netbeans/modules/maven/graph/zoomin.gif&quot;, true))" type="code"/>
+                  <Connection code="ImageUtilities.loadImageIcon(ZOOM_IN_ICON, true)" type="code"/>
                 </Property>
                 <Property name="focusable" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -51,7 +51,7 @@
             <Component class="javax.swing.JButton" name="btnSmaller">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="ImageUtilities.image2Icon(ImageUtilities.loadImage(&quot;org/netbeans/modules/maven/graph/zoomout.gif&quot;, true))" type="code"/>
+                  <Connection code="ImageUtilities.loadImageIcon(ZOOM_OUT_ICON, true)" type="code"/>
                 </Property>
                 <Property name="focusable" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>

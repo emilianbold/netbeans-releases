@@ -80,18 +80,22 @@ public class LineColOffsPositionImpl implements CsmOffsetable.Position {
         this.offset = offset;
     }
 
+    @Override
     public int getOffset() {
         return offset;
     }
 
+    @Override
     public int getLine() {
         return line;
     }
 
+    @Override
     public int getColumn() {
         return col;
     }
     
+    @Override
     public String toString() {
         return "" + getLine() + ':' + getColumn() + '/' + getOffset();
     }

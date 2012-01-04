@@ -70,7 +70,7 @@ import org.openide.windows.TopComponent;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 @MultiViewElement.Registration(displayName = "#LBL_PageFlow", //NOI18N
-        iconBase = "org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png",
+        iconBase = "org/netbeans/modules/web/jsf/navigation/resources/JSFConfigIcon.png",
         persistenceType = TopComponent.PERSISTENCE_NEVER,
         preferredID = "jsf.page.flow",
         mimeType = "text/x-jsf+xml",

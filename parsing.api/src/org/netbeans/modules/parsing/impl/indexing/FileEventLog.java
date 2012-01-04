@@ -66,16 +66,22 @@ class FileEventLog implements Runnable {
        CREATE
     };
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private final ThreadLocal<Map<URL,Map<String,Pair<FileEventLog.FileOp,Work>>>> changes;
 
     public FileEventLog() {
         this.changes = new ThreadLocal<Map<URL, Map<String, Pair<FileOp, Work>>>>();
     }
 
-   
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     public void record (final FileOp operation, final URL root, String relativePath, FileEvent event, final Work work) {
         assert operation != null;
         assert root != null;
+        assert PathRegistry.noHostPart(root) : root;
         if (relativePath == null) {
             relativePath = "";  //NOI18N
         }
@@ -97,6 +103,9 @@ class FileEventLog implements Runnable {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
     private Map<URL,Map<String,Pair<FileEventLog.FileOp,Work>>> getChanges(final boolean create) {
         Map<URL,Map<String,Pair<FileEventLog.FileOp,Work>>> res = changes.get();
         if (res == null && create) {

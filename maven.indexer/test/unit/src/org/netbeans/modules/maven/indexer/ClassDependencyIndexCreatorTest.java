@@ -39,8 +39,10 @@
 package org.netbeans.modules.maven.indexer;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery.ClassUsageResult;
 import org.openide.util.test.JarBuilder;
 import org.openide.util.test.TestFileUtils;
@@ -103,6 +105,15 @@ public class ClassDependencyIndexCreatorTest extends NexusTestBase {
         assertEquals("[test:mod2:0:test[mod2.Outer]]", nrii.findClassUsages("mod1.Outer$Inner", Collections.singletonList(info)).toString());
         assertEquals("[]", nrii.findClassUsages("mod1.Outer$Unused", Collections.singletonList(info)).toString());
         // XXX InnerClass attribute will produce spurious references to outer classes even when just an inner is used
+    }
+
+    public void testRead() throws Exception { // #206111
+        File jar = TestFileUtils.writeZipFile(new File(getWorkDir(), "x.jar"),
+                // XXX failed to produce a manifest that would generate a SecurityException if loaded with verify=true
+                "pkg/Clazz.class:ABC");
+        Map<String,byte[]> content = ClassDependencyIndexCreator.read(jar);
+        assertEquals("[pkg/Clazz]", content.keySet().toString());
+        assertEquals("[65, 66, 67]", Arrays.toString(content.get("pkg/Clazz")));
     }
 
 }

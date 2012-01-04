@@ -96,12 +96,17 @@ public class PhpModuleImpl extends PhpModule {
     @Override
     public PhpModuleProperties getProperties() {
         PhpModuleProperties properties = new PhpModuleProperties();
+        properties = setEncoding(properties);
         properties = setWebRoot(properties);
         properties = setTests(properties);
         properties = setUrl(properties);
         properties = setIndexFile(properties);
         properties = setIncludePath(properties);
         return properties;
+    }
+
+    private PhpModuleProperties setEncoding(PhpModuleProperties properties) {
+        return properties.setEncoding(ProjectPropertiesSupport.getEncoding(phpProject));
     }
 
     private PhpModuleProperties setWebRoot(PhpModuleProperties properties) {

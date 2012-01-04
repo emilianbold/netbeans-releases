@@ -42,6 +42,7 @@ package org.netbeans.modules.openide.awt;
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.annotation.processing.Completion;
@@ -51,6 +52,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -63,6 +65,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import javax.tools.Diagnostic;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -181,6 +184,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (aid == null) {
                 throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation", e, processingEnv, ar);
             }
+            if (aid.id() == null) {
+                continue;
+            }
             if (aid.category().startsWith("Actions/")) {
                 throw new LayerGenerationException("@ActionID category() cannot contain /", e, processingEnv, aid, "category");
             }
@@ -235,17 +241,33 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 key = ar.key();
             }
 
-            boolean direct;
-            if (e.getKind() == ElementKind.FIELD) {
-                direct = false;
-            } else {
-                TypeMirror type = e.getKind() == ElementKind.CLASS ? e.asType() : ((ExecutableElement) e).getReturnType();
-                direct = isAssignable(type, p1) || isAssignable(type, p2) || isAssignable(type, p3) || isAssignable(type, caa) || isAssignable(type, dmc);
+            Boolean direct = null;
+            for (AnnotationMirror m : e.getAnnotationMirrors()) {
+                if (m.getAnnotationType().toString().equals(ActionRegistration.class.getCanonicalName())) {
+                    for (Map.Entry<? extends ExecutableElement,? extends AnnotationValue> entry : m.getElementValues().entrySet()) {
+                        if (entry.getKey().getSimpleName().contentEquals("lazy")) {
+                            direct = ! (Boolean) entry.getValue().getValue();
+                            assert direct == !ar.lazy();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (direct == null) {
+                if (e.getKind() == ElementKind.FIELD) {
+                    direct = false;
+                } else {
+                    TypeMirror type = e.getKind() == ElementKind.CLASS ? e.asType() : ((ExecutableElement) e).getReturnType();
+                    direct = isAssignable(type, p1) || isAssignable(type, p2) || isAssignable(type, p3) || isAssignable(type, caa) || isAssignable(type, dmc);
+                    if (direct) {
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "Should explicitly specify lazy attribute", e);
+                    }
+                }
             }
             
             if (direct) {
                 if (key.length() != 0) {
-                    throw new LayerGenerationException("Cannot specify key and implement Presenter interface", e, processingEnv, ar, "key");
+                    throw new LayerGenerationException("Cannot specify key and use eager registration", e, processingEnv, ar, "key");
                 }
                 f.instanceAttribute("instanceCreate", Action.class);
             } else {
@@ -296,6 +318,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 continue;
             }
             ActionReference ref = e.getAnnotation(ActionReference.class);
+            if (ref == null) {
+                continue;
+            }
             ActionID id = e.getAnnotation(ActionID.class);
             if (id != null) {
                 processReferences(e, ref, id);
@@ -308,6 +333,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 continue;
             }
             ActionReferences refs = e.getAnnotation(ActionReferences.class);
+            if (refs == null) {
+                continue;
+            }
             if (e.getKind() != ElementKind.PACKAGE) {
                 ActionID id = e.getAnnotation(ActionID.class);
                 if (id == null) {
@@ -367,7 +395,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (dt.getTypeArguments().isEmpty()) {
                 throw new LayerGenerationException("Use List<SomeType>", ee);
             }
-            f.stringvalue("type", dt.getTypeArguments().get(0).toString());
+            f.stringvalue("type", binaryName(dt.getTypeArguments().get(0)));
             f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
             f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString());
             f.stringvalue("selectionType", "ANY");
@@ -378,11 +406,19 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             throw new LayerGenerationException("No type parameters allowed in ", ee);
         }
 
-        f.stringvalue("type", ve.asType().toString());
+        f.stringvalue("type", binaryName(ve.asType()));
         f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
         f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString());
         f.stringvalue("selectionType", "EXACTLY_ONE");
         f.methodvalue("instanceCreate", "org.openide.awt.Actions", "context");
+    }
+    private String binaryName(TypeMirror t) {
+        Element e = processingEnv.getTypeUtils().asElement(t);
+        if (e != null && (e.getKind().isClass() || e.getKind().isInterface())) {
+            return processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
+        } else {
+            return t.toString(); // fallback - might not always be right
+        }
     }
 
     private boolean isAssignable(TypeMirror first, TypeMirror snd) {

@@ -69,7 +69,7 @@ public final class GitModuleConfig {
     
     private static GitModuleConfig instance;
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";     // NOI18N
-    private static final String PROP_COMMIT_EXCLUSIONS  = "commitExclusions";   // NOI18N
+    public static final String PROP_COMMIT_EXCLUSIONS          = "commitExclusions";   // NOI18N
     private static final String PROP_LAST_USED_MODE     = "lastUsedMode";       // NOI18N
     private static final String EXCLUDE_NEW_FILES       = "excludeNewFiles";    // NOI18N
     private static final String RECENT_COMMIT_AUTHORS   = "recentCommitAuhtors";// NOI18N

@@ -175,7 +175,7 @@ public final class RefactoringElementsBag {
      * commits are called after all changes are performed
      * @param commit Transaction to commit
      * @see Transaction
-     * @see BackupFacilty
+     * @see BackupFacility
      */
     public void registerTransaction(Transaction commit) {
         if (APIAccessor.DEFAULT.isCommit(session))
@@ -188,7 +188,7 @@ public final class RefactoringElementsBag {
      * fileChanges are performed after all element changes
      * @param changes changes to be performed
      * @see Transaction
-     * @see BackupFacilty
+     * @see BackupFacility
      */
     public Problem addFileChange(AbstractRefactoring refactoring, RefactoringElementImplementation el) {
         if (APIAccessor.DEFAULT.isCommit(session))

@@ -60,6 +60,8 @@ public final class MyRandomAccessFile extends RandomAccessFile {
     private long bufferShift;
     private long bufferSize;
     private final FileChannel channel;
+    private boolean doSeek = false;
+    private long postponedSeek = 0;
 
     public MyRandomAccessFile(String fileName) throws IOException {
         super(fileName, "r"); // NOI18N
@@ -77,6 +79,10 @@ public final class MyRandomAccessFile extends RandomAccessFile {
 
     @Override
     public int read() throws IOException {
+        if (doSeek) {
+            doSeek = false;
+            _seek(postponedSeek);
+        }
         if (buffer.remaining() == 0) {
             if(bufferShift + bufferSize < channel.size()) {
                 long position = bufferShift + bufferSize;
@@ -95,12 +101,20 @@ public final class MyRandomAccessFile extends RandomAccessFile {
         }
     }
 
-    public MappedByteBuffer getBuffer() {
+    public MappedByteBuffer getBuffer() throws IOException {
+        if (doSeek) {
+            doSeek = false;
+            _seek(postponedSeek);
+        }
         return buffer;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        if (doSeek) {
+            doSeek = false;
+            _seek(postponedSeek);
+        }
         if (buffer.remaining() >= len) {
             buffer.get(b, off, len);
             return len;
@@ -127,22 +141,34 @@ public final class MyRandomAccessFile extends RandomAccessFile {
         }
     }
 
-    public int remaining() {
+    public int remaining() throws IOException{
+        if (doSeek) {
+            doSeek = false;
+            _seek(postponedSeek);
+        }
         return buffer.remaining();
     }
     
     @Override
     public long getFilePointer() throws IOException {
+        if (doSeek) {
+            return postponedSeek;
+        }
         return buffer.position() + bufferShift;
     }
-
+    
     @Override
     public void seek(long pos) throws IOException {
+        if (pos < 0 || pos > channel.size()) {
+            throw new IOException("Wrong position "+pos); // NOI18N
+        }
+        doSeek = true;
+        postponedSeek = pos;
+    }
+
+    private void _seek(long pos) throws IOException {
         long filePointer = getFilePointer();
         if (pos == filePointer) {
-            return;
-        }
-        if (pos == channel.size()) {
             return;
         }
         if (pos >= bufferShift && pos < bufferShift + bufferSize) {
@@ -164,7 +190,7 @@ public final class MyRandomAccessFile extends RandomAccessFile {
             channel.close();
             close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
     }
 }

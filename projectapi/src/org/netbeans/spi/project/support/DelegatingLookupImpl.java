@@ -62,9 +62,10 @@ import org.openide.util.lookup.ProxyLookup;
 
 class DelegatingLookupImpl extends ProxyLookup implements LookupListener, ChangeListener {
 
-    private static final Logger LOG = Logger.getLogger(LookupProviderSupport.class.getName());
+    private static final Logger LOG = Logger.getLogger(DelegatingLookupImpl.class.getName());
 
     private final Lookup baseLookup;
+    private final String path;
     private final UnmergedLookup unmergedLookup = new UnmergedLookup();
     private final Map<LookupMerger<?>,Object> mergerResults = new WeakHashMap<LookupMerger<?>,Object>();
     private final Lookup.Result<LookupProvider> providerResult;
@@ -82,7 +83,8 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
     DelegatingLookupImpl(Lookup base, Lookup providerLookup, String path) {
         assert base != null;
         baseLookup = base;
-        providerResult = providerLookup.lookup(new Lookup.Template<LookupProvider>(LookupProvider.class));
+        this.path = path;
+        providerResult = providerLookup.lookupResult(LookupProvider.class);
         metaMergers = providerLookup.lookupResult(MetaLookupMerger.class);
         metaMergerListener = WeakListeners.change(this, null);
         assert isAllJustLookupProviders(providerLookup) : "Layer content at " + path + " contains other than LookupProvider instances! See messages.log file for more details.";
@@ -157,7 +159,7 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
             for (LookupMerger<?> lm : allMergers) {
                 Class<?> c = lm.getMergeableClass();
                 if (filteredClasses.contains(c)) {
-                    LOG.log(Level.WARNING, "Two LookupMerger registered for {0}. Only first one will be used", c);
+                    LOG.log(Level.WARNING, "Two LookupMerger instances for {0} among {1} in {2}. Only first one will be used", new Object[] {c, allMergers, path});
                     continue;
                 }
                 filteredClasses.add(c);

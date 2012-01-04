@@ -202,7 +202,7 @@ public class ImportManager extends java.awt.Panel {
                     DialogDescriptor.BOTTOM_ALIGN,
                     null,
                     null);
-            dd.setClosingOptions (new Object[] {bNoButton, bRemindLaterButton});
+            dd.setClosingOptions (new Object[] {bImportButton, bNoButton, bRemindLaterButton});
             DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
             if (bImportButton.equals (dd.getValue ()) || bNoButton.equals (dd.getValue ())) {
                 ui.dontRemind ();
@@ -229,29 +229,11 @@ public class ImportManager extends java.awt.Panel {
             public void actionPerformed(ActionEvent e) {
                 Object source = e.getSource();
                 if (source instanceof JButton) {
-                    final JButton button = (JButton) source;
-                    button.setEnabled(false);
                     RequestProcessor.getDefault().post(new Runnable() {
 
                         @Override
                         public void run() {
-                            try {
-                                final boolean res = doImport();
-                                SwingUtilities.invokeAndWait(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (res) {
-                                            doClose();
-                                        } else {
-                                            button.setEnabled(true);
-                                        }
-                                    }
-                                });
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (InvocationTargetException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
+                            doImport();
                         }
                     });
                 }
@@ -272,10 +254,6 @@ public class ImportManager extends java.awt.Panel {
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace (ex);
         }
-    }
-
-    private void doClose () {
-        bNo.doClick (); // XXX
     }
 
     private boolean doImport () {

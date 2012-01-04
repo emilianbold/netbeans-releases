@@ -74,7 +74,7 @@ public class NativeWatch {
     private String replacedwith = null;
     private boolean restricted;
     private ModelListener updater;
-    private Watch watch;	// back-pointer
+    private final Watch watch;	// back-pointer
 
     public NativeWatch(Watch watch) {
 	this.watch = watch;

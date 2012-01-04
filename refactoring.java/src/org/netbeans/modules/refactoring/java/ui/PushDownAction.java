@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import org.netbeans.modules.refactoring.java.ui.JavaActionsImplementationFactory;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -58,7 +56,7 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.PushDownAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_PushDown_Action")
+@ActionRegistration(displayName = "#LBL_PushDown_Action", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "PushDownAction", position = 600)
 public class PushDownAction extends JavaRefactoringGlobalAction {
     
@@ -69,18 +67,22 @@ public class PushDownAction extends JavaRefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         JavaActionsImplementationFactory.doPushDown(context);
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         return JavaActionsImplementationFactory.canPushDown(context);
     }

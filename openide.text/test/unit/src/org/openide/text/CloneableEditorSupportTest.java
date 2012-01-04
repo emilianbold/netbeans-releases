@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.Date;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import junit.framework.AssertionFailedError;
@@ -265,12 +266,12 @@ implements CloneableEditorSupport.Env {
         assertFalse ("Nothing to undo", support.getUndoRedo ().canUndo ());
         
         // this should not be allowed
-        doc.insertString (0, "Kuk", null);
-        
-        String modifiedForAWhile = doc.getText (0, 3);
-        //assertEquals ("For a while the test really starts with Kuk", "Kuk", doc.getText (0, 3));
-        
-        assertFalse ("The document cannot be modified", support.getUndoRedo ().canUndo ());
+        try {
+            doc.insertString (0, "Kuk", null);
+            fail("Modification should not proceed");
+        } catch (BadLocationException ex) {
+            // Expected
+        }
         
         String s = doc.getText (0, doc.getLength ());
         assertEquals ("The document is now the same as at the begining", content, s);

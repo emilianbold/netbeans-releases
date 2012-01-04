@@ -60,6 +60,7 @@ public class NameCache extends APTStringManager {
     private NameCache() {
     }
 
+    @Override
     public CharSequence getString(CharSequence text) {
         if (text == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
@@ -68,6 +69,7 @@ public class NameCache extends APTStringManager {
         return instance.getString(text);
     }
     
+    @Override
     public void dispose() {
         instance.dispose();
     }

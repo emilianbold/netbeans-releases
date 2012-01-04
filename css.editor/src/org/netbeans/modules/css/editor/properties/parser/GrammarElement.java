@@ -49,12 +49,15 @@ package org.netbeans.modules.css.editor.properties.parser;
  * @author mfukala@netbeans.org
  */
 public abstract class GrammarElement {
+    
     private GroupGrammarElement parent;
     private String path;
 
     public GrammarElement(GroupGrammarElement parent) {
         this.parent = parent;
     }
+    
+    public abstract GrammarElementKind getKind();
     
     private int minimum_occurances = 1;
     private int maximum_occurances = 1;
@@ -73,6 +76,10 @@ public abstract class GrammarElement {
 
     public int getMinimumOccurances() {
         return minimum_occurances;
+    }
+    
+    public boolean isOptional() {
+        return getMinimumOccurances() == 0;
     }
 
     public GroupGrammarElement parent() {
@@ -95,34 +102,27 @@ public abstract class GrammarElement {
 
     /** returns a name of the property from which this element comes from */
     public String origin() {
+        return origin(true);
+    }
+    
+    public String getVisibleOrigin() {
+        return origin(false);
+    }
+    
+    private String origin(boolean allowNonVisibleElements) {
         GroupGrammarElement p = parent;
         while (p != null) {
             if (p.referenceName != null) {
-                return p.referenceName;
+                boolean visible = !GrammarParser.isArtificialElementName(p.referenceName);
+                if (visible || allowNonVisibleElements) {
+                    return p.referenceName;
+                }
             }
             p = p.parent();
         }
         return null;
     }
 
-    public String getResolvedOrigin() {
-        String origin = origin();
-        if (origin == null) {
-            return null;
-        }
-        if (GrammarParser.isArtificialElementName(origin)) {
-            //NOI18N
-            //artificial origin, get real origin from the first ancestor element with an origin
-            GrammarElement parentElement = this;
-            while ((parentElement = parentElement.parent()) != null) {
-                if (parentElement.origin() != null && !GrammarParser.isArtificialElementName(parentElement.origin())) {
-                    origin = parentElement.origin();
-                    break;
-                }
-            }
-        }
-        return origin;
-    }
 
     public synchronized String path() {
         if (path == null) {

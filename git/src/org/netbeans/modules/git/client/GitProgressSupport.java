@@ -51,7 +51,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;

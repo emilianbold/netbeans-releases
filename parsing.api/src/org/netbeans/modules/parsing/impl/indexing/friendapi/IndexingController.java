@@ -63,15 +63,24 @@ public abstract class IndexingController {
 
     public abstract boolean isInProtectedMode();
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_COLLECTION_OF_URLS"
+    /*,justification="URLs have never host part"*/)
     public abstract Map<URL, List<URL>> getRootDependencies();
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_COLLECTION_OF_URLS"
+    /*,justification="URLs have never host part"*/)
     public abstract Map<URL, List<URL>> getBinaryRootDependencies();
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_COLLECTION_OF_URLS"
+    /*,justification="URLs have never host part"*/)
     public abstract Map<URL, List<URL>> getRootPeers();
 
     public abstract int getFileLocksDelay();
-    
+
     protected IndexingController() {
     }
-    
+
 }

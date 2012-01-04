@@ -51,7 +51,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;
@@ -59,6 +59,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 
 /**
  * Executes searches in Search History panel.
@@ -76,7 +77,6 @@ class SearchExecutor extends GitProgressSupport {
     
     private final SearchHistoryPanel    master;
     private final int limitRevisions;
-    private final boolean showAllPaths;
     private final boolean showMerges;
     private final String message;
     private final String username;
@@ -84,6 +84,8 @@ class SearchExecutor extends GitProgressSupport {
     private final String toRevision;
     private final Date from;
     private final Date to;
+    static final int DEFAULT_LIMIT = 10;
+    private final SearchCriteria sc;
 
     public SearchExecutor (SearchHistoryPanel master) {
         this.master = master;
@@ -96,16 +98,9 @@ class SearchExecutor extends GitProgressSupport {
         username = criteria.getUsername();
         message = criteria.getCommitMessage();
         limitRevisions = criteria.getLimit();
-        showMerges = criteria.isShowMerges();
-        showAllPaths = master.fileInfoCheckBox.isSelected();
-    }    
-        
-    @Override
-    public void perform () {
-        if (isCanceled()) {
-            return;
-        }
-        SearchCriteria sc = new SearchCriteria();
+        showMerges = criteria.isIncludeMerges();
+
+        sc = new SearchCriteria();
         File[] files = master.getRoots();
         sc.setFiles(files);
         if (files != null && files.length == 1 && files[0].isFile()) {
@@ -113,35 +108,47 @@ class SearchExecutor extends GitProgressSupport {
         }
         sc.setUsername(username);
         sc.setMessage(message);
-        sc.setLimit(limitRevisions);
         sc.setIncludeMerges(showMerges);
         sc.setRevisionFrom(fromRevision);
         sc.setRevisionTo(toRevision);
         sc.setFrom(from);
         sc.setTo(to);
+    }    
+        
+    @Override
+    public void perform () {
+        if (isCanceled()) {
+            return;
+        }
         try {
-            GitClient client = getClient();
-            GitRevisionInfo[] messages = client.log(sc, this);
-            if (!isCanceled()) {
-                RepositoryInfo info = RepositoryInfo.getInstance(getRepositoryRoot());
-                appendResults(messages, info.getBranches().values(), info.getTags().values());
-            }
+            List<RepositoryRevision> results = search(limitRevisions, getClient(), this);
+            setResults(results);
         } catch (GitException ex) {
             GitClientExceptionHandler.notifyException(ex, true);
         }
     }
 
-    private void appendResults (GitRevisionInfo[] logMessages, Collection<GitBranch> allBranches, Collection<GitTag> allTags) {
-        final List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
+    List<RepositoryRevision> search (int limit, GitClient client, GitProgressSupport support) throws GitException {
+        sc.setLimit(limit);
+        List<RepositoryRevision> retval = Collections.<RepositoryRevision>emptyList();
+        GitRevisionInfo[] messages = client.log(sc, support);
+        if (!support.isCanceled()) {
+            RepositoryInfo info = RepositoryInfo.getInstance(getRepositoryRoot());
+            retval = appendResults(messages, info.getBranches().values(), info.getTags().values(), support);
+        }
+        return retval;
+    }
+
+    private List<RepositoryRevision> appendResults (GitRevisionInfo[] logMessages, Collection<GitBranch> allBranches, Collection<GitTag> allTags, GitProgressSupport support) {
+        List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
         File dummyFile = null;
         String dummyFileRelativePath = null;
-        if (master.getRoots().length == 1 && !showAllPaths) {
+        if (master.getRoots().length == 1) {
             // dummy event must be implemented
             dummyFile = master.getRoots()[0];
             dummyFileRelativePath = GitUtils.getRelativePath(getRepositoryRoot(), dummyFile);
         }
-        Map<File, Set<File>> renames = new HashMap<File, Set<File>>();
-        for (int i = 0; i < logMessages.length && !isCanceled(); ++i) {
+        for (int i = 0; i < logMessages.length && !support.isCanceled(); ++i) {
             GitRevisionInfo logMessage = logMessages[i];
             RepositoryRevision rev;
             Set<GitBranch> branches = new HashSet<GitBranch>();
@@ -156,23 +163,21 @@ class SearchExecutor extends GitProgressSupport {
                     tags.add(t);
                 }
             }
-            if (showAllPaths) {
-                rev = new RepositoryRevision(logMessage, tags, branches, renames);
-            } else {
-                rev = new RepositoryRevision(logMessage, tags, branches, dummyFile, dummyFileRelativePath);
-            }
+            rev = new RepositoryRevision(logMessage, master.getRepository(), master.getRoots(), tags, branches, dummyFile, dummyFileRelativePath);
             results.add(rev);
         }
-        if (isCanceled()) {
-            return;
-        }
+        return results;
+    }
+
+    private void setResults (final List<RepositoryRevision> results) {
+        final Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap = SearchHistoryPanel.createKenaiUsersMap(results);
         EventQueue.invokeLater(new Runnable() {
         @Override
             public void run() {
                 if(results.isEmpty()) {
-                    master.setResults(null);
+                    master.setResults(null, kenaiUserMap, -1);
                 } else {
-                    master.setResults(results);
+                    master.setResults(results, kenaiUserMap, limitRevisions);
                 }
             }
         });

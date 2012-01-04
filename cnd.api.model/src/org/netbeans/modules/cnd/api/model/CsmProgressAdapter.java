@@ -50,33 +50,43 @@ package org.netbeans.modules.cnd.api.model;
  */
 public class CsmProgressAdapter implements CsmProgressListener {
     
+    @Override
     public void projectParsingStarted(CsmProject project) {
     }
 
+    @Override
     public void projectFilesCounted(CsmProject project, int filesCount) {
     }
 
+    @Override
     public void projectParsingFinished(CsmProject project) {
     }
 
+    @Override
     public void projectParsingCancelled(CsmProject project) {
     }
     
+    @Override
     public void projectLoaded(CsmProject project) {
     }
 
+    @Override
     public void fileInvalidated(CsmFile file) {
     }
     
+    @Override
     public void fileParsingStarted(CsmFile file) {
     }
 
+    @Override
     public void fileParsingFinished(CsmFile file) {
     }
 
+    @Override
     public void parserIdle() {
     }
 
+    @Override
     public void fileAddedToParse(CsmFile file) {
     }
 }

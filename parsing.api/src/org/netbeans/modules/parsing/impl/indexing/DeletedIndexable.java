@@ -98,6 +98,9 @@ public final class DeletedIndexable implements IndexableImpl, FileObjectProvider
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_BLOCKING_METHODS_ON_URL"
+    /*,justification="URLs have never host part"*/)
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -116,6 +119,9 @@ public final class DeletedIndexable implements IndexableImpl, FileObjectProvider
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_BLOCKING_METHODS_ON_URL"
+    /*,justification="URLs have never host part"*/)
     public int hashCode() {
         int hash = 7;
         hash = 83 * hash + (this.root != null ? this.root.hashCode() : 0);

@@ -76,16 +76,14 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
     private String moduleVersion;
     private Artifact artifact;
     private String url;
-    private EarModuleProviderImpl provider;
 
     private MetadataModel<EjbJarMetadata> ejbJarMetadataModel;
     private MetadataModel<WebAppMetadata> webAppAnnMetadataModel;
     
-    /** Creates a new instance of NonProjectJ2eeModule */
-    public NonProjectJ2eeModule(Artifact art, String modVer, EarModuleProviderImpl prov) {
+
+    public NonProjectJ2eeModule(Artifact art, String modVer) {
         artifact = art;
         moduleVersion = modVer;
-        provider = prov;
     }
     
     public String getModuleVersion() {

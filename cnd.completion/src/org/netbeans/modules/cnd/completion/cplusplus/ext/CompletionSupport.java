@@ -212,14 +212,22 @@ public final class CompletionSupport implements DocumentListener {
         if (pos == 0) {
             return 0;
         }
+        // freeze the value to prevent modification of cache value from diff thread
+        int curCachedValue = lastSeparatorOffset;
         if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos) && 
                 !CndTokenUtilities.isInProCDirective(getDocument(), pos)) {
-            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos && 
-                    !CndTokenUtilities.isInProCDirective(getDocument(), lastSeparatorOffset)) {
-                return lastSeparatorOffset;
+            if (curCachedValue >= 0 && curCachedValue < pos && 
+                    !CndTokenUtilities.isInProCDirective(getDocument(), curCachedValue)) {
+                return curCachedValue;
             }
-            lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
-            return lastSeparatorOffset;
+            // have to return newLastSeparatorOffset
+            int newLastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
+            // it's OK if cache is set to different values from different threads
+            // so no sync here
+            if (curCachedValue == lastSeparatorOffset) {
+                lastSeparatorOffset = newLastSeparatorOffset;
+            }
+            return newLastSeparatorOffset;
         } else {
             return CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
         }
@@ -664,14 +672,17 @@ public final class CompletionSupport implements DocumentListener {
         }
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         this.lastSeparatorOffset = -1;
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         this.lastSeparatorOffset = -1;
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         this.lastSeparatorOffset = -1;
     }

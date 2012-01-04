@@ -1225,6 +1225,9 @@ public class MultiDataObject extends DataObject {
 
         @SuppressWarnings("deprecation")
         protected Entry (FileObject file) {
+            if (file == null) {
+                throw new NullPointerException();
+            }
             this.file = file;
             if (!isImportant()) {
                 file.setImportant(false);

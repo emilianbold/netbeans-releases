@@ -45,8 +45,8 @@ package org.netbeans.modules.refactoring.java.api;
 
 /**
  * @author Jan Becicka
- * @see WhereUsedQuery#putValue
- * @see WhereUsedQuery#getBooleanValue
+ * @see org.netbeans.modules.refactoring.api.WhereUsedQuery#putValue
+ * @see org.netbeans.modules.refactoring.api.WhereUsedQuery#getBooleanValue
  */
 public enum WhereUsedQueryConstants {
     /**

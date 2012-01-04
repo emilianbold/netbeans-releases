@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
+import java.awt.Image;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.ByteArrayInputStream;
@@ -54,15 +55,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -76,10 +69,14 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbObjectInputStream;
 import org.openide.windows.WindowManager;
@@ -118,7 +115,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
     private final List<FileSystemProblemListener> problemListeners =
             new ArrayList<FileSystemProblemListener>();
-    
+    transient private final StatusImpl status = new StatusImpl();
+
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
@@ -139,6 +137,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
+            @Override
             public void windowGainedFocus(WindowEvent e) {
                 if (e.getOppositeWindow() == null) {
                     if (ConnectionManager.getInstance().isConnectedTo(RemoteFileSystem.this.execEnv)) {
@@ -147,11 +146,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
 
+            @Override
             public void windowLostFocus(WindowEvent e) {
             }
         };
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
                 WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
@@ -160,6 +161,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         ConnectionManager.getInstance().addConnectionListener(this);
     }
     
+    @Override
     public void connected(ExecutionEnvironment env) {
         readOnlyConnectNotification.compareAndSet(true, false);
         if (execEnv.equals(env)) {
@@ -171,6 +173,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
         
+    @Override
     public void disconnected(ExecutionEnvironment env) {
         readOnlyConnectNotification.compareAndSet(true, false);
         if (execEnv.equals(env)) {
@@ -502,6 +505,110 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
+    @Override
+    public Status getStatus() {
+        return status;
+    }
+
+    private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {
+
+        /** result with providers */
+        private Lookup.Result<AnnotationProvider> annotationProviders;
+        private Collection<? extends AnnotationProvider> previousProviders;
+
+        {
+            annotationProviders = Lookup.getDefault().lookupResult(AnnotationProvider.class);
+            annotationProviders.addLookupListener(this);
+            resultChanged(null);
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            Collection<? extends AnnotationProvider> now = annotationProviders.allInstances();
+            Collection<? extends AnnotationProvider> add;
+
+            if (previousProviders != null) {
+                add = new HashSet<AnnotationProvider>(now);
+                add.removeAll(previousProviders);
+                HashSet<AnnotationProvider> toRemove = new HashSet<AnnotationProvider>(previousProviders);
+                toRemove.removeAll(now);
+                for (AnnotationProvider ap : toRemove) {
+                    ap.removeFileStatusListener(this);
+                }
+            } else {
+                add = now;
+            }
+
+            for (AnnotationProvider ap : add) {
+                try {
+                    ap.addFileStatusListener(this);
+                } catch (java.util.TooManyListenersException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            previousProviders = now;
+        }
+
+        public SystemAction[] getActions(Set<FileObject> foSet) {
+
+            javax.swing.Action[] retVal = null;
+            java.util.Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
+            while (retVal == null && it.hasNext()) {
+                AnnotationProvider ap = it.next();
+                retVal = ap.actions(foSet);
+            }
+            if (retVal != null) {
+                // right now we handle just SystemAction, it can be changed if necessary
+                SystemAction[] ret = new SystemAction[retVal.length];
+                for (int i = 0; i < retVal.length; i++) {
+                    if (retVal[i] instanceof SystemAction) {
+                        ret[i] = (SystemAction) retVal[i];
+                    }
+                }
+                return ret;
+            }
+            return null;
+        }
+
+        @Override
+        public void annotationChanged(FileStatusEvent ev) {
+            fireFileStatusChanged(ev);
+        }
+
+        @Override
+        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
+            for(AnnotationProvider ap : annotationProviders.allInstances()) {
+                Image retVal = ap.annotateIcon(icon, iconType, files);
+                if (retVal != null) {
+                    return retVal;
+                }
+            }
+            return icon;
+        }
+
+        @Override
+        public String annotateName(String name, Set<? extends FileObject> files) {
+            for(AnnotationProvider ap : annotationProviders.allInstances()) {
+                String retVal = ap.annotateName(name, files);
+                if (retVal != null) {
+                    return retVal;
+                }
+            }
+            return name;
+        }
+
+        @Override
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+            for(AnnotationProvider ap : annotationProviders.allInstances()) {
+                String retVal = ap.annotateNameHtml(name, files);
+                if (retVal != null) {
+                    return retVal;
+                }
+            }
+            return null;
+        }
+    }
+    
     private static class RootFileObject extends RemoteDirectory {
 
         private RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
@@ -522,7 +629,16 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         public RemoteDirectory getParent() {
             return null;
         }
-                
+
+        @Override
+        public Object getAttribute(String attrName) {
+            if (FileOperationsProvider.ATTRIBUTE.equals(attrName)) {
+                if (USE_VCS) {
+                    return FileOperationsProvider.getDefault().getFileOperations(getFileSystem());
+                }
+            }
+            return super.getAttribute(attrName);
+        }
     }
     
     private class RemoteFileSupport extends ConnectionNotifier.NamedRunnable {

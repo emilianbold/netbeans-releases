@@ -50,6 +50,7 @@ package org.netbeans.modules.java.j2seplatform.queries;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -66,13 +67,13 @@ class SelectSourcesPanel extends javax.swing.JPanel {
 
     private final String displayName;
     private final Callable<List<? extends String>> browseCall;
-    private final Function<String,URI> convertor;
+    private final Function<String,Collection<? extends URI>> convertor;
 
     /** Creates new form SelectSourcesPanel */
     SelectSourcesPanel (
             @NonNull final String displayName,
             @NonNull final Callable<List<? extends String>> browseCall,
-            @NonNull final Function<String,URI> convertor) {
+            @NonNull final Function<String, Collection<? extends URI>> convertor) {
         assert displayName != null;
         assert browseCall != null;
         assert convertor != null;
@@ -89,7 +90,7 @@ class SelectSourcesPanel extends javax.swing.JPanel {
         for (String pathElement : str.split(File.pathSeparator)) {
             pathElement = pathElement.trim();
             if (pathElement.length() > 0) {
-                paths.add(convertor.call(pathElement));
+                paths.addAll(convertor.call(pathElement));
             }
         }
         return paths;

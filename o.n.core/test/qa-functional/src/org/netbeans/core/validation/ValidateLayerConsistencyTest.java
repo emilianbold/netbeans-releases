@@ -623,14 +623,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             Set<String> overriders = overrides.keySet();
             String file = e.getKey();
 
-            if (file.matches("Editors/Actions/build-(popup-menu|tool-tip)[.]instance")) {
-                // Provided by editor.lib but overridden (direct dep) by editor.
-                // Seems like the editor.lib definition might be needed if editor is missing.
-                // @EditorActionRegistration does not supply a way to define a weight.
-                // So for now, just permit this special case.
-                continue;
-            }
-
             if (new HashSet<ContentAndAttrs>(overrides.values()).size() == 1) {
                 // All the same. Check whether these are parallel declarations (e.g. CND debugger vs. Java debugger), or vertical.
                 for (String overrider : overriders) {
@@ -993,5 +985,40 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             }
         }
     }
+
+    /* XXX too many failures for now, some spurious; use regex, or look for unloc files/folders with loc siblings?
+    public void testLocalizedFolderNames() throws Exception {
+        List<String> warnings = new ArrayList<String>();
+        for (String folder : new String[] {
+            "Actions", // many legit failures!
+            "OptionsDialog/Actions", // XXX #71280
+            "Menu",
+            "Toolbars",
+            "org-netbeans-modules-java-hints/rules/hints",
+            "Editors/FontsColors", // XXX exclude .../Defaults
+            "Keymaps",
+            "FormDesignerPalette", // XXX match any *Palette?
+            "HTMLPalette",
+            "XHTMLPalette",
+            "JSPPalette",
+            "SVGXMLPalette",
+            "OptionsExport",
+            // "Projects/.../Customizer",
+            "QuickSearch",
+            "Templates", // XXX exclude Privileged, Recent, Services
+        }) {
+            FileObject root = FileUtil.getConfigFile(folder);
+            if (root == null) {
+                continue;
+            }
+            for (FileObject d : NbCollections.iterable(root.getFolders(true))) {
+                if (d.getAttribute("displayName") == null && d.getAttribute("SystemFileSystem.localizingBundle") == null) {
+                    warnings.add("No displayName for " + d.getPath());
+                }
+            }
+        }
+        assertNoErrors("Some folders need a localized display name", warnings);
+    }
+    */
 
 }

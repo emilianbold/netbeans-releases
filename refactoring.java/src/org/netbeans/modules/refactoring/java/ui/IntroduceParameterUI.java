@@ -72,24 +72,26 @@ public class IntroduceParameterUI implements RefactoringUI {
         return new IntroduceParameterUI(expression, info);
     }
     
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(IntroduceParameterUI.class, 
                                         "DSC_IntroduceParameterRootNode", refactoring.getParameterName()); // NOI18N
     }
     
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            //TODO:
-            //parent.setPreviewEnabled(true);
             panel = new IntroduceParameterPanel(expression, parent);
         }
         return panel;
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public boolean isQuery() {
         return false;
     }
@@ -109,22 +111,27 @@ public class IntroduceParameterUI implements RefactoringUI {
         return problem;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(IntroduceParameterUI.class, "LBL_IntroduceParameter");
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
 
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(IntroduceParameterUI.class);
     }

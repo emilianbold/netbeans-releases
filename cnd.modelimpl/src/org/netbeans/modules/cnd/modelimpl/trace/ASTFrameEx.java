@@ -64,6 +64,7 @@ public class ASTFrameEx extends JFrame {
     JTextArea text;
 
     class MyTreeSelectionListener implements TreeSelectionListener {
+        @Override
         public void valueChanged(TreeSelectionEvent event) {
             TreePath path = event.getPath();
 //            System.out.println("Selected: " + path.getLastPathComponent());
@@ -104,6 +105,7 @@ public class ASTFrameEx extends JFrame {
         content.setLayout(new BorderLayout());
         
         text = new JTextArea() {
+            @Override
             public Insets getInsets() {
                 return new Insets(6, 6,  6,  6);
             }
@@ -121,6 +123,7 @@ public class ASTFrameEx extends JFrame {
         content.add(splitter, BorderLayout.CENTER);
 
         addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent e) {
                 Frame f = (Frame)e.getSource();
                 f.setVisible(false);

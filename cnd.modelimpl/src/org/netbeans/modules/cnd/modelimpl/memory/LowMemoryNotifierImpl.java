@@ -85,12 +85,14 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
         }
     }
 
+    @Override
     public void addListener(LowMemoryListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
+    @Override
     public void removeListener(LowMemoryListener listener) {
         logger.info("LowMemoryNotifierImpl.removeListener " + listener); // NOI18N
         synchronized (listeners) {
@@ -98,6 +100,7 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
         }
     }
 
+    @Override
     public void setThresholdPercentage(double percentage) {
         logger.info("LowMemoryNotifierImpl.setThresholdPercentage " + percentage); // NOI18N
         assert (0 < percentage && percentage < 1.0);
@@ -116,6 +119,7 @@ class LowMemoryNotifierImpl extends LowMemoryNotifier implements NotificationLis
      * addListener call and resent, without modification, to the listener. The MBean object
      * should not use or modify the object.
      */
+    @Override
     public void handleNotification(Notification notification, Object hb) {
         logger.info("LowMemoryNotifierImpl.handleNotification " + notification); // NOI18N
         if (MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType())) {

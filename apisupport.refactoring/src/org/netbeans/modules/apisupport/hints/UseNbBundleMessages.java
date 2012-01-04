@@ -87,8 +87,11 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import org.netbeans.api.actions.Savable;
+import org.netbeans.api.java.source.TreeUtilities;
 
 public class UseNbBundleMessages extends AbstractHint {
 
@@ -263,11 +266,17 @@ public class UseNbBundleMessages extends AbstractHint {
                         if (!isAlreadyRegistered) {
                             Tree enclosing = findEnclosingElement(wc, treePath);
                             Tree modifiers;
-                            if (enclosing.getKind() == Kind.METHOD) {
+                            switch (enclosing.getKind()) {
+                            case METHOD:
                                 modifiers = ((MethodTree) enclosing).getModifiers();
-                            } else if (enclosing.getKind() == Kind.COMPILATION_UNIT) {
+                                break;
+                            case VARIABLE:
+                                modifiers = ((VariableTree) enclosing).getModifiers();
+                                break;
+                            case COMPILATION_UNIT:
                                 modifiers = enclosing;
-                            } else {
+                                break;
+                            default:
                                 modifiers = ((ClassTree) enclosing).getModifiers();
                             }
                             List<ExpressionTree> lines = new ArrayList<ExpressionTree>();
@@ -353,9 +362,10 @@ public class UseNbBundleMessages extends AbstractHint {
                         case INTERFACE:
                         case ANNOTATION_TYPE:
                         case METHOD: // (or constructor)
+                        case VARIABLE:
                             Element e = wc.getTrees().getElement(treePath);
                             if (e != null) {
-                                TypeElement type = kind == Kind.METHOD ? wc.getElementUtilities().enclosingTypeElement(e) : (TypeElement) e;
+                                TypeElement type = TreeUtilities.CLASS_TREE_KINDS.contains(kind) ? (TypeElement) e : wc.getElementUtilities().enclosingTypeElement(e);
                                 if (type == null || !wc.getElementUtilities().isLocal(type)) {
                                     return leaf;
                                 } // else part of an inner class
@@ -378,6 +388,12 @@ public class UseNbBundleMessages extends AbstractHint {
                     } finally {
                         os.close();
                     }
+                }
+                Savable save = DataObject.find(src).getLookup().lookup(Savable.class);
+                if (save != null) {
+                    save.save();
+                } else {
+                    // XXX sometimes does not appear here reliably, why?
                 }
                 return null;
             }
@@ -412,6 +428,9 @@ public class UseNbBundleMessages extends AbstractHint {
         switch (tree.getKind()) {
         case METHOD:
             modifiers = ((MethodTree) tree).getModifiers();
+            break;
+        case VARIABLE:
+            modifiers = ((VariableTree) tree).getModifiers();
             break;
         case CLASS:
         case ENUM:

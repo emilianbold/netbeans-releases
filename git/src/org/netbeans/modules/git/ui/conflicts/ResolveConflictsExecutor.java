@@ -62,7 +62,7 @@ import org.openide.filesystems.*;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitException;

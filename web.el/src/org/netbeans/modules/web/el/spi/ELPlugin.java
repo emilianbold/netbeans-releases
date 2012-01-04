@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -67,6 +66,9 @@ public interface ELPlugin {
 
     /** A list of resource bundles for given file */
     public List<ResourceBundle> getResourceBundles(FileObject file);
+
+    /** A list of functions for given file */
+    public List<Function> getFunctions(FileObject file);
 
     static class Query {
 
@@ -92,6 +94,13 @@ public interface ELPlugin {
             return result;
         }
 
-        
+        public static List<Function> getFunctions(FileObject file) {
+            List<Function> result = new ArrayList<Function>();
+             for (ELPlugin plugin : getELPlugins()) {
+                result.addAll(plugin.getFunctions(file));
+            }
+            return result;
+        }
+
     }
 }

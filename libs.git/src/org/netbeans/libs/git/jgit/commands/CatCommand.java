@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.MessageFormat;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -57,7 +58,6 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -99,7 +99,7 @@ public class CatCommand extends GitCommand {
         if (retval) {
             relativePath = Utils.getRelativePath(getRepository().getWorkTree(), file);
             if (relativePath.isEmpty()) {
-                String message = NbBundle.getMessage(CatCommand.class, "MSG_Error_CannotCatRoot", file); //NOI18N
+                String message = MessageFormat.format(Utils.getBundle(CatCommand.class).getString("MSG_Error_CannotCatRoot"), file); //NOI18N
                 monitor.preparationsFailed(message);
                 throw new GitException(message);
             }

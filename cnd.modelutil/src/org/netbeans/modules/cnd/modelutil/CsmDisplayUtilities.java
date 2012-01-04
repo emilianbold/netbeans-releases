@@ -100,15 +100,7 @@ public class CsmDisplayUtilities {
 
     public static String getContextLineHtml(CsmFile csmFile, final int stToken, final int endToken, boolean tokenInBold) {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-        StyledDocument stDoc = null;
-        try {
-            if (ces != null) {
-                stDoc = ces.openDocument();
-            }
-        } catch (IOException iOException) {
-            // skip
-        }
-
+        StyledDocument stDoc = CsmUtilities.openDocument(ces);
         String displayText = null;
         if (stDoc instanceof BaseDocument) {
             BaseDocument doc = (BaseDocument) stDoc;
@@ -131,13 +123,7 @@ public class CsmDisplayUtilities {
 
     public static String getContextLine(CsmFile csmFile, final int stToken, final int endToken) {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
-        StyledDocument stDoc = null;
-        try {
-            stDoc = ces.openDocument();
-        } catch (IOException iOException) {
-            // skip
-        }
-
+        StyledDocument stDoc = CsmUtilities.openDocument(ces);
         String displayText = null;
         if (stDoc instanceof BaseDocument) {
             BaseDocument doc = (BaseDocument) stDoc;
@@ -158,7 +144,7 @@ public class CsmDisplayUtilities {
         String content = doc.getText(startLine, endLine - startLine);
 
         String mime = (String) doc.getProperty("mimeType"); // NOI18N
-        if (startBold >= 0 && endBold >= 0) {
+        if (startBold >= 0 && endBold >= 0 && startBold <= content.length() && endBold <= content.length()  && startBold < endBold) {
             StringBuilder buf = new StringBuilder();
             buf.append(getHtml(mime, trimStart(content.substring(0, startBold))));
             buf.append("<b>"); //NOI18N
