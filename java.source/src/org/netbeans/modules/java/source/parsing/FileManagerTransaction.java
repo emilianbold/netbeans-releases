@@ -329,6 +329,11 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         }
 
         @Override
+        JavaFileObject createFileObject(File file, File root, JavaFileFilterImplementation filter, Charset encoding) {
+            throw new UnsupportedOperationException ("Create File not supported, read-only.");   //NOI18N
+        }
+
+        @Override
         @NonNull
         Iterable<JavaFileObject> filter(String packageName, @NonNull final Iterable<JavaFileObject> files) {
             return files;
@@ -336,17 +341,12 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
 
         @Override
         protected void commit() throws IOException {
-            throw new UnsupportedOperationException ("Commit not supported, read-only.");   //NOI18N
+            //NOP
         }
 
         @Override
         protected void rollBack() throws IOException {
-            throw new UnsupportedOperationException ("RollBack not supported, read-only."); //NOi18N
-        }
-
-        @Override
-        JavaFileObject createFileObject(File file, File root, JavaFileFilterImplementation filter, Charset encoding) {
-            return FileObjects.fileFileObject(file, root, filter, encoding);
+            //NOP
         }
 
     }
