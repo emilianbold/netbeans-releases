@@ -133,7 +133,7 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
         if (getProcessBuilder(true) == null) {
             return null;
         }
-        InputStream output = redirectScriptOutput(Doctrine2Script.LIST_COMMAND, Doctrine2Script.XML_PARAM); // NOI18N
+        InputStream output = redirectScriptOutput(Doctrine2Script.LIST_COMMAND, Doctrine2Script.XML_PARAM);
         if (output == null) {
             return null;
         }
