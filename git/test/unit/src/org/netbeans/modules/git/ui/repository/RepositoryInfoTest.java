@@ -165,7 +165,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         info.refresh();
         assertEquals(GitBranch.NO_BRANCH, info.getActiveBranch().getName());
-        assertEquals("", info.getActiveBranch().getId());
+        assertEquals(AbstractGitTestCase.NULL_OBJECT_ID, info.getActiveBranch().getId());
         client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
 
         // test property support

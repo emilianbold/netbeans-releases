@@ -70,6 +70,8 @@ import org.openide.filesystems.FileUtil;
 public abstract class AbstractGitTestCase extends NbTestCase {
 
     protected File repositoryLocation;
+    
+    protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
 
     public AbstractGitTestCase (String name) {
         super(name);
