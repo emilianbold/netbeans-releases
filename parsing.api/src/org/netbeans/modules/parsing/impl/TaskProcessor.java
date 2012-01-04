@@ -57,15 +57,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -124,9 +118,7 @@ public class TaskProcessor {
     final static WorkerThreadFactory factory = new WorkerThreadFactory ();
     //Currently running SchedulerTask
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
-    //Deferred task until scan is done
-    private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
-                    
+
     //Internal lock used to synchronize parsing api iternal state (TaskProcessor, Source, SourceCache)
     private static class InternalLock {};    
     public static final Object INTERNAL_LOCK = new InternalLock ();
@@ -230,100 +222,6 @@ public class TaskProcessor {
         }        
     }
 
-    public static Future<Void> runWhenScanFinished (final Mutex.ExceptionAction<Void> task, final Collection<Source> sources) throws ParseException {
-        assert task != null;
-        final ScanSync sync = new ScanSync (task);
-        final DeferredTask r = new DeferredTask (sources,task,sync);
-        //0) Add speculatively task to be performed at the end of background scan
-        todo.add (r);
-        final Set<? extends RepositoryUpdater.IndexingState> state = Utilities.getIndexingState();
-        if (!state.isEmpty()) {
-            return sync;
-        }
-        //1) Try to aquire javac lock, if successfull no task is running
-        //   perform the given taks synchronously if it wasn't already performed
-        //   by background scan.
-        final boolean locked = parserLock.tryLock();
-        if (locked) {
-            try {
-                if (todo.remove(r)) {
-                    try {
-                        runUserTask(task, sources);
-                    } finally {
-                        sync.taskFinished();
-                    }
-                }
-            } finally {
-                parserLock.unlock();
-            }
-        } else {
-            //Otherwise interrupt currently running task and try to aquire lock
-            final boolean[] isScanner = new boolean[1];
-            final CancelStrategy cancelStrategy = new CancelStrategy(Parser.CancelReason.USER_TASK) {
-                @Override
-                public boolean apply(final @NonNull Request request) {
-                    isScanner[0] = request.cache == null;
-                    return !isScanner[0];
-                }
-            };
-            do {
-                final Request request = currentRequest.cancel(cancelStrategy);
-                try {
-                    if (isScanner[0]) {
-                        assert request == null;
-                        return sync;
-                    }
-                    if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
-                        try {
-                            if (todo.remove(r)) {
-                                try {
-                                    runUserTask(task,sources);
-                                    return sync;
-                                } finally {
-                                    sync.taskFinished();
-                                }
-                            }
-                            else {
-                                return sync;
-                            }
-                        } finally {
-                            parserLock.unlock();
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    throw new ParseException ("Interupted.",e); //NOI18N
-                }
-                finally {
-                    if (!isScanner[0]) {
-                        currentRequest.cancelCompleted(request);
-                    }
-                }
-            } while (true);
-        }
-        return sync;
-    }
-
-    public static void performDeferredTasks() {
-        scheduleSpecialTask(new Runnable() {
-            @Override
-            public void run() {
-                DeferredTask[] _todo;
-                synchronized (todo) {
-                    _todo = todo.toArray(new DeferredTask[todo.size()]);
-                    todo.clear();
-                }
-                for (DeferredTask rq : _todo) {
-                    try {
-                        runUserTask(rq.task, rq.sources);
-                    } catch (ParseException e) {
-                        Exceptions.printStackTrace(e);
-                    } finally {
-                        rq.sync.taskFinished();
-                    }
-                }
-            }
-        }, 0);
-    }
 
     /** Adds a task to scheduled requests. The tasks will run sequentially.
      * @see SchedulerTask for information about implementation requirements 
@@ -1241,108 +1139,8 @@ public class TaskProcessor {
         }                
     }
 
-    final static class ScanSync implements Future<Void> {
-
-        private Mutex.ExceptionAction<Void> task;
-        private final CountDownLatch sync;
-        private final AtomicBoolean canceled;
-
-        public ScanSync (final Mutex.ExceptionAction<Void> task) {
-            assert task != null;
-            this.task = task;
-            this.sync = new CountDownLatch (1);
-            this.canceled = new AtomicBoolean (false);
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            if (this.sync.getCount() == 0) {
-                return false;
-            }
-            synchronized (todo) {
-                boolean _canceled = canceled.getAndSet(true);
-                if (!_canceled) {
-                    for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
-                        DeferredTask t = it.next();
-                        if (t.task == this.task) {
-                            it.remove();
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return this.canceled.get();
-        }
-
-        @Override
-        public synchronized boolean isDone() {
-            return this.sync.getCount() == 0;
-        }
-
-        @Override
-        public Void get() throws InterruptedException, ExecutionException {
-            checkCaller();
-            this.sync.await();
-            return null;
-        }
-
-        @Override
-        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            checkCaller();
-            if (!this.sync.await(timeout, unit)) {
-                throw new TimeoutException();
-            } else {
-                return null;
-            }
-        }
-
-        private void taskFinished () {
-            this.sync.countDown();
-        }
-
-        private void checkCaller() {
-            if (RepositoryUpdater.getDefault().isProtectedModeOwner(Thread.currentThread())) {
-                throw new IllegalStateException("ScanSync.get called by protected mode owner.");    //NOI18N
-            }
-            //In dev build check also that blocking get is not called from OpenProjectHook -> deadlock
-            boolean ae = false;
-            assert ae = true;
-            if (ae) {
-                for (StackTraceElement stElement : Thread.currentThread().getStackTrace()) {
-                    if ("org.netbeans.spi.project.ui.ProjectOpenedHook$1".equals(stElement.getClassName()) &&   //NOI18N
-                        ("projectOpened".equals(stElement.getMethodName()) || "projectClosed".equals(stElement.getMethodName()))) {    //NOI18N
-                        throw new AssertionError("Calling ParserManager.parseWhenScanFinished().get() from ProjectOpenedHook"); //NOI18N
-                    }
-                }
-                
-            }
-        }
-
-    }
-
-    static final class DeferredTask {
-        final Collection<Source> sources;
-        final Mutex.ExceptionAction<Void> task;
-        final ScanSync sync;
-
-        public DeferredTask (final Collection<Source> sources,
-                final Mutex.ExceptionAction<Void> task,
-                final ScanSync sync) {
-            assert sources != null;
-            assert task != null;
-            assert sync != null;
-
-            this.sources = sources;
-            this.task = task;
-            this.sync = sync;
-        }
-    }
     
+
     static final class RemovedTask extends WeakReference<Source> implements Runnable {
         
         private final SchedulerTask task;
