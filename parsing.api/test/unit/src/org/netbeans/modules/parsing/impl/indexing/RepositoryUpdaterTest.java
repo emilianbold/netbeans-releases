@@ -104,15 +104,14 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -1746,66 +1745,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertFalse(ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
     }
 
-    public void testRUNotInterruptableBySourceChanges() throws Exception {
-        final Source source = Source.create(f1);
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-            }
-        });
-        final RequestProcessor worker = new RequestProcessor("testRUNotInterruptableBySourceChanges", 1);   //NOI18N
-        class H extends Handler {            
-            private final Semaphore sem = new Semaphore(0);
-            private final AtomicBoolean didCancel = new AtomicBoolean();
-            private final AtomicBoolean wasCanceled = new AtomicBoolean();
-            @Override
-            public void publish(LogRecord record) {
-                if ("RootsWork-started".equals(record.getMessage())) {      //NOI18N
-                    if (!didCancel.getAndSet(true)) {
-                        final RequestProcessor.Task task = worker.create(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    touch(f1.getURL());
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
-                        task.schedule(0);
-                        task.waitFinished();
-                    }
-                } else if ("cancel".equals(record.getMessage())) {          //NOI18N
-                    wasCanceled.set(true);
-                } else if ("scanSources".equals(record.getMessage())) {  //NOI18N
-                    final List<URL> roots = (List<URL>) record.getParameters()[0];
-                    sem.release(roots.size());
-                }
-            }
-            @Override
-            public void flush() {
-            }
-            @Override
-            public void close() throws SecurityException {
-            }
-            public boolean await(int number, long timeout, TimeUnit unit) throws InterruptedException {
-                return sem.tryAcquire(number, timeout, unit);
-            }
-            public boolean wasCanceled() {
-                return this.wasCanceled.get();
-            }
-        }
-        final H h = new H();
-        Logger log = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");  //NOI18N
-        log.setLevel(Level.FINEST);
-        log.addHandler(h);
-        final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
-        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
-        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
-        assertFalse(h.wasCanceled());
-    }
 
-    public void testRUInterruptableBySourceChanges() throws Exception {
+    public void testRUSuspendedByUserTask() throws Exception {
         final Source source = Source.create(f1);
         final RequestProcessor worker = new RequestProcessor("testRUNotInterruptableBySourceChanges", 1);   //NOI18N
         class H extends Handler {
@@ -1838,7 +1779,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                             Exceptions.printStackTrace(ex);
                         }
                     }
-                } else if ("cancel".equals(record.getMessage())) {          //NOI18N
+                } else if ("SUSPEND: {0}".equals(record.getMessage())) {          //NOI18N
                     wasCanceled.set(true);
                     latch.countDown();
                 } else if ("scanSources".equals(record.getMessage())) {  //NOI18N
@@ -1860,15 +1801,166 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
         }
         final H h = new H();
-        Logger log = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");  //NOI18N
-        log.setLevel(Level.FINEST);
-        log.addHandler(h);
+        Logger log1 = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");  //NOI18N
+        Logger log2 = Logger.getLogger(SuspendSupport.class.getName());
+        log1.setLevel(Level.FINEST);
+        log1.addHandler(h);
+        log2.setLevel(Level.FINEST);
+        log2.addHandler(h);
         final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
         globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
         assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
         assertTrue(h.wasCanceled());
     }
 
+    public void testRUSuspendedByIndexReadAccess() throws Exception {
+        final RequestProcessor worker = new RequestProcessor("testRUNotInterruptableBySourceChanges", 1);   //NOI18N
+        class H extends Handler {
+            private final Semaphore sem = new Semaphore(0);
+            private final CountDownLatch latch = new CountDownLatch(1);
+            private final AtomicBoolean didCancel = new AtomicBoolean();
+            private final AtomicBoolean wasCanceled = new AtomicBoolean();
+            @Override
+            public void publish(LogRecord record) {
+                if ("RootsWork-started".equals(record.getMessage())) {      //NOI18N
+                    if (!didCancel.getAndSet(true)) {
+                        final RequestProcessor.Task task = worker.create(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    IndexManager.readAccess(new IndexManager.Action<Void>() {
+                                        @Override
+                                        public Void run() throws IOException, InterruptedException {
+                                            return null;
+                                        }
+                                    });
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (InterruptedException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                        task.schedule(0);
+                        try {
+                            latch.await(5000, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } else if ("SUSPEND: {0}".equals(record.getMessage())) {          //NOI18N
+                    wasCanceled.set(true);
+                    latch.countDown();
+                } else if ("scanSources".equals(record.getMessage())) {  //NOI18N
+                    final List<URL> roots = (List<URL>) record.getParameters()[0];
+                    sem.release(roots.size());
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+            public boolean await(int number, long timeout, TimeUnit unit) throws InterruptedException {
+                return sem.tryAcquire(number, timeout, unit);
+            }
+            public boolean wasCanceled() {
+                return this.wasCanceled.get();
+            }
+        }
+        final H h = new H();
+        Logger log1 = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");  //NOI18N
+        Logger log2 = Logger.getLogger(SuspendSupport.class.getName());
+        log1.setLevel(Level.FINEST);
+        log1.addHandler(h);
+        log2.setLevel(Level.FINEST);
+        log2.addHandler(h);
+        final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
+        assertTrue(h.wasCanceled());
+    }
+    
+    public void testRUSuspendedByEditorParsingThread() throws Exception {
+        final Source source = Source.create(f1);
+        final RequestProcessor worker = new RequestProcessor("testRUNotInterruptableBySourceChanges", 1);   //NOI18N
+        class H extends Handler {
+            private final Semaphore sem = new Semaphore(0);
+            private final CountDownLatch latch = new CountDownLatch(1);
+            private final AtomicBoolean didCancel = new AtomicBoolean();
+            private final AtomicBoolean wasCanceled = new AtomicBoolean();
+            @Override
+            public void publish(LogRecord record) {
+                if ("RootsWork-started".equals(record.getMessage())) {      //NOI18N
+                    if (!didCancel.getAndSet(true)) {
+                        final RequestProcessor.Task task = worker.create(new Runnable() {
+                            @Override
+                            public void run() {
+                                final ParserResultTask task = new ParserResultTask() {
+                                    @Override
+                                    public void run(Result result, SchedulerEvent event) {
+                                        //NOP
+                                    }
+
+                                    @Override
+                                    public int getPriority() {
+                                        return 0;
+                                    }
+
+                                    @Override
+                                    public Class<? extends Scheduler> getSchedulerClass() {
+                                        return null;
+                                    }
+
+                                    @Override
+                                    public void cancel() {
+                                    }
+                                };
+                                Utilities.addParserResultTask(task, source);
+                            }
+                        });
+                        task.schedule(0);
+                        try {
+                            latch.await(5000, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } else if ("SUSPEND: {0}".equals(record.getMessage())) {          //NOI18N
+                    wasCanceled.set(true);
+                    latch.countDown();
+                } else if ("scanSources".equals(record.getMessage())) {  //NOI18N
+                    final List<URL> roots = (List<URL>) record.getParameters()[0];
+                    sem.release(roots.size());
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+            public boolean await(int number, long timeout, TimeUnit unit) throws InterruptedException {
+                return sem.tryAcquire(number, timeout, unit);
+            }
+            public boolean wasCanceled() {
+                return this.wasCanceled.get();
+            }
+        }
+        final H h = new H();
+        Logger log1 = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");  //NOI18N
+        Logger log2 = Logger.getLogger(SuspendSupport.class.getName());
+        log1.setLevel(Level.FINEST);
+        log1.addHandler(h);
+        log2.setLevel(Level.FINEST);
+        log2.addHandler(h);
+        final ClassPath cp = ClassPathSupport.createClassPath(srcRoot1, srcRoot2, srcRootWithFiles1);
+        globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
+        assertTrue(h.await(3, 5000, TimeUnit.MILLISECONDS));
+        assertTrue(h.wasCanceled());
+    }
+    
     public void testPerfLogger() throws Exception {
         final File workdDir  =  getWorkDir();
         final File root = new File (workdDir,"loggerTest");             //NOI18N
