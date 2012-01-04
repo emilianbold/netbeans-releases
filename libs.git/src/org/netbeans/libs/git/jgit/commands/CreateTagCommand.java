@@ -57,8 +57,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitTag;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
-import org.netbeans.libs.git.jgit.JGitTag;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -72,10 +71,10 @@ public class CreateTagCommand extends GitCommand {
     private final String taggedObject;
     private final String message;
     private final boolean signed;
-    private JGitTag tag;
+    private GitTag tag;
 
-    public CreateTagCommand (Repository repository, String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CreateTagCommand (Repository repository, GitClassFactory gitFactory, String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.tagName = tagName;
         this.taggedObject = taggedObject;
         this.message = message;
@@ -98,7 +97,7 @@ public class CreateTagCommand extends GitCommand {
                 cmd.setForceUpdate(forceUpdate);
                 cmd.setSigned(signed);
                 RevTag revTag = cmd.call();
-                tag = new JGitTag(revTag);
+                tag = getClassFactory().createTag(revTag);
             }
         } catch (JGitInternalException ex) {
             throw new GitException(ex);
@@ -132,7 +131,7 @@ public class CreateTagCommand extends GitCommand {
         return tag;
     }
 
-    private JGitTag createLightWeight (RevObject revObject, Repository repository) throws GitException, IOException {
+    private GitTag createLightWeight (RevObject revObject, Repository repository) throws GitException, IOException {
         RevWalk revWalk = new RevWalk(repository);
         try {
             String refName = Constants.R_TAGS + tagName;
@@ -144,7 +143,9 @@ public class CreateTagCommand extends GitCommand {
             switch (updateResult) {
                 case NEW:
                 case FORCED:
-                    return revObject instanceof RevCommit ? new JGitTag(tagName, new JGitRevisionInfo((RevCommit) revObject, repository)) : new JGitTag(tagName, revObject);
+                    return revObject instanceof RevCommit 
+                            ? getClassFactory().createTag(tagName, getClassFactory().createRevisionInfo((RevCommit) revObject, repository)) 
+                            : getClassFactory().createTag(tagName, revObject);
                 case LOCK_FAILURE:
                     throw new GitException.RefUpdateException("Cannot lock ref " + refName, GitRefUpdateResult.valueOf(updateResult.name()));
                 default:

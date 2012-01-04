@@ -46,7 +46,7 @@ import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -247,9 +247,9 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         } else {
                             client = getClient();
                         }
-                        remoteBranches = client.listRemoteBranches(uri, this);
+                        remoteBranches = client.listRemoteBranches(uri, getProgressMonitor());
                         if (!isCanceled() && mode == Mode.PUSH) {
-                            remoteTags = client.listRemoteTags(uri, this);
+                            remoteTags = client.listRemoteTags(uri, getProgressMonitor());
                         }
                     } catch (GitException ex) {
                         if (panel.rbCreateNew.isSelected()) {
@@ -308,11 +308,11 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     }
 
     public GitRemoteConfig getSelectedRemote () {
-        GitRemoteConfig selectedRemote = null;
+        GitRemoteConfig selectedRemote;
         if (panel.rbConfiguredUri.isSelected()) {
             selectedRemote = remotes.get(((RemoteUri) panel.cmbConfiguredRepositories.getSelectedItem()).remoteName);
         } else {
-            selectedRemote = RemoteConfig.createUpdatableRemote(repositoryFile, (String) panel.cmbRemoteNames.getSelectedItem());
+            selectedRemote = RemoteConfig.createUpdatableRemote(repositoryFile, (String) panel.cmbRemoteNames.getSelectedItem()).toGitRemote();
         }
         return selectedRemote;
     }

@@ -82,7 +82,7 @@ public class ManageTagsAction extends SingleRepositoryAction {
             protected void perform () {
                 try {
                     GitClient client = getClient();
-                    Map<String, GitTag> tags = client.getTags(this, true);
+                    Map<String, GitTag> tags = client.getTags(getProgressMonitor(), true);
                     final ManageTags createTag = new ManageTags(repository, tags, preselectedTag);
                     EventQueue.invokeLater(new Runnable() {
                         @Override

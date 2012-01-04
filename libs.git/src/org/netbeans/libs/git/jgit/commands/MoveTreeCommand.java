@@ -56,6 +56,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -72,8 +73,8 @@ abstract class MoveTreeCommand extends GitCommand {
     private final boolean keepSourceTree;
     private final FileListener listener;
 
-    protected MoveTreeCommand (Repository repository, File source, File target, boolean after, boolean keepSourceTree, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    protected MoveTreeCommand (Repository repository, GitClassFactory gitFactory, File source, File target, boolean after, boolean keepSourceTree, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.source = source;
         this.target = target;
         this.monitor = monitor;

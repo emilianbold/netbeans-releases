@@ -144,7 +144,7 @@ public class ResultProcessor {
         new GitProgressSupport() {
             @Override
             protected void perform () {
-                GitUtils.openInVersioningView(files, repository, this);
+                GitUtils.openInVersioningView(files, repository, getProgressMonitor());
             }
         }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
     }

@@ -98,11 +98,11 @@ public class RevertCommitAction extends SingleRepositoryAction {
                         String revision = revert.getRevision();
                         LOG.log(Level.FINE, "Reverting revision {0}", revision); //NOI18N
                         boolean cont;
-                        RevertResultProcessor mrp = new RevertResultProcessor(client, repository, revision, getLogger(), this);
+                        RevertResultProcessor mrp = new RevertResultProcessor(client, repository, revision, getLogger(), getProgressMonitor());
                         do {
                             cont = false;
                             try {
-                                GitRevertResult result = client.revert(revision, revert.getMessage(), revert.isCommitEnabled(), this);
+                                GitRevertResult result = client.revert(revision, revert.getMessage(), revert.isCommitEnabled(), getProgressMonitor());
                                 mrp.processResult(result);
                                 GitUtils.headChanged(repository);
                             } catch (GitException.CheckoutConflictException ex) {

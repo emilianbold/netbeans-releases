@@ -134,7 +134,7 @@ public abstract class PushMapping extends ItemSelector.Item {
 
         @Override
         public String getRefSpec () {
-            return org.netbeans.libs.git.utils.Utils.getPushRefSpec(localBranch.getName(), (remoteBranch == null ? localBranch : remoteBranch).getName());
+            return GitUtils.getPushRefSpec(localBranch.getName(), (remoteBranch == null ? localBranch : remoteBranch).getName());
         }
     }
     
@@ -148,7 +148,7 @@ public abstract class PushMapping extends ItemSelector.Item {
 
         @Override
         public String getRefSpec () {
-            return org.netbeans.libs.git.utils.Utils.getPushTagRefSpec(tag.getTagName());
+            return GitUtils.getPushTagRefSpec(tag.getTagName());
         }
     }
 }

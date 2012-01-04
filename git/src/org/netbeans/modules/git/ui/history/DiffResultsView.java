@@ -52,7 +52,6 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
-import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
@@ -62,7 +61,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.diff.DiffController;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.DiffStreamSource;
 import org.openide.util.WeakListeners;
@@ -436,7 +439,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             if (revision1 == null) {
                 try {
-                    revision1 = event2.getLogInfoHeader().getAncestorCommit(event2.getOriginalFile(), getClient(), NULL_PROGRESS_MONITOR);
+                    revision1 = event2.getLogInfoHeader().getAncestorCommit(event2.getOriginalFile(), getClient(), ProgressMonitor.NULL_PROGRESS_MONITOR);
                     file1 = event2.getOriginalFile();
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
