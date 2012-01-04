@@ -594,7 +594,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(MethodInvocation node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "MethodInvocation");
-        printNode.addChild(node.getMember());
+        printNode.addChild(node.getDispatcher());
         printNode.addChild(node.getMethod());
         printNode.print(this);
     }

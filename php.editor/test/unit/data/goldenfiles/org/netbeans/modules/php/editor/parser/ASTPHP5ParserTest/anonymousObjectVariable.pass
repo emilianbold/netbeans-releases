@@ -139,15 +139,17 @@
             </ExpressionStatement>
             <ExpressionStatement start='40' end='76'>
                 <MethodInvocation start='40' end='75'>
-                    <FunctionInvocation start='66' end='75'>
-                        <FucntionName start='66' end='73'>
-                            <Variable start='66' end='73' isDollared='false'>
-                                <Identifier start='66' end='73' name='method1'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                        </Parameters>
-                    </FunctionInvocation>
+                    <AnonymousObjectVariable start='40' end='64'>
+                        <ClassInstanceCreation start='41' end='63'>
+                            <ClassName start='45' end='61'>
+                                <NamespaceName start='45' end='61' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='45' end='61' name='AnonymousObject2'/>
+                                </NamespaceName>
+                            </ClassName>
+                            <Parameters>
+                            </Parameters>
+                        </ClassInstanceCreation>
+                    </AnonymousObjectVariable>
                     <FunctionInvocation start='66' end='75'>
                         <FucntionName start='66' end='73'>
                             <Variable start='66' end='73' isDollared='false'>
@@ -179,15 +181,17 @@
             </ExpressionStatement>
             <ExpressionStatement start='109' end='143'>
                 <MethodInvocation start='109' end='142'>
-                    <FunctionInvocation start='133' end='142'>
-                        <FucntionName start='133' end='140'>
-                            <Variable start='133' end='140' isDollared='false'>
-                                <Identifier start='133' end='140' name='method2'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                        </Parameters>
-                    </FunctionInvocation>
+                    <AnonymousObjectVariable start='109' end='131'>
+                        <ClassInstanceCreation start='110' end='130'>
+                            <ClassName start='114' end='130'>
+                                <NamespaceName start='114' end='130' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='114' end='130' name='AnonymousObject4'/>
+                                </NamespaceName>
+                            </ClassName>
+                            <Parameters>
+                            </Parameters>
+                        </ClassInstanceCreation>
+                    </AnonymousObjectVariable>
                     <FunctionInvocation start='133' end='142'>
                         <FucntionName start='133' end='140'>
                             <Variable start='133' end='140' isDollared='false'>
