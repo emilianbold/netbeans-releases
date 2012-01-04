@@ -245,4 +245,19 @@ public class ModelTest extends JsTestBase {
         assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "fix")));
         assertEquals(771, object.getOffset());
     }
+    
+    public void testProperties01() throws Exception {
+        Model model = getModel("testfiles/model/property01.js");
+        assertNotNull(model);
+        
+        FileScope fScope = model.getFileScope();
+        assertEquals(1, fScope.getLogicalElements().size());
+        
+        ObjectScope object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "fruit"));
+        assertEquals("fruit", object.getName());
+        assertEquals(3, object.getElements().size());
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "color")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "size")));
+        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "quality")));
+    }
 }
