@@ -296,19 +296,6 @@ public class Utils {
         return "true".equals(System.getProperty("versioning.netbeans.user.versioned", "false")); // NOI18N
     }
 
-    static FileSystem getRootFilesystem() {
-        if(filesystem == null) {
-            try {
-                String userDir = System.getProperty("netbeans.user"); // NOI18N
-                FileObject fo = FileUtil.toFileObject(new File(userDir));
-                filesystem = fo.getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                VersioningManager.LOG.log(Level.WARNING, null, ex);
-            }
-        }
-        return filesystem;
-    }
-
     /**
      * Helper method to get an array of Strings from preferences.
      *

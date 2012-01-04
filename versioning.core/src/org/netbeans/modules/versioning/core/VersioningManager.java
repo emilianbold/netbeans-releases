@@ -66,10 +66,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationListener;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
 import org.openide.util.*;
 import org.openide.util.Lookup.Result;
 
@@ -107,7 +107,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     private static boolean initialized = false;
     private static boolean initializing = false;
     private static final Object INIT_LOCK = new Object();
-    private static volatile Set<FileStatusListener> statusListeners = Collections.emptySet();
+    private static volatile Set<VCSAnnotationListener> statusListeners = Collections.emptySet();
 
     public static synchronized VersioningManager getInstance() {
         if (instance == null) {
@@ -135,8 +135,8 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         return false;
     }
 
-    public static void deliverStatusEvent(FileStatusEvent ev) {
-        for (FileStatusListener l : statusListeners) {
+    public static void deliverStatusEvent(VCSAnnotationEvent ev) {
+        for (VCSAnnotationListener l : statusListeners) {
             l.annotationChanged(ev);
         }
     }
@@ -615,8 +615,8 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         }
     }
 
-    public synchronized static void statusListener(FileStatusListener listener, boolean add) {
-        WeakSet<FileStatusListener> newSet = new WeakSet<FileStatusListener>(statusListeners);
+    public synchronized static void statusListener(VCSAnnotationListener listener, boolean add) {
+        WeakSet<VCSAnnotationListener> newSet = new WeakSet<VCSAnnotationListener>(statusListeners);
         if (add) {
             newSet.add(listener);
         } else {
@@ -626,7 +626,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     }
 
     private static void refreshAllAnnotations() {
-        FileStatusEvent ev = new FileStatusEvent(Utils.getRootFilesystem(), true, true);
+        VCSAnnotationEvent ev = new VCSAnnotationEvent(true, true);
         deliverStatusEvent(ev);
     }
 

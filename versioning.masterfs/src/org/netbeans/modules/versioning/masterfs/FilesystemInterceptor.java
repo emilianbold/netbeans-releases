@@ -52,13 +52,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationListener;
 
 /**
  * Plugs into IDE filesystem and delegates file operations to registered versioning systems.
  *
  * @author Maros Sandor
  */
-class FilesystemInterceptor extends ProvidedExtensions implements FileChangeListener, FileStatusListener {
+class FilesystemInterceptor extends ProvidedExtensions implements FileChangeListener, VCSAnnotationListener {
     private final VersioningAnnotationProvider vap;
     
     public FilesystemInterceptor(VersioningAnnotationProvider vap) {
@@ -307,8 +309,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     }
     
     @Override
-    public void annotationChanged(FileStatusEvent ev) {
-        vap.deliverStatusEvent(ev);
+    public void annotationChanged(VCSAnnotationEvent ev) {
+        vap.deliverStatusEvent(getRootFilesystem(), ev);
     }
 
     private IOHandler wrap(final VCSFilesystemInterceptor.IOHandler io) {

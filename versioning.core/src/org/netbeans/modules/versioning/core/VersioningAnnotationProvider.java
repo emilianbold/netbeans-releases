@@ -63,6 +63,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -363,8 +364,7 @@ public class VersioningAnnotationProvider {
             labelCache.removeAll();
             iconCache.removeAll();
             
-            FileSystem fileSystem = Utils.getRootFilesystem();
-            VersioningManager.deliverStatusEvent(new FileStatusEvent(fileSystem, true, true));
+            VersioningManager.deliverStatusEvent(new VCSAnnotationEvent(true, true));
         }
     });    
     
@@ -376,8 +376,8 @@ public class VersioningAnnotationProvider {
         public void run() {
             
             // createInitializingMenu and fire for all files which have to be refreshed
-            List<FileStatusEvent> fileEvents = new ArrayList<FileStatusEvent>(); 
-            List<FileStatusEvent> folderEvents = new ArrayList<FileStatusEvent>(); 
+            List<VCSAnnotationEvent> fileEvents = new ArrayList<VCSAnnotationEvent>(); 
+            List<VCSAnnotationEvent> folderEvents = new ArrayList<VCSAnnotationEvent>(); 
 
             synchronized(filesToRefresh) {
                 Set<FileSystem> fileSystems = filesToRefresh.keySet();                
@@ -397,10 +397,10 @@ public class VersioningAnnotationProvider {
                     }        
                     set.clear();
                     if(files.size() > 0) {
-                        fileEvents.add(new FileStatusEvent(fs, files, true, true));
+                        fileEvents.add(new VCSAnnotationEvent(files, true, true));
                     }
                     if(folders.size() > 0) {
-                        folderEvents.add(new FileStatusEvent(fs, folders, true,  true));
+                        folderEvents.add(new VCSAnnotationEvent(folders, true,  true));
                     }
                 }        
             }    
@@ -409,21 +409,21 @@ public class VersioningAnnotationProvider {
             fireFileStatusEvents(folderEvents);
 
             // createInitializingMenu and fire events for all parent from each file which has to be refreshed
-            List<FileStatusEvent> parentEvents = new ArrayList<FileStatusEvent>(); 
+            List<VCSAnnotationEvent> parentEvents = new ArrayList<VCSAnnotationEvent>(); 
             synchronized(parentsToRefresh) {
                 Set<FileSystem> fileSystems = parentsToRefresh.keySet();
                 for (FileSystem fs : fileSystems) {            
                     Set<FileObject> set = parentsToRefresh.get(fs);
                     Set<FileObject> files = new HashSet<FileObject>(set);
-                    parentEvents.add(new FileStatusEvent(fs, files, true, false));                                        
+                    parentEvents.add(new VCSAnnotationEvent(files, true, false));                                        
                     set.clear();                    
                 }                                
             }       
             fireFileStatusEvents(parentEvents);            
         }    
         
-        private void fireFileStatusEvents(Collection<FileStatusEvent> events) {
-            for(FileStatusEvent event : events) {
+        private void fireFileStatusEvents(Collection<VCSAnnotationEvent> events) {
+            for(VCSAnnotationEvent event : events) {
                 VersioningManager.deliverStatusEvent(event);
             }
         }          

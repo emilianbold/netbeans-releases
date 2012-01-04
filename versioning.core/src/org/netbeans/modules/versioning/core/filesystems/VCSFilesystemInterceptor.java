@@ -52,8 +52,7 @@ import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.*;
 
 /**
  * Entry point for calls from a filesystem. 
@@ -92,12 +91,93 @@ public final class VCSFilesystemInterceptor {
     private VCSFilesystemInterceptor() {
     }
     
+    /** 
+     * Listener for changes in annotations of files.
+     */
+    public static interface VCSAnnotationListener {
+        /** Notifies listener about change in annotataion of a few files.
+        * @param ev event describing the change
+        */
+        public void annotationChanged(VCSAnnotationEvent ev);
+    }
+    
+    /**
+     * Event describing a change in annotation of files.
+     */
+    public static final class VCSAnnotationEvent {
+
+        /** changed files */
+        private Set<? extends FileObject> files;
+
+        /** icon changed? */
+        private boolean icon;
+
+        /** name changed? */
+        private boolean name;
+
+        /** Creates new VCSAnnotationEvent
+        * @param files set of FileObjects that has been changed
+        * @param icon has icon changed?
+        * @param name has name changed?
+        */
+        public VCSAnnotationEvent(Set<? extends FileObject> files, boolean icon, boolean name) {
+            this.files = files;
+            this.icon = icon;
+            this.name = name;
+        }
+
+        /** Creates new VCSAnnotationEvent
+        * @param file file object that has been changed
+        * @param icon has icon changed?
+        * @param name has name changed?
+        */
+        public VCSAnnotationEvent(FileObject file, boolean icon, boolean name) {
+            this(Collections.singleton(file), icon, name);
+        }
+
+        /** Creates new VCSAnnotationEvent. This does not specify the
+        * file that changed annotation, assuming that everyone should update
+        * its annotation. Please notice that this can be time consuming
+        * and should be fired only when really necessary.
+        *
+        * @param icon has icon changed?
+        * @param name has name changed?
+        */
+        public VCSAnnotationEvent(boolean icon, boolean name) {
+            this((Set<FileObject>) null, icon, name);
+        }
+
+        /** 
+         * Is the change a change in the name?
+         */
+        public boolean isNameChange() {
+            return name;
+        }
+
+        /** 
+         * Did the files changed their icons?
+         */
+        public boolean isIconChange() {
+            return icon;
+        }
+        
+        /**
+         * Files with a changed annotation
+         * 
+         * @return 
+         */
+        public Set<? extends FileObject> getFiles() {
+            return files;
+        }
+    }    
+
+
     // ==================================================================================================
     // ANNOTATIONS
     // ==================================================================================================
 
     /** Listeners are held weakly, and can GC if nobody else holds them */
-    public static void registerFileStatusListener(FileStatusListener listener) {
+    public static void registerFileStatusListener(VCSAnnotationListener listener) {
         VersioningManager.statusListener(listener, true);
     }
     

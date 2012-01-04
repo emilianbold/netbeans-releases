@@ -51,6 +51,7 @@ import javax.swing.*;
 import java.util.*;
 import java.awt.Image;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 
 /**
  * Plugs into IDE filesystem and delegates annotation work to registered versioning systems.
@@ -92,7 +93,7 @@ public final class VersioningAnnotationProvider extends AnnotationProvider {
         return name;    // do not support 'plain' annotations
     }
     
-    final void deliverStatusEvent(FileStatusEvent ev) {
-        fireFileStatusChanged(ev);
+    final void deliverStatusEvent(FileSystem fs, VCSAnnotationEvent ev) {
+        fireFileStatusChanged(new FileStatusEvent(fs, ev.getFiles(), ev.isIconChange(), ev.isNameChange()));
     }
 }
