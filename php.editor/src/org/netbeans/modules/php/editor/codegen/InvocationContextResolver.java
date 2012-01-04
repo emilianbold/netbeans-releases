@@ -89,8 +89,10 @@ public class InvocationContextResolver {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ParserResult info = (ParserResult) resultIterator.getParserResult();
-                    int caretOffset = component.getCaretPosition();
-                    nodes = NavUtils.underCaret(info, caretOffset);
+                    if (info != null) {
+                        int caretOffset = component.getCaretPosition();
+                        nodes = NavUtils.underCaret(info, caretOffset);
+                    }
                 }
             });
         } catch (ParseException ex) {
@@ -99,11 +101,15 @@ public class InvocationContextResolver {
     }
 
     public boolean isExactlyIn(InvocationContext context) {
-        ASTNode lastNode = nodes.get(nodes.size() - 1);
-        if (lastNode instanceof Block) {
-            lastNode = nodes.get(nodes.size() - 2);
+        boolean result = false;
+        if (!nodes.isEmpty()) {
+            ASTNode lastNode = nodes.get(nodes.size() - 1);
+            if (lastNode instanceof Block) {
+                lastNode = nodes.get(nodes.size() - 2);
+            }
+            result = context.isExactlyIn(lastNode);
         }
-        return context.isExactlyIn(lastNode);
+        return result;
     }
 
     public enum InvocationContext {
