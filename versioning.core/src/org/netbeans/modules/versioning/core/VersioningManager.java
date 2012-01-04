@@ -626,8 +626,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     }
 
     private static void refreshAllAnnotations() {
-        VCSAnnotationEvent ev = new VCSAnnotationEvent(true, true);
-        deliverStatusEvent(ev);
+        VersioningAnnotationProvider.refreshAllAnnotations();
     }
 
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
