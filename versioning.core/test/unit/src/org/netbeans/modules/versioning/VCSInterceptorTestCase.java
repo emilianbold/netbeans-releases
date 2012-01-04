@@ -108,11 +108,10 @@ public class VCSInterceptorTestCase extends NbTestCase {
     }
 
     public void testIsMutable() throws IOException {
-        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
-        FileObject fo = proxy.toFileObject();
+        FileObject fo = getFileObject(new File(dataRootDir, "workdir/root-test-versioned"));
         fo = fo.createData("checkme.txt");
         fo.canWrite();
-        proxy = VCSFileProxy.createFileProxy(fo);
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
         
         assertTrue(inteceptor.getBeforeCreateFiles().contains(proxy));
         assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
@@ -127,8 +126,7 @@ public class VCSInterceptorTestCase extends NbTestCase {
     }
 
     public void testGetAttribute() throws IOException {
-        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
-        FileObject folder = proxy.toFileObject();
+        FileObject folder = getFileObject(new File(dataRootDir, "workdir/root-test-versioned"));
         FileObject fo = folder.createData("gotattr.txt");
         
         String attr = (String) fo.getAttribute("whatever");
@@ -146,35 +144,23 @@ public class VCSInterceptorTestCase extends NbTestCase {
         Boolean battr = (Boolean) fo.getAttribute("ProvidedExtensions.VCSManaged");
         assertNotNull(battr);
         assertTrue(battr);
-
-
-        proxy = createProxy(new File(dataRootDir, "workdir"));
-        folder = proxy.toFileObject();
-        fo = folder.createData("unversioned.txt");
-
-        fo = folder.createData("versioned.txt");
-        battr = (Boolean) fo.getAttribute("ProvidedExtensions.VCSManaged");
-        assertNotNull(battr);
-        assertFalse(battr);
     }
 
     public void testRefreshRecursively() throws IOException {
-        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
-        FileObject fo = proxy.toFileObject();
+        FileObject fo = getFileObject(new File(dataRootDir, "workdir/root-test-versioned"));
         fo = fo.createFolder("folder");
         fo.addRecursiveListener(new FileChangeAdapter());
         assertTrue(inteceptor.getRefreshRecursivelyFiles().contains(VCSFileProxy.createFileProxy(fo)));     
     }
 
     public void testChangedFile() throws IOException {
-        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
-        FileObject fo = proxy.toFileObject();
+        FileObject fo = getFileObject(new File(dataRootDir, "workdir/root-test-versioned"));
         fo = fo.createData("deleteme.txt");
         
         OutputStream os = fo.getOutputStream();
         os.close();
         
-        proxy = VCSFileProxy.createFileProxy(fo);
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
         assertTrue(inteceptor.getBeforeCreateFiles().contains(proxy));
         assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
         assertTrue(inteceptor.getCreatedFiles().contains(proxy));
@@ -183,12 +169,11 @@ public class VCSInterceptorTestCase extends NbTestCase {
     }
     
     public void testFileProtectedAndNotDeleted() throws IOException {
-        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
-        FileObject fo = proxy.toFileObject();
+        FileObject fo = getFileObject(new File(dataRootDir, "workdir/root-test-versioned"));
         fo = fo.createData("deleteme.txt-do-not-delete");
         fo.delete();
         
-        proxy = VCSFileProxy.createFileProxy(fo);
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
         assertTrue(proxy.isFile());
         assertTrue(inteceptor.getBeforeCreateFiles().contains(proxy));
         assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
@@ -199,10 +184,9 @@ public class VCSInterceptorTestCase extends NbTestCase {
     }
 
     public void testFileCreatedLockedRenamedDeleted() throws IOException {
-        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
-        FileObject fo = proxy.toFileObject();
+        FileObject fo = getFileObject(new File(dataRootDir, "workdir/root-test-versioned"));
         fo = fo.createData("deleteme.txt");
-        proxy = VCSFileProxy.createFileProxy(fo);
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
         FileLock lock = fo.lock();
         fo.rename(lock, "deleteme", "now");
         lock.releaseLock();
@@ -220,8 +204,7 @@ public class VCSInterceptorTestCase extends NbTestCase {
     }
 
     public void testFileCopied() throws IOException {
-        VCSFileProxy proxy = createProxy(new File(dataRootDir, "workdir/root-test-versioned"));
-        FileObject fo = proxy.toFileObject();
+        FileObject fo = getFileObject(new File(dataRootDir, "workdir/root-test-versioned"));
         fo = fo.createData("copyme.txt");
 
         FileObject fto = fo.copy(fo.getParent(), "copymeto", "txt");
@@ -249,7 +232,7 @@ public class VCSInterceptorTestCase extends NbTestCase {
         f = new File(deepestFolder.getParentFile().getParentFile().getParentFile(), "file");
         f.createNewFile();
         
-        FileObject fo = createProxy(deleteFolder).toFileObject();
+        FileObject fo = getFileObject(deleteFolder);
         fo.delete();
         
         assertTrue(inteceptor.getDeletedFiles().contains(VCSFileProxy.createFileProxy(deleteFolder)));
@@ -270,12 +253,12 @@ public class VCSInterceptorTestCase extends NbTestCase {
         }
     }
     
-    private VCSFileProxy createProxy(File f) throws IOException {
+    private FileObject getFileObject(File f) throws IOException {
         refreshWorkdir();
-        return VCSTestFactory.getInstance(this).createVCSFileProxy(f.getAbsolutePath());
+        return VCSFilesystemTestFactory.getInstance(this).createFileObject(f.getAbsolutePath());
     }
     
     private void refreshWorkdir() throws IOException {
-        VCSTestFactory.getInstance(this).toVCSFileProxy(new File(dataRootDir, "workdir")).toFileObject().refresh();
+        VCSFilesystemTestFactory.getInstance(this).createFileObject(new File(dataRootDir, "workdir").getAbsolutePath()).refresh();
     }    
 }

@@ -322,11 +322,12 @@ public class GetOwnerTestCase extends NbTestCase {
 
     protected VCSFileProxy toVCSFileProxy(File file) throws IOException {
         refreshWorkdir();        
-        return VCSTestFactory.getInstance(this).toVCSFileProxy(file);
+        FileObject fo = VCSFilesystemTestFactory.getInstance(this).createFileObject(file.getAbsolutePath());
+        return VCSFileProxy.createFileProxy(fo);
     }
 
     private void refreshWorkdir() throws IOException {
-        VCSTestFactory.getInstance(this).toVCSFileProxy(new File(dataRootDir, "workdir")).toFileObject().refresh();
+        VCSFilesystemTestFactory.getInstance(this).createFileObject(new File(dataRootDir, "workdir").getAbsolutePath()).refresh();
     }
 
     private Class getVCS() {

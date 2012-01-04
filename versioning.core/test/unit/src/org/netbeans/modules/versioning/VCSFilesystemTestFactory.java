@@ -53,30 +53,31 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSetup;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author tomas
  */
-public abstract class VCSTestFactory extends NbTestSetup {
+public abstract class VCSFilesystemTestFactory extends NbTestSetup {
 
-    public VCSTestFactory(Test test) {
+    public VCSFilesystemTestFactory(Test test) {
         super(test);
         registerMap (test);
     }
 
-    public VCSFileProxy toVCSFileProxy(File file) throws IOException {
-        return createVCSFileProxy(file.getAbsolutePath());
-    };
+//    public VCSFileProxy toVCSFileProxy(File file) throws IOException {
+//        return createVCSFileProxy(file.getAbsolutePath());
+//    };
     
-    protected abstract VCSFileProxy createVCSFileProxy(String path) throws IOException;
+    protected abstract FileObject createFileObject(String path) throws IOException;
 
-    public final static  VCSTestFactory getInstance (Test test) {
-        VCSTestFactory factory = getFromMap (test);
+    public final static  VCSFilesystemTestFactory getInstance (Test test) {
+        VCSFilesystemTestFactory factory = getFromMap (test);
         return factory;
     }
 
-    private static Map<Test, List<VCSTestFactory>> map = new HashMap<Test, List<VCSTestFactory>> ();
+    private static Map<Test, List<VCSFilesystemTestFactory>> map = new HashMap<Test, List<VCSFilesystemTestFactory>> ();
 
     private void registerMap (Test test) {
         if (test instanceof TestSuite) {
@@ -95,19 +96,19 @@ public abstract class VCSTestFactory extends NbTestSetup {
     }
 
     private void addToMap (Test test) {
-        List<VCSTestFactory> s = map.get (test);
+        List<VCSFilesystemTestFactory> s = map.get (test);
         if (s == null) {
-            s = new LinkedList<VCSTestFactory>();
+            s = new LinkedList<VCSFilesystemTestFactory>();
         }
         s.add(this);
         map.put(test ,s );
     }
 
-    private static VCSTestFactory getFromMap (Test test) {
+    private static VCSFilesystemTestFactory getFromMap (Test test) {
         LinkedList s = (LinkedList) map.get (test);
-        VCSTestFactory  retVal;
+        VCSFilesystemTestFactory  retVal;
         try {
-            retVal = (VCSTestFactory) s.getLast();
+            retVal = (VCSFilesystemTestFactory) s.getLast();
         } catch (NoSuchElementException x ) {
             System.out.println("exc: "+ test + " : " );
             throw x;

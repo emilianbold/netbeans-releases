@@ -47,16 +47,17 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.versioning.GetOwnerTestCase;
 import org.netbeans.modules.versioning.VCSInterceptorTestCase;
-import org.netbeans.modules.versioning.VCSTestFactory;
+import org.netbeans.modules.versioning.VCSFilesystemTestFactory;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author tomas
  */
-public class FileVCSTest extends VCSTestFactory {
+public class FileVCSTest extends VCSFilesystemTestFactory {
 
     public FileVCSTest(Test test) {
         super(test);
@@ -64,11 +65,19 @@ public class FileVCSTest extends VCSTestFactory {
     }
 
     @Override
-    public VCSFileProxy createVCSFileProxy(String path) throws IOException {
+    protected FileObject createFileObject(String path) throws IOException {
+        FileObject fo;
         File f = new File(path);
-        return APIAccessor.IMPL.createFileProxy(f, f.isDirectory()); 
+        if(!f.exists()) {
+            f.createNewFile();
+            fo = FileUtil.toFileObject(f);
+            f.delete();
+        } else {
+            fo = FileUtil.toFileObject(f);
+        }
+        return fo;
     }
-    
+
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }
