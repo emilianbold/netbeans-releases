@@ -48,6 +48,7 @@ import org.eclipse.jgit.api.errors.NotMergedException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -59,8 +60,8 @@ public class DeleteBranchCommand extends GitCommand {
     private final String branchName;
     private final boolean forceDeleteUnmerged;
 
-    public DeleteBranchCommand (Repository repository, String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public DeleteBranchCommand (Repository repository, GitClassFactory gitFactory, String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.branchName = branchName;
         this.forceDeleteUnmerged = forceDeleteUnmerged;
     }

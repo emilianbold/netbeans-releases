@@ -65,7 +65,7 @@ public final class GitFileInfo {
     private final File file;
     private final File originalFile;
 
-    public GitFileInfo (File file, String relativePath, Status status, File originalFile, String originalPath) {
+    GitFileInfo (File file, String relativePath, Status status, File originalFile, String originalPath) {
         this.relativePath = relativePath;
         this.status = status;
         this.file = file;

@@ -308,11 +308,11 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     }
 
     public GitRemoteConfig getSelectedRemote () {
-        GitRemoteConfig selectedRemote = null;
+        GitRemoteConfig selectedRemote;
         if (panel.rbConfiguredUri.isSelected()) {
             selectedRemote = remotes.get(((RemoteUri) panel.cmbConfiguredRepositories.getSelectedItem()).remoteName);
         } else {
-            selectedRemote = RemoteConfig.createUpdatableRemote(repositoryFile, (String) panel.cmbRemoteNames.getSelectedItem());
+            selectedRemote = RemoteConfig.createUpdatableRemote(repositoryFile, (String) panel.cmbRemoteNames.getSelectedItem()).toGitRemote();
         }
         return selectedRemote;
     }

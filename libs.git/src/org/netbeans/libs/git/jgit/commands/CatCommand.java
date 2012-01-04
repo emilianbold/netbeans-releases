@@ -56,6 +56,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -73,8 +74,8 @@ public class CatCommand extends GitCommand {
     private final boolean fromRevision;
     private final int stage;
 
-    public CatCommand (Repository repository, File file, String revision, OutputStream out, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CatCommand (Repository repository, GitClassFactory gitFactory, File file, String revision, OutputStream out, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.file = file;
         this.revision = revision;
         this.os = out;
@@ -83,8 +84,8 @@ public class CatCommand extends GitCommand {
         this.stage = 0;
     }
 
-    public CatCommand (Repository repository, File file, int stage, OutputStream out, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CatCommand (Repository repository, GitClassFactory gitFactory, File file, int stage, OutputStream out, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.file = file;
         this.revision = null;
         this.os = out;

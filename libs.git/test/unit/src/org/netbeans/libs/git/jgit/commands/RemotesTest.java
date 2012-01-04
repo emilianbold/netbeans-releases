@@ -45,7 +45,6 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
@@ -120,32 +119,11 @@ public class RemotesTest extends AbstractGitTestCase {
         assertEquals(0, config.getSubsections("remote").size());
         
         GitClient client = getClient(workDir);
-        GitRemoteConfig remoteConfig = new GitRemoteConfig() {
-            @Override
-            public String getRemoteName () {
-                return "origin";
-            }
-
-            @Override
-            public List<String> getUris () {
-                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
-            }
-
-            @Override
-            public List<String> getPushUris () {
-                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
-            }
-
-            @Override
-            public List<String> getFetchRefSpecs () {
-                return Arrays.asList("+refs/heads/*:refs/remotes/origin/*");
-            }
-
-            @Override
-            public List<String> getPushRefSpecs () {
-                return Arrays.asList("refs/remotes/origin/*:+refs/heads/*");
-            }
-        };
+        GitRemoteConfig remoteConfig = new GitRemoteConfig("origin",
+                Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString()),
+                Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString()),
+                Arrays.asList("+refs/heads/*:refs/remotes/origin/*"),
+                Arrays.asList("refs/remotes/origin/*:+refs/heads/*"));
         client.setRemote(remoteConfig, ProgressMonitor.NULL_PROGRESS_MONITOR);
         
         config.load();
@@ -167,32 +145,11 @@ public class RemotesTest extends AbstractGitTestCase {
         assertEquals(1, config.getSubsections("remote").size());        
         
         GitClient client = getClient(workDir);
-        GitRemoteConfig remoteConfig = new GitRemoteConfig() {
-            @Override
-            public String getRemoteName () {
-                return "origin";
-            }
-
-            @Override
-            public List<String> getUris () {
-                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
-            }
-
-            @Override
-            public List<String> getPushUris () {
-                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
-            }
-
-            @Override
-            public List<String> getFetchRefSpecs () {
-                return Arrays.asList("+refs/heads/*:refs/remotes/origin/*");
-            }
-
-            @Override
-            public List<String> getPushRefSpecs () {
-                return Arrays.asList("refs/remotes/origin/*:+refs/heads/*");
-            }
-        };
+        GitRemoteConfig remoteConfig = new GitRemoteConfig("origin",
+                Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString()),
+                Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString()),
+                Arrays.asList("+refs/heads/*:refs/remotes/origin/*"),
+                Arrays.asList("refs/remotes/origin/*:+refs/heads/*"));
         client.setRemote(remoteConfig, ProgressMonitor.NULL_PROGRESS_MONITOR);
         
         config.load();
@@ -214,33 +171,11 @@ public class RemotesTest extends AbstractGitTestCase {
         assertEquals(1, config.getSubsections("remote").size());        
         
         GitClient client = getClient(workDir);
-        GitRemoteConfig remoteConfig = new GitRemoteConfig() {
-            @Override
-            public String getRemoteName () {
-                return "origin";
-            }
-
-            @Override
-            public List<String> getUris () {
-                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
-            }
-
-            @Override
-            public List<String> getPushUris () {
-                return Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString());
-            }
-
-            @Override
-            public List<String> getFetchRefSpecs () {
-                // this refspec is invalid
-                return Arrays.asList("+refs/heads/*:refs/remotes/origin/master");
-            }
-
-            @Override
-            public List<String> getPushRefSpecs () {
-                return Arrays.asList("refs/remotes/origin/*:+refs/heads/*");
-            }
-        };
+        GitRemoteConfig remoteConfig = new GitRemoteConfig("origin",
+                Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString()),
+                Arrays.asList(new File(workDir.getParentFile(), "repo2").toURI().toString()),
+                Arrays.asList("+refs/heads/*:refs/remotes/origin/master"),
+                Arrays.asList("refs/remotes/origin/*:+refs/heads/*"));
         // an error while setting the remote must result in the rollback of the modification
         try {
             client.setRemote(remoteConfig, ProgressMonitor.NULL_PROGRESS_MONITOR);

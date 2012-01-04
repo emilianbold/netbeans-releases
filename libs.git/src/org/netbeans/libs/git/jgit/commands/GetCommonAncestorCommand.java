@@ -52,7 +52,7 @@ import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -64,8 +64,8 @@ public class GetCommonAncestorCommand extends GitCommand {
     private final String[] revisions;
     private GitRevisionInfo revision;
 
-    public GetCommonAncestorCommand (Repository repository, String[] revisions, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public GetCommonAncestorCommand (Repository repository, GitClassFactory gitFactory, String[] revisions, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.revisions = revisions;
     }
 
@@ -80,7 +80,7 @@ public class GetCommonAncestorCommand extends GitCommand {
                 walk.setRevFilter(RevFilter.MERGE_BASE);
                 Iterator<RevCommit> it = walk.iterator();
                 if (it.hasNext()) {
-                    revision = new JGitRevisionInfo(it.next(), repository);
+                    revision = getClassFactory().createRevisionInfo(it.next(), repository);
                 }
             } catch (MissingObjectException ex) {
                 throw new GitException.MissingObjectException(ex.getObjectId().toString(), GitObjectType.COMMIT);

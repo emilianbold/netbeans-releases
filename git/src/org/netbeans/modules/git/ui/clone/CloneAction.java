@@ -169,7 +169,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                             return;
                         }
 
-                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), getProgressMonitor());
+                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs).toGitRemote(), getProgressMonitor());
                         org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
                         client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
                         client.checkoutRevision(branch.getName(), true, getProgressMonitor());
@@ -229,7 +229,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
         ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
     }    
     
-    private static class CloneRemoteConfig implements GitRemoteConfig {
+    private static class CloneRemoteConfig {
         private String remoteName;
         private GitURI remoteUri;
         private List<String> refSpecs;
@@ -238,25 +238,24 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             this.remoteUri = remoteUri;
             this.refSpecs = refSpecs;
         }
-        @Override
         public String getRemoteName() {
             return remoteName;
         }
-        @Override
         public List<String> getUris() {
             return Arrays.asList(remoteUri.toPrivateString());
         }
-        @Override
         public List<String> getPushUris() {
             return Collections.emptyList();
         }
-        @Override
         public List<String> getFetchRefSpecs() {
             return refSpecs;
         }
-        @Override
         public List<String> getPushRefSpecs() {
             return Collections.emptyList();
+        }
+
+        private GitRemoteConfig toGitRemote () {
+            return new GitRemoteConfig(remoteName, getUris(), getPushUris(), getFetchRefSpecs(), getPushRefSpecs());
         }
     }    
 }

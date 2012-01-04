@@ -73,7 +73,7 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -90,8 +90,8 @@ public class CommitCommand extends GitCommand {
     private final GitUser commiter;
     public GitRevisionInfo revision;
 
-    public CommitCommand (Repository repository, File[] roots, String message, GitUser author, GitUser commiter, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CommitCommand (Repository repository, GitClassFactory gitFactory, File[] roots, String message, GitUser author, GitUser commiter, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.message = message;
         this.monitor = monitor;
@@ -152,7 +152,7 @@ public class CommitCommand extends GitCommand {
                 
                 commit.setMessage(message);
                 RevCommit rev = commit.call();
-                revision = new JGitRevisionInfo(rev, repository);
+                revision = getClassFactory().createRevisionInfo(rev, repository);
             } finally {
                 backup.lock();
                 try {

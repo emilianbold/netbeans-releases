@@ -47,7 +47,7 @@ import java.io.File;
  *
  * @author ondra
  */
-public class GitLineDetails {
+public final class GitLineDetails {
     private final GitRevisionInfo revision;
     private final GitUser author;
     private final GitUser committer;
@@ -55,7 +55,7 @@ public class GitLineDetails {
     private final int sourceLine;
     private final String content;
 
-    public GitLineDetails (String content, GitRevisionInfo revision, GitUser author, GitUser committer, File sourceFile, int sourceLine) {
+    GitLineDetails (String content, GitRevisionInfo revision, GitUser author, GitUser committer, File sourceFile, int sourceLine) {
         this.revision = revision;
         this.author = author;
         this.committer = committer;

@@ -76,7 +76,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     private RequestProcessor.Task task;
     private GitClient gitClient;
     private OutputLogger logger;
-    private ProgressMonitorImpl progressMonitor;
+    private final ProgressMonitorImpl progressMonitor = new ProgressMonitorImpl();
 
     public RequestProcessor.Task start (RequestProcessor rp, File repositoryRoot, String displayName) {
         this.originalDisplayName = displayName;
@@ -85,7 +85,6 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         startProgress();
         setProgressQueued();
         task = rp.post(this);
-        this.progressMonitor = new ProgressMonitorImpl();
         return task;
     }
 
