@@ -312,7 +312,7 @@ class SummaryView extends AbstractSummaryView {
                         new GitProgressSupport() {
                             @Override
                             protected void perform () {
-                                openFile(event, false, this);
+                                openFile(event, false, getProgressMonitor());
                             }
                         }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
                     }
@@ -323,7 +323,7 @@ class SummaryView extends AbstractSummaryView {
                         new GitProgressSupport() {
                             @Override
                             protected void perform () {
-                                openFile(event, true, this);
+                                openFile(event, true, getProgressMonitor());
                             }
                         }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
                     }
@@ -476,7 +476,7 @@ class SummaryView extends AbstractSummaryView {
                         @Override
                         protected void perform () {
                             for (RepositoryRevision.Event evt : drev) {
-                                openFile(evt, false, this);
+                                openFile(evt, false, getProgressMonitor());
                             }
                         }
                     }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
@@ -492,7 +492,7 @@ class SummaryView extends AbstractSummaryView {
                         @Override
                         protected void perform () {
                             for (RepositoryRevision.Event evt : drev) {
-                                openFile(evt, true, this);
+                                openFile(evt, true, getProgressMonitor());
                             }
                         }
                     }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N

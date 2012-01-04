@@ -104,11 +104,11 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
                         if (c == 1) {
                             // recursive
                             LOG.log(Level.FINE, "Checking out paths recursively, revision: {0}", revision); //NOI18N
-                            client.checkout(splitRoots, revision, true, this);
+                            client.checkout(splitRoots, revision, true, getProgressMonitor());
                         } else {
                             // not recursive, list only direct descendants
                             LOG.log(Level.FINE, "Checking out paths non-recursively, revision: {0}", revision); //NOI18N
-                            client.checkout(splitRoots, revision, false, this);
+                            client.checkout(splitRoots, revision, false, getProgressMonitor());
                         }
                     }
                 } catch (GitException ex) {

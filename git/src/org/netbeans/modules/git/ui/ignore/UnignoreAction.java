@@ -118,7 +118,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
                                 notifiedFiles.add(file);
                             }
                         });
-                        modifiedIgnores = client.unignore(toUnignore, this);
+                        modifiedIgnores = client.unignore(toUnignore, getProgressMonitor());
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {

@@ -47,19 +47,31 @@ package org.netbeans.libs.git;
  * @author Jan Becicka
  * @author Tomas Stupka
  */
-public abstract class GitUser {
+public final class GitUser {
+
+    private final String name;
+    private final String email;
+
+    public GitUser (String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
 
     /**
      * user's name
      * @return
      */
-    public abstract String getName ();
+    public String getName() {
+        return name;
+    }
 
     /**
-     * users email address
+     * user's email address
      * @return
      */
-    public abstract String getEmailAddress ();
+    public String getEmailAddress() {
+        return email;
+    }
         
     @Override 
     public boolean equals(Object obj) {

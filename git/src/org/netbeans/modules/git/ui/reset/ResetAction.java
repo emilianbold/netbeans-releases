@@ -93,7 +93,7 @@ public class ResetAction extends SingleRepositoryAction {
                         }
                         client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
                         LOG.log(Level.FINE, "Reset head, revision: {0}", reset.getRevision()); //NOI18N
-                        client.reset(reset.getRevision(), reset.getType(), this);
+                        client.reset(reset.getRevision(), reset.getType(), getProgressMonitor());
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {

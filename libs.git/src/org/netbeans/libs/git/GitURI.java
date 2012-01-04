@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.utils;
+package org.netbeans.libs.git;
 
 import java.net.URISyntaxException;
 import org.eclipse.jgit.transport.URIish;
@@ -48,7 +48,7 @@ import org.eclipse.jgit.transport.URIish;
  *
  * @author Tomas Stupka
  */
-public class GitURI {
+public final class GitURI {
     private URIish uri;
     
     private GitURI() {}
@@ -144,7 +144,11 @@ public class GitURI {
 
     @Override
     public boolean equals(Object o) {
-        return uri.equals(o);
+        if (o instanceof GitURI) {
+            return uri.equals(((GitURI) o).uri);
+        } else {
+            return false;
+        }
     }
 
     @Override

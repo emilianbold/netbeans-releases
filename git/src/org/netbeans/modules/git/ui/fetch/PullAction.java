@@ -102,11 +102,11 @@ public class PullAction extends GetRemoteChangesAction {
                 try {
                     boolean cont;
                     GitClient client = getClient();
-                    MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), this);
+                    MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
                     do {
                         cont = false;
                         try {
-                            GitPullResult result = client.pull(remote, fetchRefSpecs, branchToMerge, this);
+                            GitPullResult result = client.pull(remote, fetchRefSpecs, branchToMerge, getProgressMonitor());
                             log(result.getFetchResult(), getLogger());
                             mrp.processResult(result.getMergeResult());
                         } catch (GitException.CheckoutConflictException ex) {

@@ -383,7 +383,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
 
         try {
             GitClient client = getClient();
-            Map<File, GitStatus> statuses = client.getStatus(files, this);
+            Map<File, GitStatus> statuses = client.getStatus(files, getProgressMonitor());
             for (Map.Entry<File, GitStatus> e : statuses.entrySet()) {
                 if (isCanceled()) {
                     break;
@@ -441,7 +441,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
 
     private boolean getFile (File file, File out, int stage) throws GitException, FileNotFoundException {
         GitClient client = getClient();
-        return client.catIndexEntry(file, stage, new FileOutputStream(out), this);
+        return client.catIndexEntry(file, stage, new FileOutputStream(out), getProgressMonitor());
     }
 
     private static class MergeResultWriterInfo extends StreamSource {

@@ -67,7 +67,7 @@ public class RemoveRemoteConfig {
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        client.removeRemote(remoteName, this);
+                        client.removeRemote(remoteName, getProgressMonitor());
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     }

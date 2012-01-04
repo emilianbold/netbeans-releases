@@ -46,18 +46,18 @@ package org.netbeans.libs.git;
  *
  * @author ondra
  */
-public interface GitClientCallback {
+public abstract class GitClientCallback {
     
-    String askQuestion (String uri, String prompt);
+    public abstract String askQuestion (String uri, String prompt);
     
-    String getUsername (String uri, String prompt);
+    public abstract String getUsername (String uri, String prompt);
     
-    char[] getPassword (String uri, String prompt);
+    public abstract char[] getPassword (String uri, String prompt);
     
-    char[] getPassphrase (String uri, String prompt);
+    public abstract char[] getPassphrase (String uri, String prompt);
     
-    String getIdentityFile (String uri, String prompt);
+    public abstract String getIdentityFile (String uri, String prompt);
     
-    Boolean askYesNoQuestion (String uri, String prompt);
+    public abstract Boolean askYesNoQuestion (String uri, String prompt);
 
 }

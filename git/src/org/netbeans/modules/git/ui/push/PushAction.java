@@ -127,7 +127,7 @@ public class PushAction extends SingleRepositoryAction {
                         return;
                     }
                     // push
-                    GitPushResult result = client.push(remote, pushRefSpecs, fetchRefSpecs, this);
+                    GitPushResult result = client.push(remote, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
                     reportRemoteConflicts(result.getRemoteRepositoryUpdates());
                     logUpdates(result.getRemoteRepositoryUpdates(), "MSG_PushAction.updates.remoteUpdates"); //NOI18N
                     logUpdates(result.getLocalRepositoryUpdates(), "MSG_PushAction.updates.localUpdates"); //NOI18N

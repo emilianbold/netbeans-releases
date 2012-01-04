@@ -185,10 +185,10 @@ public class CommitAction extends SingleRepositoryAction {
                     outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_TITLE_SEP")); // NOI18N
 
                     if(addCandidates.size() > 0) {
-                        client.add(addCandidates.toArray(new File[addCandidates.size()]), this);
+                        client.add(addCandidates.toArray(new File[addCandidates.size()]), getProgressMonitor());
                     }
                     if(deleteCandidates.size() > 0) {
-                        client.remove(deleteCandidates.toArray(new File[deleteCandidates.size()]), false, this);
+                        client.remove(deleteCandidates.toArray(new File[deleteCandidates.size()]), false, getProgressMonitor());
                     }
 
                     if(GitModuleConfig.getDefault().getSignOff() && commiter != null) {
@@ -296,7 +296,7 @@ public class CommitAction extends SingleRepositoryAction {
             try {
                 GitRevisionInfo info = getClient().commit(
                         state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]),
-                        message, author, commiter, this);
+                        message, author, commiter, getProgressMonitor());
                 printInfo(info);
                 return info;
             } catch (GitException ex) {

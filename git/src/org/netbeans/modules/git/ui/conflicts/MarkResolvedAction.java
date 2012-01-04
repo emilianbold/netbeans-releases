@@ -97,14 +97,13 @@ public class MarkResolvedAction extends SingleRepositoryAction {
                         client = getClient();
                         client.addNotificationListener(new DefaultFileListener(roots));
                         if (!toAdd.isEmpty()) {
-                            client.add(toAdd.toArray(new File[toAdd.size()]), this);
+                            client.add(toAdd.toArray(new File[toAdd.size()]), getProgressMonitor());
                         }
                         if (!toRemove.isEmpty()) {
-                            client.remove(toRemove.toArray(new File[toRemove.size()]), true, this);
+                            client.remove(toRemove.toArray(new File[toRemove.size()]), true, getProgressMonitor());
                         }
                     } catch (GitException ex) {
                         LOG.log(Level.WARNING, null, ex);
-                        return;
                     } finally {
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                         Collection<File> toRefresh = new ArrayList<File>(toAdd.size() + toRemove.size());
@@ -113,10 +112,6 @@ public class MarkResolvedAction extends SingleRepositoryAction {
                         Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(repository, toRefresh));
                     }
                 }
-            }
-            @Override
-            public void finished() {
-                super.finished();
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(MarkResolvedAction.class, "LBL_MarkingProgress")); //NOI18N

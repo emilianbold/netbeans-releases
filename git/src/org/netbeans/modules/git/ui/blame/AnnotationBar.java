@@ -530,7 +530,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         @Override
                         protected void perform () {
                             try {
-                                GitUtils.openInRevision(originalFile, sourceLine , revisionPerLine.getRevision(), true, this);
+                                GitUtils.openInRevision(originalFile, sourceLine , revisionPerLine.getRevision(), true, getProgressMonitor());
                             } catch (IOException ex) {
                                 //
                             }
@@ -551,7 +551,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         public void run() {
                             try {
                                 String previousRevision = pri.getPreviousRevision();
-                                GitUtils.openInRevision(originalFile, -1, previousRevision, true, pri);
+                                GitUtils.openInRevision(originalFile, -1, previousRevision, true, pri.getProgressMonitor());
                             } catch (IOException ex) {
                                 //
                             }
@@ -688,11 +688,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 GitRevisionInfo parentInfo = null;
                 try {
                     if (revision.getParents().length == 1) {
-                        parentInfo = getClient().getPreviousRevision(file, revision.getRevision(), this);
+                        parentInfo = getClient().getPreviousRevision(file, revision.getRevision(), getProgressMonitor());
                     }
                     if (parentInfo == null) {
                         // fallback for merges and initial revisoin
-                        parentInfo = getClient().getCommonAncestor(revision.getParents(), this);
+                        parentInfo = getClient().getCommonAncestor(revision.getParents(), getProgressMonitor());
                     }
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);

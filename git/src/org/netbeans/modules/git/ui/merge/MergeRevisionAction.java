@@ -104,11 +104,11 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                         revision = mergeRevision.getRevision();
                         LOG.log(Level.FINE, "Merging revision {0} into HEAD", revision); //NOI18N
                         boolean cont;
-                        MergeResultProcessor mrp = new MergeResultProcessor(client, repository, revision, getLogger(), this);
+                        MergeResultProcessor mrp = new MergeResultProcessor(client, repository, revision, getLogger(), getProgressMonitor());
                         do {
                             cont = false;
                             try {
-                                GitMergeResult result = client.merge(revision, this);
+                                GitMergeResult result = client.merge(revision, getProgressMonitor());
                                 mrp.processResult(result);
                             } catch (GitException.CheckoutConflictException ex) {
                                 if (LOG.isLoggable(Level.FINE)) {

@@ -64,6 +64,7 @@ import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.IgnoreRule;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
@@ -81,8 +82,8 @@ public abstract class IgnoreUnignoreCommand extends GitCommand {
     private final FileListener listener;
     protected final static Logger LOG = Logger.getLogger(IgnoreUnignoreCommand.class.getName());
     
-    public IgnoreUnignoreCommand (Repository repository, File[] files, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public IgnoreUnignoreCommand (Repository repository, GitClassFactory gitFactory, File[] files, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.files = files;
         this.monitor = monitor;
         this.ignoreFiles = new LinkedHashSet<File>();

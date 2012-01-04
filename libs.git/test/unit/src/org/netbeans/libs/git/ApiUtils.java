@@ -41,6 +41,8 @@
  */
 package org.netbeans.libs.git;
 
+import org.netbeans.libs.git.jgit.GitClassFactory;
+
 /**
  *
  * @author ondra
@@ -55,5 +57,7 @@ public final class ApiUtils {
         
     }
     
-    
+    public static GitClassFactory getClassFactory () {
+        return GitClassFactoryImpl.getInstance();
+    }
 }

@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientCallback;
@@ -241,32 +240,11 @@ public class ConnectionTest extends AbstractGitTestCase {
 
     public void testSshFetchCredentialsFromCallback () throws Exception {
         GitClient client = getClient(workDir);
-        client.setRemote(new GitRemoteConfig() {
-            @Override
-            public String getRemoteName () {
-                return "origin";
-            }
-
-            @Override
-            public List<String> getUris () {
-                return Arrays.asList("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/");
-            }
-
-            @Override
-            public List<String> getPushUris () {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public List<String> getFetchRefSpecs () {
-                return Arrays.asList("+refs/heads/*:refs/remotes/origin/*");
-            }
-
-            @Override
-            public List<String> getPushRefSpecs () {
-                return Collections.emptyList();
-            }
-        }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.setRemote(new GitRemoteConfig("origin",
+                Arrays.asList("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/"),
+                Collections.<String>emptyList(),
+                Arrays.asList("+refs/heads/*:refs/remotes/origin/*"),
+                Collections.<String>emptyList()), ProgressMonitor.NULL_PROGRESS_MONITOR);
         GitClientCallback callback = new DefaultCallback() {
             @Override
             public String getUsername (String uri, String prompt) {
@@ -304,7 +282,7 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
     
-    private static class DefaultCallback implements GitClientCallback {
+    private static class DefaultCallback extends GitClientCallback {
         @Override
         public String askQuestion (String uri, String prompt) {
             throw new UnsupportedOperationException("Not supported yet.");
