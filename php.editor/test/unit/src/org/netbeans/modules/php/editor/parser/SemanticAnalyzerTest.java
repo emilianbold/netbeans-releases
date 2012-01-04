@@ -84,11 +84,11 @@ public class SemanticAnalyzerTest extends PHPTestBase {
     public void testAnalysisAll() throws Exception {
         checkSemantic("testfiles/class005.php");
     }
-    
+
     public void testAnalysisDeclarationAfterUsage() throws Exception {
         checkSemantic("testfiles/class006.php");
     }
-    
+
     public void testIssue142005() throws Exception {
         checkSemantic("testfiles/class007.php");
     }
@@ -97,11 +97,11 @@ public class SemanticAnalyzerTest extends PHPTestBase {
     public void testAbstract() throws Exception {
         checkSemantic("testfiles/abstract01.php");
     }
-    
+
     public void testIssue142644() throws Exception {
         checkSemantic("testfiles/issue142644.php");
     }
-    
+
     public void testIssue141041() throws Exception {
         checkSemantic("testfiles/issue141041.php");
     }
@@ -133,8 +133,32 @@ public class SemanticAnalyzerTest extends PHPTestBase {
     public void testVarComment02() throws Exception {
         checkSemantic("testfiles/varcomment/mixed01.php");
     }
-    
+
     public void testIssue194535() throws Exception {
         checkSemantic("testfiles/issue194535.php");
+    }
+
+    public void testTraits01() throws Exception {
+        checkSemantic("testfiles/traits_01.php");
+    }
+
+    public void testTraits02() throws Exception {
+        checkSemantic("testfiles/traits_02.php");
+    }
+
+    public void testTraits03() throws Exception {
+        checkSemantic("testfiles/traits_03.php");
+    }
+
+    public void testTraits04() throws Exception {
+        checkSemantic("testfiles/traits_04.php");
+    }
+
+    public void testTraits05() throws Exception {
+        checkSemantic("testfiles/traits_05.php");
+    }
+
+    public void testTraits06() throws Exception {
+        checkSemantic("testfiles/traits_06.php");
     }
 }
