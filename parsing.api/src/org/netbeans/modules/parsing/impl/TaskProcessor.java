@@ -972,7 +972,7 @@ public class TaskProcessor {
         @Override
         public Thread newThread(Runnable r) {
             assert this.t == null;
-            this.t = new Thread(r, "Parsing & Indexing Loop (" + System.getProperty("netbeans.buildnumber") + ")"); //NOI18N
+            this.t = new Thread(r, "Editor Parsing Loop (" + System.getProperty("netbeans.buildnumber") + ")"); //NOI18N
             return this.t;
         }
         /**
