@@ -215,18 +215,18 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
         return (c == ' ' || c == '\n' || c == '\t' || c == '\r');
     }
 
-    private void findJavaClass(final String fqn, javax.swing.text.Document doc){
+    private void findJavaClass(final String fqn, javax.swing.text.Document doc) {
         FileObject fo = NbEditorUtilities.getFileObject(doc);
-        if (fo != null){
+        if (fo != null) {
             WebModule wm = WebModule.getWebModule(fo);
-            if (wm != null){
+            if (wm != null) {
                 try {
                     final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
                     JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
-
                     js.runUserActionTask(new Task<CompilationController>() {
-
+                        @Override
                         public void run(CompilationController cc) throws Exception {
+                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             Elements elements = cc.getElements();
                             TypeElement element = elements.getTypeElement(fqn.trim());
                             if (element != null) {
@@ -235,7 +235,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
 
                                 // Not a regular Java data object (may be a multi-view data object), open it first
                                 DataObject od = DataObject.find(fo);
-                                if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { // NOI18N
+                                if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { //NOI18N
                                     OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
                                     oc.open();
                                 }
@@ -244,7 +244,6 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                                     String key = "goto_source_not_found"; // NOI18N
                                     String msg = NbBundle.getBundle(JSFConfigHyperlinkProvider.class).getString(key);
                                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
-
                                 }
                             }
                         }
