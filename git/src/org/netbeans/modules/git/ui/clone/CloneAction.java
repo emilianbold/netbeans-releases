@@ -63,12 +63,12 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
-import org.netbeans.libs.git.utils.GitURI;
-import org.netbeans.libs.git.utils.Utils;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.output.OutputLogger;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.awt.ActionID;
@@ -151,7 +151,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             List<? extends GitBranch> branches = wiz.getBranches();
             final List<String> refSpecs = new ArrayList<String>(branches.size());
             for (GitBranch branch : branches) {
-                refSpecs.add(Utils.getRefSpec(branch, remoteName));
+                refSpecs.add(GitUtils.getRefSpec(branch, remoteName));
             }
             final GitBranch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();

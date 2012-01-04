@@ -53,7 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;

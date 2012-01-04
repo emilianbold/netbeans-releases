@@ -45,6 +45,7 @@ import java.text.MessageFormat;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,7 +89,7 @@ public class BranchMapping extends ItemSelector.Item {
     }
 
     public String getRefSpec () {
-        return org.netbeans.libs.git.utils.Utils.getRefSpec(remoteBranch, remote.getRemoteName());
+        return GitUtils.getRefSpec(remoteBranch, remote.getRemoteName());
     }
 
     @Override

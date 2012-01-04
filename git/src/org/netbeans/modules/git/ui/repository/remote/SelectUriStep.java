@@ -46,7 +46,7 @@ import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

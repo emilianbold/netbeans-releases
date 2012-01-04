@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
@@ -720,6 +722,26 @@ public final class GitUtils {
             }
         }
         return sorted;
+    }
+    
+    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    private static final String REF_PUSHSPEC_PATTERN = "+refs/heads/{0}:refs/heads/{1}"; //NOI18N
+    private static final String REF_TAG_PUSHSPEC_PATTERN = "+refs/tags/{0}:refs/tags/{0}"; //NOI18N
+
+    public static String getRefSpec(GitBranch branch, String remoteName) {
+        return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
+    }
+
+    public static String getRefSpec (String branchName, String remoteName) {
+        return MessageFormat.format(REF_SPEC_PATTERN, branchName, remoteName);
+    }
+
+    public static String getPushRefSpec (String branchName, String remoteRepositoryBranchName) {
+        return MessageFormat.format(REF_PUSHSPEC_PATTERN, branchName, remoteRepositoryBranchName);
+    }
+
+    public static String getPushTagRefSpec (String tagName) {
+        return MessageFormat.format(REF_TAG_PUSHSPEC_PATTERN, tagName);
     }
     
     private GitUtils() {

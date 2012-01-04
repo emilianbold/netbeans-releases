@@ -57,7 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
