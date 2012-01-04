@@ -86,7 +86,7 @@ public class CreateBranchAction extends SingleRepositoryAction {
                         GitClient client = getClient();
                         String revision = createBranch.getRevision();
                         LOG.log(Level.FINE, "Creating a branch: {0}", revision); //NOI18N
-                        GitBranch branch = client.createBranch(createBranch.getBranchName(), createBranch.getRevision(), this);
+                        GitBranch branch = client.createBranch(createBranch.getBranchName(), createBranch.getRevision(), getProgressMonitor());
                         log(revision, branch);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);

@@ -42,22 +42,67 @@
 
 package org.netbeans.libs.git;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import org.eclipse.jgit.transport.RemoteConfig;
 
 /**
  *
  * @author ondra
  */
-public interface GitRemoteConfig {
+public final class GitRemoteConfig {
     
-    String getRemoteName ();
+    private final List<String> uris;
+    private final List<String> pushUris;
+    private final List<String> fetchSpecs;
+    private final List<String> pushSpecs;
+    private final String remoteName;
+
+    public GitRemoteConfig (String remoteName, List<String> uris, List<String> pushUris, List<String> fetchSpecs, List<String> pushSpecs) {
+        this.remoteName = remoteName;
+        this.uris = uris;
+        this.pushUris = pushUris;
+        this.fetchSpecs = fetchSpecs;
+        this.pushSpecs = pushSpecs;
+    }
+
+    public String getRemoteName () {
+        return remoteName;
+    }
+
+    public List<String> getUris () {
+        return Collections.unmodifiableList(uris);
+    }
+
+    public List<String> getPushUris () {
+        return Collections.unmodifiableList(pushUris);
+    }
+
+    public List<String> getFetchRefSpecs () {
+        return Collections.unmodifiableList(fetchSpecs);
+    }
+
+    public List<String> getPushRefSpecs () {
+        return Collections.unmodifiableList(pushSpecs);
+    }
+
+    private static List<String> getAsStrings (List<? extends Object> list) {
+        Set<String> set = new HashSet<String>();
+        for (Object elem : list) {
+            set.add(elem.toString());
+        }
+        return new LinkedList<String>(set);
+    }
     
-    List<String> getUris ();
-    
-    List<String> getPushUris ();
-    
-    List<String> getFetchRefSpecs ();
-    
-    List<String> getPushRefSpecs ();
+    static GitRemoteConfig fromRemoteConfig (RemoteConfig config) {
+        return new GitRemoteConfig(config.getName(),
+                getAsStrings(config.getURIs()),
+                getAsStrings(config.getPushURIs()),
+                getAsStrings(config.getFetchRefSpecs()),
+                getAsStrings(config.getPushRefSpecs()));
+    }
 
 }

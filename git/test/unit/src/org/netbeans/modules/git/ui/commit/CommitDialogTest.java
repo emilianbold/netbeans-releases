@@ -44,10 +44,7 @@ package org.netbeans.modules.git.ui.commit;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.GitModuleConfig;
@@ -69,13 +66,13 @@ public class CommitDialogTest extends AbstractGitTestCase {
         super.setUp();        
     }
 
-    public void testPrefilledPanel() throws IOException, GitException, InterruptedException, InvocationTargetException {
+    public void testPrefilledPanel() throws Exception {
         final File repository = getRepositoryLocation();
         final File[] roots = new File[] {repository};
         File file = createFile(repository, "file");                
         add(file);
         
-        final GitUser user = GitTestKit.creategGitUser();
+        final GitUser user = GitTestKit.createGitUser();
         String  message = "msg";        
         GitModuleConfig.getDefault().setLastCanceledCommitMessage(message);
                 

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -58,8 +59,8 @@ public class InitRepositoryCommand extends GitCommand {
     private final File workDir;
     private final ProgressMonitor monitor;
 
-    public InitRepositoryCommand (Repository repository, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public InitRepositoryCommand (Repository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.monitor = monitor;
         this.workDir = getRepository().getWorkTree();
     }

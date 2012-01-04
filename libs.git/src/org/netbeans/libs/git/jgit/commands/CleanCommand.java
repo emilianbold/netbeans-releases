@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheEditor;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Repository;
@@ -56,6 +55,7 @@ import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -69,8 +69,8 @@ public class CleanCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final FileListener listener;
 
-    public CleanCommand (Repository repository, File[] roots, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public CleanCommand (Repository repository, GitClassFactory gitFactory, File[] roots, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.monitor = monitor;
         this.listener = listener;

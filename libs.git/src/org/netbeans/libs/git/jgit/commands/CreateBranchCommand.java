@@ -42,7 +42,6 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
-import java.io.IOException;
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -51,7 +50,7 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.JGitBranch;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -64,8 +63,8 @@ public class CreateBranchCommand extends GitCommand {
     private final String branchName;
     private GitBranch branch;
 
-    public CreateBranchCommand (Repository repository, String branchName, String revision, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CreateBranchCommand (Repository repository, GitClassFactory gitFactory, String branchName, String revision, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.branchName = branchName;
         this.revision = revision;
     }
@@ -102,6 +101,6 @@ public class CreateBranchCommand extends GitCommand {
     private GitBranch getBranch (boolean isRemote, Ref ref) {
         String refName = ref.getLeaf().getName();
         String name = refName.substring(refName.indexOf('/', 5) + 1);
-        return new JGitBranch(name, isRemote, false, ref.getLeaf().getObjectId());
+        return getClassFactory().createBranch(name, isRemote, false, ref.getLeaf().getObjectId());
     }
 }

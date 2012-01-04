@@ -48,8 +48,13 @@ import org.netbeans.libs.git.jgit.Utils;
  *
  * @author ondra
  */
-public interface GitConflictDescriptor {
+public final class GitConflictDescriptor {
+    private Type type;
 
+    public GitConflictDescriptor (Type type) {
+        this.type = type;
+    }
+    
     public static enum Type {
         BOTH_DELETED {
             @Override
@@ -144,5 +149,7 @@ public interface GitConflictDescriptor {
         public abstract String getDescription ();
     }
 
-    Type getType ();
+    public Type getType () {
+        return type;
+    }
 }

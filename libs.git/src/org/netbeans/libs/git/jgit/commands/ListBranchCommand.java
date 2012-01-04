@@ -51,7 +51,7 @@ import org.eclipse.jgit.lib.RefComparator;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.JGitBranch;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -62,8 +62,8 @@ public class ListBranchCommand extends GitCommand {
     private final boolean all;
     private HashMap<String, GitBranch> allBranches;
 
-    public ListBranchCommand (Repository repository, boolean all, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public ListBranchCommand (Repository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.all = all;
     }
 
@@ -77,7 +77,7 @@ public class ListBranchCommand extends GitCommand {
             String current = head.getLeaf().getName();
             if (current.equals(Constants.HEAD)) {
                 String name = GitBranch.NO_BRANCH;
-                allBranches.put(name, new JGitBranch(name, false, true, head.getLeaf().getObjectId()));
+                allBranches.put(name, getClassFactory().createBranch(name, false, true, head.getLeaf().getObjectId()));
             }
             allBranches.putAll(getRefs(refs.values(), Constants.R_HEADS, false, current));
         }
@@ -92,7 +92,7 @@ public class ListBranchCommand extends GitCommand {
             String refName = ref.getLeaf().getName();
             if (refName.startsWith(prefix)) {
                 String name = refName.substring(refName.indexOf('/', 5) + 1);
-                branches.put(name, new JGitBranch(name, isRemote, refName.equals(activeBranch), ref.getLeaf().getObjectId()));
+                branches.put(name, getClassFactory().createBranch(name, isRemote, refName.equals(activeBranch), ref.getLeaf().getObjectId()));
             }
         }
         return branches;

@@ -55,6 +55,7 @@ import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -71,8 +72,8 @@ public class CheckoutRevisionCommand extends GitCommand {
     private final boolean failOnConflict;
     private DirCache cache;
 
-    public CheckoutRevisionCommand (Repository repository, String revision, boolean failOnConflict, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public CheckoutRevisionCommand (Repository repository, GitClassFactory gitFactory, String revision, boolean failOnConflict, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.revision = revision;
         this.listener = listener;
         this.monitor = monitor;

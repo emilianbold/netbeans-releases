@@ -807,7 +807,7 @@ public class GitClientTest extends AbstractGitTestCase {
             public void perform () {
                 try {
                     client.addNotificationListener(m);
-                    client.add(new File[] { file, file2 }, this);
+                    client.add(new File[] { file, file2 }, getProgressMonitor());
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -899,7 +899,7 @@ public class GitClientTest extends AbstractGitTestCase {
                     }
                     GitClient client = getClient();
                     client.addNotificationListener(list);
-                    client.add(new File[] { file, file2 }, this);
+                    client.add(new File[] { file, file2 }, getProgressMonitor());
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }

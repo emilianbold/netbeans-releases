@@ -67,6 +67,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.repository.RevisionInfoPanel;
@@ -250,7 +251,7 @@ class ManageTags implements ListSelectionListener, ActionListener {
         @Override
         public void perform() {
             try {
-                getClient().deleteTag(tag.getTagName(), NULL_PROGRESS_MONITOR);
+                getClient().deleteTag(tag.getTagName(), ProgressMonitor.NULL_PROGRESS_MONITOR);
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {

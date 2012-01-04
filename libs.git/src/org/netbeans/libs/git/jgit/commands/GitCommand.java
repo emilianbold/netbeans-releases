@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.text.MessageFormat;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -56,9 +57,11 @@ public abstract class GitCommand {
     private final Repository repository;
     private final ProgressMonitor monitor;
     protected static final String EMPTY_ROOTS = Utils.getBundle(GitCommand.class).getString("MSG_Error_NoFiles"); //NOI18N
+    private final GitClassFactory gitFactory;
 
-    protected GitCommand (Repository repository, ProgressMonitor monitor) {
+    protected GitCommand (Repository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
         this.repository = repository;
+        this.gitFactory = gitFactory;
         this.monitor = monitor;
     }
 
@@ -90,5 +93,8 @@ public abstract class GitCommand {
     }
 
     protected abstract String getCommandDescription ();
-    
+
+    protected final GitClassFactory getClassFactory () {
+        return gitFactory;
+    }
 }

@@ -123,7 +123,7 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
                                     out = new BufferedOutputStream(new FileOutputStream(toFile));
                                     client.addNotificationListener(new DefaultFileListener(roots));
                                     setProgress(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.preparingDiff")); //NOI18N
-                                    client.exportDiff(files, diffMode, out, this);
+                                    client.exportDiff(files, diffMode, out, getProgressMonitor());
                                     if (!isCanceled()) {
                                         success = true;
                                     }

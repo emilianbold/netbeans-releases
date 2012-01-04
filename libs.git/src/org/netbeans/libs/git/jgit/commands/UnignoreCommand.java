@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.ListIterator;
 import org.eclipse.jgit.ignore.IgnoreNode.MatchResult;
 import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.IgnoreRule;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -58,8 +59,8 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public class UnignoreCommand extends IgnoreUnignoreCommand {
     
-    public UnignoreCommand(Repository repository, File[] files, ProgressMonitor monitor, FileListener listener) {
-        super(repository, files, monitor, listener);
+    public UnignoreCommand(Repository repository, GitClassFactory gitFactory, File[] files, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, files, monitor, listener);
     }
 
     @Override

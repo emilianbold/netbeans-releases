@@ -37,7 +37,7 @@
  */
 package org.netbeans.modules.git.ui.repository.remote;
 
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 
 /**
  *

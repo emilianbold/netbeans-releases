@@ -85,7 +85,7 @@ public class CreateTagAction extends SingleRepositoryAction {
                     try {
                         GitClient client = getClient();
                         LOG.log(Level.FINE, "Creating a tag: {0}/{1}", new Object[] { createTag.getTagName(), createTag.getRevision() }); //NOI18N
-                        GitTag tag = client.createTag(createTag.getTagName(), createTag.getRevision(), createTag.getTagMessage(), false, createTag.isForceUpdate(), this);
+                        GitTag tag = client.createTag(createTag.getTagName(), createTag.getRevision(), createTag.getTagMessage(), false, createTag.isForceUpdate(), getProgressMonitor());
                         log(tag);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
