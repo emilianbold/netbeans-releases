@@ -97,11 +97,9 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
     private ClassMarker cMarker = new ClassMarker();
     private PackageMarker pMarker = new PackageMarker();
     private CompositeMarker cmMarker = new CompositeMarker();
-    private JavaSource associatedParser;
     private Project pp;
 
     public MarkerProcessor(final Project prj) {
-        associatedParser = ElementUtilitiesEx.getSources(prj);
         pp = prj;
     }
 
@@ -190,9 +188,10 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
     private void addTypeMarker(final MethodMarker marker, final String type, final String[] methodNameRestriction,
             final boolean inclusive, final Mark mark) {
         final Set<String> restrictorSet = methodNameRestriction != null ? new HashSet<String>(Arrays.asList(methodNameRestriction)) : Collections.EMPTY_SET;
-        if (associatedParser != null) {
+        JavaSource src = ElementUtilitiesEx.getSources(pp);
+        if (src != null) {
             try {
-                associatedParser.runUserActionTask(new Task<CompilationController>() {
+                src.runUserActionTask(new Task<CompilationController>() {
                     
                     @Override
                     public void run(CompilationController cc) throws Exception {
