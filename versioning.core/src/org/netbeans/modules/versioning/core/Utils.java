@@ -139,8 +139,16 @@ public class Utils {
      * @return true if ancestor is an ancestor folder of file OR both parameters are equal, false otherwise
      */
     public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file) {
+        return isAncestorOrEqual(ancestor, file, false);
+    }
+    
+    public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file, boolean pathMatch) {
         if (APIAccessor.IMPL.isFlat(ancestor)) {
-            return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
+            if(pathMatch) {
+                return ancestor.getPath().equals(file.getPath()) || ancestor.getPath().equals(file.getParentFile().getPath()) && !file.isDirectory();
+            } else {
+                return ancestor.equals(file) || ancestor.equals(file.getParentFile()) && !file.isDirectory();
+            }
         }
         
         String filePath = file.getPath();
@@ -166,7 +174,13 @@ public class Utils {
         // ancestor: /home/dil
         // file:     /home/dil1/dil2
         for (; file != null; file = file.getParentFile()) {
-            if (file.equals(ancestor)) return true;
+            if(pathMatch) {
+                // XXX have to rely on path because of fileproxy being created from 
+                // io.file even if it was originaly stored from a remote
+                if (file.getPath().equals(ancestor.getPath())) return true; 
+            } else {
+                if (file.equals(ancestor)) return true; 
+            }
         }
         return false;
     }
