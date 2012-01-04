@@ -462,54 +462,55 @@ class DocRenderer {
          @Override
         public void run(ResultIterator resultIterator) throws Exception {
             ParserResult presult = (ParserResult)resultIterator.getParserResult();
-            Program program = Utils.getRoot(presult);
+            if (presult != null) {
+                Program program = Utils.getRoot(presult);
 
-            if (program != null) {
-                ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                if (program != null) {
+                    ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
 
-                if (node == null){ // issue #118222
-                    LOGGER.warning("Could not find AST node for element "
-                            + indexedElement.getName() + " defined in " + indexedElement.getFilenameUrl());
-                    return;
-                }
-                //header.appendHtml("<br/>"); //NOI18N
-
-                if (node instanceof FunctionDeclaration) {
-                    doFunctionDeclaration((FunctionDeclaration) node);
-                } else {
-                    header.name(indexedElement.getKind(), true);
-                    header.appendText(indexedElement.getName());
-                    header.name(indexedElement.getKind(), false);
-                    String value = null;
-                    if (indexedElement instanceof ConstantElement) {
-                        ConstantElement constant = (ConstantElement) indexedElement;
-                        value = constant.getValue();
-                    } else if (indexedElement instanceof TypeConstantElement) {
-                        TypeConstantElement constant = (TypeConstantElement) indexedElement;
-                        value = constant.getValue();
+                    if (node == null){ // issue #118222
+                        LOGGER.warning("Could not find AST node for element "
+                                + indexedElement.getName() + " defined in " + indexedElement.getFilenameUrl());
+                        return;
                     }
-                    if (value != null) {
-                        header.appendText(" = ");//NOI18N
-                        header.appendText(value);
-                    }
-                }
+                    //header.appendHtml("<br/>"); //NOI18N
 
-                header.appendHtml("<br/><br/>"); //NOI18N
-                if (node instanceof PHPDocTag) {
-                    if (node instanceof PHPDocMethodTag) {
-                        extractPHPDoc((PHPDocMethodTag)node);
+                    if (node instanceof FunctionDeclaration) {
+                        doFunctionDeclaration((FunctionDeclaration) node);
                     } else {
-                        phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                        header.name(indexedElement.getKind(), true);
+                        header.appendText(indexedElement.getName());
+                        header.name(indexedElement.getKind(), false);
+                        String value = null;
+                        if (indexedElement instanceof ConstantElement) {
+                            ConstantElement constant = (ConstantElement) indexedElement;
+                            value = constant.getValue();
+                        } else if (indexedElement instanceof TypeConstantElement) {
+                            TypeConstantElement constant = (TypeConstantElement) indexedElement;
+                            value = constant.getValue();
+                        }
+                        if (value != null) {
+                            header.appendText(" = ");//NOI18N
+                            header.appendText(value);
+                        }
                     }
-                } else {
-                    Comment comment = Utils.getCommentForNode(program, node);
 
-                    if (comment instanceof PHPDocBlock) {
-                        extractPHPDoc((PHPDocBlock) comment);
+                    header.appendHtml("<br/><br/>"); //NOI18N
+                    if (node instanceof PHPDocTag) {
+                        if (node instanceof PHPDocMethodTag) {
+                            extractPHPDoc((PHPDocMethodTag)node);
+                        } else {
+                            phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                        }
+                    } else {
+                        Comment comment = Utils.getCommentForNode(program, node);
+
+                        if (comment instanceof PHPDocBlock) {
+                            extractPHPDoc((PHPDocBlock) comment);
+                        }
                     }
                 }
             }
-
         }
     }
 }

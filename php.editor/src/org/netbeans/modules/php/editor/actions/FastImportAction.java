@@ -104,7 +104,7 @@ public class FastImportAction extends BaseAction {
 
             final int position = target.getCaretPosition();
             final String ident = Utilities.getIdentifier(Utilities.getDocument(target), position);
-            
+
             if (ident == null) {
                 Toolkit.getDefaultToolkit().beep();
                 return;
@@ -115,7 +115,9 @@ public class FastImportAction extends BaseAction {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         ParserResult info = (ParserResult) resultIterator.getParserResult();
-                        importItem(info, where, caretRectangle, font, position, ident);
+                        if (info != null) {
+                            importItem(info, where, caretRectangle, font, position, ident);
+                        }
                     }
                 });
             } catch (ParseException ex) {

@@ -42,27 +42,15 @@
 package org.netbeans.modules.ws.qaf;
 
 import java.awt.Container;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.api.project.*;
+import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OutputWindowViewAction;
@@ -74,13 +62,7 @@ import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -164,14 +146,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     //Enterprise Application Client
                     return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle", "Templates/Project/J2EE/emptyCar.xml");
                 case MAVEN_SE:
-                    //Maven Project
-                    return Bundle.getStringTrimmed("org.netbeans.modules.maven.newproject.Bundle", "Templates/Project/Maven2/Archetypes");
+                    return "Java Application";
                 case MAVEN_WEB:
-                    //Maven Web Application
-                    return Bundle.getStringTrimmed("org.netbeans.modules.maven.newproject.Bundle", "Templates/Project/Maven2/WebApp");
+                    return "Web Application";
                 case MAVEN_EJB:
-                    //Maven EJB Module
-                    return Bundle.getStringTrimmed("org.netbeans.modules.maven.newproject.Bundle", "Templates/Project/Maven2/EJB");
+                    return "EJB Module";
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -184,14 +163,15 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         public int getServerComboBoxIndex() {
             switch (this) {
                 case MAVEN_SE:
-                case MAVEN_WEB:
-                case MAVEN_EJB:
                 case JAVASE_APPLICATION:
                     return -1;
                 case WEB:
                 case EJB:
                 case APPCLIENT:
                     return 1;
+                case MAVEN_WEB:
+                case MAVEN_EJB:
+                    return 0;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -208,7 +188,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     return -1;
                 case MAVEN_WEB:
                 case MAVEN_EJB:
-                    return 0;
+                    return 1;
                 case WEB:
                 case APPCLIENT:
                 case EJB:
@@ -296,7 +276,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
 
     public void assertServerRunning() {
         if (!(REGISTERED_SERVER.equals(ServerType.GLASSFISH))) {
-            LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
+            LOGGER.log(Level.INFO, "not yet supported for server: {0}", REGISTERED_SERVER.toString());
             return;
         }
         J2eeServerNode gf = getServerNode();
@@ -347,7 +327,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @return default project source root
      */
     protected FileObject getProjectSourceRoot() {
-        Sources s = getProject().getLookup().lookup(Sources.class);
+        Sources s = ProjectUtils.getSources(getProject());
         SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         return sg[0].getRootFolder();
     }
@@ -409,32 +389,29 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 checkMissingServer(getProjectName());
             } else {
                 projectRoot = new File(getProjectsRootDir(), projectName);
-                LOGGER.info("Using project in: " + projectRoot.getAbsolutePath()); //NOI18N
+                LOGGER.log(Level.INFO, "Using project in: {0}", projectRoot.getAbsolutePath()); //NOI18N
                 if (!projectRoot.exists()) {
+                    if (!getProjectType().isAntBasedProject()) {
+                        runAndCancelUpdateIndex("central");
+                        runAndCancelUpdateIndex("Local");
+                    }
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
                     // closing Tasks tab
                     new OutputWindowViewAction().performMenu();
                     new ActionNoBlock("Window|Tasks", null).performMenu();
                     new ActionNoBlock("Window|Close Window", null).performMenu();
-                    //set server for maven projects
+                    // not display browser on run for Maven projects
                     if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
                         //Properties
                         String propLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Properties_Action");
                         new ActionNoBlock(null, propLabel).performPopup(getProjectRootNode());
-                        new EventTool().waitEvent(2000);
                         // "Project Properties"
                         String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
                         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
                         // select "Run" category
                         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
-                        JComboBoxOperator comboBox = new JComboBoxOperator(propertiesDialogOper);
-                        int numberOfItems = comboBox.getItemCount();
-                        for (int q = 0; q < numberOfItems; q++) {
-                            if (((String) comboBox.getItemAt(q)).toLowerCase().contains(REGISTERED_SERVER.toString().toLowerCase())) {
-                                comboBox.selectItem(q);
-                                break;
-                            }
-                        }
+                        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
+                        new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
                         // confirm properties dialog
                         propertiesDialogOper.ok();
                     }
@@ -506,43 +483,44 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         if (ProjectType.SAMPLE.equals(type)) {
             op.txtLocation().setText(getWorkDirPath());
         } else {
-            File projectLocation = null;
-            projectLocation = getProjectsRootDir();
-            op.txtProjectLocation().setText(projectLocation.getAbsolutePath());
+            op.txtProjectLocation().setText(getProjectsRootDir().getAbsolutePath());
         }
-        LOGGER.info("Creating project in: " + op.txtProjectLocation().getText()); //NOI18N
-        if (!(ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type))) {
-            //second panel in New Web, Ejb and AppClient project wizards
-            if (ProjectType.APPCLIENT.equals(type) || ProjectType.EJB.equals(type) || ProjectType.WEB.equals(type)) {
-                op.next();
-                //choose server type and Java EE version
-                JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
-                jcboServer.selectItem(REGISTERED_SERVER.toString());
-            }
+        LOGGER.log(Level.INFO, "Creating project in: {0}", op.txtProjectLocation().getText()); //NOI18N
+        if (!(ProjectType.SAMPLE.equals(type) || ProjectType.JAVASE_APPLICATION.equals(type)
+                || ProjectType.MAVEN_SE.equals(type))) {
+            //second panel in web project wizards
+            op.next();
+            //choose server type and Java EE version
+            JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
             JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
-            jcboVersion.selectItem(javaeeVersion.toString());
-        }
-        if (!type.isAntBasedProject()) {
-            op.btFinish().pushNoBlock();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                //ignore
+            if (type.isAntBasedProject()) {
+                jcboServer.selectItem(REGISTERED_SERVER.toString());
+                jcboVersion.selectItem(javaeeVersion.toString());
+            } else {
+                // cannot use display name for Maven project
+                if (JavaEEVersion.JAVAEE5.equals(javaeeVersion)) {
+                    jcboVersion.selectItem("1.5");
+                } else if (JavaEEVersion.J2EE14.equals(javaeeVersion)) {
+                    jcboVersion.selectItem("1.4");
+                }
             }
-            if (JDialogOperator.findJDialog("Message", true, true) != null) {
-                new JButtonOperator(new JDialogOperator("Message")).push();
-            }
-            // Opening Projects
-            String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
-            waitDialogClosed(openingProjectsTitle);
-        } else {
-            op.finish();
         }
+        op.finish();
         if (ProjectType.SAMPLE.equals(type)) {
             checkMissingServer(name);
         }
         // wait project appear in projects view
-        ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
+        ProjectRootNode node;
+        long oldTimeout = JemmyProperties.getCurrentTimeout("JTreeOperator.WaitNextNodeTimeout");
+        if (!type.isAntBasedProject()) {
+            // need to increase time to wait for project node for Maven project
+            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000);
+        }
+        try {
+            node = ProjectsTabOperator.invoke().getProjectRootNode(name);
+        } finally {
+            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
+        }
         // wait classpath scanning finished
         waitScanFinished();
         // get a project instance to return
@@ -602,9 +580,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param projectName name of the project to be run
      */
     protected void runProject(String projectName) throws IOException {
-        //Run
-        String runLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_RunAction_Name");
-        performProjectAction(projectName, runLabel);
+        performProjectAction(projectName, "Run");
     }
 
     /**
@@ -675,7 +651,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     continue;
                 }
                 jtpo.selectPage(i);
-                OutputTabOperator oto = null;
+                OutputTabOperator oto;
                 if (tabTitle.indexOf("<html>") < 0) { //NOI18N
                     oto = new OutputTabOperator(tabTitle.trim());
                 } else {
@@ -698,13 +674,16 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
      * @param dialogTitle title of the dialog to be closed
      */
     protected void waitDialogClosed(String dialogTitle) {
+        NbDialogOperator dialogOper;
         try {
-            // wait at most 60 second until progress dialog dismiss
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000); //NOI18N
-            new NbDialogOperator(dialogTitle).waitClosed();
+            dialogOper = new NbDialogOperator(dialogTitle);
         } catch (TimeoutExpiredException e) {
             // ignore when progress dialog was closed before we started to wait for it
+            return;
         }
+        // wait at most 120 second until progress dialog dismiss
+        dialogOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000); //NOI18N
+        dialogOper.waitClosed();
     }
 
     private void performProjectAction(String projectName, String actionName) throws IOException {
@@ -715,7 +694,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         if (!getProjectType().isAntBasedProject()) {
             oto.waitText("Total time:"); //NOI18N
             dumpOutput();
-            assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+            assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESS") > -1); //NOI18N
             assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N
         } else {
             //Ant projects
@@ -808,9 +787,24 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         waitScanFinished();
     }
 
+    /**
+     * Opens Services tab, go to specified Maven repository, call Update Index
+     * and immediately cancel this action.
+     * @param repositoryName 
+     */
+    private static void runAndCancelUpdateIndex(String repositoryName) {
+        RuntimeTabOperator servicesOper = RuntimeTabOperator.invoke();
+        Node node = new Node(servicesOper.getRootNode(), "Maven Repositories|" + repositoryName);
+        new Action(null, "Update Index").perform(node);
+        String lblCancelProgress = "Click to cancel process";
+        JButtonOperator btnCancel = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) MainWindowOperator.getDefault().getSource(), lblCancelProgress, true, true));
+        btnCancel.pushNoBlock();
+        new NbDialogOperator("Cancel Running Task").yes();
+    }
+    
     protected File getProjectsRootDir() throws IOException {
         File f = getWorkDir();
-        LOGGER.fine("Working directory is set to: " + f.getAbsolutePath());
+        LOGGER.log(Level.FINE, "Working directory is set to: {0}", f.getAbsolutePath());
         if (f != null) {
             f = f.getParentFile();
             if (f != null) {

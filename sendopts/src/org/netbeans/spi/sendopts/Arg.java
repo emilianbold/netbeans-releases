@@ -47,9 +47,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Marks a non-static field in a class as on option and assigns it a short,
+/** Marks a non-static field in a class as an option and assigns it a short,
  * or long name. Usually used together with {@link Description} which provides
- * human readable explantation of the option's behavior. The field should be
+ * human readable explanation of the option's behavior. The field should be
  * public and the class should have public default constructor. It is suggested
  * the class implements {@link ArgsProcessor} or at least {@link Runnable} - its
  * methods will be called after successful assignment of argument fields. 
@@ -57,7 +57,7 @@ import java.lang.annotation.Target;
  * <pre>
  * {@code @}{@link Arg}(shortName='p', longName="") public boolean usedWithO;
  * </pre>
- * if such option is present on a command line, the value of the 
+ * if such option is present on the command line, the value of the 
  * <code>usedWithO</code> field is set to <code>true</code>. Otherwise its
  * value remains unchanged (e.g. <code>false</code>).
  * <p>
@@ -76,7 +76,7 @@ import java.lang.annotation.Target;
  * To define an option with {@link org.netbeans.spi.sendopts.Option#optionalArgument(char, java.lang.String) optional argument}
  * one can annotate string field and provide its default value:
  * <pre>
- * {@code @}{@link Arg}(shortName='o', longName="", defaultValue="no-arg-provided") public String optionArg;
+ * {@code @}{@link Arg}(shortName='o', longName="", defaultValue="used-but-no-argument-provided") public String optionArg;
  * </pre>
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 2.20

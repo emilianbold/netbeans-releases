@@ -411,9 +411,11 @@ public final class DeployOnSaveManager {
                     continue;
                 }
                 try {
-                    notifyServer(entry.getKey(), entry.getValue());
-                    // run nbjpdaapprealoaded task.
-                    runJPDAAppReloaded();
+                    boolean updated = notifyServer(entry.getKey(), entry.getValue());
+                    if (updated) {
+                        // run nbjpdaapprealoaded task.
+                        runJPDAAppReloaded();
+                    }
                 } catch (Throwable t) {
                     // do not throw away any exception:
                     LOGGER.log(Level.SEVERE, null, t);
@@ -421,7 +423,7 @@ public final class DeployOnSaveManager {
             }
         }
 
-        private void notifyServer(J2eeModuleProvider provider, Iterable<Artifact> artifacts) {
+        private boolean notifyServer(J2eeModuleProvider provider, Iterable<Artifact> artifacts) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 StringBuilder builder = new StringBuilder("Artifacts updated: [");
                 for (Artifact artifact : artifacts) {
@@ -436,11 +438,11 @@ public final class DeployOnSaveManager {
             ServerInstance inst = ServerRegistry.getInstance ().getServerInstance (instanceID);
             if (inst == null && "DEV-NULL".equals(instanceID)) { // NOI18N
                 LOGGER.log(Level.INFO, "No server set for Maven project - Deploy on Save will not be performed"); // NOI18N
-                return;
+                return false;
             } else if (null == inst) {
                 // the server is not in the registry... so we should not try to deploy
                 LOGGER.log(Level.INFO, "Project''s server {0} is not registered - Deploy on Save will not be performed", instanceID); // NOI18N
-                return;
+                return false;
             }
 
             DeploymentState lastState;
@@ -527,6 +529,7 @@ public final class DeployOnSaveManager {
             synchronized (this) {
                 lastDeploymentStates.put(provider, state);
             }
+            return state == DeploymentState.MODULE_UPDATED;
         }
         
         private void runJPDAAppReloaded() {
