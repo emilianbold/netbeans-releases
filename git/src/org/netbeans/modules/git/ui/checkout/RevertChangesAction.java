@@ -81,7 +81,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (final File repository, final File[] roots, VCSContext context) {
-        final RevertChanges revert = new RevertChanges();
+        final RevertChanges revert = new RevertChanges(roots);
         if (revert.show()) {
             GitProgressSupport supp = new GitProgressSupport() {
                 @Override
