@@ -43,13 +43,10 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.*;
 import com.oracle.nashorn.parser.TokenType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.ScopeImpl.ElementFilter;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -61,19 +58,15 @@ public class ModelVisitor extends PathNodeVisitor {
     private JsParserResult parserResult;
     private final FileScopeImpl fileScope;
     private final ModelBuilder modelBuilder;
-    private final List<FunctionNode> unvisitedFn;
     /**
      * Keeps the name of the visited properties
      */
-    private final List<String> visitedProperties;
     private final List<List<FunctionNode>> functionStack;
 
     public ModelVisitor(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.fileScope = new FileScopeImpl(parserResult);
         this.modelBuilder = new ModelBuilder(this.fileScope);
-        this.unvisitedFn = new ArrayList<FunctionNode>();
-        this.visitedProperties = new ArrayList<String>();
         this.functionStack = new ArrayList<List<FunctionNode>>();
     }
 
@@ -143,15 +136,11 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             List<Identifier> name = null;
-
+            boolean isPrivate = false;
             int pathSize = getPath().size();
             if (pathSize > 1 && getPath().get(pathSize - 2) instanceof ReferenceNode) {
                 List<FunctionNode> siblings = functionStack.get(functionStack.size() - 1);
-                if (siblings.remove(functionNode)) {
-                    System.out.println("   funkce smazana ze seznam ve stacku");
-                } else {
-                    System.out.println("    !! funkce nenalezena v seznamu ve stacku");
-                }
+                siblings.remove(functionNode);
 
                 if (pathSize > 3) {
                     Node node = getPath().get(pathSize - 3);
@@ -159,6 +148,11 @@ public class ModelVisitor extends PathNodeVisitor {
                         name = getName((PropertyNode)node);
                     } else if (node instanceof BinaryNode) {
                         name = getName((BinaryNode)node);
+                    } else if (node instanceof VarNode) {
+                        name = getName((VarNode)node);
+                        // private method
+                        // It can be only if it's in a function
+                        isPrivate = functionStack.size() > 1;
                     }
                 }
             }
@@ -174,6 +168,11 @@ public class ModelVisitor extends PathNodeVisitor {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 ScopeImpl scope = modelBuilder.getCurrentScope();
                 FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
+                if (isPrivate) {
+                    Set<Modifier> modifier = fncScope.getModifiers();
+                    modifier.clear();
+                    modifier.add(Modifier.PRIVATE);
+                }
                 modelBuilder.setCurrentScope(scope = fncScope);
             }
 
@@ -258,7 +257,7 @@ public class ModelVisitor extends PathNodeVisitor {
     
     @Override
     public Node visit(VarNode varNode, boolean onset) {
-        if (onset && !(varNode.getInit() instanceof ObjectNode)) {
+        if (onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
             ScopeImpl scope = modelBuilder.getCurrentScope();
             boolean isGlobal = false;
             if (scope instanceof FileScope) {
@@ -271,6 +270,8 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return super.visit(varNode, onset);
     }
+    
+//--------------------------------End of visit methods--------------------------------------
     
     private List<Identifier> getName(PropertyNode propertyNode) {
         List<Identifier> name = new ArrayList(1);
