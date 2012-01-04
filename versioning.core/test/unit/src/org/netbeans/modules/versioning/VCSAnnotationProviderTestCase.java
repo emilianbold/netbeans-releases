@@ -40,48 +40,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.versioning.masterfs;
+package org.netbeans.modules.versioning;
 
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author ondra
  */
-public class VersioningAnnotationProviderTest extends NbTestCase {
+public class VCSAnnotationProviderTestCase extends NbTestCase {
 
     private static VCSAnnotator annotator;
     private StatusListener statusListener;
-    private FileObject workDir;
+    private File workDir;
     private static final BufferedImage IMAGE = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     private static final BufferedImage IMAGE_ANNOTATION = new BufferedImage(6, 6, BufferedImage.TYPE_INT_ARGB);
 
-    public VersioningAnnotationProviderTest(String arg) {
+    public VCSAnnotationProviderTestCase(String arg) {
         super(arg);
     }
 
@@ -92,28 +86,22 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         System.setProperty("versioning.asyncAnnotator", "true");
-        File wDir = new File(getWorkDir(), String.valueOf(System.currentTimeMillis()));
-        wDir.mkdirs();
-        workDir = FileUtil.toFileObject(wDir);
-    }
-
-    public void testProviderPresent () {
-        Collection<? extends AnnotationProvider> providers = Lookup.getDefault().lookupAll(AnnotationProvider.class);
-        for (AnnotationProvider provider : providers) {
-            if (provider.getClass().getName().equals(VersioningAnnotationProvider.class.getName())) {
-                return;
-            }
-        }
-        assert false;
+        workDir = new File(getWorkDir(), String.valueOf(System.currentTimeMillis()));
+        workDir.mkdirs();
+        
+        VCSFilesystemTestFactory.getInstance(this).createFileObject(getWorkDir().getAbsolutePath()).refresh();
     }
 
     public void testAnnotationChanged () throws Exception {
-        DummyVCS.topmostFile = VCSFileProxy.createFileProxy(FileUtil.toFile(workDir));
+        FileObject workDirFO = VCSFilesystemTestFactory.getInstance(this).createFileObject(workDir.getAbsolutePath());
+        DummyVCS.topmostFile = VCSFileProxy.createFileProxy(workDir);
+        
         HashMap<FileObject, String> expectedLabelAnnotations = new HashMap<FileObject, String>();
         HashMap<FileObject, String> expectedIconToolTips = new HashMap<FileObject, String>();
-        expectedLabelAnnotations.put(workDir, workDir.getNameExt() + " - annotated");
-        expectedIconToolTips.put(workDir, workDir.getNameExt() + "<br>Annotated");
-        FileObject f = workDir.createFolder("folder1");
+        expectedLabelAnnotations.put(workDirFO, workDirFO.getNameExt() + " - annotated");
+        expectedIconToolTips.put(workDirFO, workDirFO.getNameExt() + "<br>Annotated");
+        FileObject f = workDirFO.createFolder("folder1");
+        FileObject f1 = workDirFO.createData("vole");
         expectedLabelAnnotations.put(f, f.getNameExt() + " - annotated");
         expectedIconToolTips.put(f, f.getNameExt() + "<br>Annotated");
         f = f.createFolder("folder1_1");
@@ -125,7 +113,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         file = f.createData("file2", "txt");
         expectedLabelAnnotations.put(file, file.getNameExt() + " - annotated");
         expectedIconToolTips.put(file, file.getNameExt() + "<br>Annotated");
-        f = workDir.createFolder("folder2");
+        f = workDirFO.createFolder("folder2");
         expectedLabelAnnotations.put(f, f.getNameExt() + " - annotated");
         expectedIconToolTips.put(f, f.getNameExt() + "<br>Annotated");
         f = f.createFolder("folder2_1");
@@ -138,9 +126,9 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
         expectedLabelAnnotations.put(file, file.getNameExt() + " - annotated");
         expectedIconToolTips.put(file, file.getNameExt() + "<br>Annotated");
 
-        statusListener = new VersioningAnnotationProviderTest.StatusListener(expectedLabelAnnotations.keySet());
-        annotator = new VersioningAnnotationProviderTest.DummyVCSAnnotator();
-        FileSystem fileSystem = (FileSystem) workDir.getFileSystem();
+        statusListener = new VCSAnnotationProviderTestCase.StatusListener(expectedLabelAnnotations.keySet());
+        annotator = new VCSAnnotationProviderTestCase.DummyVCSAnnotator();
+        FileSystem fileSystem = (FileSystem) workDirFO.getFileSystem();
         fileSystem.addFileStatusListener(statusListener);
         statusListener.startAnnotation(expectedLabelAnnotations.keySet());
         Thread.sleep(500);
@@ -215,26 +203,21 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
                 @Override
                 public void run() {
                     lastEvent = System.currentTimeMillis();
-                    Collection<? extends AnnotationProvider> providers = Lookup.getDefault().lookupAll(AnnotationProvider.class);
-                    for (AnnotationProvider provider : providers) {
-                        if (provider instanceof VersioningAnnotationProvider) {
-                            long time = System.currentTimeMillis();
-                            for (FileObject fo : files) {
-                                String name = fo.getNameExt();
-                                name = provider.annotateNameHtml(name, Collections.singleton(fo));
-                                annotationsLabels.put(fo, name);
-                                Image image = ImageUtilities.assignToolTipToImage(VersioningAnnotationProviderTest.IMAGE, fo.getNameExt());
-                                ImageUtilities.getImageToolTip(image);
-                                image = provider.annotateIcon(image, 0, Collections.singleton(fo));
-                                annotationsIcons.put(fo, image);
-                            }
-                            time = System.currentTimeMillis() - time;
-                            if (time > 500) {
-                                ex = new Exception("Annotation takes more than 200ms");
-                            }
-                        }
+                    long time = System.currentTimeMillis();
+                    for (FileObject fo : files) {
+                        String name = fo.getNameExt();
+                        name = VersioningAnnotationProvider.getDefault().annotateNameHtml(name, Collections.singleton(fo));
+                        annotationsLabels.put(fo, name);
+                        Image image = ImageUtilities.assignToolTipToImage(VCSAnnotationProviderTestCase.IMAGE, fo.getNameExt());
+                        ImageUtilities.getImageToolTip(image);
+                        image = VersioningAnnotationProvider.getDefault().annotateIcon(image, 0, Collections.singleton(fo));
+                        annotationsIcons.put(fo, image);
                     }
-                }
+                    time = System.currentTimeMillis() - time;
+                    if (time > 500) {
+                        ex = new Exception("Annotation takes more than 200ms");
+                    }
+                }     
             });
         }
 
@@ -276,7 +259,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            icon = ImageUtilities.mergeImages(icon, VersioningAnnotationProviderTest.IMAGE_ANNOTATION, 16, 16);
+            icon = ImageUtilities.mergeImages(icon, VCSAnnotationProviderTestCase.IMAGE_ANNOTATION, 16, 16);
             icon = ImageUtilities.addToolTipToImage(icon, "Annotated");
             return icon;
         }
