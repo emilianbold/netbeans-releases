@@ -44,9 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.ObjectNode;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.javascript2.editor.model.*;
 
 
