@@ -95,9 +95,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.SourceFlags;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.*;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
@@ -4716,7 +4714,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         @Override
         public void run() {
             try {
-                _run();
+                RunWhenScanFinishedSupport.performScan(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                _run();
+                            }
+                        });
             } finally {
                 synchronized (todo) {
                     if (todo.isEmpty()) {
@@ -4726,7 +4730,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         WORKER.submit(this);
                     }
                     todo.notifyAll();
-                    TaskProcessor.performDeferredTasks();
+                    RunWhenScanFinishedSupport.performDeferredTasks();
                 }
             }
         }
