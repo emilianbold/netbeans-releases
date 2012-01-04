@@ -77,6 +77,11 @@ public class JsStructureScanner implements StructureScanner {
             }
         }
         
+        Collection<? extends Variable> globalVariables = fileScope.getDeclaredVariables();
+        for (Variable variable : globalVariables) {
+            items.add(new JsSimpleStructureItem(variable, "global-")); // NOI18N
+        }
+        
         return items;
     }
     
