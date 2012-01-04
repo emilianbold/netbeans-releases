@@ -67,7 +67,7 @@ public final class ModelElementFactory {
     static FunctionScopeImpl create(final FunctionNode function, List<Identifier> name, final ModelBuilder context) {
         assert name != null;
         final Scope currentScope = context.getCurrentScope();
-        JsElement.Kind functionType = getFunctionType(function);
+        JsElement.Kind functionType = getFunctionType(function, currentScope);
         FunctionScopeImpl result = new FunctionScopeImpl(currentScope, name, function, functionType);
         FileScopeImpl fileScope = ModelUtils.getFileScope(currentScope);
         fileScope.addMethod(result);
@@ -81,12 +81,13 @@ public final class ModelElementFactory {
      * @param function
      * @return true if the function should be treated as constructor
      */
-    private static  JsElement.Kind getFunctionType(FunctionNode function) {
+    private static  JsElement.Kind getFunctionType(final FunctionNode function, final Scope inScope) {
         JsElement.Kind type = JsElement.Kind.FUNCTION;
         if (function.getFunctions().size() > 0) {
             type = JsElement.Kind.CONSTRUCTOR;
         } else {
-            if (function.getIdent().getStart() == function.getIdent().getFinish()) {
+            if (function.getIdent().getStart() == function.getIdent().getFinish()
+                    && !(inScope instanceof FileScope)) {
                 type = JsElement.Kind.METHOD;
             }
         }
