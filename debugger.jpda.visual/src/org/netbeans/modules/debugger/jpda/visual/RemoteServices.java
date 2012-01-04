@@ -698,7 +698,23 @@ public class RemoteServices {
                         }
                     }
                 });
-                DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+                final JPDADebugger dbg = thread.getDebugger();
+                PropertyChangeListener listener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (dbg.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                            DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                            //System.err.println("BREAKPOINT "+mb+" REMOVED after debugger finished."+" ID = "+System.identityHashCode(mb));
+                            dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+                        }
+                    }
+                };
+                dbg.addPropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+                if (dbg.getState() != JPDADebugger.STATE_DISCONNECTED) {
+                    DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+                } else {
+                    dbg.removePropertyChangeListener(JPDADebugger.PROP_STATE, listener);
+                }
                 ClassObjectReference serviceClassObject;
                 synchronized (remoteServiceClasses) {
                     serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
