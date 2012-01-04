@@ -53,7 +53,9 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.beans.BeanInfo;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
@@ -61,12 +63,13 @@ import javax.lang.model.type.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
-import org.netbeans.api.java.source.Task;
+import javax.swing.plaf.UIResource;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.api.java.source.ui.TypeElementFinder;
-import org.netbeans.editor.Utilities;
+import org.netbeans.api.project.*;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visibility;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
@@ -75,11 +78,10 @@ import org.netbeans.modules.refactoring.java.ui.elements.SortActionSupport.SortB
 import org.netbeans.modules.refactoring.java.ui.elements.SortActionSupport.SortBySourceAction;
 import org.netbeans.modules.refactoring.java.ui.elements.*;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.CheckableNode;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.*;
@@ -104,27 +106,28 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     private static final String DELEGATE = "delegate.moveMembers"; // NOI18N
     private static final String DEPRECATE = "deprecate.moveMembers"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(MoveMembersPanel.class.getName(), 1);
+    private final ListCellRenderer GROUP_CELL_RENDERER = new MoveClassPanel.GroupCellRenderer();
+    private final ListCellRenderer PROJECT_CELL_RENDERER = new MoveClassPanel.ProjectCellRenderer();
+    private final ListCellRenderer CLASS_CELL_RENDERER = new ClassListCellRenderer();
     private ChangeListener parent;
     private FiltersManager filtersManager;
     private final ExplorerManager manager;
     private final TreePathHandle[] selectedElements;
-    private final JComponent[] singleLineEditor;
-    private final TargetTypeAction returnTypeAction;
     private final FileObject fileObject;
-    private TreePathHandle target;
     private TapPanel filtersPanel;
-
     /**
      * constants for defined filters
      */
-    private static final String SHOW_NON_PUBLIC = "show_non_public";
-    private static final String SHOW_STATIC = "show_static";
-    private static final String SHOW_FIELDS = "show_fields";
-    private static final String SHOW_INHERITED = "show_inherited";
+    private static final String SHOW_NON_PUBLIC = "show_non_public"; //NOI18N
+    private static final String SHOW_STATIC = "show_static"; //NOI18N
+    private static final String SHOW_FIELDS = "show_fields"; //NOI18N
+    private static final String SHOW_INHERITED = "show_inherited"; //NOI18N
     private JToggleButton sortByNameButton;
     private JToggleButton sortByPositionButton;
     private boolean naturalSort;
     private final Action[] actions;
+    private final Project project;
+    private SourceGroup[] groups;
 
     /**
      * Creates new form MoveMembersPanel
@@ -135,28 +138,25 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         this.naturalSort = NbPreferences.forModule(MoveMembersPanel.class).getBoolean("naturalSort", false); //NOI18N
         this.selectedElements = selectedElements;
         this.fileObject = selectedElements[0].getFileObject();
-        this.returnTypeAction = new TargetTypeAction();
-        singleLineEditor = Utilities.createSingleLineEditor(MIME_JAVA);
-        singleLineEditor[0].setPreferredSize(null);
         initComponents();
-        try {
-            DataObject dob = DataObject.find(fileObject);
-            ((JEditorPane) singleLineEditor[1]).getDocument().putProperty(
-                    Document.StreamDescriptionProperty,
-                    dob);
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+
+        rootComboBox.setRenderer(GROUP_CELL_RENDERER);
+        packageComboBox.setRenderer(PackageView.listRenderer());
+        projectsComboBox.setRenderer(PROJECT_CELL_RENDERER);
+        classComboBox.setRenderer(CLASS_CELL_RENDERER);
+        Project fileOwner = this.fileObject != null ? FileOwnerQuery.getOwner(this.fileObject) : null;
+        project = fileOwner != null ? fileOwner : OpenProjects.getDefault().getOpenProjects()[0];
+
         manager.setRootContext(ElementNode.getWaitNode());
         outlineView1.getOutline().setRootVisible(true);
         outlineView1.getOutline().setTableHeader(null);
         initFiltersPanel();
-        actions = new Action[] {
-            new SortByNameAction( this ),
-            new SortBySourceAction( this )
+        actions = new Action[]{
+            new SortByNameAction(this),
+            new SortBySourceAction(this)
         };
     }
-    
+
     public Action[] getActions() {
         return actions;
     }
@@ -198,7 +198,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         sortByPositionButton.setText(null);
         sortByPositionButton.setSelected(isNaturalSort());
         res[1] = sortByPositionButton;
-        
+
         res[2] = new JButton(null, new JCheckBoxIcon(true, new Dimension(16, 16)));
         res[2].addActionListener(new ActionListener() {
 
@@ -207,6 +207,8 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                 selectAll(true);
             }
         });
+        res[2].setToolTipText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "TIP_SelectAll"));
+        
         res[3] = new JButton(null, new JCheckBoxIcon(false, new Dimension(16, 16)));
         res[3].addActionListener(new ActionListener() {
 
@@ -215,6 +217,8 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                 selectAll(false);
             }
         });
+        res[3].setToolTipText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "TIP_DeselectAll"));
+        
         filtersManager = FiltersDescription.createManager(desc);
         filtersManager.hookChangeListener(this);
 
@@ -228,6 +232,148 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         membersListPanel.add(filtersPanel, BorderLayout.SOUTH);
     }
 
+    private void initValues() {
+
+        Project openProjects[] = OpenProjects.getDefault().getOpenProjects();
+        Arrays.sort(openProjects, new MoveClassPanel.ProjectByDisplayNameComparator());
+        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel(openProjects);
+        projectsComboBox.setModel(projectsModel);
+        projectsComboBox.setSelectedItem(project);
+
+        updateRoots();
+        updatePackages();
+        updateClasses();
+    }
+
+    private void updateRoots() {
+        Sources sources = ProjectUtils.getSources(project);
+        groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+
+        int preselectedItem = 0;
+        for (int i = 0; i < groups.length; i++) {
+            if (this.fileObject != null) {
+                try {
+                    if (groups[i].contains(this.fileObject)) {
+                        preselectedItem = i;
+                    }
+                } catch (IllegalArgumentException e) {
+                    // XXX this is a poor abuse of exception handling
+                }
+            }
+        }
+
+        // Setup comboboxes 
+        rootComboBox.setModel(new DefaultComboBoxModel(groups));
+        if (groups.length > 0) {
+            rootComboBox.setSelectedIndex(preselectedItem);
+        }
+    }
+
+    private void updatePackages() {
+        SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
+        packageComboBox.setModel(g != null
+                ? PackageView.createListView(g)
+                : new DefaultComboBoxModel());
+    }
+
+    private void updateClasses() {
+        classComboBox.setModel(new DefaultComboBoxModel(new Object[]{ElementNode.getWaitNode()}));
+        RP.post(new Runnable() {
+            private DefaultComboBoxModel model;
+
+            @Override
+            public void run() {
+                SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
+                String packageName = packageComboBox.getSelectedItem().toString();
+                if (g != null && packageName != null && !packageName.isEmpty()) {
+                    String pathname = packageName.replaceAll("\\.", "/"); // NOI18N
+                    FileObject fo = g.getRootFolder().getFileObject(pathname);
+                    ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                    ClassPath compileCp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                    ClassPath sourcePath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                    final ClasspathInfo info = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                    Set<ClassIndex.SearchScopeType> searchScopeType = new HashSet<ClassIndex.SearchScopeType>(1);
+                    final Set<String> packageSet = Collections.singleton(packageName);
+                    searchScopeType.add(new ClassIndex.SearchScopeType() {
+
+                        @Override
+                        public Set<? extends String> getPackages() {
+                            return packageSet;
+                        }
+
+                        @Override
+                        public boolean isSources() {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isDependencies() {
+                            return false;
+                        }
+                    });
+                    final Set<ElementHandle<TypeElement>> result = info.getClassIndex().getDeclaredTypes("", ClassIndex.NameKind.PREFIX, searchScopeType);
+                    if (result != null && !result.isEmpty()) {
+                        JavaSource javaSource = JavaSource.create(info);
+                        final ArrayList<ClassItem> items = new ArrayList<ClassItem>(result.size());
+                        try {
+                            javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                                private AtomicBoolean cancel = new AtomicBoolean();
+
+                                @Override
+                                public void cancel() {
+                                    this.cancel.set(true);
+                                }
+
+                                @Override
+                                public void run(CompilationController parameter) throws Exception {
+                                    for (ElementHandle<TypeElement> elementHandle : result) {
+                                        TypeElement element = elementHandle.resolve(parameter);
+                                        if (element != null) {
+                                            Icon icon = ElementIcons.getElementIcon(element.getKind(), element.getModifiers());
+                                            ClassItem classItem = new ClassItem(element.getSimpleName().toString(), icon, TreePathHandle.create(element, parameter));
+                                            items.add(classItem);
+                                        }
+                                    }
+                                }
+                            }, true);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        Collections.sort(items, new Comparator() {
+                            private Comparator COLLATOR = Collator.getInstance();
+
+                            @Override
+                            public int compare(Object o1, Object o2) {
+
+                                if ( !( o1 instanceof ClassItem ) ) {
+                                    return 1;
+                                }
+                                if ( !( o2 instanceof ClassItem ) ) {
+                                    return -1;
+                                }
+
+                                ClassItem p1 = (ClassItem)o1;
+                                ClassItem p2 = (ClassItem)o2;
+
+                                return COLLATOR.compare(p1.getDisplayName(), p2.getDisplayName());
+                            }
+                        });
+                        model = new DefaultComboBoxModel(items.toArray(new ClassItem[items.size()]));
+                    } else {
+                        model = new DefaultComboBoxModel();
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        classComboBox.setModel(model);
+                    }
+                });
+            }
+        });
+    }
+
     public Collection<Description> filter(Collection<Description> original) {
 
         boolean non_public = filtersManager.isSelected(SHOW_NON_PUBLIC);
@@ -238,7 +384,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         ArrayList<Description> result = new ArrayList<Description>(original.size());
         for (Description description : original) {
 
-            if(description.isConstructor()) {
+            if (description.isConstructor()) {
                 continue;
             }
             if (!inherited && description.isInherited()) {
@@ -289,22 +435,18 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             return null;
         }
     }
-    
+
     private void selectAll(boolean select) {
         for (Node node : manager.getRootContext().getChildren().getNodes()) {
-            if(node instanceof ElementNode) {
+            if (node instanceof ElementNode) {
                 ElementNode elementNode = (ElementNode) node;
                 CheckableNode check = elementNode.getLookup().lookup(CheckableNode.class);
-                if(check != null) {
+                if (check != null) {
                     check.setSelected(select);
                     elementNode.selectionChanged();
                 }
             }
         }
-    }
-
-    private Action getReturnTypeAction() {
-        return returnTypeAction;
     }
     private boolean initialized = false;
 
@@ -323,6 +465,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                             Exceptions.printStackTrace(ex);
                         }
                     }
+                    initValues();
                 }
             });
             initialized = true;
@@ -343,7 +486,8 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonGroup1 = new javax.swing.ButtonGroup();
+        visibilityButtonGroup = new javax.swing.ButtonGroup();
+        javadocButtonGroup = new javax.swing.ButtonGroup();
         membersListPanel = new javax.swing.JPanel();
         outlineView1 = new org.openide.explorer.view.OutlineView();
         visibilityPanel = new javax.swing.JPanel();
@@ -355,13 +499,21 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         btnPublic = new javax.swing.JRadioButton();
         lblMoveMembersFrom = new javax.swing.JLabel();
         lblSource = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane2 = (JScrollPane)singleLineEditor[0];
-        btnFindType = new javax.swing.JButton();
-        lblTarget = new javax.swing.JLabel();
         chkDelegate = new javax.swing.JCheckBox();
         chkDeprecate = new javax.swing.JCheckBox();
-        chkJavaDoc = new javax.swing.JCheckBox();
+        targetPanel = new javax.swing.JPanel();
+        rootComboBox = new javax.swing.JComboBox();
+        labelLocation = new javax.swing.JLabel();
+        labelProject = new javax.swing.JLabel();
+        packageComboBox = new javax.swing.JComboBox();
+        classComboBox = new javax.swing.JComboBox();
+        labelPackage = new javax.swing.JLabel();
+        projectsComboBox = new javax.swing.JComboBox();
+        labelClass = new javax.swing.JLabel();
+        javadocPanel = new javax.swing.JPanel();
+        btnJavadocUpdate = new javax.swing.JRadioButton();
+        btnJavadocGenerate = new javax.swing.JRadioButton();
+        btnJavadocAsIs = new javax.swing.JRadioButton();
 
         membersListPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.membersListPanel.border.title"))); // NOI18N
         membersListPanel.setLayout(new java.awt.BorderLayout());
@@ -374,28 +526,28 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
         visibilityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.visibilityPanel.border.title"))); // NOI18N
 
-        buttonGroup1.add(btnEscalate);
+        visibilityButtonGroup.add(btnEscalate);
         btnEscalate.setSelected(true);
         btnEscalate.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnEscalate.text")); // NOI18N
         btnEscalate.setActionCommand(Visibility.ESCALATE.name());
 
-        buttonGroup1.add(btnAsIs);
+        visibilityButtonGroup.add(btnAsIs);
         btnAsIs.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnAsIs.text")); // NOI18N
         btnAsIs.setActionCommand(Visibility.ASIS.name());
 
-        buttonGroup1.add(btnPrivate);
+        visibilityButtonGroup.add(btnPrivate);
         btnPrivate.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnPrivate.text")); // NOI18N
         btnPrivate.setActionCommand(Visibility.PRIVATE.name());
 
-        buttonGroup1.add(btnDefault);
+        visibilityButtonGroup.add(btnDefault);
         btnDefault.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnDefault.text")); // NOI18N
         btnDefault.setActionCommand(Visibility.DEFAULT.name());
 
-        buttonGroup1.add(btnProtected);
+        visibilityButtonGroup.add(btnProtected);
         btnProtected.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnProtected.text")); // NOI18N
         btnProtected.setActionCommand(Visibility.PROTECTED.name());
 
-        buttonGroup1.add(btnPublic);
+        visibilityButtonGroup.add(btnPublic);
         btnPublic.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnPublic.text")); // NOI18N
         btnPublic.setActionCommand(Visibility.PUBLIC.name());
 
@@ -433,16 +585,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
         lblSource.setText("<ClassName>"); // NOI18N
 
-        jPanel2.setLayout(new java.awt.BorderLayout());
-        jPanel2.add(jScrollPane2, java.awt.BorderLayout.CENTER);
-
-        btnFindType.setAction(getReturnTypeAction());
-        btnFindType.setText("…"); // NOI18N
-        jPanel2.add(btnFindType, java.awt.BorderLayout.EAST);
-
-        lblTarget.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.lblTarget.text")); // NOI18N
-        jPanel2.add(lblTarget, java.awt.BorderLayout.WEST);
-
         chkDelegate.setSelected(((Boolean) RefactoringModule.getOption(DELEGATE, Boolean.FALSE)).booleanValue());
         chkDelegate.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.chkDelegate.text")); // NOI18N
         chkDelegate.addItemListener(new java.awt.event.ItemListener() {
@@ -460,13 +602,128 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             }
         });
 
-        chkJavaDoc.setSelected(((Boolean) RefactoringModule.getOption(JAVADOC, Boolean.TRUE)).booleanValue());
-        chkJavaDoc.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.chkJavaDoc.text")); // NOI18N
-        chkJavaDoc.addItemListener(new java.awt.event.ItemListener() {
+        targetPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.targetPanel.border.title"))); // NOI18N
+
+        rootComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                chkJavaDocItemStateChanged(evt);
+                rootComboBoxItemStateChanged(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelLocation, org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.labelLocation.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelProject, org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.labelProject.text")); // NOI18N
+
+        packageComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                packageComboBoxItemStateChanged(evt);
+            }
+        });
+
+        classComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                classComboBoxItemStateChanged(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelPackage, org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.labelPackage.text")); // NOI18N
+
+        projectsComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                projectsComboBoxItemStateChanged(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelClass, org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.labelClass.text")); // NOI18N
+
+        javax.swing.GroupLayout targetPanelLayout = new javax.swing.GroupLayout(targetPanel);
+        targetPanel.setLayout(targetPanelLayout);
+        targetPanelLayout.setHorizontalGroup(
+            targetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(targetPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(targetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addComponent(labelClass, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(7, 7, 7)
+                        .addComponent(classComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addComponent(labelPackage, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(7, 7, 7)
+                        .addComponent(packageComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addComponent(labelProject, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(38, 38, 38)
+                        .addComponent(projectsComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addComponent(labelLocation, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(27, 27, 27)
+                        .addComponent(rootComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        targetPanelLayout.setVerticalGroup(
+            targetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(targetPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(targetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(labelProject))
+                    .addComponent(projectsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addGroup(targetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(labelLocation))
+                    .addComponent(rootComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addGroup(targetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(labelPackage))
+                    .addComponent(packageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(targetPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(targetPanelLayout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(labelClass))
+                    .addComponent(classComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 8, Short.MAX_VALUE))
+        );
+
+        javadocPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.javadocPanel.border.title"))); // NOI18N
+
+        javadocButtonGroup.add(btnJavadocUpdate);
+        btnJavadocUpdate.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnJavadocUpdate.text")); // NOI18N
+
+        javadocButtonGroup.add(btnJavadocGenerate);
+        btnJavadocGenerate.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnJavadocGenerate.text")); // NOI18N
+
+        javadocButtonGroup.add(btnJavadocAsIs);
+        btnJavadocAsIs.setSelected(true);
+        btnJavadocAsIs.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnJavadocAsIs.text")); // NOI18N
+
+        javax.swing.GroupLayout javadocPanelLayout = new javax.swing.GroupLayout(javadocPanel);
+        javadocPanel.setLayout(javadocPanelLayout);
+        javadocPanelLayout.setHorizontalGroup(
+            javadocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javadocPanelLayout.createSequentialGroup()
+                .addGroup(javadocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnJavadocAsIs)
+                    .addComponent(btnJavadocGenerate)
+                    .addComponent(btnJavadocUpdate))
+                .addGap(61, 61, 61))
+        );
+        javadocPanelLayout.setVerticalGroup(
+            javadocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javadocPanelLayout.createSequentialGroup()
+                .addComponent(btnJavadocAsIs)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnJavadocUpdate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnJavadocGenerate)
+                .addGap(6, 6, 6))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -477,15 +734,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(membersListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(visibilityPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(22, 22, 22)
                                 .addComponent(chkDeprecate))
@@ -493,9 +741,17 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                                 .addComponent(lblMoveMembersFrom)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblSource))
-                            .addComponent(chkDelegate)
-                            .addComponent(chkJavaDoc))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(chkDelegate))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(targetPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(membersListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(visibilityPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(javadocPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -506,17 +762,20 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                     .addComponent(lblSource))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(visibilityPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(membersListPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkJavaDoc)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkDelegate)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkDeprecate)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(visibilityPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javadocPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(229, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(targetPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(membersListPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkDelegate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(chkDeprecate)
+                        .addContainerGap())))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -531,30 +790,52 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         chkDeprecate.setVisible(b);
     }//GEN-LAST:event_chkDelegateItemStateChanged
 
-    private void chkJavaDocItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkJavaDocItemStateChanged
-        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-        RefactoringModule.setOption(JAVADOC, b);
-    }//GEN-LAST:event_chkJavaDocItemStateChanged
+    private void projectsComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_projectsComboBoxItemStateChanged
+        updateRoots();
+        updatePackages();
+        updateClasses();
+    }//GEN-LAST:event_projectsComboBoxItemStateChanged
 
+    private void rootComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootComboBoxItemStateChanged
+        updatePackages();
+        updateClasses();
+    }//GEN-LAST:event_rootComboBoxItemStateChanged
+
+    private void packageComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_packageComboBoxItemStateChanged
+        updateClasses();
+    }//GEN-LAST:event_packageComboBoxItemStateChanged
+
+    private void classComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_classComboBoxItemStateChanged
+        parent.stateChanged(null);
+    }//GEN-LAST:event_classComboBoxItemStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton btnAsIs;
     private javax.swing.JRadioButton btnDefault;
     private javax.swing.JRadioButton btnEscalate;
-    private javax.swing.JButton btnFindType;
+    private javax.swing.JRadioButton btnJavadocAsIs;
+    private javax.swing.JRadioButton btnJavadocGenerate;
+    private javax.swing.JRadioButton btnJavadocUpdate;
     private javax.swing.JRadioButton btnPrivate;
     private javax.swing.JRadioButton btnProtected;
     private javax.swing.JRadioButton btnPublic;
-    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox chkDelegate;
     private javax.swing.JCheckBox chkDeprecate;
-    private javax.swing.JCheckBox chkJavaDoc;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JComboBox classComboBox;
+    private javax.swing.ButtonGroup javadocButtonGroup;
+    private javax.swing.JPanel javadocPanel;
+    private javax.swing.JLabel labelClass;
+    private javax.swing.JLabel labelLocation;
+    private javax.swing.JLabel labelPackage;
+    private javax.swing.JLabel labelProject;
     private javax.swing.JLabel lblMoveMembersFrom;
     private javax.swing.JLabel lblSource;
-    private javax.swing.JLabel lblTarget;
     private javax.swing.JPanel membersListPanel;
     private org.openide.explorer.view.OutlineView outlineView1;
+    private javax.swing.JComboBox packageComboBox;
+    private javax.swing.JComboBox projectsComboBox;
+    private javax.swing.JComboBox rootComboBox;
+    private javax.swing.JPanel targetPanel;
+    private javax.swing.ButtonGroup visibilityButtonGroup;
     private javax.swing.JPanel visibilityPanel;
     // End of variables declaration//GEN-END:variables
 
@@ -562,21 +843,21 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         List<TreePathHandle> result = new LinkedList<TreePathHandle>();
         ElementNode rootNode = getRootNode();
         for (Description description : rootNode.getDescritption().getSubs()) {
-            if(description.getSelected() == Boolean.TRUE) {
+            if (description.getSelected() == Boolean.TRUE) {
                 result.add(TreePathHandle.from(description.getElementHandle(), description.getCpInfo()));
             }
         }
         return result;
     }
-    
+
     public boolean getDeprecated() {
         return chkDeprecate.isSelected();
     }
-    
+
     public boolean getUpdateJavaDoc() {
-        return chkJavaDoc.isSelected();
+        return btnJavadocUpdate.isSelected();
     }
-    
+
     public boolean getDelegate() {
         return chkDelegate.isSelected();
     }
@@ -587,29 +868,23 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     }
 
     public TreePathHandle getTarget() {
-        try {
-            JavaSource.forFileObject(fileObject).runUserActionTask(new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    TypeElement typeElement = parameter.getElements().getTypeElement(((JEditorPane) singleLineEditor[1]).getText());
-                    target = TreePathHandle.create(typeElement, parameter);
-                }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        Object selectedItem = classComboBox.getSelectedItem();
+        if (selectedItem instanceof ClassItem) {
+            ClassItem classItem = (ClassItem) selectedItem;
+            return classItem.getHandle();
+        } else {
+            return null;
         }
-        return target;
     }
 
     private void refresh(final Description description) {
         final DescriptionFilter descriptionFilter = this;
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 manager.setRootContext(new ElementNode(description, descriptionFilter));
                 outlineView1.getOutline().setRootVisible(false);
-                ((JEditorPane) singleLineEditor[1]).setText(description.getElementHandle().getQualifiedName());
                 lblSource.setText("<html>" + description.getHtmlHeader()); //NOI18N
                 lblSource.setIcon(ElementIcons.getElementIcon(description.getKind(), description.getModifiers()));
             }
@@ -622,31 +897,13 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
     public void filterStateChanged(ChangeEvent e) {
         ElementNode root = getRootNode();
-        
-        if ( root != null ) {
+        if (root != null) {
             root.refreshRecursively();
         }
     }
 
     public Visibility getVisibility() {
-        return Visibility.valueOf(buttonGroup1.getSelection().getActionCommand());
-    }
-
-    private class TargetTypeAction extends AbstractAction {
-
-        public TargetTypeAction() {
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(fileObject), ((JEditorPane) singleLineEditor[1]).getText(), null);
-            if (type != null) {
-                String fqn = type.getQualifiedName().toString();
-                ((JEditorPane) singleLineEditor[1]).setText(fqn);
-                ((JEditorPane) singleLineEditor[1]).selectAll();
-                parent.stateChanged(null);
-            }
-        }
+        return Visibility.valueOf(visibilityButtonGroup.getSelection().getActionCommand());
     }
 
     class ElementScanningTask implements CancellableTask<CompilationController> {
@@ -673,10 +930,10 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
             if (!canceled.get()) {
                 Trees trees = info.getTrees();
-                PositionVisitor posVis = new PositionVisitor (trees, canceled);
+                PositionVisitor posVis = new PositionVisitor(trees, canceled);
                 posVis.scan(info.getCompilationUnit(), pos);
             }
-            
+
             if (!canceled.get() && typeElementPath != null) {
                 TypeElement topLevelElement = (TypeElement) info.getTrees().getElement(typeElementPath);
                 rootDescription = element2description(topLevelElement, null, false, info, pos);
@@ -843,14 +1100,14 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                     sb.append(UIUtilities.escape(tp.getSimpleName().toString()));
                     List<? extends TypeMirror> bounds = null;
                     try {
-                         bounds = tp.getBounds();
+                        bounds = tp.getBounds();
                     } catch (NullPointerException npe) {
                         // Ignore
                     }
                     if (bounds != null && !bounds.isEmpty()) {
                         sb.append(printBounds(bounds));
                     }
-                    
+
                     if (it.hasNext()) {
                         sb.append(", "); // NOI18N
                     }
@@ -995,15 +1252,15 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             return result;
         }
     }
-    
-    private static class PositionVisitor extends TreePathScanner<Void, Map<Element,Long>> {
+
+    private static class PositionVisitor extends TreePathScanner<Void, Map<Element, Long>> {
 
         private final Trees trees;
         private final SourcePositions sourcePositions;
         private final AtomicBoolean canceled;
         private CompilationUnitTree cu;
 
-        public PositionVisitor (final Trees trees, final AtomicBoolean canceled) {
+        public PositionVisitor(final Trees trees, final AtomicBoolean canceled) {
             assert trees != null;
             assert canceled != null;
             this.trees = trees;
@@ -1051,14 +1308,14 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         public Void scan(Tree tree, Map<Element, Long> p) {
             if (!canceled.get()) {
                 return super.scan(tree, p);
-            }
-            else {                
+            } else {
                 return null;
             }
-        }        
+        }
     }
-    
+
     private static class JCheckBoxIcon implements Icon {
+
         private final JPanel delegate;
 
         public JCheckBoxIcon(boolean selected, Dimension dimension) {
@@ -1084,6 +1341,79 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         @Override
         public int getIconHeight() {
             return delegate.getHeight();
+        }
+    }
+
+    /**
+     * The renderer which just displays {@link PackageItem#getLabel} and {@link PackageItem#getIcon}.
+     */
+    private static final class ClassListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+
+        public ClassListCellRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+
+            if (value instanceof ClassItem) {
+                ClassItem item = (ClassItem) value;
+                setText(item.getDisplayName());
+                setIcon(item.getIcon());
+            } else if (value instanceof Node) {
+                Node node = (Node) value;
+                setText(node.getHtmlDisplayName());
+                setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
+            } else {
+                // #49954: render a specially inserted class somehow.
+                String item = (String) value;
+                setText(item);
+                setIcon(null);
+            }
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            return this;
+        }
+
+        // #93658: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+    }
+
+    private static class ClassItem {
+
+        private final String displayName;
+        private final Icon icon;
+        private final TreePathHandle handle;
+
+        public ClassItem(String displayName, Icon icon, TreePathHandle handle) {
+            this.displayName = displayName;
+            this.icon = icon;
+            this.handle = handle;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public Icon getIcon() {
+            return icon;
+        }
+
+        private TreePathHandle getHandle() {
+            return handle;
         }
     }
 }

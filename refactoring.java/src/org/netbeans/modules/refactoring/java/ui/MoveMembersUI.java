@@ -42,7 +42,9 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.util.List;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -51,6 +53,7 @@ import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -100,7 +103,8 @@ public class MoveMembersUI implements RefactoringUI {
     private Problem setParameters(boolean checkOnly) {
         List<? extends TreePathHandle> handles = panel.getHandles();
         ic.set(handles, null);
-        refactoring.setTarget(Lookups.fixed(panel.getTarget()));
+        TreePathHandle target = panel.getTarget();
+        refactoring.setTarget(target == null? Lookup.EMPTY:Lookups.fixed(target));
         JavaMoveMembersProperties properties = new JavaMoveMembersProperties();
         properties.setVisibility(panel.getVisibility());
         properties.setDelegate(panel.getDelegate());
