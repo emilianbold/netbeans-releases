@@ -240,13 +240,11 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node visit(ReferenceNode referenceNode, boolean onset) {
-        if (referenceNode.getReference() instanceof FunctionNode) {
-            if (onset) {
-                addToPath(referenceNode);
-                ((FunctionNode) referenceNode.getReference()).accept(this);
-                removeFromPathTheLast();
-                return null;
-            }
+        if (onset && referenceNode.getReference() instanceof FunctionNode) {
+            addToPath(referenceNode);
+            ((FunctionNode) referenceNode.getReference()).accept(this);
+            removeFromPathTheLast();
+            return null;
         }
         return super.visit(referenceNode, onset);
     }
