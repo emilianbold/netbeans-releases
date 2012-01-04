@@ -49,6 +49,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -74,7 +75,7 @@ import org.openide.util.NbBundle;
     "ERR_MoveToSuperClass=Cannot move to a superclass, maybe you need the Pull Up Refactoring?",
     "ERR_MoveToSubClass=Cannot move to a subclass, maybe you need the Push Down Refactoring?",
     "WRN_InitNoAccess=Field initializer uses local accessors which will not be accessible",
-    "WRN_NoAccessor=No accessor found to invoke the method in the new target"})
+    "WRN_NoAccessor=No accessor found to invoke the method from: {0}"})
 public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
 
     private final MoveRefactoring refactoring;
@@ -120,6 +121,10 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         if (source.isEmpty()) { // [f] nothing is selected
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NothingSelected")); //NOI18N
         }
+        
+        if(target == null) {
+            return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NoTarget")); //NOI18N
+        }
 
         if (target.getFileObject() == null || !JavaRefactoringUtils.isOnSourceClasspath(target.getFileObject())) { // [f] target is not on source classpath
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveToLibrary")); //NOI18N
@@ -142,7 +147,33 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         if (javac.getTypes().isSubtype(targetType, sourceType)) { // [f] target is a subclass of source
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveToSubClass")); //NOI18N
         }
-        return null;
+        
+        Problem p = null;
+        Element targetElement = target.resolveElement(javac);
+        for (TreePathHandle treePathHandle : source) {
+            Element element = treePathHandle.resolveElement(javac);
+            List<? extends Element> enclosedElements = targetElement.getEnclosedElements();
+            switch(element.getKind()) {
+                case FIELD:
+                    enclosedElements = ElementFilter.fieldsIn(enclosedElements);
+                    break;
+                case METHOD:
+                    enclosedElements = ElementFilter.methodsIn(enclosedElements);
+                    break;
+                case CONSTRUCTOR:
+                    enclosedElements = ElementFilter.constructorsIn(enclosedElements);
+                    break;
+                default:
+                    enclosedElements = ElementFilter.typesIn(enclosedElements);
+                    break;
+            }
+            for (Element member : enclosedElements) {
+                if(element.getSimpleName().contentEquals(member.getSimpleName())) {
+                    p = JavaPluginUtils.chainProblems(p, new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_PullUp_MemberAlreadyExists", element.getSimpleName())));
+                }
+            }
+        }
+        return p;
     }
 
     private Set<FileObject> getRelevantFiles() {

@@ -454,7 +454,7 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
         }
     }
     
-    /** Groups combo renderer, used also in CopyClassPanel */
+    /** Groups combo renderer, used also in MoveMembersPanel */
     static class GroupCellRenderer extends BaseCellRenderer {
         
         @Override
@@ -490,7 +490,7 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
         }
     }
     
-    /** Projects combo renderer, used also in CopyClassPanel */
+    /** Projects combo renderer, used also in MoveMembersPanel */
     static class ProjectCellRenderer extends BaseCellRenderer {
         
         @Override
@@ -524,7 +524,7 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
     }
     //Copy/pasted from OpenProjectList
     //remove this code as soon as #68827 is fixed.
-    private static class ProjectByDisplayNameComparator implements Comparator {
+    static class ProjectByDisplayNameComparator implements Comparator {
         
         private static Comparator COLLATOR = Collator.getInstance();
         
