@@ -85,6 +85,7 @@ class WriteBackTransaction extends FileManagerTransaction {
     private FileObject root;
 
     WriteBackTransaction(FileObject root) {
+        super(true);
         this.root = root;
         
         deleted = new HashSet<File>();

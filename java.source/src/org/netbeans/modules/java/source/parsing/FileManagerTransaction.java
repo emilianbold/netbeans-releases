@@ -56,8 +56,16 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Zezula
  */
 public abstract class FileManagerTransaction extends TransactionContext.Service {
+    
+    private final boolean writeable;
 
-    protected FileManagerTransaction() {}
+    protected FileManagerTransaction(boolean writeable) {
+        this.writeable = writeable;
+    }
+    
+    public final boolean canWrite() {
+        return writeable;
+    }
 
     public abstract void delete (@NonNull final File file);
 
@@ -112,8 +120,12 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         
         
     }
-    
+
     private static class WriteThrogh extends FileManagerTransaction {
+        
+        private WriteThrogh() {
+            super(true);
+        }
 
         @Override
         public void delete (@NonNull final File file) {
@@ -143,6 +155,10 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
     }
 
     private static class Read extends FileManagerTransaction {
+        
+        private Read() {
+            super(false);
+        }
 
         @Override
         public void delete (@NonNull final File file) {

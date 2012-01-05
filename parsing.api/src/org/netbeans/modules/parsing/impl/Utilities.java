@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
@@ -162,6 +163,11 @@ public class Utilities {
         Parameters.notNull ("task", task);
         Parameters.notNull ("source", source);
         TaskProcessor.rescheduleTasks (Collections.<SchedulerTask>singleton (task), source, null);
+    }
+    
+    public static void runAsScanWork(@NonNull Runnable work) {
+        Parameters.notNull("work", work);   //NOI18N
+        RepositoryUpdater.getDefault().runAsWork(work);
     }
 
     //Internal API among TaskProcessor and RepositoryUpdater
