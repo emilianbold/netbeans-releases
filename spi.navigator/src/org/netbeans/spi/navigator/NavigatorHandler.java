@@ -82,14 +82,14 @@ public final class NavigatorHandler {
     }
 
     /**
-     * If there is a custom NavigatorDisplayer implementation, it should call
+     * If there is a custom {@link NavigatorDisplayer} implementation, it should call
      * this method just before its UI shows up (before the enclosing
      * TopComponent is opened) to actually initialize the navigator. From this
      * point the navigator observes the TopComponent and once it is opened, it
      * starts collecting panels from the providers and passing them to the
      * displayer.
      * <p>
-     * If there is no custom NavigatorDisplayer registered, the navigator's own
+     * If there is no custom displayer registered, the navigator's own
      * (default) TopComponent will be used and it also takes care of
      * initializing the navigator automatically. No need to call this method then.
      * <p>

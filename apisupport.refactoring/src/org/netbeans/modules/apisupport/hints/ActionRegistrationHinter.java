@@ -74,10 +74,10 @@ public class ActionRegistrationHinter implements Hinter {
 
      public @Override void process(final Context ctx) throws Exception {
         final FileObject file = ctx.file();
-        if (!file.isData() || !file.hasExt("instance")) {
-            return; // not supporting *.settings etc. for now
+        final Object instanceCreate = ctx.instanceAttribute(file);
+        if (instanceCreate == null) {
+            return;
         }
-        final Object instanceCreate = file.getAttribute("literal:instanceCreate");
         if ("method:org.openide.awt.Actions.alwaysEnabled".equals(instanceCreate)) {
             ctx.addStandardAnnotationHint(new Callable<Void>() {
                 public @Override Void call() throws Exception {
@@ -103,18 +103,7 @@ public class ActionRegistrationHinter implements Hinter {
                     if (!annotationsAvailable(ctx)) {
                         return null;
                     }
-                    Object action;
-                    if (instanceCreate != null) {
-                        action = instanceCreate;
-                    } else {
-                        Object clazz = file.getAttribute("instanceClass");
-                        if (clazz != null) {
-                            action = "new:" + clazz;
-                        } else {
-                            action = "new:" + file.getName().replace('-', '.');
-                        }
-                    }
-                    ctx.findAndModifyDeclaration(action, new RegisterAction(ctx, true));
+                    ctx.findAndModifyDeclaration(instanceCreate, new RegisterAction(ctx, true));
                     return null;
                 }
             });
