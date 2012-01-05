@@ -51,6 +51,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -87,9 +89,9 @@ public class ElementNode extends AbstractNode {
     /**
      * Creates a new instance of TreeNode
      */
-    public ElementNode(final Description description, DescriptionFilter filters) {
-        super(description.subs == null ? Children.LEAF : new ElementChilren(description.subs, filters),
-                description.elementHandle == null ? null : prepareLookup(description));
+    public ElementNode(final Description description, DescriptionFilter filters, ChangeListener listener) {
+        super(description.subs == null ? Children.LEAF : new ElementChilren(description.subs, filters, listener),
+                description.elementHandle == null ? null : prepareLookup(description, listener));
         this.filters = filters;
         this.description = description;
         setDisplayName(description.name);
@@ -246,7 +248,7 @@ public class ElementNode extends AbstractNode {
         return description;
     }
 
-    private static Lookup prepareLookup(final Description description) {
+    private static Lookup prepareLookup(final Description description, final ChangeListener listener) {
         InstanceContent ic = new InstanceContent();
 
         ic.add(description, ConvertDescription2TreePathHandle);
@@ -297,6 +299,7 @@ public class ElementNode extends AbstractNode {
              */
             public void setSelected(Boolean selected) {
                 description.selected = selected;
+                listener.stateChanged(new ChangeEvent(this));
             }
         });
 
@@ -368,14 +371,16 @@ public class ElementNode extends AbstractNode {
 
     private static final class ElementChilren extends Children.Keys<Description> {
         private final DescriptionFilter filters;
+        private final ChangeListener listener;
 
-        public ElementChilren(Collection<Description> descriptions, DescriptionFilter filters ) {
+        public ElementChilren(Collection<Description> descriptions, DescriptionFilter filters, ChangeListener listener ) {
             this.filters = filters;
+            this.listener = listener;
             resetKeys( descriptions, filters );
         }
 
         protected Node[] createNodes(Description key) {
-            return new Node[] {new  ElementNode(key, filters)};
+            return new Node[] {new  ElementNode(key, filters, listener)};
         }
 
         void resetKeys( Collection<Description> descriptions, DescriptionFilter filters ) {            

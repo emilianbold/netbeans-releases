@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.javadoc.Doc;
+import com.sun.javadoc.Tag;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -53,10 +55,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.Pair;
@@ -75,6 +74,7 @@ import org.openide.util.NbBundle;
  */
 public class MoveMembersTransformer extends RefactoringVisitor {
 
+    private static final int NOPOS = -2;
     private static final Set<Modifier> ALL_ACCESS_MODIFIERS = EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC);
     private Problem problem;
     private Collection<? extends TreePathHandle> allElements;
@@ -82,6 +82,8 @@ public class MoveMembersTransformer extends RefactoringVisitor {
     private final HashMap<TreePathHandle, Boolean> usageOutsideOfPackage;
     private final TreePathHandle targetHandle;
     private final boolean delegate;
+    private final boolean deprecate;
+    private final boolean updateJavadoc;
 
     public MoveMembersTransformer(MoveRefactoring refactoring) {
         allElements = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
@@ -94,6 +96,8 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         }
         targetHandle = refactoring.getTarget().lookup(TreePathHandle.class);
         delegate = properties.isDelegate();
+        deprecate = properties.isAddDeprecated();
+        updateJavadoc = properties.isUpdateJavaDoc();
     }
 
     public Problem getProblem() {
@@ -368,7 +372,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 @Override
                 public Boolean visitMemberSelect(MemberSelectTree node, TypeMirror source) {
                     String isThis = node.getExpression().toString();
-                    if (isThis.equals("this") || isThis.endsWith(".this")) {
+                    if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                         TreePath thisPath = new TreePath(currentPath, node);
                         Element el = workingCopy.getTrees().getElement(thisPath);
                         if (isElementBeingMoved(el) != null) {
@@ -386,7 +390,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     if (isElementBeingMoved(el) == null) {
                         String isThis = node.toString();
                         // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
-                        if (isThis.equals("this") || isThis.endsWith(".this")) {
+                        if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                             if (!el.getModifiers().contains(Modifier.STATIC)) {
                                 return true;
                             }
@@ -452,13 +456,14 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 final TreePath resolvedPath = tph.resolve(workingCopy);
                 Tree member = resolvedPath.getLeaf();
                 Tree newMember = null;
+                Element resolvedElement = workingCopy.getTrees().getElement(resolvedPath);
 
                 // Make a new Method tree
                 if (member.getKind() == Tree.Kind.METHOD) {
 
                     // Change Modifiers
                     final MethodTree methodTree = (MethodTree) member;
-                    ExecutableElement method = (ExecutableElement) workingCopy.getTrees().getElement(resolvedPath);
+                    ExecutableElement method = (ExecutableElement) resolvedElement;
                     ModifiersTree modifiers = changeModifiers(methodTree.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE);
 
                     // Find and remove a usable parameter
@@ -506,7 +511,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         @Override
                         public Boolean visitMemberSelect(MemberSelectTree node, TypeMirror source) {
                             String isThis = node.getExpression().toString();
-                            if (isThis.equals("this") || isThis.endsWith(".this")) {
+                            if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                                 TreePath currentPath = new TreePath(resolvedPath, node);
                                 Element el = trees.getElement(currentPath);
                                 if (isElementBeingMoved(el) != null) {
@@ -527,7 +532,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                                 String isThis = node.toString();
                                 TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                 // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
-                                if (isThis.equals("this") || isThis.endsWith(".this")) {
+                                if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                                     // Check for static
                                     if (!el.getModifiers().contains(Modifier.STATIC)) {
                                         ExpressionTree newLabel = make.setLabel(node, parameterName);
@@ -614,6 +619,24 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
                     GeneratorUtilities.get(workingCopy).copyComments(member, newMember, true);
                     GeneratorUtilities.get(workingCopy).copyComments(member, newMember, false);
+                    if(newMember.getKind() == Tree.Kind.METHOD) {
+                        if(updateJavadoc) {
+                            MethodTree method = (MethodTree) newMember;
+                            List<Comment> comments = workingCopy.getTreeUtilities().getComments(method, true);
+                            Comment comment;
+                            if(comments.isEmpty()) {
+                                comment = generateJavadoc(method, target, false);
+                            } else {
+                                if(comments.get(0).isDocComment()) {
+                                    make.removeComment(method, 0, true);
+                                    comment = updateJavadoc(resolvedElement, target, false);
+                                } else {
+                                    comment = generateJavadoc(method, target, false);
+                                }
+                            }
+                            make.addComment(newMember, comment, true);
+                        }
+                    }
                     newClassTree = GeneratorUtilities.get(workingCopy).insertClassMember(newClassTree, newMember);
                 }
             }
@@ -634,8 +657,9 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 TreePath resolvedPath = tph.resolve(workingCopy);
                 Tree member = resolvedPath.getLeaf();
                 if (delegate && member.getKind() == Tree.Kind.METHOD) {
-                    int index = newClassTree.getMembers().indexOf(member);
-                    newClassTree = make.removeClassMember(newClassTree, member);
+                    MethodTree methodTree = (MethodTree) member;
+                    int index = newClassTree.getMembers().indexOf(methodTree);
+                    newClassTree = make.removeClassMember(newClassTree, methodTree);
                     ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(resolvedPath);
                     List<ExpressionTree> paramList = new ArrayList<ExpressionTree>();
 
@@ -658,12 +682,31 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     } else {
                         statement = make.ExpressionStatement(methodInvocation);
                     }
-
-
-
-                    MethodTree method = make.Method(element, make.Block(Collections.singletonList(statement), false));
+                    ModifiersTree modifiers = methodTree.getModifiers();
+                    if(deprecate) {
+                        AnnotationTree annotation = make.Annotation(make.Identifier("Deprecated"), Collections.EMPTY_LIST); //NOI18N
+                        modifiers = make.addModifiersAnnotation(modifiers, annotation);
+                    }
+                    MethodTree method = make.Method(modifiers, methodTree.getName(), methodTree.getReturnType(), methodTree.getTypeParameters(), methodTree.getParameters(), methodTree.getThrows(), make.Block(Collections.singletonList(statement), false), (ExpressionTree) methodTree.getDefaultValue());
+                    GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
+                    GeneratorUtilities.get(workingCopy).copyComments(member, method, true);
+                    GeneratorUtilities.get(workingCopy).copyComments(member, method, false);
+                    if(updateJavadoc) {
+                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(method, true);
+                        Comment comment;
+                        if(comments.isEmpty()) {
+                            comment = generateJavadoc(method, target, deprecate);
+                        } else {
+                            if(comments.get(0).isDocComment()) {
+                                make.removeComment(method, 0, true);
+                                comment = updateJavadoc(element, target, deprecate);
+                            } else {
+                                comment = generateJavadoc(method, target, deprecate);
+                            }
+                        }
+                        make.addComment(method, comment, true);
+                    }
                     newClassTree = make.insertClassMember(newClassTree, index, method);
-
                 } else {
                     newClassTree = make.removeClassMember(newClassTree, member);
                 }
@@ -672,6 +715,68 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             return true;
         }
         return false;
+    }
+    
+    private Comment updateJavadoc(Element method, Element targetElement, boolean addDeprecated) {
+        Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
+        
+        List<Tag> otherTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags()));
+        List<Tag> returnTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@return"))); // NOI18N
+        List<Tag> throwsTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@throws"))); // NOI18N
+        List<Tag> paramTags = new LinkedList<Tag>(Arrays.asList(javadoc.tags("@param"))); // NOI18N
+
+        otherTags.removeAll(returnTags);
+        otherTags.removeAll(throwsTags);
+        otherTags.removeAll(paramTags);
+        
+        StringBuilder text = new StringBuilder(javadoc.commentText()).append("\n\n"); // NOI18N
+        text.append(tagsToString(paramTags));
+        text.append(tagsToString(returnTags));
+        text.append(tagsToString(throwsTags));
+        text.append(tagsToString(otherTags));
+        if(addDeprecated) {
+            String target = targetElement.asType().toString() + "#" + method.getSimpleName(); // NOI18N
+            text.append(org.openide.util.NbBundle.getMessage(MoveMembersTransformer.class, "TAG_Deprecated", target));
+        }
+        Comment comment = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS, text.toString());
+        return comment;
+    }
+    
+    private String tagsToString(List<Tag> tags) {
+        StringBuilder sb = new StringBuilder();
+        for (Tag tag : tags) {
+            sb.append(tag.name()).append(" ").append(tag.text()).append("\n"); // NOI18N
+        }
+        return sb.toString();
+    }
+    
+    private Comment generateJavadoc(MethodTree current, Element targetElement, boolean addDeprecated) {
+        Tree returnType = current.getReturnType();
+        StringBuilder builder = new StringBuilder("\n"); // NOI18N
+        for (VariableTree variableTree : current.getParameters()) {
+            builder.append(String.format("@param %s the value of %s", variableTree.getName(), variableTree.getName())); // NOI18N
+            builder.append("\n"); // NOI18N
+        }
+        boolean hasReturn = false;
+        if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+            if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                hasReturn = true;
+            }
+        }
+        if(hasReturn) {
+            builder.append("@return the ").append(returnType).append("\n"); // NOI18N
+        }
+        for (ExpressionTree expressionTree : current.getThrows()) {
+            builder.append("@throws ").append(expressionTree).append("\n"); // NOI18N
+        }
+        if(addDeprecated) {
+            String target = targetElement.asType().toString() + "#" + current.getName(); // NOI18N
+            builder.append(org.openide.util.NbBundle.getMessage(MoveMembersTransformer.class, "TAG_Deprecated", target));
+        }
+        Comment comment = Comment.create(
+                Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS,
+                builder.toString());
+        return comment;
     }
 
     private TreePathHandle isElementBeingMoved(Element el) {
@@ -731,16 +836,12 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
         TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, resolvedPath, true, true, true, true, true);
         final TypeElement enclosingClass = (TypeElement) workingCopy.getTrees().getElement(enclosingClassPath);
-
         final Map<Tree, Tree> original2Translated = new HashMap<Tree, Tree>();
-
-        // TODO What about non static stuff.
+        
+        // TODO Change this to something like that is used for method body; importFqns
         TreeScanner<Void, Void> idScan = new TreeScanner<Void, Void>() {
-
             @Override
             public Void visitIdentifier(IdentifierTree node, Void p) {
-                // TODO Check if this is necesary, probably it is no problem to change them all, if it is not moved.
-
                 TreePath currentPath = new TreePath(resolvedPath, node);
                 if (currentPath.getParentPath().getLeaf().getKind() == Tree.Kind.MEMBER_SELECT) {
                     return super.visitIdentifier(node, p); // Already checked by visitMemberSelect
