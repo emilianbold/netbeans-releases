@@ -56,7 +56,7 @@ import junit.textui.TestRunner;
 
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -102,7 +102,7 @@ public class VersioningSystemTest extends JellyTestCase {
         versioningSystemClassName = props.getProperty("test.vcs");
         rootDir = new File(props.getProperty("test.root"));
 
-        testedSystem = VersioningManager.getInstance().getOwner(rootDir);
+        testedSystem = VersioningSupport.getOwner(rootDir);
         assertNotNull(testedSystem);
         assertEquals(testedSystem.getClass().getName(), versioningSystemClassName);
     }
@@ -124,7 +124,7 @@ public class VersioningSystemTest extends JellyTestCase {
     public void testOwnership() throws IOException {
         VersioningSystem vs;
 
-        vs = VersioningManager.getInstance().getOwner(rootDir.getParentFile());
+        vs = VersioningSupport.getOwner(rootDir.getParentFile());
         assertNull(vs);
 
         testOwnershipRecursively(rootDir);
@@ -139,7 +139,7 @@ public class VersioningSystemTest extends JellyTestCase {
     }
 
     private void testOwnershipRecursively(File dir) {
-        VersioningSystem vs = VersioningManager.getInstance().getOwner(dir);
+        VersioningSystem vs = VersioningSupport.getOwner(dir);
         assertEquals(testedSystem, vs);
         File [] children = dir.listFiles();
         if (children == null) return;
