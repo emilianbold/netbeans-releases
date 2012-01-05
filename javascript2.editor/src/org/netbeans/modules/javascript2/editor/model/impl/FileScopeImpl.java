@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.*;
@@ -87,9 +84,12 @@ public class FileScopeImpl extends VariableScopeImpl implements FileScope {
                 logicalElements.put(function.getName(), function);
                 break;
             case CONSTRUCTOR:
-                String objectName = ModelUtils.getNameWithoutPrototype(identifiers);
-                ObjectScopeImpl logicalObject = new ObjectScopeImpl(this, identifiers, function.getBlockRange());
-                logicalElements.put(objectName.toString(), logicalObject);
+                ObjectScopeImpl logicalObject = identifiers.size() == 1 
+                        ? new ObjectScopeImpl(this, identifiers, function.getBlockRange())
+                        : findOrCreateLogicaObject(this, identifiers, OffsetRange.NONE);
+                if (!logicalElements.containsKey(identifiers.get(0).getName())) {
+                    logicalElements.put(identifiers.get(0).getName(), logicalObject);
+                }
                 logicalObject.addElement((FunctionScopeImpl) function);
                 break;
             case METHOD:
@@ -99,11 +99,24 @@ public class FileScopeImpl extends VariableScopeImpl implements FileScope {
                     // these methods are already in
                     break;
                 }
-                objectName = ModelUtils.getObjectName(function);
-                logicalObject = (ObjectScopeImpl) logicalElements.get(objectName);
+                List<Identifier> objectName = new ArrayList<Identifier>();
+                
+                if (identifiers.size() > 1) {
+                    for(int i = 0; i < identifiers.size() - 2; i++) {
+                        objectName.add(identifiers.get(i));
+                    }
+                    if(!identifiers.get(identifiers.size() - 2).getName().equals("prototype")) {
+                        objectName.add(identifiers.get(identifiers.size() - 2));
+                    }
+                    logicalObject = identifiers.size() == 1 
+                        ? new ObjectScopeImpl(this, identifiers, function.getBlockRange())
+                        : findOrCreateLogicaObject(this, objectName, OffsetRange.NONE);
+                } else {
+                    logicalObject = (ObjectScopeImpl) logicalElements.get(identifiers.get(0).getName());
+                }
                 if (logicalObject == null) {
                     logicalObject = new ObjectScopeImpl(this, identifiers, function.getBlockRange());
-                    logicalElements.put(objectName, logicalObject);
+                    logicalElements.put(identifiers.get(0).getName(), logicalObject);
                 }
                 FunctionScopeImpl functionImpl = (FunctionScopeImpl) function;
                 logicalObject.addElement(functionImpl);
@@ -113,5 +126,25 @@ public class FileScopeImpl extends VariableScopeImpl implements FileScope {
                 break;
         }
 
+    }
+    
+    private ObjectScopeImpl findOrCreateLogicaObject(FileScope fScope, List<Identifier> fqName, OffsetRange range) {
+        ObjectScopeImpl result = ModelUtils.findObjectWithName(fScope, fqName.get(0).getName());
+        List<Identifier> fqNameOfCreated = new ArrayList<Identifier>(fqName.size());
+        fqNameOfCreated.add(fqName.get(0));
+        if (result == null) {
+            result = new ObjectScopeImpl(fScope, fqNameOfCreated, range);
+            ((FileScopeImpl) fScope).addObject(result);
+        }
+        for (int i = 1; i < fqName.size(); i++) {
+            ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(result.getElements(), fqName.get(i).getName()));
+            fqNameOfCreated.add(fqName.get(i));
+            if (me == null) {
+                result = new ObjectScopeImpl(result, fqNameOfCreated, range);
+            } else {
+                result = (ObjectScopeImpl) me;
+            }
+        }
+        return result;
     }
 }
