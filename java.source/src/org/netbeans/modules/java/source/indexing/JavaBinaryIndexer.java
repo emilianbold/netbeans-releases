@@ -59,22 +59,27 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -119,7 +124,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                                 CachingArchiveProvider.getDefault().clearArchive(context.getRootURI());
                                 deleteSigFiles(context.getRootURI(), changed);
                                 if (changes.preBuildArgs) {
-                                    preBuildArgs(context.getRootURI());
+                                    preBuildArgs(context.getRootURI(),javax.swing.JComponent.class.getName());
                                 }
                             }
                             final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, peers, changed, !changes.added.isEmpty(), false);
@@ -155,6 +160,22 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         }
     }
     
+    public static void preBuildArgs(
+        @NonNull final FileObject root,
+        @NonNull final FileObject file) throws IOException {
+        
+        final String relativePath = 
+            FileObjects.convertFolder2Package(
+                FileObjects.stripExtension(
+                    FileUtil.getRelativePath(root, file)));
+        final TransactionContext txCtx = TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.writeThrough());
+        try {
+            preBuildArgs(root.getURL(), relativePath);
+        } finally {
+            txCtx.commit();
+        }
+    }
+    
     /**
      * Pre builds argument names for {@link javax.swing.JComponent} to speed up first
      * call of code completion on swing classes. Has no semantic impact only improves performance,
@@ -162,7 +183,9 @@ public class JavaBinaryIndexer extends BinaryIndexer {
      * @param archiveFile the archive
      * @param archiveUrl URL of an archive
      */
-    private static void preBuildArgs (final URL archiveUrl) {
+    private static void preBuildArgs (
+            @NonNull final URL archiveUrl,
+            @NonNull final String fqn) {
         class DevNullDiagnosticListener implements DiagnosticListener<JavaFileObject> {
             @Override
             public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
@@ -171,9 +194,15 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 }
             }
         }
-        ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
+        ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
+            ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
             ClassPathSupport.createClassPath(new URL[0]),
-            ClassPathSupport.createClassPath(new URL[0]));
+            ClassPathSupport.createClassPath(new URL[0]),
+            null,
+            true,
+            true,
+            false,
+            false);
         final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null);
         TreeLoader.preRegister(jt.getContext(), cpInfo, true);
         //Force JTImpl.prepareCompiler to get JTImpl into Context
@@ -182,7 +211,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
+        TypeElement jc = (TypeElement) jt.getElements().getTypeElementByBinaryName(fqn);
         if (jc != null) {
             List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
             for (ExecutableElement method : methods) {
@@ -193,8 +222,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 }
             }
         }
-    }   
-
+    }
+    
     public static class Factory extends BinaryIndexerFactory {
 
         @Override

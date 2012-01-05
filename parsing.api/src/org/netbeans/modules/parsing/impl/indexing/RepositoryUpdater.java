@@ -1367,7 +1367,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
-    /*test*/ void runAsWork(@NonNull final Runnable r) {
+    public void runAsWork(@NonNull final Runnable r) {
         assert r != null;
         final Work work = new Work(false, false, false, true, SuspendStatus.NOP, null) {
             @Override

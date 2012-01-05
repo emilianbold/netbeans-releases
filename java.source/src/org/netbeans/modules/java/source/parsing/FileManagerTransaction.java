@@ -68,8 +68,16 @@ import org.netbeans.modules.java.source.util.Iterators;
  * @author Tomas Zezula
  */
 public abstract class FileManagerTransaction extends TransactionContext.Service {
+    
+    private final boolean writeable;
 
-    private FileManagerTransaction() {}
+    private FileManagerTransaction(boolean writeable) {
+        this.writeable = writeable;
+    }
+    
+    public final boolean canWrite() {
+        return writeable;
+    }
 
     public abstract void delete (@NonNull final File file);
 
@@ -201,6 +209,7 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         private final Storage   storage;
 
         private WriteBack () {
+            super(true);
             deleted = new HashSet<File>();
             storage = new Storage();
         }
@@ -293,6 +302,10 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
     }
 
     private static class WriteThrogh extends FileManagerTransaction {
+        
+        private WriteThrogh() {
+            super(true);
+        }
 
         @Override
         public void delete (@NonNull final File file) {
@@ -322,6 +335,10 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
     }
 
     private static class Read extends FileManagerTransaction {
+        
+        private Read() {
+            super(false);
+        }
 
         @Override
         public void delete (@NonNull final File file) {
