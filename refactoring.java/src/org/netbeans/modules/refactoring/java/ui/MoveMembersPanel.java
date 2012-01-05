@@ -53,6 +53,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.text.Collator;
@@ -101,7 +102,6 @@ import org.openide.util.*;
     "LBL_ShowInheritedTip=Show inherited members"})
 public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefactoringPanel, ExplorerManager.Provider, DescriptionFilter, FiltersManager.FilterChangeListener {
 
-    private static final String MIME_JAVA = "text/x-java"; // NOI18N
     private static final String JAVADOC = "updateJavadoc.moveMembers"; // NOI18N
     private static final String DELEGATE = "delegate.moveMembers"; // NOI18N
     private static final String DEPRECATE = "deprecate.moveMembers"; // NOI18N
@@ -132,7 +132,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     /**
      * Creates new form MoveMembersPanel
      */
-    public MoveMembersPanel(TreePathHandle[] selectedElements, ChangeListener parent) {
+    public MoveMembersPanel(TreePathHandle[] selectedElements, final ChangeListener parent) {
         manager = new ExplorerManager();
         this.parent = parent;
         this.naturalSort = NbPreferences.forModule(MoveMembersPanel.class).getBoolean("naturalSort", false); //NOI18N
@@ -155,6 +155,20 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             new SortByNameAction(this),
             new SortBySourceAction(this)
         };
+        ItemListener parentListener = new ItemListener() {
+                                        @Override
+                                        public void itemStateChanged(ItemEvent e) {
+                                            parent.stateChanged(null);
+                                        }
+                                    };
+        btnAsIs.addItemListener(parentListener);
+        btnDefault.addItemListener(parentListener);
+        btnEscalate.addItemListener(parentListener);
+        btnJavadocAsIs.addItemListener(parentListener);
+        btnJavadocUpdate.addItemListener(parentListener);
+        btnPrivate.addItemListener(parentListener);
+        btnProtected.addItemListener(parentListener);
+        btnPublic.addItemListener(parentListener);
     }
 
     public Action[] getActions() {
@@ -279,13 +293,13 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     private void updateClasses() {
         classComboBox.setModel(new DefaultComboBoxModel(new Object[]{ElementNode.getWaitNode()}));
         RP.post(new Runnable() {
-            private DefaultComboBoxModel model;
 
             @Override
             public void run() {
+                final ComboBoxModel model;
                 SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
                 String packageName = packageComboBox.getSelectedItem().toString();
-                if (g != null && packageName != null && !packageName.isEmpty()) {
+                if (g != null && packageName != null) {
                     String pathname = packageName.replaceAll("\\.", "/"); // NOI18N
                     FileObject fo = g.getRootFolder().getFileObject(pathname);
                     ClassPath bootCp = ClassPath.getClassPath(fo, ClassPath.BOOT);
@@ -331,7 +345,10 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                                         TypeElement element = elementHandle.resolve(parameter);
                                         if (element != null) {
                                             Icon icon = ElementIcons.getElementIcon(element.getKind(), element.getModifiers());
-                                            ClassItem classItem = new ClassItem(element.getSimpleName().toString(), icon, TreePathHandle.create(element, parameter));
+                                            String fqn = element.getQualifiedName().toString();
+                                            String packageName = packageSet.iterator().next();
+                                            String className = packageName.length() > 0 ? fqn.substring(packageName.length()+1) : fqn;
+                                            ClassItem classItem = new ClassItem(className, icon, TreePathHandle.create(element, parameter));
                                             items.add(classItem);
                                         }
                                     }
@@ -363,11 +380,14 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                     } else {
                         model = new DefaultComboBoxModel();
                     }
+                } else {
+                    model = new DefaultComboBoxModel();
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         classComboBox.setModel(model);
+                        parent.stateChanged(null);
                     }
                 });
             }
@@ -469,6 +489,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                 }
             });
             initialized = true;
+            parent.stateChanged(null);
         }
     }
 
@@ -512,7 +533,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         labelClass = new javax.swing.JLabel();
         javadocPanel = new javax.swing.JPanel();
         btnJavadocUpdate = new javax.swing.JRadioButton();
-        btnJavadocGenerate = new javax.swing.JRadioButton();
         btnJavadocAsIs = new javax.swing.JRadioButton();
 
         membersListPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.membersListPanel.border.title"))); // NOI18N
@@ -694,13 +714,11 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         javadocPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.javadocPanel.border.title"))); // NOI18N
 
         javadocButtonGroup.add(btnJavadocUpdate);
+        btnJavadocUpdate.setSelected(((Boolean) RefactoringModule.getOption(JAVADOC, Boolean.FALSE)).booleanValue());
         btnJavadocUpdate.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnJavadocUpdate.text")); // NOI18N
 
-        javadocButtonGroup.add(btnJavadocGenerate);
-        btnJavadocGenerate.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnJavadocGenerate.text")); // NOI18N
-
         javadocButtonGroup.add(btnJavadocAsIs);
-        btnJavadocAsIs.setSelected(true);
+        btnJavadocAsIs.setSelected(!((Boolean) RefactoringModule.getOption(JAVADOC, Boolean.FALSE)).booleanValue());
         btnJavadocAsIs.setText(org.openide.util.NbBundle.getMessage(MoveMembersPanel.class, "MoveMembersPanel.btnJavadocAsIs.text")); // NOI18N
 
         javax.swing.GroupLayout javadocPanelLayout = new javax.swing.GroupLayout(javadocPanel);
@@ -710,9 +728,8 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             .addGroup(javadocPanelLayout.createSequentialGroup()
                 .addGroup(javadocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnJavadocAsIs)
-                    .addComponent(btnJavadocGenerate)
                     .addComponent(btnJavadocUpdate))
-                .addGap(61, 61, 61))
+                .addGap(75, 75, 75))
         );
         javadocPanelLayout.setVerticalGroup(
             javadocPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -720,9 +737,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                 .addComponent(btnJavadocAsIs)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnJavadocUpdate)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnJavadocGenerate)
-                .addGap(6, 6, 6))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -746,11 +761,11 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(targetPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(membersListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE))
+                            .addComponent(membersListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(visibilityPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(javadocPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                            .addComponent(javadocPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -766,28 +781,30 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                         .addComponent(visibilityPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(javadocPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(229, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(targetPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(membersListPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addComponent(membersListPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chkDelegate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(chkDeprecate)
-                        .addContainerGap())))
+                        .addComponent(chkDeprecate)))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void chkDeprecateItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkDeprecateItemStateChanged
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
         RefactoringModule.setOption(DEPRECATE, b);
+        parent.stateChanged(null);
     }//GEN-LAST:event_chkDeprecateItemStateChanged
 
     private void chkDelegateItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkDelegateItemStateChanged
         Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
         RefactoringModule.setOption(DELEGATE, b);
-        chkDeprecate.setVisible(b);
+        chkDeprecate.setEnabled(b);
+        parent.stateChanged(null);
     }//GEN-LAST:event_chkDelegateItemStateChanged
 
     private void projectsComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_projectsComboBoxItemStateChanged
@@ -813,7 +830,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     private javax.swing.JRadioButton btnDefault;
     private javax.swing.JRadioButton btnEscalate;
     private javax.swing.JRadioButton btnJavadocAsIs;
-    private javax.swing.JRadioButton btnJavadocGenerate;
     private javax.swing.JRadioButton btnJavadocUpdate;
     private javax.swing.JRadioButton btnPrivate;
     private javax.swing.JRadioButton btnProtected;
@@ -842,9 +858,11 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     public List<? extends TreePathHandle> getHandles() {
         List<TreePathHandle> result = new LinkedList<TreePathHandle>();
         ElementNode rootNode = getRootNode();
-        for (Description description : rootNode.getDescritption().getSubs()) {
-            if (description.getSelected() == Boolean.TRUE) {
-                result.add(TreePathHandle.from(description.getElementHandle(), description.getCpInfo()));
+        if(rootNode != null && rootNode.getDescritption() != null) {
+            for (Description description : rootNode.getDescritption().getSubs()) {
+                if (description.getSelected() == Boolean.TRUE) {
+                    result.add(TreePathHandle.from(description.getElementHandle(), description.getCpInfo()));
+                }
             }
         }
         return result;
@@ -883,7 +901,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
             @Override
             public void run() {
-                manager.setRootContext(new ElementNode(description, descriptionFilter));
+                manager.setRootContext(new ElementNode(description, descriptionFilter, parent));
                 outlineView1.getOutline().setRootVisible(false);
                 lblSource.setText("<html>" + description.getHtmlHeader()); //NOI18N
                 lblSource.setIcon(ElementIcons.getElementIcon(description.getKind(), description.getModifiers()));
