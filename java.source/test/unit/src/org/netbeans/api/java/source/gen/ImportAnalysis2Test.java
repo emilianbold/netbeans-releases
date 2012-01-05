@@ -600,6 +600,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
     public void test195882() throws Exception {
         clearWorkDir();
+        beginTx();
         assertTrue(new File(getWorkDir(), "test").mkdirs());
         testFile = new File(getWorkDir(), "test/Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -653,6 +654,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
     public void testParameterizedType() throws Exception {
         clearWorkDir();
+        beginTx();
         assertTrue(new File(getWorkDir(), "test").mkdirs());
         testFile = new File(getWorkDir(), "test/Test.java");
         TestUtilities.copyStringToFile(testFile,
