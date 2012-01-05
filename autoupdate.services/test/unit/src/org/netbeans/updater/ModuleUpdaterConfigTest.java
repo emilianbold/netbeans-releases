@@ -78,7 +78,7 @@ public class ModuleUpdaterConfigTest extends NbTestCase {
     
     public void testMainConfigParsesPathSeparator() {
         ModuleUpdater.MainConfig mc = new ModuleUpdater.MainConfig(props.getPath(), cluster);
-        String exp = File.pathSeparator + File.separator + "jarda" + File.pathSeparator + File.separator + "darda" + File.pathSeparator + File.separator + "parda";
+        String exp = File.pathSeparator + DRIVE + File.separator + "jarda" + File.pathSeparator + DRIVE + File.separator + "darda" + File.pathSeparator + DRIVE + File.separator + "parda";
         if (!mc.getClasspath().equals(exp)) {
             fail("Expecting " + exp + " but was: " + mc.getClasspath());
         }
