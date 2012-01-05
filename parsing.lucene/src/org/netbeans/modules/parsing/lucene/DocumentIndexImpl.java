@@ -77,6 +77,12 @@ public final class DocumentIndexImpl implements DocumentIndex {
      */
     private final Index.Transactional txLuceneIndex;
     
+    /**
+     * This flag is used in tests, in particular in java.source IndexerTranscationTest. System property must be set before
+     * the indexing starts and will disable caching of document changes, all changes will be flushed (but not committed) immediately.
+     */
+    private boolean disableCache = Boolean.getBoolean("test." + DocumentIndexImpl.class.getName() + ".cacheDisable");
+    
     private static final Convertor<IndexDocumentImpl,Document> ADD_CONVERTOR = new AddConvertor();
     private static final Convertor<String,Query> REMOVE_CONVERTOR = new RemoveConvertor();
     private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = new QueryConvertor();
@@ -118,7 +124,7 @@ public final class DocumentIndexImpl implements DocumentIndex {
             assert document instanceof IndexDocumentImpl;
             final Reference<List[]> ref = getDataRef();
             assert ref != null;
-            forceFlush = ref.get() == null;
+            forceFlush = disableCache || ref.get() == null;
             toAdd.add((IndexDocumentImpl)document);
             toRemove.add(document.getPrimaryKey());
         }

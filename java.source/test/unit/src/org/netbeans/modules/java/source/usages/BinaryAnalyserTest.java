@@ -234,6 +234,18 @@ public class BinaryAnalyserTest extends NbTestCase {
         public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             ((Index.Transactional)index).txStore(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor());
         }
+
+        @Override
+        public void commit() throws IOException {
+            ((Index.Transactional)index).commit();
+        }
+
+        @Override
+        public void rollback() throws IOException {
+            ((Index.Transactional)index).rollback();
+        }
+        
+        
     }
 
     public void testCRCDiff () throws Exception {

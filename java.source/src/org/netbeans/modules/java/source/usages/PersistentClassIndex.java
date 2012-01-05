@@ -68,6 +68,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -113,12 +114,19 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     
     @Override
     public BinaryAnalyser getBinaryAnalyser () {
+        // TODO - run in tx ?
         return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
     }
     
     @Override
     public SourceAnalyser getSourceAnalyser () {        
-        return new SourceAnalyser (new PIWriter());        
+        Writer writer = new PIWriter();
+        final TransactionContext txCtx = TransactionContext.get();
+        assert  txCtx != null;
+        
+        PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
+        pit.addIndexWriter(writer);
+        return new SourceAnalyser (writer);        
     }
 
     @Override
@@ -455,6 +463,21 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 deleteAndStore(refs, toDelete);
             }
         }
+
+        @Override
+        public void commit() throws IOException {
+            if (index instanceof Index.Transactional) {
+                ((Index.Transactional)index).commit();
+            }
+        }
+        
+        @Override
+        public void rollback() throws IOException {
+            if (index instanceof Index.Transactional) {
+                ((Index.Transactional)index).rollback();
+            }
+        }
+        
         
         @Override
         public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {

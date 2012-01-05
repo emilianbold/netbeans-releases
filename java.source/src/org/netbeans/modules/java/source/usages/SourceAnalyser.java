@@ -80,6 +80,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.openide.filesystems.FileObject;
@@ -111,7 +112,7 @@ public class SourceAnalyser {
     public void store () throws IOException {
         if (this.references.size() > 0 || this.toDelete.size() > 0) {
             try {
-                this.writer.deleteAndStore(this.references, toDelete);
+                this.writer.deleteAndFlush(this.references, toDelete);
             } finally {
                 this.references.clear();
                 this.toDelete.clear();
