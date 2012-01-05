@@ -43,10 +43,17 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
-public class DocRendererTest extends NbTestCase {
+public class DocRendererTest extends TestBase {
 
     public DocRendererTest(String name) {
         super(name);
@@ -93,7 +100,7 @@ public class DocRendererTest extends NbTestCase {
             assertEquals(expected, processed);
         }
     }
-    
+
     public void testLinksInDescription01() {
 
         String tested = "Sort the given array of {@link MyObject}s by ORDER field.";
@@ -108,8 +115,43 @@ public class DocRendererTest extends NbTestCase {
         }
         assertEquals(expected, result);
     }
-    
-    
-    
-    
+
+    public void testArrayReturnType() throws Exception {
+        String tested = "<?php\n/**\n *\n * @return Bbb[] foo\n */ \nfunction function^Name() {}\n?>";
+        String expected = "<b>functionName</b><br/><br/>\n<br />\n<h3>Returns:</h3>\n<table>\n<tr><td>&nbsp;</td><td><b>Type:</b></td><td>Bbb[]</td></tr><tr><td>&nbsp;</td><td valign=\"top\"><b>Description:</b></td><td>foo</td></tr></table>";
+        checkDocRendererOutput(tested, expected);
+    }
+
+    private void checkDocRendererOutput(String codeToTest, String expectedCode) throws Exception {
+        int caretOffset = codeToTest.indexOf("^");
+        String tested = codeToTest.substring(0, caretOffset) + codeToTest.substring(caretOffset + 1);
+        PHPParseResult parserResult = getParserResult(tested);
+        Model model = parserResult.getModel();
+        assertNotNull(model);
+        List<? extends ModelElement> elements = ModelUtils.getElements(model.getFileScope(), true);
+        ModelElement elementToTest = null;
+        for (ModelElement modelElement : elements) {
+            if (modelElement.getOffsetRange(parserResult).containsInclusive(caretOffset)) {
+                elementToTest = modelElement;
+                break;
+            }
+        }
+        assertNotNull(elementToTest);
+        String result = DocRenderer.document(parserResult, elementToTest);
+        assertEquals(expectedCode, result);
+    }
+
+    private PHPParseResult getParserResult(String code) throws Exception {
+        final PHPParseResult[] result = new PHPParseResult[1];
+        super.performTest(new String[] {code}, new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                result[0] = (PHPParseResult) resultIterator.getParserResult();
+            }
+        }, false);
+        assertNotNull(result[0]);
+        return result[0];
+    }
+
+
 }
