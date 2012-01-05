@@ -338,9 +338,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitClass(ClassTree tree, Object p) {
         Element oldSym = currentSym;
         currentSym = model.getElement(tree);
-        importAnalysis.classEntered(tree);
 	ClassTree result = rewriteChildren(tree);
-        importAnalysis.classLeft();
         currentSym = oldSym;
         return result;
     }
@@ -556,6 +554,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	Tree extending = translateClassRef(tree.getExtendsClause());
 	List<? extends ExpressionTree> implementing = 
             translateClassRef((List<? extends ExpressionTree>)tree.getImplementsClause());
+        importAnalysis.classEntered(tree);
 	List<? extends Tree> defs = translate(tree.getMembers());
         boolean typeChanged = !typarams.equals(tree.getTypeParameters()) || 
             extending != tree.getExtendsClause() ||
@@ -575,6 +574,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
                 copyPosTo(tree,n);
 	    tree = n;
 	}
+        importAnalysis.classLeft();
 	return tree;
     }
 
