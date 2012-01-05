@@ -70,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
@@ -157,13 +158,6 @@ public abstract class Group {
     })
     public static void setActiveGroup(Group nue) {
         LOG.log(Level.FINE, "set active group: {0}", nue);
-        if (UILOG.isLoggable(Level.FINER)) {
-            LogRecord rec = new LogRecord(Level.FINER, "Group.UI.setActiveGroup");
-            rec.setParameters(new Object[] {nue != null ? nue.toString(true) : null});
-            rec.setResourceBundle(NbBundle.getBundle(Group.class));
-            rec.setLoggerName(UILOG.getName());
-            UILOG.log(rec);
-        }
         Group old = getActiveGroup();
         if (nue != null) {
             NODE.put(KEY_ACTIVE, nue.id);
@@ -187,6 +181,13 @@ public abstract class Group {
             settings.setOpenProjectsURLsAsStrings(nue != null ? nue.projectPaths() : Collections.<String>emptyList());
             settings.setMainProjectURL(nue != null ? nue.prefs().get(KEY_MAIN, null) : null);
             // XXX with #168578 could adjust open files too
+        }
+        if (UILOG.isLoggable(Level.FINER)) {
+            LogRecord rec = new LogRecord(Level.FINER, "Group.UI.setActiveGroup");
+            rec.setParameters(new Object[] {nue != null ? nue.toString(true) : null});
+            rec.setResourceBundle(NbBundle.getBundle(Group.class));
+            rec.setLoggerName(UILOG.getName());
+            UILOG.log(rec);
         }
     }
     private static boolean projectsLoaded;
@@ -394,8 +395,8 @@ public abstract class Group {
         try {
         h.start(200);
         ProjectUtilities.WaitCursor.show();
-        OpenProjects op = OpenProjects.getDefault();
-        Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(op.getOpenProjects()));
+        OpenProjectList opl = OpenProjectList.getDefault();
+        Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
         Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
         Set<Project> toClose = new HashSet<Project>(oldOpen);
         toClose.removeAll(newOpen);
@@ -403,12 +404,13 @@ public abstract class Group {
         toOpen.removeAll(oldOpen);
         assert !toClose.contains(null) : toClose;
         assert !toOpen.contains(null) : toOpen;
-        h.progress(Group_progress_closing(toClose.size()), 120);
-        op.close(toClose.toArray(new Project[toClose.size()]));
-        h.progress(Group_progress_opening(toOpen.size()), 140);
-        op.open(toOpen.toArray(new Project[toOpen.size()]), false);
+        h.progress(Group_progress_closing(toClose.size()), 110);
+        opl.close(toClose.toArray(new Project[toClose.size()]), false);
+        h.switchToIndeterminate();
+        h.progress(Group_progress_opening(toOpen.size()));
+        opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
         if (g != null) {
-            op.setMainProject(g.getMainProject());
+            opl.setMainProject(g.getMainProject());
         }
         } finally {
             ProjectUtilities.WaitCursor.hide();
