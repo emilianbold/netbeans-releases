@@ -349,7 +349,7 @@ public class UseNbBundleMessages extends AbstractHint {
                             newAnns.add(atMessages);
                             result = make.CompilationUnit(newAnns, cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile());
                         } else {
-                            result = make.addModifiersAnnotation((ModifiersTree) original, atMessages);
+                            result = make.insertModifiersAnnotation((ModifiersTree) original, 0, atMessages);
                         }
                         return GeneratorUtilities.get(wc).importFQNs(result);
                     }
@@ -474,6 +474,7 @@ public class UseNbBundleMessages extends AbstractHint {
         if (parentPath == null) {
             return false;
         }
+        // XXX better to check all sources in the same package
         return isAlreadyRegistered(parentPath, key);
     }
     private static boolean isRegistered(String key, ExpressionTree expr) {
