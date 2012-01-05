@@ -364,7 +364,7 @@ public class UseNbBundleMessages extends AbstractHint {
                         case METHOD: // (or constructor)
                         case VARIABLE:
                             Element e = wc.getTrees().getElement(treePath);
-                            if (e != null) {
+                            if (e != null && !wc.getElementUtilities().isLocal(e)) {
                                 TypeElement type = TreeUtilities.CLASS_TREE_KINDS.contains(kind) ? (TypeElement) e : wc.getElementUtilities().enclosingTypeElement(e);
                                 if (type == null || !wc.getElementUtilities().isLocal(type)) {
                                     return leaf;
