@@ -82,6 +82,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
@@ -117,7 +118,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         iconBase=DEPENDENCY_JAR,
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID=ArtifactViewer.HINT_GRAPH,
-        mimeType="text/x-maven-pom+xml",
+        mimeType=Constants.POM_MIME_TYPE,
         position=100
     )
     @Messages("TAB_Graph=Graph")
