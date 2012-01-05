@@ -73,11 +73,13 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 
 /**
@@ -149,6 +151,10 @@ public abstract class Group {
     /**
      * Set the currently active group (or null).
      */
+    @Messages({
+        "# {0} - internal group info", "Group.UI.setActiveGroup=Selecting project group: {0}",
+        "#NOI18N", "Group.UI.setActiveGroup_ICON_BASE=org/netbeans/modules/project/ui/resources/openProject.png"
+    })
     public static void setActiveGroup(Group nue) {
         LOG.log(Level.FINE, "set active group: {0}", nue);
         if (UILOG.isLoggable(Level.FINER)) {
@@ -269,7 +275,7 @@ public abstract class Group {
         prefs().put(KEY_NAME, n);
         if (this.equals(getActiveGroup())) {
             EventQueue.invokeLater(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(Group.this);
                 }
             });
@@ -327,8 +333,9 @@ public abstract class Group {
         return urls;
     }
 
+    @Messages({"# {0} - project display name", "Group.progress_project=Loading project \"{0}\""})
     protected static String progressMessage(Project p) {
-        return NbBundle.getMessage(Group.class, "Group.progress_project", ProjectUtils.getInformation(p).getDisplayName());
+        return Group_progress_project(ProjectUtils.getInformation(p).getDisplayName());
     }
 
     /**
@@ -365,17 +372,23 @@ public abstract class Group {
     /**
      * Open a group, replacing any open projects with this group's project set.
      */
+    @Messages({
+        "# {0} - group display name", "Group.open_handle=Opening group \"{0}\"",
+        "Group.close_handle=Closing group",
+        "# {0} - count", "Group.progress_closing=Closing {0} old projects",
+        "# {0} - count", "Group.progress_opening=Opening {0} new projects"
+    })
     private static void open(final Group g) {
         EventQueue.invokeLater(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(g);
             }
         });
         String handleLabel;
         if (g != null) {
-            handleLabel = NbBundle.getMessage(Group.class, "Group.open_handle", g.getName());
+            handleLabel = Group_open_handle(g.getName());
         } else {
-            handleLabel = NbBundle.getMessage(Group.class, "Group.close_handle");
+            handleLabel = Group_close_handle();
         }
         ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
         try {
@@ -390,9 +403,9 @@ public abstract class Group {
         toOpen.removeAll(oldOpen);
         assert !toClose.contains(null) : toClose;
         assert !toOpen.contains(null) : toOpen;
-        h.progress(NbBundle.getMessage(Group.class, "Group.progress_closing", toClose.size()), 120);
+        h.progress(Group_progress_closing(toClose.size()), 120);
         op.close(toClose.toArray(new Project[toClose.size()]));
-        h.progress(NbBundle.getMessage(Group.class, "Group.progress_opening", toOpen.size()), 140);
+        h.progress(Group_progress_opening(toOpen.size()), 140);
         op.open(toOpen.toArray(new Project[toOpen.size()]), false);
         if (g != null) {
             op.setMainProject(g.getMainProject());
@@ -435,7 +448,7 @@ public abstract class Group {
     public static Comparator<Group> displayNameComparator() {
         return new Comparator<Group>() {
             Collator COLLATOR = Collator.getInstance();
-            public int compare(Group g1, Group g2) {
+            @Override public int compare(Group g1, Group g2) {
                 return COLLATOR.compare(g1.getName(), g2.getName());
             }
         };
