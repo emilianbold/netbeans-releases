@@ -273,6 +273,7 @@ class DiffTreeTable extends OutlineView {
         @SuppressWarnings("unchecked")
         void refreshKeys() {
             setKeys(results);
+            repaint();
         }
     
         protected Node[] createNodes(Object key) {

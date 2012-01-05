@@ -91,8 +91,6 @@ class SearchExecutor extends SvnProgressSupport {
     static final int DEFAULT_LIMIT = 10;
     private final SVNRevision fromRevision;
     private final SVNRevision toRevision;
-    private final String username;
-    private final String msg;
     private final int limit;
     private SvnProgressSupport currentSearch;
 
@@ -101,8 +99,6 @@ class SearchExecutor extends SvnProgressSupport {
         criteria = master.getCriteria();
         fromRevision = criteria.getFrom();
         toRevision = criteria.getTo();
-        username = criteria.getUsername();
-        msg = criteria.getCommitMessage();
         limit = searchingUrl() || master.getRoots().length == 1 ? DEFAULT_LIMIT : -1;
     }
 
@@ -281,9 +277,6 @@ class SearchExecutor extends SvnProgressSupport {
         for (int i = logMessages.length - 1; i >= 0; i--) {
             ISVNLogMessage logMessage = logMessages[i];
             if(logMessage == null) continue;
-            String logMsg = logMessage.getMessage();
-            if (username != null && !username.equals(logMessage.getAuthor())) continue;
-            if (msg != null && logMsg != null && logMsg.indexOf(msg) == -1) continue;
             RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl, master.getRoots(), pathToRoot);
             results.add(rev);
         }
@@ -305,19 +298,9 @@ class SearchExecutor extends SvnProgressSupport {
         }
     }
 
-    String getUsername () {
-        return username;
-    }
-
-    String getMessage () {
-        return msg;
-    }
-
     void start() {
         start(Subversion.getInstance().getParallelRequestProcessor(), null, null);
     }
-    
-    
 
     @Override
     public synchronized boolean cancel() {

@@ -53,15 +53,32 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.util.NoContentPanel;
-import javax.swing.*;
 import java.io.File;
-import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -71,6 +88,8 @@ import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.SummaryView.HgLogEntry;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 
 /**
@@ -78,7 +97,7 @@ import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
  *
  * @author Maros Sandor
  */
-class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, DiffSetupSource, DocumentListener {
+class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, DiffSetupSource, DocumentListener, ActionListener {
 
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
@@ -105,6 +124,27 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
 
+    enum FilterKind {
+        ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
+        MESSAGE(SearchHighlight.Kind.MESSAGE, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.Message")), //NOI18N
+        USER(SearchHighlight.Kind.AUTHOR, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.User")), //NOI18N
+        ID(SearchHighlight.Kind.REVISION, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.Commit")), //NOI18N
+        FILE(SearchHighlight.Kind.FILE, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.File")); //NOI18N
+        private String label;
+        private Kind kind;
+        
+        FilterKind (SearchHighlight.Kind kind, String label) {
+            this.kind = kind;
+            this.label = label;
+        }
+        
+        @Override
+        public final String toString () {
+            return label;
+        }
+    }
+    private final Timer filterTimer;
+
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
         this.bOutSearch = false;
@@ -115,6 +155,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();
+        initializeFilter();
+        filterTimer = new Timer(500, this);
+        filterTimer.stop();
         setupComponents();
         aquaBackgroundWorkaround();
         refreshComponents(true);
@@ -182,6 +225,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (currentAdditionalSearch != null) {
             currentAdditionalSearch.cancel();
         }
+    }
+
+    private void enableFilters (boolean enabled) {
+        lblFilter.setEnabled(enabled);
+        cmbFilterKind.setEnabled(enabled);
+        lblFilterContains.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
+        txtFilter.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
     }
 
     private void setupComponents() {
@@ -287,7 +337,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     summaryView.requestFocusInWindow();
                 } else {
                     if (diffView == null) {
-                        diffView = diffViewFactory.createDiffResultsView(this, results);
+                        diffView = diffViewFactory.createDiffResultsView(this, filter(results));
                     }
                     resultsPanel.add(diffView.getComponent());
                 }
@@ -302,6 +352,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (criteria.getLimit() <= 0) {
             criteria.setLimit(SearchExecutor.DEFAULT_LIMIT);
         }
+        enableFilters(results != null);
         revalidate();
         repaint();
     }
@@ -315,7 +366,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private void setResults(List<RepositoryRevision> newResults, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap, boolean searching, int limit) {
-        this.results = newResults == null ? null : filter(newResults);
+        this.results = newResults;
         this.kenaiUserMap = kenaiUserMap;
         this.searchInProgress = searching;
         showingResults = limit;
@@ -473,6 +524,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         tbDiff = new javax.swing.JToggleButton();
         jSeparator2 = new javax.swing.JSeparator();
         jSeparator3 = new javax.swing.JToolBar.Separator();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        lblFilter = new javax.swing.JLabel();
+        cmbFilterKind = new javax.swing.JComboBox();
+        lblFilterContains = new javax.swing.JLabel();
+        txtFilter = new javax.swing.JTextField();
         resultsPanel = new javax.swing.JPanel();
         searchCriteriaPanel = new javax.swing.JPanel();
         expandCriteriaButton = new org.netbeans.modules.versioning.history.LinkButton();
@@ -522,15 +578,32 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         org.openide.awt.Mnemonics.setLocalizedText(fileInfoCheckBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistoryPanel_AllInfo")); // NOI18N
         fileInfoCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_TT_SearchHistoryPanel_AllInfo")); // NOI18N
-        fileInfoCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         fileInfoCheckBox.setOpaque(false);
-        fileInfoCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         fileInfoCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fileInfoCheckBoxActionPerformed(evt);
             }
         });
         jToolBar1.add(fileInfoCheckBox);
+        jToolBar1.add(jSeparator1);
+
+        lblFilter.setLabelFor(cmbFilterKind);
+        org.openide.awt.Mnemonics.setLocalizedText(lblFilter, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "filterLabel.text")); // NOI18N
+        lblFilter.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        jToolBar1.add(lblFilter);
+
+        cmbFilterKind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbFilterKindActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(cmbFilterKind);
+
+        lblFilterContains.setLabelFor(txtFilter);
+        org.openide.awt.Mnemonics.setLocalizedText(lblFilterContains, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "containsLabel")); // NOI18N
+        lblFilterContains.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        jToolBar1.add(lblFilterContains);
+        jToolBar1.add(txtFilter);
 
         resultsPanel.setLayout(new java.awt.BorderLayout());
 
@@ -547,7 +620,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 789, Short.MAX_VALUE)
             .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
@@ -555,7 +628,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(expandCriteriaButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 693, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -590,19 +663,36 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         criteriaVisible = searchCriteriaPanel.isVisible();
     }//GEN-LAST:event_expandCriteriaButtonActionPerformed
 
+    private void cmbFilterKindActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFilterKindActionPerformed
+        boolean filterCritEnabled = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
+        lblFilterContains.setEnabled(filterCritEnabled);
+        txtFilter.setEnabled(filterCritEnabled);
+        if (filterTimer != null && !txtFilter.getText().trim().isEmpty()) {
+            filterTimer.restart();
+        }
+    }//GEN-LAST:event_cmbFilterKindActionPerformed
+
     @Override
     public void insertUpdate(DocumentEvent e) {
-        validateUserInput();
+        documentChanged(e);
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        validateUserInput();        
+        documentChanged(e);
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        validateUserInput();        
+        documentChanged(e);
+    }
+    
+    private void documentChanged (DocumentEvent e) {
+        if (e.getDocument() == txtFilter.getDocument()) {
+            filterTimer.restart();
+        } else {
+            validateUserInput();
+        }
     }
     
     private void validateUserInput() {
@@ -617,22 +707,39 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             return;
         }        
         bSearch.setEnabled(true);
-    }    
+    }
+
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        if (e.getSource() == filterTimer) {
+            if (summaryView != null) {
+                summaryView.refreshView();
+            }
+            if (diffView != null) {
+                diffView.refreshResults(filter(results));
+            }
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton bNext = new javax.swing.JButton();
     final javax.swing.JButton bPrev = new javax.swing.JButton();
     private javax.swing.JButton bSearch;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox cmbFilterKind;
     private org.netbeans.modules.versioning.history.LinkButton expandCriteriaButton;
     final javax.swing.JCheckBox fileInfoCheckBox = new javax.swing.JCheckBox();
+    private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JLabel lblFilter;
+    private javax.swing.JLabel lblFilterContains;
     private javax.swing.JPanel resultsPanel;
     private javax.swing.JPanel searchCriteriaPanel;
     private javax.swing.JToggleButton tbDiff;
     private javax.swing.JToggleButton tbSummary;
+    private javax.swing.JTextField txtFilter;
     // End of variables declaration//GEN-END:variables
 
     void getMoreRevisions (PropertyChangeListener callback, int count) {
@@ -666,16 +773,65 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         cancelBackgroundSearch();
     }
 
+    Collection<SearchHighlight> getSearchHighlights () {
+        String filterText = txtFilter.getText().trim();
+        Object selectedFilterKind = cmbFilterKind.getSelectedItem();
+        if (selectedFilterKind == FilterKind.ALL || filterText.isEmpty() || !(selectedFilterKind instanceof FilterKind)) {
+            return Collections.<SearchHighlight>emptyList();
+        } else {
+            return Collections.singleton(new SearchHighlight(((FilterKind) selectedFilterKind).kind, filterText));
+        }
+    }
+
+    private void initializeFilter () {
+        DefaultComboBoxModel filterModel = new DefaultComboBoxModel();
+        filterModel.addElement(FilterKind.ALL);
+        filterModel.addElement(FilterKind.ID);
+        filterModel.addElement(FilterKind.MESSAGE);
+        filterModel.addElement(FilterKind.USER);
+//        filterModel.addElement(FilterKind.FILE);
+        cmbFilterKind.setModel(filterModel);
+        cmbFilterKind.setSelectedItem(FilterKind.ALL);
+        txtFilter.getDocument().addDocumentListener(this);
+    }
+
     private List<RepositoryRevision> filter (List<RepositoryRevision> results) {
-        String username = currentSearch.getUsername();
-        String msg = currentSearch.getMessage();
         List<RepositoryRevision> newResults = new ArrayList<RepositoryRevision>(results.size());
         for (RepositoryRevision rev : results) {
-            if (username != null && !rev.getLog().getAuthor().contains(username)) continue;
-            if (msg != null && !rev.getLog().getMessage().contains(msg)) continue;
-            newResults.add(rev);
+            if (applyFilter(rev)) {
+                newResults.add(rev);
+            }
         }
         return newResults;
+    }
+
+    boolean applyFilter (RepositoryRevision rev) {
+        boolean visible = true;
+        String filterText = txtFilter.getText().trim().toLowerCase();
+        Object selectedFilterKind = cmbFilterKind.getSelectedItem();
+        if (selectedFilterKind != FilterKind.ALL && !filterText.isEmpty()) {
+            if (selectedFilterKind == FilterKind.MESSAGE) {
+                visible = rev.getLog().getMessage().toLowerCase().contains(filterText);
+            } else if (selectedFilterKind == FilterKind.USER) {
+                visible = rev.getLog().getUsername().toLowerCase().contains(filterText)
+                        || rev.getLog().getAuthor().toLowerCase().contains(filterText);
+            } else if (selectedFilterKind == FilterKind.ID) {
+                visible = rev.getLog().getRevisionNumber().contains(filterText)
+                        || rev.getLog().getCSetShortID().contains(filterText)
+                        || contains(rev.getLog().getBranches(), filterText)
+                        || contains(rev.getLog().getTags(), filterText);
+            }
+        }
+        return visible;
+    }
+    
+    private static boolean contains (String[] items, String needle) {
+        for (String item : items) {
+            if (item.toLowerCase().contains(needle)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private class Search extends HgProgressSupport {
@@ -702,7 +858,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
                             }
                             
                             List<RepositoryRevision> toAdd = new ArrayList<RepositoryRevision>(newResults.size());
-                            for (RepositoryRevision rev : filter(newResults)) {
+                            for (RepositoryRevision rev : newResults) {
                                 if (!visibleRevisions.contains(rev.getLog().getCSetShortID())) {
                                     toAdd.add(rev);
                                 }

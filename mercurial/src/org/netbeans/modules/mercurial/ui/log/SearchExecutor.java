@@ -86,8 +86,6 @@ class SearchExecutor extends HgProgressSupport {
     private final String toRevision;
     private int limitRevisions;
     private final String branchName;
-    private final String username;
-    private final String msg;
     static final int DEFAULT_LIMIT = 10;
     private final boolean includeMerges;
     private HgBranch[] branches;
@@ -103,8 +101,6 @@ class SearchExecutor extends HgProgressSupport {
             limitRevisions = DEFAULT_LIMIT;
         }
         branchName = criteria.getBranch();
-        username = criteria.getUsername();
-        msg = criteria.getCommitMessage();
         
         pathToRoot = new HashMap<String, File>(); 
         root = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]);
@@ -204,14 +200,6 @@ class SearchExecutor extends HgProgressSupport {
             }
         }
         return headOfBranches;
-    }
-
-    String getUsername () {
-        return username;
-    }
-
-    String getMessage () {
-        return msg;
     }
   
 }

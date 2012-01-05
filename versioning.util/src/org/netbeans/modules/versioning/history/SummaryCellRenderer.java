@@ -85,6 +85,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.LogEntry.Event;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.RevisionItem;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
@@ -116,8 +117,6 @@ class SummaryCellRenderer implements ListCellRenderer {
 
     private AttributeSet searchHiliteAttrs;
 
-    private final String hiliteMessage;
-
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
     private static final int INDENT = ICON_EXPANDED.getIconWidth() + 3;
@@ -129,7 +128,6 @@ class SummaryCellRenderer implements ListCellRenderer {
 
     public SummaryCellRenderer(AbstractSummaryView summaryView, final VCSHyperlinkSupport linkerSupport, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap) {
         this.summaryView = summaryView;
-        this.hiliteMessage = summaryView.getMessage();
         this.kenaiUsersMap = kenaiUsersMap;
         this.linkerSupport = linkerSupport;
         searchHiliteAttrs = ((FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class)).getFontColors("highlight-search"); //NOI18N
@@ -254,6 +252,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         private boolean lastMessageExpanded;
         private boolean lastRevisionExpanded;
         private int lastWidth;
+        private Collection<SearchHighlight> lastHighlights;
 
         public RevisionRenderer() {
             selectionForeground = new JList().getSelectionForeground();
@@ -305,10 +304,13 @@ class SummaryCellRenderer implements ListCellRenderer {
             AbstractSummaryView.LogEntry entry = item.getUserData();
 
             StyledDocument sd = textPane.getStyledDocument();
-            if (sd.getLength() == 0 || selected != lastSelection || item.messageExpanded != lastMessageExpanded || item.revisionExpanded != lastRevisionExpanded) {
+            Collection<SearchHighlight> highlights = summaryView.getMaster().getSearchHighlights();
+            if (sd.getLength() == 0 || selected != lastSelection || item.messageExpanded != lastMessageExpanded || item.revisionExpanded != lastRevisionExpanded
+                    || !highlights.equals(lastHighlights)) {
                 lastSelection = selected;
                 lastMessageExpanded = item.messageExpanded;
                 lastRevisionExpanded = item.revisionExpanded;
+                lastHighlights = highlights;
 
                 Style style;
                 Color backgroundColor;
@@ -354,6 +356,17 @@ class SummaryCellRenderer implements ListCellRenderer {
                             StyleConstants.setBackground(s, highlight.getBackground());
                             sd.setCharacterAttributes(highlight.getStart(), highlight.getLength(), s, false);
                         }
+                        for (SearchHighlight highlight : highlights) {
+                            if (highlight.getKind() == SearchHighlight.Kind.REVISION) {
+                                int doclen = sd.getLength();
+                                String highlightMessage = highlight.getSearchText();
+                                String revisionText = item.getUserData().getRevision().toLowerCase();
+                                int idx = revisionText.indexOf(highlightMessage);
+                                if (idx > -1) {
+                                    sd.setCharacterAttributes(doclen - revisionText.length() + idx, highlightMessage.length(), hiliteStyle, false);
+                                }
+                            }
+                        }
                     }
 
                     // add author
@@ -367,10 +380,24 @@ class SummaryCellRenderer implements ListCellRenderer {
                             linkerSupport.add(l, id);
                         }
                     }
+                    int pos = sd.getLength();
                     if(l != null) {
                         l.insertString(sd, selected ? style : null);
                     } else {
                         sd.insertString(sd.getLength(), author, style);
+                    }
+                    if (!selected) {
+                        for (SearchHighlight highlight : highlights) {
+                            if (highlight.getKind() == SearchHighlight.Kind.AUTHOR) {
+                                int doclen = sd.getLength();
+                                String highlightMessage = highlight.getSearchText();
+                                String authorText = sd.getText(pos, doclen - pos).toLowerCase();
+                                int idx = authorText.indexOf(highlightMessage);
+                                if (idx > -1) {
+                                    sd.setCharacterAttributes(doclen - authorText.length() + idx, highlightMessage.length(), hiliteStyle, false);
+                                }
+                            }
+                        }
                     }
 
                     // add date
@@ -406,7 +433,7 @@ class SummaryCellRenderer implements ListCellRenderer {
                             }
                         }
                     }
-                    int pos = sd.getLength();
+                    pos = sd.getLength();
                     if(l != null) {
                         l.insertString(sd, style);
                     } else {
@@ -431,6 +458,9 @@ class SummaryCellRenderer implements ListCellRenderer {
                     Style s = textPane.addStyle(null, style);
                     StyleConstants.setBold(s, true);
                     sd.setCharacterAttributes(pos, lineEnd, s, false);
+                    int msglen = commitMessage.length();
+                    int doclen = sd.getLength();
+
                     if (nlc > 0 && !item.messageExpanded) {
                         l = linkerSupport.getLinker(ExpandMsgHyperlink.class, id);
                         if (l == null) {
@@ -441,12 +471,19 @@ class SummaryCellRenderer implements ListCellRenderer {
                     }
                     
 
-                    int msglen = commitMessage.length();
-                    int doclen = sd.getLength();
-                    if (hiliteMessage != null && !selected) {
-                        int idx = commitMessage.indexOf(hiliteMessage);
-                        if (idx != -1) {
-                            sd.setCharacterAttributes(doclen - msglen + idx, hiliteMessage.length(), hiliteStyle, true);
+                    if (!selected) {
+                        for (SearchHighlight highlight : highlights) {
+                            if (highlight.getKind() == SearchHighlight.Kind.MESSAGE) {
+                                String highlightMessage = highlight.getSearchText();
+                                int idx = commitMessage.toLowerCase().indexOf(highlightMessage);
+                                if (idx == -1) {
+                                    if (nlc > 0 && !item.messageExpanded && entry.getMessage().toLowerCase().contains(highlightMessage)) {
+                                        sd.setCharacterAttributes(doclen, sd.getLength(), hiliteStyle, false);
+                                    }
+                                } else {
+                                    sd.setCharacterAttributes(doclen - msglen + idx, highlightMessage.length(), hiliteStyle, false);
+                                }
+                            }
                         }
                     }
 
