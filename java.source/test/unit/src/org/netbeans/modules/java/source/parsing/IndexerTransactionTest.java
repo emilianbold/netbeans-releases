@@ -225,7 +225,8 @@ public class IndexerTransactionTest extends NbTestCase {
             Set<ClassPath> classpaths = registeredClasspaths.get(id);
             GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
         }
-        Thread.sleep(300);
+        registeredClasspaths.clear();
+        RepositoryUpdater.getDefault().waitUntilFinished(1000);
         parserBlocker.drainPermits();
     }
     
