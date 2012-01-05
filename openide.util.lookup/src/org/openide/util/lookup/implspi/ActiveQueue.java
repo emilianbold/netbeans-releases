@@ -44,6 +44,8 @@ package org.openide.util.lookup.implspi;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,31 +54,48 @@ import java.util.logging.Logger;
  * @since 8.1
  */
 public final class ActiveQueue {
-
     private ActiveQueue() {}
 
     private static final Logger LOGGER = Logger.getLogger(ActiveQueue.class.getName());
-    private static Impl activeReferenceQueue;
+    private static final ReferenceQueue<Impl> ACTIVE = new ReferenceQueue<Impl>();
+    private static Reference<Impl> activeReferenceQueue = new WeakReference<Impl>(null);
 
     /**
      * Gets the active reference queue.
      * @return the singleton queue
      */
     public static synchronized ReferenceQueue<Object> queue() {
-        if (activeReferenceQueue == null) {
-            activeReferenceQueue = new Impl();
+        Impl impl = activeReferenceQueue.get();
+        if (impl == null) {
+            impl = new Impl();
+            activeReferenceQueue = new WeakReference<Impl>(impl, ACTIVE);
+            Daemon.ping();
         }
-
-        activeReferenceQueue.ping();
-
-        return activeReferenceQueue;
+        return impl;
     }
 
-    private static final class Impl extends ReferenceQueue<Object> implements Runnable {
-        /** number of known outstanding references */
-        private int count;
-
+    private static final class Impl extends ReferenceQueue<Object> {
+        private static final Field LOCK;
+        static {
+            try {
+                LOCK = ReferenceQueue.class.getDeclaredField("lock"); // NOI18N
+                LOCK.setAccessible(true);
+            } catch (NoSuchFieldException ex) {
+                throw new IllegalStateException(ex);
+            } catch (SecurityException ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
+        private final Object myLock;
+        
         Impl() {
+            try {
+                LOCK.set(this, myLock = LOCK.get(ACTIVE));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalStateException(ex);
+            } catch (IllegalAccessException ex) {
+                throw new IllegalStateException(ex);
+            }
         }
 
         @Override
@@ -93,12 +112,69 @@ public final class ActiveQueue {
         public Reference<Object> remove() throws InterruptedException {
             throw new InterruptedException();
         }
+        
+        final Object lock() {
+            return myLock;
+        }
+
+        final Reference<? extends Object> pollSuper() throws IllegalArgumentException, InterruptedException {
+            return super.poll();
+        }
+    }
+
+    private static final class Daemon extends Thread {
+        private static Daemon running;
+        
+        public Daemon() {
+            super("Active Reference Queue Daemon");
+        }
+        
+        static synchronized void ping() {
+            if (running == null) {
+                Daemon t = new Daemon();
+                t.setPriority(Thread.MIN_PRIORITY);
+                t.setDaemon(true);
+                t.start();
+                LOGGER.fine("starting thread");
+                running = t;
+            }
+        }
+        
+        static synchronized boolean isActive() {
+            return running != null;
+        }
+        
+        static synchronized void wakeUp() {
+            if (running != null) {
+                running.interrupt();
+            }
+        }
+        
+        static synchronized Impl obtainQueue() {
+            Impl impl= activeReferenceQueue.get();
+            if (impl == null) {
+                running = null;
+            }
+            return impl;
+        }
 
         @Override
         public void run() {
             while (true) {
                 try {
-                    Reference<?> ref = super.remove(0);
+                    Impl impl = obtainQueue();
+                    if (impl == null) {
+                        return;
+                    }
+                    Reference<?> ref;
+                    synchronized (impl.lock()) {
+                        ref = impl.pollSuper();
+                        impl = null;
+                        if (ref == null) {
+                            ACTIVE.remove(Integer.MAX_VALUE);
+                            continue;
+                        }
+                    }
                     LOGGER.finer("dequeued reference");
                     if (!(ref instanceof Runnable)) {
                         LOGGER.log(Level.WARNING, "A reference not implementing runnable has been added to the Utilities.activeReferenceQueue(): {0}", ref.getClass());
@@ -121,37 +197,7 @@ public final class ActiveQueue {
                     // Can happen during VM shutdown, it seems. Ignore.
                     continue;
                 }
-                synchronized (this) {
-                    assert count > 0;
-                    count--;
-                    if (count == 0) {
-                        // We have processed all we have to process (for now at least).
-                        // Could be restarted later if ping() called again.
-                        // This could also happen in case someone called queue() once and tried
-                        // to use it for several references; in that case run() might never be called on
-                        // the later ones to be collected. Can't really protect against that situation.
-                        // See issue #86625 for details.
-                        LOGGER.fine("stopping thread");
-                        break;
-                    }
-                }
             }
         }
-
-        synchronized void ping() {
-            if (count == 0) {
-                Thread t = new Thread(this, "Active Reference Queue Daemon");
-                t.setPriority(Thread.MIN_PRIORITY);
-                t.setDaemon(true);
-                t.start();
-                LOGGER.fine("starting thread");
-                count = 1;
-            } else {
-                count++;
-                LOGGER.log(Level.FINER, "enqued references = {0}", count);
-            }
-        }
-
     }
-
 }
