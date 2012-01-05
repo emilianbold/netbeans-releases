@@ -270,6 +270,38 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("anonymousObjectVariable");
     }
 
+    public void testFieldArraysWithArrayDereferencing() throws Exception {
+        performTest("fieldArraysWithArrayDereferencing");
+    }
+
+    public void testArrayDereferencing_01() throws Exception {
+        performTest("arrayDereferencing_01");
+    }
+
+    public void testArrayDereferencing_02() throws Exception {
+        performTest("arrayDereferencing_02");
+    }
+
+    public void testArrayDereferencing_03() throws Exception {
+        performTest("arrayDereferencing_03");
+    }
+
+    public void testArrayDereferencing_04() throws Exception {
+        performTest("arrayDereferencing_04");
+    }
+
+    public void testArrayDereferencing_05() throws Exception {
+        performTest("arrayDereferencing_05");
+    }
+
+    public void testArrayDereferencing_06() throws Exception {
+        performTest("arrayDereferencing_06");
+    }
+
+    public void testArrayDereferencing_07() throws Exception {
+        performTest("arrayDereferencing_07");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

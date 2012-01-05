@@ -319,6 +319,9 @@ non terminal List interface_statement_list;
 non terminal Statement interface_statement;
 non terminal UseTraitStatementPart use_trait;
 non terminal Quote heredoc;
+non terminal VariableBase field_or_method_access;
+non terminal VariableBase function_call_with_array;
+non terminal VariableBase field_or_method_access_with_array;
 
 non terminal VariableBase w_variable;
 non terminal Expression class_name;
@@ -2908,7 +2911,7 @@ variable:var
 {: RESULT = var; :}
 ;
 
-variable ::=
+field_or_method_access ::=
 base_variable_with_function_calls:var T_OBJECT_OPERATOR object_property:memberProperty method_or_not:paramsList variable_properties:propertyList
 {:
 	// get the last property
@@ -2935,10 +2938,34 @@ base_variable_with_function_calls:var T_OBJECT_OPERATOR object_property:memberPr
 	}
 	RESULT = dispatch;
 :}
+;
+
+variable ::=
+field_or_method_access:acc
+{:
+	RESULT = acc;
+:}
+
+| field_or_method_access_with_array:foa
+{:
+    RESULT = foa;
+:}
 
 | base_variable_with_function_calls:var
 {:
 	RESULT = var;
+:}
+;
+
+field_or_method_access_with_array ::=
+field_or_method_access:acc T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ArrayAccess(accleft, endright, acc, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
+:}
+
+| field_or_method_access_with_array:acc T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ArrayAccess(accleft, endright, acc, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
 :}
 ;
 
@@ -3025,6 +3052,23 @@ base_variable:var
 
 | function_call:var
 {: RESULT = var; :}
+
+| function_call_with_array:fc
+{:
+    RESULT = fc;
+:}
+;
+
+function_call_with_array ::=
+function_call:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ArrayAccess(varleft, endright, var, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
+:}
+
+| function_call_with_array:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ArrayAccess(varleft, endright, var, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
+:}
 ;
 
 base_variable ::=

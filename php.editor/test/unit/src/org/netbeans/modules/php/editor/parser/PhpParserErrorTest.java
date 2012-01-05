@@ -151,4 +151,32 @@ public class PhpParserErrorTest extends CslTestBase {
     public void testAnonymousObjectVariable() throws Exception {
         checkErrors("testfiles/parser/anonymousObjectVariable.php");
     }
+
+    public void testArrayDereferencing_01() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_01.php");
+    }
+
+    public void testArrayDereferencing_02() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_02.php");
+    }
+
+    public void testArrayDereferencing_03() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_03.php");
+    }
+
+    public void testArrayDereferencing_04() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_04.php");
+    }
+
+    public void testArrayDereferencing_05() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_05.php");
+    }
+
+    public void testArrayDereferencing_06() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_06.php");
+    }
+
+    public void testArrayDereferencing_07() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_07.php");
+    }
 }
