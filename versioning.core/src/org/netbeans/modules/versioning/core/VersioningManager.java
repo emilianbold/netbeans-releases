@@ -549,7 +549,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             Set<VCSFileProxy> files = (Set<VCSFileProxy>) evt.getNewValue();
             VersioningAnnotationProvider.getDefault().refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
-            if(evt.getSource() == localHistory.getDelegate()) {
+            if(localHistory != null && evt.getSource() == localHistory.getDelegate()) {
                 synchronized(localHistoryFiles) {
                     localHistoryFiles.clear();
                 }
