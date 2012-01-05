@@ -56,6 +56,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -411,6 +412,17 @@ class SummaryCellRenderer implements ListCellRenderer {
                     } else {
                         sd.insertString(sd.getLength(), commitMessage, style);
                     }
+
+                    // tooltip for message
+                    MessageTooltip mtt = linkerSupport.getLinker(MessageTooltip.class, id);
+                    if (messageChanged) {
+                        linkerSupport.remove(mtt, id);
+                        mtt = null;
+                    }
+                    if (mtt == null) {
+                        linkerSupport.add(new MessageTooltip(entry.getMessage(), pos, sd.getLength()), id);
+                    }
+                    
                     // paint first line of commit message bold
                     int lineEnd = sd.getText(pos, sd.getLength() - pos).indexOf("\n");
                     if (lineEnd == -1) {
@@ -480,6 +492,71 @@ class SummaryCellRenderer implements ListCellRenderer {
                 link.computeBounds(expandButton);
             }
         }
+    }
+    
+    private static class MessageTooltip extends VCSHyperlinkSupport.Hyperlink {
+        private Rectangle[] bounds;
+        private final int start;
+        private final int end;
+        private final String text;
+
+        private MessageTooltip (String text, int start, int end) {
+            this.start = start;
+            this.end = end;
+            this.text = prepareText(text);
+        }
+        
+        @Override
+        public boolean mouseMoved (Point p, JComponent component) {
+            if (bounds != null && component.getToolTipText() == null) {
+                for (Rectangle b : bounds) {
+                    if (b.contains(p)) {
+                        component.setToolTipText(text);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked (Point p) {
+            return false;
+        }
+
+        @Override
+        public void computeBounds (JTextPane textPane) {
+            Rectangle tpBounds = textPane.getBounds();
+            TextUI tui = textPane.getUI();
+            try {
+                int lastY = -1;
+                Rectangle rec = null;
+                List<Rectangle> rects = new LinkedList<Rectangle>();
+                // get bounds for every line
+                for (int pos = start; pos <= end; ++pos) {
+                    Rectangle startr = tui.modelToView(textPane, pos, Position.Bias.Forward);
+                    Rectangle endr = tui.modelToView(textPane, pos + 1, Position.Bias.Backward);
+                    if (startr.y > lastY) {
+                        rects.add(rec);
+                        rec = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
+                        lastY = rec.y;
+                    } else {
+                        rec.setSize(rec.width + endr.x - startr.x, rec.height);
+                    }
+                }
+                rects.add(rec);
+                rects.remove(0);
+                bounds = rects.toArray(new Rectangle[rects.size()]);
+            } catch (BadLocationException ex) {
+                bounds = null;
+            }
+        }
+
+        private String prepareText (String text) {
+            text = text.replaceAll("\n", "<br>"); //NOI18N
+            return "<html><body>" + text + "</body></html>"; //NOI18N
+        }
+        
     }
 
     private class EventRenderer extends JPanel implements ListCellRenderer {
