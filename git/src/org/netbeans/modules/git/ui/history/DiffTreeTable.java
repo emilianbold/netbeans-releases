@@ -290,6 +290,7 @@ class DiffTreeTable extends OutlineView {
         @SuppressWarnings("unchecked")
         private void refreshKeys() {
             setKeys(results);
+            repaint();
         }
     
         @Override

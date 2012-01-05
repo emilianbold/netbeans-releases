@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
+import java.awt.Color;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
@@ -60,7 +61,13 @@ import java.awt.Rectangle;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.versioning.history.AbstractSummaryView;
 
 /**
  * Visible in the Search History Diff view.
@@ -77,6 +84,8 @@ class RevisionNode extends AbstractNode {
     private RepositoryRevision.Event    event;
     private RepositoryRevision          container;
     private String                      path;
+    private String bgColor;
+    private String fgColor;
 
     public RevisionNode(RepositoryRevision container, SearchHistoryPanel master) {
         super(new RevisionNodeChildren(container, master), Lookups.fixed(master, container));
@@ -133,6 +142,16 @@ class RevisionNode extends AbstractNode {
     }
     
     private void initProperties() {
+        AttributeSet searchHiliteAttrs = ((FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class)).getFontColors("highlight-search"); //NOI18N
+        Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
+        if (c != null) {
+            bgColor = getColorString(c);
+        }
+        c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
+        if (c != null) {
+            fgColor = getColorString(c);
+        }
+
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
         
@@ -142,6 +161,18 @@ class RevisionNode extends AbstractNode {
         
         sheet.put(ps);
         setSheet(sheet);        
+    }
+
+    private static String getColorString(Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+    
+    private static String getHex(int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 
     private abstract class CommitNodeProperty<T> extends PropertySupport.ReadOnly<T> {
@@ -170,6 +201,19 @@ class RevisionNode extends AbstractNode {
         }
     }
     
+    private static String highlight (String author, String needle, String bgColor, String fgColor) {
+        if (fgColor != null && bgColor != null) {
+            int idx = author.toLowerCase().indexOf(needle);
+            if (idx != -1) {
+                return new StringBuilder("<html><body>").append(author.substring(0, idx)) //NOI18N
+                        .append("<span style=\"background-color: ").append(bgColor).append("; color: ").append(fgColor).append(";\">") //NOI18N
+                        .append(author.substring(idx, idx + needle.length())).append("</span>") //NOI18N
+                        .append(author.substring(idx + needle.length())).append("</body></html>").toString(); //NOI18N
+            }
+        }
+        return author;
+    }
+    
     private class UsernameProperty extends CommitNodeProperty<String> {
 
         public UsernameProperty() {
@@ -179,6 +223,11 @@ class RevisionNode extends AbstractNode {
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
+                for (AbstractSummaryView.SummaryViewMaster.SearchHighlight h : getLookup().lookup(SearchHistoryPanel.class).getSearchHighlights()) {
+                    if (h.getKind() == AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind.AUTHOR) {
+                        return highlight(container.getLog().getAuthor(), h.getSearchText(), bgColor, fgColor);
+                    }
+                }
                 return container.getLog().getAuthor();
             } else {
                 return ""; // NOI18N
@@ -211,6 +260,11 @@ class RevisionNode extends AbstractNode {
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
+                for (AbstractSummaryView.SummaryViewMaster.SearchHighlight h : getLookup().lookup(SearchHistoryPanel.class).getSearchHighlights()) {
+                    if (h.getKind() == AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind.MESSAGE) {
+                        return highlight(container.getLog().getMessage(), h.getSearchText(), bgColor, fgColor);
+                    }
+                }
                 return container.getLog().getMessage();
             } else {
                 return ""; // NOI18N

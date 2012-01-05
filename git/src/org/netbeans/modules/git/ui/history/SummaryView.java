@@ -76,6 +76,7 @@ import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
@@ -224,9 +225,7 @@ class SummaryView extends AbstractSummaryView {
 
         @Override
         public boolean isVisible () {
-            boolean visible = true;
-            // can apply filter criteria here
-            return visible;
+            return master.applyFilter(revision);
         }
 
         @Override
@@ -370,8 +369,8 @@ class SummaryView extends AbstractSummaryView {
             }
 
             @Override
-            public String getMessage () {
-                return master.getCriteria().getCommitMessage();
+            public Collection<SearchHighlight> getSearchHighlights () {
+                return master.getSearchHighlights();
             }
 
             @Override

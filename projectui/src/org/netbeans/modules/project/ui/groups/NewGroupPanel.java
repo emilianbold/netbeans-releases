@@ -56,13 +56,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Panel permitting user to create a new project group.
@@ -76,13 +77,13 @@ public class NewGroupPanel extends JPanel {
     public NewGroupPanel() {
         initComponents();
         DocumentListener l = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
+            @Override public void insertUpdate(DocumentEvent e) {
                 firePropertyChange(PROP_READY, null, null);
             }
-            public void removeUpdate(DocumentEvent e) {
+            @Override public void removeUpdate(DocumentEvent e) {
                 firePropertyChange(PROP_READY, null, null);
             }
-            public void changedUpdate(DocumentEvent e) {}
+            @Override public void changedUpdate(DocumentEvent e) {}
         };
         directoryField.getDocument().addDocumentListener(l);
         nameField.getDocument().addDocumentListener(l);
@@ -398,7 +399,7 @@ public class NewGroupPanel extends JPanel {
         if (directoryField.getText() != null && directoryField.getText().trim().length() > 0) {
             start = new File(directoryField.getText().trim());
         }
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, start);
+        chooser.setCurrentDirectory(start);
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File f = chooser.getSelectedFile();
             if (f != null) {
@@ -479,11 +480,12 @@ public class NewGroupPanel extends JPanel {
     void setNotificationLineSupport(NotificationLineSupport notificationLineSupport) {
         this.notificationLineSupport = notificationLineSupport;
     }
+    @Messages("NewGroupPanel.open_project_warning=The list of projects currently open will be lost, unless you make a free group for them first.")
     private void updateExistingProjectListWarning() { // #192899
         if (adHocKindRadio.isSelected() && useOpenCheckbox.isSelected() || OpenProjects.getDefault().getOpenProjects().length == 0) {
             notificationLineSupport.clearMessages();
         } else {
-            notificationLineSupport.setWarningMessage(NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.open_project_warning"));
+            notificationLineSupport.setWarningMessage(NewGroupPanel_open_project_warning());
         }
     }
     

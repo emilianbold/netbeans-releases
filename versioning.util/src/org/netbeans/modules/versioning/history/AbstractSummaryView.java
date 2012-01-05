@@ -279,10 +279,6 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         return scrollPane;
     }
 
-    String getMessage() {
-        return master.getMessage();
-    }
-
     File getRoot() {
         return master.getRoots()[0];
     }
@@ -346,10 +342,56 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     public interface SummaryViewMaster {
         public JComponent getComponent();
         public File[] getRoots();
-        public String getMessage();
+        public Collection<SearchHighlight> getSearchHighlights ();
         public Map<String, String> getActionColors();
         public void getMoreResults(PropertyChangeListener callback, int count);
         public boolean hasMoreResults ();
+        
+        public final static class SearchHighlight {
+            public static enum Kind {
+                MESSAGE,
+                AUTHOR,
+                REVISION,
+                FILE
+            }
+            
+            private final Kind kind;
+            private final String searchText;
+
+            public SearchHighlight (Kind kind, String searchText) {
+                this.kind = kind;
+                this.searchText = searchText.toLowerCase();
+            }
+
+            public Kind getKind () {
+                return kind;
+            }
+
+            public String getSearchText () {
+                return searchText;
+            }
+
+            @Override
+            public boolean equals (Object obj) {
+                boolean eq = false;
+                if (obj instanceof SearchHighlight) {
+                    eq = kind == ((SearchHighlight) obj).kind;
+                    if (eq) {
+                        eq = searchText.equals(((SearchHighlight) obj).searchText);
+                    }
+                }
+                return eq;
+            }
+
+            @Override
+            public int hashCode () {
+                int hash = 5;
+                hash = 17 * hash + (this.kind != null ? this.kind.hashCode() : 0);
+                hash = 17 * hash + (this.searchText != null ? this.searchText.hashCode() : 0);
+                return hash;
+            }
+            
+        }
     }
 
     private final SummaryViewMaster master;

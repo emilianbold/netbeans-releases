@@ -67,6 +67,7 @@ import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.WeakListeners;
 
@@ -208,9 +209,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         @Override
         public boolean isVisible () {
-            boolean visible = true;
-            // can apply filter criteria here
-            return visible;
+            return master.applyFilter(revision);
         }
 
         @Override
@@ -365,8 +364,8 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
 
             @Override
-            public String getMessage () {
-                return master.getCriteria().getCommitMessage();
+            public Collection<SearchHighlight> getSearchHighlights () {
+                return master.getSearchHighlights();
             }
 
             @Override
