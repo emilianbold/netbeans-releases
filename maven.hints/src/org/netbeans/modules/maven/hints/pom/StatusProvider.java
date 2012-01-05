@@ -73,6 +73,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
@@ -108,7 +109,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
-@MimeRegistration(mimeType="text/x-maven-pom+xml", service=UpToDateStatusProviderFactory.class)
+@MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=UpToDateStatusProviderFactory.class)
 public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     private static final String LAYER_POM = "pom"; //NOI18N
