@@ -43,7 +43,6 @@ package org.netbeans.modules.spring.webmvc.editor;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
@@ -77,8 +76,9 @@ public class AddBeanPanel {
 
 
     public String getClassName() {
-        if (className == null)
+        if (className == null) {
             className = findClassName();
+        }
         return className;
     }
 
@@ -89,20 +89,19 @@ public class AddBeanPanel {
     public String getId() {
         if (id == null) {
             String name = getClassName();
-            if (name == null)
+            if (name == null) {
                 return null;
-            name = name.substring(name.lastIndexOf(".")+1);
+            }
+            name = name.substring(name.lastIndexOf(".") + 1); //NOI18N
             id = name.substring(0, 1).toLowerCase() + name.substring(1);
         }
         return id;
     }
 
     private String findClassName() {
-
-        final String[] className = new String[1];
-
+        final String[] clazzName = new String[1];
         JavaSource js = JavaSource.forDocument(document);
-        if (js==null) {
+        if (js == null) {
             return null;
         }
         try {
@@ -116,21 +115,22 @@ public class AddBeanPanel {
                         ExpressionTree packageTree = cc.getCompilationUnit().getPackageName();
                         if (packageTree != null) {
                             TreePath path = cc.getTrees().getPath(cc.getCompilationUnit(), packageTree);
-                            Name qualifiedName = cc.getElements().getPackageOf(cc.getTrees().getElement(path)).getQualifiedName();
-                            className[0] = qualifiedName.toString() + ".";
+                            Name qualifiedName = cc.getElements().getPackageOf(
+                                    cc.getTrees().getElement(path)).getQualifiedName();
+                            clazzName[0] = qualifiedName.toString() + "."; //NOI18N
                         }
                         String cls = new ClassScanner().scan(cc.getCompilationUnit(), null);
-                        if (className[0] == null) {
-                            className[0] = cls;
+                        if (clazzName[0] == null) {
+                            clazzName[0] = cls;
                         } else {
-                            className[0] += cls;
+                            clazzName[0] += cls;
                         }
                     }
 
 
                 }
             }, true);
-            return className[0];
+            return clazzName[0];
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

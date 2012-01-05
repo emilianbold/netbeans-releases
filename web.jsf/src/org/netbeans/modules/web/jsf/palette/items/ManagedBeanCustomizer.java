@@ -46,8 +46,6 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +64,6 @@ import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -102,6 +99,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -450,17 +448,12 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     }
 
     private void setScanningLabelVisible(final boolean visible) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            scanningLabel.setVisible(visible);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    setScanningLabelVisible(visible);
-                }
-            });
-        }
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                scanningLabel.setVisible(visible);
+            }
+        });
     }
 
     private class SearchTask implements Task<CompilationController> {
