@@ -549,8 +549,10 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             Set<VCSFileProxy> files = (Set<VCSFileProxy>) evt.getNewValue();
             VersioningAnnotationProvider.getDefault().refreshAnnotations(files);
         } else if (EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
-            if(evt.getSource() instanceof VersioningSystem) {
-                versionedRootsChanged((VersioningSystem) evt.getSource());
+            if(evt.getSource() == localHistory.getDelegate()) {
+                synchronized(localHistoryFiles) {
+                    localHistoryFiles.clear();
+                }
             } else {
                 versionedRootsChanged(null);
             }
@@ -562,14 +564,8 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     }
     
     public void versionedRootsChanged(VersioningSystem owner) {
-        if(owner != null && owner == localHistory) {
-            synchronized(localHistoryFiles) {
-                localHistoryFiles.clear();
-            }
-        } else {
-            flushFileOwnerCache();
-            fireFileStatusChanged(null);
-        }
+        flushFileOwnerCache();
+        fireFileStatusChanged(null);
     }
     
     @Override
