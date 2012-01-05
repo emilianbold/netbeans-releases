@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
@@ -75,16 +76,20 @@ import org.openide.util.lookup.implspi.SharedClassObjectBridge;
 final class MetaInfServicesLookup extends AbstractLookup {
 
     private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
-    static final Executor RP;
-    static {
-        Executor res = null;
-        try {
-            Class<?> seek = Class.forName("org.openide.util.RequestProcessor");
-            res = (Executor)seek.newInstance();
-        } catch (Throwable t) {
-            res = Executors.newSingleThreadExecutor();
+    private static Reference<Executor> RP = new WeakReference<Executor>(null);
+    
+    static synchronized Executor getRP() {
+        Executor res = RP.get();
+        if (res == null) {
+            try {
+                Class<?> seek = Class.forName("org.openide.util.RequestProcessor");
+                res = (Executor)seek.newInstance();
+            } catch (Throwable t) {
+                res = Executors.newSingleThreadExecutor();
+            }
+            RP = new SoftReference<Executor>(res);
         }
-        RP = res;
+        return res;
     }
     /*TBD: Inject RequestProcessor somehow
      new RequestProcessor(MetaInfServicesLookup.class.getName(), 1);
@@ -159,7 +164,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 arr.addAll(toAdd);
-                setPairs(arr, RP);
+                setPairs(arr, getRP());
             }
         }
     }
