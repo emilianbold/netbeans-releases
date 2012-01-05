@@ -5,7 +5,7 @@
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="tstupka@netbeans.org"
 >
 
   &api-questions;
@@ -32,8 +32,8 @@
     The module provides the necessary functionality for Source Code Management (SCM or Versioning) modules 
     to fully integrate into the IDE workflow. 
   </p>
-    <api name="VersioningSPI" group="java" type="export" category="devel">
-        Enables Source Code Management (SCM or Versioning) modules to fully integrate into the IDE workflow.
+    <api name="FSIndependentVersioningSPI" group="java" type="export" category="devel">
+        Enables to fully integrate into the IDE workflow filesystem independent Source Code Management (SCM or Versioning) modules.
     </api>  
  </answer>
 
