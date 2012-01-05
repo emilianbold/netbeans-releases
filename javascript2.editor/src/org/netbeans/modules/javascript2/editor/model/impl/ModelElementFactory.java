@@ -114,7 +114,12 @@ public final class ModelElementFactory {
             }
             result = newObject;
             if (currentScope instanceof FileScope) {
-                ((FileScopeImpl)currentScope).addObject(result);
+                FileScopeImpl fScope = (FileScopeImpl)currentScope;
+                fScope.addObject(result);
+                ModelElementImpl variable = (ModelElementImpl)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getDeclaredVariables(), fqName.get(0).getName())); 
+                if (variable != null) {
+                    fScope.removeElement(variable);
+                }
             }
         } else {
             List<Identifier> fqNameOfCreated = new ArrayList<Identifier>(fqName.size());

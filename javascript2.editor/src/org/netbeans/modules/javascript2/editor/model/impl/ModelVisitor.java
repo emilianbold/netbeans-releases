@@ -215,9 +215,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     } else if (lastVisited instanceof BinaryNode) {
                         name = getName((BinaryNode)lastVisited);
                     }
-            if (name == null) {
+            if (name == null || name.size() == 0) {
                 name = new ArrayList<Identifier>(1);
-                name.add(new IdentifierImpl("UNKNOWN", 
+                name.add(new IdentifierImpl("UNKNOWN",   //NOI18N
                         new OffsetRange(objectNode.getStart(), objectNode.getFinish())));
             }
             ScopeImpl scope = modelBuilder.getCurrentScope();
@@ -234,12 +234,18 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node visit(PropertyNode propertyNode, boolean onset) {
-        if (onset && propertyNode.getKey() instanceof IdentNode) {
+        if (onset && propertyNode.getKey() instanceof IdentNode
+                && !(propertyNode.getValue() instanceof ObjectNode)) {
             ScopeImpl scope = modelBuilder.getCurrentScope();
             IdentNode key = (IdentNode)propertyNode.getKey();
             scope.addElement(new FieldImpl(scope, 
                     new IdentifierImpl(key.getName(), 
                     new OffsetRange(key.getStart(), key.getFinish()))));
+            if(propertyNode.getValue() instanceof CallNode) {
+                // TODO for now, don't continue. There shoudl be handled cases liek
+                // in the testFiles/model/property02.js file
+                return null;
+            }
         }
         return super.visit(propertyNode, onset);
     }
@@ -295,6 +301,10 @@ public class ModelVisitor extends PathNodeVisitor {
         Node lhs = binaryNode.lhs();
         if (lhs instanceof AccessNode) {
             name = getName((AccessNode)lhs);
+        } else if (lhs instanceof IdentNode) {
+            IdentNode ident = (IdentNode) lhs;
+            name.add(new IdentifierImpl(ident.getName(),
+                        new OffsetRange(ident.getStart(), ident.getFinish())));
         }
         return name;
     }
