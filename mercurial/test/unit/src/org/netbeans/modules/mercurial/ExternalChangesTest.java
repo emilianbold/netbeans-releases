@@ -50,7 +50,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;

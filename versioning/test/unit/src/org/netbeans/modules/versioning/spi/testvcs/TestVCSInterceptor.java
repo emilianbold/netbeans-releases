@@ -46,9 +46,11 @@ package org.netbeans.modules.versioning.spi.testvcs;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
-import org.netbeans.modules.versioning.util.FileUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Maros Sandor
@@ -156,7 +158,11 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doCopy(File from, File to) throws IOException {
         doCopyFiles.add(from);
         doCopyFiles.add(to);
-        FileUtils.copyFile(from, to);
+        FileInputStream is = new FileInputStream(from);
+        FileOutputStream os = new FileOutputStream(to);
+        FileUtil.copy(is, os);
+        is.close();
+        os.close();
     }
 
     public void afterCopy(File from, File to) {

@@ -126,14 +126,13 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.javafx.source</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
                 <friend>org.netbeans.modules.parsing.lucene</friend>
-                <friend>org.netbeans.modules.versioning</friend>
                 <friend>org.netbeans.modules.masterfs.windows</friend>
                 <friend>org.netbeans.modules.masterfs.linux</friend>
                 <friend>org.netbeans.modules.masterfs.solaris</friend>
                 <friend>org.netbeans.modules.masterfs.macosx</friend>
+                <friend>org.netbeans.modules.versioning.masterfs</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>
             </friend-packages>
         </data>
