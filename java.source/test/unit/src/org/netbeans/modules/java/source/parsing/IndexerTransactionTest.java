@@ -46,8 +46,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,7 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
@@ -129,10 +132,22 @@ public class IndexerTransactionTest extends NbTestCase {
     
     private TxLogHandler    logHandler = new TxLogHandler();
 
+    private final Map<String, Set<ClassPath>> registeredClasspaths = new HashMap<String, Set<ClassPath>>();
+
     public IndexerTransactionTest(String name) {
         super(name);
     }
     
+    protected final void registerGlobalPath(String id, ClassPath [] classpaths) {
+        Set<ClassPath> set = registeredClasspaths.get(id);
+        if (set == null) {
+            set = new HashSet<ClassPath>();
+            registeredClasspaths.put(id, set);
+        }
+        set.addAll(Arrays.asList(classpaths));
+        GlobalPathRegistry.getDefault().register(id, classpaths);
+    }
+
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
@@ -201,6 +216,17 @@ public class IndexerTransactionTest extends NbTestCase {
         synchronized (blocker) {
             blocker.notifyAll();
         }
+        logHandler.beforeCommitCallback = null;
+        logHandler.beforeFileWriteCallback = null;
+        logHandler.beforeFinishCallback = null;
+        parserBlocker.release(1000);
+
+        for(String id : registeredClasspaths.keySet()) {
+            Set<ClassPath> classpaths = registeredClasspaths.get(id);
+            GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
+        }
+        Thread.sleep(300);
+        parserBlocker.drainPermits();
     }
     
     /**
@@ -238,9 +264,9 @@ public class IndexerTransactionTest extends NbTestCase {
      * @throws Exception 
      */
     public void testInitialWorkRootHidden() throws Exception {
-        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
-        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        registerGlobalPath(ClassPath.BOOT, new ClassPath[] {bootPath});
+        registerGlobalPath(ClassPath.COMPILE, new ClassPath[] {compilePath});
+        registerGlobalPath(ClassPath.SOURCE, new ClassPath[] {sourcePath});
         
         RepositoryUpdater.getDefault().start(true);
         
@@ -273,7 +299,6 @@ public class IndexerTransactionTest extends NbTestCase {
         // now add 'src2' to the set of roots, block the completion (in log handler),
         // check that classes are not available
         final Object blocker = new String("blocker");
-        final Object signal = new String("signal");
         
         logHandler.beforeFinishCallback = new ScanCallback() {
 
@@ -355,12 +380,9 @@ public class IndexerTransactionTest extends NbTestCase {
             
     }
     
-    /**
-     * Checks that added files are not visible until their source root is added,
-     * even if the memcache with file contents 
-     * is flushed during the scan (will be flushed after each file)
-     */
-    public void testAddedClassesNotVisible() throws Exception {
+    ClassIndex ci;
+    
+    void commonSetup() throws Exception {
         Logger l = Logger.getLogger(WriteBackTransaction.class.getName());
         l.setLevel(Level.FINE);
         l.addHandler(logHandler);
@@ -372,9 +394,9 @@ public class IndexerTransactionTest extends NbTestCase {
         ll.add(ClassPathSupport.createResource(srcRoot2.getURL()));
         spiSrc.setImpls(ll);
 
-        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
-        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        registerGlobalPath(ClassPath.BOOT, new ClassPath[] {bootPath});
+        registerGlobalPath(ClassPath.COMPILE, new ClassPath[] {compilePath});
+        registerGlobalPath(ClassPath.SOURCE, new ClassPath[] {sourcePath});
 
         final ClassPath scp = ClassPathSupport.createClassPath(srcRoot, srcRoot2);
         
@@ -382,20 +404,33 @@ public class IndexerTransactionTest extends NbTestCase {
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]),
             scp);
-        final ClassIndex ci = cpInfo.getClassIndex();
-        
-        RepositoryUpdater.getDefault().start(true);
+        ci = cpInfo.getClassIndex();
 
+        RepositoryUpdater.getDefault().start(true);
+        
         // make the initial scan, with 'src' and 'src2'
         logHandler.waitForInitialScan(2);
 
         // ensure the cache will flush after each file:
         WriteBackTransaction.disableCache = true;
         
+    }
+    
+    /**
+     * Checks that added files are not visible until their source root is added,
+     * even if the memcache with file contents 
+     * is flushed during the scan (will be flushed after each file)
+     */
+    public void testAddedClassesNotVisible() throws Exception {
+        commonSetup();
         final Semaphore signal = new Semaphore(0);
 
         logHandler.beforeFinishCallback = new RootScannedCallback("java", "src/", signal);
         
+        Set<ElementHandle<TypeElement>> handles;
+
+        handles = ci.getDeclaredTypes("ConstructorTest", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
+                SearchScope.SOURCE));
         // copy over some files
         TestUtil.copyFiles(
                 new File(getDataDir(), "indexing/files"),
@@ -412,11 +447,9 @@ public class IndexerTransactionTest extends NbTestCase {
             fail("Should rescan the added files");
         }
 
-        Set<ElementHandle<TypeElement>> handles;
-
         handles = ci.getDeclaredTypes("ConstructorTest", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
                 SearchScope.SOURCE));
-        //assertEquals(0, handles.size());    
+        assertEquals(0, handles.size());    
         
         // check that files STILL do not exist
         File dir = findSegmentDir("src");
@@ -435,9 +468,8 @@ public class IndexerTransactionTest extends NbTestCase {
 
         assertTrue(new File(targetDir, "ConstructorTest.sig").exists());
         assertTrue(new File(targetDir, "EmptyClass.sig").exists());
-        
-}
-    
+    }
+
     private class RootScannedCallback implements ScanCallback {
         private String indexerName;
         private String rootSuffix;
@@ -475,7 +507,50 @@ public class IndexerTransactionTest extends NbTestCase {
      * @throws Exception 
      */
     public void testDeletedClassesVisible() throws Exception {
+        commonSetup();
+        final Semaphore signal = new Semaphore(0);
+
+        logHandler.beforeFinishCallback = new RootScannedCallback("java", "src/", signal);
         
+        Set<ElementHandle<TypeElement>> handles;
+
+        handles = ci.getDeclaredTypes("ClassWithInnerClass", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
+                SearchScope.SOURCE));
+        
+        assertEquals(1, handles.size());
+        
+        File sourceDir = new File(FileUtil.toFile(srcRoot), "org/netbeans/parsing/source1".replaceAll("/", File.separator));
+        new File(sourceDir, "ClassWithInnerClass.java").delete();
+        
+        // must force rescan, indexer does not notice the file-copy ?
+        RepositoryUpdater.getDefault().refreshAll(false, false, true, null, 
+                srcRoot, srcRoot2);
+        try {
+            signal.acquire();
+            signal.drainPermits();
+        } catch (InterruptedException ex) {
+            fail("Should rescan the added files");
+        }
+
+        handles = ci.getDeclaredTypes("ClassWithInnerClass", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
+                SearchScope.SOURCE));
+        assertEquals(1, handles.size());    
+        
+        // check that files STILL do not exist
+        File dir = findSegmentDir("src");
+        File targetDir = new File(dir, "org/netbeans/parsing/source1".replaceAll("/", File.separator));
+        
+        assertTrue(new File(targetDir, "ClassWithInnerClass.sig").exists());
+        
+        parserBlocker.release();
+        
+        logHandler.waitForInitialScan();
+        
+        handles = ci.getDeclaredTypes("ClassWithInnerClass", ClassIndex.NameKind.SIMPLE_NAME, Collections.singleton(
+                SearchScope.SOURCE));
+        assertEquals(0, handles.size());    
+
+        assertFalse(new File(targetDir, "ClassWithInnerClass.sig").exists());
     }
     
     interface ScanCallback {

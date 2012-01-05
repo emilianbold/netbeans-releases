@@ -240,6 +240,13 @@ public abstract class ClassIndexImpl {
          * @throws IOException 
          */
         void deleteAndFlush(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+        
+        /**
+         * Flushes any pending data from deleteAndFlush as if deleteAndStore was called with empty collections
+         */
+        void commit() throws IOException;
+        
+        void rollback() throws IOException;
     }
     
     private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {

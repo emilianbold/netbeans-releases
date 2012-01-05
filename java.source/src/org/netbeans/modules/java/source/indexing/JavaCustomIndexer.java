@@ -797,6 +797,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                             FileManagerTransaction.writeBack(context.getRoot()):
                             FileManagerTransaction.writeThrough()).
                     register(
+                        PersistentIndexTransaction.class, 
+                        PersistentIndexTransaction.create()).
+                    register(
                         ClassIndexEventsTransaction.class,
                         ClassIndexEventsTransaction.create()
                     );

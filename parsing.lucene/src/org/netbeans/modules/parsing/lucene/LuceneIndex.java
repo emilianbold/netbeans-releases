@@ -289,6 +289,7 @@ public class LuceneIndex implements Index.Transactional {
             IndexManager.writeAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
+                LOGGER.log(Level.FINE, "Committing {0}", LuceneIndex.this);
                     dirCache.closeTxWriter();
                     return null;
                 }
@@ -304,6 +305,7 @@ public class LuceneIndex implements Index.Transactional {
             IndexManager.writeAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
+                    LOGGER.log(Level.FINE, "Rolling back {0}", this);
                     dirCache.rollbackTxWriter();
                     return null;
                 }
@@ -347,6 +349,11 @@ public class LuceneIndex implements Index.Transactional {
 
                 @Override
                 public Void run() throws IOException, InterruptedException {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Storing in TX {0}: {1} added, {2} deleted", 
+                                new Object[] { this, toAdd.size(), toDelete.size() }
+                                );
+                    }
                     _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr, false);
                     return null;
                 }
@@ -434,6 +441,7 @@ public class LuceneIndex implements Index.Transactional {
             _doStore(data, toDelete, docConvertor, queryConvertor, wr, optimize);
         } finally {
             try {
+                LOGGER.log(Level.FINE, "Committing {0}", this);
                 dirCache.close(wr[0]);
             } finally {
                 dirCache.refreshReader();
@@ -687,6 +695,7 @@ public class LuceneIndex implements Index.Transactional {
                 writer.close();
             } finally {
                 if (txWriter == writer) {
+                    LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
                     txWriter = null;
                 }
             }
@@ -773,6 +782,7 @@ public class LuceneIndex implements Index.Transactional {
         void closeTxWriter() throws IOException {
             if (txWriter != null) {
                 try {
+                    LOGGER.log(Level.FINE, "Committing {0}", this);
                     close(txWriter);
                 } finally {
                     refreshReader();
