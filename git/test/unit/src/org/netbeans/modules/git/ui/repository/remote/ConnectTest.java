@@ -52,12 +52,12 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClient;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;
@@ -89,7 +89,7 @@ public class ConnectTest extends AbstractGitTestCase {
 
     public void testConnectNoCredentials () throws Exception {
         try {
-            client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches(URL, GitUtils.NULL_PROGRESS_MONITOR);
             fail();
         } catch (GitException.AuthorizationException ex) {
             // OK
@@ -114,7 +114,7 @@ public class ConnectTest extends AbstractGitTestCase {
         assertSettings(Arrays.asList(conn));
         
         // command passes?
-        client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches(URL, GitUtils.NULL_PROGRESS_MONITOR);
         assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertNull(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user").toString()));
     }
@@ -137,7 +137,7 @@ public class ConnectTest extends AbstractGitTestCase {
         assertSettings(Arrays.asList(conn));
         
         // command passes?
-        client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches(URL, GitUtils.NULL_PROGRESS_MONITOR);
         assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertEquals("heslo", new String(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user").toString())));
     }
@@ -159,7 +159,7 @@ public class ConnectTest extends AbstractGitTestCase {
         assertSettings(Arrays.asList(conn));
         
         // command passes?
-        client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches(URL, GitUtils.NULL_PROGRESS_MONITOR);
         assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertNull(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2").toString()));
     }
@@ -182,26 +182,26 @@ public class ConnectTest extends AbstractGitTestCase {
         assertSettings(Arrays.asList(conn));
         
         // command passes?
-        client.listRemoteBranches(URL, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches(URL, GitUtils.NULL_PROGRESS_MONITOR);
         assertEquals(Arrays.asList(toPrefsString(conn)), Utils.getStringList(prefs, RECENT_GURI));
         assertEquals("", new String(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2").toString())));
     }
     
     public void testSupportedProtocols () throws Exception {
         try {
-            client.listRemoteBranches("ftp://host.name/resource", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches("ftp://host.name/resource", GitUtils.NULL_PROGRESS_MONITOR);
             fail("Protocol is now supported, add to RemoteRepository.Scheme");
         } catch (GitException ex) {
             assertEquals("URI not supported: ftp://host.name/resource", ex.getMessage());
         }
         try {
-            client.listRemoteBranches("ftps://host.name/resource", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches("ftps://host.name/resource", GitUtils.NULL_PROGRESS_MONITOR);
             fail("Protocol is now supported, add to RemoteRepository.Scheme");
         } catch (GitException ex) {
             assertEquals("URI not supported: ftps://host.name/resource", ex.getMessage());
         }
         try {
-            client.listRemoteBranches("rsync://host.name/resource", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches("rsync://host.name/resource", GitUtils.NULL_PROGRESS_MONITOR);
             fail("Protocol is now supported, add to RemoteRepository.Scheme");
         } catch (GitException ex) {
             assertEquals("URI not supported: rsync://host.name/resource", ex.getMessage());

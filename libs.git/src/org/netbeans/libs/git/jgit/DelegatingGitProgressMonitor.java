@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,61 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.progress;
+package org.netbeans.libs.git.jgit;
+
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public abstract class ProgressMonitor {
-    
-    public abstract boolean isCanceled ();
+public final class DelegatingGitProgressMonitor extends ProgressMonitor {
+    private final ProgressMonitor monitor;
 
-    public abstract void started (String command);
-
-    public abstract void finished();
-
-    public abstract void preparationsFailed (String message);
-
-    public abstract void notifyError (String message);
-
-    public abstract void notifyWarning (String message);
-
-    public static class DefaultProgressMonitor extends ProgressMonitor {
-        private boolean canceled;
-
-        public final synchronized boolean cancel () {
-            boolean alreadyCanceled = canceled;
-            canceled = true;
-            return !alreadyCanceled;
-        }
-
-        @Override
-        public final synchronized boolean isCanceled () {
-            return canceled;
-        }
-
-        @Override
-        public void started (String command) {
-        }
-
-        @Override
-        public void finished() {
-        }
-
-        @Override
-        public void preparationsFailed (String message) {
-        }
-
-        @Override
-        public void notifyError (String message) {
-        }
-
-        @Override
-        public void notifyWarning (String message) {
-        }
+    public DelegatingGitProgressMonitor (ProgressMonitor monitor) {
+        this.monitor = monitor;
     }
+
+    @Override
+    public boolean isCanceled () {
+        return monitor.isCanceled();
+    }
+
+    @Override
+    public void started (String command) {
+    }
+
+    @Override
+    public void finished () {
+    }
+
+    @Override
+    public void preparationsFailed (String message) {
+    }
+
+    @Override
+    public void notifyError (String message) {
+    }
+
+    @Override
+    public void notifyWarning (String message) {
+    }
+
 }

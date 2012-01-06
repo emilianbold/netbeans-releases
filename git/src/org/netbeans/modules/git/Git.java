@@ -146,7 +146,7 @@ public final class Git {
         if (repository != null) {
             try {
                 GitClient client = getClient(repository);
-                if (!client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), ProgressMonitor.NULL_PROGRESS_MONITOR)) {
+                if (!client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), GitUtils.NULL_PROGRESS_MONITOR)) {
                     originalFile.delete();
                 }
             } catch (java.io.FileNotFoundException ex) {

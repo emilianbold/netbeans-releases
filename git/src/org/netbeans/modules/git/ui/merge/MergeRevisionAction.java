@@ -148,7 +148,7 @@ public class MergeRevisionAction extends SingleRepositoryAction {
             GitRevisionInfo info = null;
             if (result.getNewHead() != null) {
                 try {
-                    info = client.log(result.getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    info = client.log(result.getNewHead(), GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }

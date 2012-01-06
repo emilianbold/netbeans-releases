@@ -77,12 +77,12 @@ public class GetPreviousRevisionTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         write(f, "modification");
         add(files);
-        GitRevisionInfo commit1 = client.commit(files, "modification", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit1 = client.commit(files, "modification", null, null, NULL_PROGRESS_MONITOR);
         
         write(f, "modification2");
         add(files);
-        GitRevisionInfo commit2 = client.commit(files, "modification2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revision = client.getPreviousRevision(f, commit2.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit2 = client.commit(files, "modification2", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revision = client.getPreviousRevision(f, commit2.getRevision(), NULL_PROGRESS_MONITOR);
         assertRevisions(commit1, revision);
     }
     
@@ -94,29 +94,29 @@ public class GetPreviousRevisionTest extends AbstractGitTestCase {
         File[] files = new File[] { f, f2 };
         add(files);
         GitClient client = getClient(workDir);
-        GitRevisionInfo init = client.commit(files, "init", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo init = client.commit(files, "init", null, null, NULL_PROGRESS_MONITOR);
 
         write(f, "modification 1");
         add(files);
-        GitRevisionInfo commit1 = client.commit(files, "modification 1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit1 = client.commit(files, "modification 1", null, null, NULL_PROGRESS_MONITOR);
         
         // commit 2 does not touch "f"
         write(f2, "modification 2");
         add(files);
-        GitRevisionInfo commit2 = client.commit(files, "modification 2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit2 = client.commit(files, "modification 2", null, null, NULL_PROGRESS_MONITOR);
         
         write(f, "modification 3");
         add(files);
-        GitRevisionInfo commit3 = client.commit(files, "modification 3", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revision = client.getPreviousRevision(f, commit3.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit3 = client.commit(files, "modification 3", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revision = client.getPreviousRevision(f, commit3.getRevision(), NULL_PROGRESS_MONITOR);
         assertRevisions(commit1, revision);
         
-        revision = client.getPreviousRevision(f2, commit2.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        revision = client.getPreviousRevision(f2, commit2.getRevision(), NULL_PROGRESS_MONITOR);
         assertRevisions(init, revision);
         
-        revision = client.getCommonAncestor(new String[] { commit2.getParents()[0] }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        revision = client.getCommonAncestor(new String[] { commit2.getParents()[0] }, NULL_PROGRESS_MONITOR);
         assertRevisions(commit1, revision);
-        revision = client.getPreviousRevision(f2, commit3.getRevision(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        revision = client.getPreviousRevision(f2, commit3.getRevision(), NULL_PROGRESS_MONITOR);
         assertRevisions(commit2, revision);
     }
 

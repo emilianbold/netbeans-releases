@@ -54,10 +54,10 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitVCS;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.util.Utils;
 
@@ -94,7 +94,7 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
 
     public void testInstanceCollected () throws Exception {
         File repo2 = new File(repositoryLocation.getParentFile(), "other");
-        getClient(repo2).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repo2).init(GitUtils.NULL_PROGRESS_MONITOR);
         assertTrue(repo2.exists());
         Git.getInstance().versionedFilesChanged();
         assertEquals(repo2, Git.getInstance().getRepositoryRoot(repo2));
@@ -122,16 +122,16 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         File f = new File(repositoryLocation, "file");
         File[] roots = new File[] { f };
         GitClient client = getClient(repositoryLocation);
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revInfo = client.commit(roots, "bla", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
 
         // test refresh
         write(f, "huhu 1");
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
+        revInfo = client.commit(roots, "bla", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
     }
@@ -140,8 +140,8 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         File f = new File(repositoryLocation, "file");
         File[] roots = new File[] { f };
         GitClient client = getClient(repositoryLocation);
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revInfo = client.commit(roots, "bla", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
@@ -151,8 +151,8 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         RepositoryInfoListener list = new RepositoryInfoListener();
         info.addPropertyChangeListener(list);
         write(f, "huhu 2");
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        revInfo = client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
+        revInfo = client.commit(roots, "bla", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         info.refresh();
         assertEquals(revInfo.getRevision(), info.getActiveBranch().getId());
         list.assertPropertyEvent(RepositoryInfo.PROPERTY_HEAD, oldBranch, info.getActiveBranch());
@@ -166,15 +166,15 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
         info.refresh();
         assertEquals(GitBranch.NO_BRANCH, info.getActiveBranch().getName());
         assertEquals(AbstractGitTestCase.NULL_OBJECT_ID, info.getActiveBranch().getId());
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
 
         // test property support
         GitBranch oldBranch = info.getActiveBranch();
         RepositoryInfoListener list = new RepositoryInfoListener();
         info.addPropertyChangeListener(list);
         write(f, "huhu");
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(roots, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
+        client.commit(roots, "bla", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         info.refresh();
         list.assertPropertyEvent(RepositoryInfo.PROPERTY_ACTIVE_BRANCH, oldBranch, info.getActiveBranch());
 

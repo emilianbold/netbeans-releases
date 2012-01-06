@@ -121,7 +121,7 @@ public abstract class SingleRepositoryAction extends GitAction {
                     Set<String> urls = new HashSet<String>();
                     try {
                         GitClient client = Git.getInstance().getClient(repositoryRoot);
-                        Map<String, GitRemoteConfig> cfgs = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+                        Map<String, GitRemoteConfig> cfgs = client.getRemotes(GitUtils.NULL_PROGRESS_MONITOR);
                         for (Map.Entry<String, GitRemoteConfig> e : cfgs.entrySet()) {
                             GitRemoteConfig cfg = e.getValue();
                             for (List<String> uris : Arrays.asList(cfg.getUris(), cfg.getPushUris())) {

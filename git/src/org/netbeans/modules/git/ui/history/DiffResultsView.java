@@ -65,9 +65,9 @@ import javax.swing.JComponent;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.diff.DiffController;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.DiffStreamSource;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.WeakListeners;
 
 /**
@@ -439,7 +439,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
             if (revision1 == null) {
                 try {
-                    revision1 = event2.getLogInfoHeader().getAncestorCommit(event2.getOriginalFile(), getClient(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    revision1 = event2.getLogInfoHeader().getAncestorCommit(event2.getOriginalFile(), getClient(), GitUtils.NULL_PROGRESS_MONITOR);
                     file1 = event2.getOriginalFile();
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);

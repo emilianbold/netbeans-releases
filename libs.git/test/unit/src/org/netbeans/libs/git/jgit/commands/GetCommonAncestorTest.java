@@ -77,22 +77,22 @@ public class GetCommonAncestorTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         write(f, "a\nb\nc\n");
         add(files);
-        GitRevisionInfo revisionBase = client.commit(files, "base revision", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revisionBase = client.commit(files, "base revision", null, null, NULL_PROGRESS_MONITOR);
         
-        client.createBranch("b", "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.checkoutRevision("b", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch("b", "master", NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("b", true, NULL_PROGRESS_MONITOR);
         
         write(f, "modification on branch\nb\nc\n");
         add(files);
         
-        client.checkoutRevision("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
         write(f, "a\nb\nmodification on master\n");
         add(files);
-        client.commit(files, "modification on master", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(files, "modification on master", null, null, NULL_PROGRESS_MONITOR);
         
-        GitRevisionInfo revisionMerge = client.log(client.merge("b", ProgressMonitor.NULL_PROGRESS_MONITOR).getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revisionMerge = client.log(client.merge("b", NULL_PROGRESS_MONITOR).getNewHead(), NULL_PROGRESS_MONITOR);
         
-        GitRevisionInfo revision = client.getCommonAncestor(revisionMerge.getParents(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revision = client.getCommonAncestor(revisionMerge.getParents(), NULL_PROGRESS_MONITOR);
         assertRevisions(revisionBase, revision);
     }
     
@@ -106,8 +106,8 @@ public class GetCommonAncestorTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         write(f, "modification");
         add(files);
-        GitRevisionInfo commit = client.commit(files, "modification", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revision = client.getCommonAncestor(new String[] { commit.getRevision() }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit = client.commit(files, "modification", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revision = client.getCommonAncestor(new String[] { commit.getRevision() }, NULL_PROGRESS_MONITOR);
         assertRevisions(commit, revision);
     }
     
@@ -121,16 +121,16 @@ public class GetCommonAncestorTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         write(f, "modification 1");
         add(files);
-        GitRevisionInfo commit1 = client.commit(files, "modification 1", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit1 = client.commit(files, "modification 1", null, null, NULL_PROGRESS_MONITOR);
         
         write(f, "modification 2");
         add(files);
-        GitRevisionInfo commit2 = client.commit(files, "modification 2", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit2 = client.commit(files, "modification 2", null, null, NULL_PROGRESS_MONITOR);
         
         write(f, "modification 3");
         add(files);
-        GitRevisionInfo commit3 = client.commit(files, "modification 3", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo revision = client.getCommonAncestor(new String[] { commit1.getRevision(), commit2.getRevision(), commit3.getRevision() }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit3 = client.commit(files, "modification 3", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revision = client.getCommonAncestor(new String[] { commit1.getRevision(), commit2.getRevision(), commit3.getRevision() }, NULL_PROGRESS_MONITOR);
         assertRevisions(commit1, revision);
     }
 

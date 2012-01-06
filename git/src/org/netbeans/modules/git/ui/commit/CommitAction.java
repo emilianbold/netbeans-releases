@@ -330,7 +330,7 @@ public class CommitAction extends SingleRepositoryAction {
             if (state.equals(GitRepositoryState.MERGING)) {
                 try {
                     GitClient client = Git.getInstance().getClient(repository);
-                    conflicts = client.getConflicts(new File[] { repository }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    conflicts = client.getConflicts(new File[] { repository }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
                 }
@@ -345,7 +345,7 @@ public class CommitAction extends SingleRepositoryAction {
             }
             Object retval = DialogDisplayer.getDefault().notify(nd);
             if (retval == NotifyDescriptor.YES_OPTION) {
-                GitUtils.openInVersioningView(conflicts.keySet(), repository, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                GitUtils.openInVersioningView(conflicts.keySet(), repository, GitUtils.NULL_PROGRESS_MONITOR);
             }
         }
         return commitPermitted;
