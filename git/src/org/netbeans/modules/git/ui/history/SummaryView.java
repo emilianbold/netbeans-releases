@@ -96,7 +96,7 @@ class SummaryView extends AbstractSummaryView {
     static class GitLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private RepositoryRevision revision;
-        private List events = new ArrayList<GitLogEvent>(10);
+        private List<Event> events = new ArrayList<Event>(10);
         private SearchHistoryPanel master;
         private String complexRevision;
         private final PropertyChangeListener list;
@@ -238,12 +238,12 @@ class SummaryView extends AbstractSummaryView {
         }
 
         void refreshEvents () {
-            ArrayList<GitLogEvent> evts = new ArrayList<GitLogEvent>(revision.getEvents().size());
+            ArrayList<Event> evts = new ArrayList<Event>(revision.getEvents().length);
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new GitLogEvent(master, event));
             }
-            List<GitLogEvent> oldEvents = new ArrayList<GitLogEvent>(events);
-            List<GitLogEvent> newEvents = new ArrayList<GitLogEvent>(evts);
+            List<Event> oldEvents = new ArrayList<Event>(events);
+            List<Event> newEvents = new ArrayList<Event>(evts);
             events = evts;
             eventsChanged(oldEvents, newEvents);
         }

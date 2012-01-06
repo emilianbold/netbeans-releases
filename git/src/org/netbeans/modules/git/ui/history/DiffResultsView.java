@@ -300,11 +300,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     protected boolean showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
         boolean initialized = container.isEventsInitialized();
-        List<RepositoryRevision.Event> revs = container.getEvents();
+        RepositoryRevision.Event[] revs = container.getEvents();
         
         RepositoryRevision.Event newest = getEventForRoots(container, null);
         if(newest == null) {
-            newest = revs.get(0);   
+            newest = revs[0];   
         }
         if (newest == null && !initialized) {
             return false;
@@ -316,7 +316,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     private RepositoryRevision.Event getEventForRoots (RepositoryRevision container, File preferedFile) {
         RepositoryRevision.Event event = null;
-        List<RepositoryRevision.Event> revs;
+        RepositoryRevision.Event[] revs;
         if (container.isEventsInitialized()) {
             revs = container.getEvents();
         } else {

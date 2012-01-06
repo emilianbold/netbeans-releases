@@ -98,12 +98,12 @@ public class RepositoryRevision {
         }
     }
 
-    public List<Event> getEvents() {
-        return events;
+    public Event[] getEvents() {
+        return events.toArray(new Event[events.size()]);
     }
 
-    List<Event> getDummyEvents () {
-        return dummyEvents;
+    Event[] getDummyEvents () {
+        return dummyEvents.toArray(new Event[dummyEvents.size()]);
     }
 
     public GitRevisionInfo getLog() {

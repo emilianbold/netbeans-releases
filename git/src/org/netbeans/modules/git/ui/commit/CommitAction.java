@@ -127,11 +127,11 @@ public class CommitAction extends SingleRepositoryAction {
                 GitCommitPanel panel = state == GitRepositoryState.MERGING_RESOLVED
                         ? GitCommitPanelMerged.create(roots, repository, user)
                         : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
-                VCSCommitTable table = panel.getCommitTable();
+                VCSCommitTable<GitFileNode> table = panel.getCommitTable();
                 boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
                 if (ok) {
-                    final List<VCSFileNode> commitFiles = table.getCommitFiles();
+                    final List<GitFileNode> commitFiles = table.getCommitFiles();
 
                     GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
                     panel.getParameters().storeCommitMessage();
@@ -149,11 +149,11 @@ public class CommitAction extends SingleRepositoryAction {
 
     private static class CommitProgressSupport extends GitProgressSupport {
         private final GitCommitPanel panel;
-        private final List<VCSFileNode> commitFiles;
+        private final List<GitFileNode> commitFiles;
         private final VCSCommitFilter selectedFilter;
         private final GitRepositoryState state;
 
-        private CommitProgressSupport (GitCommitPanel panel, List<VCSFileNode> commitFiles, VCSCommitFilter selectedFilter, GitRepositoryState state) {
+        private CommitProgressSupport (GitCommitPanel panel, List<GitFileNode> commitFiles, VCSCommitFilter selectedFilter, GitRepositoryState state) {
             this.panel = panel;
             this.commitFiles = commitFiles;
             this.selectedFilter = selectedFilter;
@@ -222,7 +222,7 @@ public class CommitAction extends SingleRepositoryAction {
             List<String> excPaths = new ArrayList<String>();
             List<String> incPaths = new ArrayList<String>();
 
-            Iterator<VCSFileNode> it = commitFiles.iterator();
+            Iterator<GitFileNode> it = commitFiles.iterator();
             while (it.hasNext()) {
                 if (isCanceled()) {
                     return;

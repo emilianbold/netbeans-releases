@@ -696,6 +696,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (RepositoryInfo.PROPERTY_BRANCHES.equals(evt.getPropertyName())) {
                 RP.post(new Runnable() {
                     @Override
+                    @SuppressWarnings("unchecked")
                     public void run () {
                         refreshBranches((java.util.Map<String, GitBranch>) evt.getNewValue());
                     }
@@ -1026,6 +1027,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (RepositoryInfo.PROPERTY_TAGS.equals(evt.getPropertyName())) {
                 RP.post(new Runnable() {
                     @Override
+                    @SuppressWarnings("unchecked")
                     public void run () {
                         refreshTags((java.util.Map<String, GitTag>) evt.getNewValue());
                     }
@@ -1239,6 +1241,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (!refreshing && RepositoryInfo.PROPERTY_REMOTES.equals(evt.getPropertyName())) {
                 RP.post(new Runnable() {
                     @Override
+                    @SuppressWarnings("unchecked")
                     public void run () {
                         refreshRemotes((java.util.Map<String, GitRemoteConfig>) evt.getNewValue());
                     }

@@ -113,6 +113,7 @@ public abstract class SingleRepositoryAction extends GitAction {
      * Does this only once per a NB session and repository
      * @param repositoryRoot root of the local repository
      */
+    @SuppressWarnings("unchecked")
     private void logRemoteRepositoryAccess (final File repositoryRoot) {
         if (loggedRepositories.add(repositoryRoot)) {
             Git.getInstance().getRequestProcessor(repositoryRoot).post(new Runnable() {
