@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.project.phpunit;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import org.netbeans.modules.php.project.util.PhpTestCase;
 
@@ -54,33 +53,6 @@ public class PhpUnitTest extends PhpTestCase {
 
     public PhpUnitTest(String name) {
         super(name);
-    }
-
-    public void testVersion() {
-        int[] version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3 by Sebastian Bergmann.");
-        assertNull(version);
-
-        version = PhpUnit.OutputProcessorFactory.match("PHPUnit A3.3.1 by Sebastian Bergmann.");
-        assertNull(version);
-
-        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3x.1 by Sebastian Bergmann.");
-        assertNull(version);
-
-        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1RC by Sebastian Bergmann.");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
-
-        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 3.3.1 by Sebastian Bergmann.");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
-
-        version = PhpUnit.OutputProcessorFactory.match("PHPUnit          3.3.1 by Sebastian Bergmann.");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {3, 3, 1}, version));
-
-        version = PhpUnit.OutputProcessorFactory.match("PHPUnit 323324.3877987.165456 by Sebastian Bergmann.");
-        assertNotNull(version);
-        assertTrue(Arrays.equals(new int[] {323324, 3877987, 165456}, version));
     }
 
     public void testLinePatternTestRunner() {

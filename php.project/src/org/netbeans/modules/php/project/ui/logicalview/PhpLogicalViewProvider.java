@@ -63,7 +63,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -262,7 +261,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
             addDocumentationActions(actions, phpModule);
             actions.add(null);
-            if (PhpUnit.hasValidVersion(CommandUtils.getPhpUnit(false))) {
+            if (CommandUtils.getPhpUnit(false) != null) {
                 // code coverage seems to be supported in php unit 3.3.0+
                 actions.add(CoverageActionFactory.createCollectorAction(null, null));
                 actions.add(null);

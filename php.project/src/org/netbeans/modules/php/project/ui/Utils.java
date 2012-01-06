@@ -63,7 +63,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -94,18 +93,6 @@ public final class Utils {
     public static Image getIncludePathIcon(boolean opened) {
         Image badge = ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/libraries-badge.png", false); // NOI18N
         return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
-    }
-
-    public static boolean validatePhpUnitForProject(PhpUnit phpUnit, PhpProject project) {
-        String error = PhpUnit.validateVersion(phpUnit);
-        if (error == null) {
-            error = PhpUnit.validateVersion(phpUnit, project);
-        }
-        if (error != null) {
-            UiUtils.invalidScriptProvided(error, PhpUnit.OPTIONS_SUB_PATH);
-            return false;
-        }
-        return true;
     }
 
     /**
