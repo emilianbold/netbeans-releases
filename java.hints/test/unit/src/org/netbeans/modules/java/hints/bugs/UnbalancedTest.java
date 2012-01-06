@@ -115,6 +115,20 @@ public class UnbalancedTest extends TestBase {
                             "}\n");
     }
 
+    public void testArrayNeg206855() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "  private final int aa[][] = new int[3][3];\n" +
+                            "  public Test() {\n" +
+                            "    aa[0][0] = 1;\n" +
+                            "  }\n" +
+                            "  public int get() {\n" +
+                            "    return aa[0][0];\n" +
+                            "  }\n" +
+                            "}\n");
+    }
+
     public void testCollectionWriteOnly1() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
