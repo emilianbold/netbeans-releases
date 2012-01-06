@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -76,7 +75,6 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -140,10 +138,6 @@ public final class CreateTestsAction extends NodeAction {
         final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
-            return;
-        }
-
-        if (!Utils.validatePhpUnitForProject(phpUnit, phpProject)) {
             return;
         }
 
@@ -283,7 +277,7 @@ public final class CreateTestsAction extends NodeAction {
         proceeded.add(sourceFo);
 
         final ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
-        final String paramSkeleton = PhpUnit.hasValidVersion(phpUnit) ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
+        final String paramSkeleton = PhpUnit.PARAM_SKELETON;
         final File sourceFile = FileUtil.toFile(sourceFo);
         final File parent = FileUtil.toFile(sourceFo.getParent());
         final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
@@ -321,8 +315,7 @@ public final class CreateTestsAction extends NodeAction {
                         // test not generated
                         failed.add(sourceFo);
                         if (!generatedFile.isFile()) {
-                            LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found [PHPUnit version {1}].",
-                                    new Object[] {generatedFile.getName(), Arrays.toString(PhpUnit.getVersions(phpUnit))});
+                            LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found.", generatedFile.getName());
                         }
                         continue;
                     }
