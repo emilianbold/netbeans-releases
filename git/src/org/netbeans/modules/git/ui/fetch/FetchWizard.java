@@ -132,6 +132,7 @@ class FetchWizard  implements ChangeListener {
         private FetchBranchesStep fetchBranchesStep;
 
         @Override
+        @SuppressWarnings("unchecked")
         protected Panel<WizardDescriptor>[] initializePanels () {
             selectUriStep = new SelectUriStep(repository, remotes, SelectUriStep.Mode.FETCH);
             selectUriStep.addChangeListener(FetchWizard.this);

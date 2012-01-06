@@ -141,7 +141,7 @@ final class RepositoryRevision {
             currentSearch.start(Subversion.getInstance().getRequestProcessor(repositoryRootUrl), repositoryRootUrl, null);
             return true;
         }
-        return false;
+        return !eventsInitialized;
     }
 
     void cancelExpand () {
@@ -363,14 +363,16 @@ final class RepositoryRevision {
                 for (ISVNLogMessageChangePath path : paths) {
                     boolean underRoots = false;
                     File f = computeFile(path.getPath());
-                    for (File selectionRoot : selectionRoots) {
-                        if (VersioningSupport.isFlat(selectionRoot)) {
-                            underRoots = selectionRoot.equals(f.getParentFile());
-                        } else {
-                            underRoots = Utils.isAncestorOrEqual(selectionRoot, f);
-                        }
-                        if (underRoots) {
-                            break;
+                    if (f != null) {
+                        for (File selectionRoot : selectionRoots) {
+                            if (VersioningSupport.isFlat(selectionRoot)) {
+                                underRoots = selectionRoot.equals(f.getParentFile());
+                            } else {
+                                underRoots = Utils.isAncestorOrEqual(selectionRoot, f);
+                            }
+                            if (underRoots) {
+                                break;
+                            }
                         }
                     }
                     String action = Character.toString(path.getAction());

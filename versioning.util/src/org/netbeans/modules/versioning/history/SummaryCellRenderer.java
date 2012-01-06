@@ -1078,9 +1078,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
                 item.getUserData().cancelExpand();
-                if (item.revisionExpanded = !item.revisionExpanded) {
-                    item.getUserData().expand();
-                }
+                item.setExpanded(!item.revisionExpanded);
                 summaryView.itemChanged(p);
                 return true;
             }

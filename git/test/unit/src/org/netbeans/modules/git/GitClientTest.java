@@ -60,9 +60,9 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.ProgressMonitor.DefaultProgressMonitor;
 import org.netbeans.modules.git.client.GitClient;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -466,37 +466,37 @@ public class GitClientTest extends AbstractGitTestCase {
         folder.mkdirs();
         file.createNewFile();
         h.reset();
-        client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
-        client.commit(new File[] { file }, "aaa", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { file }, "aaa", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
-        client.copyAfter(file, new File(folder, "file2"), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.copyAfter(file, new File(folder, "file2"), GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
-        client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
         File anotherRepo = new File(repositoryLocation.getParentFile(), "wc2");
         anotherRepo.mkdirs();
         GitClient client2 = Git.getInstance().getClient(anotherRepo);
-        client2.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client2.init(GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
         h.setExpectedParents(new File[] { file.getParentFile() });
-        client.remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
         assertTrue(h.bridgeAccessed);
         assertTrue(h.expectedParents.isEmpty());
 
         h.reset();
         write(file, "aaa");
-        client.rename(file, new File(folder, "file2"), false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.rename(file, new File(folder, "file2"), false, GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
     }
 
@@ -610,7 +610,7 @@ public class GitClientTest extends AbstractGitTestCase {
             public void run() {
                 try {
                     client.addNotificationListener(m);
-                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -621,7 +621,7 @@ public class GitClientTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -650,7 +650,7 @@ public class GitClientTest extends AbstractGitTestCase {
             public void run() {
                 try {
                     client.addNotificationListener(m);
-                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -664,7 +664,7 @@ public class GitClientTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -694,7 +694,7 @@ public class GitClientTest extends AbstractGitTestCase {
             public void run() {
                 try {
                     client.addNotificationListener(m);
-                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -705,7 +705,7 @@ public class GitClientTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -763,7 +763,7 @@ public class GitClientTest extends AbstractGitTestCase {
             public void run() {
                 try {
                     client.addNotificationListener(m);
-                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -774,7 +774,7 @@ public class GitClientTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -861,7 +861,7 @@ public class GitClientTest extends AbstractGitTestCase {
             public void run() {
                 try {
                     client.addNotificationListener(m);
-                    client.add(new File[] { file3 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file3 }, GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     Exceptions.printStackTrace(ex);
                 }

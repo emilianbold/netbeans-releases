@@ -101,7 +101,11 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     
     static final long serialVersionUID = 5011742660516204764L;
     static {
-        AcceleratorBinding.init();
+        try {
+            Class.forName(AcceleratorBinding.class.getName());
+        } catch (ClassNotFoundException x) {
+            throw new ExceptionInInitializerError(x);
+        }
     }
 
     /** Create a new Toolbar with empty name. */

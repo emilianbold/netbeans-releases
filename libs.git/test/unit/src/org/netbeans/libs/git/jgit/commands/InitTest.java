@@ -87,7 +87,7 @@ public class InitTest extends AbstractGitTestCase {
         assertNull(repo.getBranch());
 
         // test repository init
-        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.init(NULL_PROGRESS_MONITOR);
         DirCache index = repo.readDirCache();
         assertEquals(0, index.getEntryCount());
         assertTrue(repo.getDirectory().exists());
@@ -95,7 +95,7 @@ public class InitTest extends AbstractGitTestCase {
 
         // test failure when repository already exists
         try {
-            client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.init(NULL_PROGRESS_MONITOR);
             fail("Repository created twice");
         } catch (GitException ex) {
             assertTrue(ex.getMessage().contains("Git repository already exists"));

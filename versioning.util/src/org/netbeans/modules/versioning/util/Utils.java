@@ -1545,6 +1545,7 @@ public final class Utils {
     }
     
     public static Action getAcceleratedAction(String path) {
+        // or use Actions.forID
         Action a = FileUtil.getConfigObject(path, Action.class);
         FileObject fo = FileUtil.getConfigFile(path);
         if(fo != null) {

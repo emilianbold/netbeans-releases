@@ -83,9 +83,7 @@ import org.netbeans.modules.subversion.ui.export.ExportAction;
 import org.netbeans.modules.subversion.ui.lock.LockAction;
 import org.netbeans.modules.subversion.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
-import org.openide.awt.AcceleratorBinding;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.Lookups;
@@ -429,6 +427,7 @@ public class Annotator {
         File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         boolean noneVersioned = isNothingVersioned(files);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
+            // XXX use Actions.forID
             Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");
             if(a != null) actions.add(a);
             if (noneVersioned) {
@@ -480,7 +479,7 @@ public class Annotator {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
             Lookup context = ctx.getElements();
             if (noneVersioned) {
-                Action a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
+                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.ui.project.ImportAction");
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            

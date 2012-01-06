@@ -56,10 +56,10 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitTag;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -198,7 +198,7 @@ class CreateTag implements DocumentListener, ActionListener {
             final String tagName = CreateTag.this.branchName;
             try {
                 GitClient client = Git.getInstance().getClient(repository);
-                final Map<String, GitTag> tags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, true);
+                final Map<String, GitTag> tags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, true);
                 EventQueue.invokeLater(new Runnable () {
                     @Override
                     public void run () {

@@ -55,7 +55,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.Actions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -107,7 +107,7 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
     }
     
     private void tryOpenProject() {
-        final Action act = FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance", Action.class); //NOI18N
+        final Action act = Actions.forID("Project", "org.netbeans.modules.project.ui.OpenProject"); //NOI18N
         if (act != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

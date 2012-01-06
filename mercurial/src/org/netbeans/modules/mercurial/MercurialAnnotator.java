@@ -88,7 +88,7 @@ import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -314,6 +314,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
+            // XXX use Actions.forID
             Action a = Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance");
             if(a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
@@ -370,7 +371,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
+                Action a = Actions.forID("Mercurial", "org.netbeans.modules.mercurial.ui.create.CreateAction");
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            

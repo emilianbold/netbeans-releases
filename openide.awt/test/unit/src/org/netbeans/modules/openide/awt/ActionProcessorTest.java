@@ -129,15 +129,9 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testAlwaysEnabledAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/my-test-Always.instance"
-        );
-        assertNotNull("File found", fo);
         assertEquals("Not created yet", 0, Always.created);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is an action", obj instanceof Action);
-        Action a = (Action)obj;
+        Action a = Actions.forID("Tools", "my.test.Always");
+        assertNotNull("action found", a);
         assertEquals("Still not created", 0, Always.created);
 
         assertEquals("I am always on!", a.getValue(Action.NAME));
@@ -152,7 +146,7 @@ public class ActionProcessorTest extends NbTestCase {
         );
         assertNotNull("Shadow created", shad);
         assertEquals("Right position", 333, shad.getAttribute("position"));
-        assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+        assertEquals("Proper link", "Actions/Tools/my-test-Always.instance", shad.getAttribute("originalFile"));
     }
     
     public void testVerifyReferencesInstalledViaPackageInfo() {
@@ -185,13 +179,9 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testAlwaysEnabledActionByMethod() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/Tools/my-test-AlwaysByMethod.instance");
-        assertNotNull("File found", fo);
         assertEquals("Not created yet", 0, AlwaysByMethod.created);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is an action", obj instanceof Action);
-        Action a = (Action)obj;
+        Action a = Actions.forID("Tools", "my.test.AlwaysByMethod");
+        assertNotNull(a);
         assertEquals("Still not created", 0, AlwaysByMethod.created);
         assertEquals("I am always on!", a.getValue(Action.NAME));
         assertEquals("Not even now created", 0, AlwaysByMethod.created);
@@ -205,7 +195,7 @@ public class ActionProcessorTest extends NbTestCase {
             );
             assertNotNull("Shadow created", shad);
             assertEquals("Right position", 1, shad.getAttribute("position"));
-            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+            assertEquals("Proper link", "Actions/Tools/my-test-AlwaysByMethod.instance", shad.getAttribute("originalFile"));
             FileObject sep = FileUtil.getConfigFile(
                 "Kuk/buk/my-test-AlwaysByMethod-separatorAfter.instance"
             );
@@ -220,7 +210,7 @@ public class ActionProcessorTest extends NbTestCase {
             );
             assertNotNull("Shadow created", shad);
             assertEquals("Right position", 11, shad.getAttribute("position"));
-            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+            assertEquals("Proper link", "Actions/Tools/my-test-AlwaysByMethod.instance", shad.getAttribute("originalFile"));
             FileObject sep = FileUtil.getConfigFile(
                 "Muk/luk/my-test-AlwaysByMethod-separatorBefore.instance"
             );
@@ -250,15 +240,7 @@ public class ActionProcessorTest extends NbTestCase {
 
     public void testCallbackAction() throws Exception {
         Callback.cnt = 0;
-        
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/my-action.instance"
-        );
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction a = (ContextAwareAction)obj;
+        ContextAwareAction a = (ContextAwareAction) Actions.forID("Tools", "my.action");
 
         class MyAction extends AbstractAction {
             int cnt;
@@ -365,18 +347,12 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testContextAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/on-int.instance"
-        );
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction a = (ContextAwareAction)obj;
+        Action a = Actions.forID("Tools", "on.int");
+        assertTrue("It is context aware action", a instanceof ContextAwareAction);
 
         InstanceContent ic = new InstanceContent();
         AbstractLookup lkp = new AbstractLookup(ic);
-        Action clone = a.createContextAwareInstance(lkp);
+        Action clone = ((ContextAwareAction) a).createContextAwareInstance(lkp);
         NumberLike ten = new NumberLike(10);
         ic.add(ten);
 
@@ -415,14 +391,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testMultiContextAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/on-numbers.instance"
-        );
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction a = (ContextAwareAction)obj;
+        ContextAwareAction a = (ContextAwareAction) Actions.forID("Tools", "on.numbers");
 
         InstanceContent ic = new InstanceContent();
         AbstractLookup lkp = new AbstractLookup(ic);
@@ -474,13 +443,7 @@ public class ActionProcessorTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
         
-        FileObject fo = FileUtil.getConfigFile(
-                "Actions/Windows/my-survival-action.instance");
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction temp = (ContextAwareAction) obj;
+        ContextAwareAction temp = (ContextAwareAction) Actions.forID("Windows", "my.survival.action");
         Action a = temp.createContextAwareInstance(al);
         
         enable.put(SURVIVE_KEY, myAction);
@@ -648,12 +611,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testPopupAndMenuText() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/menutext/namedaction.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        
-        Action a = (Action) obj;
+        Action a = Actions.forID("menutext", "namedaction");
         assertEquals("This is an Action", a.getValue(Action.NAME));
         JMenuItem item = new JMenuItem();
         Actions.connect(item, a, false);
@@ -664,60 +622,28 @@ public class ActionProcessorTest extends NbTestCase {
     }
     
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct.class, obj.getClass());
+        assertEquals("Direct class is created", Direct.class, Actions.forID("eager", "direct.one").getClass());
     }
     public void testDirectInstanceIfImplementsToolbarPresenter() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-two.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct2.class, obj.getClass());
+        assertEquals("Direct class is created", Direct2.class, Actions.forID("eager", "direct.two").getClass());
     }
     public void testDirectInstanceIfImplementsPopupPresenter() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-three.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct3.class, obj.getClass());
+        assertEquals("Direct class is created", Direct3.class, Actions.forID("eager", "direct.three").getClass());
     }
     public void testDirectInstanceIfImplementsContextAwareAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-four.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct4.class, obj.getClass());
+        assertEquals("Direct class is created", Direct4.class, Actions.forID("eager", "direct.four").getClass());
     }
     public void testDirectInstanceIfImplementsContextAwareActionByMethod() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-five.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct5.class, obj.getClass());
+        assertEquals("Direct class is created", Direct5.class, Actions.forID("eager", "direct.five").getClass());
     }
     public void testDirectInstanceIfImplementsDynamicMenuContent() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-six.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct6.class, obj.getClass());
+        assertEquals("Direct class is created", Direct6.class, Actions.forID("eager", "direct.six").getClass());
     }
     public void testDirectInstanceIfRequested() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-seven.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct7.class, obj.getClass());
+        assertEquals("Direct class is created", Direct7.class, Actions.forID("eager", "direct.seven").getClass());
     }
     public void testIndirectInstanceIfRequested() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-eight.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertNotSame("Direct class is not created", Direct8.class, obj.getClass());
+        assertNotSame("Direct class is not created", Direct8.class, Actions.forID("eager", "direct.eight").getClass());
     }
     
     public void testNoKeyForDirects() throws IOException {

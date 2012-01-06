@@ -111,6 +111,7 @@ public final class GitUtils {
     public static final String CURRENT = "CURRENT"; //NOI18N
     public static final String PREFIX_R_HEADS = "refs/heads/"; //NOI18N
     public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
+    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -742,6 +743,35 @@ public final class GitUtils {
 
     public static String getPushTagRefSpec (String tagName) {
         return MessageFormat.format(REF_TAG_PUSHSPEC_PATTERN, tagName);
+    }
+
+    private static class NullProgressMonitor extends ProgressMonitor {
+
+        @Override
+        public boolean isCanceled () {
+            return false;
+        }
+
+        @Override
+        public void started (String command) {
+        }
+
+        @Override
+        public void finished () {
+        }
+
+        @Override
+        public void preparationsFailed (String message) {
+        }
+
+        @Override
+        public void notifyError (String message) {
+        }
+
+        @Override
+        public void notifyWarning (String message) {
+        }
+
     }
     
     private GitUtils() {

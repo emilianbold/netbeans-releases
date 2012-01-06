@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -81,9 +82,12 @@ import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.actions.Printable;
 import org.netbeans.api.actions.Viewable;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
@@ -716,6 +720,42 @@ public class Actions {
         }
         throw new IllegalStateException(type);
     }
+
+    /**
+     * Locates a specific action programmatically.
+     * The action will typically have been registered using {@link ActionRegistration}.
+     * <p>Normally an {@link ActionReference} will suffice to insert the action
+     * into various UI elements (typically using {@link Utilities#actionsForPath}),
+     * but in special circumstances you may need to find a single known action.
+     * This method is just a shortcut for using {@link FileUtil#getConfigObject}
+     * with the correct arguments, plus using {@link AcceleratorBinding#setAccelerator}.
+     * @param category as in {@link ActionID#category}
+     * @param id as in {@link ActionID#id}
+     * @return the action registered under that ID, or null
+     * @throws IllegalArgumentException if a corresponding {@link ActionID} would have been rejected
+     * @since 7.42
+     */
+    public static Action forID(String category, String id) throws IllegalArgumentException {
+        // copied from ActionProcessor:
+        if (category.startsWith("Actions/")) {
+            throw new IllegalArgumentException("category should not start with Actions/: " + category);
+        }
+        if (!FQN.matcher(id).matches()) {
+            throw new IllegalArgumentException("id must be valid fully qualified name: " + id);
+        }
+        String path = "Actions/" + category + "/" + id.replace('.', '-') + ".instance";
+        Action a = FileUtil.getConfigObject(path, Action.class);
+        if (a == null) {
+            return null;
+        }
+        FileObject def = FileUtil.getConfigFile(path);
+        if (def != null) {
+            AcceleratorBinding.setAccelerator(a, def);
+        }
+        return a;
+    }
+    private static final String IDENTIFIER = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; // NOI18N
+    private static final Pattern FQN = Pattern.compile(IDENTIFIER + "(?:[.]" + IDENTIFIER + ")*"); // NOI18N
     
     /** Extracts help from action.
      */

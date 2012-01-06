@@ -74,21 +74,21 @@ public class ConnectionTest extends AbstractGitTestCase {
     
     public void testGitConnection () throws Exception {
         GitClient client = getClient(workDir);
-        client.listRemoteBranches("git://bugtracking-test.cz.oracle.com/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("git://bugtracking-test.cz.oracle.com/repo/", NULL_PROGRESS_MONITOR);
     }
     
     // start damon as git daemon --base-path=/srv/git --verbose --export-all /srv/git &
     public void testHttpConnectionCredentialsInUri () throws Exception {
         // UN and PWD in uri
         GitClient client = getClient(workDir);
-        client.listRemoteBranches("http://user:heslo@bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("http://user:heslo@bugtracking-test.cz.oracle.com/git/repo/", NULL_PROGRESS_MONITOR);
     }
     
     public void testHttpConnection () throws Exception {
         // UN and PWD provided by a callback
         GitClient client = getClient(workDir);
         try {
-            client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", NULL_PROGRESS_MONITOR);
             fail();
         } catch (GitException.AuthorizationException ex) {
             assertEquals("http://bugtracking-test.cz.oracle.com/git/repo/", ex.getRepositoryUrl());
@@ -125,7 +125,7 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
         };
         client.setCallback(callback);
-        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", NULL_PROGRESS_MONITOR);
     }
     
     public void testHttpConnectionPublic () throws Exception {
@@ -133,15 +133,15 @@ public class ConnectionTest extends AbstractGitTestCase {
         // no username or password
         client.setCallback(null);
         try {
-            client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", NULL_PROGRESS_MONITOR);
             fail();
         } catch (GitException.AuthorizationException ex) {
             assertEquals("http://bugtracking-test.cz.oracle.com/git/repo/", ex.getRepositoryUrl());
         }
-        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git-public/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git-public/repo/", NULL_PROGRESS_MONITOR);
         // callback should not be called at all
         client.setCallback(new DefaultCallback());
-        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git-public/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git-public/repo/", NULL_PROGRESS_MONITOR);
     }
     
     public void testHttpConnectionEmptyPassword () throws Exception {
@@ -179,13 +179,13 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
         };
         client.setCallback(callback);
-        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("http://bugtracking-test.cz.oracle.com/git/repo/", NULL_PROGRESS_MONITOR);
     }
 
     public void testSshConnectionCredentialsInUri () throws Exception {
         GitClient client = getClient(workDir);
         client.setCallback(new DefaultCallback());
-        client.listRemoteBranches("ssh://tester:vsdsvsds@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("ssh://tester:vsdsvsds@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
     }
 
     public void testSshConnectionCanceled () throws Exception {
@@ -203,7 +203,7 @@ public class ConnectionTest extends AbstractGitTestCase {
         };
         client.setCallback(callback);
         try {
-            client.listRemoteBranches("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.listRemoteBranches("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
         } catch (GitException.AuthorizationException ex) {
             assertEquals("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", ex.getRepositoryUrl());
         }
@@ -223,7 +223,7 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
         };
         client.setCallback(callback);
-        client.listRemoteBranches("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
     }
 
     public void testSshConnectionUserInUriPasswordFromCallback () throws Exception {
@@ -235,7 +235,7 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
         };
         client.setCallback(callback);
-        client.listRemoteBranches("ssh://tester@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("ssh://tester@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
     }
 
     public void testSshFetchCredentialsFromCallback () throws Exception {
@@ -244,7 +244,7 @@ public class ConnectionTest extends AbstractGitTestCase {
                 Arrays.asList("ssh://bugtracking-test.cz.oracle.com/srv/git/repo/"),
                 Collections.<String>emptyList(),
                 Arrays.asList("+refs/heads/*:refs/remotes/origin/*"),
-                Collections.<String>emptyList()), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                Collections.<String>emptyList()), NULL_PROGRESS_MONITOR);
         GitClientCallback callback = new DefaultCallback() {
             @Override
             public String getUsername (String uri, String prompt) {
@@ -257,7 +257,7 @@ public class ConnectionTest extends AbstractGitTestCase {
             }
         };
         client.setCallback(callback);
-        client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.fetch("origin", NULL_PROGRESS_MONITOR);
     }
     
     public void testSshConnectionPassphrase () throws Exception {
@@ -279,7 +279,7 @@ public class ConnectionTest extends AbstractGitTestCase {
                 return "qwerty".toCharArray();
             }
         });
-        client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
     }
     
     private static class DefaultCallback extends GitClientCallback {

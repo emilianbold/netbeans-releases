@@ -77,8 +77,8 @@ public class BlameTest extends AbstractGitTestCase {
         File[] files = { f };
         add(files);
         GitClient client = getClient(workDir);
-        String revision1 = client.commit(files, "initial commit", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        GitBlameResult result = client.blame(f, revision1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String revision1 = client.commit(files, "initial commit", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
+        GitBlameResult result = client.blame(f, revision1, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         // the same authors should be the same one instance
@@ -93,8 +93,8 @@ public class BlameTest extends AbstractGitTestCase {
         
         write(f, "aaa\nzzz\nccc\n");
         add(files);
-        String revision2 = client.commit(files, "change 1", USER2, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        result = client.blame(f, revision2, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String revision2 = client.commit(files, "change 1", USER2, USER1, NULL_PROGRESS_MONITOR).getRevision();
+        result = client.blame(f, revision2, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertLineDetails(f, 1, revision2, USER2, USER1, result.getLineDetails(1));
@@ -102,8 +102,8 @@ public class BlameTest extends AbstractGitTestCase {
         
         write(f, "aaa\nzzz\nyyy\n");
         add(files);
-        String revision3 = client.commit(files, "change 2", USER1, USER2, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        result = client.blame(f, revision3, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String revision3 = client.commit(files, "change 2", USER1, USER2, NULL_PROGRESS_MONITOR).getRevision();
+        result = client.blame(f, revision3, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertLineDetails(f, 1, revision2, USER2, USER1, result.getLineDetails(1));
@@ -116,20 +116,20 @@ public class BlameTest extends AbstractGitTestCase {
         File[] files = { f };
         add(files);
         GitClient client = getClient(workDir);
-        String revision1 = client.commit(files, "initial commit", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        String revision1 = client.commit(files, "initial commit", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
         
         write(f, "aaa\nccc\n");
-        GitBlameResult result = client.blame(f, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitBlameResult result = client.blame(f, null, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertNull(result.getLineDetails(1));
         add(files);
-        result = client.blame(f, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        result = client.blame(f, null, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertNull(result.getLineDetails(1));
         write(f, "aaa\nbbb\n");
-        result = client.blame(f, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        result = client.blame(f, null, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertNull(result.getLineDetails(1));
@@ -142,20 +142,20 @@ public class BlameTest extends AbstractGitTestCase {
         File[] files = { f, f2 };
         add(files);
         GitClient client = getClient(workDir);
-        String revision1 = client.commit(files, "initial commit", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        String revision1 = client.commit(files, "initial commit", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
         
-        client.rename(f, f2, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.rename(f, f2, false, NULL_PROGRESS_MONITOR);
         write(f2, "aaa\nbbb\nddd\n");
         add(f2);
-        String revision2 = client.commit(files, "rename", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        GitBlameResult result = client.blame(f, revision2, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String revision2 = client.commit(files, "rename", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
+        GitBlameResult result = client.blame(f, revision2, NULL_PROGRESS_MONITOR);
         assertNull(result);
-        result = client.blame(f, revision1, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        result = client.blame(f, revision1, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertLineDetails(f, 1, revision1, USER1, USER1, result.getLineDetails(1));
         assertLineDetails(f, 2, revision1, USER1, USER1, result.getLineDetails(2));
-        result = client.blame(f2, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        result = client.blame(f2, null, NULL_PROGRESS_MONITOR);
         assertEquals(f2, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertLineDetails(f, 1, revision1, USER1, USER1, result.getLineDetails(1));
@@ -168,12 +168,12 @@ public class BlameTest extends AbstractGitTestCase {
         File[] files = { f };
         add(files);
         GitClient client = getClient(workDir);
-        String revision1 = client.commit(files, "initial commit", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        String revision1 = client.commit(files, "initial commit", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
         
         write(f, "aaa\nbbb\nccc\n");
         add(f);
-        String revision2 = client.commit(files, "add line", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        GitBlameResult result = client.blame(f, revision2, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String revision2 = client.commit(files, "add line", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
+        GitBlameResult result = client.blame(f, revision2, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));
         assertLineDetails(f, 1, revision2, USER1, USER1, result.getLineDetails(1));
@@ -186,12 +186,12 @@ public class BlameTest extends AbstractGitTestCase {
         File[] files = { f };
         add(files);
         GitClient client = getClient(workDir);
-        String revision1 = client.commit(files, "initial commit", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        String revision1 = client.commit(files, "initial commit", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
         
         write(f, "aaa\nccc");
         add(f);
-        String revision2 = client.commit(files, "remove line", USER1, USER1, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        GitBlameResult result = client.blame(f, revision2, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String revision2 = client.commit(files, "remove line", USER1, USER1, NULL_PROGRESS_MONITOR).getRevision();
+        GitBlameResult result = client.blame(f, revision2, NULL_PROGRESS_MONITOR);
         assertEquals(f, result.getBlamedFile());
         assertEquals(2, result.getLineCount());
         assertLineDetails(f, 0, revision1, USER1, USER1, result.getLineDetails(0));

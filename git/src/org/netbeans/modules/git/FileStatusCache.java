@@ -180,7 +180,7 @@ public class FileStatusCache {
      * @param rootFiles root files to scan sorted under their repository roots
      */
     public void refreshAllRoots (Map<File, Collection<File>> rootFiles) {
-        refreshAllRoots(rootFiles, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        refreshAllRoots(rootFiles, GitUtils.NULL_PROGRESS_MONITOR);
     }
 
     /**

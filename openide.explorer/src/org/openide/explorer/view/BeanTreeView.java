@@ -174,10 +174,9 @@ public class BeanTreeView extends TreeView {
                 correction += ((BasicTreeUI) tmp).getRightChildIndent();
             }
             rect.x = Math.max(0, rect.x - correction);
-            tree.scrollRectToVisible(rect);
-        }
-        if (rect != null && rect.y >= 0) { //#197514 - do not scroll to negative y values
-            tree.scrollRectToVisible(rect);
+            if (rect.y >= 0) { //#197514 - do not scroll to negative y values
+                tree.scrollRectToVisible(rect);
+            }
         }
     }
 

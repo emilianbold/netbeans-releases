@@ -109,6 +109,8 @@ import org.netbeans.modules.mercurial.ui.commit.CommitOptions;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
@@ -361,7 +363,7 @@ public class HgUtils {
     private static void addNotSharable (File topFile, String ignoredPath) {
         synchronized (notSharable) {
             // get cached patterns
-            Set ignores = notSharable.get(topFile);
+            Set<String> ignores = notSharable.get(topFile);
             if (ignores == null) {
                 ignores = new HashSet<String>();
             }
@@ -1419,6 +1421,12 @@ itor tabs #66700).
                 }
             });
         }
+    }
+
+    public static void notifyException (Exception ex) {
+        Mercurial.LOG.log(Level.FINE, null, ex);
+        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+        DialogDisplayer.getDefault().notifyLater(e);
     }
 
     /**

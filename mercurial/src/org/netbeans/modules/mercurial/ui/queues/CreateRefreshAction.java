@@ -195,8 +195,7 @@ abstract class CreateRefreshAction extends ContextAction {
                     } catch (HgException.HgCommandCanceledException ex) {
                         // canceled by user, do nothing
                     } catch (HgException ex) {
-                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                        DialogDisplayer.getDefault().notifyLater(e);
+                        HgUtils.notifyException(ex);
                     } finally {
                         Mercurial.getInstance().getFileStatusCache().refreshAllRoots(filesToRefresh);
                         logger.outputInRed(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_DONE." + bundleKeyPostfix)); // NOI18N
@@ -301,7 +300,7 @@ abstract class CreateRefreshAction extends ContextAction {
                             offeredFileNames += "\n" + f.getName();     //NOI18N
                         }
                     } else {
-                        reducedCommitCandidates = Collections.EMPTY_LIST;
+                        reducedCommitCandidates = Collections.<File>emptyList();
                         files = Collections.singleton(repository);
                         offeredFileNames = "\n" + repository.getName(); //NOI18N
                     }
