@@ -56,13 +56,10 @@ import org.openide.util.LookupListener;
  * This class is only intended for use from NetBeans infrastructure code:
  * that which either reads shortcut definitions (i.e. the global {@link Keymap});
  * or which loads actions into presenters (e.g. {@link Toolbar}).
- * @since org.openide.loaders 7.13
+ * @since org.openide.loaders 7.13 but moved down to org.openide.awt 7.42
  */
 public abstract class AcceleratorBinding {
     private static final Iter ALL = new Iter();
-
-    static void init() {
-    }
 
     /**
      * Subclass constructor. Only certain implementations are permitted.

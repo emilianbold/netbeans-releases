@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 7.26
  * @see ActionRegistration
+ * @see Actions#forID
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})

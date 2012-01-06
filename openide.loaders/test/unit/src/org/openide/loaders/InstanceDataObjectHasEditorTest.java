@@ -47,9 +47,9 @@ package org.openide.loaders;
 import java.util.Date;
 import java.io.*;
 import javax.swing.Action;
+import org.openide.awt.Actions;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
 
@@ -73,8 +73,7 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
         // initialize modules
         Lookup.getDefault().lookup(ModuleInfo.class);
 
-        FileObject a = FileUtil.getConfigFile("Actions/System/org-openide-actions-OpenAction.instance");
-        openAction = (Action) a.getAttribute("instanceCreate");
+        openAction = Actions.forID("System", "org.openide.actions.OpenAction");
     }
 
     public void testSettingsFileOnSFSShouldHaveEditor () throws Exception {

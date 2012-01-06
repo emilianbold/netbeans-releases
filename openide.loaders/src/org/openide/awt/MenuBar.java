@@ -127,7 +127,11 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
     static final long serialVersionUID =-4721949937356581268L;
     static {
-        AcceleratorBinding.init();
+        try {
+            Class.forName(AcceleratorBinding.class.getName());
+        } catch (ClassNotFoundException x) {
+            throw new ExceptionInInitializerError(x);
+        }
     }
 
     /** Don't call this constructor or this class will not get
