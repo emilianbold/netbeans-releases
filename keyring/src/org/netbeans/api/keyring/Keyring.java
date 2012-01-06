@@ -72,7 +72,7 @@ import org.openide.util.RequestProcessor;
  * <p> <i>Since 1.10</i> it is allowed to call methods of this class from even
  * dispatch thread.
  */
-public final class Keyring {
+public class Keyring {
 
     // throughput 1 is intentional
     private static final RequestProcessor KEYRING_ACCESS = new RequestProcessor(Keyring.class);
