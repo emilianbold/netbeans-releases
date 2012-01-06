@@ -230,6 +230,7 @@ class DiffTreeTable extends OutlineView {
     
         private void refreshKeys() {
             setKeys(results);
+            repaint();
         }
     
         @Override

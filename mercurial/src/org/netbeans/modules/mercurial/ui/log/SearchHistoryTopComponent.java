@@ -74,12 +74,12 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
     
     public SearchHistoryTopComponent(File[] files, String branchName) {
-        this(files, null, null, null, null, branchName);
+        this(files, null, null, branchName);
     }
 
-    public SearchHistoryTopComponent(File[] files, String commitMessage, String username, Date from, Date to, String branchName) {
+    public SearchHistoryTopComponent(File[] files, Date from, Date to, String branchName) {
         this();
-        initComponents(files, commitMessage, username, from, to, branchName);
+        initComponents(files, from, to, branchName);
     }
 
     /**
@@ -89,7 +89,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
      */
     SearchHistoryTopComponent(File file, DiffResultsViewFactory fac) {
         this();
-        initComponents(new File[] {file}, null, null, null, null, ""); //NOI18N
+        initComponents(new File[] {file}, null, null, ""); //NOI18N
         shp.setDiffResultsViewFactory(fac);
     }
 
@@ -112,11 +112,9 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         shp.executeSearch();
     }
 
-    private void initComponents(final File[] roots, String commitMessage, String username, Date from, Date to, String branchName) {
+    private void initComponents(final File[] roots, Date from, Date to, String branchName) {
         setLayout(new BorderLayout());
         scp = new SearchCriteriaPanel();
-        scp.setCommitMessage(commitMessage);
-        scp.setUsername(username);
         if (from != null){ 
             scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
         }

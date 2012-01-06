@@ -76,6 +76,7 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.WeakListeners;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -182,9 +183,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         @Override
         public boolean isVisible () {
-            boolean visible = true;
-            // can apply filter criteria here
-            return visible;
+            return master.applyFilter(revision);
         }
 
         @Override
@@ -383,8 +382,8 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
 
             @Override
-            public String getMessage () {
-                return master.getCriteria().getCommitMessage();
+            public Collection<SearchHighlight> getSearchHighlights () {
+                return master.getSearchHighlights();
             }
 
             @Override

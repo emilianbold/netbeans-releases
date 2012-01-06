@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.mercurial.ui.log;
 
-import javax.swing.*;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.openide.util.NbBundle;
 
@@ -98,8 +97,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     void setForIncoming() {
         fromInfoLabel.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_FromToOutOrIncomingHint"));
         toInfoLabel.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_FromToOutOrIncomingHint"));
-        commitMessageLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingCommitMessage"));
-        usernameLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingUsername"));
         fromLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingFrom"));
         toLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingTo"));
         showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingShowMerges"));
@@ -111,24 +108,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     void setForOut() {
         fromInfoLabel.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_FromToOutOrIncomingHint"));
         toInfoLabel.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_FromToOutOrIncomingHint"));
-        commitMessageLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutCommitMessage"));
-        usernameLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutUsername"));
         fromLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutFrom"));
         toLabel.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutTo"));
         showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowMerges"));
         
         tfFrom.setText(NbBundle.getMessage(SearchHistoryPanel.class,  "TTF_OutFrom"));
         tfFrom.setEnabled(false);
-    }
-    
-    public String getCommitMessage() {
-        String s = tfCommitMessage.getText().trim();
-        return s.length() > 0 ? s : null;
-    }
-
-    public String getUsername() {
-        String s = tfUsername.getText().trim();
-        return s.length() > 0 ? s : null;
     }
 
     public void setFrom(String from) {
@@ -139,16 +124,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     public void setTo(String to) {
         if (to == null) to = "";  // NOI18N
         tfTo.setText(to);
-    }
-    
-    public void setCommitMessage(String message) {
-        if (message == null) message = ""; // NOI18N
-        tfCommitMessage.setText(message);
-    }
-
-    public void setUsername(String username) {
-        if (username == null) username = ""; // NOI18N
-        tfUsername.setText(username);
     }
     
     void setLimit (int limit) {
@@ -168,17 +143,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     boolean isIncludeMerges() {
         return showMergesChkBox.isSelected();
     }
-    
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                tfCommitMessage.requestFocusInWindow();
-            }
-        });
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -188,10 +152,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        commitMessageLabel = new javax.swing.JLabel();
-        tfCommitMessage = new javax.swing.JTextField();
-        usernameLabel = new javax.swing.JLabel();
-        tfUsername = new javax.swing.JTextField();
         fromLabel = new javax.swing.JLabel();
         fromInfoLabel = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
@@ -202,20 +162,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
 
-        commitMessageLabel.setLabelFor(tfCommitMessage);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(commitMessageLabel, bundle.getString("CTL_UseCommitMessage")); // NOI18N
-        commitMessageLabel.setToolTipText(bundle.getString("TT_CommitMessage")); // NOI18N
-
-        tfCommitMessage.setColumns(20);
-
-        usernameLabel.setLabelFor(tfUsername);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, bundle.getString("CTL_UseUsername")); // NOI18N
-        usernameLabel.setToolTipText(bundle.getString("TT_Username")); // NOI18N
-
-        tfUsername.setColumns(20);
-
         fromLabel.setLabelFor(tfFrom);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(fromLabel, bundle.getString("CTL_UseFrom")); // NOI18N
         fromLabel.setToolTipText(bundle.getString("TT_From")); // NOI18N
 
@@ -256,26 +204,25 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(commitMessageLabel)
-                    .addComponent(usernameLabel, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(toLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(toLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(tfLimit)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(showMergesChkBox))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(tfBranch)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnSelectBranch))
-                    .addComponent(tfUsername, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
-                    .addComponent(tfCommitMessage))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(fromLabel)
-                    .addComponent(toLabel))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(toLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(toLabel1, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(tfLimit, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(showMergesChkBox))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(tfBranch)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnSelectBranch)))
+                        .addGap(30, 30, 30)
+                        .addComponent(fromLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(toLabel)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(toInfoLabel)
@@ -290,57 +237,44 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(2, 2, 2)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(commitMessageLabel)
-                    .addComponent(tfCommitMessage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(fromLabel)
                     .addComponent(tfFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(tfUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(usernameLabel))
-                    .addComponent(fromInfoLabel))
+                .addComponent(fromInfoLabel)
+                .addGap(16, 16, 16)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(tfTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(toInfoLabel)
+                .addContainerGap(28, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(toLabel2)
+                    .addComponent(btnSelectBranch)
+                    .addComponent(tfBranch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(toLabel2)
-                            .addComponent(btnSelectBranch)
-                            .addComponent(tfBranch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(showMergesChkBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(toLabel1)
-                            .addComponent(tfLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tfTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(toLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(toInfoLabel)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(showMergesChkBox, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(toLabel1)
+                    .addComponent(tfLimit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
-
-        commitMessageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_UseCommitMessage")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton btnSelectBranch = new javax.swing.JButton();
-    private javax.swing.JLabel commitMessageLabel;
     private javax.swing.JLabel fromInfoLabel;
     private javax.swing.JLabel fromLabel;
     private javax.swing.JCheckBox showMergesChkBox;
     final javax.swing.JTextField tfBranch = new javax.swing.JTextField();
-    private javax.swing.JTextField tfCommitMessage;
     final javax.swing.JTextField tfFrom = new javax.swing.JTextField();
     final javax.swing.JTextField tfLimit = new javax.swing.JTextField();
     final javax.swing.JTextField tfTo = new javax.swing.JTextField();
-    private javax.swing.JTextField tfUsername;
     private javax.swing.JLabel toInfoLabel;
     private javax.swing.JLabel toLabel;
     private javax.swing.JLabel toLabel1;
     private javax.swing.JLabel toLabel2;
-    private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
     
 }
