@@ -103,7 +103,12 @@ public class Utilities {
     public static void scheduleSpecialTask (final Runnable runnable, int priority) {
         TaskProcessor.scheduleSpecialTask(runnable, priority);
     }
-
+    
+    public static void runAsScanWork(@NonNull Runnable work) {
+        Parameters.notNull("work", work);   //NOI18N
+        RepositoryUpdater.getDefault().runAsWork(work);
+    }
+    
     /**
      * Sets the {@link IndexingStatus}
      * @param st an {@link IndexingStatus}
@@ -165,10 +170,6 @@ public class Utilities {
         TaskProcessor.rescheduleTasks (Collections.<SchedulerTask>singleton (task), source, null);
     }
     
-    public static void runAsScanWork(@NonNull Runnable work) {
-        Parameters.notNull("work", work);   //NOI18N
-        RepositoryUpdater.getDefault().runAsWork(work);
-    }
 
     //Internal API among TaskProcessor and RepositoryUpdater
     //If SchedulerTask will need the information about cancel
