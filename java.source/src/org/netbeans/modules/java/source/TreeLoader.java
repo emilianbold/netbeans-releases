@@ -108,14 +108,11 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.indexing.JavaBinaryIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager.InvalidSourcePath;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.Utilities;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -177,7 +174,7 @@ public class TreeLoader extends LazyTreeLoader {
                             jc.skipAnnotationProcessing = true;
                             jti.analyze(jti.enter(jti.parse(jfo)));
                             if (persist) {
-                                if (canWrite()) {
+                                if (canWrite(cpInfo)) {
                                     dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
                                 } else {
                                     final JavaFileObject cfo = clazz.classfile;
@@ -720,15 +717,9 @@ public class TreeLoader extends LazyTreeLoader {
         }
     }
     
-    private boolean canWrite() {
-        final TransactionContext txCtx = TransactionContext.getIfExists();
-        if (txCtx == null) {
-            return false;
-        }
-        final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
-        if (fmTx == null) {
-            return false;
-        }
+    private boolean canWrite(final ClasspathInfo cpInfo) {
+        final FileManagerTransaction fmTx = ClasspathInfoAccessor.getINSTANCE().getFileManagerTransaction(cpInfo);
+        assert fmTx != null;
         return fmTx.canWrite();
     }
     
