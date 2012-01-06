@@ -43,18 +43,19 @@
  */
 package org.netbeans.modules.web.struts.editor;
 
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.Hashtable;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
@@ -231,38 +232,23 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
         }
         return null;
     }
-    
+
+    @NbBundle.Messages("title.go.to.class.action=Searching Class")
     private void findJavaClass(final String fqn, javax.swing.text.Document doc) {
         FileObject fo = NbEditorUtilities.getFileObject(doc);
         if (fo != null) {
             WebModule wm = WebModule.getWebModule(fo);
             if (wm != null) {
-                try {
-                    final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
-                    JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
-                    js.runUserActionTask(new Task<CompilationController>() {
-
-                        @Override
-                        public void run(CompilationController cc) throws Exception {
-                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TypeElement element = cc.getElements().getTypeElement(fqn.trim());
-                            if (element != null) {
-                                if (!ElementOpen.open(cpi, element)) {
-                                    String key = "goto_source_not_found"; //NOI18N
-                                    String msg = NbBundle.getMessage(StrutsConfigHyperlinkProvider.class, key);
-                                    StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object []{fqn}));
-                                }
-                            }
-                        }
-                    }, false);
-                } catch (IOException ex) {
-                    java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                            ex.getMessage(), ex);
-                }
+                ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
+                ClassSeekerTask classSeekerTask = new ClassSeekerTask(cpi, fqn);
+                ScanDialog.runWhenScanFinished(classSeekerTask, Bundle.title_go_to_class_action());
             }
         }
     }
-    
+
+    @NbBundle.Messages({
+            "lbl.goto.formbean.not.found=ActionForm Bean {0} not found."
+        })
     private void findForm(String name, BaseDocument doc){
         ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
         
@@ -271,9 +257,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             JTextComponent target = Utilities.getFocusedComponent();
             target.setCaretPosition(offset);
         } else {
-            String key = "goto_formbean_not_found"; // NOI18N
-            String msg = NbBundle.getBundle(StrutsConfigHyperlinkProvider.class).getString(key);
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { name } ));
+            StatusDisplayer.getDefault().setStatusText(Bundle.lbl_goto_formbean_not_found(name));
         }
     }
     
@@ -405,5 +389,52 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
                     ((OpenCookie)cookie).open();
             }
         }
+    }
+
+    private class ClassSeekerTask implements Runnable, CancellableTask<CompilationController> {
+
+        private final ClasspathInfo cpi;
+        private final String fqn;
+
+        public ClassSeekerTask(ClasspathInfo cpi, String fqn) {
+            this.cpi = cpi;
+            this.fqn = fqn;
+        }
+
+        @Override
+        public void run() {
+            JavaSource js = JavaSource.create(cpi);
+            if (js != null) {
+                try {
+                    js.runUserActionTask(this, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @NbBundle.Messages({
+            "lbl.goto.source.not.found=Source file for {0} not found.",
+            "lbl.class.not.found=Class {0} not found."
+        })
+        @Override
+        public void run(CompilationController cc) throws Exception {
+            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            TypeElement element = cc.getElements().getTypeElement(fqn.trim());
+            if (element != null) {
+                if (!ElementOpen.open(cpi, element)) {
+                    StatusDisplayer.getDefault().setStatusText(Bundle.lbl_goto_source_not_found(fqn));
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            } else {
+                StatusDisplayer.getDefault().setStatusText(Bundle.lbl_class_not_found(fqn));
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+
     }
 }
