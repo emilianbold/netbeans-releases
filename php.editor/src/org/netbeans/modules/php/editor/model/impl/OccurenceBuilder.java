@@ -1619,7 +1619,7 @@ class OccurenceBuilder {
             for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
                 PhpDocTypeTagInfo nodeInfo = entry.getKey();
                 Scope scope = entry.getValue();
-                if (Kind.VARIABLE.equals(nodeInfo.getKind()) && scope instanceof VariableScope
+                if (Kind.VARIABLE.equals(nodeInfo.getKind()) && scope instanceof VariableScope && !nodeInfo.getName().trim().isEmpty()
                         && NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeCtxInfo.getName())) {
                     if (!var.isGloballyVisible()) {
                         Scope nextScope = entry.getValue();
