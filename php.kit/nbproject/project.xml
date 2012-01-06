@@ -56,7 +56,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.project</code-name-base>
                     <run-dependency>
-                        <specification-version>2.42</specification-version>
+                        <specification-version>2.43</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
