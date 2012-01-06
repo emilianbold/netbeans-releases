@@ -265,9 +265,13 @@ public class JavaBinaryIndexer extends BinaryIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
-            TransactionContext.beginTrans().register(
-                ClassIndexEventsTransaction.class,
-                ClassIndexEventsTransaction.create());
+            TransactionContext.
+                    beginTrans().
+                    register(
+                        ClassIndexEventsTransaction.class,
+                        ClassIndexEventsTransaction.create()).
+                    register(FileManagerTransaction.class,
+                        FileManagerTransaction.writeThrough());
             try {
                 return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
                     @Override

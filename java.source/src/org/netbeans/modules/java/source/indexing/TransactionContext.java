@@ -120,11 +120,6 @@ public final class TransactionContext {
         }
         return res;
     }
-    
-    @CheckForNull
-    public static TransactionContext getIfExists() {
-        return ctx.get();
-    }
 
     public static abstract class Service {
         protected abstract void commit() throws IOException;

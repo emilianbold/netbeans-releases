@@ -454,6 +454,12 @@ public final class ClasspathInfo {
         public JavaFileManager getFileManager(ClasspathInfo cpInfo) {
             return cpInfo.getFileManager();
         }
+        
+        @Override
+        @NonNull
+        public FileManagerTransaction getFileManagerTransaction(@NonNull ClasspathInfo cpInfo) {
+            return cpInfo.fmTx;
+        }
 
         @Override
         public ClassPath getCachedClassPath(final ClasspathInfo cpInfo, final PathKind kind) {
