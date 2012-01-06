@@ -67,6 +67,7 @@ CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
+CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
@@ -272,6 +273,7 @@ METHOD     Recommendations()               [PUBLIC]   html.php
 METHOD     Signatures()                    [PUBLIC]   html.php
 METHOD     WorkAdjustment()                [PUBLIC]   html.php
 METHOD     WorkHistory()                   [PUBLIC]   html.php
+METHOD     arrayFunctionName()             [PUBLIC]   arrays.php
 METHOD     bar($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     bar($x = -5, $y = 3)            [PUBLIC]   issue200178.php
 METHOD     bar()                           [PUBLIC]   issue141999.php
