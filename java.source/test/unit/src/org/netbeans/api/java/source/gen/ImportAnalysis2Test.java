@@ -689,7 +689,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
-    public void testTooSoon206957() throws Exception {
+    public void testTooSoon206957a() throws Exception {
         clearWorkDir();
         assertTrue(new File(getWorkDir(), "test").mkdirs());
         testFile = new File(getWorkDir(), "test/Test.java");
@@ -708,6 +708,44 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "import java.util.Map.Entry;\n" +
             "\n" +
             "public abstract class Test implements Entry, Map {\n" +
+            "}\n";
+
+        ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
+        JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.insertClassImplementsClause(clazz, 0, make.QualIdent("java.util.Map.Entry")));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testTooSoon206957b() throws Exception {
+        clearWorkDir();
+        assertTrue(new File(getWorkDir(), "test").mkdirs());
+        testFile = new File(getWorkDir(), "test/Entry.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "\n" +
+            "import java.util.Map;\n" +
+            "\n" +
+            "public abstract class Entry implements Map {\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "\n" +
+            "import java.util.Map;\n" +
+            "\n" +
+            "public abstract class Entry implements Map.Entry, Map {\n" +
             "}\n";
 
         ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);

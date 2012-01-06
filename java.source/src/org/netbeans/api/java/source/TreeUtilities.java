@@ -978,6 +978,9 @@ public final class TreeUtilities {
         public void classEntered(ClassTree clazz) {}
 
         @Override
+        public void enterVisibleThroughClasses(ClassTree clazz) {}
+
+        @Override
         public void classLeft() {}
 
         @Override

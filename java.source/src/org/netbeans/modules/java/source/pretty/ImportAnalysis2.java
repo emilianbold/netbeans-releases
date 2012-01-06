@@ -172,9 +172,21 @@ public class ImportAnalysis2 {
     }
 
     public void classEntered(ClassTree clazz) {
-        Set<Element> visible = new HashSet<Element>();
-
         currentFQN.enterClass(clazz);
+
+        Set<Element> visible = new HashSet<Element>();
+        String what = currentFQN.getFQN();
+        Element currentClassElement = what != null ? overlay.resolve(model, elements, what) : null;
+
+        if (currentClassElement != null) {
+            visible.add(currentClassElement);
+        }
+
+        visibleThroughClasses.push(visible);
+    }
+
+    public void enterVisibleThroughClasses(ClassTree clazz) {
+        Set<Element> visible = visibleThroughClasses.peek();
 
         visible.addAll(overlay.getAllVisibleThrough(model, elements, currentFQN.getFQN(), clazz));
 
