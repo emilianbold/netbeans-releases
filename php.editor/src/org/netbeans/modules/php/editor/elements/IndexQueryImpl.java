@@ -235,7 +235,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final LinkedList<String> segments = query.getQuery().getSegments();
         for (int i = 0; i < segments.size(); i++) {
             final String nextSegment = segments.get(i);
-            if ((i == 0 || (i == segments.size() - 1)) && (!nextSegment.isEmpty() || segments.size() == 1)
+            if (!nextSegment.isEmpty() && (i == 0 || (i == segments.size() - 1)) && (!nextSegment.isEmpty() || segments.size() == 1)
                     && NameKind.create(nextSegment, queryKind).matchesName(elementKind, aliasedName.getAliasName())) {
                 final LinkedList<String> nSegments = new LinkedList<String>();
                 nSegments.addAll(segments.subList(0, i));
