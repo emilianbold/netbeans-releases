@@ -87,7 +87,11 @@ public final class PhpLanguageOptions {
 
         // order is important! from oldest to newest, see #getDefault()
         PHP_5(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_5")),
-        PHP_53(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_53"));
+        PHP_53(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_53")),
+        /**
+         * @since 2.43
+         */
+        PHP_54(NbBundle.getMessage(PhpLanguageOptions.class, "PHP_54"));
 
         private final String displayName;
 
