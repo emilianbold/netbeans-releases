@@ -88,7 +88,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author phrebejk
- * 
+ *
  */
 public class FmtOptions {
 
@@ -112,11 +112,13 @@ public class FmtOptions {
     public static final String whileBracePlacement = "whileBracePlacement"; //NOI18N
     public static final String switchBracePlacement = "switchBracePlacement"; //NOI18N
     public static final String catchBracePlacement = "catchBracePlacement"; //NOI18N
+    public static final String useTraitBodyBracePlacement = "useTraitBodyBracePlacement"; //NOI18N
     public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
 
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
     public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
     public static final String blankLinesBeforeUse = "blankLinesBeforeUse"; //NOI18N
+    public static final String blankLinesBeforeUseTrait = "blankLinesBeforeUseTrait"; //NOI18N
     public static final String blankLinesAfterUse = "blankLinesAfterUse"; //NOI18N
     public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
     public static final String blankLinesBeforeClassEnd = "blankLinesBeforeClassEnd"; //NOI18N
@@ -162,6 +164,7 @@ public class FmtOptions {
     public static final String spaceBeforeSwitchLeftBrace = "spaceBeforeSwitchLeftBrace"; //NOI18N
     public static final String spaceBeforeTryLeftBrace = "spaceBeforeTryLeftBrace"; //NOI18N
     public static final String spaceBeforeCatchLeftBrace = "spaceBeforeCatchLeftBrace"; //NOI18N
+    public static final String spaceBeforeUseTraitBodyLeftBrace = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
 //    public static final String spaceBeforeSynchronizedLeftBrace = "spaceBeforeSynchronizedLeftBrace"; //NOI18N
 //    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
 //    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
@@ -203,7 +206,7 @@ public class FmtOptions {
     public static final String alignMultilineAssignment = "alignMultilineAssignment"; //NOI18N
     public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
-    
+
     public static final String groupAlignmentAssignment = "groupAlignmentAssignment"; //NOI18N
     public static final String groupAlignmentArrayInit = "groupAlignmentArrayInit"; //NOI18N
 
@@ -223,7 +226,7 @@ public class FmtOptions {
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
     public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
-    
+
     public static CodeStyleProducer codeStyleProducer;
 
     private FmtOptions() {}
@@ -231,17 +234,17 @@ public class FmtOptions {
     public static int getDefaultAsInt(String key) {
         return Integer.parseInt(defaults.get(key));
     }
-    
+
     public static boolean getDefaultAsBoolean(String key) {
         return Boolean.parseBoolean(defaults.get(key));
     }
-        
+
     public static String getDefaultAsString(String key) {
         return defaults.get(key);
     }
-    
+
     // Private section ---------------------------------------------------------
-    
+
     private static final String TRUE = "true";      // NOI18N
     private static final String FALSE = "false";    // NOI18N
 
@@ -250,17 +253,17 @@ public class FmtOptions {
     public static final String OBRACE_SAMELINE = CodeStyle.BracePlacement.SAME_LINE.name();
     public static final String OBRACE_PRESERVE = CodeStyle.BracePlacement.PRESERVE_EXISTING.name();
     public static final String OBRACE_NEWLINE_INDENTED = CodeStyle.BracePlacement.NEW_LINE_INDENTED.name();
-    
+
     public static final String WRAP_ALWAYS = CodeStyle.WrapStyle.WRAP_ALWAYS.name();
     public static final String WRAP_IF_LONG = CodeStyle.WrapStyle.WRAP_IF_LONG.name();
     public static final String WRAP_NEVER = CodeStyle.WrapStyle.WRAP_NEVER.name();
 
     private static Map<String,String> defaults;
-    
+
     static {
         createDefaults();
     }
-    
+
     private static void createDefaults() {
         String defaultValues[][] = {
             { expandTabToSpaces, TRUE}, //NOI18N
@@ -280,11 +283,13 @@ public class FmtOptions {
 	    { whileBracePlacement, OBRACE_SAMELINE },
 	    { switchBracePlacement, OBRACE_SAMELINE },
 	    { catchBracePlacement, OBRACE_SAMELINE },
+        { useTraitBodyBracePlacement, OBRACE_SAMELINE },
 	    { otherBracePlacement, OBRACE_SAMELINE },
 
             { blankLinesBeforeNamespace, "1"}, //NOI18N
             { blankLinesAfterNamespace, "1"}, //NOI18N
             { blankLinesBeforeUse, "1"}, //NOI18N
+            { blankLinesBeforeUseTrait, "1"}, //NOI18N
             { blankLinesAfterUse, "1"}, //NOI18N
             { blankLinesBeforeClass, "1"}, //NOI18N
             { blankLinesAfterClass, "1"}, //NOI18N
@@ -329,6 +334,7 @@ public class FmtOptions {
             { spaceBeforeSwitchLeftBrace, TRUE},
             { spaceBeforeTryLeftBrace, TRUE},
             { spaceBeforeCatchLeftBrace, TRUE},
+            { spaceBeforeUseTraitBodyLeftBrace, TRUE},
 //            { spaceBeforeSynchronizedLeftBrace, TRUE},
 //            { spaceBeforeStaticInitLeftBrace, TRUE},
 //            { spaceBeforeArrayInitLeftBrace, FALSE},
@@ -370,7 +376,7 @@ public class FmtOptions {
             { placeWhileOnNewLine, FALSE}, //NOI18N
             { placeCatchOnNewLine, FALSE}, //NOI18N
             { placeNewLineAfterModifiers, FALSE}, //NOI18N
-            
+
             {groupAlignmentArrayInit, FALSE},
             {groupAlignmentAssignment, FALSE},
 
@@ -386,15 +392,15 @@ public class FmtOptions {
             { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapBinaryOps, WRAP_NEVER}, //NOI18N
-            { wrapTernaryOps, WRAP_NEVER}, 
+            { wrapTernaryOps, WRAP_NEVER},
             { wrapAssignOps, WRAP_NEVER},
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE}
 
         };
-        
+
         defaults = new HashMap<String,String>();
-        
+
         for (java.lang.String[] strings : defaultValues) {
             defaults.put(strings[0], strings[1]);
         }
@@ -725,7 +731,7 @@ public class FmtOptions {
                 JComboBox cb  = (JComboBox)jc;
                 ComboItem comboItem = ((ComboItem) cb.getSelectedItem());
                 String value = comboItem == null ? getDefaultAsString(optionID) : comboItem.value;
-                
+
                 if (getDefaultAsString(optionID).equals(value))
                     node.remove(optionID);
                 else

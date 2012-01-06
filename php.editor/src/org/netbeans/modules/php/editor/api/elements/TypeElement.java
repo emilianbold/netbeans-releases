@@ -65,4 +65,5 @@ public interface TypeElement extends FullyQualifiedElement {
     Collection<QualifiedName> getFQSuperInterfaceNames();
     boolean isClass();
     boolean isInterface();
+    boolean isTrait();
 }
