@@ -80,8 +80,8 @@ public class ClassIndexTestCase extends NbTestCase {
         }
     }
     
-    public static void beginWriteTxt() throws Exception {
-        
+    protected void createClassIndex(URL url) throws Exception {
+        ClassIndexManager.getDefault().createUsagesQuery(url, true);
     }
     
     public static TransactionContext beginTx() throws IOException {
