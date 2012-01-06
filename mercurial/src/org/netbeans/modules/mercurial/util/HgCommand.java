@@ -2010,7 +2010,14 @@ public class HgCommand {
             command.add(url);
             command.add(target); // target must be the last argument
 
-            list = exec(command);
+            String proxy = getGlobalProxyIfNeeded(url.toUrlStringWithoutUserInfo(), true, logger);
+            if (proxy != null) {
+                List<String> env = new ArrayList<String>();
+                env.add(HG_PROXY_ENV + proxy);
+                list = execEnv(command, env);
+            } else {
+                list = exec(command);
+            }
             try {
                 if (!list.isEmpty()) {
                     if (isErrorNoRepository(list.get(0))) {
