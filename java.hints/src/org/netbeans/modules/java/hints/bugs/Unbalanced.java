@@ -54,6 +54,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -132,6 +133,8 @@ public class Unbalanced {
             Element el = ctx.getInfo().getTrees().getElement(ctx.getPath());
 
             if (!isAcceptable(el) || el.asType().getKind() != TypeKind.ARRAY) return null;
+
+            if (((ArrayType) el.asType()).getComponentType().getKind() == TypeKind.ARRAY) return null;
 
             return (VariableElement) el;
         }
