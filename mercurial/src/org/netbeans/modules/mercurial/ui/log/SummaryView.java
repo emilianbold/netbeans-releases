@@ -91,7 +91,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     private static final Color HIGHLIGHT_BRANCH_HEAD_BG = Color.decode("0xaaffaa"); //NOI18N
     private static final Color HIGHLIGHT_TAG_BG = Color.decode("0xffffaa"); //NOI18N
     
-    static class HgLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
+    static final class HgLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private RepositoryRevision revision;
         private List<Event> events = new ArrayList<Event>(10);
@@ -103,7 +103,12 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         public HgLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
-            revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            if (revision.isEventsInitialized()) {
+                refreshEvents();
+                list = null;
+            } else {
+                revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            }
         }
 
         @Override

@@ -128,7 +128,7 @@ public class RepositoryRevision {
             currentSearch.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot));
             return true;
         }
-        return false;
+        return !eventsInitialized;
     }
 
     void cancelExpand () {

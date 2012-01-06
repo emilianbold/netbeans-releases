@@ -153,7 +153,7 @@ public class RepositoryRevision {
             currentSearch.start(Git.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot);
             return true;
         }
-        return false;
+        return !eventsInitialized;
     }
 
     void cancelExpand () {

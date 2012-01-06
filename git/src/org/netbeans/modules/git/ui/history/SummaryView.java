@@ -93,7 +93,7 @@ class SummaryView extends AbstractSummaryView {
     private static final Color HIGHLIGHT_BRANCH_BG = Color.decode("0xaaffaa"); //NOI18N
     private static final Color HIGHLIGHT_TAG_BG = Color.decode("0xffffaa"); //NOI18N
     
-    static class GitLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
+    static final class GitLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private RepositoryRevision revision;
         private List<Event> events = new ArrayList<Event>(10);
@@ -105,7 +105,12 @@ class SummaryView extends AbstractSummaryView {
         public GitLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
-            revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            if (revision.isEventsInitialized()) {
+                refreshEvents();
+                list = null;
+            } else {
+                revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            }
         }
 
         @Override

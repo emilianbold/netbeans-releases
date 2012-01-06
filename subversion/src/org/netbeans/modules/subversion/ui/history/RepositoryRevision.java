@@ -141,7 +141,7 @@ final class RepositoryRevision {
             currentSearch.start(Subversion.getInstance().getRequestProcessor(repositoryRootUrl), repositoryRootUrl, null);
             return true;
         }
-        return false;
+        return !eventsInitialized;
     }
 
     void cancelExpand () {
