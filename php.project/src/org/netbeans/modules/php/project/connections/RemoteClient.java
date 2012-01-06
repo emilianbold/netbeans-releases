@@ -1114,7 +1114,9 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
         String path = baseRemoteDirectory;
         if (subdirectory != null && !subdirectory.equals(TransferFile.REMOTE_PROJECT_ROOT)) {
-            path = baseRemoteDirectory + TransferFile.REMOTE_PATH_SEPARATOR + subdirectory;
+            path = baseRemoteDirectory
+                    + (baseRemoteDirectory.equals(TransferFile.REMOTE_PATH_SEPARATOR) ? "" : TransferFile.REMOTE_PATH_SEPARATOR) // upload directly to root directory "/"? // NOI18N
+                    + subdirectory;
         }
         return cdRemoteDirectory(path, create);
     }

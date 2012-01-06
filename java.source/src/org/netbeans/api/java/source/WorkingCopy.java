@@ -498,6 +498,7 @@ public class WorkingCopy extends CompilationController {
             
             for (ClassTree ct : classes) {
                 ia.classEntered(ct);
+                ia.enterVisibleThroughClasses(ct);
             }
 
             Tree brandNew = getTreeUtilities().translate(path.getLeaf(), parent2Rewrites.get(path), ia, tree2Tag);
