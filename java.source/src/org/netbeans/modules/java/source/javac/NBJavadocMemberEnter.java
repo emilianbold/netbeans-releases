@@ -52,7 +52,7 @@ import com.sun.tools.javadoc.JavadocMemberEnter;
 public class NBJavadocMemberEnter extends JavadocMemberEnter {
 
     public static void preRegister(Context context) {
-        context.put(MemberEnter.class, new Context.Factory<MemberEnter>() {
+        context.put(memberEnterKey, new Context.Factory<MemberEnter>() {
             public MemberEnter make(Context c) {
                 return new NBJavadocMemberEnter(c);
             }

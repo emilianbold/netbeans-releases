@@ -43,9 +43,13 @@
  */
 package org.netbeans.modules.git.ui.history;
 
+import java.awt.EventQueue;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.*;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -54,7 +58,12 @@ import org.netbeans.libs.git.GitFileInfo.Status;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.RequestProcessor;
 
 public class RepositoryRevision {
 
@@ -64,57 +73,37 @@ public class RepositoryRevision {
     /**
      * List of events associated with the revision.
      */ 
-    private final List<Event> events = new ArrayList<Event>(1);
+    private final List<Event> events = new ArrayList<Event>(5);
+    private final List<Event> dummyEvents;
     private final Map<File, String> commonAncestors = new HashMap<File, String>();
     private final Set<GitTag> tags;
     private final Set<GitBranch> branches;
+    private boolean eventsInitialized;
+    private Search currentSearch;
+    private final PropertyChangeSupport support;
+    public static final String PROP_EVENTS_CHANGED = "eventsChanged"; //NOI18N
+    private final File repositoryRoot;
+    private final File[] selectionRoots;
 
-    public RepositoryRevision (GitRevisionInfo message, Set<GitTag> tags, Set<GitBranch> branches, Map<File, Set<File>> renames) {
+    RepositoryRevision (GitRevisionInfo message, File repositoryRoot, File[] selectionRoots, Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath) {
         this.message = message;
+        this.repositoryRoot = repositoryRoot;
+        this.selectionRoots = selectionRoots;
         this.tags = tags;
         this.branches = branches;
-        initEvents(renames);
-        
-    }
-
-    RepositoryRevision (GitRevisionInfo message, Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath) {
-        this.message = message;
-        this.tags = tags;
-        this.branches = branches;
+        support = new PropertyChangeSupport(this);
+        dummyEvents = new ArrayList<Event>(1);
         if (dummyFile != null && dummyFileRelativePath != null) {
-            events.add(new Event(dummyFile, dummyFileRelativePath));
-        }
-    }
-
-    private void initEvents (Map<File, Set<File>> allRenames) {
-        try {
-            Map<File, GitFileInfo> paths = message.getModifiedFiles();
-            if (paths == null || paths.isEmpty()) return;
-            for (Map.Entry<File, GitFileInfo> path : paths.entrySet()) {
-                GitFileInfo info = path.getValue();
-                Set<File> renames = allRenames.get(info.getFile());
-                if (renames == null) {
-                    renames = Collections.<File>emptySet();
-                }
-                if (info.getStatus().equals(Status.COPIED) || info.getStatus().equals(Status.RENAMED)) {
-                    Set<File> combinedRenames = allRenames.get(info.getOriginalFile());
-                    if (combinedRenames == null) {
-                        combinedRenames = new HashSet<File>();
-                        allRenames.put(info.getOriginalFile(), combinedRenames);
-                    }
-                    combinedRenames.add(info.getFile());
-                    combinedRenames.addAll(renames);
-                    renames = combinedRenames;
-                }
-                events.add(new Event(info, renames));
-            }
-        } catch (GitException ex) {
-            GitClientExceptionHandler.notifyException(ex, false);
+            dummyEvents.add(new Event(dummyFile, dummyFileRelativePath));
         }
     }
 
     public List<Event> getEvents() {
         return events;
+    }
+
+    List<Event> getDummyEvents () {
+        return dummyEvents;
     }
 
     public GitRevisionInfo getLog() {
@@ -125,9 +114,9 @@ public class RepositoryRevision {
     public String toString() {
         StringBuilder text = new StringBuilder();
         text.append(getLog().getRevision());
-        text.append("\t");
+        text.append("\t"); //NOI18N
         text.append(DateFormat.getDateTimeInstance().format(new Date(getLog().getCommitTime())));
-        text.append("\t");
+        text.append("\t"); //NOI18N
         text.append(getLog().getAuthor()); // NOI18N
         text.append("\n"); // NOI18N
         text.append(getLog().getShortMessage());
@@ -157,6 +146,40 @@ public class RepositoryRevision {
         return tags == null ? new GitTag[0] : tags.toArray(new GitTag[tags.size()]);
     }
     
+    boolean expandEvents () {
+        Search s = currentSearch;
+        if (s == null && !eventsInitialized) {
+            currentSearch = new Search();
+            currentSearch.start(Git.getInstance().getRequestProcessor(repositoryRoot), repositoryRoot);
+            return true;
+        }
+        return false;
+    }
+
+    void cancelExpand () {
+        Search s = currentSearch;
+        if (s != null) {
+            s.cancel();
+            currentSearch = null;
+        }
+    }
+
+    boolean isEventsInitialized () {
+        return eventsInitialized;
+    }
+    
+    public void addPropertyChangeListener (String propertyName, PropertyChangeListener listener) {
+        support.addPropertyChangeListener(propertyName, listener);
+    }
+    
+    public void removePropertyChangeListener (String propertyName, PropertyChangeListener listener) {
+        support.removePropertyChangeListener(propertyName, listener);
+    }
+
+    File getRepositoryRoot () {
+        return repositoryRoot;
+    }
+    
     public class Event {
         /**
          * The file or folder that this event is about. It may be null if the File cannot be computed.
@@ -165,20 +188,26 @@ public class RepositoryRevision {
     
         private final String path;
         private final Status status;
-        private final Set<File> renames;
+        private boolean underRoots;
+        private final File originalFile;
+        private final String originalPath;
 
-        public Event (GitFileInfo changedPath, Set<File> renames) {
+        public Event (GitFileInfo changedPath, boolean underRoots) {
             path = changedPath.getRelativePath();
             file = changedPath.getFile();
+            originalPath = changedPath.getOriginalPath() == null ? path : changedPath.getOriginalPath();
+            originalFile = changedPath.getOriginalFile() == null ? file : changedPath.getOriginalFile();
             status = changedPath.getStatus();
-            this.renames = Collections.unmodifiableSet(new HashSet<File>(renames));
+            this.underRoots = underRoots;
         }
         
         private Event (File dummyFile, String dummyPath) {
             this.path = dummyPath;
             this.file = dummyFile;
+            this.originalPath = dummyPath;
+            this.originalFile = dummyFile;
             this.status = Status.UNKNOWN;
-            renames = Collections.<File>emptySet();
+            underRoots = true;
         }
 
         public RepositoryRevision getLogInfoHeader () {
@@ -187,6 +216,10 @@ public class RepositoryRevision {
 
         public File getFile() {
             return file;
+        }
+
+        public File getOriginalFile () {
+            return originalFile;
         }
 
         public String getName() {
@@ -219,8 +252,93 @@ public class RepositoryRevision {
             return path;
         }
 
-        public Collection<File> getRenames () {
-            return renames;
+        boolean isUnderRoots () {
+            return underRoots;
+        }
+
+        String getOriginalPath () {
+            return originalPath;
+        }
+    }
+    
+    private class Search extends GitProgressSupport {
+
+        @Override
+        protected void perform () {
+            Map<File, GitFileInfo> files;
+            try {
+                files = getLog().getModifiedFiles();
+            } catch (GitException ex) {
+                GitClientExceptionHandler.notifyException(ex, true);
+                files = Collections.<File, GitFileInfo>emptyMap();
+            }
+            final List<Event> logEvents = prepareEvents(files);
+            if (!isCanceled()) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        if (!isCanceled()) {
+                            events.clear();
+                            dummyEvents.clear();
+                            events.addAll(logEvents);
+                            eventsInitialized = true;
+                            currentSearch = null;
+                            support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<Event>(events));
+                        }
+                    }
+                });
+            }
+        }
+
+        @Override
+        protected void finishProgress () {
+
+        }
+
+        @Override
+        protected void startProgress () {
+
+        }
+
+        @Override
+        protected ProgressHandle getProgressHandle () {
+            return null;
+        }
+
+        private void start (RequestProcessor requestProcessor, File repositoryRoot) {
+            start(requestProcessor, repositoryRoot, null);
+        }
+
+        private List<Event> prepareEvents (Map<File, GitFileInfo> files) {
+            final List<Event> logEvents = new ArrayList<Event>(files.size());
+            Set<File> renamedFilesOriginals = new HashSet<File>(files.size());
+            for (Map.Entry<File, GitFileInfo> e : files.entrySet()) {
+                if (e.getValue().getStatus() == Status.RENAMED) {
+                    renamedFilesOriginals.add(e.getValue().getOriginalFile());
+                }
+            }
+            
+            for (Map.Entry<File, GitFileInfo> e : files.entrySet()) {
+                File f = e.getKey();
+                if (renamedFilesOriginals.contains(f)) {
+                    // lets not track delete part of a rename and display only the rename itself
+                    continue;
+                }
+                GitFileInfo info = e.getValue();
+                boolean underRoots = false;
+                for (File selectionRoot : selectionRoots) {
+                    if (VersioningSupport.isFlat(selectionRoot)) {
+                        underRoots = selectionRoot.equals(f.getParentFile());
+                    } else {
+                        underRoots = Utils.isAncestorOrEqual(selectionRoot, f);
+                    }
+                    if (underRoots) {
+                        break;
+                    }
+                }
+                logEvents.add(new Event(info, underRoots));
+            }
+            return logEvents;
         }
     }
 }

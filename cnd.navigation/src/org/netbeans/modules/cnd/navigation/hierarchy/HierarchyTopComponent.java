@@ -215,12 +215,15 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         }
     }
 
+    @Override
     public void projectOpened(CsmProject project) {
     }
 
+    @Override
     public void projectClosed(CsmProject project) {
         if (CsmModelAccessor.getModel().projects().isEmpty()) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     HierarchyTopComponent tc = HierarchyTopComponent.findInstance();
                     if (tc.isOpened()) {
@@ -231,6 +234,7 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
         }
     }
 
+    @Override
     public void modelChanged(CsmChangeEvent e) {
     }
 }

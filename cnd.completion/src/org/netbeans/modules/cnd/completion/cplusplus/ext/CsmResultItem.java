@@ -167,6 +167,7 @@ public abstract class CsmResultItem implements CompletionItem {
             // Update the text
             doc.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
@@ -226,6 +227,7 @@ public abstract class CsmResultItem implements CompletionItem {
     protected abstract Component getPaintComponent(boolean isSelected);
 
     // CompletionItem implementation
+    @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         Component renderComponent = getPaintComponent(false);
         renderComponent.setFont(defaultFont);
@@ -233,6 +235,7 @@ public abstract class CsmResultItem implements CompletionItem {
         return width;
     }
 
+    @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor,
             Color backgroundColor, int width, int height, boolean selected) {
         Component renderComponent = getPaintComponent(selected);
@@ -273,6 +276,7 @@ public abstract class CsmResultItem implements CompletionItem {
     public static final String COMPLETION_SUBSTITUTE_TEXT = "completion-substitute-text"; //NOI18N
     private String toAdd;
 
+    @Override
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             Completion completion = Completion.get();
@@ -304,19 +308,23 @@ public abstract class CsmResultItem implements CompletionItem {
         }
     }
 
+    @Override
     public CharSequence getSortText() {
         return getItemText();
     }
 
+    @Override
     public CharSequence getInsertPrefix() {
         return getItemText();
     }
 
+    @Override
     public CompletionTask createDocumentationTask() {
         CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
         return p != null ? p.createDocumentationTask(this) : null;
     }
 
+    @Override
     public CompletionTask createToolTipTask() {
         return null;
     }
@@ -325,6 +333,7 @@ public abstract class CsmResultItem implements CompletionItem {
         CsmResultItem.enableInstantSubstitution = enable;
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent c) {
         if (CsmResultItem.enableInstantSubstitution) {
             Completion completion = Completion.get();
@@ -337,6 +346,7 @@ public abstract class CsmResultItem implements CompletionItem {
         }
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         Completion completion = Completion.get();
         completion.hideCompletion();
@@ -467,6 +477,7 @@ public abstract class CsmResultItem implements CompletionItem {
         final boolean isLastIncludeTypeMatch2 = isLastIncludeTypeMatch;
         doc.runAtomic(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     if (lastInclude2 != null) {
@@ -562,6 +573,7 @@ public abstract class CsmResultItem implements CompletionItem {
         return getItemText();
     }
 
+    @Override
     public int getSortPriority() {
         return this.priority;
     }
@@ -572,6 +584,7 @@ public abstract class CsmResultItem implements CompletionItem {
             super(fld, priotity);
         }
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.FileLocalVariablePaintComponent();
         }
@@ -583,6 +596,7 @@ public abstract class CsmResultItem implements CompletionItem {
             super(fld, priotity);
         }
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.GlobalVariablePaintComponent();
         }
@@ -594,6 +608,7 @@ public abstract class CsmResultItem implements CompletionItem {
             super(fld, priotity);
         }
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.LocalVariablePaintComponent();
         }
@@ -605,6 +620,7 @@ public abstract class CsmResultItem implements CompletionItem {
             super(fld, priotity);
         }
 
+        @Override
         protected CsmPaintComponent.FieldPaintComponent createPaintComponent() {
             return new CsmPaintComponent.FieldPaintComponent();
         }
@@ -630,6 +646,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return params;
         }
 
+        @Override
         public String getItemText() {
             return getName();
         }
@@ -638,6 +655,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.MacroPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (macroPaintComp == null) {
                 macroPaintComp = createPaintComponent();
@@ -663,6 +681,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return parName.toString();
         }
 
+        @Override
         public String getItemText() {
             return getName();
         }
@@ -671,6 +690,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.TemplateParameterPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (parPaintComp == null) {
                 parPaintComp = createPaintComponent();
@@ -695,6 +715,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return parName.toString();
         }
 
+        @Override
         public String getItemText() {
             return getName();
         }
@@ -703,6 +724,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.LabelPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (parPaintComp == null) {
                 parPaintComp = createPaintComponent();
@@ -732,12 +754,14 @@ public abstract class CsmResultItem implements CompletionItem {
             this.typeColor = getTypeColor(fld.getType());
         }
 
+        @Override
         public String getItemText() {
             return fldName.toString();
         }
 
         abstract protected CsmPaintComponent.FieldPaintComponent createPaintComponent();
 
+        @Override
         public java.awt.Component getPaintComponent(boolean isSelected) {
             CsmPaintComponent.FieldPaintComponent comp = null;
             assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
@@ -1043,6 +1067,7 @@ public abstract class CsmResultItem implements CompletionItem {
             final CsmResultItem thisItem = this;
             doc.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     String text = null;
                     boolean addParams = true;
@@ -1234,6 +1259,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return false;
         }
 
+        @Override
         public String getItemText() {
             // TODO review the output
             return ctr.getName().toString();
@@ -1243,6 +1269,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.ConstructorPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (ctrComponent == null) {
                 ctrComponent = createPaintComponent();
@@ -1266,6 +1293,7 @@ public abstract class CsmResultItem implements CompletionItem {
             this.aliasName = alias.getAlias();
         }
 
+        @Override
         public String getItemText() {
             return aliasName.toString();
         }
@@ -1274,6 +1302,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.NamespaceAliasPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (aliasComponent == null) {
                 aliasComponent = createPaintComponent();
@@ -1298,6 +1327,7 @@ public abstract class CsmResultItem implements CompletionItem {
             this.pkgName = pkg.getName();
         }
 
+        @Override
         public String getItemText() {
             return displayFullNamespacePath ? pkg.getQualifiedName().toString() : pkg.getName().toString();
         }
@@ -1306,6 +1336,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.NamespacePaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (pkgComponent == null) {
                 pkgComponent = createPaintComponent();
@@ -1348,6 +1379,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return text;
         }
 
+        @Override
         public String getItemText() {
             return displayFQN ? enm.getQualifiedName().toString() : enm.getName().toString();
         }
@@ -1356,6 +1388,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.EnumPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (enumComponent == null) {
                 enumComponent = createPaintComponent();
@@ -1397,6 +1430,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return text;
         }
 
+        @Override
         public String getItemText() {
             // TODO: do we need name of enum?
             return (displayFQN ? enmtr.getEnumeration().getQualifiedName() + CsmCompletion.SCOPE : "") + enmtr.getName(); //NOI18N
@@ -1406,6 +1440,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.EnumeratorPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (enumtrComponent == null) {
                 enumtrComponent = createPaintComponent();
@@ -1451,6 +1486,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return text;
         }
 
+        @Override
         public String getItemText() {
             return displayFQN ? cls.getQualifiedName().toString() : getName();
         }
@@ -1467,6 +1503,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.ClassPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (kind == CsmDeclaration.Kind.STRUCT) {
                 if (structComponent == null) {
@@ -1534,6 +1571,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return text;
         }
 
+        @Override
         public String getItemText() {
             return displayFQN ? cls.getQualifiedName().toString() : getName();
         }
@@ -1550,6 +1588,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.ClassPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (kind == CsmDeclaration.Kind.STRUCT) {
                 if (structComponent == null) {
@@ -1608,6 +1647,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return text;
         }
 
+        @Override
         public String getItemText() {
             return displayFQN ? def.getQualifiedName().toString() : def.getName().toString();
         }
@@ -1616,6 +1656,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return new CsmPaintComponent.TypedefPaintComponent();
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (defComponent == null) {
                 defComponent = createTypedefPaintComponent();
@@ -1636,10 +1677,12 @@ public abstract class CsmResultItem implements CompletionItem {
             this.str = str;
         }
 
+        @Override
         public String getItemText() {
             return str;
         }
 
+        @Override
         public Component getPaintComponent(boolean isSelected) {
             if (stringComponent == null) {
                 stringComponent = createStringPaintComponent();

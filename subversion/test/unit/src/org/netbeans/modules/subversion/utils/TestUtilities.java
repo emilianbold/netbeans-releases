@@ -43,8 +43,12 @@
 package org.netbeans.modules.subversion.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -198,4 +202,9 @@ public final class TestUtilities {
                || ((c >= '0') && (c <= '9'));
     }
 
+    public static void deleteRecursively(File file) throws IOException {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return;
+        fo.delete();
+    }    
 }

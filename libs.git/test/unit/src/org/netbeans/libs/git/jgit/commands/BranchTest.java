@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.errors.NotSupportedException;
@@ -260,32 +259,11 @@ public class BranchTest extends AbstractGitTestCase {
         client.commit(new File[] { f }, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         
         client = getClient(workDir);
-        client.setRemote(new GitRemoteConfig() {
-            @Override
-            public String getRemoteName () {
-                return "origin";
-            }
-
-            @Override
-            public List<String> getUris () {
-                return Arrays.asList(new String[] { otherWT.getAbsolutePath() });
-            }
-
-            @Override
-            public List<String> getPushUris () {
-                return Arrays.asList(new String[] { otherWT.getAbsolutePath() });
-            }
-
-            @Override
-            public List<String> getFetchRefSpecs () {
-                return Arrays.asList(new String[] { "refs/heads/*:refs/remotes/origin/*" });
-            }
-
-            @Override
-            public List<String> getPushRefSpecs () {
-                return Arrays.asList(new String[] { "refs/remotes/origin/*:refs/heads/*" });
-            }
-        }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.setRemote(new GitRemoteConfig("origin",
+                Arrays.asList(new String[] { otherWT.getAbsolutePath() }),
+                Arrays.asList(new String[] { otherWT.getAbsolutePath() }),
+                Arrays.asList(new String[] { "refs/heads/*:refs/remotes/origin/*" }),
+                Arrays.asList(new String[] { "refs/remotes/origin/*:refs/heads/*" })), ProgressMonitor.NULL_PROGRESS_MONITOR);
         client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
         client.checkoutRevision("origin/master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         GitBranch b = client.createBranch(BRANCH_NAME, "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);

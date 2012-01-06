@@ -39,19 +39,15 @@
 
 package org.netbeans.installer.product.components;
 
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.applications.NetBeansUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -237,7 +233,7 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         final List<Dependency> dependencies =
                 getProduct().getDependencyByUid(sourceUid);
         
-        if(dependencies.size()==0) {
+        if(dependencies.isEmpty()) {
             LogManager.log(ErrorLevel.WARNING, 
                     "Can`t uninstall " + getProduct().getDisplayName());
             LogManager.log(ErrorLevel.WARNING, 

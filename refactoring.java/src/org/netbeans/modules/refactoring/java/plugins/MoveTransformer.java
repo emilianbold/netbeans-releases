@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
@@ -126,7 +127,7 @@ public class MoveTransformer extends RefactoringVisitor {
                             Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                             
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                            TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if(enclosingTypeElement != null && enclosingClass != null
                                     && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -145,7 +146,7 @@ public class MoveTransformer extends RefactoringVisitor {
                             Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
 
                             EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                            TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if(enclosingTypeElement != null && enclosingClass != null
                                     && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -191,7 +192,7 @@ public class MoveTransformer extends RefactoringVisitor {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                        TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                         Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                         if(enclosingTypeElement != null && enclosingClass != null
                                 && workingCopy.getTypes().isSubtype(enclosingClass.asType(), enclosingTypeElement.asType())) {
@@ -216,7 +217,7 @@ public class MoveTransformer extends RefactoringVisitor {
                         Element enclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(el);
                         
                         EnumSet<Modifier> neededMods = EnumSet.of(Modifier.PUBLIC);
-                        TreePath enclosingClassPath = RefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
+                        TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false);
                         if (enclosingClassPath != null) {
                             Element enclosingClass = workingCopy.getTrees().getElement(enclosingClassPath);
                             if (enclosingTypeElement != null && enclosingClass != null
@@ -402,27 +403,30 @@ public class MoveTransformer extends RefactoringVisitor {
                 }
             } else if(qualifiedIdentifier.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree memberSelect = (MemberSelectTree) qualifiedIdentifier;
-                if(memberSelect.getIdentifier().contentEquals("*") && !node.isStatic()) {
-                    PackageElement pakketje = (PackageElement) workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), memberSelect.getExpression()));
-                    if(isThisPackageMoving(pakketje)) {
-                        importToRemove.add(node);
-                    } else if(move.packages.contains(ElementHandle.create(pakketje))) {
-                        boolean packageWillBeEmpty = true;
-                        List<? extends Element> enclosedElements = pakketje.getEnclosedElements();
-                        for (Element element : enclosedElements) {
-                            if(!isElementMoving(element)) {
-                                packageWillBeEmpty = false;
-                                break;
-                            } else {
-                                String targetPackageName = getTargetPackageName(element);
-                                if(pakketje.getQualifiedName().contentEquals(targetPackageName)) {
+                if(memberSelect.getIdentifier().contentEquals("*")) {
+                    Element packageElement = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), memberSelect.getExpression()));
+                    if(packageElement.getKind() == ElementKind.PACKAGE) {
+                        PackageElement pakketje = (PackageElement) packageElement;
+                        if(isThisPackageMoving(pakketje)) {
+                            importToRemove.add(node);
+                        } else if(move.packages.contains(ElementHandle.create(pakketje))) {
+                            boolean packageWillBeEmpty = true;
+                            List<? extends Element> enclosedElements = pakketje.getEnclosedElements();
+                            for (Element element : enclosedElements) {
+                                if(!isElementMoving(element)) {
                                     packageWillBeEmpty = false;
                                     break;
+                                } else {
+                                    String targetPackageName = getTargetPackageName(element);
+                                    if(pakketje.getQualifiedName().contentEquals(targetPackageName)) {
+                                        packageWillBeEmpty = false;
+                                        break;
+                                    }
                                 }
                             }
-                        }
-                        if(packageWillBeEmpty) {
-                            importToRemove.add(node);
+                            if(packageWillBeEmpty) {
+                                importToRemove.add(node);
+                            }
                         }
                     }
                 }

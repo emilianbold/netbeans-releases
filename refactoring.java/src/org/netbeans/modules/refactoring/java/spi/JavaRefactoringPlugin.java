@@ -43,29 +43,15 @@
  */
 package org.netbeans.modules.refactoring.java.spi;
 
-import java.util.Collections;
-import org.netbeans.api.java.source.ModificationResult.Difference;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;

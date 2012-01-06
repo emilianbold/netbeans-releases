@@ -64,6 +64,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.WindowCache;
 import org.eclipse.jgit.storage.file.WindowCacheConfig;
+import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -536,7 +537,7 @@ public class CheckoutTest extends AbstractGitTestCase {
             Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
             assertTrue(branches.get(BRANCH).isActive());
         }
-        CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, Constants.MASTER, false, ProgressMonitor.NULL_PROGRESS_MONITOR, new FileListener() {
+        CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, ApiUtils.getClassFactory(), Constants.MASTER, false, ProgressMonitor.NULL_PROGRESS_MONITOR, new FileListener() {
             @Override
             public void notifyFile (File file, String relativePathToRoot) { }
         });

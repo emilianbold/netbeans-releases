@@ -255,7 +255,7 @@ public final class Utils {
      * @param prefix prefix denoting heads amongst references
      * @return 
      */
-    public static Map<String, GitBranch> refsToBranches (Collection<Ref> allRefs, String prefix) {
+    public static Map<String, GitBranch> refsToBranches (Collection<Ref> allRefs, String prefix, GitClassFactory factory) {
         Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
         
         // try to find the head first - it usually is the active remote branch
@@ -274,7 +274,7 @@ public final class Utils {
                 String name = refName.substring(prefix.length());
                 branches.put(
                     name, 
-                    new JGitBranch(
+                    factory.createBranch(
                         name, 
                         false, 
                         head != null && ref.getObjectId().equals(head.getObjectId()), 

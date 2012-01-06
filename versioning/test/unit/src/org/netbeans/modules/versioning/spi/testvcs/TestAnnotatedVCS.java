@@ -81,6 +81,8 @@ public class TestAnnotatedVCS extends VersioningSystem {
         interceptor = new TestVCSInterceptor();
         annotator = new TestVCSAnnotator();
         vq = new TestVCSVisibilityQuery();
+        putProperty(PROP_DISPLAY_NAME, "TestVCSDisplay");
+        putProperty(PROP_MENU_LABEL, "TestVCSMenu");
     }
 
     public File getTopmostManagedAncestor(File file) {

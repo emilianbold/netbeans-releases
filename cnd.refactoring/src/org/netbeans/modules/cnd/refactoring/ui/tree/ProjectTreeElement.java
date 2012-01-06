@@ -79,18 +79,22 @@ public class ProjectTreeElement implements TreeElement {
         prjUID = CsmRefactoringUtils.getHandler(csmPrj);
     }
     
+    @Override
     public TreeElement getParent(boolean isLogical) {
         return null;
     }
 
+    @Override
     public Icon getIcon() {
         return icon;
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return name;
     }
 
+    @Override
     public Object getUserObject() {
         return prjUID.getObject();
     }

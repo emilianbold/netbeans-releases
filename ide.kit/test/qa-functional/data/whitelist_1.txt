@@ -16,12 +16,6 @@ org.netbeans.modules.profiler.spi.IconsProvider
 org.netbeans.modules.profiler.spi.IconsProvider$Basic
 org.netbeans.modules.profiler.stp.icons.STPIconsProviderImpl
 
-#200035
-org.netbeans.modules.project.ui.groups.GroupOptionProcessor
-org.netbeans.modules.project.ui.Bundle
-org.netbeans.modules.project.ui.actions.Bundle
-org.netbeans.modules.project.ui.groups.Bundle
-
 #200036
 org.netbeans.spi.project.libraries.NamedLibraryImplementation
 org.netbeans.modules.project.libraries.Util
@@ -3432,7 +3426,6 @@ org.netbeans.modules.navigator.NavigatorController$PanelLookupWrapper
 org.netbeans.modules.navigator.NavigatorTC
 org.netbeans.modules.navigator.ShowNavigatorAction
 org.netbeans.modules.openfile.FileChooser
-org.netbeans.modules.openfile.Handler
 org.netbeans.modules.openfile.OpenFileAction
 org.netbeans.modules.openfile.RecentFileAction
 org.netbeans.modules.openfile.RecentFileAction$UpdatingMenu
@@ -5997,5 +5990,9 @@ org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj$Delivered
 org.netbeans.modules.openide.loaders.AWTTask$EDT
 org.netbeans.modules.uihandler.UIHandler$2WriteOut
 
+# Infrastructure types for CLI
+org.netbeans.modules.sendopts.DefaultProcessor
+org.netbeans.modules.sendopts.DefaultProcessor$Type
+org.netbeans.spi.sendopts.Arg
 
 

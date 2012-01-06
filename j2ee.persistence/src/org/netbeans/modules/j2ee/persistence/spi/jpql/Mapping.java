@@ -57,6 +57,7 @@ public class Mapping implements IMapping {
     
     private final ManagedType parent;
     private IMappingType mappingType;
+    private IType type;
     private JPAAttribute attribute;
 
 
@@ -85,12 +86,19 @@ public class Mapping implements IMapping {
 
     @Override
     public IType getType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(type == null){
+            if(attribute.getType() != null) {
+                type = new Type(parent.getProvider().getTypeRepository(), attribute.getType());
+            } else {
+                type = new DefaultType(parent.getProvider().getTypeRepository(), attribute.getTypeName());
+            }
+        }
+        return type;
     }
 
     @Override
     public ITypeDeclaration getTypeDeclaration() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getType().getTypeDeclaration();
     }
 
     @Override

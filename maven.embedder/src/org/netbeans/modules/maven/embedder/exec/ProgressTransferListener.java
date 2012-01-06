@@ -47,12 +47,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import static org.netbeans.modules.maven.embedder.exec.Bundle.*;
 import org.openide.util.Cancellable;
-import org.openide.util.NbBundle;
 import org.sonatype.aether.transfer.TransferCancelledException;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferListener;
 import org.sonatype.aether.transfer.TransferResource;
+import org.openide.util.NbBundle.Messages;
 
 public class ProgressTransferListener implements TransferListener {
 
@@ -118,8 +119,11 @@ public class ProgressTransferListener implements TransferListener {
         return lastSlash > -1 ? res.getResourceName().substring(lastSlash + 1) : res.getResourceName();
     }
     
-
-
+    @Messages({
+        "TXT_Download=Downloading {0}",
+        "TXT_Uploading=Uploading {0}",
+        "TXT_Started={0} - Transfer Started..."
+    })
     @Override
     public void transferInitiated(TransferEvent te) throws TransferCancelledException {
         if (handle == null) {
@@ -133,23 +137,23 @@ public class ProgressTransferListener implements TransferListener {
             ProgressContributor pc = !contribStack.empty() ? contribStack.pop() : null;
             if (pc == null) {
                 String name = (te.getRequestType() == TransferEvent.RequestType.GET
-                        ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
-                        : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
+                        ? TXT_Download(resName)
+                        : TXT_Uploading(resName));
                 pc = AggregateProgressFactory.createProgressContributor(name);
                 handle.addContributor(pc);
             }
             contrib = pc;
         } else {
             String name = (te.getRequestType() == TransferEvent.RequestType.GET
-                    ? NbBundle.getMessage(ProgressTransferListener.class, "TXT_Download", resName)
-                    : NbBundle.getMessage(ProgressTransferListener.class, "TXT_Uploading", resName));
+                    ? TXT_Download(resName)
+                    : TXT_Uploading(resName));
             ProgressContributor pc = AggregateProgressFactory.createProgressContributor(name);
             contribStack.add(pc);
             handle.addContributor(pc);
             if (pomCount < POM_MAX - 1) {
-                pomcontrib.progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", resName), ++pomCount);
+                pomcontrib.progress(TXT_Started(resName), ++pomCount);
             } else {
-                pomcontrib.progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", resName));
+                pomcontrib.progress(TXT_Started(resName));
             }
         }
     }
@@ -167,9 +171,13 @@ public class ProgressTransferListener implements TransferListener {
             contrib.start(total);
         }
         length = total;
-        contrib.progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", getResourceName(res)));
+        contrib.progress(TXT_Started(getResourceName(res)));
     }
 
+    @Messages({
+        "TXT_Transferring={0} - Transferring...",
+        "TXT_Transferred={0} - Transferred {1}"
+    })
     @Override
     public void transferProgressed(TransferEvent te) throws TransferCancelledException {
          checkCancel();
@@ -179,10 +187,10 @@ public class ProgressTransferListener implements TransferListener {
         long cnt = te.getTransferredBytes();
         cnt = Math.min((long)Integer.MAX_VALUE, cnt);
         if (length < 0) {
-            contrib.progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring", getResourceName(te.getResource())));
+            contrib.progress(TXT_Transferring(getResourceName(te.getResource())));
         } else {
             cnt = Math.min(cnt, (long)length);
-            contrib.progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", getResourceName(te.getResource()), cnt), (int)cnt);
+            contrib.progress(TXT_Transferred(getResourceName(te.getResource()), cnt), (int)cnt);
         }
     }
 

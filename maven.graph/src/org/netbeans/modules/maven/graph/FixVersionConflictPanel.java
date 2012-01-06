@@ -40,12 +40,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-/*
- * FixVersionConflictPanel.java
- *
- * Created on Apr 7, 2009, 2:57:30 PM
- */
-
 package org.netbeans.modules.maven.graph;
 
 import java.awt.Component;
@@ -70,7 +64,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.graph.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -83,7 +78,6 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
     private List<ArtifactVersion> clashingVersions;
     private ExclusionTargets eTargets;
 
-    /** Creates new form FixVersionConflictPanel */
     public FixVersionConflictPanel (DependencyGraphScene scene, ArtifactGraphNode node) {
         this.scene = scene;
         this.conflictNode = node;
@@ -97,7 +91,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
 
         eTargets = new ExclusionTargets(conflictNode, getClashingVersions().get(0));
 
-        visualizeRecommandations(computeRecommandations());
+        visualizeRecommendations(computeRecommendations());
     }
 
     FixDescription getResult() {
@@ -182,7 +176,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
      *
      * @return description of found recommended solution
      */
-    private FixDescription computeRecommandations () {
+    private FixDescription computeRecommendations() {
         FixDescription recs = new FixDescription();
 
         boolean isDirect = conflictNode.getPrimaryLevel() == 1;
@@ -218,9 +212,12 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         return recs;
     }
 
-    private void visualizeRecommandations(FixDescription recs) {
-        addSetCheck.setText(NbBundle.getMessage(FixVersionConflictPanel.class,
-                "FixVersionConflictPanel.addSetCheck.text", getSetText())); // NOI18N
+    @Messages({
+        "FixVersionConflictPanel.addSetCheck.text={0} Direct Dependency",
+        "FixVersionConflictPanel.excludeCheck.text=Exclude Transitive Dependency"
+    })
+    private void visualizeRecommendations(FixDescription recs) {
+        addSetCheck.setText(FixVersionConflictPanel_addSetCheck_text(getSetText()));
         addSetCheck.setSelected(recs.isSet);
         addSetCheckChanged();
 
@@ -236,8 +233,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
             versionList.setSelectedValue(recs.version2Set, true);
         }
 
-        excludeCheck.setText(NbBundle.getMessage(FixVersionConflictPanel.class,
-                "FixVersionConflictPanel.excludeCheck.text")); // NOI18N
+        excludeCheck.setText(FixVersionConflictPanel_excludeCheck_text());
         excludeCheck.setSelected(recs.isExclude);
         excludeCheckChanged();
 
@@ -256,20 +252,25 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         updateSummary();
     }
 
+    @Messages({
+        "LBL_SetDep=Set",
+        "LBL_AddDep=Add"
+    })
     private String getSetText () {
-        return conflictNode.getPrimaryLevel() == 1 ?
-            NbBundle.getMessage(FixVersionConflictPanel.class, "LBL_SetDep")
-            : NbBundle.getMessage(FixVersionConflictPanel.class, "LBL_AddDep");
+        return conflictNode.getPrimaryLevel() == 1 ? LBL_SetDep() : LBL_AddDep();
     }
 
+    @Messages({
+        "FixVersionConflictPanel.sumPart1.text={0} direct dependency on version <b>{1}</b> of <b>{2}</b>.",
+        "FixVersionConflictPanel.sumPart2.text=Exclude transitive dependency on <b>{0}</b> from direct dependency on <b>{1}</b>.",
+        "FixVersionConflictPanel.noChanges=No changes.",
+        "FixVersionConflictPanel.sumContent.text=<html>{0} {1}</html>"
+    })
     private void updateSummary () {
         FixDescription curFix = getResult();
         String part1 = "", part2 = "";
         if (curFix.isSet && curFix.version2Set != null) {
-            part1 = NbBundle.getMessage(FixVersionConflictPanel.class,
-                    "FixVersionConflictPanel.sumPart1.text",
-                    getSetText(), curFix.version2Set.toString(),
-                    conflictNode.getArtifact().getArtifact().getArtifactId());
+            part1 = FixVersionConflictPanel_sumPart1_text(getSetText(), curFix.version2Set.toString(), conflictNode.getArtifact().getArtifact().getArtifactId());
         }
         if (curFix.isExclude && !curFix.exclusionTargets.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -282,22 +283,18 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
                 }
                 sb.append(art.getArtifactId());
             }
-            part2 = NbBundle.getMessage(FixVersionConflictPanel.class,
-                    "FixVersionConflictPanel.sumPart2.text",
-                    conflictNode.getArtifact().getArtifact().getArtifactId(),
-                    sb.toString());
+            part2 = FixVersionConflictPanel_sumPart2_text(conflictNode.getArtifact().getArtifact().getArtifactId(), sb);
         }
 
-        if (part1.equals("") && part2.equals("")) {
-            part1 = NbBundle.getMessage(FixVersionConflictPanel.class, "FixVersionConflictPanel.noChanges");
+        if (part1.isEmpty() && part2.isEmpty()) {
+            part1 = FixVersionConflictPanel_noChanges();
         }
 
-        if (!part1.equals("") && !part2.equals("")) {
+        if (!part1.isEmpty() && !part2.isEmpty()) {
             part1 = part1 + " ";
         }
 
-        sumContent.setText(NbBundle.getMessage(FixVersionConflictPanel.class,
-                "FixVersionConflictPanel.sumContent.text", part1, part2));
+        sumContent.setText(FixVersionConflictPanel_sumContent_text(part1, part2));
     }
 
 
@@ -526,7 +523,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         ArtifactGraphNode conflictNode;
         ArtifactVersion usedVersion, newestVersion;
 
-        public ExclusionTargets (ArtifactGraphNode conflictNode, ArtifactVersion newestVersion) {
+        ExclusionTargets(ArtifactGraphNode conflictNode, ArtifactVersion newestVersion) {
             this.conflictNode = conflictNode;
             this.newestVersion = newestVersion;
             this.usedVersion = new DefaultArtifactVersion(
@@ -625,7 +622,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         Artifact artif;
         boolean isSelected = false;
 
-        public ExclTargetEntry(Artifact artif, boolean isSelected) {
+        ExclTargetEntry(Artifact artif, boolean isSelected) {
             this.artif = artif;
             this.isSelected = isSelected;
         }
@@ -637,12 +634,12 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         private JList parentList;
         private FixVersionConflictPanel parentPanel;
 
-        public ExclTargetRenderer (JList list, FixVersionConflictPanel parentPanel) {
+        ExclTargetRenderer (JList list, FixVersionConflictPanel parentPanel) {
             this.parentList = list;
             this.parentPanel = parentPanel;
         }
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             ExclTargetEntry entry = (ExclTargetEntry)value;
 
             setText(entry.artif.getArtifactId());
@@ -660,7 +657,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
             return this;
         }
 
-        public void mouseClicked(MouseEvent e) {
+        @Override public void mouseClicked(MouseEvent e) {
             int idx = parentList.locationToIndex(e.getPoint());
             if (idx == -1) {
                 return;
@@ -671,7 +668,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
             }
         }
 
-        public void keyPressed(KeyEvent e) {
+        @Override public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                 doCheck();
             }
@@ -688,23 +685,17 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
             parentPanel.updateSummary();
         }
 
-        public void mousePressed(MouseEvent e) {
-        }
+        @Override public void mousePressed(MouseEvent e) {}
 
-        public void mouseReleased(MouseEvent e) {
-        }
+        @Override public void mouseReleased(MouseEvent e) {}
 
-        public void mouseEntered(MouseEvent e) {
-        }
+        @Override public void mouseEntered(MouseEvent e) {}
 
-        public void mouseExited(MouseEvent e) {
-        }
+        @Override public void mouseExited(MouseEvent e) {}
 
-        public void keyTyped(KeyEvent e) {
-        }
+        @Override public void keyTyped(KeyEvent e) {}
 
-        public void keyReleased(KeyEvent e) {
-        }
+        @Override public void keyReleased(KeyEvent e) {}
 
     } // ExclTargetRenderer
 

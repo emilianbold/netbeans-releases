@@ -46,11 +46,15 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
@@ -64,6 +68,7 @@ import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -77,12 +82,15 @@ public class AddBeanPanelVisual extends javax.swing.JPanel {
     private boolean dialogOK = false;
     private AddBeanPanel panel;
     private FileObject fileObject;
+    private final AtomicBoolean classFound = new AtomicBoolean(false);
+    private static final RequestProcessor RP = new RequestProcessor();
+
     /** Creates new form AddBeanPanelVisual */
     public AddBeanPanelVisual(AddBeanPanel panel) {
         this.panel = panel;
         fileObject = NbEditorUtilities.getFileObject(panel.getDocument());
         initComponents();
-
+        scanningLabel.setVisible(false);
         idTextField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -167,8 +175,11 @@ public class AddBeanPanelVisual extends javax.swing.JPanel {
         panel.setId(idTextField.getText());
     }
 
-
     private void validateInput() {
+        validateInput(true);
+    }
+
+    private void validateInput(boolean validateClass) {
         if (descriptor == null)
             return;
         if (idTextField.getText().length() < 1) {
@@ -187,16 +198,26 @@ public class AddBeanPanelVisual extends javax.swing.JPanel {
             descriptor.setValid(false);
             return;
         }
-        if (!validClass()) {
-            statusLine.setErrorMessage(NbBundle.getMessage(AddBeanPanelVisual.class, "Error_No_Such_class")); // NOI18N
-            descriptor.setValid(false);
-            return;
-        }
         if (beanExist()) {
             statusLine.setErrorMessage(NbBundle.getMessage(AddBeanPanelVisual.class, "Error_Bean_Already_exist")); // NOI18N
             descriptor.setValid(false);
             return;
         }
+        if (validateClass) {
+            scanningLabel.setVisible(SourceUtils.isScanInProgress());
+            RP.submit(new Runnable() {
+                @Override
+                public void run() {
+                    validClass();
+                }
+            });
+        }
+        if (!classFound.get()) {
+            statusLine.setErrorMessage(NbBundle.getMessage(AddBeanPanelVisual.class, "Error_No_Such_class")); // NOI18N
+            descriptor.setValid(false);
+            return;
+        }
+
         statusLine.clearMessages();
         descriptor.setValid(true);
     }
@@ -255,26 +276,47 @@ public class AddBeanPanelVisual extends javax.swing.JPanel {
         return found[0];
     }
 
-    private boolean validClass() {
-        final boolean[] result ={false};
-        final String name = classNameTextField.getText();
+    private void validClass() {
         JavaSource js = JavaSource.create(ClasspathInfo.create(fileObject));
-        if (js ==null) {
-            return result[0];
+        if (js == null) {
+            return;
         }
         try {
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    result[0] = parameter.getElements().getTypeElement(name) != null;
-                }
-            }, true);
+            ClassSeeker laterSeeker = new ClassSeeker();
+            Future<Void> seekingTask = js.runWhenScanFinished(laterSeeker, true);
+            if (seekingTask.isDone()) {
+                classFound.set(laterSeeker.isClassFound());
+                return;
+            }
+            ClassSeeker promptSeeker = new ClassSeeker();
+            js.runUserActionTask(promptSeeker, true);
+            classFound.set(promptSeeker.isClassFound());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return result[0];
     }
+
+    private class ClassSeeker implements Task<CompilationController> {
+
+        private final AtomicBoolean found = new AtomicBoolean(false);
+
+        public boolean isClassFound() {
+            return found.get();
+        }
+
+        @Override
+        public void run(CompilationController parameter) throws Exception {
+            found.set(parameter.getElements().getTypeElement(classNameTextField.getText()) != null);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    scanningLabel.setVisible(SourceUtils.isScanInProgress());
+                    validateInput(false);
+                }
+            });
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -283,58 +325,66 @@ public class AddBeanPanelVisual extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
         idTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         classNameTextField = new javax.swing.JTextField();
+        scanningLabel = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(420, 120));
         setRequestFocusEnabled(false);
-        setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(idTextField);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(AddBeanPanelVisual.class, "AddBeanPanelVisual.jLabel1.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(jLabel1, gridBagConstraints);
 
         idTextField.setText(org.openide.util.NbBundle.getMessage(AddBeanPanelVisual.class, "AddBeanPanelVisual.idTextField.text")); // NOI18N
         idTextField.setMinimumSize(new java.awt.Dimension(200, 27));
         idTextField.setPreferredSize(new java.awt.Dimension(450, 27));
         idTextField.setRequestFocusEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
-        add(idTextField, gridBagConstraints);
 
         jLabel2.setLabelFor(classNameTextField);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(AddBeanPanelVisual.class, "AddBeanPanelVisual.jLabel2.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(jLabel2, gridBagConstraints);
 
         classNameTextField.setText(org.openide.util.NbBundle.getMessage(AddBeanPanelVisual.class, "AddBeanPanelVisual.classNameTextField.text")); // NOI18N
         classNameTextField.setPreferredSize(new java.awt.Dimension(450, 27));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
-        add(classNameTextField, gridBagConstraints);
+
+        scanningLabel.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
+        scanningLabel.setText(org.openide.util.NbBundle.getMessage(AddBeanPanelVisual.class, "AddBeanPanelVisual.scanningLabel.text")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scanningLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(idTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                            .addComponent(classNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(idTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 18, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(classNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scanningLabel)
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -343,6 +393,7 @@ public class AddBeanPanelVisual extends javax.swing.JPanel {
     private javax.swing.JTextField idTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel scanningLabel;
     // End of variables declaration//GEN-END:variables
 
 }

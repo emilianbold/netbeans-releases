@@ -137,6 +137,7 @@ public final class OpenProjectList {
     
     // Property names
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
+    public static final String PROPERTY_WILL_OPEN_PROJECTS = "willOpenProjects"; // NOI18N
     public static final String PROPERTY_MAIN_PROJECT = "MainProject";
     public static final String PROPERTY_RECENT_PROJECTS = "RecentProjects";
     public static final String PROPERTY_REPLACE = "ReplaceProject";
@@ -579,7 +580,7 @@ public final class OpenProjectList {
                 @Override public void run() {
                     cancellation.t = Thread.currentThread();
                     try {
-                        doOpen(projects, openSubprojects, handle, cancellation);
+                        open(projects, openSubprojects, handle, cancellation);
                     } finally {
                         handle.finish();
                     }
@@ -589,7 +590,7 @@ public final class OpenProjectList {
                 }
             });
         } else {
-            doOpen(projects, openSubprojects, null, null);
+            open(projects, openSubprojects, null, null);
             if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
                 setMainProject(mainProject);
             }
@@ -606,16 +607,26 @@ public final class OpenProjectList {
         "# {0} - project display name", "OpenProjectList.finding_subprojects=Finding required projects of {0}",
         "# {0} - project path", "OpenProjectList.deleted_project={0} seems to have been deleted."
     })
-    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
+    public void open(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
+        pchSupport.firePropertyChange(PROPERTY_WILL_OPEN_PROJECTS, null, projects);
+        for (int i = 0; i < projects.length; i++) {
+            try {
+                projects[i] = ProjectManager.getDefault().findProject(projects[i].getProjectDirectory());
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+            }
+        }
             
         try {
             LOAD.enter();
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
-        int  workForSubprojects = maxWork / 2;
+        double workForSubprojects = maxWork / (openSubprojects ? 2.0 : 10.0);
         double currentWork = 0;
         Collection<Project> projectsToOpen = new LinkedHashSet<Project>();
         

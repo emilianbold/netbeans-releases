@@ -110,6 +110,7 @@ public class RepositoryWritingThread implements Runnable {
     private int numOfSpareCycles = 0;
     private boolean maintenanceIsNeeded = true;
     
+    @Override
     public void run() {
         if (Stats.queueTrace) { System.err.printf("%s: started.\n", getName()); }
         

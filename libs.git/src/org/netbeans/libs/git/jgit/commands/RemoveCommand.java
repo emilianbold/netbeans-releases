@@ -56,6 +56,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -70,8 +71,8 @@ public class RemoveCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final boolean cached;
 
-    public RemoveCommand (Repository repository, File[] roots, boolean cached, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public RemoveCommand (Repository repository, GitClassFactory gitFactory, File[] roots, boolean cached, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.listener = listener;
         this.monitor = monitor;

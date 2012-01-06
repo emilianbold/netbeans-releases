@@ -56,9 +56,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
@@ -181,25 +181,28 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     final ElementUtilities elmUtils = info.getElementUtilities();
 
                     //add all references of overriding methods
-                    Element el = treePathHandle.resolveElement(info);
+                    ExecutableElement el = (ExecutableElement)treePathHandle.resolveElement(info);
+                    ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(el);
                     ElementHandle<TypeElement>  enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
-                        allMethods = new HashSet<ElementHandle<ExecutableElement>>();
-                        allMethods.add(ElementHandle.create((ExecutableElement)el));
-                        for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods((ExecutableElement)el, info)) {
-                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-                            ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
-                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            allMethods.add(ElementHandle.create(e));
-                        }
-                        //add all references of overriden methods
-                        for (ExecutableElement e:JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)el, info)) {
-                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-                            ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
-                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            allMethods.add(ElementHandle.create(e));
-                        }
-                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                        set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
+                    allMethods = new HashSet<ElementHandle<ExecutableElement>>();
+                    allMethods.add(methodHandle);
+                    for (ExecutableElement e:JavaRefactoringUtils.getOverridingMethods(el, info)) {
+                        ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+                        set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
+                        ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
+                        set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        allMethods.add(ElementHandle.create(e));
+                    }
+                    //add all references of overriden methods
+                    for (ExecutableElement e:JavaRefactoringUtils.getOverriddenMethods(el, info)) {
+                        ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+                        set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
+                        ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
+                        set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        allMethods.add(ElementHandle.create(e));
+                    }
+                    set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                    set.add(SourceUtils.getFile(methodHandle, info.getClasspathInfo()));
                 }
             }, true);
         } catch (IOException ioe) {
@@ -282,7 +285,8 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         
         for (ExecutableElement e : JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) el, info)) {
-            if (RefactoringUtils.isFromLibrary(e, info.getClasspathInfo())) { //NOI18N
+            ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+            if (RefactoringUtils.isFromLibrary(handle, info.getClasspathInfo())) { //NOI18N
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_CannnotRefactorLibrary", el)); // NOI18N
             }
         }

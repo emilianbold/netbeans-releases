@@ -43,9 +43,13 @@
 package org.netbeans.modules.maven.profiler;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
@@ -55,6 +59,7 @@ import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -67,6 +72,8 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     private static final String ACTION_PROFILE = "profile"; // NOI18N
     private static final String ACTION_PROFILE_SINGLE = "profile-single"; // NOI18N
         private static final String ACTION_PROFILE_TESTS = "profile-tests"; // NOI18N
+
+    private static final Logger LOG = Logger.getLogger(RunCheckerImpl.class.getName());
     
 //    private static final String EXEC_ARGS = "exec.args"; // NOI18N
     private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
@@ -106,16 +113,12 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
                 
                 String value = configProperties.get(key);
                 if (value.contains(PROFILER_ARGS)) {
-                    String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
-                    value = value.replace(PROFILER_ARGS, sessionProperties.getProperty("profiler.info.jvmargs") // NOI18N
-                            + " " + agentArg); // NOI18N
+                    value = value.replace(PROFILER_ARGS, profilerArgs(sessionProperties, false));
                     config.setProperty(key, value.trim());
                 }
                 if (value.contains(PROFILER_ARGS_PREFIXED)) {
-                    String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
-                    value = value.replace(PROFILER_ARGS_PREFIXED,
-                            (sessionProperties.getProperty("profiler.info.jvmargs") + " " + agentArg).trim().replaceAll("^|(?<= +)(?! )", "-J"));
-                    config.setProperty(key, value);
+                    value = value.replace(PROFILER_ARGS_PREFIXED, profilerArgs(sessionProperties, true));
+                    config.setProperty(key, value.trim());
                 }
                 if (value.contains(PROFILER_JAVA)) {
                     String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
@@ -129,7 +132,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
                     if (profilerJava != null) {
                         File binJava = new File(profilerJava);
                         if (binJava.isFile() && binJava.getName().matches("java([.]exe)?") && binJava.getParentFile().getName().equals("bin")) {
-                            opt = "--jdkhome " + binJava.getParentFile().getParent();
+                            String jdkhome = binJava.getParentFile().getParent();
+                            opt = Utilities.escapeParameters(new String[] {"--jdkhome", jdkhome});
+                            LOG.log(Level.FINE, "from {0} escaped {1}", new Object[] {jdkhome, opt});
                         }
                     }
                     value = value.replace(PROFILER_JDKHOME_OPT, opt);
@@ -155,15 +160,20 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         return true;
     }
 
-    private String fixAgentArg(String agentArg) {
-        // !!!!!!!!!!!!!!!!!!!!!!!! Never remove this replacement !!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !! It is absolutely needed for correct profiling of maven projects on Windows  !!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        agentArg = agentArg.replace("\\", "/"); // NOI18N
-
-        if (agentArg.indexOf(' ') != -1) { //NOI18N
-            return "\"" + agentArg + "\""; // NOI18N
+    private String profilerArgs(Properties sessionProperties, boolean prefixed) {
+        List<String> args = new ArrayList<String>();
+        String jvmargs = sessionProperties.getProperty("profiler.info.jvmargs");
+        for (String arg : Utilities.parseParameters(jvmargs)) {
+            args.add(prefixed ? "-J" + arg : arg);
         }
-        return agentArg;
+        String agentarg = sessionProperties.getProperty("profiler.info.jvmargs.agent");
+        if (Utilities.isWindows()) {
+            agentarg = agentarg.replace('\\', '/'); // XXX is this still necessary given quoting?
+        }
+        args.add(prefixed ? "-J" + agentarg : agentarg);
+        String escaped = Utilities.escapeParameters(args.toArray(new String[args.size()]));
+        LOG.log(Level.FINE, "from {0} and {1} produced {2}", new Object[] {jvmargs, agentarg, escaped});
+        return escaped;
     }
+
 }

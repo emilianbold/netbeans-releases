@@ -226,13 +226,13 @@ public final class RunAsValidator {
     public static String composeUrlHint(String baseURL, String indexFile, String args) throws InvalidUrlException {
         URL retval = null;
         try {
-            if (baseURL != null && baseURL.trim().length() > 0) {
+            if (StringUtils.hasText(baseURL)) {
                 retval = new URL(baseURL);
             }
-            if (retval != null && indexFile != null && indexFile.trim().length() > 0) {
+            if (retval != null && StringUtils.hasText(indexFile)) {
                 retval = new URL(retval, indexFile);
             }
-            if (retval != null && args != null && args.trim().length() > 0) {
+            if (retval != null && StringUtils.hasText(args)) {
                 retval = new URI(retval.getProtocol(), retval.getUserInfo(), retval.getHost(), retval.getPort(),
                         retval.getPath(), args, retval.getRef()).toURL();
             }

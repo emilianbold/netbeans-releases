@@ -58,7 +58,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -73,10 +72,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitFileInfo;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.RevisionInfoListener;
@@ -173,7 +170,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            GitRevisionInfo revision = (GitRevisionInfo) value;
+            GitRevisionInfoDelegate revision = (GitRevisionInfoDelegate) value;
             StyledDocument sd = getStyledDocument();
 
             Style style;
@@ -256,7 +253,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         private final List<GitRevisionInfo> revisions = new LinkedList<GitRevisionInfo>();
         private final Set<String> displayedRevisions = new HashSet<String>(10);
         private boolean reselected;
-        private GitRevisionInfo selectedRevision;
+        private GitRevisionInfoDelegate selectedRevision;
         private int limit;
         
         @Override
@@ -286,11 +283,11 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
-                            selectedRevision = (GitRevisionInfo) lstRevisions.getSelectedValue();
+                            selectedRevision = (GitRevisionInfoDelegate) lstRevisions.getSelectedValue();
                             displayedRevisions.clear();
                             if (add) {
                                 for (Object o : revisionListModel.toArray()) {
-                                    displayedRevisions.add(((GitRevisionInfo) o).getRevision());
+                                    displayedRevisions.add(((GitRevisionInfoDelegate) o).getRevision());
                                 }
                             } else {
                                 revisionListModel.clear();
@@ -356,7 +353,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                 public void run () {
                     synchronized (revisions) {
                         while (!revisions.isEmpty()) {
-                            GitRevisionInfo info = new GitRevisionInfoDelegate(revisions.remove(0));// override toString, so one can Ctrl+C the revision string
+                            GitRevisionInfoDelegate info = new GitRevisionInfoDelegate(revisions.remove(0));// override toString, so one can Ctrl+C the revision string
                             if ((limit < 0 || limit > revisionListModel.getSize()) && !displayedRevisions.contains(info.getRevision())) {
                                 revisionListModel.addElement(info);
                                 if (!reselected && selectedRevision != null && info.getRevision().equals(selectedRevision.getRevision())) {
@@ -381,56 +378,20 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         }
     }
     
-    private static class GitRevisionInfoDelegate implements GitRevisionInfo {
+    private static class GitRevisionInfoDelegate {
         private final GitRevisionInfo info;
 
         public GitRevisionInfoDelegate (GitRevisionInfo info) {
             this.info = info;
         }
 
-        @Override
         public String getRevision () {
             return info.getRevision();
         }
 
         @Override
-        public String getShortMessage () {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String getFullMessage () {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public long getCommitTime () {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public GitUser getAuthor () {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public GitUser getCommitter () {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Map<File, GitFileInfo> getModifiedFiles () throws GitException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public String toString () {
             return getRevision();
-        }
-
-        @Override
-        public String[] getParents () {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

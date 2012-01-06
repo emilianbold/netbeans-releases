@@ -69,6 +69,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
 
     private static final Logger LOGGER = Logger.getLogger(CoherenceInstanceProvider.class.getName());
     private static final Map<Integer, ServerInstance> instances = new HashMap<Integer, ServerInstance>();
+    private static final List<CoherenceInstance> coherenceInstances = new ArrayList<CoherenceInstance>();
     private static volatile CoherenceInstanceProvider provider;
 
     private static volatile boolean initialized = false;
@@ -89,6 +90,17 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
             }
 
             return result;
+        }
+    }
+
+    public List<CoherenceInstance> getCoherenceInstances() {
+        synchronized (instances) {
+            if (!initialized) {
+                initialized = true;
+                init();
+            }
+
+            return coherenceInstances;
         }
     }
 
@@ -135,6 +147,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
             List<InstanceProperties> properties = InstancePropertiesManager.getInstance().getProperties(COHERENCE_INSTANCES_NS);
             for (InstanceProperties instanceProperties : properties) {
                 CoherenceInstance coherenceInstance = CoherenceInstance.create(instanceProperties);
+                coherenceInstances.add(coherenceInstance);
                 instances.put(coherenceInstance.getId(), coherenceInstance.getServerInstance());
             }
         }
@@ -146,6 +159,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
     public void addServerInstance(CoherenceInstance coherenceInstance) {
         synchronized (instances) {
             instances.put(coherenceInstance.getId(), coherenceInstance.getServerInstance());
+            coherenceInstances.add(coherenceInstance);
             changeSupport.fireChange();
         }
     }
@@ -156,6 +170,7 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
     public void removeServerInstance(CoherenceInstance coherenceInstance) {
         synchronized (instances) {
             instances.remove(coherenceInstance.getId());
+            coherenceInstances.remove(coherenceInstance);
             coherenceInstance.getProperties().remove();
             changeSupport.fireChange();
         }

@@ -46,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitFileInfo;
@@ -374,17 +376,7 @@ public class LogTest extends AbstractGitTestCase {
         add(files);
 
         GitClient client = getClient(workDir);
-        GitUser user1 = new GitUser() {
-            @Override
-            public String getName () {
-                return "git-test-user";
-            }
-
-            @Override
-            public String getEmailAddress () {
-                return "git-test-user@domain.com";
-            }
-        };
+        GitUser user1 = ApiUtils.getClassFactory().createUser(new PersonIdent("git-test-user", "git-test-user@domain.com"));
         GitRevisionInfo revision1 = client.commit(files, "modification1", user1, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
 
         write(f, "modification2");

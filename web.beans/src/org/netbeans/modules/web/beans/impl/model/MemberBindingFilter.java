@@ -162,8 +162,12 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
             impl.getHelper().getCompilationController().getElements().
                     getAllAnnotationMirrors( element);
         for (AnnotationMirror annotationMirror : annotationMirrors) {
-            Name name = ((TypeElement)annotationMirror.getAnnotationType().asElement()).
-                getQualifiedName();
+            TypeElement annotation = (TypeElement)annotationMirror.
+                getAnnotationType().asElement();
+            if ( annotation == null ){
+                continue;
+            }
+            Name name = annotation.getQualifiedName();
             if ( NON_BINDING_MEMBER_ANNOTATION.contentEquals(name)){
                 return false;
             }

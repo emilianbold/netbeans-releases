@@ -126,7 +126,7 @@ public class InitAction implements ActionListener, HelpCtx.Provider {
                 try {
                     output(NbBundle.getMessage(InitAction.class, "MSG_INIT", rootToManage)); // NOI18N
                     GitClient client = getClient();
-                    client.init(this);
+                    client.init(getProgressMonitor());
                     Git.getInstance().getFileStatusCache().refreshAllRoots(rootToManage);
                     Git.getInstance().versionedFilesChanged();                       
                 } catch (GitException ex) {

@@ -46,6 +46,7 @@ import java.util.Collections;
 import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
+import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 
 /**
  *
@@ -54,10 +55,10 @@ import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
 public class DefaultType implements IType {
     
     private final String typeName;
-    private final TypeRepository typeRepository;
+    private final ITypeRepository typeRepository;
     private ITypeDeclaration typeDeclaration;
     
-    DefaultType(TypeRepository typeRepository, String typeName){
+    DefaultType(ITypeRepository typeRepository, String typeName){
         this.typeRepository = typeRepository;
         this.typeName = typeName;
     }

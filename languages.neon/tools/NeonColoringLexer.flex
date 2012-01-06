@@ -151,7 +151,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 IDENTIFIER=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff\.]*"!"?
-KEYWORD=("true" | "TRUE" | "false" | "FALSE" | "yes" | "YES" | "no" | "NO" | "null" | "NULL")
+KEYWORD=("true" | "TRUE" | "false" | "FALSE" | "yes" | "YES" | "no" | "NO" | "null" | "NULL" | "not" | "self")
 WHITESPACE=[ \t]+
 NEWLINE=("\r"|"\n"|"\r\n")
 ZERO=0
@@ -176,7 +176,7 @@ VARIABLE="%"{LITERAL}"%"?
 ARRAY_KEY=({REFERENCE} | {LITERAL} | {STRING} | {NUMBER}){WHITESPACE}*(":"|"=")
 ARRAY_VALUE={WHITESPACE}*({REFERENCE} | {LITERAL} | {STRING} | {NUMBER} | {VARIABLE} | {KEYWORD}){WHITESPACE}*
 BLOCK_HEADER={IDENTIFIER}({WHITESPACE}*"<"{WHITESPACE}*{IDENTIFIER})?{WHITESPACE}*":"{WHITESPACE}*({NEWLINE} | {COMMENT})
-COMMENT="#"[^"\r""\n""\r\n")]*
+COMMENT="#"[^"\r""\n""\r\n"]*
 BLOCK_ARRAY_SEPARATOR=":" | "="
 REFERENCE="@"({IDENTIFIER} | "\\")+
 

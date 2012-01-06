@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  * @author Jan Pokorsky
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.ExtractSuperclassAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_ExtractSC_Action")
+@ActionRegistration(displayName = "#LBL_ExtractSC_Action", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ExtractSuperclassAction", position = 800)
 public final class ExtractSuperclassAction extends JavaRefactoringGlobalAction {
 

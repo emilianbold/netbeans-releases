@@ -479,8 +479,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
 
-        final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision")); // NOI18N
-
         // annotation for target line
         AnnotateLine al = null;
         if (elementAnnotations != null) {
@@ -497,105 +495,93 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // source line in the original file this line annotation represents
         final int sourceLine = al == null ? -1 : al.getSourceLineNum();
         
-        diffMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
-                pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
-                    @Override
-                    public void run() {
-                        SystemAction.get(DiffAction.class).diff(originalFile, pri.getPreviousRevision(), revisionPerLine.getRevision());
-                    }
-                }, true, null);
-            }
-        });
-        popupMenu.add(diffMenu);
-
-        final JMenuItem checkoutMenu = new JMenuItem();
-        checkoutMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                checkout(file, revisionPerLine.getRevision());
-            }
-        });
-        popupMenu.add(checkoutMenu);
-        checkoutMenu.setEnabled(revisionCanBeRolledBack);
-
-        // an action showing annotation for line's revisions
-        final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotationsPrevious", revisionPerLine.getRevision().substring(0, 7))); //NOI18N
-        annotationsForSelectedItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new GitProgressSupport() {
-                    @Override
-                    protected void perform () {
-                        try {
-                            GitUtils.openInRevision(originalFile, sourceLine , revisionPerLine.getRevision(), true, this);
-                        } catch (IOException ex) {
-                            //
-                        }
-                    }
-                }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
-            }
-        });
-        popupMenu.add(annotationsForSelectedItem);
-
-        // an action showing annotation for previous revisions
-        final JMenuItem previousAnnotationsMenu = new JMenuItem();
-        previousAnnotationsMenu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
-                pri.runWithRevision (Git.getInstance().getRequestProcessor(repositoryRoot), new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            String previousRevision = pri.getPreviousRevision();
-                            GitUtils.openInRevision(originalFile, -1, previousRevision, true, pri);
-                        } catch (IOException ex) {
-                            //
-                        }
-                    }
-                }, false, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
-            }
-        });
-        popupMenu.add(previousAnnotationsMenu);
-
-        if(isKenai() && al != null) {
-            String author = al.getAuthor().toString();
-            final int lineNr = al.getLineNum();
-            final KenaiUser ku = kenaiUsersMap.get(author);
-            if(ku != null) {
-                popupMenu.addSeparator();
-                JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
-                chatMenu.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
-                    }
-                });
-                popupMenu.add(chatMenu);
-            }
-        }
-
-        JMenuItem menu;
-        menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
-        menu.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                hideBar();
-            }
-        });
-        JSeparator separator = new JPopupMenu.Separator();
-        popupMenu.add(separator);
-        popupMenu.add(menu);
-
-        diffMenu.setVisible(false);
-        annotationsForSelectedItem.setVisible(false);
-        previousAnnotationsMenu.setVisible(false);
-        checkoutMenu.setVisible(false);
-        separator.setVisible(false);
         if (revisionPerLine != null) {
+            final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision")); // NOI18N
+            diffMenu.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
+                    pri.runWithRevision(Git.getInstance().getRequestProcessor(), new Runnable() {
+                        @Override
+                        public void run() {
+                            SystemAction.get(DiffAction.class).diff(originalFile, pri.getPreviousRevision(), revisionPerLine.getRevision());
+                        }
+                    }, true, null);
+                }
+            });
+            popupMenu.add(diffMenu);
+
+            final JMenuItem checkoutMenu = new JMenuItem();
+            checkoutMenu.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    checkout(file, revisionPerLine.getRevision());
+                }
+            });
+            popupMenu.add(checkoutMenu);
+            checkoutMenu.setEnabled(revisionCanBeRolledBack);
+
+            // an action showing annotation for line's revisions
+            final JMenuItem annotationsForSelectedItem = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_ShowAnnotationsPrevious", revisionPerLine.getRevision().substring(0, 7))); //NOI18N
+            annotationsForSelectedItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    new GitProgressSupport() {
+                        @Override
+                        protected void perform () {
+                            try {
+                                GitUtils.openInRevision(originalFile, sourceLine , revisionPerLine.getRevision(), true, getProgressMonitor());
+                            } catch (IOException ex) {
+                                //
+                            }
+                        }
+                    }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
+                }
+            });
+            popupMenu.add(annotationsForSelectedItem);
+
+            // an action showing annotation for previous revisions
+            final JMenuItem previousAnnotationsMenu = new JMenuItem();
+            previousAnnotationsMenu.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    final PreviousRevisionInvoker pri = new PreviousRevisionInvoker(originalFile, revisionPerLine);
+                    pri.runWithRevision (Git.getInstance().getRequestProcessor(repositoryRoot), new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                String previousRevision = pri.getPreviousRevision();
+                                GitUtils.openInRevision(originalFile, -1, previousRevision, true, pri.getProgressMonitor());
+                            } catch (IOException ex) {
+                                //
+                            }
+                        }
+                    }, false, NbBundle.getMessage(AnnotationBar.class, "MSG_Annotation_Progress")); //NOI18N
+                }
+            });
+            popupMenu.add(previousAnnotationsMenu);
+            previousAnnotationsMenu.setVisible(false);
+
+            if(isKenai() && al != null) {
+                String author = al.getAuthor().toString();
+                final int lineNr = al.getLineNum();
+                final KenaiUser ku = kenaiUsersMap.get(author);
+                if(ku != null) {
+                    popupMenu.addSeparator();
+                    JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
+                    chatMenu.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
+                        }
+                    });
+                    popupMenu.add(chatMenu);
+                }
+            }
+
+            JSeparator separator = new JPopupMenu.Separator();
+            popupMenu.add(separator);
+
             String key = getKeyFor(originalFile, revisionPerLine.getRevision());
             String previousRevision = getPreviousRevisions().get(key); // get from cache
             boolean hasPrevious = previousRevision != null || !getPreviousRevisions().containsKey(key);
@@ -633,6 +619,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 previousAnnotationsMenu.setEnabled(!"-1".equals(previousRevision)); //NOI18N
             }
         }
+        JMenuItem closeMenu;
+        closeMenu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
+        closeMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                hideBar();
+            }
+        });
+        popupMenu.add(closeMenu);
 
         return popupMenu;
     }
@@ -693,11 +688,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 GitRevisionInfo parentInfo = null;
                 try {
                     if (revision.getParents().length == 1) {
-                        parentInfo = getClient().getPreviousRevision(file, revision.getRevision(), this);
+                        parentInfo = getClient().getPreviousRevision(file, revision.getRevision(), getProgressMonitor());
                     }
                     if (parentInfo == null) {
                         // fallback for merges and initial revisoin
-                        parentInfo = getClient().getCommonAncestor(revision.getParents(), this);
+                        parentInfo = getClient().getCommonAncestor(revision.getParents(), getProgressMonitor());
                     }
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);

@@ -41,10 +41,11 @@
  */
 package org.netbeans.updater;
 
-import java.io.FileOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Properties;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -53,6 +54,7 @@ import org.netbeans.junit.NbTestCase;
 public class ModuleUpdaterConfigTest extends NbTestCase {
     private File props;
     private File cluster;
+    private static String DRIVE = Utilities.isWindows() ? "C:" : "";
     
     public ModuleUpdaterConfigTest(String s) {
         super(s);
@@ -63,7 +65,7 @@ public class ModuleUpdaterConfigTest extends NbTestCase {
         clearWorkDir();
         
         Properties p = new Properties();
-        p.setProperty("relativeClassPath", "%FS%jarda%PS%%FS%darda%PS%%FS%parda");
+        p.setProperty("relativeClassPath", DRIVE + "%FS%jarda%PS%" + DRIVE + "%FS%darda%PS%" + DRIVE + "%FS%parda");
         
         props = new File(getWorkDir(), "p.properties");
         FileOutputStream os = new FileOutputStream(props);
@@ -76,8 +78,8 @@ public class ModuleUpdaterConfigTest extends NbTestCase {
     
     public void testMainConfigParsesPathSeparator() {
         ModuleUpdater.MainConfig mc = new ModuleUpdater.MainConfig(props.getPath(), cluster);
-        String exp = File.separator + "jarda" + File.pathSeparator + File.separator + "darda" + File.pathSeparator + File.separator + "parda";
-        if (!mc.getClasspath().contains(exp)) {
+        String exp = File.pathSeparator + DRIVE + File.separator + "jarda" + File.pathSeparator + DRIVE + File.separator + "darda" + File.pathSeparator + DRIVE + File.separator + "parda";
+        if (!mc.getClasspath().equals(exp)) {
             fail("Expecting " + exp + " but was: " + mc.getClasspath());
         }
     }

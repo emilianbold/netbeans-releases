@@ -90,8 +90,6 @@ import static org.netbeans.api.java.source.ModificationResult.*;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 import org.netbeans.modules.java.source.builder.TreeFactory;
-import org.netbeans.modules.java.source.engine.SourceReader;
-import org.netbeans.modules.java.source.engine.SourceRewriter;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
@@ -300,34 +298,25 @@ public class WorkingCopy extends CompilationController {
     
     // Package private methods -------------------------------------------------        
     
-    private static void commit(CompilationUnitTree topLevel, List<Diff> diffs, SourceRewriter out) throws IOException, BadLocationException {
-        SourceReader in = null;
-        try {
-            String s = codeForCompilationUnit(topLevel);
-            char[] buf = s.toCharArray();
-            in = new SourceReader(buf);
+    private static void commit(CompilationUnitTree topLevel, List<Diff> diffs, Rewriter out) throws IOException, BadLocationException {
+        String s = codeForCompilationUnit(topLevel);
+        char[] buf = s.toCharArray();
 
-            // Copy any leading comments.
-            for (Diff d : diffs) {
-                switch (d.type) {
-                    case INSERT:
-                        out.copyTo(in, d.getPos());
-                        out.writeTo(d.getText());
-                        break;
-                    case DELETE:
-                        out.copyTo(in, d.getPos());
-                        out.skipThrough(in, d.getEnd());
-                        break;
-                    default:
-                        throw new AssertionError("unknown CasualDiff type: " + d.type);
-                }
+        // Copy any leading comments.
+        for (Diff d : diffs) {
+            switch (d.type) {
+                case INSERT:
+                    out.copyTo(d.getPos());
+                    out.writeTo(d.getText());
+                    break;
+                case DELETE:
+                    out.copyTo(d.getPos());
+                    out.skipThrough(buf, d.getEnd());
+                    break;
+                default:
+                    throw new AssertionError("unknown CasualDiff type: " + d.type);
             }
-            out.copyRest(in);
-        } finally {
-            if (in != null)
-                in.close();
         }
-        
     }
 
     private static String codeForCompilationUnit(CompilationUnitTree topLevel) throws IOException {
@@ -686,7 +675,7 @@ public class WorkingCopy extends CompilationController {
     }
     
     // Innerclasses ------------------------------------------------------------
-    private static class Rewriter implements SourceRewriter {
+    private static class Rewriter {
 
         private int offset = 0;
         private CloneableEditorSupport ces;
@@ -717,29 +706,22 @@ public class WorkingCopy extends CompilationController {
             }
         }
 
-        public void skipThrough(SourceReader in, int pos) throws IOException, BadLocationException {
-            char[] buf = in.getCharsTo(pos);
+        public void skipThrough(char[] in, int pos) throws IOException, BadLocationException {
+            String origText = new String(in, offset, pos - offset);
             Difference diff = diffs.size() > 0 ? diffs.get(diffs.size() - 1) : null;
             if (diff != null && diff.getKind() == Difference.Kind.INSERT && diff.getStartPosition().getOffset() == offset) {
                 diff.kind = Difference.Kind.CHANGE;
-                diff.oldText = new String(buf);
+                diff.oldText = origText;
             } else {
                 int off = converter != null ? converter.getOriginalPosition(offset) : offset;
                 if (off >= 0)
-                    diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off + buf.length, Bias.Backward), new String(buf), null, userInfo.get(offset)));
+                    diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off + origText.length(), Bias.Backward), origText, null, userInfo.get(offset)));
             }
-            offset += buf.length;
+            offset = pos;
         }
 
-        public void copyTo(SourceReader in, int pos) throws IOException {
-            char[] buf = in.getCharsTo(pos);
-            offset += buf.length;
-        }
-
-        public void copyRest(SourceReader in) throws IOException {
-        }
-
-        public void close(boolean save) {
+        public void copyTo(int pos) throws IOException {
+            offset = pos;
         }
     }
 }

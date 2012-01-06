@@ -45,7 +45,6 @@
 package org.netbeans.modules.refactoring.java.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.UIUtilities;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;

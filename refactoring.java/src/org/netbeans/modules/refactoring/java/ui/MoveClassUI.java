@@ -55,7 +55,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -121,6 +120,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
                     new MessageFormat(getString("LBL_MoveClassNamed")).format (
                     new Object[] {javaObject.getPrimaryFile().getName()}
                 ),
+                getString("LBL_MoveWithoutReferences"),
                 targetFolder != null ? targetFolder : (javaObject != null ? javaObject.getPrimaryFile(): null)
             );
             panel.setCombosEnabled(!disable);
@@ -182,7 +182,7 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public boolean isRefactoringBypassRequired() {
-        return !panel.isUpdateReferences();
+        return panel != null && panel.isRefactoringBypassRequired();
     }
     @Override
     public void doRefactoringBypass() throws IOException {

@@ -41,7 +41,6 @@
  */
 package org.netbeans.libs.git.jgit.commands;
 
-import org.netbeans.libs.git.jgit.JGitRemoteConfig;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +49,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -60,8 +60,8 @@ public class GetRemotesCommand extends GitCommand {
 
     private Map<String, GitRemoteConfig> remotes;
     
-    public GetRemotesCommand (Repository repository, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public GetRemotesCommand (Repository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class GetRemotesCommand extends GitCommand {
             List<RemoteConfig> configs = RemoteConfig.getAllRemoteConfigs(repository.getConfig());
             remotes = new HashMap<String, GitRemoteConfig>(configs.size());
             for (RemoteConfig remote : configs) {
-                remotes.put(remote.getName(), new JGitRemoteConfig(remote));
+                remotes.put(remote.getName(), getClassFactory().createRemoteConfig(remote));
             }
         } catch (URISyntaxException ex) {
             throw new GitException(ex);

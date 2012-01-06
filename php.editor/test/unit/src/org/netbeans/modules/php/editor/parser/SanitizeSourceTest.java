@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -57,7 +57,7 @@ import org.openide.filesystems.FileObject;
  * @author Petr Pisl
  */
 public class SanitizeSourceTest extends ParserTestBase {
-    
+
     public SanitizeSourceTest(String testName) {
         super(testName);
     }
@@ -71,7 +71,7 @@ public class SanitizeSourceTest extends ParserTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     public void testSanitizeClass01() throws Exception {
         performTest("sanitize/sanitize001");
     }
@@ -96,12 +96,12 @@ public class SanitizeSourceTest extends ParserTestBase {
         // more } at the end
         performTest("sanitize/curly02");
     }
-    
+
     public void testMissingEndCurly3() throws Exception {
-        // more } at the end without end php ?> 
+        // more } at the end without end php ?>
         performTest("sanitize/curly03");
     }
-    
+
     public void testMissingEndCurly4() throws Exception {
         // inner functions
         performTest("sanitize/curly04");
@@ -111,17 +111,17 @@ public class SanitizeSourceTest extends ParserTestBase {
         // non finished class and method and blog
         performTest("sanitize/curly05");
     }
-    
+
     public void testMissingEndCurly6() throws Exception {
         // non finished class and method and blog 2
         performTest("sanitize/curly06", "if ($a) {^");
     }
-    
+
     public void testMissingEndCurly7() throws Exception {
         // non finieshed class and method
         performTest("sanitize/curly07");
     }
-    
+
     public void testMissingEndCurly8() throws Exception {
         // non finished class
         performTest("sanitize/curly08");
@@ -131,7 +131,7 @@ public class SanitizeSourceTest extends ParserTestBase {
         // non finished class
         performTest("sanitize/sanitize005");
     }
-    
+
     public void testUnfinishedVar() throws Exception {
         // non finished class
         performTest("sanitize/sanitize006");
@@ -206,16 +206,17 @@ public class SanitizeSourceTest extends ParserTestBase {
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
-                assertTrue(r instanceof ParserResult);
-                PHPParseResult phpResult = (PHPParseResult)r;
-                Program program = phpResult.getProgram();
+                if (r != null) {
+                    assertTrue(r instanceof ParserResult);
+                    PHPParseResult phpResult = (PHPParseResult)r;
+                    Program program = phpResult.getProgram();
 
-                if (program != null) {
-                    textresult.append((new PrintASTVisitor()).printTree(program, 0));
-                } else {
-                    textresult.append("Program is null");
+                    if (program != null) {
+                        textresult.append((new PrintASTVisitor()).printTree(program, 0));
+                    } else {
+                        textresult.append("Program is null");
+                    }
                 }
-
             }
         });
 

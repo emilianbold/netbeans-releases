@@ -91,17 +91,10 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isValid() {
-        PhpUnit phpUnit = null;
         try {
-            phpUnit = PhpUnit.getCustom(phpUnitOptionsPanel.getPhpUnit());
+            PhpUnit.getCustom(phpUnitOptionsPanel.getPhpUnit());
         } catch (InvalidPhpProgramException ex) {
             phpUnitOptionsPanel.setWarning(ex.getLocalizedMessage());
-            return true;
-        }
-        assert phpUnit != null;
-        String warning = PhpUnit.validateVersion(phpUnit);
-        if (warning != null) {
-            phpUnitOptionsPanel.setWarning(warning);
             return true;
         }
 
@@ -143,8 +136,6 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
     public void stateChanged(ChangeEvent e) {
         if (!changed) {
             changed = true;
-            // #202620 - #isValid() is called several times in a row, reset PhpUnit version only once
-            PhpUnit.resetVersion();
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);

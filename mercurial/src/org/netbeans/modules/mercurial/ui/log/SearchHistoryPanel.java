@@ -47,42 +47,64 @@ package org.netbeans.modules.mercurial.ui.log;
 import java.awt.Color;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.util.NoContentPanel;
-import javax.swing.*;
 import java.io.File;
-import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.ui.log.SummaryView.HgLogEntry;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
+import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 
 /**
  * Contains all components of the Search History panel.
  *
  * @author Maros Sandor
  */
-class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener, DiffSetupSource, DocumentListener {
+class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, DiffSetupSource, DocumentListener, ActionListener {
 
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
     
-    private Divider                 divider;
     private Action                  searchAction;
     private SearchExecutor          currentSearch;
-    private RequestProcessor.Task   currentSearchTask;
+    private Search                  currentAdditionalSearch;
 
     private boolean                 criteriaVisible;
     private boolean                 searchInProgress;
@@ -95,6 +117,33 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private AbstractAction prevAction;
     private SearchHistoryTopComponent.DiffResultsViewFactory diffViewFactory;
     private String currentBranch;
+    private int showingResults;
+    private Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap;
+    private List<HgLogEntry> logEntries;
+    
+    private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
+    private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
+
+    enum FilterKind {
+        ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
+        MESSAGE(SearchHighlight.Kind.MESSAGE, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.Message")), //NOI18N
+        USER(SearchHighlight.Kind.AUTHOR, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.User")), //NOI18N
+        ID(SearchHighlight.Kind.REVISION, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.Commit")), //NOI18N
+        FILE(SearchHighlight.Kind.FILE, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.File")); //NOI18N
+        private String label;
+        private Kind kind;
+        
+        FilterKind (SearchHighlight.Kind kind, String label) {
+            this.kind = kind;
+            this.label = label;
+        }
+        
+        @Override
+        public final String toString () {
+            return label;
+        }
+    }
+    private final Timer filterTimer;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
@@ -106,6 +155,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();
+        initializeFilter();
+        filterTimer = new Timer(500, this);
+        filterTimer.stop();
         setupComponents();
         aquaBackgroundWorkaround();
         refreshComponents(true);
@@ -117,7 +169,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             setBackground(color); 
             jToolBar1.setBackground(color); 
             resultsPanel.setBackground(color); 
-            jPanel1.setBackground(color); 
             searchCriteriaPanel.setBackground(color); 
             criteria.setBackground(color); 
         }
@@ -133,25 +184,15 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
 
-    public void disableFileChangesOption(boolean b) {
-        fileInfoCheckBox.setEnabled(false);
-        fileInfoCheckBox.setSelected(false);
-    }
-
     void setOutSearch() {
         criteria.setForOut();
         bOutSearch = true;
         tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutSummary"));
-        showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowMerges"));
         tbDiff.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowDiff"));
     }
 
     boolean isOutSearch() {
         return bOutSearch;
-    }
-
-    boolean isShowMerges() {
-        return showMergesChkBox.isSelected();
     }
 
     boolean isShowInfo() {
@@ -165,7 +206,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         tbDiff.setVisible(false);
         bNext.setVisible(false);
         bPrev.setVisible(false);
-        showMergesChkBox.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingShowMerges"));
         tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingSummary"));
     }
     
@@ -178,19 +218,23 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(false);
     }
 
+    private void cancelBackgroundSearch () {
+        if (currentSearch != null) {
+            currentSearch.cancel();
+        }
+        if (currentAdditionalSearch != null) {
+            currentAdditionalSearch.cancel();
+        }
+    }
+
+    private void enableFilters (boolean enabled) {
+        lblFilter.setEnabled(enabled);
+        cmbFilterKind.setEnabled(enabled);
+        lblFilterContains.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
+        txtFilter.setEnabled(enabled && cmbFilterKind.getSelectedItem() != FilterKind.ALL);
+    }
+
     private void setupComponents() {
-        remove(jPanel1);
-
-        divider = new Divider(this);
-        java.awt.GridBagConstraints gridBagConstraints;
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        add(divider, gridBagConstraints);
-
         searchCriteriaPanel.add(criteria);
         searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) { // NOI18N
             {
@@ -201,8 +245,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 search();
             }
         };
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
-        getActionMap().put("search", searchAction); // NOI18N
+        searchCriteriaPanel.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
+        searchCriteriaPanel.getActionMap().put("search", searchAction); // NOI18N
         bSearch.setAction(searchAction);
         Mnemonics.setLocalizedText(bSearch, NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")); // NOI18N
         
@@ -241,25 +285,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getActionMap().put("jumpNext", nextAction); // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
         
-        showMergesChkBox.setSelected(HgModuleConfig.getDefault().getShowHistoryMerges());
-        if(roots.length == 1) {
-            File file = roots[0];
-            if(!file.isFile()) fileInfoCheckBox.setEnabled(false);
-        }
-        if(fileInfoCheckBox.isEnabled()) {
-            fileInfoCheckBox.setSelected(HgModuleConfig.getDefault().getShowFileInfo());
-        } else {
-            fileInfoCheckBox.setSelected(true);
-        }
-        showMergesChkBox.setOpaque(false);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getID() == Divider.DIVIDER_CLICKED) {
-            criteriaVisible = !criteriaVisible;
-            refreshComponents(false);
-        }
+        fileInfoCheckBox.setSelected(HgModuleConfig.getDefault().getShowFileInfo());
     }
 
     private ExplorerManager             explorerManager;
@@ -305,12 +331,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             } else {
                 if (tbSummary.isSelected()) {
                     if (summaryView == null) {
-                        summaryView = new SummaryView(this, results);
+                        summaryView = new SummaryView(this, logEntries = createLogEntries(results), kenaiUserMap);
                     }
                     resultsPanel.add(summaryView.getComponent());
+                    summaryView.requestFocusInWindow();
                 } else {
                     if (diffView == null) {
-                        diffView = diffViewFactory.createDiffResultsView(this, results);
+                        diffView = diffViewFactory.createDiffResultsView(this, filter(results));
                     }
                     resultsPanel.add(diffView.getComponent());
                 }
@@ -320,9 +347,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
         updateActions();
 
-        divider.setArrowDirection(criteriaVisible ? Divider.UP : Divider.DOWN);
         searchCriteriaPanel.setVisible(criteriaVisible);
-        bSearch.setVisible(criteriaVisible);
+        expandCriteriaButton.setIcon(criteriaVisible ? ICON_EXPANDED : ICON_COLLAPSED);
+        if (criteria.getLimit() <= 0) {
+            criteria.setLimit(SearchExecutor.DEFAULT_LIMIT);
+        }
+        enableFilters(results != null);
         revalidate();
         repaint();
     }
@@ -331,13 +361,18 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         nextAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isNextEnabled());
         prevAction.setEnabled(!tbSummary.isSelected() && diffView != null && diffView.isPrevEnabled());
     }
-    public void setResults(List<RepositoryRevision> newResults) {
-        setResults(newResults, false);
+    public void setResults(List<RepositoryRevision> newResults, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap, int limit) {
+        setResults(newResults, kenaiUserMap, false, limit);
     }
 
-    private void setResults(List<RepositoryRevision> newResults, boolean searching) {
+    private void setResults(List<RepositoryRevision> newResults, Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap, boolean searching, int limit) {
         this.results = newResults;
+        this.kenaiUserMap = kenaiUserMap;
         this.searchInProgress = searching;
+        showingResults = limit;
+        if (newResults != null && newResults.size() < limit) {
+            showingResults = -1;
+        }
         summaryView = null;
         diffView = null;
         refreshComponents(true);
@@ -352,13 +387,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private synchronized void search() {
-        if (currentSearchTask != null) {
-            currentSearchTask.cancel();
-        }
-        setResults(null, true);
+        cancelBackgroundSearch();
+        setResults(null, null, true, -1);
+        HgModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
         currentSearch = new SearchExecutor(this);
-        currentSearchTask = Mercurial.getInstance().getParallelRequestProcessor().create(currentSearch);
-        currentSearchTask.schedule(0);
+        currentSearch.start();
     }
     
     void executeSearch() {
@@ -483,49 +516,27 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        searchCriteriaPanel = new javax.swing.JPanel();
         bSearch = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
         tbSummary = new javax.swing.JToggleButton();
         tbDiff = new javax.swing.JToggleButton();
         jSeparator2 = new javax.swing.JSeparator();
         jSeparator3 = new javax.swing.JToolBar.Separator();
-        showMergesChkBox = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        lblFilter = new javax.swing.JLabel();
+        cmbFilterKind = new javax.swing.JComboBox();
+        lblFilterContains = new javax.swing.JLabel();
+        txtFilter = new javax.swing.JTextField();
         resultsPanel = new javax.swing.JPanel();
+        searchCriteriaPanel = new javax.swing.JPanel();
+        expandCriteriaButton = new org.netbeans.modules.versioning.history.LinkButton();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
-        setLayout(new java.awt.GridBagLayout());
-
-        searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        add(searchCriteriaPanel, gridBagConstraints);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
         bSearch.setToolTipText(bundle.getString("TT_Search")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(bSearch, gridBagConstraints);
-
-        jPanel1.setPreferredSize(new java.awt.Dimension(10, 6));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        add(jPanel1, gridBagConstraints);
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
@@ -565,73 +576,123 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         jToolBar1.add(jSeparator3);
 
-        showMergesChkBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(showMergesChkBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "CTL_ShowMerge")); // NOI18N
-        showMergesChkBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "TT_ShowMerges")); // NOI18N
-        showMergesChkBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-        showMergesChkBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        showMergesChkBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                showMergesChkBoxStateChanged(evt);
-            }
-        });
-        jToolBar1.add(showMergesChkBox);
-
         org.openide.awt.Mnemonics.setLocalizedText(fileInfoCheckBox, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistoryPanel_AllInfo")); // NOI18N
         fileInfoCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "LBL_TT_SearchHistoryPanel_AllInfo")); // NOI18N
-        fileInfoCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-        fileInfoCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        fileInfoCheckBox.setOpaque(false);
         fileInfoCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fileInfoCheckBoxActionPerformed(evt);
             }
         });
         jToolBar1.add(fileInfoCheckBox);
+        jToolBar1.add(jSeparator1);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(jToolBar1, gridBagConstraints);
+        lblFilter.setLabelFor(cmbFilterKind);
+        org.openide.awt.Mnemonics.setLocalizedText(lblFilter, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "filterLabel.text")); // NOI18N
+        lblFilter.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        jToolBar1.add(lblFilter);
+
+        cmbFilterKind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbFilterKindActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(cmbFilterKind);
+
+        lblFilterContains.setLabelFor(txtFilter);
+        org.openide.awt.Mnemonics.setLocalizedText(lblFilterContains, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "containsLabel")); // NOI18N
+        lblFilterContains.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        jToolBar1.add(lblFilterContains);
+        jToolBar1.add(txtFilter);
 
         resultsPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
-        add(resultsPanel, gridBagConstraints);
+
+        searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(expandCriteriaButton, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "CTL_expandCriteriaButton.text")); // NOI18N
+        expandCriteriaButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                expandCriteriaButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 789, Short.MAX_VALUE)
+            .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(bSearch))
+            .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(expandCriteriaButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 693, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(resultsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(expandCriteriaButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(searchCriteriaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(bSearch)
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle
         refreshComponents(true);
     }//GEN-LAST:event_onViewToggle
 
-private void showMergesChkBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_showMergesChkBoxStateChanged
-        HgModuleConfig.getDefault().setShowHistoryMerges( showMergesChkBox.isSelected());
-}//GEN-LAST:event_showMergesChkBoxStateChanged
-
 private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileInfoCheckBoxActionPerformed
         HgModuleConfig.getDefault().setShowFileInfo( fileInfoCheckBox.isSelected() && fileInfoCheckBox.isEnabled());
+        if (summaryView != null) {
+            summaryView.refreshView();
+        }
 }//GEN-LAST:event_fileInfoCheckBoxActionPerformed
+
+    private void expandCriteriaButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandCriteriaButtonActionPerformed
+        searchCriteriaPanel.setVisible(!searchCriteriaPanel.isVisible());
+        expandCriteriaButton.setIcon(searchCriteriaPanel.isVisible() ? ICON_EXPANDED : ICON_COLLAPSED);
+        criteriaVisible = searchCriteriaPanel.isVisible();
+    }//GEN-LAST:event_expandCriteriaButtonActionPerformed
+
+    private void cmbFilterKindActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFilterKindActionPerformed
+        boolean filterCritEnabled = cmbFilterKind.getSelectedItem() != FilterKind.ALL;
+        lblFilterContains.setEnabled(filterCritEnabled);
+        txtFilter.setEnabled(filterCritEnabled);
+        if (filterTimer != null && !txtFilter.getText().trim().isEmpty()) {
+            filterTimer.restart();
+        }
+    }//GEN-LAST:event_cmbFilterKindActionPerformed
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        validateUserInput();
+        documentChanged(e);
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        validateUserInput();        
+        documentChanged(e);
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        validateUserInput();        
+        documentChanged(e);
+    }
+    
+    private void documentChanged (DocumentEvent e) {
+        if (e.getDocument() == txtFilter.getDocument()) {
+            filterTimer.restart();
+        } else {
+            validateUserInput();
+        }
     }
     
     private void validateUserInput() {
@@ -646,23 +707,217 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             return;
         }        
         bSearch.setEnabled(true);
-    }    
+    }
+
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        if (e.getSource() == filterTimer) {
+            if (summaryView != null) {
+                summaryView.refreshView();
+            }
+            if (diffView != null) {
+                diffView.refreshResults(filter(results));
+            }
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton bNext = new javax.swing.JButton();
     final javax.swing.JButton bPrev = new javax.swing.JButton();
     private javax.swing.JButton bSearch;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox cmbFilterKind;
+    private org.netbeans.modules.versioning.history.LinkButton expandCriteriaButton;
     final javax.swing.JCheckBox fileInfoCheckBox = new javax.swing.JCheckBox();
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JLabel lblFilter;
+    private javax.swing.JLabel lblFilterContains;
     private javax.swing.JPanel resultsPanel;
     private javax.swing.JPanel searchCriteriaPanel;
-    private javax.swing.JCheckBox showMergesChkBox;
     private javax.swing.JToggleButton tbDiff;
     private javax.swing.JToggleButton tbSummary;
+    private javax.swing.JTextField txtFilter;
     // End of variables declaration//GEN-END:variables
+
+    void getMoreRevisions (PropertyChangeListener callback, int count) {
+        if (currentSearch == null) {
+            throw new IllegalStateException("No search task active"); //NOI18N
+        }
+        if (currentAdditionalSearch != null) {
+            currentAdditionalSearch.cancel();
+        }
+        if (count < 0 || showingResults < 0) {
+            count = -1;
+        } else {
+            count += showingResults;
+        }
+        currentAdditionalSearch = new Search(count);
+        File repoRoot = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        currentAdditionalSearch.start(Mercurial.getInstance().getRequestProcessor(repoRoot), 
+                repoRoot, 
+                NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SearchHistoryPanel.GettingMoreRevisions")); //NOI18N
+    }
+
+    List<RepositoryRevision> getResults () {
+        return results;
+    }
+
+    boolean hasMoreResults () {
+        return showingResults > -1;
+    }
+
+    void windowClosed () {
+        cancelBackgroundSearch();
+    }
+
+    Collection<SearchHighlight> getSearchHighlights () {
+        String filterText = txtFilter.getText().trim();
+        Object selectedFilterKind = cmbFilterKind.getSelectedItem();
+        if (selectedFilterKind == FilterKind.ALL || filterText.isEmpty() || !(selectedFilterKind instanceof FilterKind)) {
+            return Collections.<SearchHighlight>emptyList();
+        } else {
+            return Collections.singleton(new SearchHighlight(((FilterKind) selectedFilterKind).kind, filterText));
+        }
+    }
+
+    private void initializeFilter () {
+        DefaultComboBoxModel filterModel = new DefaultComboBoxModel();
+        filterModel.addElement(FilterKind.ALL);
+        filterModel.addElement(FilterKind.ID);
+        filterModel.addElement(FilterKind.MESSAGE);
+        filterModel.addElement(FilterKind.USER);
+//        filterModel.addElement(FilterKind.FILE);
+        cmbFilterKind.setModel(filterModel);
+        cmbFilterKind.setSelectedItem(FilterKind.ALL);
+        txtFilter.getDocument().addDocumentListener(this);
+    }
+
+    private List<RepositoryRevision> filter (List<RepositoryRevision> results) {
+        List<RepositoryRevision> newResults = new ArrayList<RepositoryRevision>(results.size());
+        for (RepositoryRevision rev : results) {
+            if (applyFilter(rev)) {
+                newResults.add(rev);
+            }
+        }
+        return newResults;
+    }
+
+    boolean applyFilter (RepositoryRevision rev) {
+        boolean visible = true;
+        String filterText = txtFilter.getText().trim().toLowerCase();
+        Object selectedFilterKind = cmbFilterKind.getSelectedItem();
+        if (selectedFilterKind != FilterKind.ALL && !filterText.isEmpty()) {
+            if (selectedFilterKind == FilterKind.MESSAGE) {
+                visible = rev.getLog().getMessage().toLowerCase().contains(filterText);
+            } else if (selectedFilterKind == FilterKind.USER) {
+                visible = rev.getLog().getUsername().toLowerCase().contains(filterText)
+                        || rev.getLog().getAuthor().toLowerCase().contains(filterText);
+            } else if (selectedFilterKind == FilterKind.ID) {
+                visible = rev.getLog().getRevisionNumber().contains(filterText)
+                        || rev.getLog().getCSetShortID().contains(filterText)
+                        || contains(rev.getLog().getBranches(), filterText)
+                        || contains(rev.getLog().getTags(), filterText);
+            }
+        }
+        return visible;
+    }
     
+    private static boolean contains (String[] items, String needle) {
+        for (String item : items) {
+            if (item.toLowerCase().contains(needle)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private class Search extends HgProgressSupport {
+        private final int count;
+        private final SearchExecutor executor;
+
+        private Search (int count) {
+            this.count = count;
+            this.executor = currentSearch;
+        }
+
+        @Override
+        protected void perform () {
+            final List<RepositoryRevision> newResults = executor.search(count, this);
+            final Map<String, VCSKenaiAccessor.KenaiUser> additionalUsersMap = createKenaiUsersMap(newResults);
+            if (!isCanceled()) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        if (!isCanceled()) {
+                            Set<String> visibleRevisions = new HashSet<String>(results.size());
+                            for (RepositoryRevision rev : results) {
+                                visibleRevisions.add(rev.getLog().getCSetShortID());
+                            }
+                            
+                            List<RepositoryRevision> toAdd = new ArrayList<RepositoryRevision>(newResults.size());
+                            for (RepositoryRevision rev : newResults) {
+                                if (!visibleRevisions.contains(rev.getLog().getCSetShortID())) {
+                                    toAdd.add(rev);
+                                }
+                            }
+                            results.addAll(toAdd);
+                            if (count == -1) {
+                                showingResults = -1;
+                            } else {
+                                showingResults = count;
+                            }
+                            if (showingResults > newResults.size()) {
+                                showingResults = -1;
+                            }
+                            logEntries = createLogEntries(results);
+                            kenaiUserMap.putAll(additionalUsersMap);
+                            if (diffView != null) {
+                                diffView.refreshResults(results);
+                            }
+                            if (summaryView != null) {
+                                summaryView.entriesChanged(logEntries);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    static Map<String, VCSKenaiAccessor.KenaiUser> createKenaiUsersMap (List<RepositoryRevision> results) {
+        Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap = new HashMap<String, VCSKenaiAccessor.KenaiUser>();
+        if(results.size() > 0) {
+            String url = HgUtils.getRemoteRepository(results.get(0).getRepositoryRoot());
+            boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
+            if(isKenaiRepository) {
+                for (RepositoryRevision repositoryRevision : results) {
+                    String author = repositoryRevision.getLog().getAuthor();
+                    String username = repositoryRevision.getLog().getUsername();
+                    if(author != null && !author.equals("")) {
+                        if (username == null || username.isEmpty()) {
+                            username = author;
+                        }
+                        if(!kenaiUsersMap.keySet().contains(author)) {
+                            VCSKenaiAccessor.KenaiUser kenaiUser = HgKenaiAccessor.getInstance().forName(username, url);
+                            if(kenaiUser != null) {
+                                kenaiUsersMap.put(author, kenaiUser);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return kenaiUsersMap;
+    }
+
+    List<HgLogEntry> createLogEntries(List<RepositoryRevision> results) {
+        List<HgLogEntry> ret = new LinkedList<HgLogEntry>();
+        for (RepositoryRevision repositoryRevision : results) {
+            ret.add(new SummaryView.HgLogEntry(repositoryRevision, this));
+        }
+        return ret;
+    }
 }

@@ -1306,7 +1306,12 @@ public class VariousUtils {
                     }
                     qualifiedName = QualifiedName.create(true, segments);
                 } else if (qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
-                    qualifiedName = QualifiedName.createFullyQualified(qualifiedName.toString(), inScope.getNamespaceName().toString());
+                    String fullNamespaceName = inScope.getNamespaceName().toString();
+                    if (qualifiedName.getKind() == QualifiedNameKind.QUALIFIED) {
+                        fullNamespaceName += fullNamespaceName.trim().isEmpty() ? "" : "\\";  //NOI18N
+                        fullNamespaceName += qualifiedName.getNamespaceName();
+                    }
+                    qualifiedName = QualifiedName.createFullyQualified(qualifiedName.getName(), fullNamespaceName);
                 }
             }
         }

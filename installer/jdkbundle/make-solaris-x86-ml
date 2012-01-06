@@ -1,5 +1,0 @@
-ant 
--Dismp.home=$IS_HOME \
--Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_09-solaris-i586.sh \
--Dbundled.jvm=$JVM_PATH/is-jre1_5_0_06-solaris-i586.bin \
-build-solaris-x86-ml

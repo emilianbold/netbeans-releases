@@ -42,53 +42,50 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.refactoring.java.ui;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
-import org.netbeans.modules.refactoring.java.ui.CopyClassPanel;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.datatransfer.PasteType;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
-/** Refactoring UI object for Copy Class refactoring.
+/**
+ * Refactoring UI object for Copy Class refactoring.
  *
  * @author Jan Becicka
  */
 public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     // reference to pull up refactoring this UI object corresponds to
+
     private final SingleCopyRefactoring refactoring;
     // UI panel for collecting parameters
-    private CopyClassPanel panel;
+    private MoveClassPanel panel;
     private FileObject resource;
     private FileObject targetFolder;
-    private PasteType paste;
-    
-    public CopyClassRefactoringUI(FileObject resource, FileObject target, PasteType paste) {
+
+    public CopyClassRefactoringUI(FileObject resource) {
+        this(resource, null);
+    }
+
+    public CopyClassRefactoringUI(FileObject resource, FileObject target) {
         refactoring = new SingleCopyRefactoring(Lookups.singleton(resource));
         this.resource = resource;
         this.targetFolder = target;
-        this.paste=paste;
     }
-    
+
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
-    
     @Override
     public boolean isQuery() {
         return false;
@@ -97,13 +94,13 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            FileObject target = targetFolder!=null?targetFolder:resource.getParent();
-            panel = new CopyClassPanel(parent,
+            FileObject target = targetFolder != null ? targetFolder : resource.getParent();
+            panel = new MoveClassPanel(parent,
+                    RefactoringUtils.getPackageName(target),
                     getName() + " - " + resource.getName(), // NOI18N
-                    RefactoringUtils.getPackageName(target), 
-                    target,
-                    resource.getName());
-            panel.setCombosEnabled(!(targetFolder!=null));
+                    NbBundle.getMessage(CopyClassRefactoringUI.class, "LBL_CopyWithoutRefactoring"),
+                    target, resource.getName());
+            panel.setCombosEnabled(!(targetFolder != null));
         }
         return panel;
     }
@@ -113,15 +110,16 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         setupRefactoring();
         return refactoring.checkParameters();
     }
-    
+
     @Override
     public Problem checkParameters() {
-        if (panel==null)
+        if (panel == null) {
             return null;
+        }
         setupRefactoring();
         return refactoring.fastCheckParameters();
     }
-    
+
     private void setupRefactoring() {
         refactoring.setNewName(panel.getNewName());
         FileObject rootFolder = panel.getRootFolder();
@@ -162,12 +160,12 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CopyClassRefactoringUI.class.getName());
     }
+
     @Override
     public boolean isRefactoringBypassRequired() {
-        if (panel==null)
-            return false;
-        return !panel.isUpdateReferences();
+        return panel != null && panel.isRefactoringBypassRequired();
     }
+
     @Override
     public void doRefactoringBypass() throws IOException {
         RequestProcessor.getDefault().post(new Runnable() {

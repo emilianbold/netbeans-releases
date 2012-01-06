@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public class CredentialsCallback implements GitClientCallback {
+public class CredentialsCallback extends GitClientCallback {
 
     private String username;
     private char[] password;

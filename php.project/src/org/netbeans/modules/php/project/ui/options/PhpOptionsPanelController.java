@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
 )
 public class PhpOptionsPanelController extends BaseOptionsPanelController {
 
-    public static final String ID = "General";
+    public static final String ID = UiUtils.GENERAL_OPTIONS_SUBCATEGORY;
 
     private PhpOptionsPanel phpOptionsPanel = null;
 

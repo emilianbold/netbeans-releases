@@ -53,6 +53,148 @@ public class MoveMethodTest extends MoveBaseTest {
     public MoveMethodTest(String name) {
         super(name);
     }
+    
+    public void testMoveImports() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "import java.util.Random;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void movedMethod() {\n"
+                + "        if(field==1) field++;\n"
+                + "        Random r = new Random(field);\n"
+                + "        field = r.nextInt();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/SourceClass.java"), new int[]{2}, src.getFileObject("t/TargetClass.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "import java.util.Random;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        tClass.movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "import java.util.Random;\n"
+                + "public class TargetClass {\n"
+                + "    public void movedMethod() {\n"
+                + "        if (SourceClass.field == 1) { SourceClass.field++; }\n"
+                + "        Random r = new Random(SourceClass.field);\n"
+                + "        SourceClass.field = r.nextInt();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
+    public void testMoveParameterNotNeeded() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void movedMethod() {\n"
+                + "        if(field==1) field++;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/SourceClass.java"), new int[]{2}, src.getFileObject("t/TargetClass.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        tClass.movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "    public void movedMethod() {\n"
+                + "        if (SourceClass.field == 1) { SourceClass.field++; }\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
+    public void testMoveParameterMissing() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    int field;\n"
+                + "\n"
+                + "    public void movedMethod() {\n"
+                + "        if(field==1) field++;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/SourceClass.java"), new int[]{2}, src.getFileObject("t/TargetClass.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    int field;\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        tClass.movedMethod(this);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "    public void movedMethod(SourceClass sourceClass) {\n"
+                + "        if (sourceClass.field == 1) { sourceClass.field++; }\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
+    public void testMoveExists() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    static int i() { return 1; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    /** Something about j */\n"
+                + "    static int i() { return 1; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_PullUp_MemberAlreadyExists"));
+    }
 
     public void testMoveLibrary() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -135,6 +277,58 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "public class C {\n"
                 + "    public void foo() {\n"
                 + "        System.out.println(B.i(new B()));\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void testMoveNoAccessor() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    int i() { return 1; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false, new Problem(false, "WRN_NoAccessor"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "    /** Something about i */\n"
+                + "    public int i() { return 1; }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.i());\n"
                 + "    }\n"
                 + "}\n"));
     }

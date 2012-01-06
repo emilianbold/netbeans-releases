@@ -52,6 +52,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -74,7 +75,9 @@ public class ServerSelectionHelper {
     private final Deployment deployment;
     private final JComboBox serverModel;
     private final JComboBox j2eeVersion;
+    private final ListCellRenderer delegate;
     private final J2eeModule.Type projectType;
+
 
     /**
      * Creates new Helper instance for specific project type
@@ -88,15 +91,15 @@ public class ServerSelectionHelper {
         this.deployment = Deployment.getDefault();
         this.serverModel = serverModel;
         this.projectType = projectType;
+        this.delegate = j2eeVersion.getRenderer();
         
         this.j2eeVersion = j2eeVersion;
         this.j2eeVersion.setRenderer(new DefaultListCellRenderer() {
 
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                return super.getListCellRendererComponent(list, ((Profile) value).getDisplayName(), index, isSelected, cellHasFocus);
+                return delegate.getListCellRendererComponent(list, ((Profile) value).getDisplayName(), index, isSelected, cellHasFocus);
             }
-            
             
         });
         initServerModel(null);

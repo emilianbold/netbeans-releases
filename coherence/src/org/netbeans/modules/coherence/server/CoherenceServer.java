@@ -134,7 +134,9 @@ public class CoherenceServer {
      */
     public synchronized void restart() {
         LOGGER.log(Level.INFO, "Restarting Coherence server: {0}", getServerDisplayName());
-        stop();
+        if (isEngaged()) {
+            stop();
+        }
         start();
     }
 

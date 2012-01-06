@@ -44,13 +44,14 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.logging.Logger;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
 
@@ -112,9 +113,8 @@ public class CopyTransformer extends RefactoringVisitor {
                 Logger.getLogger("org.netbeans.modules.refactoring.java").severe("Cannot resolve tree " + tree + "\n file: " + workingCopy.getFileObject().getPath()); // NOI18N
             } else {
                 if (!currentClass.getNestingKind().isNested() && 
-                        ( (workingCopy.getCompilationUnit().getTypeDecls().size() == 1) ||
-                           tree.getSimpleName().toString().equals(oldName) ||
-                           tree.getSimpleName().toString().equals(oldName + "_1")
+                        ( tree.getSimpleName().toString().equals(oldName) ||
+                          tree.getSimpleName().toString().equals(oldName + "_1")
                         )
                     ) {
                     Tree nju = make.setLabel(tree, newName);
@@ -138,13 +138,15 @@ public class CopyTransformer extends RefactoringVisitor {
     }
     
     private void renameUsageIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path))
+        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
             return;
+        }
         Element el = workingCopy.getTrees().getElement(path);
-        if (el==null)
+        if (el==null) {
             return;
+        }
         
-        if ((el instanceof TypeElement) && ((TypeElement) el).getQualifiedName().toString().equals(newPackage+"."+oldName)) { // NOI18N
+        if ((el.getKind().isClass() || el.getKind().isInterface()) && ((TypeElement) el).getQualifiedName().toString().equals(newPackage+"."+oldName)) { // NOI18N
             Tree nju = make.setLabel(tree, newName);
             rewrite(tree, nju);
         }

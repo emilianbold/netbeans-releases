@@ -51,6 +51,30 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Messages.fields">
+        <api name="util"/>
+        <summary><code>@NbBundle.Messages</code> available on fields</summary>
+        <version major="8" minor="22"/>
+        <date year="2012" month="1" day="3"/>
+        <author login="jglick"/>
+        <compatibility addition="yes">
+            <p>
+                Existing annotations made on classes but only used from a field
+                within that class will continue to work, but for clarity should
+                be moved onto the field.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                <code>@NbBundle.Messages</code> may now be used on fields, useful
+                in case the field initializer involves some complex construction
+                requiring a localized message. (Merely storing a localized message
+                in a String constant is poor practice; inline the field instead.)
+            </p>
+        </description>
+        <class package="org.openide.util" name="NbBundle"/>
+        <issue number="206543"/>
+    </change>
     <change id="HelpCtx.display">
         <api name="util"/>
         <summary><code>HelpCtx.display</code> added</summary>

@@ -65,6 +65,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -150,7 +151,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             }
                         }
                     } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
-                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
+                        ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement)selected);
+                        FileObject f = SourceUtils.getFile(handle, info.getClasspathInfo());
                         if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
                             return wrap(new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info));
                         } else {
@@ -258,68 +260,167 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public void doCopy(final Lookup lookup) {
         Runnable task;
-//        EditorCookie ec = lookup.lookup(EditorCookie.class);
-//        if (isFromEditor(ec)) {
-//            return new TextComponentRunnable(ec) {
+////        EditorCookie ec = lookup.lookup(EditorCookie.class);
+////        if (isFromEditor(ec)) {
+////            return new TextComponentRunnable(ec) {
+////                @Override
+////                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+////                    Element selected = selectedElement.resolveElement(info);
+////                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+////                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
+////                        return new RenameRefactoringUI(f==null?info.getFileObject():f);
+////                    } else {
+////                        return new RenameRefactoringUI(selectedElement, info);
+////                    }
+////                }
+////            };
+////        } else {
+//            task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
 //                @Override
-//                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-//                    Element selected = selectedElement.resolveElement(info);
-//                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-//                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-//                        return new RenameRefactoringUI(f==null?info.getFileObject():f);
-//                    } else {
-//                        return new RenameRefactoringUI(selectedElement, info);
-//                    }
+//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
+//                    return wrap(new CopyClassRefactoringUI(selectedElements[0], getTarget(lookup), getPaste(lookup)));
 //                }
 //            };
-//        } else {
-            task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
+////        }
+//        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
+
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (isFromEditor(ec)) {
+            task = new TextComponentTask(ec) {
                 @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
-                    return wrap(new CopyClassRefactoringUI(selectedElements[0], getTarget(lookup), getPaste(lookup)));
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+                    Element e = selectedElement.resolveElement(info);
+                    if (e == null) {
+                        logger().log(Level.INFO, "doCopy: " + selectedElement, new NullPointerException("e")); // NOI18N
+                        return null;
+                    }
+                    if ((e.getKind().isClass() || e.getKind().isInterface()) &&
+                            SourceUtils.getOutermostEnclosingTypeElement(e)==e) {
+                        try {
+                            FileObject fo = SourceUtils.getFile(e, info.getClasspathInfo());
+                            if (fo!=null) {
+                                DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
+                                if (d.getName().equals(e.getSimpleName().toString())) {
+                                    return wrap(new CopyClassRefactoringUI(d.getPrimaryFile()));
+                                }
+                            }
+                        } catch (DataObjectNotFoundException ex) {
+                            throw new RuntimeException (ex);
+                        }
+                    }
+                    return wrap(new CopyClassRefactoringUI(info.getFileObject()));
                 }
             };
-//        }
+        } else {
+            task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    PasteType paste = getPaste(lookup);
+                    FileObject tar=getTarget(lookup);
+                    if (selectedElements.length == 1) {
+                        if (!selectedElements[0].isFolder()) {
+                            return wrap(new CopyClassRefactoringUI(selectedElements[0], tar));
+                        } else {
+                            Set<FileObject> s = new HashSet<FileObject>();
+                            s.addAll(Arrays.asList(selectedElements));
+                            return wrap(new CopyClassesUI(s, tar, paste));
+                        }
+                    } else {
+                        Set<FileObject> s = new HashSet<FileObject>();
+                        s.addAll(Arrays.asList(selectedElements));
+                        return wrap(new CopyClassesUI(s, tar, paste));
+                    }
+                }
+                
+            };
+        }
         ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
     }
 
     /**
-     * returns true if exactly one refactorable file is selected
+     * returns true if there is at least one java file in the selection
+     * and all java files are refactorable
      */
     @Override
     public boolean canCopy(Lookup lookup) {
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
-        if (nodes.size() != 1) {
-            return false;
-        }
-        Node n = nodes.iterator().next();
-        DataObject dob = n.getCookie(DataObject.class);
-        if (dob==null) {
-            return false;
-        }
-        
-        ExplorerContext dict = lookup.lookup(ExplorerContext.class);
-        FileObject fob = getTarget(lookup);
-        if (dict!=null && dict.getTargetNode() != null && fob==null) { //NOI18N
-            //unknown target
-            return false;
-        }
-        if (fob != null) {
-            if (!fob.isFolder() || !JavaRefactoringUtils.isOnSourceClasspath(fob))
+        ExplorerContext drop = lookup.lookup(ExplorerContext.class);
+        FileObject fo = getTarget(lookup);
+        if (fo != null) {
+            if (!fo.isFolder())
                 return false;
-            FileObject fo = dob.getPrimaryFile();
-            if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
-                return true;
+            if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) 
+                return false;
+            
+            //it is drag and drop
+            Set<DataFolder> folders = new HashSet<DataFolder>();
+            boolean jdoFound = false;
+            for (Node n:nodes) {
+                DataObject dob = n.getLookup().lookup(DataObject.class);
+                if (dob==null) {
+                    return false;
+                }
+                if (!JavaRefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
+                    return false;
+                }
+                if (dob instanceof DataFolder) {
+                    if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null)
+                        return false;
+                    folders.add((DataFolder)dob);
+                } else if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
+                    jdoFound = true;
+                }
             }
-
+            if (jdoFound)
+                return true;
+            for (DataFolder fold:folders) {
+                for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
+                    if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         } else {
-            FileObject fo = dob.getPrimaryFile();
-            if (JavaRefactoringUtils.isRefactorable(fo)) { //NOI18N
-                return true;
+            //regular invokation
+            boolean result = false;
+            nodesloop:
+            for (Node n:nodes) {
+                DataObject dob = n.getCookie(DataObject.class);
+                if (dob==null) {
+                    return false;
+                }
+                if (dob instanceof DataFolder) {
+                    if (drop==null) {
+                        return false;
+                    } else {
+                        //Ctrl-X
+                        if (!JavaRefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RefactoringUtils.isClasspathRoot(dob.getPrimaryFile())) {
+                            return false;
+                        } else {
+                            LinkedList<DataFolder> folders = new LinkedList<DataFolder>();
+                            folders.add((DataFolder) dob);
+                            while (!folders.isEmpty()) {
+                                DataFolder fold = folders.remove();
+                                for (Enumeration<DataObject> e = fold.children(true); e.hasMoreElements();) {
+                                    if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
+                                        result = true;
+                                        continue nodesloop;
+                                    } else if (e instanceof DataFolder) {
+                                        folders.add((DataFolder) e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())
+                        && ClassPath.getClassPath(dob.getPrimaryFile(), ClassPath.SOURCE) != null) {
+                    result = true;
+                }
             }
+            return result;
         }
-
-        return false;
     }    
 
     @Override
@@ -430,7 +531,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return null;
                     }
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-                        FileObject file = SourceUtils.getFile(selected, info.getClasspathInfo());
+                        ElementHandle<Element> handle = ElementHandle.create(selected);
+                        FileObject file = SourceUtils.getFile(handle, info.getClasspathInfo());
                         if (file==null) {
                             return null;
                         }

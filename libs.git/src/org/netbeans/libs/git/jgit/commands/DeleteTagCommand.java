@@ -49,6 +49,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRefUpdateResult;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -59,8 +60,8 @@ public class DeleteTagCommand extends GitCommand {
     private final String tagName;
     private GitRefUpdateResult result;
 
-    public DeleteTagCommand (Repository repository, String tagName, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public DeleteTagCommand (Repository repository, GitClassFactory gitFactory, String tagName, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.tagName = tagName;
     }
 

@@ -78,13 +78,11 @@ import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -866,10 +864,6 @@ public final class PhpProject implements Project {
             if (coverageProvider.isEnabled()) {
                 PhpCoverageProvider.notifyProjectOpened(PhpProject.this);
             }
-
-
-            // #164073 - for the first time, let's do it not in AWT thread
-            PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
 
             // frameworks
             PhpModule phpModule = getPhpModule();

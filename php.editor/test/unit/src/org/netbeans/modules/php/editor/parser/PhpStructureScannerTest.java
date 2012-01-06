@@ -137,7 +137,9 @@ public class PhpStructureScannerTest extends ParserTestBase{
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult info = (PHPParseResult)resultIterator.getParserResult();
-                result.addAll(instance.scan(info));
+                if (info != null) {
+                    result.addAll(instance.scan(info));
+                }
             }
         });
         Comparator<StructureItem> comparator = new Comparator<StructureItem>() {

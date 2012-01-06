@@ -45,14 +45,12 @@ package org.netbeans.modules.refactoring.java.spi;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import static org.netbeans.modules.refactoring.java.RefactoringUtils.*;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;

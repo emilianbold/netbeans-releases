@@ -1714,7 +1714,7 @@ public class ETable extends JTable {
                 List<RowMapping> rows = new ArrayList<RowMapping>();
                 for (int i = 0; i < noRows; i++) {
                     if (acceptByQuickFilter(model, i)) {
-                        rows.add(new RowMapping(i, model));
+                        rows.add(new RowMapping(i, model, this));
                     }
                 }
                 Collections.sort(rows, c);
@@ -2242,9 +2242,20 @@ public class ETable extends JTable {
      */
     public final static class RowMapping {
         // index (of the row) in the TableModel
-        private int originalIndex;
+        private final int originalIndex;
         // table model of my table
-        private TableModel model;
+        private final TableModel model;
+        // The table
+        private final ETable table;
+        // The cached transformed value
+        private Object transformed = TRANSFORMED_NONE;
+        // The column of the transformed value
+        private int transformedColumn;
+        // When values from more columns are requested, the transformed values
+        // are stored in this array
+        private Object[] allTransformed = null;
+        
+        private static final Object TRANSFORMED_NONE = new Object();
 
         /**
          * Create a new table row mapping.
@@ -2254,7 +2265,23 @@ public class ETable extends JTable {
         public RowMapping(int index, TableModel model) {
             originalIndex = index;
             this.model = model;
+            this.table = null;
         }
+        
+        /**
+         * Create a new table row mapping.
+         * @param index The row index
+         * @param model The table model
+         * @param table The table. This argument needs to be set when
+         * {@link #getTransformedValue(int)} is to be used.
+         * @since 1.19
+         */
+        public RowMapping(int index, TableModel model, ETable table) {
+            originalIndex = index;
+            this.model = model;
+            this.table = table;
+        }
+        
         /**
          * Get the model row index.
          * @return The model row index
@@ -2262,14 +2289,65 @@ public class ETable extends JTable {
         public int getModelRowIndex() {
             return originalIndex;
         }
+        
         /**
          * Get the model object at the row index of this mapping and the given column.
          * @param column The column
          * @return The model object
+         * @see {@link #getTransformedValue(int)}
          */
         public Object getModelObject(int column) {
             return model.getValueAt(originalIndex, column);
         }
+        
+        /**
+         * Get the transformed value. This method assures that we retrieve every
+         * value only once per any number of calls. The table needs to be set
+         * in order to be able to transform the value, see
+         * {@link #RowMapping(int, javax.swing.table.TableModel, org.netbeans.swing.etable.ETable)}.
+         * 
+         * @param column The column
+         * @return The transformed value. It returns the cached value of
+         * <code>table.transformValue(getModelObject(column))</code>.
+         * @throws IllegalStateException when table is not set
+         * @since 1.19
+         */
+        public Object getTransformedValue(int column) {
+            if (table == null) {
+                throw new IllegalStateException("The table was not set.");
+            }
+            Object value;
+            if (TRANSFORMED_NONE == transformed) {
+                value = transformed = table.transformValue(getModelObject(column));
+                transformedColumn = column;
+            } else if (allTransformed != null) {
+                if (allTransformed.length <= column) {
+                    Object[] newTransformed = new Object[column + 1];
+                    System.arraycopy(allTransformed, 0, newTransformed, 0, allTransformed.length);
+                    for (int i = allTransformed.length; i < newTransformed.length; i++) {
+                        newTransformed[i] = TRANSFORMED_NONE;
+                    }
+                    allTransformed = newTransformed;
+                }
+                if (TRANSFORMED_NONE == allTransformed[column]) {
+                    value = allTransformed[column] = table.transformValue(getModelObject(column));
+                } else {
+                    value = allTransformed[column];
+                }
+            } else if (transformedColumn != column) {
+                int n = Math.max(transformedColumn, column) + 1;
+                allTransformed = new Object[n];
+                for (int i = 0; i < n; i++) {
+                    allTransformed[i] = TRANSFORMED_NONE;
+                }
+                allTransformed[transformedColumn] = transformed;
+                value = allTransformed[column] = table.transformValue(getModelObject(column));
+            } else {
+                value = transformed;
+            }
+            return value;
+        }
+        
     }
     
     /** 

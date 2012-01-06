@@ -166,6 +166,9 @@ public class Utils {
     }
 
     private static boolean hasAnnotationType(Element element, String annotationType) {
+        if ( element == null ){
+            return false;
+        }
         for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
             if (annotation.getAnnotationType().toString().equals(annotationType)) {
                 return true;
@@ -240,7 +243,7 @@ public class Utils {
     
     static boolean isRestApplication(TypeElement type, AnnotationModelHelper helper) {
         boolean isRest = false;
-        if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
+        if (type != null && type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
             if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.APPLICATION_PATH)) { // NOI18N
                 isRest = true;
             }

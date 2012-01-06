@@ -94,7 +94,7 @@ public class TypeRepository implements ITypeRepository {
         String fqn = type.getCanonicalName();
         IType ret = types.get(fqn);
         if(ret == null){
-            fillTypeElement(fqn);
+            fillTypeElement(type);
             ret = types.get(fqn);
         }
         return ret;
@@ -137,6 +137,9 @@ public class TypeRepository implements ITypeRepository {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    private void fillTypeElement(Class<?> type){
+        types.put(type.getName(), new JavaType(TypeRepository.this, type));
     }
     
 }

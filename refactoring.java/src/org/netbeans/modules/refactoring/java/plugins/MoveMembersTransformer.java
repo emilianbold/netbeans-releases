@@ -66,10 +66,11 @@ import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visib
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * 
+ *
  * @author Ralph Ruijs
  */
 public class MoveMembersTransformer extends RefactoringVisitor {
@@ -136,7 +137,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             checkForUsagesOutsideOfPackage(folder, compilationUnit, elementBeingMoved);
 
             if (node instanceof MethodInvocationTree) {
-                if(!delegate) {
+                if (!delegate) {
                     changeMethodInvocation((ExecutableElement) el, (MethodInvocationTree) node, currentPath, target);
                 }
             } else if (node instanceof IdentifierTree) {
@@ -158,7 +159,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitVariable(VariableTree node, Element target) {
-        if(removeIfMatch(getCurrentPath(), target)) {;
+        if (removeIfMatch(getCurrentPath(), target)) {;
             return node;
         } else {
             return super.visitVariable(node, target);
@@ -167,7 +168,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitMethod(MethodTree node, Element target) {
-        if(removeIfMatch(getCurrentPath(), target)) {
+        if (removeIfMatch(getCurrentPath(), target)) {
             return node;
         } else {
             return super.visitMethod(node, target);
@@ -203,7 +204,11 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     }
                 });
                 if (!vars.iterator().hasNext()) {
-                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor"))); //NOI18N
+                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
                 } else {
                     Element localVar = vars.iterator().next();
                     MemberSelectTree selectTree = (MemberSelectTree) node;
@@ -239,7 +244,11 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
             });
             if (!vars.iterator().hasNext()) {
-                problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor"))); //NOI18N
+                SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
             } else {
                 Tree it;
                 Tree newIt;
@@ -257,15 +266,13 @@ public class MoveMembersTransformer extends RefactoringVisitor {
     /**
      * Changing a method invocation to refer to the new location.
      *
-     * Steps: 1. Check if we need to remove a parameter from the invocation.
-     * 2. Check if it is a Static method.
-     * 2.1 Change methodSelect
-     * 2.2 Translate method arguments
+     * Steps: 1. Check if we need to remove a parameter from the invocation. 2.
+     * Check if it is a Static method. 2.1 Change methodSelect 2.2 Translate
+     * method arguments
      *
-     * 3. Find Parameter or local var to use
-     * 3.1 Create problem if no accessor
-     * 4. Check if it needs an argument for local accessors
-     * 4.1 Check if it van be the memberselect
+     * 3. Find Parameter or local var to use 3.1 Create problem if no accessor
+     * 4. Check if it needs an argument for local accessors 4.1 Check if it van
+     * be the memberselect
      *
      * 5. Create a new method invocation
      *
@@ -277,7 +284,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
     private void changeMethodInvocation(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target) {
         rewrite(node, createMethodInvocationTree(el, node, currentPath, target));
     }
-    
+
     private MethodInvocationTree createMethodInvocationTree(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target) {
         TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, true);
         Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
@@ -285,7 +292,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         final List<? extends ExpressionTree> typeArguments = (List<? extends ExpressionTree>) node.getTypeArguments();
         final LinkedList<ExpressionTree> arguments = new LinkedList(node.getArguments());
         final ExpressionTree newMethodSelect;
-        
+
         if (el.getModifiers().contains(Modifier.STATIC)) {
             if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
                 if (enclosingElement.equals(target)) {
@@ -323,7 +330,11 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     }
                 });
                 if (!vars.iterator().hasNext()) {
-                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor"))); //NOI18N
+                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
                     selectExpression = null;
                 } else {
                     Element localVar = vars.iterator().next();
@@ -331,7 +342,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
             }
 
-            if(selectExpression == null) {
+            if (selectExpression == null) {
                 newMethodSelect = node.getMethodSelect();
             } else {
                 if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -350,27 +361,47 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             if (removedIndex != -1) {
                 arguments.remove(removedIndex);
             }
-            TreeScanner<Boolean, Void> needsArgumentScanner = new TreeScanner<Boolean, Void>() {
-                // TODO: fix needsArgumentScanner
+            TypeMirror sourceType = workingCopy.getTrees().getTypeMirror(enclosingClassPath);
+            TreeScanner<Boolean, TypeMirror> needsArgumentScanner = new TreeScanner<Boolean, TypeMirror>() {
+                // Logic is a copy from #insertIfMatch
 
                 @Override
-                public Boolean visitIdentifier(IdentifierTree node, Void p) {
-
-                    return super.visitIdentifier(node, p);
-                }
-
-                @Override
-                public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
-                    return super.visitMethodInvocation(node, p);
-                }
-
-                @Override
-                public Boolean visitMemberSelect(MemberSelectTree node, Void p) {
+                public Boolean visitMemberSelect(MemberSelectTree node, TypeMirror source) {
                     String isThis = node.getExpression().toString();
                     if (isThis.equals("this") || isThis.endsWith(".this")) {
-                        return true;
+                        TreePath thisPath = new TreePath(currentPath, node);
+                        Element el = workingCopy.getTrees().getElement(thisPath);
+                        if (isElementBeingMoved(el) != null) {
+                            return false;
+                        }
                     }
-                    return super.visitMemberSelect(node, p);
+                    return super.visitMemberSelect(node, source);
+                }
+
+                @Override
+                public Boolean visitIdentifier(IdentifierTree node, TypeMirror source) {
+                    TreePath thisPath = new TreePath(currentPath, node);
+                    Element el = workingCopy.getTrees().getElement(thisPath);
+
+                    if (isElementBeingMoved(el) == null) {
+                        String isThis = node.toString();
+                        // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
+                        if (isThis.equals("this") || isThis.endsWith(".this")) {
+                            if (!el.getModifiers().contains(Modifier.STATIC)) {
+                                return true;
+                            }
+                        } else {
+                            if (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM) {
+                                TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
+                                if (elType != null && workingCopy.getTypes().isSubtype(source, elType.asType())) {
+                                    if (!el.getModifiers().contains(Modifier.STATIC)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return super.visitIdentifier(node, source);
                 }
 
                 @Override
@@ -378,7 +409,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     return (r1 == Boolean.TRUE || r2 == Boolean.TRUE);
                 }
             };
-            Boolean needsArgument = needsArgumentScanner.scan(workingCopy.getTrees().getTree(el).getBody(), null);
+            Boolean needsArgument = needsArgumentScanner.scan(workingCopy.getTrees().getTree(el).getBody(), sourceType);
             if (needsArgument == Boolean.TRUE) {
                 ExpressionTree newArgument;
                 if (enclosingElement.equals(target) && node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -393,7 +424,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
             }
         }
-        
+
         List<ExpressionTree> newArguments = new ArrayList<ExpressionTree>(arguments.size());
         for (ExpressionTree expressionTree : arguments) {
             ExpressionTree expression = fixReferences(expressionTree, target, currentPath);
@@ -450,56 +481,87 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     }
                     // Scan the body and fix references
                     BlockTree body = methodTree.getBody();
-                    TreePath bodyPath = new TreePath(resolvedPath, body);
+                    final TreePath bodyPath = new TreePath(resolvedPath, body);
+                    final Trees trees = workingCopy.getTrees();
+                    final Map<ExpressionTree, ExpressionTree> fqns = new HashMap<ExpressionTree, ExpressionTree>();
+                    TreeScanner<Void, Void> fqnScan = new TreeScanner<Void, Void>() {
+
+                        @Override
+                        public Void visitIdentifier(IdentifierTree node, Void p) {
+                            fqns.put(node, make.Identifier(trees.getElement(new TreePath(bodyPath, node))));
+                            return super.visitIdentifier(node, p);
+                        }
+                    };
+                    fqnScan.scan(body, null);
+                    body = (BlockTree) workingCopy.getTreeUtilities().translate(body, fqns);
 
                     // Remove the parameter and change it to the keyword this
                     final Map<ExpressionTree, ExpressionTree> original2Translated = new HashMap<ExpressionTree, ExpressionTree>();
-                    final Trees trees = workingCopy.getTrees();
                     // Add parameter and change local accessors
                     TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(workingCopy, resolvedPath, true, true, true, true, true);
                     TypeMirror sourceType = workingCopy.getTrees().getTypeMirror(sourceClass);
                     final String parameterName = getParameterName(sourceType, methodTree, workingCopy.getTrees().getScope(bodyPath), workingCopy);
-                    TreeScanner<Void, TypeMirror> idScan = new TreeScanner<Void, TypeMirror>() {
+                    TreeScanner<Boolean, TypeMirror> idScan = new TreeScanner<Boolean, TypeMirror>() {
 
                         @Override
-                        public Void visitMemberSelect(MemberSelectTree node, TypeMirror source) {
+                        public Boolean visitMemberSelect(MemberSelectTree node, TypeMirror source) {
                             String isThis = node.getExpression().toString();
                             if (isThis.equals("this") || isThis.endsWith(".this")) {
                                 TreePath currentPath = new TreePath(resolvedPath, node);
                                 Element el = trees.getElement(currentPath);
-                                if(isElementBeingMoved(el) != null) {
-                                    return null;
+                                if (isElementBeingMoved(el) != null) {
+                                    return false;
                                 }
                             }
                             return super.visitMemberSelect(node, source);
                         }
 
                         @Override
-                        public Void visitIdentifier(IdentifierTree node, TypeMirror source) {
+                        public Boolean visitIdentifier(IdentifierTree node, TypeMirror source) {
                             TreePath currentPath = new TreePath(resolvedPath, node);
                             Element el = trees.getElement(currentPath);
-                            
-                            if(isElementBeingMoved(el) == null) {
+
+                            boolean result = false;
+
+                            if (isElementBeingMoved(el) == null) {
                                 String isThis = node.toString();
+                                TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                 // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
                                 if (isThis.equals("this") || isThis.endsWith(".this")) {
-                                    ExpressionTree newLabel = make.setLabel(node, parameterName);
-                                    original2Translated.put(node, newLabel);
+                                    // Check for static
+                                    if (!el.getModifiers().contains(Modifier.STATIC)) {
+                                        ExpressionTree newLabel = make.setLabel(node, parameterName);
+                                        original2Translated.put(node, newLabel);
+                                        result = true;
+                                    } else {
+                                        ExpressionTree ident = make.Identifier(elType);
+                                        original2Translated.put(node, ident);
+                                    }
                                 } else {
                                     if (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM) {
-                                        TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                         if (elType != null && workingCopy.getTypes().isSubtype(source, elType.asType())) {
-                                            MemberSelectTree memberSelect = make.MemberSelect(workingCopy.getTreeUtilities().parseExpression(parameterName, new SourcePositions[1]), el);
-                                            original2Translated.put(node, memberSelect);
+                                            if (!el.getModifiers().contains(Modifier.STATIC)) {
+                                                MemberSelectTree memberSelect = make.MemberSelect(workingCopy.getTreeUtilities().parseExpression(parameterName, new SourcePositions[1]), el);
+                                                original2Translated.put(node, memberSelect);
+                                                result = true;
+                                            } else {
+                                                ExpressionTree ident = make.Identifier(elType);
+                                                MemberSelectTree memberSelect = make.MemberSelect(ident, el);
+                                                original2Translated.put(node, memberSelect);
+                                            }
                                         }
                                     }
                                 }
                             }
-                            return super.visitIdentifier(node, source);
+                            return super.visitIdentifier(node, source) == Boolean.TRUE || result;
+                        }
+
+                        @Override
+                        public Boolean reduce(Boolean r1, Boolean r2) {
+                            return (r1 == Boolean.TRUE || r2 == Boolean.TRUE);
                         }
                     };
-                    idScan.scan(body, sourceType);
-                    boolean addParameter = !original2Translated.isEmpty();
+                    boolean addParameter = idScan.scan(body, sourceType) == Boolean.TRUE;
 
                     if (removedParameter != null) {
                         TreeScanner<Void, Pair<Element, ExpressionTree>> idScan2 = new TreeScanner<Void, Pair<Element, ExpressionTree>>() {
@@ -531,6 +593,8 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         }
                     }
 
+                    // Addimports
+                    body = GeneratorUtilities.get(workingCopy).importFQNs(body);
                     newMember = make.Method(modifiers, methodTree.getName(), methodTree.getReturnType(), methodTree.getTypeParameters(), newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
 
                     // Make a new Variable (Field) tree
@@ -594,12 +658,12 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     } else {
                         statement = make.ExpressionStatement(methodInvocation);
                     }
-                    
-                    
-                    
+
+
+
                     MethodTree method = make.Method(element, make.Block(Collections.singletonList(statement), false));
                     newClassTree = make.insertClassMember(newClassTree, index, method);
-                    
+
                 } else {
                     newClassTree = make.removeClassMember(newClassTree, member);
                 }
@@ -664,12 +728,12 @@ public class MoveMembersTransformer extends RefactoringVisitor {
     }
 
     private <T extends Tree> T fixReferences(T body, Element target, final TreePath resolvedPath) {
-                
+
         TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, resolvedPath, true, true, true, true, true);
         final TypeElement enclosingClass = (TypeElement) workingCopy.getTrees().getElement(enclosingClassPath);
 
         final Map<Tree, Tree> original2Translated = new HashMap<Tree, Tree>();
-        
+
         // TODO What about non static stuff.
         TreeScanner<Void, Void> idScan = new TreeScanner<Void, Void>() {
 
@@ -682,7 +746,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     return super.visitIdentifier(node, p); // Already checked by visitMemberSelect
                 }
                 Element element = workingCopy.getTrees().getElement(currentPath);
-                if (isElementBeingMoved(element) == null && element.getModifiers().contains(Modifier.STATIC)) {
+                if (element != null && isElementBeingMoved(element) == null && element.getModifiers().contains(Modifier.STATIC)) {
                     Tree newTree = make.QualIdent(element);
                     original2Translated.put(node, newTree);
                 }
@@ -697,7 +761,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
                 Element element = workingCopy.getTrees().getElement(currentPath);
                 ExpressionTree methodSelect = node.getMethodSelect();
-                if(isElementBeingMoved(element) == null) {
+                if (isElementBeingMoved(element) == null) {
                     if (element.getModifiers().contains(Modifier.STATIC)) {
                         Tree newTree = make.QualIdent(element);
                         original2Translated.put(methodSelect, newTree);

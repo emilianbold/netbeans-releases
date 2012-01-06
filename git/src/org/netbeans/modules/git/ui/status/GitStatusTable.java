@@ -66,6 +66,8 @@ import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.DeleteLocalAction;
+import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
@@ -74,8 +76,10 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
@@ -138,25 +142,37 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
                 allLocallyNew = false;
             }
         }
+        Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
         if (displayAdd) {
-            item = menu.add(new SystemActionBridge(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"))); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
             Mnemonics.setLocalizedText(item, item.getText());
         }
         
         if (allLocallyNew) {
             SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
-            item = menu.add(new SystemActionBridge(systemAction, NbBundle.getMessage(DeleteLocalAction.class, "CTL_PopupMenuItem_Delete"))); //NOI18N
+            item = menu.add(SystemActionBridge.createAction(systemAction, NbBundle.getMessage(DeleteLocalAction.class, "CTL_PopupMenuItem_Delete"), lkp)); //NOI18N
             Mnemonics.setLocalizedText(item, item.getText());
         }
-        item = menu.add(new SystemActionBridge(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"))); //NOI18N
+        SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
+        SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
+        if (efca.isEnabled() || iica.isEnabled()) {
+            if (efca.isEnabled()) {
+                item = menu.add(efca);
+                Mnemonics.setLocalizedText(item, item.getText());
+            } else if (iica.isEnabled()) {
+                item = menu.add(iica);
+                Mnemonics.setLocalizedText(item, item.getText());
+            }
+        }
+        item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"))); //NOI18N
+        item = menu.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp)); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
         ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
         if (a.isEnabled()) {
             menu.addSeparator();
-            item = menu.add(new SystemActionBridge(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"))); //NOI18N);
+            item = menu.add(SystemActionBridge.createAction(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp)); //NOI18N
             Mnemonics.setLocalizedText(item, item.getText());
         }
         return menu;

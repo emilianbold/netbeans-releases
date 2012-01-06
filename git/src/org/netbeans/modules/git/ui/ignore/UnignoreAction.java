@@ -80,7 +80,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
 
     @Override
     protected Task performAction (File repository, File[] roots, VCSContext context) {
-        return ignore(repository, roots);
+        return unignore(repository, roots);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
         return enabled;
     }
 
-    public Task ignore (File repository, File[] roots) {
+    public Task unignore (File repository, File[] roots) {
         final File[] toUnignore = filterRoots(roots);
         if (toUnignore.length == 0) {
             return null;
@@ -118,7 +118,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
                                 notifiedFiles.add(file);
                             }
                         });
-                        modifiedIgnores = client.unignore(toUnignore, this);
+                        modifiedIgnores = client.unignore(toUnignore, getProgressMonitor());
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {

@@ -42,19 +42,44 @@
 
 package org.netbeans.libs.git;
 
+import org.eclipse.jgit.lib.ObjectId;
+
 /**
  *
  * @author ondra
  */
-public interface GitBranch {
+public final class GitBranch {
 
     public static final String NO_BRANCH = "(no branch)"; //NOI18N
+    
+    public static final GitBranch NO_BRANCH_INSTANCE = new GitBranch(NO_BRANCH, false, true, ObjectId.zeroId());
 
-    String getName ();
+    private final String name;
+    private final boolean remote;
+    private final boolean active;
+    private final ObjectId id;
 
-    boolean isRemote ();
+    GitBranch (String name, boolean remote, boolean active, ObjectId id) {
+        this.name = name;
+        this.remote = remote;
+        this.active = active;
+        this.id = id;
+    }
 
-    boolean isActive ();
+    public String getName () {
+        return name;
+    }
 
-    String getId ();
+    public boolean isRemote () {
+        return remote;
+    }
+
+    public boolean isActive () {
+        return active;
+    }
+
+    public String getId () {
+        return id.getName();
+    }
+    
 }

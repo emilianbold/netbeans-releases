@@ -56,17 +56,11 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
       <folder name="File">
             <folder name="Import">
-                <attr name="position" intvalue="1426"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.jbuilder.resources.Bundle"/>
                 <file name="org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.instance"/>
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
-            <file name="ImporterSeparator1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="1430"/>
-            </file>
         </folder>
     </folder>
 

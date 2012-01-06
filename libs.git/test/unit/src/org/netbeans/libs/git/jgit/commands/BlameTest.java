@@ -44,12 +44,12 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitLineDetails;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.jgit.JGitUserInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -58,8 +58,8 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public class BlameTest extends AbstractGitTestCase {
     private File workDir;
-    private static final GitUser USER1 = new JGitUserInfo(new PersonIdent("user1", "user1@company.com")); //NOI18N
-    private static final GitUser USER2 = new JGitUserInfo(new PersonIdent("user2", "user2@company.com")); //NOI18N
+    private static final GitUser USER1 = ApiUtils.getClassFactory().createUser(new PersonIdent("user1", "user1@company.com")); //NOI18N
+    private static final GitUser USER2 = ApiUtils.getClassFactory().createUser(new PersonIdent("user2", "user2@company.com")); //NOI18N
 
     public BlameTest (String testName) throws IOException {
         super(testName);

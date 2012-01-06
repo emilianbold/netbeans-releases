@@ -161,7 +161,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                 ISVNLogMessage[] messageArray= null;
                 try {                        
                     SvnClient client = Subversion.getInstance().getClient(repositoryUrl, this);                         
-                    messageArray = SvnUtils.getLogMessages(client, repositoryUrl, paths, SVNRevision.HEAD, revisionFrom, false, true);                   
+                    messageArray = SvnUtils.getLogMessages(client, repositoryUrl, paths, SVNRevision.HEAD, revisionFrom, false, false, 0);
                 } catch (SVNClientException ex) {
                     AbstractNode errorNode = new AbstractNode(Children.LEAF);
                     errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Error")); // NOI18N

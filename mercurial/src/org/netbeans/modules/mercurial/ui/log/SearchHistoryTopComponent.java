@@ -74,12 +74,12 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
     
     public SearchHistoryTopComponent(File[] files, String branchName) {
-        this(files, null, null, null, null, branchName);
+        this(files, null, null, branchName);
     }
 
-    public SearchHistoryTopComponent(File[] files, String commitMessage, String username, Date from, Date to, String branchName) {
+    public SearchHistoryTopComponent(File[] files, Date from, Date to, String branchName) {
         this();
-        initComponents(files, commitMessage, username, from, to, branchName);
+        initComponents(files, from, to, branchName);
     }
 
     /**
@@ -89,10 +89,8 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
      */
     SearchHistoryTopComponent(File file, DiffResultsViewFactory fac) {
         this();
-        initComponents(new File[] {file}, null, null, null, null, ""); //NOI18N
+        initComponents(new File[] {file}, null, null, ""); //NOI18N
         shp.setDiffResultsViewFactory(fac);
-        // showing only one file - so disable the show all changepaths options
-        shp.disableFileChangesOption(false);
     }
 
     public void search() {        
@@ -103,18 +101,20 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     public void searchOut() {  
         shp.setOutSearch();
         scp.setTo("");
+        shp.setSearchCriteria(false);
+        shp.executeSearch();
     }
 
     public void searchIncoming() {  
         shp.setIncomingSearch();
         scp.setTo("");
+        shp.setSearchCriteria(false);
+        shp.executeSearch();
     }
 
-    private void initComponents(final File[] roots, String commitMessage, String username, Date from, Date to, String branchName) {
+    private void initComponents(final File[] roots, Date from, Date to, String branchName) {
         setLayout(new BorderLayout());
         scp = new SearchCriteriaPanel();
-        scp.setCommitMessage(commitMessage);
-        scp.setUsername(username);
         if (from != null){ 
             scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
         }
@@ -140,7 +140,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     
     @Override
     protected void componentClosed() {
-       //((DiffMainPanel) getComponent(0)).componentClosed();
+       shp.windowClosed();
        super.componentClosed();
     }
     

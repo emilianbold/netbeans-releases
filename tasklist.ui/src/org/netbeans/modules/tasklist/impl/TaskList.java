@@ -45,15 +45,7 @@
 package org.netbeans.modules.tasklist.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
@@ -118,7 +110,7 @@ public class TaskList {
                     groupTasks = new LinkedList<Task>();
                     group2tasks.put( group, groupTasks );
                 }
-                
+
                 tasksToAdd.add( t );
                 scannerTasks.add( t );
                 groupTasks.add( t );
@@ -159,17 +151,17 @@ public class TaskList {
     }
     
     private List<Task> clear( PushTaskScanner scanner, FileObject resource ) {
-        List<Task> toRemove = null;
+        Set<Task> toRemove = null;
         List<Task> tasks = pushScanner2tasks.get( scanner );
         if( null != tasks ) {
             if( null == resource ) {
-                toRemove = new LinkedList<Task>();
+                toRemove = new HashSet<Task>();
                 toRemove.addAll(tasks);
             } else {
                 for( Task t : tasks ) {
                     if( resource.equals( Accessor.getFile( t ) ) ) {
                         if( null == toRemove )
-                            toRemove = new LinkedList<Task>();
+                            toRemove = new HashSet<Task>();
                         toRemove.add( t );
                     }
                 }
@@ -183,7 +175,7 @@ public class TaskList {
                 groupTasks.removeAll( toRemove );
             }
         }
-        return toRemove;
+        return toRemove == null ? null : new LinkedList(toRemove);
     }
     
     void update( FileTaskScanner scanner, FileObject resource, List<Task> newTasks, TaskFilter filter ) {
@@ -311,11 +303,11 @@ public class TaskList {
         List<Task> tasks = fileScanner2tasks.get( scanner );
         if( null == tasks )
             return null;
-        List<Task> toRemove = null;
+        Set<Task> toRemove = null;
         for( Task t : tasks ) {
             if( resource.equals( Accessor.getFile( t ) ) ) {
                 if( null == toRemove )
-                    toRemove = new LinkedList<Task>();
+                    toRemove = new HashSet<Task>();
                 toRemove.add( t );
             }
         }
@@ -327,7 +319,7 @@ public class TaskList {
                 groupTasks.removeAll( toRemove );
             }
         }
-        return toRemove;
+        return toRemove == null ? null : new LinkedList(toRemove);
     }
     
     void clear( FileObject resource ) {
@@ -481,7 +473,7 @@ public class TaskList {
         tasksList = null; 
     }
     
-    private void removeTasks(List<Task> toRemove) {
+    private void removeTasks(Collection<Task> toRemove) {
         sortedTasks.removeAll( toRemove );
         tasksList = null; 
     }    

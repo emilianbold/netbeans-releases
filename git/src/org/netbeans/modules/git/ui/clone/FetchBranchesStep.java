@@ -98,8 +98,13 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
         branches.setBranches(l);
     }
     
-    public List<? extends GitBranch> getSelectedBranches () {
-        return branches.getSelectedBranches();
+    public List<GitBranch> getSelectedBranches () {
+        List<Branch> selected = branches.getSelectedBranches();
+        List<GitBranch> l = new ArrayList<GitBranch>(selected.size());
+        for (Branch b : selected) {
+            l.add(b.branch);
+        }
+        return l;
     }
 
     @Override
@@ -112,7 +117,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
         return new HelpCtx(FetchBranchesStep.class);
     }
     
-    private static class Branch extends ItemSelector.Item implements GitBranch {
+    private static class Branch extends ItemSelector.Item {
         private final GitBranch branch;
 
         public Branch(GitBranch branch) {
@@ -128,19 +133,19 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
         public String getTooltipText() {
             return getText();
         }
-        @Override
+
         public String getName() {
             return branch.getName();
         }
-        @Override
+
         public String getId() {
             return branch.getId();
         }
-        @Override
+
         public boolean isRemote() {
             return branch.isRemote();
         }
-        @Override
+
         public boolean isActive() {
             return branch.isActive();
         }

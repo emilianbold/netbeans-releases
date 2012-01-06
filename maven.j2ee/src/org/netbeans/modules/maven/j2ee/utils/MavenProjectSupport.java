@@ -230,8 +230,8 @@ public class MavenProjectSupport {
      */
     public static String[] obtainServerIds (Project project) {
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (sc.getServerInstanceId() != null) {
-            return new String[]{sc.getServerInstanceId(), null};
+        if (sc != null && sc.getServerInstanceId() != null) {
+            return new String[] {sc.getServerInstanceId(), null};
         }
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
         // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue

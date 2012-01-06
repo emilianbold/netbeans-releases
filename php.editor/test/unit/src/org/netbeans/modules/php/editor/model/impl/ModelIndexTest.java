@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.model.impl;
@@ -202,19 +202,21 @@ public class ModelIndexTest extends ModelTestBase {
 
         public void run (ResultIterator resultIterator) throws Exception {
             PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-            Model model = ModelFactory.getModel(parameter);
-            assertNotNull(model);
-            FileScope fileScope = model.getFileScope();
-            assertNotNull(fileScope);
-            IndexScope indexScope = fileScope.getIndexScope();
-            assertNotNull(indexScope);
-            testIndexScope(model, fileScope, indexScope);
-            testFileScope(model, fileScope, indexScope);
-            for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
-                testClassScope(model, fileScope, classScope, indexScope);
-            }
-            for (InterfaceScope ifaceScope : ModelUtils.getDeclaredInterfaces(fileScope)) {
-                testIfaceScope(model, fileScope, ifaceScope, indexScope);
+            if (parameter != null) {
+                Model model = ModelFactory.getModel(parameter);
+                assertNotNull(model);
+                FileScope fileScope = model.getFileScope();
+                assertNotNull(fileScope);
+                IndexScope indexScope = fileScope.getIndexScope();
+                assertNotNull(indexScope);
+                testIndexScope(model, fileScope, indexScope);
+                testFileScope(model, fileScope, indexScope);
+                for (ClassScope classScope : ModelUtils.getDeclaredClasses(fileScope)) {
+                    testClassScope(model, fileScope, classScope, indexScope);
+                }
+                for (InterfaceScope ifaceScope : ModelUtils.getDeclaredInterfaces(fileScope)) {
+                    testIfaceScope(model, fileScope, ifaceScope, indexScope);
+                }
             }
         }
         abstract void testIndexScope(Model model, FileScope fileScope, IndexScope indexScope);

@@ -181,7 +181,7 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
         // Note about decreasing CPU profiling overhead
         hints.addHint(REDUCE_OVERHEAD_MSG);
 
-        // Put here a warning that the IDE must be run under JDK6/7
+        // Put here a warning that the IDE must be run under JDK6/7/8
         hints.addWarning(Bundle.JavaApplicationIntegrationProvider_DynamicWarningMessage(
                             IntegrationUtils.getJavaPlatformName(getTargetJava())));
 

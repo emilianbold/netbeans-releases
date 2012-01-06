@@ -145,7 +145,7 @@ public class AnnotateAction extends GitAction {
                 }
                 GitBlameResult result = null;
                 try {
-                    result = getClient().blame(file, revision, this);
+                    result = getClient().blame(file, revision, getProgressMonitor());
                     if (isCanceled()) {
                         ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationFailed")); // NOI18N;
                         return;

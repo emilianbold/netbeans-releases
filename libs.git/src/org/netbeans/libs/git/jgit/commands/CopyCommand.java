@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -54,8 +55,8 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public class CopyCommand extends MoveTreeCommand {
     private final String description;
 
-    public CopyCommand (Repository repository, File source, File target, ProgressMonitor monitor, FileListener listener) {
-        super(repository, source, target, true, true, monitor, listener);
+    public CopyCommand (Repository repository, GitClassFactory gitFactory, File source, File target, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, source, target, true, true, monitor, listener);
         this.description = new StringBuilder("git copy ").append("--after ").append(source).append(" ").append(target).toString(); //NOI18N
     }
 

@@ -53,8 +53,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitTag;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
-import org.netbeans.libs.git.jgit.JGitTag;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -65,8 +64,8 @@ public class ListTagCommand extends GitCommand {
     private Map<String, GitTag> allTags;
     private final boolean all;
 
-    public ListTagCommand (Repository repository, boolean all, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public ListTagCommand (Repository repository, GitClassFactory gitFactory, boolean all, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.all = all;
     }
 
@@ -80,9 +79,10 @@ public class ListTagCommand extends GitCommand {
             for (Map.Entry<String, Ref> e : tags.entrySet()) {
                 GitTag tag;
                 try {
-                    tag = new JGitTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
+                    tag = getClassFactory().createTag(walk.parseTag(e.getValue().getLeaf().getObjectId()));
                 } catch (IncorrectObjectTypeException ex) {
-                    tag = new JGitTag(e.getKey(), new JGitRevisionInfo(walk.parseCommit(e.getValue().getLeaf().getObjectId()), repository));
+                    tag = getClassFactory().createTag(e.getKey(),
+                            getClassFactory().createRevisionInfo(walk.parseCommit(e.getValue().getLeaf().getObjectId()), repository));
                 }
                 if (all || tag.getTaggedObjectType() == GitObjectType.COMMIT) {
                     allTags.put(tag.getTagName(), tag);

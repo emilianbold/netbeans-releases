@@ -76,15 +76,16 @@ public final class SearchResponse {
      * Providers are expected to signal unsuccessful invocation of <code>Runnable.run</code>
      * by writing into status line and producing beep. Invocation failures may happen,
      * as <code>Runnable.run</code> may be called later, when conditions or context
-     * changed in a way that action can't be performed.<p></p>
+     * changed in a way that action can't be performed.
      * 
-     * @param htmlDisplayName Localized display name of this result item. Note
-     * that <b>&lt;b&gt;</b> and <b>&lt;/b&gt;</b> html tags should be used to emphasize part of the result.
+     * @param htmlDisplayName Localized display name of this result item.
+     * May start with {@code <html>} in which case the text may use HTML tags;
+     * then {@code <b>...</b>} tags should be used to emphasize part of the result.
      * Common provider implementations will use bold marking for found substring, so
-     * resulting string should look like <b>"Item containing &lt;b&gt;searched&lt;/b&gt; text"</b>, where 
-     * "searched" is text returned from {@link SearchRequest#getText()}.<br></br>
-     * It's possible but not recommended to use other basic html tags, as readability
-     * of results may suffer.<p></p>
+     * resulting string should look like {@code <html>Item containing <b>searched</b> text}, where
+     * {@code searched} is text returned from {@link SearchRequest#getText()}.
+     * Use of other HTML tags is discouraged.
+     * If plain text is passed, the first occurrence of the search string will be highlighted automatically.
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.
@@ -102,19 +103,13 @@ public final class SearchResponse {
      * Providers are expected to signal unsuccessful invocation of <code>Runnable.run</code>
      * by writing into status line and producing beep. Invocation failures may happen,
      * as <code>Runnable.run</code> may be called later, when conditions or context
-     * changed in a way that action can't be performed.<p></p>
+     * changed in a way that action can't be performed.
      * 
-     * @param htmlDisplayName Localized display name of this result item. Note
-     * that <b>&lt;b&gt;</b> and <b>&lt;/b&gt;</b> html tags should be used to emphasize part of the result.
-     * Common provider implementations will use bold marking for found substring, so
-     * resulting string should look like <b>"Item containing &lt;b&gt;searched&lt;/b&gt; text"</b>, where 
-     * "searched" is text returned from {@link SearchRequest#getText()}.<br></br>
-     * It's possible but not recommended to use other basic html tags, as readability
-     * of results may suffer.<p></p>
+     * @param htmlDisplayName see {@link #addResult(Runnable,String)} for description
      * 
-     * @param displayHint Localized display hint of this result item or null if not available<p></p>
+     * @param displayHint Localized display hint of this result item or null if not available
      * 
-     * @param shortcut Shortcut of this result item or null if shortcut isn't available<p></p>
+     * @param shortcut Shortcut of this result item or null if shortcut isn't available
      * 
      * @return true when result was accepted and more results are needed if available.
      * False when no further results are needed.

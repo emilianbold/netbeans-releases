@@ -45,25 +45,16 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
-import javax.lang.model.element.TypeElement;
+import java.util.*;
+import javax.lang.model.element.*;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -72,6 +63,7 @@ import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.Javadoc;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -168,7 +160,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             return null;
         }
 
-        TreePath clazz = RefactoringUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+        TreePath clazz = JavaRefactoringUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
         TypeElement clazzElm = (TypeElement) javac.getTrees().getElement(clazz);
         preCheckProblem = JavaPluginUtils.isSourceElement(clazzElm, javac);
         if (preCheckProblem != null) {

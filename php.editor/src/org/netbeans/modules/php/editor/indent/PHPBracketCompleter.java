@@ -674,7 +674,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     public void run() {
                         final long currentTimeMillis = System.currentTimeMillis();
                         try {
-                            ParserManager.parseWhenScanFinished(Collections.<Source>singleton(Source.create(doc)), new UserTask() {
+                            ParserManager.parse(Collections.<Source>singleton(Source.create(doc)), new UserTask() {
                                 @Override
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     if (System.currentTimeMillis() - currentTimeMillis < 1500) {

@@ -63,7 +63,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.spi.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.doc.PhpDocProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -262,7 +261,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(provider.getAction(ActionProvider.COMMAND_TEST));
             addDocumentationActions(actions, phpModule);
             actions.add(null);
-            if (PhpUnit.hasValidVersion(CommandUtils.getPhpUnit(false))) {
+            if (CommandUtils.getPhpUnit(false) != null) {
                 // code coverage seems to be supported in php unit 3.3.0+
                 actions.add(CoverageActionFactory.createCollectorAction(null, null));
                 actions.add(null);
@@ -279,8 +278,10 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
+            actions.add(null);
 
             // frameworks
+            boolean hasFrameworkActions = false;
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 PhpModuleActionsExtender actionsExtender = frameworkProvider.getActionsExtender(phpModule);
                 if (actionsExtender != null) {
@@ -296,12 +297,15 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                         }
                         allActions.addAll(frameworkActions);
                         actions.add(new FrameworkMenu(actionsExtender.getMenuName(), allActions));
+                        hasFrameworkActions = true;
                     }
                 }
             }
+            if (hasFrameworkActions) {
+                actions.add(null);
+            }
 
             // honor 57874 contract
-            actions.add(null);
             actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());

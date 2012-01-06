@@ -131,7 +131,11 @@ public abstract class ChildFactory <T> {
      * Children.create() with the <code>asynchronous</code> parameter
      * set to true.  If not, then no guarantees are made as to what
      * the calling thread is.
-     *
+     * <p>Returning false is tricky since there is no way to tell whether
+     * the loop has been restarted except by examining what is already in
+     * the list. As of 7.27 it is generally unnecessary since calls to
+     * {@link List#add(Object)} will immediately display the new element
+     * as well as checking for interruption.
      * @param toPopulate A list to add key objects to
      * @return true if the list of keys has been completely populated,
      *         false if the list has only been partially populated and
