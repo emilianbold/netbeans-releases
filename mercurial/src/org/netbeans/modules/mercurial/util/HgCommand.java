@@ -1206,8 +1206,7 @@ public class HgCommand {
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             logger.closeLog();
         }
@@ -1224,8 +1223,7 @@ public class HgCommand {
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             logger.closeLog();
         }
@@ -1261,8 +1259,7 @@ public class HgCommand {
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             logger.closeLog();
         }
@@ -3753,6 +3750,7 @@ public class HgCommand {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private static List<String> toCommandList(List<? extends Object> cmdLine, File styleFile) {
         if (cmdLine.isEmpty()) {
             return (List<String>) cmdLine;

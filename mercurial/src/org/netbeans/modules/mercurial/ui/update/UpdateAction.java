@@ -154,8 +154,7 @@ public class UpdateAction extends ContextAction {
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
+                    HgUtils.notifyException(ex);
                 }
 
                 logger.outputInRed(

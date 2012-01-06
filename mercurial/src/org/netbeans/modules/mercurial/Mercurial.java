@@ -512,7 +512,7 @@ public class Mercurial {
             hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
         }
         if (hpResult == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<VCSHyperlinkProvider>emptyList();
         }
         Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
         List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
@@ -559,7 +559,7 @@ public class Mercurial {
                 Mercurial.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (VersioningSupport.isExcluded(file)) break;
             if (HgUtils.hgExistsFor(file)){
                 Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
@@ -589,7 +589,7 @@ public class Mercurial {
         File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
         File knownParent = null;
         for (File r : roots) {
-            if(!Utils.isScanForbidden(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+            if(!VersioningSupport.isExcluded(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
                 knownParent = r;
             }
         }

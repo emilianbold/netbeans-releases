@@ -305,8 +305,8 @@ class RevisionNode extends AbstractNode {
             }
             if(repoRev == null && event == null) return;
             if(repoRev != null){
-                if(repoRev.getEvents() != null){
-                    event =  repoRev.getEvents().get(0);
+                if(repoRev.getEvents().length > 0){
+                    event = repoRev.getEvents()[0];
                 }else if(event == null){
                     return;
                 }
