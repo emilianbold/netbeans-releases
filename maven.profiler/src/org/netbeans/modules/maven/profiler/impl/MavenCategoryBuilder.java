@@ -60,8 +60,14 @@ import org.openide.util.Lookup;
 })
 public class MavenCategoryBuilder extends CategoryBuilder {
 
-    public MavenCategoryBuilder(Project proj, Lookup lkp) {
-        super(proj, findProjectId(lkp));
+    public MavenCategoryBuilder(Project proj, final Lookup lkp) {
+        super(proj, new ProjectTypeIdProvider() {
+
+            @Override
+            public String getId() {
+                return findProjectId(lkp);
+            }
+        });
     }
 
     private static String findProjectId(Lookup lkp) {
