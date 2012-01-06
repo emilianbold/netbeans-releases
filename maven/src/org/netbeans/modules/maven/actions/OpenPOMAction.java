@@ -50,6 +50,7 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -57,16 +58,16 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.NbBundle.Messages;
 
-@ActionID(category="Project", id="org.netbeans.modules.maven.actions.openpom")
+@ActionID(category=OpenPOMAction.CATEGORY, id=OpenPOMAction.ID)
 @ActionRegistration(displayName="#BTN_open_pom")
 @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position=1650, separatorAfter=1655)
 @Messages("BTN_open_pom=Open POM")
 public class OpenPOMAction implements ActionListener {
 
+    static final String CATEGORY = "Project";
+    static final String ID = "org.netbeans.modules.maven.actions.openpom";
     public static ContextAwareAction instance() {
-        ContextAwareAction a = FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-maven-actions-openpom.instance", ContextAwareAction.class); // XXX #205798
-        assert a != null;
-        return a;
+        return (ContextAwareAction) Actions.forID(CATEGORY, ID);
     }
 
     private final List<NbMavenProjectImpl> projects;
