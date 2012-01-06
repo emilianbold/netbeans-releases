@@ -66,7 +66,7 @@ public final class JavaMoveMembersProperties {
         visibility = Visibility.ESCALATE;
         delegate = false;
         addDeprecated = false;
-        updateJavaDoc = true;
+        updateJavaDoc = false;
     }
 
     /**

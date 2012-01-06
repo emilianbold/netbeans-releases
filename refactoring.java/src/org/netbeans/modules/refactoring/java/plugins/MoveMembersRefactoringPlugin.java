@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -109,6 +110,8 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         // TODO if target is different project, there is no dependency on the target from source
         // TODO source method is using something not available at target
         // TODO source using generics not available at target
+        // TODO Check if member is static but target is non static inner
+        // TODO Check if target is in <default> package but source is not
         return null;
     }
 
@@ -150,6 +153,12 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         
         Problem p = null;
         Element targetElement = target.resolveElement(javac);
+        PackageElement targetPackage = (PackageElement) javac.getElementUtilities().outermostTypeElement(targetElement).getEnclosingElement();
+        Element sourceElement = sourceTph.resolveElement(javac);
+        PackageElement sourcePackage = (PackageElement) javac.getElementUtilities().outermostTypeElement(sourceElement).getEnclosingElement();
+        if(targetPackage.isUnnamed() && !sourcePackage.isUnnamed()) {
+            return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MovingMemberToDefaultPackage")); //NOI18N
+        }
         for (TreePathHandle treePathHandle : source) {
             Element element = treePathHandle.resolveElement(javac);
             List<? extends Element> enclosedElements = targetElement.getEnclosedElements();
