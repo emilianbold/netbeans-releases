@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -74,7 +75,7 @@ import org.openide.util.SharedClassObject;
  *
  * @author Pavel Flaska
  */
-public abstract class GeneratorTestMDRCompat extends NbTestCase {
+public abstract class GeneratorTestMDRCompat extends ClassIndexTestCase {
 
     File testFile = null;
     
