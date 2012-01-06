@@ -428,6 +428,18 @@ made subject to such option by the copyright holder.
                                 </file>
                             </folder>
                         </folder>
+                        <folder name="CodeTemplateProcessorFactories">
+                            <file name="org-netbeans-modules-editor-java-JavaCodeTemplateProcessor$Factory.shadow">
+                                <attr name="originalFile" stringvalue="Editors/text/x-java/CodeTemplateProcessorFactories/org-netbeans-modules-editor-java-JavaCodeTemplateProcessor$Factory.instance"/>
+                            </file>
+                        </folder>                
+
+                        <folder name="CodeTemplateFilterFactories">
+                            <file name="org-netbeans-modules-editor-java-JavaCodeTemplateFilter$Factory.shadow">
+                                <attr name="originalFile" stringvalue="Editors/text/x-java/CodeTemplateFilterFactories/org-netbeans-modules-editor-java-JavaCodeTemplateFilter$Factory.instance"/>
+                            </file>
+                        </folder>                
+
                     </folder>
                 </folder>
             </folder>
