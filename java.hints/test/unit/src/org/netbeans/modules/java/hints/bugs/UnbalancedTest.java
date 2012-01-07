@@ -225,5 +225,14 @@ public class UnbalancedTest extends TestBase {
                             "}\n");
     }
 
+    public void testCollectionNegAddTested() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private java.util.List<String> coll = new java.util.ArrayList<String>();\n" +
+                            "    public void t1(String str) { if (coll.add(str)) System.err.println(\"\"); }\n" +
+                            "}\n");
+    }
+
     //XXX: test non-private
 }

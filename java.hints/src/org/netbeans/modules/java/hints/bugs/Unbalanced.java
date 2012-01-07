@@ -219,7 +219,11 @@ public class Unbalanced {
                     }
                     return null;
                 } else if (WRITE_METHODS.contains(methodName)) {
-                    record(ctx.getInfo(), var, State.WRITE);
+                    if (tp.getParentPath().getParentPath().getParentPath().getLeaf().getKind() != Kind.EXPRESSION_STATEMENT) {
+                        record(ctx.getInfo(), var, State.WRITE, State.READ);
+                    } else {
+                        record(ctx.getInfo(), var, State.WRITE);
+                    }
                     return null;
                 }
             }
