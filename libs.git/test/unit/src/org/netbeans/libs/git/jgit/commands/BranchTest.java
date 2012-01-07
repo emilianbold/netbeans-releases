@@ -88,22 +88,22 @@ public class BranchTest extends AbstractGitTestCase {
 
     public void testListBranches () throws Exception {
         GitClient client = getClient(workDir);
-        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(0, branches.size());
         
         File f = new File(workDir, "file");
         write(f, "hello");
         File[] files = new File[] { f };
-        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(files, "init", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "init", null, null, NULL_PROGRESS_MONITOR);
         write(f, "hello again");
-        client.commit(files, "change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(files, "change", null, null, NULL_PROGRESS_MONITOR);
 
         Iterator<RevCommit> it = new Git(repository).log().call().iterator();
         RevCommit info = it.next();
         String commitId = info.getId().getName();
 
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
         assertEquals("master", branches.get("master").getName());
         assertEquals(commitId, branches.get("master").getId());
@@ -111,7 +111,7 @@ public class BranchTest extends AbstractGitTestCase {
         assertTrue(branches.get("master").isActive());
 
         write(new File(workDir, ".git/refs/heads/nova"), commitId);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals("master", branches.get("master").getName());
         assertFalse(branches.get("master").isRemote());
@@ -124,7 +124,7 @@ public class BranchTest extends AbstractGitTestCase {
 
         Thread.sleep(1100);
         write(new File(workDir, ".git/HEAD"), commitId);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(3, branches.size());
         assertEquals(GitBranch.NO_BRANCH, branches.get(GitBranch.NO_BRANCH).getName());
         assertFalse(branches.get(GitBranch.NO_BRANCH).isRemote());
@@ -149,12 +149,12 @@ public class BranchTest extends AbstractGitTestCase {
         commit(files);
 
         GitClient client = getClient(workDir);
-        GitRevisionInfo[] logs = client.log(new SearchCriteria(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo[] logs = client.log(new SearchCriteria(), NULL_PROGRESS_MONITOR);
         String lastCommitId = logs[0].getRevision();
         String commitId = logs[1].getRevision();
 
-        GitBranch branch = client.createBranch(BRANCH_NAME, commitId, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitBranch branch = client.createBranch(BRANCH_NAME, commitId, NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertTrue(branches.containsKey("master"));
         assertTrue(branches.containsKey(BRANCH_NAME));
@@ -170,16 +170,16 @@ public class BranchTest extends AbstractGitTestCase {
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME)));
 
-        client.createBranch(BRANCH_NAME_2, Constants.HEAD, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH_NAME_2, Constants.HEAD, NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(3, branches.size());
         assertTrue(branches.containsKey("master"));
         assertTrue(branches.containsKey(BRANCH_NAME));
         assertTrue(branches.containsKey(BRANCH_NAME_2));
         assertTrue(branches.get("master").isActive());
         assertEquals(lastCommitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME_2)));
-        client.createBranch(BRANCH_NAME_3, "refs/heads/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch(BRANCH_NAME_3, "refs/heads/master", NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(4, branches.size());
         assertTrue(branches.containsKey("master"));
         assertTrue(branches.containsKey(BRANCH_NAME));
@@ -189,13 +189,13 @@ public class BranchTest extends AbstractGitTestCase {
         assertEquals(lastCommitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME_3)));
 
         try {
-            client.createBranch(BRANCH_NAME, commitId, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.createBranch(BRANCH_NAME, commitId, NULL_PROGRESS_MONITOR);
             fail("Branch should not have been created, it already existed");
         } catch (GitException ex) {
             // OK
             assertEquals("Ref " + BRANCH_NAME + " already exists", ex.getCause().getMessage());
         }
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(4, branches.size());
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME)));
@@ -213,17 +213,17 @@ public class BranchTest extends AbstractGitTestCase {
     public void testListRemoteBranches () throws Exception {
         File otherWT = new File(workDir.getParentFile(), "repo2");
         GitClient client = getClient(otherWT);
-        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.init(NULL_PROGRESS_MONITOR);
         File f = new File(otherWT, "f");
         write(f, "init");
-        client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(new File[] { f }, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitBranch branch = client.createBranch(BRANCH_NAME, "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        GitBranch branch = client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
         write(f, "change on master");
-        client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo master = client.commit(new File[] { f }, "change on master", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo master = client.commit(new File[] { f }, "change on master", null, null, NULL_PROGRESS_MONITOR);
         
-        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(otherWT.getAbsolutePath(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(otherWT.getAbsolutePath(), NULL_PROGRESS_MONITOR);
         assertEquals(2, remoteBranches.size());
         assertEquals(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         assertEquals(master.getRevision(), remoteBranches.get("master").getId());
@@ -236,15 +236,15 @@ public class BranchTest extends AbstractGitTestCase {
         add(files);
         commit(files);
         GitClient client = getClient(workDir);
-        GitBranch b = client.createBranch(BRANCH_NAME, "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitBranch b = client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertNotNull(branches.get(BRANCH_NAME));
         assertEquals(0, repository.getConfig().getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION).size());
         
         // delete branch
-        client.deleteBranch(BRANCH_NAME, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.deleteBranch(BRANCH_NAME, false, NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
         assertNull(branches.get(BRANCH_NAME));
     }
@@ -252,29 +252,29 @@ public class BranchTest extends AbstractGitTestCase {
     public void testDeleteTrackedBranch () throws Exception {
         final File otherWT = new File(workDir.getParentFile(), "repo2");
         GitClient client = getClient(otherWT);
-        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.init(NULL_PROGRESS_MONITOR);
         File f = new File(otherWT, "f");
         write(f, "init");
-        client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(new File[] { f }, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
         
         client = getClient(workDir);
         client.setRemote(new GitRemoteConfig("origin",
                 Arrays.asList(new String[] { otherWT.getAbsolutePath() }),
                 Arrays.asList(new String[] { otherWT.getAbsolutePath() }),
                 Arrays.asList(new String[] { "refs/heads/*:refs/remotes/origin/*" }),
-                Arrays.asList(new String[] { "refs/remotes/origin/*:refs/heads/*" })), ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.fetch("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.checkoutRevision("origin/master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitBranch b = client.createBranch(BRANCH_NAME, "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                Arrays.asList(new String[] { "refs/remotes/origin/*:refs/heads/*" })), NULL_PROGRESS_MONITOR);
+        client.fetch("origin", NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("origin/master", true, NULL_PROGRESS_MONITOR);
+        GitBranch b = client.createBranch(BRANCH_NAME, "origin/master", NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertNotNull(branches.get(BRANCH_NAME));
         assertEquals(1, repository.getConfig().getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION).size());
         
         //delete tracked branch and test
-        client.deleteBranch(BRANCH_NAME, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.deleteBranch(BRANCH_NAME, false, NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
         assertNull(branches.get(BRANCH_NAME));
         assertEquals(0, repository.getConfig().getSubsections(ConfigConstants.CONFIG_BRANCH_SECTION).size());        
@@ -287,29 +287,29 @@ public class BranchTest extends AbstractGitTestCase {
         add(files);
         commit(files);
         GitClient client = getClient(workDir);
-        GitBranch b = client.createBranch(BRANCH_NAME, "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.checkoutRevision(BRANCH_NAME, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitBranch b = client.createBranch(BRANCH_NAME, "master", NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
         write(f, "change on branch");
         add(files);
         commit(files);
         //checkout other revision
-        client.checkoutRevision("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertNotNull(branches.get(BRANCH_NAME));
         //delete and test
         try {
-            client.deleteBranch(BRANCH_NAME, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.deleteBranch(BRANCH_NAME, false, NULL_PROGRESS_MONITOR);
             fail("no force flag");
         } catch (GitException.NotMergedException ex) {
             // OK
         }
-        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertNotNull(branches.get(BRANCH_NAME));
         // delete with force flag
-        client.deleteBranch(BRANCH_NAME, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.deleteBranch(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
         assertNull(branches.get(BRANCH_NAME));
     }
@@ -322,7 +322,7 @@ public class BranchTest extends AbstractGitTestCase {
         commit(files);
         GitClient client = getClient(workDir);
         try {
-            client.deleteBranch("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.deleteBranch("master", true, NULL_PROGRESS_MONITOR);
             fail("Can not delete active branch");
         } catch (GitException ex) {
             assertTrue(ex.getMessage().contains("Branch master is checked out and can not be deleted"));
@@ -332,21 +332,21 @@ public class BranchTest extends AbstractGitTestCase {
     public void testDeleteRemoteBranch () throws Exception {
         final File otherWT = new File(workDir.getParentFile(), "repo2");
         GitClient client = getClient(otherWT);
-        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.init(NULL_PROGRESS_MONITOR);
         File f = new File(otherWT, "f");
         write(f, "init");
-        client.add(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(new File[] { f }, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
         
         client = getClient(workDir);
-        client.fetch(otherWT.getAbsolutePath(), Arrays.asList(new String[] { "refs/heads/*:refs/remotes/origin/*" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.fetch(otherWT.getAbsolutePath(), Arrays.asList(new String[] { "refs/heads/*:refs/remotes/origin/*" }), NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(1, branches.size());
         assertNotNull(branches.get("origin/master"));
         
         // delete remote branch
-        client.deleteBranch("origin/master", false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.deleteBranch("origin/master", false, NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
         assertEquals(0, branches.size());
     }
 }

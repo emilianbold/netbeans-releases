@@ -89,8 +89,6 @@ import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
 import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
@@ -914,8 +912,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 }
             }
             if (exception != null) {
-                // notify user of the failure
-                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(exception));
+                HgUtils.notifyException(exception);
             }
         }
 

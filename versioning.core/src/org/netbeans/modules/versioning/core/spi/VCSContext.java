@@ -318,7 +318,8 @@ public final class VCSContext {
                         break;
                     }
                     // XXX needed io.File for sharability
-                    if (child != null && rootChildFo.isValid() && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(child.toFile()) != SharabilityQuery.NOT_SHARABLE) {
+                    File childFile = child != null ? child.toFile() : null;
+                    if (childFile != null && rootChildFo.isValid() && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(childFile) != SharabilityQuery.NOT_SHARABLE) {
                         rootFilesExclusions.add(child);
                     }
                 } catch (IllegalArgumentException ex) {

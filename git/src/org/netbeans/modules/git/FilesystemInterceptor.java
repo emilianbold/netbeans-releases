@@ -123,7 +123,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             final File root = git.getRepositoryRoot(file);
             if (root == null) return false;
             try {
-                git.getClient(root).reset(new File[] { file }, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).reset(new File[] { file }, "HEAD", true, GitUtils.NULL_PROGRESS_MONITOR);
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
             }
@@ -160,7 +160,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         File root = git.getRepositoryRoot(file);
         try {
             if (GitUtils.getGitFolderForRoot(root).exists()) {
-                git.getClient(root).remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
             } else if (file.exists()) {
                 file.delete();
             }
@@ -205,14 +205,14 @@ class FilesystemInterceptor extends VCSInterceptor {
         try {
             if (root != null && root.equals(dstRoot) && !cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                 // target does not lie under ignored folder and is in the same repo as src
-                git.getClient(root).rename(from, to, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).rename(from, to, false, GitUtils.NULL_PROGRESS_MONITOR);
             } else {
                 boolean result = from.renameTo(to);
                 if (!result) {
                     throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
                 }
                 if (root != null) {
-                    git.getClient(root).remove(new File[] { from }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    git.getClient(root).remove(new File[] { from }, true, GitUtils.NULL_PROGRESS_MONITOR);
                 }
             }
         } catch (GitException e) {
@@ -268,7 +268,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
         try {
             if (root.equals(dstRoot)) {
-                git.getClient(root).copyAfter(from, to, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).copyAfter(from, to, GitUtils.NULL_PROGRESS_MONITOR);
             }
         } catch (GitException e) {
             IOException ex = new IOException();

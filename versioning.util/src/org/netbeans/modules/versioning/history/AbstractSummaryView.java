@@ -524,6 +524,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         private final LogEntry entry;
         boolean messageExpanded;
         boolean revisionExpanded;
+        private boolean viewEventsInitialized;
         private boolean allEventsExpanded;
 
         public RevisionItem (LogEntry entry) {
@@ -561,10 +562,16 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
             return entry.toString();
         }
 
-        private void setExpanded (boolean expanded) {
+        void setExpanded (boolean expanded) {
             revisionExpanded = expanded;
             if (revisionExpanded) {
-                entry.expand();
+                if (entry.isEventsInitialized()) {
+                    if (!viewEventsInitialized) {
+                        ((SummaryListModel) resultsList.getModel()).addEvents(getUserData());
+                    }
+                } else {
+                    entry.expand();
+                }
             }
         }
     }
@@ -818,6 +825,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                 }
             }
             if (rev != null) {
+                rev.viewEventsInitialized = true;
                 Collection<LogEntry.Event> events = src.getEvents();
                 for (LogEntry.Event ev : events) {
                     it.add(new EventItem(ev, rev));

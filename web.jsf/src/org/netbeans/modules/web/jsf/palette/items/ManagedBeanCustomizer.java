@@ -520,9 +520,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                     }
                 }
             }
-            if (scanning) {
-                setScanningLabelVisible(true);
-            }
+            setScanningLabelVisible(SourceUtils.isScanInProgress());
         }
 
         private boolean isCollection(TypeElement type) {

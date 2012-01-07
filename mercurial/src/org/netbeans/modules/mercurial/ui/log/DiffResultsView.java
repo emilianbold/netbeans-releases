@@ -64,6 +64,7 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.DiffStreamSource;
+import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.openide.util.WeakListeners;
 
@@ -245,7 +246,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     @Override
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
             return parent.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
@@ -324,11 +325,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     protected boolean showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
         boolean initialized = container.isEventsInitialized();
-        List<RepositoryRevision.Event> revs = container.getEvents();
+        RepositoryRevision.Event[] revs = container.getEvents();
         
         RepositoryRevision.Event newest = getEventForRoots(container, null);
         if(newest == null) {
-            newest = revs.get(0);   
+            newest = revs[0];
         }
         if (newest == null && !initialized) {
             return false;
@@ -340,7 +341,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     private RepositoryRevision.Event getEventForRoots(RepositoryRevision container, File preferedFile) {
         RepositoryRevision.Event event = null;
-        List<RepositoryRevision.Event> revs;
+        RepositoryRevision.Event[] revs;
         if (container.isEventsInitialized()) {
             revs = container.getEvents();
         } else {

@@ -256,13 +256,13 @@ public class AddTest extends AbstractGitTestCase {
         config.save();
         // add should not set executable bit in index
         add(roots);
-        Map<File, GitStatus> statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
         
         // index should differ from wt
         config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
         config.save();
-        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
     }
     
@@ -280,13 +280,13 @@ public class AddTest extends AbstractGitTestCase {
         write(f, "hi, i am executable");
         // add should not set executable bit in index
         add(roots);
-        Map<File, GitStatus> statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
         
         // index should differ from wt
         config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
         config.save();
-        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
     }
 

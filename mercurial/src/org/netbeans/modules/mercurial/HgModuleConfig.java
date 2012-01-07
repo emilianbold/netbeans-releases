@@ -475,7 +475,7 @@ public class HgModuleConfig {
             try {
                 rcOld = RepositoryConnection.parse(rcOldString);
             } catch (URISyntaxException ex) {
-                Logger.global.throwing(getClass().getName(),
+                Mercurial.LOG.throwing(getClass().getName(),
                                        "insertRecentUrl",               //NOI18N
                                        ex);
                 continue;
@@ -516,7 +516,7 @@ public class HgModuleConfig {
                     ret.add(conn);
                 }
             } catch (URISyntaxException ex) {
-                Logger.global.throwing(getClass().getName(),
+                Mercurial.LOG.throwing(getClass().getName(),
                                        "getRecentUrls",                 //NOI18N
                                        ex);
             }

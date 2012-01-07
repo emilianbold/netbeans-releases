@@ -51,7 +51,6 @@ import javax.swing.Icon;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -236,7 +235,7 @@ public class Actions implements ActionsFactory {
             null );
 
         try {
-            final Action delete = FileUtil.getConfigObject("Actions/Edit/org-openide-actions-DeleteAction.instance", Action.class);
+            final Action delete = org.openide.awt.Actions.forID("Edit", "org.openide.actions.DeleteAction");
             a.putValue(Action.ACCELERATOR_KEY, delete.getValue(Action.ACCELERATOR_KEY));
             delete.addPropertyChangeListener(new PropertyChangeListener() {
                 public @Override void propertyChange(PropertyChangeEvent evt) {

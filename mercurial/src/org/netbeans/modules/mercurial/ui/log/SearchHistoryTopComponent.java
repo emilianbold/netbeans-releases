@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.branch.BranchSelector;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
+import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.versioning.util.Utils;
 
 /**
@@ -160,7 +161,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
 
     @Override
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         return shp.getSetups();
     }
 

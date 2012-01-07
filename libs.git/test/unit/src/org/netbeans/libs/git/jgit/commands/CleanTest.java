@@ -88,7 +88,7 @@ public class CleanTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Collections.singleton(file));
         GitClient client = getClient(workDir);
         assertTrue(file.exists());
-        client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Collections.singleton(file));
 
         Monitor m = new Monitor();
@@ -114,7 +114,7 @@ public class CleanTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Collections.singleton(folder));
         GitClient client = getClient(workDir);
         assertTrue(folder.exists());
-        client.add(new File[] { file11, file21 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file11, file21 }, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Arrays.asList(new File[] {file11, file21}));
 
         Monitor m = new Monitor();
@@ -227,8 +227,8 @@ public class CleanTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         
         assertTrue(file.exists());
-        client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(new File[] { file }, "initial commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { file }, "initial commit", null, null, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Collections.singleton(file));
         
         Monitor m = new Monitor();
@@ -357,7 +357,7 @@ public class CleanTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         
         File[] addedFiles = new File[] {addedFile, nestedAddedFile};
-        client.add(addedFiles, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(addedFiles, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Arrays.asList(addedFiles));
         
         Monitor m = new Monitor();

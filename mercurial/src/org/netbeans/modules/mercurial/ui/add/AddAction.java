@@ -134,8 +134,7 @@ public class AddAction extends ContextAction {
                             } catch (HgException.HgCommandCanceledException ex) {
                                 // canceled by user, do nothing
                             } catch (HgException ex) {
-                                NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                                DialogDisplayer.getDefault().notifyLater(e);
+                                HgUtils.notifyException(ex);
                             }
                             logger.outputInRed(NbBundle.getMessage(AddAction.class, "MSG_ADD_DONE")); // NOI18N
                             logger.output(""); // NOI18N

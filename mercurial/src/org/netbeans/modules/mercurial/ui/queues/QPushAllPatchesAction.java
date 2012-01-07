@@ -104,8 +104,7 @@ public class QPushAllPatchesAction extends ContextAction {
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
+                    HgUtils.notifyException(ex);
                 }
             }
         }.start(Mercurial.getInstance().getRequestProcessor(root), root, NbBundle.getMessage(QPushAllPatchesAction.class, "LBL_QPushAllPatchesAction.progress")); //NOI18N

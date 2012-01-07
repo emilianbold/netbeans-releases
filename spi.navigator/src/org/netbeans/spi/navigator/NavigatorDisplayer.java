@@ -44,6 +44,7 @@ package org.netbeans.spi.navigator;
 
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 /**
@@ -52,13 +53,15 @@ import org.openide.windows.TopComponent;
  * <p>
  * By default the standard Navigator TopComponent is provided which manages the
  * navigator panels. An alternative visualization/placement can be specified by
- * implementing this interface and registering it in META-INF/services. The
+ * implementing this interface and registering it is a service. The
  * methods of the interface get call by the navigator module based on what it
  * needs at the moment.
- * <p>
+ * <p>If an implementation is provided then the navigator needs to be explicitly
+ * initialized by calling {@link NavigatorHandler#activateNavigator} when the UI is shown.
  * @since 1.19
  *
  * @author Tomas Pavek
+ * @see ServiceProvider
  */
 public interface NavigatorDisplayer {
     /**

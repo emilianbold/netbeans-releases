@@ -134,6 +134,7 @@ class PullWizard  implements ChangeListener {
         private PullBranchesStep pullBranchesStep;
 
         @Override
+        @SuppressWarnings("unchecked")
         protected Panel<WizardDescriptor>[] initializePanels () {
             selectUriStep = new SelectUriStep(repository, remotes, SelectUriStep.Mode.PULL);
             selectUriStep.addChangeListener(PullWizard.this);

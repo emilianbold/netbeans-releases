@@ -525,7 +525,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         public void attach(Action action) {
             Reference<Action> d = delegate;
 
-            if ((d != null) && (d.get() == action)) {
+            if ((d == null) || (d.get() == action)) {
                 return;
             }
 

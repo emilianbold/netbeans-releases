@@ -63,6 +63,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
+import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -90,10 +91,10 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     private static final Color HIGHLIGHT_BRANCH_HEAD_BG = Color.decode("0xaaffaa"); //NOI18N
     private static final Color HIGHLIGHT_TAG_BG = Color.decode("0xffffaa"); //NOI18N
     
-    static class HgLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
+    static final class HgLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private RepositoryRevision revision;
-        private List events = new ArrayList<HgLogEvent>(10);
+        private List<Event> events = new ArrayList<Event>(10);
         private SearchHistoryPanel master;
         private String complexRevision;
         private final PropertyChangeListener list;
@@ -102,7 +103,12 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         public HgLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
-            revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            if (revision.isEventsInitialized()) {
+                refreshEvents();
+                list = null;
+            } else {
+                revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            }
         }
 
         @Override
@@ -222,12 +228,12 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
 
         void refreshEvents () {
-            ArrayList<HgLogEvent> evts = new ArrayList<HgLogEvent>(revision.getEvents().size());
+            ArrayList<Event> evts = new ArrayList<Event>(revision.getEvents().length);
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new HgLogEvent(master, event));
             }
-            List<HgLogEvent> oldEvents = new ArrayList<HgLogEvent>(events);
-            List<HgLogEvent> newEvents = new ArrayList<HgLogEvent>(evts);
+            List<Event> oldEvents = new ArrayList<Event>(events);
+            List<Event> newEvents = new ArrayList<Event>(evts);
             events = evts;
             eventsChanged(oldEvents, newEvents);
         }
@@ -388,7 +394,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
 
     @Override
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
             List<RepositoryRevision> results = master.getResults();

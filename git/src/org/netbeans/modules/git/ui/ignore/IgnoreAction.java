@@ -58,7 +58,6 @@ import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.FileListener;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
@@ -67,6 +66,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -176,7 +176,7 @@ public class IgnoreAction extends MultipleRepositoryAction {
         Map<File, GitStatus> statuses;
         try {
             GitClient client = Git.getInstance().getClient(repository);
-            statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            statuses = client.getStatus(roots, GitUtils.NULL_PROGRESS_MONITOR);
         } catch (GitException ex) {
             LOG.log(Level.INFO, null, ex);
             statuses = Collections.<File, GitStatus>emptyMap();

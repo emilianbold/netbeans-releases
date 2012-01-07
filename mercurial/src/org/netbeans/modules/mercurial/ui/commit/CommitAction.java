@@ -512,8 +512,7 @@ public class CommitAction extends ContextAction {
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             refreshFS(filesToRefresh);
             cache.refreshAllRoots(filesToRefresh);
@@ -650,7 +649,7 @@ public class CommitAction extends ContextAction {
                             offeredFileNames += "\n" + f.getName();     //NOI18N
                         }
                     } else {
-                        reducedCommitCandidates = Collections.EMPTY_LIST;
+                        reducedCommitCandidates = Collections.<File>emptyList();
                         refreshFiles = Collections.singleton(repository);
                         offeredFileNames = "\n" + repository.getName(); //NOI18N
                     }
@@ -674,7 +673,7 @@ public class CommitAction extends ContextAction {
                         } else if(!commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
                             return;
                         } else {
-                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, closingBranch, logger);
+                            HgCommand.doCommit(repository, Collections.<File>emptyList(), msg, closingBranch, logger);
                             refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
                             commitAfterMerge = true;
                         }
