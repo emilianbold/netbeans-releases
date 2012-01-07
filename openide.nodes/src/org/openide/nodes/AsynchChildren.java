@@ -184,6 +184,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
                 if (n != null) {
                     newKeys.add(n);
                 }
+                newKeys.removeAll(Collections.singleton(null)); // #206958
                 setKeys(newKeys);
                 return true;
             }

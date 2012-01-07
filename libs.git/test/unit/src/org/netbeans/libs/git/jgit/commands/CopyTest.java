@@ -107,7 +107,7 @@ public class CopyTest extends AbstractGitTestCase {
         client.addNotificationListener(m);
         client.copyAfter(file, target, m);
         assertEquals(Collections.singleton(target), m.notifiedFiles);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
         // sadly, rename detection works only when the source is deleted
@@ -129,7 +129,7 @@ public class CopyTest extends AbstractGitTestCase {
         client.addNotificationListener(m);
         client.copyAfter(file, target, m);
         assertEquals(Collections.singleton(target), m.notifiedFiles);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
 
@@ -142,7 +142,7 @@ public class CopyTest extends AbstractGitTestCase {
         client.addNotificationListener(m);
         client.copyAfter(file, target2, m);
         assertEquals(Collections.singleton(target2), m.notifiedFiles);
-        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, target2, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -163,7 +163,7 @@ public class CopyTest extends AbstractGitTestCase {
         client.addNotificationListener(m);
         client.copyAfter(file, target, m);
         assertEquals(Collections.singleton(target), m.notifiedFiles);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
 
@@ -180,7 +180,7 @@ public class CopyTest extends AbstractGitTestCase {
         client.copyAfter(file, target2, m);
         assertTrue(m.notifiedWarnings.contains("Index already contains an entry for folder/file"));
         assertEquals(Collections.singleton(target2), m.notifiedFiles);
-        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, target2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -221,7 +221,7 @@ public class CopyTest extends AbstractGitTestCase {
         client.addNotificationListener(m);
         client.copyAfter(folder, target, m);
         assertEquals(new HashSet<File>(Arrays.asList(copy1, copy11, copy21)), m.notifiedFiles);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -241,7 +241,7 @@ public class CopyTest extends AbstractGitTestCase {
         file2.createNewFile();
         final Monitor m = new Monitor();
         final GitClient client = getClient(workDir);
-        client.add(new File[] { }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { }, NULL_PROGRESS_MONITOR);
 
         // simulate copy
         final File target = new File(folder.getParentFile(), "folder2");

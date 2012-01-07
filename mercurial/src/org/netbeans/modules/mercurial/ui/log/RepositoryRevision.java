@@ -94,12 +94,12 @@ public class RepositoryRevision {
         return repositoryRoot;
     }
 
-    List<Event> getEvents() {
-        return events;
+    Event[] getEvents() {
+        return events.toArray(new Event[events.size()]);
     }
 
-    List<Event> getDummyEvents () {
-        return dummyEvents;
+    Event[] getDummyEvents () {
+        return dummyEvents.toArray(new Event[dummyEvents.size()]);
     }
 
     public HgLogMessage getLog() {
@@ -128,7 +128,7 @@ public class RepositoryRevision {
             currentSearch.start(Mercurial.getInstance().getRequestProcessor(repositoryRoot));
             return true;
         }
-        return false;
+        return !eventsInitialized;
     }
 
     void cancelExpand () {

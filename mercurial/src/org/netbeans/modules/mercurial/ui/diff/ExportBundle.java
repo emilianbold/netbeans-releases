@@ -65,6 +65,7 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
@@ -245,8 +246,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener, Property
                     List<String> list = HgCommand.doBundle(repository, revBase, revTo, toFile, logger);
                     logger.output(list); // NOI18N
                 } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
+                    HgUtils.notifyException(ex);
                 } finally {
                     logger.outputInRed(NbBundle.getMessage(ExportBundleAction.class, "MSG_EXPORT_BUNDLE_DONE")); // NOI18N
                     logger.output(""); // NOI18N

@@ -50,6 +50,32 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="Actions.forID">
+        <api name="awt"/>
+        <summary>Added <code>Actions.forID</code></summary>
+        <version major="7" minor="42"/>
+        <date year="2012" month="1" day="6"/>
+        <author login="jglick"/>
+        <compatibility addition="yes" source="compatible">
+            <p>
+                Calls to <code>FileUtil.getConfigObject</code> or similar should be reviewed.
+            </p>
+            <p>
+                Modules with a dependency only on <code>org.openide.loaders</code>
+                but not <code>org.openide.awt</code> must add the latter dep in
+                order to use <code>AcceleratorBinding</code>.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Added a utility method <code>Actions.forID</code>.
+                Also moved <code>AcceleratorBinding</code> down into the <code>org.openide.awt</code>
+                module (keeping the same FQN and signature).
+            </p>
+        </description>
+        <class package="org.openide.awt" name="Actions"/>
+        <issue number="205798"/>
+    </change>
     <change id="ActionRegistration.lazy">
         <api name="awt"/>
         <summary>Added <code>lazy</code> attribute to <code>ActionRegistration</code></summary>

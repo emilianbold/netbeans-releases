@@ -517,6 +517,20 @@ public class ActionsTest extends NbTestCase {
         assertEquals("but this can be overridden using popupText", Utilities.isMac() ? 0 : 'C', i.getMnemonic());
         assertEquals("Ciao", i.getText());
     }
+
+    public void testForID() throws Exception {
+        // most positive usages already covered by ActionProcessorTest, just check IAEs
+        assertNull(Actions.forID("Sub/Category", "whatever"));
+        assertNull(Actions.forID("Stuff", "this.is.an.ID"));
+        try {
+            Actions.forID("Actions/Stuff", "ok");
+            fail();
+        } catch (IllegalArgumentException x) {/* OK */}
+        try {
+            Actions.forID("Stuff", "not-an-id");
+            fail();
+        } catch (IllegalArgumentException x) {/* OK */}
+    }
     
     @Override
     protected boolean runInEQ() {

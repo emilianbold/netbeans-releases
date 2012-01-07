@@ -130,6 +130,7 @@ public class ShelveChangesMenu extends AbstractAction implements DynamicMenuCont
     private List<JComponent> getUnshelveActions () {
         List<JComponent> items = new LinkedList<JComponent>();
         List<String> list = Utils.getStringList(NbPreferences.forModule(ShelveChangesMenu.class), PREF_KEY_SHELVED_PATCHES);
+        // XXX use Actions.forID
         Action a = Utils.getAcceleratedAction("Actions/Versioning/UnshelveChanges/org-netbeans-modules-versioning-shelve-impl-UnshelveChangesAction.instance");
         if (a != null && !list.isEmpty()) {
             JMenuItem mItem = new JMenuItem();

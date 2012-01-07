@@ -47,7 +47,6 @@ package org.netbeans.libs.git.progress;
  * @author ondra
  */
 public abstract class ProgressMonitor {
-    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new DefaultProgressMonitor();
     
     public abstract boolean isCanceled ();
 

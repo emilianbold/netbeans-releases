@@ -144,6 +144,7 @@ class CloneWizard  implements ChangeListener {
         private CloneDestinationStep cloneDestinationStep;        
 
         @Override
+        @SuppressWarnings("unchecked")
         protected Panel<WizardDescriptor>[] initializePanels () {
             repositoryStep = new RepositoryStep(forPath);
             repositoryStep.addChangeListener(CloneWizard.this);

@@ -416,9 +416,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
      * revision ranges. XXX move this logic to clients?
      */
     @Override
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         if (results == null) {
-            return Collections.EMPTY_SET;
+            return Collections.<Setup>emptySet();
         }
         if (tbDiff.isSelected()) {
             return diffView.getSetups();
@@ -427,7 +427,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
     
-    Collection getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
+    Collection<Setup> getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
         long fromRevision = Long.MAX_VALUE;
         long toRevision = Long.MIN_VALUE;
         HgLogMessage from = null;
@@ -444,7 +444,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 fromRevision = rev;
                 from = revision.getLog();
             }
-            List<RepositoryRevision.Event> evs = revision.getEvents();
+            RepositoryRevision.Event[] evs = revision.getEvents();
             for (RepositoryRevision.Event event : evs) {
                 File file = event.getFile();
                 if (file != null) {

@@ -93,10 +93,10 @@ class SummaryView extends AbstractSummaryView {
     private static final Color HIGHLIGHT_BRANCH_BG = Color.decode("0xaaffaa"); //NOI18N
     private static final Color HIGHLIGHT_TAG_BG = Color.decode("0xffffaa"); //NOI18N
     
-    static class GitLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
+    static final class GitLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private RepositoryRevision revision;
-        private List events = new ArrayList<GitLogEvent>(10);
+        private List<Event> events = new ArrayList<Event>(10);
         private SearchHistoryPanel master;
         private String complexRevision;
         private final PropertyChangeListener list;
@@ -105,7 +105,12 @@ class SummaryView extends AbstractSummaryView {
         public GitLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
-            revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            if (revision.isEventsInitialized()) {
+                refreshEvents();
+                list = null;
+            } else {
+                revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            }
         }
 
         @Override
@@ -238,12 +243,12 @@ class SummaryView extends AbstractSummaryView {
         }
 
         void refreshEvents () {
-            ArrayList<GitLogEvent> evts = new ArrayList<GitLogEvent>(revision.getEvents().size());
+            ArrayList<Event> evts = new ArrayList<Event>(revision.getEvents().length);
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new GitLogEvent(master, event));
             }
-            List<GitLogEvent> oldEvents = new ArrayList<GitLogEvent>(events);
-            List<GitLogEvent> newEvents = new ArrayList<GitLogEvent>(evts);
+            List<Event> oldEvents = new ArrayList<Event>(events);
+            List<Event> newEvents = new ArrayList<Event>(evts);
             events = evts;
             eventsChanged(oldEvents, newEvents);
         }

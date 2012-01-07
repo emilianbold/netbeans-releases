@@ -58,7 +58,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Maros Sandor
  */
-class RevisionNodeChildren extends Children.Keys implements PropertyChangeListener {
+class RevisionNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
 
     private RepositoryRevision container;
     private SearchHistoryPanel master;
@@ -78,7 +78,7 @@ class RevisionNodeChildren extends Children.Keys implements PropertyChangeListen
 
     @Override
     protected void removeNotify() {
-        setKeys (Collections.<RepositoryRevision.Event>emptySet());
+        setKeys (Collections.<Object>emptySet());
     }
     
     private void refreshKeys() {

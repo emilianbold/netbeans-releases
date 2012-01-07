@@ -188,7 +188,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 continue;
             }
             if (aid.category().startsWith("Actions/")) {
-                throw new LayerGenerationException("@ActionID category() cannot contain /", e, processingEnv, aid, "category");
+                throw new LayerGenerationException("@ActionID category() should not start with Actions/", e, processingEnv, aid, "category");
             }
             if (!FQN.matcher(aid.id()).matches()) {
                 throw new LayerGenerationException("@ActionID id() must be valid fully qualified name", e, processingEnv, aid, "id");

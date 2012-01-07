@@ -140,12 +140,12 @@ class SearchExecutor extends HgProgressSupport {
         
         HgLogMessage[] messages;
         if (master.isIncomingSearch()) {
-            messages = HgCommand.getIncomingMessages(root, toRevision, includeMerges, false, true, limitRevisions, logger);
+            messages = HgCommand.getIncomingMessages(root, toRevision, includeMerges, false, includeMerges, limitRevisions, logger);
         } else if (master.isOutSearch()) {
             messages = HgCommand.getOutMessages(root, toRevision, includeMerges, limitRevisions, logger);
         } else {
             List<String> branchNames = branchName.isEmpty() ? Collections.<String>emptyList() : Collections.singletonList(branchName);
-            messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, includeMerges, limitRevisions, branchNames, logger);
+            messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, includeMerges, false, includeMerges, limitRevisions, branchNames, logger, true);
         }
         return appendResults(root, messages);
     }

@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -69,13 +68,10 @@ public class ContextManagerTest extends NbTestCase {
     }
     
     public void testSurviveFocusChange() throws Exception {
-        ContextAwareAction action = (ContextAwareAction)FileUtil.getConfigFile("Actions/cat/survive.instance").getAttribute("instanceCreate");
-        assertNotNull("Action found", action);
-        
         InstanceContent ic = new InstanceContent();
         Lookup lkp = new AbstractLookup(ic);
         
-        Action clone = action.createContextAwareInstance(lkp);
+        Action clone = ((ContextAwareAction) Actions.forID("cat", "survive")).createContextAwareInstance(lkp);
         L listener = new L();
         clone.addPropertyChangeListener(listener);
         
