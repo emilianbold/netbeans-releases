@@ -315,8 +315,22 @@ made subject to such option by the copyright holder.
             <td> <!-- stability category -->
                 <a>
                     <xsl:attribute name="href">
-                        <xsl:text>http://openide.netbeans.org/tutorial/api-design.html#category-</xsl:text>
-                        <xsl:value-of select="$category" />
+                        <xsl:text>http://wiki.netbeans.org/API_Stability#</xsl:text>
+                        <xsl:choose>
+                            <xsl:when test="$category='official'">Official</xsl:when>
+                            <xsl:when test="$category='stable'">Stable</xsl:when>
+                            <xsl:when test="$category='devel'">Devel</xsl:when>
+                            <xsl:when test="$category='third'">Third_Party</xsl:when>
+                            <xsl:when test="$category='standard'">Standard</xsl:when>
+                            <xsl:when test="$category='friend'">Friend</xsl:when>
+                            <xsl:when test="$category='private'">Private</xsl:when>
+                            <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
+                            <xsl:otherwise>
+                                <xsl:message>
+                                    WARNING: <xsl:value-of select="$category"/>
+                                </xsl:message>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:attribute>
                     <xsl:choose>
                         <xsl:when test="$category='official'">Official</xsl:when>
