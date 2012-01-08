@@ -76,7 +76,8 @@ abstract class BrowserFactory implements HtmlBrowser.Factory {
 
     public static Boolean isMozillaHidden () {
 //        return !Platform.platform.is32Bit() || 
-                return null == System.getProperty( "org.eclipse.swt.browser.XULRunnerPath" );
+                //return null == System.getProperty( "org.eclipse.swt.browser.XULRunnerPath" );
+        return Boolean.FALSE;
     }
 
     public static Boolean isWebkitHidden () {
