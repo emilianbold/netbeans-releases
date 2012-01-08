@@ -39,26 +39,29 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface ObjectScope extends Scope, FullQualifiedName {
-    Collection<? extends ModelElement> getDeclaredProperties();
+public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationScope {
+
+    private DeclarationScope inScope;
     
-    Collection<? extends FunctionScope> getMethods();
-    /**
-     * If an object is logical, it's basically wrap for methods and properties, 
-     * that are defined in the file, but are not defined in the same scope.
-     * If an object is defined through a function, then the function will be 
-     * marked as constructor and will be part of a logical object. 
-     * 
-     * @return true if the object doesn't correspond with the source. 
-     * False is returned for object that are defined as objects in the code.     
-     */
-    boolean isLogical();
+    public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject, Identifier name, OffsetRange offsetRange) {
+        super(inObject, name, offsetRange);
+        this.inScope = inScope;
+    }
+    
+    @Override
+    public DeclarationScope getInScope() {
+        return inScope;
+    }
+
 }

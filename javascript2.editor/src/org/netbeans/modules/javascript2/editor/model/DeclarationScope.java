@@ -41,14 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.OffsetRange;
-
 /**
  *
  * @author Petr Pisl
  */
-public interface Scope extends ModelElement {
-    OffsetRange getBlockRange();
-    List<? extends ModelElement> getElements();
+public interface DeclarationScope {
+    DeclarationScope getInScope();
 }

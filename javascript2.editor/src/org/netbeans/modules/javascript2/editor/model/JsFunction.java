@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.editor.model;
 
 import java.util.Collection;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.ModelElement;
-import org.netbeans.modules.javascript2.editor.model.Variable;
-import org.netbeans.modules.javascript2.editor.model.VariableScope;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class VariableScopeImpl extends ScopeImpl implements VariableScope {
-
-    public VariableScopeImpl(ModelElement in, JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        super(in, kind, fileObject, name, offsetRange, modifiers);
-    }
-
-    @Override
-    public Collection<? extends Variable> getDeclaredVariables() {
-        return filter(getElements(), new ElementFilter() {
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                return element.getJSKind().equals(JsElement.Kind.VARIABLE);
-            }
-        });
-    }
-    
-    
+public interface JsFunction  extends JsObject{
+    public Collection<? extends Identifier> getParameters();
 }

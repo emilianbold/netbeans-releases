@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
  * @author Petr Pisl
  */
 public interface JsElement extends ElementHandle {
+    
     public enum Kind {
         FUNCTION,
         METHOD,
@@ -59,6 +60,7 @@ public interface JsElement extends ElementHandle {
         FILE,
         PARAMETER
     }
+    
     
     int getOffset();
     Kind getJSKind();

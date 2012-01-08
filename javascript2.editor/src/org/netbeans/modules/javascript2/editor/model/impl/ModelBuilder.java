@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.FunctionNode;
 import java.util.Stack;
-import org.netbeans.modules.javascript2.editor.model.FunctionScope;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
@@ -51,46 +50,46 @@ import org.netbeans.modules.javascript2.editor.model.FunctionScope;
  */
 public final class ModelBuilder {
     
-    private final FileScopeImpl fileScope;
-    private Stack<ScopeImpl> currentScope;
+    private final JsObjectImpl globalObject;
+    private Stack<JsObjectImpl> stack;
     
-    ModelBuilder(FileScopeImpl fileScope) {
-        this.fileScope = fileScope;
-        this.currentScope = new Stack<ScopeImpl>();
-        setCurrentScope(fileScope);
+    ModelBuilder(JsObjectImpl globalObject) {
+        this.globalObject = globalObject;
+        this.stack = new Stack<JsObjectImpl>();
+        setCurrentObject(globalObject);
     }
     
     
     /**
      * @return the fileScope
      */
-    FileScopeImpl getFileScope() {
-        return fileScope;
+    JsObjectImpl getGlobal() {
+        return globalObject;
     }
     
     /**
      * @return the currentScope or null
      */
-    ScopeImpl getCurrentScope() {
-        return currentScope.isEmpty() ? null : currentScope.peek();
+    JsObjectImpl getCurrentObject() {
+        return stack.isEmpty() ? null : stack.peek();
     }
     
     /**
      * @param currentScope the currentScope to set
      */
-    void setCurrentScope(ScopeImpl scope) {
-        this.currentScope.push(scope);
+    void setCurrentObject(JsObjectImpl object) {
+        this.stack.push(object);
     }
     
     void reset() {
-        if (!currentScope.empty()) {
-            currentScope.pop();
+        if (!stack.empty()) {
+            stack.pop();
         }
     }
     
-    FunctionScope build(FunctionNode function) {
-        FunctionScopeImpl functionScope = ModelElementFactory.create(function, this);
-        return functionScope;
-    }
+//    FunctionScope build(FunctionNode function) {
+//        FunctionScopeImpl functionScope = ModelElementFactory.create(function, this);
+//        return functionScope;
+//    }
     
 }

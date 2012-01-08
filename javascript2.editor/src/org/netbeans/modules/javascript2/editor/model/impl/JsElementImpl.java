@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -57,28 +58,26 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class JsElementImpl implements JsElement {
 
-    private JsElement.Kind kind;
     private FileObject fileObject;
     private String name;
     private OffsetRange offsetRange;
     private Set<Modifier> modifiers;
     
-    public JsElementImpl(JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        this.kind = kind;
+    public JsElementImpl(FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
         this.fileObject = fileObject;
         this.name = name;
         this.offsetRange = offsetRange;
         this.modifiers = modifiers;
     }
     
-    public JsElementImpl(JsElement.Kind kind, FileObject fileObject, String name, OffsetRange offsetRange) {
-        this(kind, fileObject, name, offsetRange, Collections.<Modifier>emptySet());
+    public JsElementImpl(FileObject fileObject, String name, OffsetRange offsetRange) {
+        this(fileObject, name, offsetRange, Collections.<Modifier>emptySet());
     }
            
     @Override
     public ElementKind getKind() {
         ElementKind result = ElementKind.OTHER;
-        switch (kind) {
+        switch (getJSKind()) {
             case CONSTRUCTOR: 
                 result = ElementKind.CONSTRUCTOR;
                 break;
@@ -106,11 +105,6 @@ public abstract class JsElementImpl implements JsElement {
                 break;
         }
         return result;
-    }
-
-    @Override
-    public Kind getJSKind() {
-        return kind;
     }
     
     @Override
@@ -146,6 +140,15 @@ public abstract class JsElementImpl implements JsElement {
     @Override
     public Set<Modifier> getModifiers() {
         return modifiers;
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+    
+    public void addModifier(Modifier modifier) {
+        modifiers.add(modifier);
     }
     
 }

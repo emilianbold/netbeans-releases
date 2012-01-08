@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import java.util.*;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -60,68 +65,46 @@ public class JsStructureScanner implements StructureScanner {
     
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
+        System.out.println("scan");
         final List<StructureItem> items = new ArrayList<StructureItem>();        
         JsParserResult result = (JsParserResult) info;
         final Model model = result.getModel();
-        FileScope fileScope = model.getFileScope();
+        JsObject globalObject = model.getGlobalObject();
         
-        for(Scope scope : fileScope.getLogicalElements()) {
-            if (scope instanceof FunctionScope) {
-                List<StructureItem> children = new ArrayList<StructureItem>();
-                children = getEmbededItems(scope, children);
-                items.add(new JsFunctionStructureItem((FunctionScope)scope, children));
-            } else if (scope instanceof ObjectScope) {
-                List<StructureItem> children = new ArrayList<StructureItem>();
-                children = getEmbededItems(scope, children);
-                items.add(new JsObjectStructureItem((ObjectScope)scope, children));
-            }
-        }
-        
-        Collection<? extends Variable> globalVariables = fileScope.getDeclaredVariables();
-        for (Variable variable : globalVariables) {
-            items.add(new JsSimpleStructureItem(variable, "global-")); // NOI18N
-        }
-        
+        getEmbededItems(globalObject, items);
         return items;
     }
     
-     private List<StructureItem>  getEmbededItems(Scope scope, List<StructureItem> collectedItems) {
-        
-        List<? extends ModelElement> elements = scope.getElements();
-        for (ModelElement element : elements) {
-            if (element instanceof FunctionScope) {
-                FunctionScope function = (FunctionScope) element;
-                if (function.getJSKind() == JsElement.Kind.METHOD) {
-                    List<StructureItem> children = new ArrayList<StructureItem>();
-                    children = getEmbededItems((Scope) element, children);
-                    collectedItems.add(new JsFunctionStructureItem(function, children));
-                } else if (function.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                    collectedItems.add(new JsFunctionStructureItem(function, null));
-                    List<StructureItem> children = new ArrayList<StructureItem>();
-                    children = getEmbededItems((Scope) element, children);
-                    collectedItems.addAll(children);
-                    
-                }
-            } else  if (element instanceof ObjectScope) {
-                List<StructureItem> children = new ArrayList<StructureItem>();
-                children = getEmbededItems((Scope) element, children);
-                collectedItems.add(new JsObjectStructureItem((ObjectScope)element, children));
-            } else if (element instanceof Variable) {
-                collectedItems.add(new JsSimpleStructureItem(element, "var-"));     //NOI18N
-            } else if (element instanceof Field) {
-                collectedItems.add(new JsSimpleStructureItem(element, "field-"));   //NOI18N
+    private List<StructureItem> getEmbededItems(JsObject jsObject, List<StructureItem> collectedItems) {
+        System.out.println("getEmbededItems for "  + jsObject.getName());
+        Collection<? extends JsObject> properties = jsObject.getProperties().values();
+        for (JsObject child : properties) {
+            List<StructureItem> children = new ArrayList<StructureItem>();
+            children = getEmbededItems(child, children);
+            if (child.getJSKind() == JsElement.Kind.FUNCTION || child.getJSKind() == JsElement.Kind.METHOD
+                    || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+                collectedItems.add(new JsFunctionStructureItem((JsFunction) child, children));
+            } else if (child.getJSKind() == JsElement.Kind.OBJECT) {
+                collectedItems.add(new JsObjectStructureItem(child, children));
+            } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
+                if(child.getModifiers().contains(Modifier.PUBLIC)
+                        || !(jsObject.getParent() instanceof JsFunction))
+                collectedItems.add(new JsSimpleStructureItem(child, "prop-")); //NOI18N
+            } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
+                    && (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)) {
+                collectedItems.add(new JsSimpleStructureItem(child, "var-")); //NOI18N
             }
-        }
+         }
         return collectedItems;
     }
 
-    private JsFunctionStructureItem createItem(FunctionScope scope, List<StructureItem> children) {
-        return new JsFunctionStructureItem(scope, children);
-    }
-    
-    private JsObjectStructureItem createItem(ObjectScope scope, List<StructureItem> children) {
-        return new JsObjectStructureItem(scope, children);
-    }
+//    private JsFunctionStructureItem createItem(FunctionScope scope, List<StructureItem> children) {
+//        return new JsFunctionStructureItem(scope, children);
+//    }
+//    
+//    private JsObjectStructureItem createItem(ObjectScope scope, List<StructureItem> children) {
+//        return new JsObjectStructureItem(scope, children);
+//    }
      
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
@@ -129,28 +112,19 @@ public class JsStructureScanner implements StructureScanner {
          
         JsParserResult result = (JsParserResult) info;
         final Model model = result.getModel();
-        FileScope fileScope = model.getFileScope();
-        
-        
-            
-            List<Scope> scopes = getEmbededScopes(fileScope, null);
-            for (Scope scope : scopes) {
-                OffsetRange offsetRange = scope.getBlockRange();
-                if (offsetRange == null) continue;
-                    
-                getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
-                
-            }
-//            Source source = info.getSnapshot().getSource();
-//            assert source != null : "source was null";
-//            Document doc = source.getDocument(false);
+//        DeclarationScope fileScope = model.getGlobalObject();
+//        
+//        
 //            
-//            if (doc != null){
-//                doc.putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
+//            List<Scope> scopes = getEmbededScopes(fileScope, null);
+//            for (Scope scope : scopes) {
+//                OffsetRange offsetRange = scope.getBlockRange();
+//                if (offsetRange == null) continue;
+//                    
+//                getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+//                
 //            }
-            return folds;
-        
-        //return Collections.emptyMap();
+       return folds;
     }
     
     private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, String kind) {
@@ -162,17 +136,17 @@ public class JsStructureScanner implements StructureScanner {
         return ranges;
     }
     
-    private List<Scope>  getEmbededScopes(Scope scope, List<Scope> collectedScopes) {
+    private List<DeclarationScope>  getEmbededScopes(DeclarationScope scope, List<DeclarationScope> collectedScopes) {
         if (collectedScopes == null) {
-            collectedScopes = new ArrayList<Scope>();
+            collectedScopes = new ArrayList<DeclarationScope>();
         }
-        List<? extends ModelElement> elements = scope.getElements();
-        for (ModelElement element : elements) {
-            if (element instanceof Scope) {
-                collectedScopes.add((Scope) element);
-                getEmbededScopes((Scope) element, collectedScopes);
-            }
-        }
+//        List<? extends ModelElement> elements = scope.getElements();
+//        for (ModelElement element : elements) {
+//            if (element instanceof Scope) {
+//                collectedScopes.add((Scope) element);
+//                getEmbededScopes((Scope) element, collectedScopes);
+//            }
+//        }
         return collectedScopes;
     }
 
@@ -182,14 +156,15 @@ public class JsStructureScanner implements StructureScanner {
         return null;
     }
     
+    
     private abstract class JsStructureItem implements StructureItem {
 
-        private ModelElement modelElement;
+        private JsObject modelElement;
         
         final private List<? extends StructureItem> children;
         final private String sortPrefix;
 
-        public JsStructureItem(ModelElement elementHandle, List<? extends StructureItem> children, String sortPrefix) {
+        public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix) {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
             if (children != null) {
@@ -272,7 +247,7 @@ public class JsStructureScanner implements StructureScanner {
             return null;
         }
      
-        public ModelElement getModelElement() {
+        public JsObject getModelElement() {
             return modelElement;
         }
         
@@ -280,12 +255,12 @@ public class JsStructureScanner implements StructureScanner {
     
     private class JsFunctionStructureItem extends JsStructureItem {
 
-        public JsFunctionStructureItem(FunctionScope elementHandle, List<? extends StructureItem> children) {
+        public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children) {
             super(elementHandle, children, "fn"); //NOI18N
         }
 
-        public FunctionScope getFunctionScope() {
-            return (FunctionScope) getModelElement();
+        public JsFunction getFunctionScope() {
+            return (JsFunction) getModelElement();
         }
 
         @Override
@@ -295,7 +270,7 @@ public class JsStructureScanner implements StructureScanner {
                 return formatter.getText();
         }
         
-        protected void appendFunctionDescription(FunctionScope function, HtmlFormatter formatter) {
+        protected void appendFunctionDescription(JsFunction function, HtmlFormatter formatter) {
             formatter.reset();
             if (function == null) {
                 return;
@@ -304,13 +279,13 @@ public class JsStructureScanner implements StructureScanner {
             formatter.appendText("(");   //NOI18N
             formatter.parameters(true);
             boolean addComma = false;
-            for(Parameter param : function.getParameters()) {
+            for(Identifier param : function.getParameters()) {
                 if (addComma) {
                     formatter.appendText(", "); //NOI8N
                 } else {
                     addComma = true;
                 }
-                formatter.appendText(param.getDeclaration().getName());
+                formatter.appendText(param.getName());
             }
             formatter.parameters(false);
             formatter.appendText(")");   //NOI18N
@@ -324,22 +299,20 @@ public class JsStructureScanner implements StructureScanner {
 
     private class JsObjectStructureItem extends JsStructureItem {
 
-        public JsObjectStructureItem(ObjectScope elementHandle, List<? extends StructureItem> children) {
+        public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children) {
             super(elementHandle, children, "ob"); //NOI18N
         }
 
-        public ObjectScope getObjectScope() {
-            return (ObjectScope) getModelElement();
-        }
+        
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
                 formatter.reset();
-                appendObjectDescription(getObjectScope(), formatter);
+                appendObjectDescription(getModelElement(), formatter);
                 return formatter.getText();
         }
         
-        protected void appendObjectDescription(ObjectScope object, HtmlFormatter formatter) {
+        protected void appendObjectDescription(JsObject object, HtmlFormatter formatter) {
             formatter.reset();
             if (object == null) {
                 return;
@@ -351,7 +324,7 @@ public class JsStructureScanner implements StructureScanner {
     
     private class JsSimpleStructureItem extends JsStructureItem {
 
-        public JsSimpleStructureItem(ModelElement elementHandle, String sortPrefix) {
+        public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix) {
             super(elementHandle, null, sortPrefix);
         }
 

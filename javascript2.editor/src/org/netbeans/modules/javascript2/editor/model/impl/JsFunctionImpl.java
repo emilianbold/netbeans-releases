@@ -39,12 +39,55 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface Field extends Parameter {
+public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
+
+    final private List <? extends Identifier> parameters;
+    
+    public JsFunctionImpl(JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
+        super(parentObject instanceof JsFunctionImpl ? (JsFunctionImpl)parentObject : null, parentObject, name, offsetRange);
+        this.parameters = parameters; 
+        setDeclared(true);
+    
+    }
+
+    
+    
+    @Override
+    public Collection<? extends Identifier> getParameters() {
+        return new ArrayList(parameters);
+    }
+
+    @Override
+    public Kind getJSKind() {
+        for (JsObject property : getProperties().values()) {
+            if (property instanceof JsFunctionImpl
+                    || property.getJSKind() == JsElement.Kind.PROPERTY) {
+                return JsElement.Kind.CONSTRUCTOR;
+            }
+        }
+
+        JsElement.Kind result = JsElement.Kind.FUNCTION;
+
+        if (getParent().getJSKind() != JsElement.Kind.FILE) {
+            result = JsElement.Kind.METHOD;
+        }
+        return result;
+    }
+    
     
 }

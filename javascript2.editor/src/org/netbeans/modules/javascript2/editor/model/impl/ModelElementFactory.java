@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,156 +37,75 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.ObjectNode;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.*;
-
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public final class ModelElementFactory {
-    
-    private ModelElementFactory() {
-        
-    }
-    
-    static FunctionScopeImpl create(final FunctionNode function, final ModelBuilder context) {
-        final Scope currentScope = context.getCurrentScope();
-        FunctionScopeImpl result = new FunctionScopeImpl(currentScope, function);
-        return result;
-    }
-    
-    static FunctionScopeImpl create(final FunctionNode function, List<Identifier> name, final ModelBuilder context) {
-        assert name != null;
-        final Scope currentScope = context.getCurrentScope();
-        JsElement.Kind functionType = getFunctionType(function, currentScope, name);
-        FunctionScopeImpl result = new FunctionScopeImpl(currentScope, name, function, functionType);
-        FileScopeImpl fileScope = ModelUtils.getFileScope(currentScope);
-        fileScope.addMethod(result);
-        return result;
-    }
-    
-    /**
-     * It decide, whether the function can be a constructor according this algorithm.
-     *    1. If there are defined method inside.
-     * 
-     * @param function
-     * @return true if the function should be treated as constructor
-     */
-    private static  JsElement.Kind getFunctionType(final FunctionNode function, final Scope inScope, List<Identifier> name) {
-        JsElement.Kind type = JsElement.Kind.FUNCTION;  ;
-        if (function.getFunctions().size() > 0
-                || (Character.isUpperCase(name.get(name.size() - 1).getName().charAt(0)))) {
-            type = JsElement.Kind.CONSTRUCTOR;
-        } else {
-            if (function.getIdent().getStart() == function.getIdent().getFinish()
-                    && !(inScope instanceof FileScope && name.size() == 1)) {
-                type = JsElement.Kind.METHOD;
-            }
-        }
-        return type;
-    }
-    
-    static ObjectScopeImpl create(final ObjectNode object, List<Identifier> fqName, final ModelBuilder context) {
-        final Scope currentScope = context.getCurrentScope();
-        ObjectScopeImpl result = ModelUtils.findObjectWithName(currentScope, fqName.get(0).getName());
-        
-        if (fqName.size() == 1) {
-            ObjectScopeImpl newObject;
-            if (result != null) {
-                ((ScopeImpl)result.getInElement()).removeElement(result);
-                if (result.getInElement() instanceof FileScopeImpl) {
-                    ((FileScopeImpl)result.getInElement()).getLogicalElements().remove(result);
-                }
-                newObject =  new ObjectScopeImpl((Scope)result.getInElement(), object, fqName);
-                for (ModelElement element : result.getElements()) {
-                    newObject.addElement((ModelElementImpl)element);
-                }
-            } else {
-                newObject = new ObjectScopeImpl(currentScope, object, fqName);
-            }
-            result = newObject;
-            if (currentScope instanceof FileScope) {
-                FileScopeImpl fScope = (FileScopeImpl)currentScope;
-                fScope.addObject(result);
-                ModelElementImpl variable = (ModelElementImpl)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getDeclaredVariables(), fqName.get(0).getName())); 
-                if (variable != null) {
-                    fScope.removeElement(variable);
-                }
-            }
-        } else {
-            List<Identifier> fqNameOfCreated = new ArrayList<Identifier>(fqName.size());
-            fqNameOfCreated.add(fqName.get(0));
-            if (result == null) {
-                FileScope fScope = ModelUtils.getFileScope(currentScope); 
-                result = new ObjectScopeImpl(fScope, fqNameOfCreated,fqNameOfCreated.get(0).getOffsetRange());
-                ((FileScopeImpl)fScope).addObject(result);
-            }
-            ModelElement inElement = result;
-            for(int i = 1; i < fqName.size(); i++) {
-                ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(result.getElements(), fqName.get(i).getName()));
-                fqNameOfCreated.add(fqName.get(i));
-                if (me == null) {
-                    result = new ObjectScopeImpl(result, fqNameOfCreated, fqName.get(i).getOffsetRange()); 
-                } else {
-                    result = (ObjectScopeImpl)me;
-                    if (result.isLogical() && (i == fqName.size() - 1)) {
-                        ((ScopeImpl)inElement).removeElement(result);
-                        if (result.getInElement() instanceof FileScopeImpl) {
-                            ((FileScopeImpl) result.getInElement()).getLogicalElements().remove(result);
-                        }
-                        ObjectScopeImpl newObject =  new ObjectScopeImpl((Scope)inElement, object, fqName);
-                        for (ModelElement element : result.getElements()) {
-                            newObject.addElement((ModelElementImpl)element);
-                        }
-                        result = newObject;
-                    }
-                }
-                inElement = result;
-            }
-        }
-        
-        return result;
-    }
-    
-    static Field createField(List<Identifier> fqName, final ModelBuilder context) {
-        FieldImpl result;
-        final Scope currentScope = context.getCurrentScope();
+class ModelElementFactory {
 
-        ObjectScope object = ModelUtils.findObjectWithName(currentScope, fqName.get(0).getName());
-        List<Identifier> fqNameOfCreated = new ArrayList<Identifier>(fqName.size() - 1);
-        fqNameOfCreated.add(fqName.get(0));
-        if (object == null) {
-            FileScope fScope = ModelUtils.getFileScope(currentScope);
-            object = new ObjectScopeImpl(fScope, fqNameOfCreated, fqNameOfCreated.get(0).getOffsetRange());
-            ((FileScopeImpl) fScope).addObject(object);
+    static JsFunctionImpl create(FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder) {
+        JsObjectImpl inObject = modelBuilder.getCurrentObject();
+        JsObject parentObject = inObject;
+        List<Identifier> parameters = new ArrayList(functionNode.getParameters().size());
+        for(IdentNode node: functionNode.getParameters()) {
+            parameters.add(create(node));
         }
-        for (int i = 1; i < fqName.size() - 1; i++) {
-            ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), fqName.get(i).getName()));
-            fqNameOfCreated.add(fqName.get(i));
-            if (me == null) {
-                object = new ObjectScopeImpl(object, fqNameOfCreated, fqName.get(i).getOffsetRange());
-            } else {
-                object = (ObjectScopeImpl) me;
-            }
-        }
-        
-        Identifier fieldName = fqName.get(fqName.size() - 1);
-        ModelElement me = ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), fieldName.getName()));
-        if (me == null) {
-            result = new FieldImpl(object, fieldName);
-            ((ObjectScopeImpl)object).addElement(result);
+        JsFunctionImpl result; 
+        if (fqName.size() > 1) {
+            JsObject globalObject = modelBuilder.getGlobal();
+            List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
+            parentObject = ModelUtils.getJsObject(globalObject, objectName);
+            result = new JsFunctionImpl(parentObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(functionNode.getStart(), functionNode.getFinish()));
+            if (!"prototype".equals(parentObject.getName())) {
+                result.addModifier(Modifier.STATIC);
+            } 
         } else {
-            result = (FieldImpl)me;
+            result = new JsFunctionImpl(inObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(functionNode.getStart(), functionNode.getFinish()));
         }
+        parentObject.addProperty(result.getDeclarationName().getName(), result);
         return result;
     }
+    
+    static IdentifierImpl create(IdentNode node) {
+        return new IdentifierImpl(node.getName(), new OffsetRange(node.getStart(), node.getFinish()));
+    }
+    
+    static JsObjectImpl create(ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder) {
+        JsObjectImpl scope = modelBuilder.getCurrentObject();
+        JsObject parent = scope;
+        JsObject result = null;
+        Identifier name = fqName.get(fqName.size() - 1);
+        JsObjectImpl newObject;
+//        if (fqName.size() > 1) {
+            JsObject globalObject = modelBuilder.getGlobal();
+            List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
+            parent = ModelUtils.getJsObject(globalObject, objectName);
+            result = parent.getPropery(name.getName());
+            newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()));
+            newObject.setDeclared(true);
+            if (result != null) {
+                // the object already exist due a definition of a property => needs to be copied
+                for (String propertyName : result.getProperties().keySet()) {
+                    newObject.addProperty(propertyName, result.getPropery(propertyName));
+                }
+            }
+//        } 
+        parent.addProperty(name.getName(), newObject);
+        return (JsObjectImpl)newObject;
+    }
+    
 }
