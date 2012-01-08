@@ -41,13 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+
 import com.oracle.nashorn.ir.*;
 import com.oracle.nashorn.parser.TokenType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -55,8 +61,6 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  */
 public class ModelVisitor extends PathNodeVisitor {
 
-    private JsParserResult parserResult;
-    private final FileScopeImpl fileScope;
     private final ModelBuilder modelBuilder;
     /**
      * Keeps the name of the visited properties
@@ -64,9 +68,8 @@ public class ModelVisitor extends PathNodeVisitor {
     private final List<List<FunctionNode>> functionStack;
 
     public ModelVisitor(JsParserResult parserResult) {
-        this.parserResult = parserResult;
-        this.fileScope = new FileScopeImpl(parserResult);
-        this.modelBuilder = new ModelBuilder(this.fileScope);
+        FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
+        this.modelBuilder = new ModelBuilder(JsObjectImpl.createGlobal(fileObject));
         this.functionStack = new ArrayList<List<FunctionNode>>();
     }
 
@@ -77,39 +80,38 @@ public class ModelVisitor extends PathNodeVisitor {
                     && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
                     && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
                 // TODO probably not only assign                
-                ScopeImpl scope = modelBuilder.getCurrentScope();
+                JsObjectImpl parent = modelBuilder.getCurrentObject();
                 if (binaryNode.lhs() instanceof AccessNode) {
                     List<Identifier> name = getName(binaryNode);
                     AccessNode aNode = (AccessNode)binaryNode.lhs();
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                         // a usage of field
                         String fieldName = aNode.getProperty().getName();
-                        Field field = findFieldWithName((FunctionScope)scope, fieldName);
-                        if (field == null) {
-                            // needs to decide, whether it belongs to this function or the parent one
-                            Scope whereToAdd = scope;
-                            if (scope.getInElement() instanceof FunctionScope) {
-                                whereToAdd = (Scope)scope.getInElement();
-                            }
-                            ((FunctionScopeImpl)whereToAdd).addElement(new FieldImpl(whereToAdd, 
-                                    new IdentifierImpl(fieldName, new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish()))));
+                        if(parent.getParent() instanceof JsFunctionImpl) {
+                            parent = (JsObjectImpl)parent.getParent();
+                        }
+                        if(parent.getPropery(fieldName) == null) {
+                            Identifier identifier = ModelElementFactory.create((IdentNode)aNode.getProperty());
+                            parent.addProperty(fieldName, new JsObjectImpl(parent, identifier, identifier.getOffsetRange() ));
                         }
                     } else {
                         // probably a property of an object
                         List<Identifier> fqName = getName(aNode);
-                        ModelElementFactory.createField(fqName, modelBuilder);
+                        ModelUtils.getJsObject(modelBuilder.getGlobal(), fqName);
                     }
                     
                 } else {
                     IdentNode ident = (IdentNode)binaryNode.lhs();
                     final Identifier name = new IdentifierImpl(ident.getName(), new OffsetRange(ident.getStart(), ident.getFinish()));
                     final String newVarName = name.getName();
-                    Variable variable = findVarWithName(scope, newVarName);
-                    if (variable == null) {
+                    boolean hasParent = parent.getPropery(newVarName) != null ;
+                    boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getPropery(newVarName) != null;
+                    if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getPropery(newVarName) == null) {
                         // variable was not found -> it's not declared and it has to be
                         // added to the global scope (filescope) as implicit variable
-                        FileScopeImpl fScope = ModelUtils.getFileScope(scope);
-                        fScope.addElement(new VariableImpl(scope, name, true, true));
+                        JsObjectImpl variable = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange());
+                        variable.setDeclared(false);
+                        modelBuilder.getGlobal().addProperty(newVarName, variable);
                     }
                 }
             }
@@ -119,10 +121,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
-        IdentNode ident = functionNode.getIdent();
         System.out.println("FunctionNode: " + functionNode.getName() + " , path: " + getPath().size() + " , onset: " + onset);
 
         if (onset) {
+            JsObjectImpl inObject = modelBuilder.getGlobal();
             addToPath(functionNode);
             List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions().size());
             for (FunctionNode fn : functionNode.getFunctions()) {
@@ -149,7 +151,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     } else if (node instanceof BinaryNode) {
                         name = getName((BinaryNode)node);
                     } else if (node instanceof VarNode) {
-                        name = getName((VarNode)node);
+                       name = getName((VarNode)node);
                         // private method
                         // It can be only if it's in a function
                         isPrivate = functionStack.size() > 1;
@@ -166,14 +168,14 @@ public class ModelVisitor extends PathNodeVisitor {
 
             // todo parameters;
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
-                ScopeImpl scope = modelBuilder.getCurrentScope();
-                FunctionScopeImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
+                JsObjectImpl scope = modelBuilder.getCurrentObject();
+                JsFunctionImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
                 if (isPrivate) {
-                    Set<Modifier> modifier = fncScope.getModifiers();
-                    modifier.clear();
-                    modifier.add(Modifier.PRIVATE);
+//                    Set<Modifier> modifier = fncScope.getModifiers();
+//                    modifier.clear();
+//                    modifier.add(Modifier.PRIVATE);
                 }
-                modelBuilder.setCurrentScope(scope = fncScope);
+                modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
             }
 
             for (Node node : functionNode.getStatements()) {
@@ -198,33 +200,33 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(functionNode, onset);
     }
 
-    public FileScopeImpl getFileScope() {
-        return fileScope;
+    public JsObject getGlobalObject() {
+        return modelBuilder.getGlobal();
     }
     
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
         if (onset) {
-            List<Identifier> name = null;
+            List<Identifier> fqName = null;
             int pathSize = getPath().size();
             Node lastVisited = getPath().get(pathSize - 1);
             if ( lastVisited instanceof VarNode) {
-                name = getName((VarNode)lastVisited);
+                fqName = getName((VarNode)lastVisited);
             } else if (lastVisited instanceof PropertyNode) {
-                        name = getName((PropertyNode)lastVisited);
+                        fqName = getName((PropertyNode)lastVisited);
                     } else if (lastVisited instanceof BinaryNode) {
-                        name = getName((BinaryNode)lastVisited);
+                        fqName = getName((BinaryNode)lastVisited);
                     }
-            if (name == null || name.size() == 0) {
-                name = new ArrayList<Identifier>(1);
-                name.add(new IdentifierImpl("UNKNOWN",   //NOI18N
+            if (fqName == null || fqName.size() == 0) {
+                fqName = new ArrayList<Identifier>(1);
+                fqName.add(new IdentifierImpl("UNKNOWN",   //NOI18N
                         new OffsetRange(objectNode.getStart(), objectNode.getFinish())));
             }
-            ScopeImpl scope = modelBuilder.getCurrentScope();
+            JsObjectImpl scope = modelBuilder.getCurrentObject();
             
-            ObjectScopeImpl objectScope = ModelElementFactory.create(objectNode, name, modelBuilder);
+            JsObjectImpl objectScope = ModelElementFactory.create(objectNode, fqName, modelBuilder);
 
-            modelBuilder.setCurrentScope(scope = objectScope);
+            modelBuilder.setCurrentObject(objectScope);
         } else {
             modelBuilder.reset();
         }
@@ -236,11 +238,10 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node visit(PropertyNode propertyNode, boolean onset) {
         if (onset && propertyNode.getKey() instanceof IdentNode
                 && !(propertyNode.getValue() instanceof ObjectNode)) {
-            ScopeImpl scope = modelBuilder.getCurrentScope();
+            JsObjectImpl scope = modelBuilder.getCurrentObject();
             IdentNode key = (IdentNode)propertyNode.getKey();
-            scope.addElement(new FieldImpl(scope, 
-                    new IdentifierImpl(key.getName(), 
-                    new OffsetRange(key.getStart(), key.getFinish()))));
+            Identifier name = ModelElementFactory.create(key);
+            scope.addProperty(name.getName(), new JsObjectImpl(scope, name, name.getOffsetRange()));
             if(propertyNode.getValue() instanceof CallNode) {
                 // TODO for now, don't continue. There shoudl be handled cases liek
                 // in the testFiles/model/property02.js file
@@ -264,15 +265,16 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(VarNode varNode, boolean onset) {
         if (onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
-            ScopeImpl scope = modelBuilder.getCurrentScope();
-            boolean isGlobal = false;
-            if (scope instanceof FileScope) {
-                isGlobal = true;
+            JsObject parent = modelBuilder.getCurrentObject();
+            Identifier name = new IdentifierImpl(varNode.getName().getName(), 
+                    new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish()));
+            JsObjectImpl variable =  new JsObjectImpl(parent, name, name.getOffsetRange());
+            variable.setDeclared(true);
+            if(parent.getJSKind() != JsElement.Kind.FILE) {
+                variable.getModifiers().remove(Modifier.PUBLIC);
+                variable.getModifiers().add(Modifier.PRIVATE);
             }
-            scope.addElement(new VariableImpl(scope, 
-                    new IdentifierImpl(varNode.getName().getName(), 
-                    new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish())), 
-                    isGlobal, false));
+            parent.addProperty(name.getName(), variable);
         }
         return super.visit(varNode, onset);
     }
@@ -329,38 +331,38 @@ public class ModelVisitor extends PathNodeVisitor {
         return name;
     }
     
-    private Variable findVarWithName(final Scope scope, final String name) {
-        Variable result = null;
-        Collection<Variable> variables = ScopeImpl.filter(scope.getElements(), new ScopeImpl.ElementFilter() {
-
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                return element.getJSKind().equals(JsElement.Kind.VARIABLE)
-                        && element.getName().equals(name);
-            }
-        });
-        
-        if (!variables.isEmpty()) {
-            result = variables.iterator().next();
-        } else {
-            if (!(scope instanceof FileScope)) {
-                result = findVarWithName((Scope)scope.getInElement(), name);
-            }
-        }
-        
-        return result;
-    }
-    
-    private Field findFieldWithName(FunctionScope function, final String name) {
-        Field result = null;
-        Collection<? extends Field> fields = function.getFields();
-        result = ModelUtils.getFirst(ModelUtils.getFirst(fields, name));
-        if (result == null && function.getInElement() instanceof FunctionScope) {
-            FunctionScope parent = (FunctionScope)function.getInElement();
-            fields = parent.getFields();
-            result = ModelUtils.getFirst(ModelUtils.getFirst(fields, name));
-        }
-        return result;
-    }
+//    private Variable findVarWithName(final Scope scope, final String name) {
+//        Variable result = null;
+//        Collection<Variable> variables = ScopeImpl.filter(scope.getElements(), new ScopeImpl.ElementFilter() {
+//
+//            @Override
+//            public boolean isAccepted(ModelElement element) {
+//                return element.getJSKind().equals(JsElement.Kind.VARIABLE)
+//                        && element.getName().equals(name);
+//            }
+//        });
+//        
+//        if (!variables.isEmpty()) {
+//            result = variables.iterator().next();
+//        } else {
+//            if (!(scope instanceof FileScope)) {
+//                result = findVarWithName((Scope)scope.getInElement(), name);
+//            }
+//        }
+//        
+//        return result;
+//    }
+//    
+//    private Field findFieldWithName(FunctionScope function, final String name) {
+//        Field result = null;
+//        Collection<? extends Field> fields = function.getFields();
+//        result = ModelUtils.getFirst(ModelUtils.getFirst(fields, name));
+//        if (result == null && function.getInElement() instanceof FunctionScope) {
+//            FunctionScope parent = (FunctionScope)function.getInElement();
+//            fields = parent.getFields();
+//            result = ModelUtils.getFirst(ModelUtils.getFirst(fields, name));
+//        }
+//        return result;
+//    }
     
 }

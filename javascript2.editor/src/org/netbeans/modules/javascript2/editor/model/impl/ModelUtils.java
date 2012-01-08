@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,171 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.ScopeImpl.ElementFilter;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
 public class ModelUtils {
-
-    public static FileScopeImpl getFileScope(ModelElement element) {
-        FileScopeImpl result = null;
-
-        while (element != null && !(element instanceof FileScope)) {
-            element = element.getInElement();
+      
+    public static JsObjectImpl getJsObject (JsObject inObject, List<Identifier> fqName) {
+        JsObject result = inObject;
+        JsObject tmpObject = inObject;
+        for (Identifier name : fqName) {
+            result = tmpObject.getPropery(name.getName());
+            if (result == null) {
+                result = new JsObjectImpl(tmpObject, name, name.getOffsetRange());
+                tmpObject.addProperty(name.getName(), result);
+            }
+            tmpObject = result;
         }
-
-        if (element != null && element instanceof FileScope) {
-            result = (FileScopeImpl) element;
-        }
-        return result;
+        return (JsObjectImpl)result;        
     }
     
-    public static String getNameWithoutPrototype(List<Identifier> fqName) {
-        StringBuilder name = new StringBuilder();
-        int size = fqName.size();
-        String part;
-        for(int i = 0; i < size; i++) {
-            part = fqName.get(i).getName();
-            if ("prototype".equals(part)) {   //NOI18N
-                break;
-            }
-            name.append(part);
-            if (i < (size - 1) && !("prototype".equals(fqName.get(i+1).getName()))) {
-               name.append(".");                //NOI18N
-            }
-        }
-        return name.toString();
-    }
-    
-    public static String getPartName(List<Identifier> fqName, int parts) {
-        StringBuilder name = new StringBuilder();
-        int size = fqName.size();
-        String part;
-        for(int i = 0; i < size && i < parts; i++) {
-            part = fqName.get(i).getName();
-            name.append(part);
-            if (i < (size - 1) && i < (parts - 1)) {
-               name.append(".");                //NOI18N
-            }
-        }
-        return name.toString();
-    }
-    
-    public static boolean isPrototype(FunctionScope function) {
-        boolean result = false;
-        int size = function.getFQDeclarationName().size();
-        if(size > 1) {
-            result = "prototype".equals(function.getFQDeclarationName().get(size - 2).getName()); // NOI18N
-        }
-        return result;
-    }
-    
-    public static String getObjectName(FunctionScope function) {
-        String name = null;
-        int size = function.getFQDeclarationName().size();
-        if(size > 1) {
-            if (isPrototype(function)) {
-                name = getNameWithoutPrototype(function.getFQDeclarationName());
-            } else {
-                name = getPartName(function.getFQDeclarationName(), size - 1);
-            }
-        }
-        return name;
-    }
-    
-    @CheckForNull
-    public static <T extends ModelElement> T getFirst(Collection<? extends T> all) {
-        if (all instanceof List) {
-            return all.size() > 0 ? ((List<T>)all).get(0) : null;
-        }
-        return all.size() > 0 ? all.iterator().next() : null;
-    }
-    
-    @CheckForNull
-    public static <T extends ModelElement> List<? extends T>  getFirst(Collection<? extends T> elements, final String name) {
-        return filter(elements, new ElementFilter() {
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                return element.getName().equals(name);
-            }
-        });
-    }
-    
-    public static <T extends ModelElement> List<? extends T> filter(final Collection<? extends T> instances, final ElementFilter<T> filter) {
-        List<T> retval = new ArrayList<T>();
-        for (T baseElement : instances) {
-            boolean accepted = filter.isAccepted(baseElement);
-            if (accepted) {
-                retval.add(baseElement);
-            }
-        }
-        return retval;
-    }
-    
-    public static ModelElement find(final Collection<? extends ModelElement> instances, final JsElement.Kind kind, final String name) {
-        return getFirst(filter(instances, new ElementFilter() {
-            
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                return element.getJSKind().equals(kind) && element.getName().equals(name);
-            }
-        }));
-    }
-    
-    public static Collection<? extends ObjectScope> getObjects(FileScope fileScope) {
-        Collection<? extends Scope> elements = fileScope.getLogicalElements();
-        return filter(elements, new ElementFilter() {
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                return element.getJSKind().equals(JsElement.Kind.OBJECT);
-            }
-        });
-    }
-    
-    public static Collection<? extends FunctionScope> getMethods(Scope scope) {
-        Collection<? extends FunctionScope> result = filter(scope.getElements(), new ElementFilter() {
-
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                return element.getJSKind().equals(JsElement.Kind.METHOD);
-            }
-        });
-        return result;
-    }
-    
-    public static ObjectScopeImpl findObjectWithName(final Scope scope, final String name) {
-        ObjectScope result = null;
-        Collection<? extends ObjectScope> objects = ModelUtils.filter(scope.getElements(), new ScopeImpl.ElementFilter() {
-
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                boolean accept = false;
-                if (element.getJSKind() == JsElement.Kind.OBJECT) {
-                    List<Identifier> fqName = ((ObjectScope) element).getFQDeclarationName();
-                    accept = fqName.get(0).getName().equals(name);
-                }
-                return accept;
-            }
-        });
-
-        if (!objects.isEmpty()) {
-            result = objects.iterator().next();
-        } else {
-            if (!(scope instanceof FileScope)) {
-                result = findObjectWithName((Scope) scope.getInElement(), name);
-            }
-        }
-        return (ObjectScopeImpl) result;
-    }
 }

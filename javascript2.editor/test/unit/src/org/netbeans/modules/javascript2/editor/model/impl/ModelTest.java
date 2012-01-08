@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.modules.csl.api.Modifier;
@@ -82,130 +81,126 @@ public class ModelTest extends JsTestBase {
     public void testObjectName01() throws Exception {
         Model model = getModel("testfiles/model/objectNames01.js");
         assertNotNull(model);
-        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
-        assertEquals(1, elements.size());
-        Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
-        ObjectScope object = ModelUtils.getFirst(objects);
-        assertEquals("Ridic", object.getFQDeclarationName().get(0).getName());
+        JsObject  global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        JsObject ridic = global.getPropery("Ridic");
+        assertEquals("Ridic", ridic.getDeclarationName().getName());
+        assertEquals("Ridic", ridic.getName());
+        assertEquals(3, ridic.getProperties().size());
     }
     
-    public void testMethods01() throws Exception {
+    public void testMethodsInFunction() throws Exception {
         Model model = getModel("testfiles/model/objectNames01.js");
         assertNotNull(model);
-        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
-        assertEquals(1, elements.size());
-        Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
-        ObjectScope object = ModelUtils.getFirst(objects);
-        FunctionScope method = ModelUtils.getFirst(object.getMethods());
-        assertEquals("getName", method.getDeclarationName().getName());
+        JsObject  global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        JsObject ridic = global.getPropery("Ridic");
+        JsObject method = ridic.getPropery("getName");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
     }
     
-    public void testMethods02() throws Exception {
+    public void testMethodsOuterFunction() throws Exception {
         Model model = getModel("testfiles/model/objectMethods01.js");
         assertNotNull(model);
-        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
-        assertEquals(1, elements.size());
-        Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
-        ObjectScope object = ModelUtils.getFirst(objects);
-        Collection<? extends FunctionScope> methods = object.getMethods();
-        assertEquals(2, methods.size());
-        final Iterator<? extends FunctionScope> iterator = methods.iterator();
-        FunctionScope method = iterator.next();
-        assertEquals("getName", method.getDeclarationName().getName());
-        method = iterator.next();
-        assertEquals("getInfo", method.getDeclarationName().getName());
+        JsObject  global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        JsObject ridic = global.getPropery("Ridic");
+        JsObject method = ridic.getPropery("prototype").getPropery("getInfo");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertFalse(method.getModifiers().contains(Modifier.STATIC));
     }
     
     public void testStaticMethod01() throws Exception {
         Model model = getModel("testfiles/model/staticMethods01.js");
         assertNotNull(model);
-        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
-        assertEquals(1, elements.size());
-        Collection<? extends ObjectScope> objects = ModelUtils.getObjects(model.getFileScope());
-        ObjectScope object = ModelUtils.getFirst(objects);
-        Collection<? extends FunctionScope> methods = object.getMethods();
-        assertEquals(3, methods.size());
-        boolean checked = false;
-        for (FunctionScope method : methods) {
-            if (method.getModifiers().contains(Modifier.STATIC)) {
-                checked = true;
-                assertEquals("getFormula", method.getDeclarationName().getName());
-            }
-        }
-        assertTrue(checked);
+        JsObject  global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        JsObject ridic = global.getPropery("Ridic");
+        JsObject method = ridic.getPropery("getFormula");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.STATIC));
     }
     
     public void testParameters01() throws Exception {
         Model model = getModel("testfiles/model/simpleFunction.js");
         assertNotNull(model);
-        Collection<? extends Scope>  elements = model.getFileScope().getLogicalElements();
-        assertEquals(1, elements.size());
-        FunctionScope function = (FunctionScope)elements.iterator().next();
+        JsObject  global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        JsFunction function = (JsFunction)global.getPropery("createInfo");
         assertEquals(3, function.getParameters().size());
-        final Iterator<? extends Parameter> iterator = function.getParameters().iterator();
-        Parameter param = iterator.next();
-        assertEquals("text", param.getDeclaration().getName());
+        final Iterator<? extends Identifier> iterator = function.getParameters().iterator();
+        Identifier param = iterator.next();
+        assertEquals("text", param.getName());
         param = iterator.next();
-        assertEquals("name", param.getDeclaration().getName());
+        assertEquals("name", param.getName());
         param = iterator.next();
-        assertEquals("description", param.getDeclaration().getName());
+        assertEquals("description", param.getName());
     }
     
     
     public void testVariables01() throws Exception {
         Model model = getModel("testfiles/model/variables01.js");
         assertNotNull(model);
-        FileScope fScope = model.getFileScope();
-        Collection<? extends Variable> variables = fScope.getDeclaredVariables();
-        assertEquals(3, variables.size());
+        JsObject  global = model.getGlobalObject();
+        assertEquals(5, global.getProperties().size());
         
-        Variable variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "address"));
-        assertEquals("address", variable.getDeclaration().getName());
-        assertEquals(true, variable.isGlobal());
-        assertEquals(false, variable.isImplicit());
+        JsObject variable = global.getPropery("address");
+        assertEquals("address", variable.getName());
+        assertEquals(true, variable.isDeclared());
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+
+        variable = global.getPropery("country");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+       
+        variable = global.getPropery("telefon");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+
+        JsObject address = global.getPropery("Address");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, address.getJSKind());
+        assertEquals(true, address.isDeclared());
+        assertEquals(5, global.getProperties().size());
         
-        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "country"));
-        assertEquals("country", variable.getDeclaration().getName());
-        assertEquals(true, variable.isGlobal());
-        assertEquals(true, variable.isImplicit());
+        variable = address.getPropery("city");
+        assertEquals(true, variable.isDeclared());
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertEquals(true, variable.getModifiers().contains(Modifier.PRIVATE));
         
-        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "telefon"));
-        assertEquals("telefon", variable.getDeclaration().getName());
-        assertEquals(true, variable.isGlobal());
-        assertEquals(true, variable.isImplicit());
+        variable = address.getPropery("zip");
+        assertEquals(true, variable.isDeclared());
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertEquals(true, variable.getModifiers().contains(Modifier.PRIVATE));
+
+        variable = address.getPropery("id");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
         
-        ModelElement element = ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "Address"));
-        FunctionScope addressObject = (FunctionScope)element;
-        assertEquals("Address", addressObject.getName());
-        variables = addressObject.getDeclaredVariables();
-        assertEquals(2, variables.size());
+        variable = address.getPropery("street");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
         
-        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "city"));
-        assertEquals("city", variable.getDeclaration().getName());
-        assertEquals(false, variable.isGlobal());
-        assertEquals(false, variable.isImplicit());
+        variable = address.getPropery("print");
+        assertEquals(true, variable.isDeclared());
+        assertEquals(JsElement.Kind.METHOD, variable.getJSKind());
+        assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
+
+        JsObject myApp = global.getPropery("MyApp");
+        assertEquals(JsElement.Kind.OBJECT, myApp.getJSKind());
+        assertEquals(true, myApp.isDeclared());
+        assertEquals(1, myApp.getProperties().size());
         
-        variable = ModelUtils.getFirst(ModelUtils.getFirst(variables, "zip"));
-        assertEquals("zip", variable.getDeclaration().getName());
-        assertEquals(false, variable.isGlobal());
-        assertEquals(false, variable.isImplicit());
+        variable = myApp.getPropery("country");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
         
-        // testing fields
-        Collection<? extends Field> fields = addressObject.getFields();
-        assertEquals(2, fields.size());
-        
-        Field field = ModelUtils.getFirst(ModelUtils.getFirst(fields, "street"));
-        assertEquals("street", field.getDeclaration().getName());
-        
-        field = ModelUtils.getFirst(ModelUtils.getFirst(fields, "id"));
-        assertEquals("id", field.getDeclaration().getName());
-        
-        element = ModelUtils.getFirst(ModelUtils.getFirst(fScope.getLogicalElements(), "MyApp"));
-        ObjectScope myApp = (ObjectScope) element;
-        assertEquals("MyApp", myApp.getFQDeclarationName().get(0).getName());
-        
-        field = (Field)ModelUtils.getFirst(ModelUtils.getFirst(myApp.getElements(), "country"));
-        assertEquals("country", field.getDeclaration().getName());
     }
     
     
@@ -213,71 +208,115 @@ public class ModelTest extends JsTestBase {
         Model model = getModel("testfiles/model/namespaces01.js");
         assertNotNull(model);
         
-        FileScope fScope = model.getFileScope();
-        assertEquals(3, fScope.getLogicalElements().size());
+        JsObject  global = model.getGlobalObject();
+        assertEquals(3, global.getProperties().size());
         
-        ObjectScope object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "MyContext"));
-        assertEquals("MyContext", object.getName());
-        assertEquals(3, object.getElements().size());
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "test")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "id")));
-        assertEquals(146, object.getOffset());
+        JsObject object = global.getPropery("MyContext");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+        assertEquals(3, object.getProperties().size());
+        assertEquals(134, object.getOffset());
         
-        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "User"));
-        assertEquals(4, object.getElements().size());
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "session")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "firstName")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "lastName")));
-        assertEquals(187, object.getOffset());
+        JsObject variable = object.getPropery("id");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
-        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "Address"));
-        assertEquals(2, object.getElements().size());
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "street")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "town")));
+        variable = object.getPropery("test");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        
+        object = object.getPropery("User");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+        assertEquals(4, object.getProperties().size());
+        assertEquals(180, object.getOffset());
+
+        variable = object.getPropery("firstName");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        
+        variable = object.getPropery("lastName");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+
+        variable = object.getPropery("session");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        
+        object = object.getPropery("Address");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+        assertEquals(2, object.getProperties().size());
         assertEquals(278, object.getOffset());
         
-        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "Ns1"));
-        assertEquals(1, object.getElements().size());
-        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "Ns2"));
-        assertEquals(1, object.getElements().size());
-        object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "Ns3"));
-        assertEquals(1, object.getElements().size());
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "fix")));
-        assertEquals(771, object.getOffset());
+        variable = object.getPropery("street");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        
+        variable = object.getPropery("town");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+
+        object = global.getPropery("Ns1");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(false, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getPropery("Ns2");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(false, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getPropery("Ns3");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(false, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        
+        variable = object.getPropery("fix");
+        assertEquals(false, variable.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
     }
     
     public void testProperties01() throws Exception {
         Model model = getModel("testfiles/model/property01.js");
         assertNotNull(model);
         
-        FileScope fScope = model.getFileScope();
-        assertEquals(1, fScope.getLogicalElements().size());
+        JsObject  global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
         
-        ObjectScope object = (ObjectScope)ModelUtils.getFirst(ModelUtils.getFirst(fScope.getElements(), "fruit"));
-        assertEquals("fruit", object.getName());
-        assertEquals(3, object.getElements().size());
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "color")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "size")));
-        assertNotNull(ModelUtils.getFirst(ModelUtils.getFirst(object.getElements(), "quality")));
+        JsObject object = global.getPropery("fruit");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+        assertEquals(3, object.getProperties().size());
+        assertEquals(4, object.getOffset());
+        
+        JsObject variable = object.getPropery("color");
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        
+        variable = object.getPropery("size");
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
+        
+        variable = object.getPropery("quality");
+        assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
     }
     
-    public void testPrivateMethod01() throws Exception {
-        Model model = getModel("testfiles/model/privateMethod.js");
-        assertNotNull(model);
-        
-        FileScope fScope = model.getFileScope();
-        assertEquals(3, fScope.getElements().size());
-        
-        ObjectScope object = (ObjectScope)ModelUtils.find(fScope.getElements(), JsElement.Kind.OBJECT, "MyClass");
-        assertEquals("MyClass", object.getName());
-        assertEquals(1, object.getElements().size());
-        FunctionScope constructor = (FunctionScope)ModelUtils.find(object.getElements(), JsElement.Kind.CONSTRUCTOR, "MyClass");
-        assertEquals(3, constructor.getElements().size());
-        FunctionScope method = (FunctionScope)ModelUtils.find(constructor.getElements(), JsElement.Kind.METHOD, "method1");
-        assertTrue(method.getModifiers().contains(Modifier.PUBLIC));
-        method = (FunctionScope)ModelUtils.find(constructor.getElements(), JsElement.Kind.METHOD, "method2");
-        assertTrue(method.getModifiers().contains(Modifier.PRIVATE));
-        
-        assertNotNull(ModelUtils.find(constructor.getElements(), JsElement.Kind.FIELD, "method2"));
-    }
+//    public void testPrivateMethod01() throws Exception {
+//        Model model = getModel("testfiles/model/privateMethod.js");
+//        assertNotNull(model);
+//        
+//        FileScope fScope = model.getFileScope();
+//        assertEquals(3, fScope.getElements().size());
+//        
+//        ObjectScope object = (ObjectScope)ModelUtils.find(fScope.getElements(), JsElement.Kind.OBJECT, "MyClass");
+//        assertEquals("MyClass", object.getName());
+//        assertEquals(1, object.getElements().size());
+//        FunctionScope constructor = (FunctionScope)ModelUtils.find(object.getElements(), JsElement.Kind.CONSTRUCTOR, "MyClass");
+//        assertEquals(3, constructor.getElements().size());
+//        FunctionScope method = (FunctionScope)ModelUtils.find(constructor.getElements(), JsElement.Kind.METHOD, "method1");
+//        assertTrue(method.getModifiers().contains(Modifier.PUBLIC));
+//        method = (FunctionScope)ModelUtils.find(constructor.getElements(), JsElement.Kind.METHOD, "method2");
+//        assertTrue(method.getModifiers().contains(Modifier.PRIVATE));
+//        
+//        assertNotNull(ModelUtils.find(constructor.getElements(), JsElement.Kind.FIELD, "method2"));
+//    }
 }

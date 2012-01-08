@@ -61,16 +61,19 @@ public final class Model {
     
     synchronized private ModelVisitor getModelVisitor() {
         if (visitor == null) {
+            long start = System.currentTimeMillis();
             visitor = new ModelVisitor(parserResult);
             FunctionNode root = parserResult.getRoot();
             root.accept(visitor);
+            long end = System.currentTimeMillis();
+            System.out.println("Building model takes: " + (end - start));
         }
         return visitor;
     }
     
-    public FileScope getFileScope() {
-        final ModelVisitor visitor = getModelVisitor();
-        return visitor.getFileScope();
+    public JsObject getGlobalObject() {
+        getModelVisitor();
+        return visitor.getGlobalObject();
     }
     
 }

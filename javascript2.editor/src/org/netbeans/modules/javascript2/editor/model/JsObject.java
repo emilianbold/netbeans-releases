@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
- * This a scope where a variable can be defined. In JavaScript it can be only a function. 
+ *
  * @author Petr Pisl
  */
-public interface VariableScope extends Scope {
-    Collection<? extends Variable> getDeclaredVariables();
+public interface JsObject extends JsElement {
+    public Identifier getDeclarationName();
+    public Map <String, ? extends JsObject> getProperties();
+    public void addProperty(String name, JsObject property);
+    public JsObject getPropery(String name);
+    
+    /**
+     * 
+     * @return the object within this is declared
+     */
+    public JsObject getParent();
+    
+    /**
+     * 
+     * @return if is really declared in the source
+     */
+    public boolean isDeclared();
+   
 }
