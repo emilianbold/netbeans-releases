@@ -759,6 +759,11 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
             boolean success = false;
             OutputStream os = tmpLocalFile.getOutputStream();
+            if (os == null) {
+                // definitely should not happen
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotOpenTmpLocalFile", tmpLocalFile));
+                return;
+            }
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
                     boolean fileRetrieved;
@@ -828,6 +833,11 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     lock = foTarget.lock();
                     try {
                         in = source.getInputStream();
+                        if (in == null) {
+                            // definitely should not happen
+                            moved.getAndSet(false);
+                            return;
+                        }
                         try {
                             // TODO the doewnload action shoudln't save all file before
                             // executing, then the ide will ask, whether user wants

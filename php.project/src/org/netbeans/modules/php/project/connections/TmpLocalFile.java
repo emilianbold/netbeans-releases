@@ -95,8 +95,8 @@ public abstract class TmpLocalFile {
     public abstract boolean isInMemory();
 
     /**
-     * Get the file output stream, never {@code null}.
-     * @return file output stream, never {@code null}
+     * Get the file output stream, can be {@code null} if any error occurs.
+     * @return file output stream, can be {@code null} if any error occurs
      */
     public abstract OutputStream getOutputStream();
 
