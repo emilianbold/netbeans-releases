@@ -172,6 +172,56 @@ public final class LexUtilities {
         return null;
     }
 
+    public static char getTokenChar(Document doc, int offset) {
+        Token<?extends JsTokenId> token = getToken(doc, offset);
+
+        if (token != null) {
+            String text = token.text().toString();
+
+            if (text.length() > 0) { // Usually true, but I could have gotten EOF right?
+
+                return text.charAt(0);
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * The same as braceBalance but generalized to any pair of matching
+     * tokens.
+     * @param open the token that increses the count
+     * @param close the token that decreses the count
+     */
+    public static int getTokenBalance(Document doc, TokenId open, TokenId close, int offset)
+        throws BadLocationException {
+        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
+        if (ts == null) {
+            return 0;
+        }
+
+        // XXX Why 0? Why not offset?
+        ts.moveIndex(0);
+
+        if (!ts.moveNext()) {
+            return 0;
+        }
+
+        int balance = 0;
+
+        do {
+            Token t = ts.token();
+
+            if (t.id() == open) {
+                balance++;
+            } else if (t.id() == close) {
+                balance--;
+            }
+        } while (ts.moveNext());
+
+        return balance;
+    }
+
     /**
      * Return true iff the line for the given offset is a JavaScript comment line.
      * This will return false for lines that contain comments (even when the
