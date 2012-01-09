@@ -63,6 +63,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.LucenePackage;
@@ -92,6 +93,11 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
+ * Note - there can be only a single IndexWriter at a time for the dir index. For consistency, the Writer is
+ * kept in a thread-local variable until it is committed. Lucene will throw an exception if another Writer creation
+ * attempt is done (by another thread, presumably). 
+ * <p/>
+ * It should be thread-safe (according to Lucene docs) to use an IndexWriter while Readers are opened.
  *
  * @author Tomas Zezula
  */
@@ -138,28 +144,35 @@ public class LuceneIndex implements Index.Transactional {
             ) throws IOException, InterruptedException {
         Parameters.notNull("queries", queries);   //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
-        Parameters.notNull("result", result);       //NOI18N        
-        final IndexReader in = dirCache.getReader();
-        if (in == null) {
-            LOGGER.log(Level.FINE, "{0} is invalid!", this);
-            return;
-        }
+        Parameters.notNull("result", result);       //NOI18N   
+        
         if (selector == null) {
             selector = ALL_FIELDS;
         }
-        final BitSet bs = new BitSet(in.maxDoc());
-        final Collector c = new BitSetCollector(bs);
-        final Searcher searcher = new IndexSearcher(in);
+        IndexReader in = null;
+        BitSet bs = null;
         try {
-            for (Query q : queries) {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
-                }
-                searcher.search(q, c);
+            in = dirCache.acquireReader();
+            if (in == null) {
+                LOGGER.log(Level.FINE, "{0} is invalid!", this);
+                return;
             }
+            bs = new BitSet(in.maxDoc());
+            final Collector c = new BitSetCollector(bs);
+            final Searcher searcher = new IndexSearcher(in);
+            try {
+                for (Query q : queries) {
+                    if (cancel != null && cancel.get()) {
+                        throw new InterruptedException ();
+                    }
+                    searcher.search(q, c);
+                }
+            } finally {
+                searcher.close();
+            }        
         } finally {
-            searcher.close();
-        }        
+            dirCache.releaseReader(in);
+        }
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
             if (cancel != null && cancel.get()) {
                 throw new InterruptedException ();
@@ -179,29 +192,34 @@ public class LuceneIndex implements Index.Transactional {
             final @NonNull StoppableConvertor<Term,T> filter,
             final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
         
-        final IndexReader in = dirCache.getReader();
-        if (in == null) {
-            return;
-        }
-
-        final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
+        IndexReader in = null;
         try {
-            do {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
-                }
-                final Term currentTerm = terms.term();
-                if (currentTerm != null) {                    
-                    final T vote = filter.convert(currentTerm);
-                    if (vote != null) {
-                        result.add(vote);
+            in = dirCache.acquireReader();
+            if (in == null) {
+                return;
+            }
+
+            final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
+            try {
+                do {
+                    if (cancel != null && cancel.get()) {
+                        throw new InterruptedException ();
                     }
-                }
-            } while (terms.next());
-        } catch (StoppableConvertor.Stop stop) {
-            //Stop iteration of TermEnum
+                    final Term currentTerm = terms.term();
+                    if (currentTerm != null) {                    
+                        final T vote = filter.convert(currentTerm);
+                        if (vote != null) {
+                            result.add(vote);
+                        }
+                    }
+                } while (terms.next());
+            } catch (StoppableConvertor.Stop stop) {
+                //Stop iteration of TermEnum
+            } finally {
+                terms.close();
+            }
         } finally {
-            terms.close();
+            dirCache.releaseReader(in);
         }
     }
     
@@ -218,60 +236,65 @@ public class LuceneIndex implements Index.Transactional {
         Parameters.notNull("convertor", convertor);         //NOI18N
         Parameters.notNull("termConvertor", termConvertor); //NOI18N
         Parameters.notNull("result", result);               //NOI18N
-        final IndexReader in = dirCache.getReader();
-        if (in == null) {
-            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
-            return;
-        }
         if (selector == null) {
             selector = ALL_FIELDS;
         }
-        final BitSet bs = new BitSet(in.maxDoc());
-        final Collector c = new BitSetCollector(bs);
-        final Searcher searcher = new IndexSearcher(in);
-        final TermCollector termCollector = new TermCollector();
+        IndexReader in = null;
         try {
-            for (Query q : queries) {
+            in = dirCache.acquireReader();
+            if (in == null) {
+                LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
+                return;
+            }
+            final BitSet bs = new BitSet(in.maxDoc());
+            final Collector c = new BitSetCollector(bs);
+            final Searcher searcher = new IndexSearcher(in);
+            final TermCollector termCollector = new TermCollector();
+            try {
+                for (Query q : queries) {
+                    if (cancel != null && cancel.get()) {
+                        throw new InterruptedException ();
+                    }
+                    if (q instanceof TermCollector.TermCollecting) {
+                        ((TermCollector.TermCollecting)q).attach(termCollector);
+                    } else {
+                        throw new IllegalArgumentException (
+                                String.format("Query: %s does not implement TermCollecting",    //NOI18N
+                                q.getClass().getName()));
+                    }
+                    searcher.search(q, c);
+                }
+            } finally {
+                searcher.close();
+            }
+        
+            boolean logged = false;
+            for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
                 if (cancel != null && cancel.get()) {
                     throw new InterruptedException ();
                 }
-                if (q instanceof TermCollector.TermCollecting) {
-                    ((TermCollector.TermCollecting)q).attach(termCollector);
-                } else {
-                    throw new IllegalArgumentException (
-                            String.format("Query: %s does not implement TermCollecting",    //NOI18N
-                            q.getClass().getName()));
+                final Document doc = in.document(docNum, selector);
+                final T value = convertor.convert(doc);
+                if (value != null) {
+                    final Set<Term> terms = termCollector.get(docNum);
+                    if (terms != null) {
+                        result.put (value, convertTerms(termConvertor, terms));
+                    } else {
+                        if (!logged) {
+                            LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
+                                    new Object[] {
+                                        in.maxDoc(),
+                                        in.numDocs(),
+                                        termCollector.docs()
+                                    });
+                            logged = true;
+                        }
+                        LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
+                    }
                 }
-                searcher.search(q, c);
             }
         } finally {
-            searcher.close();
-        }
-        
-        boolean logged = false;
-        for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (cancel != null && cancel.get()) {
-                throw new InterruptedException ();
-            }
-            final Document doc = in.document(docNum, selector);
-            final T value = convertor.convert(doc);
-            if (value != null) {
-                final Set<Term> terms = termCollector.get(docNum);
-                if (terms != null) {
-                    result.put (value, convertTerms(termConvertor, terms));
-                } else {
-                    if (!logged) {
-                        LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
-                                new Object[] {
-                                    in.maxDoc(),
-                                    in.numDocs(),
-                                    termCollector.docs()
-                                });
-                        logged = true;
-                    }
-                    LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
-                }
-            }
+            dirCache.releaseReader(in);
         }
     }
     
@@ -285,37 +308,13 @@ public class LuceneIndex implements Index.Transactional {
 
     @Override
     public void commit() throws IOException {
-        try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                LOGGER.log(Level.FINE, "Committing {0}", LuceneIndex.this);
-                    dirCache.closeTxWriter();
-                    return null;
-                }
-            });
-        } catch (InterruptedException ie) {
-            throw new IOException("Interrupted");   //NOI18N
-        }
+        dirCache.closeTxWriter();
     }
 
     @Override
     public void rollback() throws IOException {
-        try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    LOGGER.log(Level.FINE, "Rolling back {0}", this);
-                    dirCache.rollbackTxWriter();
-                    return null;
-                }
-            });
-        } catch (InterruptedException ie) {
-            throw new IOException("Interrupted");   //NOI18N
-        }
+        dirCache.rollbackTxWriter();
     }
-    
-    
 
     @Override
     public <S, T> void store (
@@ -345,22 +344,12 @@ public class LuceneIndex implements Index.Transactional {
         
         final IndexWriter[] wr = new IndexWriter[1];
         try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Storing in TX {0}: {1} added, {2} deleted", 
-                                new Object[] { this, toAdd.size(), toDelete.size() }
-                                );
-                    }
-                    _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr, false);
-                    return null;
-                }
-                
-            });
-        } catch (InterruptedException ie) {
-            throw new IOException("Interrupted");   //NOI18N
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Storing in TX {0}: {1} added, {2} deleted", 
+                        new Object[] { this, toAdd.size(), toDelete.size() }
+                        );
+            }
+            _doStore(toAdd, toDelete, docConvertor, queryConvertor, wr, false);
         } finally {
             // nothing committed upon failure - readers not affected
             boolean ok = false;
@@ -613,11 +602,12 @@ public class LuceneIndex implements Index.Transactional {
         private volatile boolean closed;
         private volatile Status validCache;
         private long lastUsedWriter;
+        private ReadWriteLock   rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
         
         /**
-         * IndexWriter with potentially uncommitted data
+         * IndexWriter with potentially uncommitted data; local to a thread.
          */
-        private IndexWriter   txWriter;
+        private ThreadLocal<IndexWriter>   txWriter = new ThreadLocal<IndexWriter>();
         
         private DirCache(
                 final @NonNull File folder,
@@ -694,15 +684,16 @@ public class LuceneIndex implements Index.Transactional {
             try {
                 writer.close();
             } finally {
-                if (txWriter == writer) {
+                if (txWriter.get() == writer) {
                     LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
-                    txWriter = null;
+                    txWriter.remove();
                 }
             }
         }
         
         synchronized void close (final boolean closeFSDir) throws IOException {
             try {
+                rwLock.writeLock().lock();
                 try {
                     rollbackTxWriter();
                     if (this.reader != null) {
@@ -725,6 +716,7 @@ public class LuceneIndex implements Index.Transactional {
                     this.closed = true;
                     this.fsDir.close();
                 }
+                rwLock.writeLock().unlock();
             }
         }
         
@@ -746,7 +738,7 @@ public class LuceneIndex implements Index.Transactional {
                 final Collection<? extends String> locks = getOrphanLock();
                 Status res = Status.INVALID;
                 if (!locks.isEmpty()) {
-                    if (txWriter != null) {
+                    if (txWriter.get() != null) {
                         res = Status.WRITING;
                     } else {
                         LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
@@ -779,25 +771,32 @@ public class LuceneIndex implements Index.Transactional {
             return valid;
         }
         
-        void closeTxWriter() throws IOException {
-            if (txWriter != null) {
+        boolean closeTxWriter() throws IOException {
+            IndexWriter writer = txWriter.get();
+            if (writer != null) {
                 try {
                     LOGGER.log(Level.FINE, "Committing {0}", this);
-                    close(txWriter);
+                    close(writer);
+                    return true;
                 } finally {
                     refreshReader();
                 }
+            } else {
+                return false;
             }
         }
         
-        void rollbackTxWriter() throws IOException {
-            if (txWriter != null) {
+        boolean rollbackTxWriter() throws IOException {
+            IndexWriter writer = txWriter.get();
+            if (writer != null) {
                 try {
-                    txWriter.rollback();
-                    txWriter = null;
+                    writer.rollback();
+                    return true;
                 } finally {
-                    txWriter = null;
+                    txWriter.remove();
                 }
+            } else {
+                return false;
             }
         }
         
@@ -807,23 +806,38 @@ public class LuceneIndex implements Index.Transactional {
             checkPreconditions();
             hit();
             
-            if (txWriter != null) {
+            IndexWriter writer = txWriter.get();
+            if (writer != null) {
                 long current = System.currentTimeMillis();
                 if (current - lastUsedWriter > STALE_WRITER_THRESHOLD) {
                     LOGGER.log(Level.WARNING, "Using stale writer, possibly forgotten call to store ?", new Throwable());
                 }
                 lastUsedWriter = current;
-                return txWriter;
+                return writer;
             }
             //Issue #149757 - logging
             try {
                 final IndexWriter iw = new FlushIndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
                 iw.setMergeScheduler(new SerialMergeScheduler());
                 lastUsedWriter = System.currentTimeMillis();
-                return txWriter = iw;
+                txWriter.set(iw);
+                return iw;
             } catch (IOException ioe) {
                 throw annotateException (ioe);
             }
+        }
+        
+        IndexReader acquireReader() throws IOException {
+            rwLock.readLock().lock();
+            return getReader();
+        }
+        
+        void releaseReader(IndexReader r) {
+            if (r == null) {
+                return;
+            }
+            assert r == this.reader;
+            rwLock.readLock().unlock();
         }
         
         synchronized IndexReader getReader () throws IOException {
@@ -874,8 +888,14 @@ public class LuceneIndex implements Index.Transactional {
                     if (reader != null) {
                         final IndexReader newReader = reader.reopen();
                         if (newReader != reader) {
-                            reader.close();
-                            reader = newReader;
+                            
+                            rwLock.writeLock().lock();
+                            try {
+                                reader.close();
+                                reader = newReader;
+                            } finally {
+                                rwLock.writeLock().unlock();
+                            }
                         }
                     }
                 }

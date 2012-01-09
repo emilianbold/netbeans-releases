@@ -379,42 +379,55 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                         js.runUserActionTask(new Task<CompilationController>() {
                             @Override
                             public void run (final CompilationController controller) {
-                                try {                            
-                                    IndexManager.writeAccess(
-                                        new IndexManager.Action<Void>() {
-                                        @Override
-                                            public Void run () throws IOException {
-                                                if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
+                                TransactionContext tx = null;
+                                try {                    
+                                    try {
+                                        tx = TransactionContext.beginStandardTx(true, root);
+                                        FileObject rootFo = URLMapper.findFileObject (root);
+                                        IndexManager.writeAccess(
+                                            new IndexManager.Action<Void>() {
+                                            @Override
+                                                public Void run () throws IOException {
+                                                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
+                                                        return null;
+                                                    }
+                                                    try {
+                                                        final SourceAnalyser sa = getSourceAnalyser();
+                                                        sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
+                                                        ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                    } catch (IllegalArgumentException ia) {
+                                                        //Debug info for issue #187344
+                                                        //seems that invalid dirty class index is used
+                                                        final ClassPath scp = controller.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                                                        throw new IllegalArgumentException(
+                                                                String.format("Provided source path: %s root: %s cache root: %",    //NOI18N
+                                                                    scp == null ? "<null>" : scp.toString(),    //NOI18N
+                                                                    root.toExternalForm(),
+                                                                    cacheRoot.toURI().toURL())
+                                                                    ,ia);
+                                                    }
                                                     return null;
                                                 }
-                                                try {
-                                                    final SourceAnalyser sa = getSourceAnalyser();
-                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
-                                                } catch (IllegalArgumentException ia) {
-                                                    //Debug info for issue #187344
-                                                    //seems that invalid dirty class index is used
-                                                    final ClassPath scp = controller.getClasspathInfo().getClassPath(PathKind.SOURCE);
-                                                    throw new IllegalArgumentException(
-                                                            String.format("Provided source path: %s root: %s cache root: %",    //NOI18N
-                                                                scp == null ? "<null>" : scp.toString(),    //NOI18N
-                                                                root.toExternalForm(),
-                                                                cacheRoot.toURI().toURL())
-                                                                ,ia);
-                                                }
-                                                return null;
-                                            }
-                                    });
-                                } catch (Index.IndexClosedException e) {
-                                    //A try to  store to closed index, safe to ignore.
-                                    //Data will be scanned when project is reopened.
-                                   LOGGER.info("Ignoring store into closed index");
-                                } catch (IOException ioe) {
-                                   Exceptions.printStackTrace(ioe);
-                                }
-                                catch (InterruptedException e) {
-                                   //Should never happen
-                                   Exceptions.printStackTrace(e);
+                                        });
+                                    } catch (Index.IndexClosedException e) {
+                                        //A try to  store to closed index, safe to ignore.
+                                        //Data will be scanned when project is reopened.
+                                       LOGGER.info("Ignoring store into closed index");
+                                    } catch (IOException ioe) {
+                                       Exceptions.printStackTrace(ioe);
+                                    }
+                                    catch (InterruptedException e) {
+                                       //Should never happen
+                                       Exceptions.printStackTrace(e);
+                                    }
+                                } finally {
+                                    if (tx != null) {
+                                        try {
+                                            tx.commit();
+                                        } catch (IOException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
                                 }
                             }
                         }, true);

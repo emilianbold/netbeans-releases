@@ -794,7 +794,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         FileManagerTransaction.class,
                         JavaIndex.hasSourceCache(
                             context.getRootURI(), false)?
-                            FileManagerTransaction.writeBack(context.getRoot()):
+                            FileManagerTransaction.writeBack(context.getRootURI()):
                             FileManagerTransaction.writeThrough()).
                     register(
                         PersistentIndexTransaction.class, 

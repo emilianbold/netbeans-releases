@@ -43,6 +43,10 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URL;
 import java.nio.charset.Charset;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
@@ -97,7 +101,7 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         return null;
     }
     
-    public static FileManagerTransaction writeBack(FileObject root) {
+    public static FileManagerTransaction writeBack(URL root) {
         return new WriteBackTransaction(root);
     }
 
@@ -109,18 +113,13 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         return new Read();
     }
     
-    static class JFOContent {
-        JavaFileObject  jfo;
-        byte[] content;
-
-        public JFOContent(JavaFileObject jfo, byte[] content) {
-            this.jfo = jfo;
-            this.content = content;
-        }
-        
-        
+    /**
+     * Ignores all writes, but acts as if they succeeded.
+     */
+    public static FileManagerTransaction nullWrite() {
+        return new Null();
     }
-
+    
     private static class WriteThrogh extends FileManagerTransaction {
         
         private WriteThrogh() {
@@ -153,6 +152,75 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
             return FileObjects.fileFileObject(file, root, filter, encoding);
         }
     }
+    
+    private static class Null extends FileManagerTransaction {
+
+        public Null() {
+            super(true);
+        }
+        
+        @Override
+        public void delete (@NonNull final File file) {
+            // NOP
+        }
+
+        @Override
+        JavaFileObject createFileObject(File file, File root, JavaFileFilterImplementation filter, Charset encoding) {
+            InferableJavaFileObject ifo = FileObjects.fileFileObject(file, root, filter, encoding);
+            return new NullFileObject(ifo);
+        }
+
+        @Override
+        @NonNull
+        Iterable<JavaFileObject> filter(String packageName, @NonNull final Iterable<JavaFileObject> files) {
+            return files;
+        }
+
+        @Override
+        protected void commit() throws IOException {
+            //NOP
+        }
+
+        @Override
+        protected void rollBack() throws IOException {
+            //NOP
+        }
+    }
+
+    /**
+     * Wraps an existing JFO so that writes + creations on the file are suppressed. Does not wrap
+     * if the JFO is already a wrapper(performance).
+     * 
+     * @return JFO wrapper which silently ignores modifications
+     */
+    static InferableJavaFileObject nullFileObject(@NonNull final InferableJavaFileObject delegate) {
+        return delegate instanceof NullFileObject ? delegate : new NullFileObject(delegate);
+    }
+
+    private static final class NullFileObject extends ForwardingInferableJavaFileObject {
+        private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
+            super (delegate);
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            return new NullOutputStream();
+        }
+
+        @Override
+        public Writer openWriter() throws IOException {
+            return new OutputStreamWriter(openOutputStream());
+        }
+    }
+
+
+    private static class NullOutputStream extends OutputStream {
+        @Override
+        public void write(int b) throws IOException {
+            //pass
+        }
+    }
+
 
     private static class Read extends FileManagerTransaction {
         

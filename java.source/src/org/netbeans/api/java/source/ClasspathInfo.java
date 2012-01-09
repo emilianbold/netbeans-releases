@@ -193,8 +193,13 @@ public final class ClasspathInfo {
             assert txCtx != null : "No transaction context associated with current thread"; //NOI18N
             fmTx = txCtx.get(FileManagerTransaction.class);
         } else {
-            //No real transaction, read-only mode.
-            fmTx = FileManagerTransaction.read();
+            final TransactionContext txCtx = TransactionContext.getIfExists();
+            if (txCtx != null) {
+                fmTx = txCtx.get(FileManagerTransaction.class);
+            } else {
+                //No real transaction, read-only mode.
+                fmTx = FileManagerTransaction.nullWrite();
+            }
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N
     }
@@ -406,8 +411,21 @@ public final class ClasspathInfo {
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
-                hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider(), fmTx) : null,
+                cachedAptSrcClassPath != null ? 
+                    new AptSourceFileManager(
+                            this.cachedSrcClassPath, 
+                            this.cachedAptSrcClassPath, 
+                            siblings.getProvider(),
+                            fmTx
+                    ) : null,
+                hasSources ? 
+                    new OutputFileManager(
+                            this.archiveProvider, 
+                            this.outputClassPath, 
+                            this.cachedSrcClassPath, 
+                            this.cachedAptSrcClassPath, 
+                            siblings.getProvider(), 
+                            fmTx) : null,
                 this.memoryFileManager,
                 marker,
                 siblings);

@@ -198,14 +198,14 @@ public interface Index {
                 @NonNull Convertor<? super S, ? extends Query> queryConvertor) throws IOException;
 
         /**
-         * Commits the data written by txStore.
+         * Commits the data written by txStore; no op, if a transaction is not opened
          * 
          * @throws IOException in case of I/O error during commit
          */
         void commit() throws IOException;
         
         /**
-         * Rolls back the transaction, frees associated resources.
+         * Rolls back the transaction, frees associated resources. No op if a transaction is not opened
          */
         void rollback() throws IOException;
     }
