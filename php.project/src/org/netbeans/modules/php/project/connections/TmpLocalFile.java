@@ -162,7 +162,7 @@ public abstract class TmpLocalFile {
 
 
         public DiskTmpLocalFile() throws IOException {
-            file = File.createTempFile("nb-ftp-tmp-file-", null); // NOI18N
+            file = File.createTempFile("nb-remote-tmp-file-", null); // NOI18N
         }
 
         @Override
