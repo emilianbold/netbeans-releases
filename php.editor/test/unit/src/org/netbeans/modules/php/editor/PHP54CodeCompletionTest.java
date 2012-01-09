@@ -95,6 +95,22 @@ public class PHP54CodeCompletionTest extends PHPTestBase {
     public void testAnonymousObjectVariables_02() throws Exception {
         checkCompletion("testfiles/completion/lib/php54/anonymousObjectVariables.php", "(new AnonymousObject(new Bar($baz, $bat)))->^baz();", false);
     }
+    
+    public void testCallableTypeHint_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/php54/callableTypeHint.php", "function callableTypeHint(^callable $arg) {", false);
+    }   
+    
+    public void testCallableTypeHint_02() throws Exception {
+        checkCompletion("testfiles/completion/lib/php54/callableTypeHint.php", "function callableTypeHint(call^able $arg) {", false);
+    } 
+    
+    public void testCallableTypeHint_03() throws Exception {
+        checkCompletion("testfiles/completion/lib/php54/callableTypeHint.php", "function __construct(^callable $arg) {", false);
+    } 
+    
+    public void testCallableTypeHint_04() throws Exception {
+        checkCompletion("testfiles/completion/lib/php54/callableTypeHint.php", "function __construct(call^able $arg) {", false);
+    } 
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

@@ -1,7 +1,6 @@
 Code completion result for source line:
-function paramsfnc($a,$b,$c,|$d) {
+function callableTypeHint(call|able $arg) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CLASS      clsA                            [PUBLIC]   paramdecltypes.php
-CLASS      ifaceA                          [PUBLIC]   paramdecltypes.php
+CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 ------------------------------------
 KEYWORD    callable                                   Language Construct
