@@ -128,6 +128,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     rp = RP;
                 }
                 rp.post (new Runnable () {
+                    @Override
                     public void run () {
                         List<Component> cs = new ArrayList<Component>(componentProxies.size());
                         try {
@@ -137,6 +138,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 final boolean[] doOpen = new boolean[] { false };
                                 try {
                                     SwingUtilities.invokeAndWait(new Runnable() {
+                                        @Override
                                         public void run() {
                                             c[0] = cp.getComponent();
                                             doOpen[0] = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
@@ -163,6 +165,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 } else {
                                     if (doOpen[0]) {
                                         SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
                                             public void run() {
                                                 c[0].setVisible(true);
                                             }
@@ -172,6 +175,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             }
                             if (topComponentsToOpen.size() > 0) {
                                 SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
                                     public void run() {
                                         openTopComponents(topComponentsToOpen);
                                     }
@@ -184,7 +188,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 openedComponents.notifyAll();
                             }
                             synchronized (OPENED_COMPONENTS) {
-                                if (componentsInitiallyOpened.size() == 0) {
+                                if (componentsInitiallyOpened.isEmpty()) {
                                     OPENED_COMPONENTS.addAll(cs);
                                 } else {
                                     List<Component> ocs = new ArrayList<Component>(cs);
@@ -202,6 +206,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 if (openedGroups.isEmpty()) {
                     // Open debugger TopComponentGroup.
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             TopComponentGroup group = WindowManager.getDefault ().
                                 findTopComponentGroup ("debugger"); // NOI18N
@@ -280,7 +285,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                         a = (Action) l;
                         break;
                     }
-                };
+                }
             }
             if (a != null && a instanceof DebuggerAction) {
                 return (DebuggerAction) a;
@@ -289,7 +294,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         return null;
     }
 
-    private final void setupToolbar(final DebuggerEngine engine) {
+    private void setupToolbar(final DebuggerEngine engine) {
         final List<Component> buttonsToClose = new ArrayList<Component>();
         buttonsToClose.add(new java.awt.Label("EMPTY"));
         final boolean isFirst;
@@ -310,6 +315,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     engineActions.addAll(ap.getActions());
                 }
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         List<Component> buttonsClosed = new ArrayList<Component>();
                         List<Component> buttonsUsed = new ArrayList<Component>();
@@ -388,6 +394,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 }
                 if (!windowsToClose.isEmpty()) {
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             final List<TopComponent> topComponentsToClose = new ArrayList<TopComponent>(windowsToClose.size());
                             for (Component c : windowsToClose) {
@@ -414,6 +421,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 openedGroups.remove(engine);
                 if (openedGroups.isEmpty()) {
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             TopComponentGroup group = WindowManager.getDefault ().
                                 findTopComponentGroup ("debugger"); // NOI18N
@@ -438,7 +446,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         closeToolbar(engine);
     }
 
-    private final void closeToolbar(DebuggerEngine engine) {
+    private void closeToolbar(DebuggerEngine engine) {
         final boolean doCloseToolbar;
         synchronized (closedToolbarButtons) {
             List<? extends Component> closedButtons = closedToolbarButtons.remove(engine);
@@ -468,6 +476,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     buttonsToClose.removeAll(usedByAllButtons);
                     if (!buttonsToClose.isEmpty()) {
                         SwingUtilities.invokeLater (new Runnable () {
+                            @Override
                             public void run () {
                                 for (Component c : buttonsToClose) {
                                     c.setVisible(false);
@@ -481,6 +490,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     }
                 } else {
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             for (Component c : debugToolbar.getComponents()) {
                                 if (c instanceof AbstractButton) {
@@ -500,6 +510,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
         if (doCloseToolbar) {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
                     unregisterToolbarListener(debugToolbar);
@@ -535,6 +546,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             doCloseDebuggerUI();
         } else {
             SwingUtilities.invokeLater(new Runnable () {
+                @Override
                 public void run () {
                     doCloseDebuggerUI();
                 }
