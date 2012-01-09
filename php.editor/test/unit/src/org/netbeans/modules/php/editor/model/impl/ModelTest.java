@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -287,7 +288,7 @@ public class ModelTest extends ModelTestBase {
         FileScope topScope = model.getFileScope();
         Collection<? extends NamespaceScope> declaredNamespaces = topScope.getDeclaredNamespaces();
         Collection<? extends ConstantElement> declaredConstants = declaredNamespaces.iterator().next().getDeclaredConstants();
-        
+
         assertEquals(2, declaredConstants.size());
         for (ConstantElement constantElement : declaredConstants) {
             if(constantElement.getName().equals("NEGATIVE")) {
@@ -299,7 +300,7 @@ public class ModelTest extends ModelTestBase {
             }
         }
     }
-    
+
     private void varContainerTestForGlobal2(VariableScope topScope) {
         VariableName my = ModelUtils.getFirst(ModelUtils.filter(topScope.getDeclaredVariables(),"$my"));
         assertNotNull(my);
@@ -335,4 +336,14 @@ public class ModelTest extends ModelTestBase {
         TypeScope foreign2Type = ModelUtils.getFirst(foreign2.getTypes(last.getOffset()));
         assertNull(foreign2Type);
     }
+
+    public void testModelPerformance() throws Exception {
+        Date start = new Date();
+        Model model = getModel(prepareTestFile("testfiles/model/performance.php"));
+        Date end = new Date();
+        long time = end.getTime() - start.getTime();
+        System.out.println("Creating model takes: " + time);
+        assertTrue(time < 3000);
+    }
+
 }
