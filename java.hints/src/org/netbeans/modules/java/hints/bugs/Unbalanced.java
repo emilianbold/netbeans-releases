@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
@@ -74,11 +75,10 @@ import org.openide.util.NbBundle;
  */
 public class Unbalanced {
 
-    private static final Set<ElementKind> ACCEPTABLE_KIND = EnumSet.of(ElementKind.FIELD, ElementKind.LOCAL_VARIABLE);
     private static final Map<CompilationInfo, Map<Element, Set<State>>> seen = new WeakHashMap<CompilationInfo, Map<Element, Set<State>>>();
 
     private static boolean isAcceptable(Element el) {
-        return el != null && ACCEPTABLE_KIND.contains(el.getKind()) && el.getModifiers().contains(Modifier.PRIVATE);
+        return el != null && (el.getKind() == ElementKind.LOCAL_VARIABLE || (el.getKind() == ElementKind.FIELD && el.getModifiers().contains(Modifier.PRIVATE)));
     }
     
     private static void record(CompilationInfo info, VariableElement el, State... states) {
@@ -253,6 +253,11 @@ public class Unbalanced {
                 }
             }
 
+            if (   ctx.getPath().getParentPath().getLeaf().getKind() == Kind.ENHANCED_FOR_LOOP
+                && ((EnhancedForLoopTree) ctx.getPath().getParentPath().getLeaf()).getVariable() == ctx.getPath().getLeaf()) {
+                return null;
+            }
+            
             return produceWarning(ctx, "ERR_UnbalancedCollection");
         }
     }
