@@ -107,6 +107,11 @@ public final class TransactionContext {
         return (T) services.get(type);
     }
 
+    @CheckForNull
+    public static TransactionContext getIfExists() {
+        return ctx.get();
+    }
+
     @NonNull
     public static TransactionContext beginTrans() {
         if (ctx.get() != null) {
