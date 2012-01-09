@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -152,6 +153,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private final PHPParseResult info;
     private boolean  askForEditorExtensions = true;
     private List<PhpBaseElement> baseElements;
+    private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<Scope, Map<String, AssignmentImpl>>();
 
     private boolean lazyScan = true;
 
@@ -670,18 +672,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {
         Map<String, AssignmentImpl> allAssignments = new HashMap<String, AssignmentImpl>();
-        if (scope instanceof VariableScope) {
-            VariableScope variableScope = (VariableScope) scope;
-            Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
-            for (VariableName variableName : declaredVariables) {
-                if (variableName instanceof VariableNameImpl) {
-                    VariableNameImpl vni = (VariableNameImpl) variableName;
-                    AssignmentImpl ai = vni.findVarAssignment(leftHandSide.getStartOffset());
-                    if (ai != null) {
-                        allAssignments.put(vni.getName(), ai);
+        Map<String, AssignmentImpl> cachedMap = assignmentMapCache.get(scope);
+        if (cachedMap == null || cachedMap.isEmpty()) {
+            if (scope instanceof VariableScope) {
+                VariableScope variableScope = (VariableScope) scope;
+                Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
+                for (VariableName variableName : declaredVariables) {
+                    if (variableName instanceof VariableNameImpl) {
+                        VariableNameImpl vni = (VariableNameImpl) variableName;
+                        AssignmentImpl ai = vni.findVarAssignment(leftHandSide.getStartOffset());
+                        if (ai != null) {
+                            allAssignments.put(vni.getName(), ai);
+                        }
                     }
                 }
             }
+            assignmentMapCache.save(scope, allAssignments);
         }
         return allAssignments;
     }
