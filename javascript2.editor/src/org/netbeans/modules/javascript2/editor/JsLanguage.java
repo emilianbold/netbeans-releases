@@ -39,6 +39,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
@@ -89,5 +90,9 @@ public class JsLanguage extends DefaultLanguageConfig {
     public StructureScanner getStructureScanner() {
         return new JsStructureScanner();
     }
-    
+
+    @Override
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new JsSemanticAnalyzer();
+    }
 }

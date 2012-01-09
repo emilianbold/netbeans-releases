@@ -14,4 +14,13 @@
     <fontcolor name="WHITESPACE" default="whitespace"/>
 
     <fontcolor name="mod-regexp" foreColor="9933CC" default="regexp" />
+    
+    <fontcolor name="mod-method">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-class" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-field" default="field"/>
+    <fontcolor name="mod-global" foreColor="9F0D79"/> 
 </fontscolors>
