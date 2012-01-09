@@ -123,6 +123,14 @@ public class PhpStructureScannerTest extends ParserTestBase{
         performTest("issue205886_01");
     }
 
+    public void testTraits_01() throws Exception {
+        performTest("traitsStructure_01");
+    }
+
+    public void testTraits_02() throws Exception {
+        performTest("traitsStructure_02");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         StringBuffer sb = new StringBuffer();
