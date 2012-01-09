@@ -785,9 +785,9 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 try {
                     if (success) {
                         // move the file
-                        success = moveTmpLocalFile(tmpLocalFile, localFile);
+                        success = copyTmpLocalFile(tmpLocalFile, localFile);
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
+                            LOGGER.fine(String.format("File %s copied to %s: %s", tmpLocalFile, localFile, success));
                         }
                     }
                 } finally {
@@ -813,7 +813,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return TmpLocalFile.onDisk();
     }
 
-    private boolean moveTmpLocalFile(final TmpLocalFile source, final File target) {
+    private boolean copyTmpLocalFile(final TmpLocalFile source, final File target) {
         final AtomicBoolean moved = new AtomicBoolean();
         FileUtil.runAtomicAction(new Runnable() {
             @Override
