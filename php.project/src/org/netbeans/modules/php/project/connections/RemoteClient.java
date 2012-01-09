@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.connections;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -98,9 +97,9 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     private static final OperationMonitor DEV_NULL_OPERATION_MONITOR = new DevNullOperationMonitor();
     private static final Set<String> IGNORED_DIRS = new HashSet<String>(Arrays.asList(".", "..", "nbproject")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
-    private static final String LOCAL_TMP_NEW_SUFFIX = ".new~"; // NOI18N
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
+    private static final int MAX_FILE_SIZE_FOR_MEMORY = 500 * 1024; // 500 kB
 
     public static enum Operation { UPLOAD, DOWNLOAD, DELETE, LIST };
 
@@ -741,9 +740,15 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
             assert parent.isDirectory() : "Parent file of " + localFile + " must be a directory";
 
-            File tmpLocalFile = new File(localFile.getAbsolutePath() + LOCAL_TMP_NEW_SUFFIX);
+            TmpLocalFile tmpLocalFile = createTmpLocalFile(file);
+            if (tmpLocalFile == null) {
+                // definitely should not happen
+                LOGGER.log(Level.INFO, "Local temporary file could not be created for {0}", file.getRemotePath());
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateTmpLocalFile", file.getRemotePath()));
+                return;
+            }
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Downloading {0} => {1}", new Object[] {file.getRemotePath(), tmpLocalFile.getAbsolutePath()});
+                LOGGER.log(Level.FINE, "Downloading {0} => {1}", new Object[] {file.getRemotePath(), tmpLocalFile.isInMemory() ? "memory" : "tmp local file on disk"});
             }
 
             if (!cdBaseRemoteDirectory(file.getParentRemotePath(), false)) {
@@ -752,9 +757,8 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 return;
             }
 
-            // XXX lock the file?
-            OutputStream os = new FileOutputStream(tmpLocalFile);
             boolean success = false;
+            OutputStream os = tmpLocalFile.getOutputStream();
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
                     boolean fileRetrieved;
@@ -773,41 +777,22 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 }
             } finally {
                 os.close();
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
-                if (fo != null) {
-                    fo.refresh();
-                }
-                if (success) {
-                    // move the file
-                    success = moveLocalFile(tmpLocalFile, localFile);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
+                try {
+                    if (success) {
+                        // move the file
+                        success = moveTmpLocalFile(tmpLocalFile, localFile);
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
+                        }
                     }
+                } finally {
+                    LOGGER.fine("Tmp local file cleanup");
+                    tmpLocalFile.cleanup();
                 }
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
-                    try {
-                        FileObject tmpFo = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
-                        if (tmpFo == null) {
-                            // # 181129
-                            LOGGER.log(Level.WARNING, "Cannot delete local temporary file {0}, its file object is null (file exists: {1})",
-                                    new Object[] {tmpLocalFile, tmpLocalFile.exists()});
-                            if (tmpLocalFile.exists()) {
-                                tmpLocalFile.delete();
-                            }
-                        } else {
-                            tmpFo.delete();
-                        }
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
-                        }
-                    } catch (IOException e) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: FALSE", tmpLocalFile));
-                        }
-                    }
                 }
             }
         } else {
@@ -815,39 +800,34 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         }
     }
 
-    private boolean moveLocalFile(final File source, final File target) {
+    private TmpLocalFile createTmpLocalFile(TransferFile file) {
+        final long size = file.getSize();
+        if (size <= MAX_FILE_SIZE_FOR_MEMORY) {
+            return TmpLocalFile.inMemory((int) size);
+        }
+        return TmpLocalFile.onDisk();
+    }
+
+    private boolean moveTmpLocalFile(final TmpLocalFile source, final File target) {
         final AtomicBoolean moved = new AtomicBoolean();
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
-                FileObject foSource = FileUtil.toFileObject(FileUtil.normalizeFile(source));
-                FileObject foTarget = FileUtil.toFileObject(FileUtil.normalizeFile(target));
-                String tmpLocalFileName = source.getName();
-                String localFileName = target.getName();
-
-                if (!target.exists()) {
-                    try {
-                        // both files are in the same directory...
-                        foTarget = foSource.getParent().createData(target.getName());
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "Error while creating local file '" + target + "'", ex);
-                        moved.getAndSet(false);
-                        return;
-                    }
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Data file %s created.", localFileName));
-                    }
+                FileObject foTarget = ensureTargetExists(FileUtil.normalizeFile(target));
+                if (foTarget == null) {
+                    moved.getAndSet(false);
+                    return;
                 }
 
-                //replace content of the target file with the source file
-                FileLock lock = null;
-                InputStream in = null;
-                OutputStream out = null;
+                // replace content of the target file with the source file
+                FileLock lock;
+                InputStream in;
+                OutputStream out;
                 try {
                     // lock the target file
                     lock = foTarget.lock();
                     try {
-                        in = foSource.getInputStream();
+                        in = source.getInputStream();
                         try {
                             // TODO the doewnload action shoudln't save all file before
                             // executing, then the ide will ask, whether user wants
@@ -868,22 +848,50 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Error while moving local file", ex);
                     moved.getAndSet(false);
-                } finally {
-                    try {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Deleting source file %s", tmpLocalFileName));
-                        }
-                        foSource.delete();
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "Cannot delete file '" + foSource + "'", ex);
-                    }
                 }
+            }
 
+            private FileObject ensureTargetExists(File target) {
+                if (target.exists()) {
+                    // exists
+                    FileObject targetFo = FileUtil.toFileObject(target);
+                    if (targetFo == null) {
+                        LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", target);
+                        return null;
+                    }
+                    return targetFo;
+                }
+                // does not exist -> create it
+                LOGGER.log(Level.FINE, "Local file {0} does not exists so it will be created", target.getName());
+
+                File parent = target.getParentFile();
+                boolean parentExists = parent.isDirectory();
+                if (!parentExists) {
+                    parentExists = parent.mkdirs();
+                }
+                if (!parentExists) {
+                    LOGGER.log(Level.INFO, "Cannot create parent directory {0}", parent);
+                    return null;
+                }
+                FileObject parentFo = FileUtil.toFileObject(parent);
+                if (parentFo == null) {
+                    LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", parent);
+                    return null;
+                }
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("Content of %s copied into %s: %s", tmpLocalFileName, localFileName, moved.get()));
+                    LOGGER.fine(String.format("Data file %s created.", target.getName()));
+                }
+                try {
+                    return parentFo.createData(target.getName());
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Error while creating local file '" + target + "'", ex);
+                    return null;
                 }
             }
         });
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Content of tmp local file copied into %s: %s", target.getName(), moved.get()));
+        }
         return moved.get();
     }
 

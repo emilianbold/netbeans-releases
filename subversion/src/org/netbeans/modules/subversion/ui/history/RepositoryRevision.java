@@ -179,12 +179,14 @@ final class RepositoryRevision {
         private File originalFile;
         private final String originalPath;
         private final String action;
+        private final String originalName;
 
         public Event (ISVNLogMessageChangePath changedPath, boolean underRoots, String displayAction) {
             this.changedPath = changedPath;
             name = changedPath.getPath().substring(changedPath.getPath().lastIndexOf('/') + 1);
             path = changedPath.getPath().substring(0, changedPath.getPath().lastIndexOf('/'));
             originalPath = changedPath.getCopySrcPath();
+            originalName = originalPath == null ? null : originalPath.substring(originalPath.lastIndexOf('/') + 1);
             this.underRoots = underRoots;
             this.action = displayAction == null ? Character.toString(changedPath.getAction()) : displayAction;
         }
@@ -238,6 +240,10 @@ final class RepositoryRevision {
 
         String getOriginalPath () {
             return originalPath;
+        }
+
+        String getOriginalName () {
+            return originalName;
         }
 
         String getAction() {
