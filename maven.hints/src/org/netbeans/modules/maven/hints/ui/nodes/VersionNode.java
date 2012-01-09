@@ -44,10 +44,10 @@ package org.netbeans.modules.maven.hints.ui.nodes;
 import javax.swing.Action;
 
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -77,7 +77,7 @@ public class VersionNode extends AbstractNode {
                     
                     );
         
-        setIconBaseWithExtension("org/netbeans/modules/maven/hints/DependencyJar.gif"); //NOI18N
+        setIconBaseWithExtension(NodeUtils.ICON_DEPENDENCY_JAR);
     }
 
     @Override
