@@ -279,7 +279,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             boolean isBlockStart = line.startsWith("/*") || (begin != -1 && begin < ts.offset());
             if (isBlockStart || line.startsWith("*")) {
                 int indent = GsfUtilities.getLineIndent(doc, offset);
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder("\n");
                 if (isBlockStart) {
                     indent++;
                 }
@@ -301,13 +301,15 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 if (offset == begin && insertOffset > 0) {
                     insertOffset = Utilities.getRowStart(doc, offset);
                     int sp = Utilities.getRowStart(doc, offset)+sb.length();
-                    doc.insertString(insertOffset, sb.toString(), null);
-                    caret.setDot(sp);
+                    context.setText(sb.toString(), -1, sb.length());
+                    //doc.insertString(insertOffset, sb.toString(), null);
+                    //caret.setDot(sp);
                     //return sp;
                     return;
                 }
-                doc.insertString(insertOffset, sb.toString(), null);
-                caret.setDot(insertOffset);
+                context.setText(sb.toString(), -1, sb.length());
+                //doc.insertString(insertOffset, sb.toString(), null);
+                //caret.setDot(insertOffset);
                 //return insertOffset+sb.length()+1;
                 return;
             }
@@ -391,7 +393,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (continueComment) {
                 // Line comments should continue
                 int indent = GsfUtilities.getLineIndent(doc, offset);
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new StringBuilder("\n");
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
@@ -410,13 +412,15 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 if (offset == begin && insertOffset > 0) {
                     insertOffset = Utilities.getRowStart(doc, offset);
                     int sp = Utilities.getRowStart(doc, offset)+sb.length();
-                    doc.insertString(insertOffset, sb.toString(), null);
-                    caret.setDot(sp);
+                    context.setText(sb.toString(), -1, sb.length());
+                    //doc.insertString(insertOffset, sb.toString(), null);
+                    //caret.setDot(sp);
                     //return sp;
                     return;
                 }
-                doc.insertString(insertOffset, sb.toString(), null);
-                caret.setDot(insertOffset);
+                context.setText(sb.toString(), -1, sb.length());
+                //doc.insertString(insertOffset, sb.toString(), null);
+                //caret.setDot(insertOffset);
                 //return insertOffset+sb.length()+1;
                 return;
             }
