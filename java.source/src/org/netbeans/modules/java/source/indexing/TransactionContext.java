@@ -42,10 +42,15 @@
 package org.netbeans.modules.java.source.indexing;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
+import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
+import org.netbeans.modules.java.source.usages.PersistentIndexTransaction;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -130,5 +135,40 @@ public final class TransactionContext {
         protected abstract void commit() throws IOException;
         protected abstract void rollBack() throws IOException;
     }
-
+    
+    public static TransactionContext beginTxNoOutput() throws IOException {
+        return TransactionContext.beginTrans().
+            register(
+                FileManagerTransaction.class,
+                FileManagerTransaction.nullWrite()).
+            register(
+                PersistentIndexTransaction.class, 
+                PersistentIndexTransaction.create()).
+            register(
+                ClassIndexEventsTransaction.class,
+                ClassIndexEventsTransaction.create()
+            );
+    }
+    
+    public static TransactionContext beginStandardTx(boolean srcIndex, URL root) throws IOException {
+        boolean hasCache;
+        if (srcIndex) {
+            hasCache = JavaIndex.hasSourceCache(root, false);
+        } else {
+            hasCache = JavaIndex.hasBinaryCache(root, false);
+        }
+        return TransactionContext.beginTrans().
+            register(
+                FileManagerTransaction.class,
+                hasCache ?
+                    FileManagerTransaction.writeBack(root):
+                    FileManagerTransaction.writeThrough()).
+            register(
+                PersistentIndexTransaction.class, 
+                PersistentIndexTransaction.create()).
+            register(
+                ClassIndexEventsTransaction.class,
+                ClassIndexEventsTransaction.create()
+            );
+    }
 }

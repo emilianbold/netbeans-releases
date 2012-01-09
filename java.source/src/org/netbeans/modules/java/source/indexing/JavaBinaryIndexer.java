@@ -174,7 +174,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         } finally {
             txCtx.commit();
         }
-    }
+     }
     
     /**
      * Pre builds argument names for {@link javax.swing.JComponent} to speed up first
@@ -265,10 +265,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
 
         @Override
         public boolean scanStarted(final Context context) {
-            TransactionContext.beginTrans().register(
-                ClassIndexEventsTransaction.class,
-                ClassIndexEventsTransaction.create());
             try {
+                TransactionContext.beginStandardTx(false, context.getRootURI());
                 return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
                     @Override
                     public Boolean run() throws IOException, InterruptedException {
