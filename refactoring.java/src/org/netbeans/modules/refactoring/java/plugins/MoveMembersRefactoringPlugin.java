@@ -53,14 +53,20 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,14 +94,34 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected JavaSource getJavaSource(Phase p) {
         TreePathHandle source = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        if (source != null && source.getFileObject() != null) {
-            switch (p) {
-                default:
-                    return JavaSource.forFileObject(source.getFileObject());
+        if(source != null && source.getFileObject() != null) {
+            switch(p) {
+                case CHECKPARAMETERS:
+                case FASTCHECKPARAMETERS:    
+                case PRECHECK:
+                case PREPARE:
+                    ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+                    return JavaSource.create(cpInfo, source.getFileObject());
             }
-        } else {
-            return null;
         }
+        return null;
+    }
+
+    @Override
+    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
+        List<TreePathHandle> handles = new ArrayList<TreePathHandle>(refactoring.getRefactoringSource().lookupAll(TreePathHandle.class));
+        TreePathHandle target = this.refactoring.getTarget().lookup(TreePathHandle.class);
+        if(target != null) {
+            handles.add(target);
+        }
+        ClasspathInfo cpInfo;
+        if (!handles.isEmpty()) {
+            cpInfo = RefactoringUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
+        } else {
+            cpInfo = JavaRefactoringUtils.getClasspathInfoFor((FileObject)null);
+        }
+        refactoring.getContext().add(cpInfo);
+        return cpInfo;
     }
 
     @Override
@@ -107,7 +133,6 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected Problem checkParameters(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
-        // TODO if target is different project, there is no dependency on the target from source
         // TODO source method is using something not available at target
         // TODO source using generics not available at target
         // TODO Check if member is static but target is non static inner
@@ -138,7 +163,15 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         }
 
         TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, true, true, true);
-        TreePath targetClass = JavaRefactoringUtils.findEnclosingClass(javac, target.resolve(javac), true, true, true, true, true);
+        TreePath targetPath = target.resolve(javac);
+        if(targetPath == null) {
+            return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_TargetNotResolved"));
+        }
+        Problem p = checkProjectDeps(sourceTph.getFileObject(), target.getFileObject());
+        if(p != null) {
+            return p;
+        }
+        TreePath targetClass = JavaRefactoringUtils.findEnclosingClass(javac, targetPath, true, true, true, true, true);
         TypeMirror sourceType = javac.getTrees().getTypeMirror(sourceClass);
         TypeMirror targetType = javac.getTrees().getTypeMirror(targetClass);
         if (sourceType.equals(targetType)) { // [f] target is the same as source
@@ -151,7 +184,6 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveToSubClass")); //NOI18N
         }
         
-        Problem p = null;
         Element targetElement = target.resolveElement(javac);
         PackageElement targetPackage = (PackageElement) javac.getElementUtilities().outermostTypeElement(targetElement).getEnclosingElement();
         Element sourceElement = sourceTph.resolveElement(javac);
@@ -262,13 +294,53 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
 
-        Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStep(a.size());
+        Set<FileObject> relevantFiles = getRelevantFiles();
+        Problem p = null;
+        TreePathHandle targetHandle = refactoring.getTarget().lookup(TreePathHandle.class);
+        fireProgressListenerStep(relevantFiles.size());
         MoveMembersTransformer transformer = new MoveMembersTransformer(refactoring);
-        TransformTask task = new TransformTask(transformer, refactoring.getTarget().lookup(TreePathHandle.class));
-        Problem prob = createAndAddElements(a, task, refactoringElements, refactoring);
+        TransformTask task = new TransformTask(transformer, targetHandle);
+        Problem prob = createAndAddElements(relevantFiles, task, refactoringElements, refactoring, getClasspathInfo(refactoring));
         prob = JavaPluginUtils.chainProblems(prob, transformer.getProblem());
         fireProgressListenerStop();
-        return prob != null ? prob : transformer.getProblem();
+        return prob != null ? prob : JavaPluginUtils.chainProblems(transformer.getProblem(), p);
+    }
+
+    private Problem checkProjectDeps(FileObject sourceFile, FileObject targetFile) {
+        Set<FileObject> sourceRoots = new HashSet<FileObject>();
+        ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);
+        if (cp != null) {
+            FileObject root = cp.findOwnerRoot(sourceFile);
+            sourceRoots.add(root);
+        }
+
+        FileObject targetRoot = null;
+        ClassPath targetCp = ClassPath.getClassPath(targetFile, ClassPath.SOURCE);
+        if(targetCp != null) {
+            targetRoot = targetCp.findOwnerRoot(targetFile);
+        }
+        
+        if(!sourceRoots.isEmpty() && targetRoot != null) {
+            URL targetUrl = URLMapper.findURL(targetRoot, URLMapper.EXTERNAL);
+            Project targetProject = FileOwnerQuery.getOwner(targetRoot);
+            Set<URL> deps = SourceUtils.getDependentRoots(targetUrl);
+
+            for (FileObject sourceRoot : sourceRoots) {
+                URL sourceUrl = URLMapper.findURL(sourceRoot, URLMapper.INTERNAL);
+                if (!deps.contains(sourceUrl)) {
+                    Project sourceProject = FileOwnerQuery.getOwner(sourceRoot);
+                    for (FileObject affected : getRelevantFiles()) {
+                        if (FileOwnerQuery.getOwner(affected).equals(sourceProject) && !sourceProject.equals(targetProject)) {
+                            assert sourceProject != null;
+                            assert targetProject != null;
+                            String sourceName = ProjectUtils.getInformation(sourceProject).getDisplayName();
+                            String targetName = ProjectUtils.getInformation(targetProject).getDisplayName();
+                            return new Problem(false, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MemberMissingProjectDeps", sourceName, targetName));
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }
