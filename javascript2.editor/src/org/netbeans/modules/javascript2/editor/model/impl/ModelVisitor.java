@@ -209,13 +209,20 @@ public class ModelVisitor extends PathNodeVisitor {
         if (onset) {
             List<Identifier> fqName = null;
             int pathSize = getPath().size();
+            boolean isDeclaredInParent = false;
             Node lastVisited = getPath().get(pathSize - 1);
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited);
             } else if (lastVisited instanceof PropertyNode) {
                         fqName = getName((PropertyNode)lastVisited);
                     } else if (lastVisited instanceof BinaryNode) {
-                        fqName = getName((BinaryNode)lastVisited);
+                        BinaryNode binNode = (BinaryNode)lastVisited;
+                        fqName = getName(binNode);
+                        if(binNode.lhs() instanceof AccessNode 
+                                && ((AccessNode)binNode.lhs()).getBase() instanceof IdentNode
+                                && ((IdentNode)((AccessNode)binNode.lhs()).getBase()).getName().equals("this")) {
+                            isDeclaredInParent = true;
+                        }
                     }
             if (fqName == null || fqName.size() == 0) {
                 fqName = new ArrayList<Identifier>(1);
@@ -224,7 +231,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             JsObjectImpl scope = modelBuilder.getCurrentObject();
             
-            JsObjectImpl objectScope = ModelElementFactory.create(objectNode, fqName, modelBuilder);
+            JsObjectImpl objectScope = ModelElementFactory.create(objectNode, fqName, modelBuilder, isDeclaredInParent);
 
             modelBuilder.setCurrentObject(objectScope);
         } else {

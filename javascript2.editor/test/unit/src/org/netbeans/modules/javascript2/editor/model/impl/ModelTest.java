@@ -300,6 +300,24 @@ public class ModelTest extends JsTestBase {
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
     }
     
+    public void testObjectLiterarThis() throws Exception {
+        Model model = getModel("testfiles/model/kolo.js");
+        assertNotNull(model);
+        
+        JsObject  global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        
+        JsObject object = global.getPropery("Kolo");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+        assertEquals(4, object.getProperties().size());
+        
+        object = object.getPropery("data");
+        assertEquals(3, object.getProperties().size());
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+    }
+    
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);

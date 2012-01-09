@@ -84,26 +84,26 @@ class ModelElementFactory {
         return new IdentifierImpl(node.getName(), new OffsetRange(node.getStart(), node.getFinish()));
     }
     
-    static JsObjectImpl create(ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder) {
+    static JsObjectImpl create(ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {
         JsObjectImpl scope = modelBuilder.getCurrentObject();
         JsObject parent = scope;
         JsObject result = null;
         Identifier name = fqName.get(fqName.size() - 1);
         JsObjectImpl newObject;
-//        if (fqName.size() > 1) {
+        if (!belongsToParent) {
             JsObject globalObject = modelBuilder.getGlobal();
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
             parent = ModelUtils.getJsObject(globalObject, objectName);
-            result = parent.getPropery(name.getName());
-            newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()));
-            newObject.setDeclared(true);
-            if (result != null) {
-                // the object already exist due a definition of a property => needs to be copied
-                for (String propertyName : result.getProperties().keySet()) {
-                    newObject.addProperty(propertyName, result.getPropery(propertyName));
-                }
+        }
+        result = parent.getPropery(name.getName());
+        newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()));
+        newObject.setDeclared(true);
+        if (result != null) {
+            // the object already exist due a definition of a property => needs to be copied
+            for (String propertyName : result.getProperties().keySet()) {
+                newObject.addProperty(propertyName, result.getPropery(propertyName));
             }
-//        } 
+        }
         parent.addProperty(name.getName(), newObject);
         return (JsObjectImpl)newObject;
     }
