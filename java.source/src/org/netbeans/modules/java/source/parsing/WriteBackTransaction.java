@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,9 +83,9 @@ class WriteBackTransaction extends FileManagerTransaction {
      */
     static boolean disableCache;
     
-    private FileObject root;
+    private URL root;
 
-    WriteBackTransaction(FileObject root) {
+    WriteBackTransaction(URL root) {
         super(true);
         this.root = root;
         
@@ -140,7 +141,7 @@ class WriteBackTransaction extends FileManagerTransaction {
         return content == null ? Collections.<File>emptyList() : content.keySet();
     }
     
-    private FileObject getRootDir() {
+    private URL getRootDir() {
         return root;
     }
 
