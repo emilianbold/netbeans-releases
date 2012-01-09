@@ -321,7 +321,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
-        if (rev.getFile() == null) return;
         showDiff(rev.getLogInfoHeader().getRepositoryRootUrl(), null, rev, showLastDifference);
     }
 
@@ -447,6 +446,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         private DiffStreamSource s1;
         private DiffStreamSource s2;
         private String filePath1;
+        private String name1;
 
         public ShowDiffTask(RepositoryRevision.Event event1, RepositoryRevision.Event event2, boolean showLastDifference) {
             this.event2 = event2;
@@ -466,6 +466,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                         ? event2.getLogInfoHeader().getLog().getRevision().getNumber() - 1
                         : event2.getChangedPath().getCopySrcRevision().getNumber());
                 file1 = event2.getOriginalFile() == null ? event2.getFile() : event2.getOriginalFile();
+                name1 = event2.getOriginalName() == null ? event2.getName() : event2.getOriginalName();
                 filePath1 = event2.getOriginalPath() == null ? event2.getChangedPath().getPath() : event2.getOriginalPath();
             }
             if (isCanceled()) {
@@ -474,26 +475,28 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             String revision2 = event2.getLogInfoHeader().getLog().getRevision().toString();
             String pegRevision1 = revision1;
             String pegRevision2 = revision2;
-            String title1 = file1.getName() + " (" + revision1 + ")"; //NOI18N
-            String title2 = event2.getFile().getName() + " (" + revision2 + ")"; //NOI18N
+            String title1 = name1 + " (" + revision1 + ")"; //NOI18N
+            String title2 = event2.getName() + " (" + revision2 + ")"; //NOI18N
             SVNUrl repoUrl = event2.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repoUrl.appendPath(event2.getChangedPath().getPath());
 
             // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
             s1 = new DiffStreamSource(
                     file1,
+                    name1,
                     repoUrl,
                     repoUrl.appendPath(filePath1),
                     revision1,
                     pegRevision1, title1);
 
             s2 = new DiffStreamSource(
-                        event2.getFile(),
-                        repoUrl,
-                        fileUrl,
-                        revision2,
-                        pegRevision2,
-                        title2);
+                    event2.getFile(),
+                    event2.getName(),
+                    repoUrl,
+                    fileUrl,
+                    revision2,
+                    pegRevision2,
+                    title2);
 
             this.setCancellableDelegate(new Cancellable() {
                 @Override
