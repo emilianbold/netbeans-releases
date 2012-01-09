@@ -50,39 +50,39 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class Cache<T, S> {
+public class Cache<K, V> {
 
     // @GuardedBy(dataLock)
-    private final Map<T, S> data;
+    private final Map<K, V> data;
     private final ReadWriteLock dataLock = new ReentrantReadWriteLock();
 
     public Cache() {
-        this(new HashMap<T, S>());
+        this(new HashMap<K, V>());
     }
 
-    public Cache(Map<T, S> data) {
+    public Cache(Map<K, V> data) {
         this.data = data;
     }
 
-    public void save(T token, S sequence) {
+    public void save(K key, V value) {
         dataLock.writeLock().lock();
         try {
-            data.put(token, sequence);
+            data.put(key, value);
         } finally {
             dataLock.writeLock().unlock();
         }
     }
 
-    public S get(T token) {
+    public V get(K key) {
         dataLock.readLock().lock();
         try {
-            return data.get(token);
+            return data.get(key);
         } finally {
             dataLock.readLock().unlock();
         }
     }
 
-    public boolean has(T token) {
+    public boolean has(K token) {
         dataLock.readLock().lock();
         try {
             return data.containsKey(token);
