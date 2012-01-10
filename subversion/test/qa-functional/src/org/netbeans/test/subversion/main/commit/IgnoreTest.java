@@ -19,8 +19,10 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -80,7 +82,7 @@ public class IgnoreTest extends JellyTestCase {
      }
     
     public void testIgnoreUnignoreFile() throws Exception {
-        try {
+       // try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -140,23 +142,32 @@ public class IgnoreTest extends JellyTestCase {
             String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong color of node - file color should be ignored!!!", TestKit.IGNORED_COLOR, color);
             assertEquals("Wrong annotation of node - file status should be ignored!!!", TestKit.IGNORED_STATUS, status);
-            
+            /*
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
-            TimeoutExpiredException tee = null;
+            JemmyException tee = null;
             try {
-                node.performPopupAction("Subversion|Ignore");
-            } catch (Exception e) {
-                tee = (TimeoutExpiredException) e;
+               JPopupMenuOperator jpmo=node.callPopup();
+               jpmo.pushMenu("Subversion|Ignore");
+               
+            } catch (JemmyException e) {
+               
+                tee =  e;
             }
+            Thread.sleep(2000);
             assertNotNull("Ingnore action should be disabled!!!", tee);
             
             //unignore file
             Thread.sleep(2000);
+            
             mh = new MessageHandler("Unignoring");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
-
+            Thread.sleep(2000);
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node.select();*/
+            Thread.sleep(2000);
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
+            Thread.sleep(2000);
             node.performPopupAction("Subversion|Unignore");
             TestKit.waitText(mh);
             Thread.sleep(2000);
@@ -185,11 +196,11 @@ public class IgnoreTest extends JellyTestCase {
             
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        //} catch (Exception e) {
+         //   throw new Exception("Test failed: " + e);
+       // } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }    
+       // }    
     }
     
     public void testIgnoreUnignorePackage() throws Exception {
@@ -251,7 +262,7 @@ public class IgnoreTest extends JellyTestCase {
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
             String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong annotation of node - package status should be ignored!!!", TestKit.IGNORED_STATUS, status);
-            
+            /*
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             TimeoutExpiredException tee = null;
             try {
@@ -259,14 +270,20 @@ public class IgnoreTest extends JellyTestCase {
             } catch (Exception e) {
                 tee = (TimeoutExpiredException) e;
             }
+            Thread.sleep(2000);
             assertNotNull("Ingnore action should be disabled!!!", tee);
             
             //unignore file
             mh = new MessageHandler("Unignoring");
             TestKit.removeHandlers(log);
-            log.addHandler(mh);
-
+            log.addHandler(mh);*/
+            Thread.sleep(2000);
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node.select();
+            
+            Thread.sleep(2000);
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
+            Thread.sleep(2000);
             node.performPopupAction("Subversion|Unignore");
             Thread.sleep(2000);
             TestKit.waitText(mh);

@@ -19,6 +19,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -136,12 +137,20 @@ public class CopyTest extends JellyTestCase {
 
             Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-            String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            new EventTool().waitNoEvent(1000);
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            String HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            String status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", "[ release01]", status);
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            new EventTool().waitNoEvent(1000);
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", "[ release01]", status);
             stream.flush();
             stream.close();
@@ -212,13 +221,21 @@ public class CopyTest extends JellyTestCase {
             Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-            String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            new EventTool().waitNoEvent(1000);
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            String HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            String status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            new EventTool().waitNoEvent(1000);
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
             //to do
             
@@ -237,13 +254,21 @@ public class CopyTest extends JellyTestCase {
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            new EventTool().waitNoEvent(1000);
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", "[ release01]", status);
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            new EventTool().waitNoEvent(1000);
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", "[ release01]", status);
             
             mh = new MessageHandler("Switching");
@@ -261,14 +286,21 @@ public class CopyTest extends JellyTestCase {
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
+            new EventTool().waitNoEvent(1000);
             //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
             //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
-            status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
+            new EventTool().waitNoEvent(1000);
+            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
+            HtmlName=nodeIDE.getHtmlDisplayName();
+            new EventTool().waitNoEvent(1000);
+            status = TestKit.getStatus(HtmlName);
             assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
             
             stream.flush();

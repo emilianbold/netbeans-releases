@@ -444,23 +444,23 @@ public class WorkDirStepOperator extends WizardOperator {
      */
     @Override
     public void verify() {
-        lblSteps();
-        lstSteps();
+        //lblSteps();
+        //lstSteps();
         lblSpecifyTheFoldersToCheckoutFromSubversionRepository();
         lblRepositoryRevision();
         lblRepositoryFolders();
         txtRepositoryFolder();
         btSearch();
-        lblLocalSubversionWorkingCopy();
+//        lblLocalSubversionWorkingCopy();
         txtRepositoryRevision();
-        lblEmptyMeansRepositoryHEAD();
-        txtLocalFolder();
-        btBrowseRepository();
-        btBrowseLocalFolder();
-        lblLocalFolder();
-        cbCheckoutContentOnly();
-        lblSpecifyTheLocalFolderToCheckoutFoldersInto();
-        lblWizardDescriptor$FixedHeightLabel();
+        //lblEmptyMeansRepositoryHEAD();
+        //txtLocalFolder();
+        //btBrowseRepository();
+        //btBrowseLocalFolder();
+        //lblLocalFolder();
+        //cbCheckoutContentOnly();
+        //lblSpecifyTheLocalFolderToCheckoutFoldersInto();
+        //lblWizardDescriptor$FixedHeightLabel();
         btBack();
         btNext();
         btFinish();
