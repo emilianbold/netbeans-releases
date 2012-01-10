@@ -354,7 +354,9 @@ public class LuceneIndex implements Index.Transactional {
             // nothing committed upon failure - readers not affected
             boolean ok = false;
             try {
-                ((FlushIndexWriter)wr[0]).callFlush(false, true);
+                if (wr[0] != null) {
+                    ((FlushIndexWriter)wr[0]).callFlush(false, true);
+                }
                 ok = true;
             } finally {
                 if (!ok) {
@@ -367,7 +369,6 @@ public class LuceneIndex implements Index.Transactional {
     private <S, T> void _doStore(Collection<T> data, 
             Collection<S> toDelete, Convertor<? super T, ? extends Document> docConvertor, 
             Convertor<? super S, ? extends Query> queryConvertor, IndexWriter[] ret, boolean optimize) throws IOException {
-        assert IndexManager.holdsWriteLock();
         final boolean create = !dirCache.exists();
         final IndexWriter out = dirCache.getWriter(create);
         try {
@@ -829,7 +830,11 @@ public class LuceneIndex implements Index.Transactional {
         
         IndexReader acquireReader() throws IOException {
             rwLock.readLock().lock();
-            return getReader();
+            IndexReader r = getReader();
+            if (r == null) {
+    	      rwLock.readLock().unlock();
+    	    }
+    	    return r;
         }
         
         void releaseReader(IndexReader r) {
