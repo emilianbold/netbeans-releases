@@ -132,7 +132,8 @@ public class CleanCommand extends GitCommand {
 
     private void deleteIfUnversioned(DirCache cache, String path, WorkingTreeIterator f, Repository repository, TreeWalk treeWalk) throws IOException, NoWorkTreeException {
         if (cache.getEntry(path) == null &&  // not in index 
-            !f.isEntryIgnored())             // not ignored
+            !f.isEntryIgnored() &&             // not ignored
+            !Utils.isFromNested(f.getEntryFileMode().getBits()))
         {            
             File file = new File(repository.getWorkTree().getAbsolutePath() + File.separator + path);                        
             if(file.isDirectory()) {

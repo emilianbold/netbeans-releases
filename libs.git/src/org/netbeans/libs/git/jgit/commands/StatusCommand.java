@@ -199,6 +199,9 @@ public class StatusCommand extends GitCommand {
                             treeWalk.enterSubtree();
                             continue;
                         }
+                    } else if (Utils.isFromNested(mWorking) || Utils.isFromNested(mIndex) || Utils.isFromNested(mHead)) {
+                        // nested repository
+                        continue;
                     } else {
                         if (mWorking == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
                             statusIndexWC = GitStatus.Status.STATUS_REMOVED;
