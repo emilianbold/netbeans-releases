@@ -42,6 +42,8 @@
 package org.netbeans.modules.javascript2.editor.model;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -50,7 +52,9 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  * @author Petr Pisl
  */
 public final class Model {
-
+    
+    private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
+    
     private final JsParserResult parserResult;
 
     private final OccurrencesSupport occurrencesSupport;
@@ -71,7 +75,7 @@ public final class Model {
                 root.accept(visitor);
             }
             long end = System.currentTimeMillis();
-            System.out.println("Building model takes: " + (end - start));
+            LOGGER.log(Level.FINE, "Building model took {0}ms.", (end - start));
         }
         return visitor;
     }
