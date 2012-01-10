@@ -83,7 +83,13 @@ class DirectoryReaderSftp implements DirectoryReader {
 
     public void readDirectory() throws InterruptedException, CancellationException, ExecutionException {
         Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
-        StatInfo[] infos = res.get();
+        StatInfo[] infos;
+        try {
+            infos = res.get();
+        } catch (InterruptedException ex) {
+            res.cancel(true);
+            throw ex;
+        }
         List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
         for (StatInfo statInfo : infos) {
             // filtering of "." and ".." is up to provider now
