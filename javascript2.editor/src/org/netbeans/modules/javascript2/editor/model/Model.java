@@ -50,16 +50,16 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  * @author Petr Pisl
  */
 public final class Model {
-    
-    private JsParserResult parserResult;
+
+    private final JsParserResult parserResult;
+
     private ModelVisitor visitor;
-    
+
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
-        visitor = null;
     }
-    
-    synchronized private ModelVisitor getModelVisitor() {
+
+    private synchronized ModelVisitor getModelVisitor() {
         if (visitor == null) {
             long start = System.currentTimeMillis();
             visitor = new ModelVisitor(parserResult);
@@ -70,10 +70,9 @@ public final class Model {
         }
         return visitor;
     }
-    
+
     public JsObject getGlobalObject() {
-        getModelVisitor();
-        return visitor.getGlobalObject();
+        return getModelVisitor().getGlobalObject();
     }
-    
+
 }
