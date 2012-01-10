@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.nav;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -82,6 +84,11 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
+
+    private static final int RECURSION_LIMIT = 50;
+    private static int recursionCounter = 0;
+    private static final Logger LOGGER = Logger.getLogger(DeclarationFinderImpl.class.getName());
+
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         return findDeclarationImpl(info, caretOffset);
@@ -194,9 +201,14 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             }
         }
         if (caretOffset == startTSOffset) {
-            // if there is not a refence, and the curet is just beetween two tokens,
-            // try the previous token. See issue #199329
-            return getReferenceSpan(ts, caretOffset - 1);
+            if (recursionCounter < RECURSION_LIMIT) {
+                recursionCounter++;
+                // if there is not a refence, and the curet is just beetween two tokens,
+                // try the previous token. See issue #199329
+                return getReferenceSpan(ts, caretOffset - 1);
+            } else {
+                LOGGER.log(Level.WARNING, "Stack overflow detection - limit: {0}, token: {1}", new Object[]{RECURSION_LIMIT, ts.token().text()});
+            }
         }
         return OffsetRange.NONE;
     }

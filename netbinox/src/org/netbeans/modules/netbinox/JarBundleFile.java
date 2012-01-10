@@ -45,7 +45,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -182,6 +181,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
         return d == null ? null : d.getFile(file, bln);
     }
 
+    @Override
     public byte[] resource(String name) throws IOException {
         BundleEntry u = findEntry("resource", name);
         if (u == null) {
@@ -212,6 +212,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
         } finally {
             is.close();
         }
+        NetbinoxFactory.LOG.log(Level.FINE, "Loaded {1} bytes for {0}", new Object[] { name, arr.length }); // NOI18N
         return arr;
     }
 
@@ -238,6 +239,10 @@ final class JarBundleFile extends BundleFile implements BundleContent {
 
     @Override
     public BundleEntry getEntry(final String name) {
+        if (!archive.isActive()) {
+            return delegate("inactive", name).getEntry(name); // NOI18N
+        }
+        
         final byte[] arr = getCachedEntry(name);
         if (arr == null && !name.equals("/")) {
             return null;

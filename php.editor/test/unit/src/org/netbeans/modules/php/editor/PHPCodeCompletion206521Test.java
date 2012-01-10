@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.maven.graph;
-
-import java.awt.Image;
-import java.io.Serializable;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import static org.netbeans.modules.maven.graph.Bundle.*;
-import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author mkleint
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class GraphMD implements MultiViewDescription, Serializable {
+public class PHPCodeCompletion206521Test extends PHPTestBase {
 
-    private Lookup lookup;
-
-    GraphMD(Lookup lkp) {
-        lookup = lkp;
+    public PHPCodeCompletion206521Test(String testName) {
+        super(testName);
     }
 
-
-    @Override public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test206521/test206521.php", "\\MC\\MockClass::^$a;", false);
     }
 
-    @Override public String getDisplayName() {
-        return TAB_Graph();
-    }
-
-    @Override public Image getIcon() {
-        return ImageUtilities.loadImage(NodeUtils.ICON_DEPENDENCY_JAR, true);
-    }
-
-    @Override public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override public String preferredID() {
-        return ArtifactViewer.HINT_GRAPH;
-    }
-
-    @Override public MultiViewElement createElement() {
-        return new DependencyGraphTopComponent(lookup);
-    }
-
-    @ServiceProvider(service=ArtifactViewerPanelProvider.class, position=400)
-    public static class Factory implements ArtifactViewerPanelProvider {
-
-        @Override public MultiViewDescription createPanel(Lookup content) {
-            return new GraphMD(content);
-        }
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test206521/"))
+            })
+        );
     }
 
 }

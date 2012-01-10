@@ -113,7 +113,7 @@ import org.openide.windows.TopComponent;
 @Messages("CTL_SourceTabCaption=Source") // NOI18N
 public class E2EDataObject extends XmlMultiViewDataObject {
     public static final String PROP_GENERATING = "generating"; // NOI18N
-    public static final String ICON_BASE = "org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"; // NOI18N
+    public static final String ICON_BASE = "org/netbeans/modules/mobility/end2end/DDDataIcon.gif"; // NOI18N
 
     public static final String MIME_TYPE_CLASS = "text/x-wsclient.class"; // NOI18N
     public static final String MIME_TYPE_WSDL = "text/x-wsclient.wsdl"; // NOI18N

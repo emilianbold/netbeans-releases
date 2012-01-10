@@ -114,7 +114,8 @@ public class AddCommand extends GitCommand {
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
                     WorkingTreeIterator f = treeWalk.getTree(1, WorkingTreeIterator.class);
-                    if (treeWalk.getTree(0, DirCacheIterator.class) == null && f != null && f.isEntryIgnored()) {
+                    if (treeWalk.getTree(0, DirCacheIterator.class) == null && f != null && f.isEntryIgnored()
+                            || Utils.isFromNested(f.getEntryFileMode().getBits())) {
                         // file is not in index but is ignored, do nothing
                     } else if (!(path.equals(lastAddedFile))) {
                         if (f != null) { // the file exists
