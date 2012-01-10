@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.22.0
+#Version 1.25.0
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -80,13 +80,15 @@ meth public java.util.concurrent.Future<java.lang.String> getTextAsync()
 meth public javax.swing.Action getGotoSourceAction()
 meth public org.netbeans.api.java.source.ui.ElementJavadoc resolveLink(java.lang.String)
 supr java.lang.Object
-hfds API,CODE_TAG,DEPRECATED_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,RP,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,content,cpInfo,docURL,goToSource,linkCounter,links
+hfds API,ASSOCIATE_JDOC,CODE_TAG,DEPRECATED_TAG,INHERIT_DOC_TAG,LANGS,LINKPLAIN_TAG,LITERAL_TAG,PARAM_TAG,RETURN_TAG,RP,SEE_TAG,SINCE_TAG,THROWS_TAG,VALUE_TAG,cancel,content,cpInfo,docURL,goToSource,handle,linkCounter,links
 hcls Now,RemoteJavadocException
 
 CLSS public final org.netbeans.api.java.source.ui.ElementOpen
 meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,javax.lang.model.element.Element)
 meth public static boolean open(org.netbeans.api.java.source.ClasspathInfo,org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>)
 meth public static boolean open(org.openide.filesystems.FileObject,org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds AWT_TIMEOUT,NON_AWT_TIMEOUT,log
 hcls FindDeclarationVisitor
@@ -98,7 +100,15 @@ supr java.lang.Object
 CLSS public final org.netbeans.api.java.source.ui.TypeElementFinder
 cons public init()
 innr public abstract interface static Customizer
+meth public static org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement> find(org.netbeans.api.java.source.ClasspathInfo,java.lang.String,org.netbeans.api.java.source.ui.TypeElementFinder$Customizer)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 meth public static org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement> find(org.netbeans.api.java.source.ClasspathInfo,org.netbeans.api.java.source.ui.TypeElementFinder$Customizer)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 supr java.lang.Object
 
 CLSS public abstract interface static org.netbeans.api.java.source.ui.TypeElementFinder$Customizer
