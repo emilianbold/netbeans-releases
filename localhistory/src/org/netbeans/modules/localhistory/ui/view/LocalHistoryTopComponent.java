@@ -43,13 +43,11 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
-import java.awt.Color;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -71,12 +69,16 @@ import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.*;
 import org.netbeans.modules.localhistory.LocalHistory;
+import org.netbeans.modules.localhistory.options.LocalHistoryOptions;
 import org.netbeans.modules.versioning.history.LinkButton;
-import org.netbeans.modules.versioning.util.SearchHistorySupport;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -85,7 +87,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.localhistory.ui.view.RevisionNode.Filter;
 import org.openide.util.Lookup;
 
 /**
@@ -107,8 +109,9 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     private LocalHistoryFileView masterView;
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
-    private JPanel toolBar;
+    private Toolbar toolBar;
     private boolean isPartOfMultiview = false;
+    private LocalHistoryDiffView diffView;
     
     public LocalHistoryTopComponent() {
         initComponents();
@@ -116,7 +119,6 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
         }
         setToolTipText(NbBundle.getMessage(LocalHistoryTopComponent.class, "HINT_LocalHistoryTopComponent"));
-//        setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
     public LocalHistoryTopComponent(Lookup context) {
@@ -124,15 +126,19 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         isPartOfMultiview = true;
         DataObject dataObject = context.lookup(DataObject.class);
 
-        List<File> files = new LinkedList<File>();
+        List<File> filesList = new LinkedList<File>();
         if (dataObject instanceof DataShadow) {
             dataObject = ((DataShadow) dataObject).getOriginal();
         }
         if (dataObject != null) {
             Collection<File> doFiles = toFileCollection(dataObject.files());
-            files.addAll(doFiles);
+            filesList.addAll(doFiles);
         }
-        init(files.toArray(new File[files.size()]));    
+        
+        File[] files = filesList.toArray(new File[filesList.size()]);
+        VersioningSystem vs = VersioningSupport.getOwner(files[0]);
+        toolBar = new Toolbar(vs, files);
+        init(vs, files);    
     }
     
     private Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
@@ -144,20 +150,22 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         return files;
     }        
 
-    public void init(final File... files) {   
-        final LocalHistoryFileView fileView = new LocalHistoryFileView();                
-        LocalHistoryDiffView diffView = new LocalHistoryDiffView(this); 
-        fileView.getExplorerManager().addPropertyChangeListener(diffView); 
-        fileView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+    public void init(VersioningSystem vs, final File... files) {   
+        masterView = new LocalHistoryFileView(files, vs, this);
+        diffView = new LocalHistoryDiffView(this); 
+        
+        masterView.getExplorerManager().addPropertyChangeListener(diffView); 
+        masterView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
                     LocalHistoryTopComponent.this.setActivatedNodes((Node[]) evt.getNewValue());  
+                } /*else if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
+                    System.out.println(" " + evt.getOldValue() +  " " + evt.getNewValue());
+                }*/
                 }
-            } 
         });
         
         // XXX should be solved in a more general way - not ony for LocalHistoryFileView 
-        this.masterView = fileView; 
         splitPane.setTopComponent(masterView.getPanel());   
         splitPane.setBottomComponent(diffView.getPanel());                   
         masterView.requestActive();
@@ -165,31 +173,13 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                initToolbar();
-                fileView.refresh(files);
+                masterView.refresh();
             }
-
-            private boolean initToolbar() {
-                if (files.length == 0) {
-                    return true;
-                }
-                FileObject fo = FileUtil.toFileObject(files[0]);
-                if (fo == null) {
-                    return true;
-                }
-                final Object attr = fo.getAttribute(SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY);
-                if (attr == null || !(attr instanceof SearchHistorySupport)) {
-                    return true;
-                }
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ((Toolbar)LocalHistoryTopComponent.this.getToolbarRepresentation()).setSupport((SearchHistorySupport) attr);
-                    }
                 });
-                return false;
             }
-        });
+    
+    Filter getSelectedFilter() {
+        return (Filter) getToolbar().filterCombo.getSelectedItem();
     }
     
     /** This method is called from within the constructor to
@@ -264,11 +254,10 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
 
     @Override
     public JComponent getToolbarRepresentation() {
-        synchronized(this) {
-            if(toolBar == null) { 
-                toolBar = new Toolbar();
+        return getToolbar();
             }
-        }
+
+    private Toolbar getToolbar() {
         return toolBar;
     }
 
@@ -316,6 +305,10 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         return CloseOperationState.STATE_OK;
     }
 
+    String getActiveFilterValue() {
+        return getToolbar().containsField.isVisible() ? getToolbar().containsField.getText() : null;
+    }
+
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
@@ -346,57 +339,138 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         super.componentShowing();
     }  
     
-    private class Toolbar extends JPanel {
-        private LinkButton searchHistoryButton;
-        private SearchHistorySupport support;
+    private void onFilterChange() {
+        Filter filter = getSelectedFilter();
+        getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
+        getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
+        masterView.setFilter(getSelectedFilter());
+        getToolbar().containsField.requestFocus();
+    }    
         
-        public Toolbar() {
+    private class Toolbar extends JToolBar implements ActionListener {
+        private JButton nextButton;
+        private JButton prevButton;
+        private JButton refreshButton;
+        private JButton settingsButton;
+        private JLabel filterLabel;
+        private JComboBox filterCombo;
+        private JLabel containsLabel;
+        private JTextField containsField;
+    
+        private Toolbar(VersioningSystem vs, final File... files) {
             setBorder(new EmptyBorder(0, 0, 0, 0));
             setOpaque(false);
             setBackground(Color.white);
             setLayout(new GridBagLayout());
             
-            JLabel label = new JLabel(NbBundle.getMessage(this.getClass(), "LBL_LocalHistory")); // NOI18N
-            Font f = label.getFont();
-            label.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
+            containsLabel = new JLabel(NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_Contains"));  // NOI18N
+            containsField = new JTextField();  
+            containsField.setPreferredSize(new Dimension(150, containsField.getPreferredSize().height));
+            containsField.getDocument().addDocumentListener(new ContainsListener());
+            containsLabel.setVisible(false);
+            containsField.setVisible(false);
+            filterLabel = new JLabel(NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_Filter"));  // NOI18N
+            filterCombo = new JComboBox();
+            filterCombo.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    if(value instanceof Filter) {
+                        return super.getListCellRendererComponent(list, ((Filter) value).getDisplayName(), index, isSelected, cellHasFocus);
+                    }
+                    return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                }
+            });
+            filterCombo.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    onFilterChange();
+                }
+            });
+            nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-next.png"))); 
+            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-prev.png"))); 
+            nextButton.addActionListener(this);
+            prevButton.addActionListener(this);
+            refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/refresh.png"))); 
+            refreshButton.addActionListener(this);
+            settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/options.png"))); 
+            settingsButton.addActionListener(this);
+            Filter[] filters;
+            if(vs != null && vs.getVCSHistoryProvider() != null) {
+                filters = new Filter[] {
+                    new AllFilter(), 
+                    new VCSFilter((String) vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)), 
+                    new LHFilter(),
+                    new ByUserFilter(),
+                    new ByMsgFilter()};
+                    filterCombo.setModel(new DefaultComboBoxModel(filters)); 
+            } else {
+                filterCombo.setVisible(false);
+                filterLabel.setVisible(false);
+            }
             
+            nextButton.setBorder(new EmptyBorder(0, 5, 0, 5));
+            prevButton.setBorder(new EmptyBorder(0, 5, 0, 5));
+            refreshButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+            filterLabel.setBorder(new EmptyBorder(0, 15, 0, 5));
+            filterCombo.setBorder(new EmptyBorder(0, 5, 0, 5));
+            containsLabel.setBorder(new EmptyBorder(0, 5, 0, 10));
+            settingsButton.setBorder(new EmptyBorder(0, 5, 0, 10));
+
             GridBagConstraints c = new GridBagConstraints();
-            c.anchor = GridBagConstraints.CENTER;
-            c.weightx = 1;
-            add(label, c); 
+            add(nextButton, c); 
+            add(prevButton, c); 
+            add(refreshButton, c); 
+            add(filterLabel, c); 
+            add(filterCombo, c); 
+            add(containsLabel, c); 
+            add(containsField, c); 
+            addSeparator(new Dimension(200, 5));
+            add(settingsButton);
   
-            searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory")); // NOI18N
-            searchHistoryButton.setVisible(false);
+            final Action openSearchHistoryAction = vs != null && vs.getVCSHistoryProvider() != null ? vs.getVCSHistoryProvider().createShowHistoryAction(files) : null;
+            if(openSearchHistoryAction != null) {
+                LinkButton searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)})); // NOI18N
             searchHistoryButton.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                    public void actionPerformed(final ActionEvent e) {
                     LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            if(support == null) {
-                                return;
+                                openSearchHistoryAction.actionPerformed(e);
                             }
-                            try {
-                                support.searchHistory(-1);
-                            } catch (IOException ex) {
-                                LocalHistory.LOG.log(Level.WARNING, null, ex);
-                            }
-                        }
                     });
                 }
             });
             
             c = new GridBagConstraints();
             c.anchor = GridBagConstraints.EAST;
-            c.weightx = 0;
+                c.weightx = 1;
             add(searchHistoryButton, c); 
+            }
+        }
             
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getSource() == getToolbar().nextButton) {
+                diffView.onNextButton();
+            } else if(e.getSource() == getToolbar().prevButton) {
+                diffView.onPrevButton();
+            } else if(e.getSource() == getToolbar().refreshButton) {
+                masterView.refresh();
+            } else if(e.getSource() == getToolbar().settingsButton) {
+                OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Versioning/" + LocalHistoryOptions.OPTIONS_SUBPATH);
+        }
+        }
+    }
+
+    void disableNavigationButtons() {
+        getToolbar().prevButton.setEnabled(false);
+        getToolbar().nextButton.setEnabled(false);
         }
 
-        public void setSupport(SearchHistorySupport support) {
-            this.support = support;
-            searchHistoryButton.setVisible(true);
-        }
+    void refreshNavigationButtons(int currentDifference, int diffCount) {
+        getToolbar().prevButton.setEnabled(currentDifference > 0);
+        getToolbar().nextButton.setEnabled(currentDifference < diffCount - 1);
     }
 
     @Override
@@ -405,4 +479,134 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
                            "org.netbeans.modules.localhistory.ui.view.LHHistoryTab" :               // NO18N
                            "org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent");   // NO18N
     }
+
+    private class AllFilter extends Filter {
+        @Override
+        public boolean accept(Object value) {
+            return true;
+}
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_AllRevisionsFilter"); // NO18N   
+        }
+    }    
+    private class VCSFilter extends Filter {
+        private final String vcsName;
+        public VCSFilter(String vscName) {
+            this.vcsName = vscName;
+        }
+        @Override
+        public boolean accept(Object value) {
+            Collection<RevisionEntry> entries = getEntries(value);
+            if(entries != null) {
+                for (RevisionEntry e : entries) {
+                    if(!e.isLocalHistory()) return true;
+                }
+            }
+            return false;
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_VCSRevisionsFilter", new Object[] {vcsName}); // NO18N
+        }
+    }    
+    private class LHFilter extends Filter {
+        @Override
+        public boolean accept(Object value) {
+            Collection<RevisionEntry> entries = getEntries(value);
+            if(entries != null) {
+                for (RevisionEntry e : entries) {
+                    if(e.isLocalHistory()) return true;
+                }
+            }
+            return false;
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_LHRevisionsFilter"); // NO18N
+        }
+    }       
+    private class ByUserFilter extends Filter {
+        @Override
+        public boolean accept(Object value) {
+            String byUser = getToolbar().containsField.getText();
+            if(byUser == null || "".equals(byUser)) return true;                // NOI18N
+            
+            Collection<RevisionEntry> entries = getEntries(value);
+            if(entries != null) {
+                for (RevisionEntry e : entries) {
+                    String user = e.getUsernameShort();
+                    if(user.toLowerCase().contains(byUser.toLowerCase())) return true;
+                }
+            }
+            return false;
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_ByUserFilter"); // NO18N
+        }
+        @Override
+        public String getRendererValue(String value) {
+            return getFilteredRendererValue(value);
+        }        
+    }           
+    private class ByMsgFilter extends Filter {
+        @Override
+        public boolean accept(Object value) {
+            String byMsg = getToolbar().containsField.getText();
+            if(byMsg == null || "".equals(byMsg)) return true;
+            
+            Collection<RevisionEntry> entries = getEntries(value);
+            if(entries != null) {
+                for (RevisionEntry e : entries) {
+                    String msg = e.getMessage();
+                    if(msg.toLowerCase().contains(byMsg.toLowerCase())) return true;
+                }
+            }
+            return false;
+        }
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_ByMsgFilter"); // NO18N
+        }
+
+        @Override
+        public String getRendererValue(String value) {
+            return getFilteredRendererValue(value);
+        }
+
+    }           
+    private String getFilteredRendererValue(String value) {
+        String contains = getToolbar().containsField.getText();
+        if(contains == null || "".equals(contains)) {
+            return value;
+        }            
+        StringBuilder sb = new StringBuilder();
+        sb.append(value.replace(contains, "<b>" + contains + "</b>")); // NOI18N
+        return sb.toString();
+    }
+    
+    private class ContainsListener implements DocumentListener, ActionListener { 
+        private final Timer t;
+        public ContainsListener() {
+            t = new Timer(300, this);
+            t.setRepeats(false);
+        }
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            t.start();
+        }
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            t.start();
+        }
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            t.start();
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            masterView.fireFilterChanged();
+        }
+    };    
 }

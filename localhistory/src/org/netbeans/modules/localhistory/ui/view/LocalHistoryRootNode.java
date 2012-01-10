@@ -43,196 +43,172 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
-import java.awt.Image;
-import java.beans.BeanInfo;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
+import java.lang.reflect.InvocationTargetException;
+import java.text.DateFormat;
+import java.util.*;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.swing.UIManager;
 import org.netbeans.modules.localhistory.LocalHistory;
+import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
-import org.openide.nodes.Node;
+import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
 /**
  *
  * The toplevel Node in the LocalHistoryView
  * 
- * <ul> 
- * <li>
- * In case the LocalHistoryView was invoked for a 1 file Node
- * 
- * LocalHistoryViewRootNode ( uvisible root node )
- *  |
- *  +-------- DateFolderNode ( Today ) 
- *              |
- *              +---------- StoreEntryNode ( 29.01.2007 02:15:07 PM ) 
- *              +---------- StoreEntryNode ( 29.01.2007 02:14:59 PM )
- *  
- *  +-------- DateFolderNode ( One day ago )
- *              |
- *              +---------- StoreEntryNode ( 28.01.2007 07:50:59 PM ) 
- *              +---------- StoreEntryNode ( 28.01.2007 03:11:50 PM ) 
- *              +---------- StoreEntryNode ( 28.01.2007 01:15:04 PM )
- *
- * </li>
- * 
- * <li>
- * In case the LocalHistoryView was invoked for a multifile Node
- * 
- * LocalHistoryViewRootNode ( uvisible root node )
- *  |
- *  +-------- DateFolderNode ( Today ) 
- *              |
- *              +---------- StoreEntryNode ( 29.01.2007 02:15:07 PM ) 
- *                              |
- *                              +--------- FileNode ( MyPanel.java )    
- *                              +--------- FileNode ( MyPanel.form )    
- * 
- *              +---------- StoreEntryNode ( 29.01.2007 01:11:23 PM ) 
- *                              |
- *                              +--------- FileNode ( MyPanel.java )    
- *                              +--------- FileNode ( MyPanel.form )     
- *  
- *  +-------- One day ago ( DateFolderNode )
- *  |
- *  +-------- Two days ago ( DateFolderNode )
- * 
- * </li>
- * </ul>
- * 
- * 
  * @author Tomas Stupka
  *
  */
 public class LocalHistoryRootNode extends AbstractNode {
     
+    static final String NODE_GET_MORE   = "getmoreno"; // NOI18N
+    static final String NODE_WAIT       = "waitnode";  // NOI18N
+    static final String NODE_ROOT       = "rootnode";  // NOI18N
+    
     static final Action[] NO_ACTION = new Action[0];
     
-    private LocalHistoryRootNode(Children children) {
-        super(children);
-    }
+    private static DateFormat dateFormat = DateFormat.getDateInstance();
     
-    /**
-     * 
-     * Creates the LocalHistoryViewRootNode with the whole node hierarchy  
-     * 
-     * @param files files represented by the node on which the LocalHistoryView was invoked - e.g. Main.java, or MyForm.form, MyForm.java, ...
-     * @return a node to be applyied as a roo tnode in the LocalHistoryView 
-     */
-    static Node createRootNode(File[] files) {        
-        Children.SortedArray children = new Children.SortedArray();                
-        children.add(createDateFolders(files));        
-        return new LocalHistoryRootNode(children);        
-    }
+    private Map<Long, RevisionEntry> revisionEntries = new HashMap<Long, RevisionEntry>();
+    private final File[] files;
     
-    /**
-     * 
-     * Creates the DateFolderNodes
-     *
-     * @param files files represented by the node on which the LocalHistoryView was invoked - e.g. Main.java, or MyForm.form, MyForm.java, ...
-     * @return an array of nodes segmenting all entries for the invoked output in separate folders - one for each day
-     */
-    private static DateFolderNode[] createDateFolders(File[] files) {
+    private LoadNextNode loadNextNode;
+    private WaitNode waitNode;
         
-        // get all StoreEntries for all files and keep them in entriesMap, where 
-        // for each timestamp retrieved from the storage there is an array of StoreEntries
-        Map<Long, List<StoreEntry>> entriesMap = new HashMap<Long, List<StoreEntry>>();                        
-        for (File f : files) {
-            StoreEntry[] ses = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntries(f);
-            for(StoreEntry se : ses) {
-                List<StoreEntry> storeEntries = entriesMap.get(se.getTimestamp());
-                if(storeEntries == null) {
-                    storeEntries = new ArrayList<StoreEntry>();
-                    entriesMap.put(se.getTimestamp(), storeEntries);
+    private final String vcsName;
+    private int vcsCount = 0;
+    private final Action loadNextAction;
+    private final Action[] actions;
+        
+    LocalHistoryRootNode(File[] files, String vcsName, Action loadNextAction, Action... actions) {
+        super(new Children.SortedArray());
+        this.files = files;
+        this.vcsName = vcsName;
+        this.loadNextAction = loadNextAction;
+        this.actions = actions;
+        if(vcsName != null) {
+            waitNode = new WaitNode(vcsName);
+            getChildren().add(new Node[] {waitNode}); 
                 }
-                storeEntries.add(se);
             }
+    
+    static boolean isLoadNext(Object n) {
+        return n instanceof LocalHistoryRootNode.LoadNextNode;
         }
                     
-        Map<Integer, List<Node>> storeEntryNodesToDays = new HashMap<Integer, List<Node>>();        
+    synchronized void addLHEntries(List<RevisionEntry> entries) {
+        addEntries(entries);
+    }
         
-        // segment the StoreEntries in day groups
-        for (Long ts  : entriesMap.keySet()) {                      
-            int day = getDay(ts);                                                        
-            List<Node> nodesFromADay =  storeEntryNodesToDays.get(day);
-            if(nodesFromADay == null) {
-                nodesFromADay = new ArrayList<Node>();
-                 storeEntryNodesToDays.put(day, nodesFromADay);
+    synchronized void addVCSEntries(List<RevisionEntry> entries) {
+        addEntries(entries);
             }
-            List<StoreEntry> storeEntries = entriesMap.get(ts);
-            nodesFromADay.add(createStoreEntryNode(storeEntries, files));
+        
+    private void addEntries(List<RevisionEntry> entries) {
+        Iterator<RevisionEntry> it = entries.iterator();
+        while(it.hasNext()) {
+            RevisionEntry e = it.next();
+            if(!revisionEntries.containsKey(e.getTimestamp())) {
+                revisionEntries.put(e.getTimestamp(), e);
+                if(!e.isLocalHistory()) {
+                    vcsCount++;
         }
-
-        // get a DateFolderNode for each day and the associated group of StoreEntryNode-s
-        List<DateFolderNode> dateFolderNodes = new ArrayList<DateFolderNode>( storeEntryNodesToDays.keySet().size());
-        for (Iterator<Integer> it =  storeEntryNodesToDays.keySet().iterator(); it.hasNext();) {
-            int key = it.next();            
-            List<Node> l =  storeEntryNodesToDays.get(key);
-            Children.SortedArray children = new Children.SortedArray();            
-            children.add(l.toArray(new Node[l.size()]));
-            
-            dateFolderNodes.add(new DateFolderNode(key, children));
+            } else {
+                it.remove();
+            }
         }
+        if(loadNextNode != null) {
+            loadNextNode.refreshMessage();
+        }
+        getChildren().add(createPlainRevisionNodes(groupByTimestamp(entries)));
+    }
 
-        return dateFolderNodes.toArray(new DateFolderNode[dateFolderNodes.size()]);
+    synchronized void loadingStarted() {
+        Children children = getChildren();
+        if(loadNextNode != null) {
+            children.remove(new Node[] { loadNextNode });
+        }
+        if(waitNode != null) {
+            children.remove(new Node[] { waitNode });
+        }
+        waitNode = new WaitNode();
+        children.add(new Node[] { waitNode });
+    }
+
+    synchronized void loadingFinished(Date dateFrom) {
+        Children children = getChildren();
+        if(waitNode != null) {
+            children.remove(new Node[] { waitNode });
     }                
-    
-    private static int getDay(long ts) {
-        Date date = new Date(ts);
-                
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());        
-        
-        // set the cal at today midnight
-        int todayMillis = c.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000 +
-                          c.get(Calendar.MINUTE)      * 60 * 1000 + 
-                          c.get(Calendar.SECOND)      * 1000 + 
-                          c.get(Calendar.MILLISECOND);                
-        c.add(Calendar.MILLISECOND, -1 * todayMillis);                        
-        
-        if(c.getTime().compareTo(date) < 0) {
-            return 0;
+        if(loadNextNode != null) {
+            children.remove(new Node[] { loadNextNode });
         }
+        if(!LocalHistorySettings.getInstance().getLoadAll()) {
+            loadNextNode = new LoadNextNode(dateFrom);
+            children.add(new Node[] {loadNextNode});
+        }
+    }
+    
+    private Map<Long, List<RevisionEntry>> groupByTimestamp(Collection<RevisionEntry> entries) {
+        Map<Long, List<RevisionEntry>> byTSMap = new HashMap<Long, List<RevisionEntry>>();
+        for (RevisionEntry entry : entries) {
+            List<RevisionEntry> l = byTSMap.get(entry.getTimestamp());
+            if(l == null) {
+                l = new LinkedList<RevisionEntry>();
+                byTSMap.put(entry.getTimestamp(), l);
+        }
+            l.add(entry);
+        }
+        return byTSMap;
+    }
         
-        return (int) ( (c.getTimeInMillis() - ts) / (24 * 60 * 60 * 1000) ) + 1;
-                
+    private RevisionNode[] createPlainRevisionNodes(Map<Long, List<RevisionEntry>> revisionEntriesMap) {
+        List<RevisionNode> nodes = new LinkedList<RevisionNode>();
+        for (Long ts  : revisionEntriesMap.keySet()) {                      
+            List<RevisionEntry> entries = revisionEntriesMap.get(ts);
+            if(!entries.isEmpty()) {
+                nodes.add(createRevisionEntryNode(entries));
+    }
+        }
+        return nodes.toArray(new RevisionNode[nodes.size()]);
     }
     
     /**
      * 
-     * Creates a StoreEntryNode for a list of files, where the files are related to one DataObject - e.g. MyForm.java, MyForm.form
+     * Creates a RevisionNode for a list of files, where the files are related to one DataObject - e.g. MyForm.java, MyForm.form
      * 
      */
-    private static Node createStoreEntryNode(List<StoreEntry> entries, File[] files) {
+    private RevisionNode createRevisionEntryNode(List<RevisionEntry> entries) {
         if(files.length == 1) {
             
-            // it's only 1 file, so we also already have the 1 StoreEntry
-            return StoreEntryNode.create(entries);
+            // it's only 1 file, so we also already have the 1 entry
+            return RevisionNode.create(entries);
             
+        } else if(!entries.get(0).isLocalHistory()) {
+            // for vcs entries just force multifile mode, no matter if there was
+            // 1 entry returned by vcs or more. 
+            return RevisionNode.create(entries, true); 
         } else {            
-            // it's a multifile node ...             
-            
             // the timestamp must be the same for all StoreEntries
             long ts = entries.get(0).getTimestamp();           
             
             // get the entries for every file - 
             // if there is no entry in the Storage then create a structural (fake) one 
-            List<StoreEntry> entriesList = new ArrayList<StoreEntry>();            
+            List<RevisionEntry> entriesList = new ArrayList<RevisionEntry>();            
             for(File f : files) {                
                 boolean fileInEntries = false;
                 // check if we already have an entry for the file
-                for(StoreEntry se : entries) {
-                    if(f.equals(se.getFile())) {
-                        entriesList.add(se);
+                for(RevisionEntry e : entries) {
+                    if(f.equals(e.getFile())) {
+                        entriesList.add(e);
                         fileInEntries = true;
                         break;
                     }
@@ -249,18 +225,18 @@ public class LocalHistoryRootNode extends AbstractNode {
                     // XXX we probably don't have to do this anymore - see in createDateFolders( ... )
                     
                     // ... either by retrieving them from the storage
-                    entriesList.add(e);
+                    entriesList.add(RevisionEntry.createRevisionEntry(e));
                 } else {
                     // ... or by creating a structural (fake) one
-                    entriesList.add(StoreEntry.createFakeStoreEntry(f, ts));
+                    entriesList.add(RevisionEntry.createRevisionEntry(StoreEntry.createFakeStoreEntry(f, ts)));
                 }                
             }            
-            return StoreEntryNode.create(entriesList);            
+            return RevisionNode.create(entriesList);            
         }
     }                                     
 
     public String getName() {
-        return "rootnode"; // NOI18N
+        return NODE_ROOT; 
     }
     
     public String getDisplayName() {
@@ -271,71 +247,101 @@ public class LocalHistoryRootNode extends AbstractNode {
         return NO_ACTION;
     }
         
-    static class DateFolderNode extends AbstractNode implements Comparable {
-        private final int day;
+    synchronized void refreshLoadNextName() {
+        if(loadNextNode != null) {
+            loadNextNode.nameChanged();
+        }
+    }
 
-        DateFolderNode(int day, Children children) {
-            super(children);                        
-            this.day = day;
+    class LoadNextNode extends AbstractNode implements Comparable<Node> {
+
+        LoadNextNode(Date dateFrom) {
+            super(new Children.SortedArray());
+            
+            Sheet sheet = Sheet.createDefault();
+            Sheet.Set ps = Sheet.createPropertiesSet();
+            ps.put(new MessageProperty(dateFrom)); 
+            sheet.put(ps);
+            setSheet(sheet);        
         }
 
-        int getDay() {
-            return day;
+        @Override
+        public Action getPreferredAction() {
+            return loadNextAction;
         }
 
-        public Image getIcon(int type) {
-            Image img = null;
-            if (type == BeanInfo.ICON_COLOR_16x16) {
-                img = (Image) UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
+        @Override
+        public Action[] getActions(boolean context) {
+            if(!LocalHistorySettings.getInstance().getLoadAll()) {
+                return actions;
             }
-            if (img == null) {
-                img = super.getIcon(type);
+            return new Action[0];
             }
-            return img;
+        
+        @Override
+        public String getDisplayName() {
+            return (String) loadNextAction.getValue(Action.NAME);  
         }
 
-        public Image getOpenedIcon(int type) {
-            Image img = null;
-            if (type == BeanInfo.ICON_COLOR_16x16) {
-                img = (Image) UIManager.get("Nb.Explorer.Folder.openedIcon");  // NOI18N
+        @Override
+        public int compareTo(Node n) {
+            return 1;
             }
-            if (img == null) {
-                img = super.getIcon(type);
+
+        @Override
+        public String getName() {
+            return NODE_GET_MORE;
             }
-            return img;
+
+        private void refreshMessage() {
+            firePropertyChange(RevisionNode.PROPERTY_NAME_LABEL, null, null);
         }      
 
-        public Action[] getActions(boolean context) {
-            return NO_ACTION;
+        private void nameChanged() {
+            fireDisplayNameChange(null, null);
         }
 
-        public String getName() {
-            switch (day) {
-                case 0: return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_0");                
-                case 1: return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_1");                
-                case 2: return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_2");                
-                case 3: return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_3");                
-                case 4: return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_4");                
-                case 5: return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_5");                
-                case 6: return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_6");                                             
+        class MessageProperty extends PropertySupport.ReadOnly<String> {
+            private final Date dateFrom;
+            public MessageProperty(Date dateFrom) {
+                super(RevisionNode.PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+                this.dateFrom = dateFrom;
             }
-            return NbBundle.getMessage(LocalHistoryRootNode.class, "DateFolderName_other");                
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                if(dateFrom != null) {
+                    return "Shoving " + vcsName + " revisions from " + dateFormat.format(dateFrom) + " (" + vcsCount + " entries)."; 
+                } else {
+                    return "Shoving all " + vcsName + " revisions."; 
+        }
+            }    
+            @Override
+            public PropertyEditor getPropertyEditor() {
+                return new PropertyEditorSupport();
+            }                             
+        }
+    }
+
+    static class WaitNode extends AbstractNode implements Comparable<Node> {
+        public WaitNode() {
+            this(null);
+            }
+        public WaitNode(String vcsName) {
+            super(Children.LEAF);
+            setDisplayName("Loading" + (vcsName != null ? " from " + vcsName : "") + ". Please wait...");
+            setIconBaseWithExtension("org/netbeans/modules/localhistory/resources/icons/wait.gif");  // NOI18N
         }
 
-        public int compareTo(Object obj) {
-            if( !(obj instanceof DateFolderNode) || obj == null) {
-                return -1;
-            }
-            DateFolderNode lhNode = (DateFolderNode) obj;        
-
-            if(lhNode.getDay() > getDay()) {
-                return -1;
-            } else if(lhNode.getDay() < getDay()) {
+        @Override
+        public int compareTo(Node n) {
                 return 1;
-            } else {
-                return 0;
             }                    
+
+        @Override
+        public String getName() {
+            return NODE_WAIT;
         }
+        
     }    
 }
 

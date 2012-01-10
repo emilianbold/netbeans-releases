@@ -62,10 +62,14 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        daysLabel1.setLabelFor(daysTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(daysLabel1, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysLabel1.text")); // NOI18N
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup2 = new javax.swing.ButtonGroup();
+        jLabel1 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel2 = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
 
-        daysTextField.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
+        olderThanDaysTextField.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.olderThanDaysTextField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(daysLabel2, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysLabel2.text")); // NOI18N
 
@@ -73,13 +77,26 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.warningLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(noLabelCleanupCheckBox, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
-        noLabelCleanupCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                noLabelCleanupCheckBoxActionPerformed(evt);
-            }
-        });
 
-        org.openide.awt.Mnemonics.setLocalizedText(keepForeverCheckBox, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.keepForeverCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel1.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel2.text")); // NOI18N
+
+        daysIncrementTextField.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysIncrementTextField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel4.text")); // NOI18N
+
+        buttonGroup1.add(loadAllRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(loadAllRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.loadAllRadioButton.text")); // NOI18N
+
+        buttonGroup1.add(loadIncrementsRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(loadIncrementsRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.loadIncrementsRadioButton.text")); // NOI18N
+
+        buttonGroup2.add(removeOlderRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(removeOlderRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.removeOlderRadioButton.text")); // NOI18N
+
+        buttonGroup2.add(keepForeverRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(keepForeverRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.keepForeverRadioButton.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -87,48 +104,97 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(warningLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(daysLabel1)
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(loadAllRadioButton)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(loadIncrementsRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(daysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(daysLabel2))
-                    .addComponent(noLabelCleanupCheckBox)
-                    .addComponent(keepForeverCheckBox)
-                    .addComponent(warningLabel))
-                .addContainerGap(96, Short.MAX_VALUE))
+                                .addComponent(daysIncrementTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel4))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(35, 35, 35)
+                        .addComponent(noLabelCleanupCheckBox))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(removeOlderRadioButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(olderThanDaysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(daysLabel2)))
+                .addGap(0, 124, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator2))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(keepForeverRadioButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(daysLabel1)
-                    .addComponent(daysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(daysLabel2))
+                    .addComponent(olderThanDaysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(daysLabel2)
+                    .addComponent(removeOlderRadioButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(noLabelCleanupCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(keepForeverCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(keepForeverRadioButton)
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2)
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(daysIncrementTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(loadIncrementsRadioButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(loadAllRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
                 .addComponent(warningLabel)
                 .addContainerGap())
         );
 
-        daysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
-        daysTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSD_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
+        olderThanDaysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
+        olderThanDaysTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSD_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-private void noLabelCleanupCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noLabelCleanupCheckBoxActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_noLabelCleanupCheckBoxActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JLabel daysLabel1 = new javax.swing.JLabel();
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
+    final javax.swing.JTextField daysIncrementTextField = new javax.swing.JTextField();
     final javax.swing.JLabel daysLabel2 = new javax.swing.JLabel();
-    final javax.swing.JTextField daysTextField = new javax.swing.JTextField();
-    final javax.swing.JCheckBox keepForeverCheckBox = new javax.swing.JCheckBox();
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    final javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    final javax.swing.JRadioButton keepForeverRadioButton = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton loadAllRadioButton = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton loadIncrementsRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JCheckBox noLabelCleanupCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JTextField olderThanDaysTextField = new javax.swing.JTextField();
+    final javax.swing.JRadioButton removeOlderRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JLabel warningLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
     

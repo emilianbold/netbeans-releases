@@ -60,6 +60,8 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -162,6 +164,7 @@ public class ShowLocalHistoryAction extends NodeAction {
     }
 
     private void openLocalHistoryTC(final File[] files) {
+        final VersioningSystem vs = VersioningSupport.getOwner(files[0]);
         // fallback opening a LHTopComponent
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -170,7 +173,7 @@ public class ShowLocalHistoryAction extends NodeAction {
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName())); // NOI18N
                 tc.open();
                 tc.requestActive();                                
-                tc.init(files);
+                tc.init(vs, files);
             }
         });
     }

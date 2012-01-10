@@ -44,6 +44,7 @@
 package org.netbeans.modules.localhistory;
 
 import java.io.File;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
@@ -59,8 +60,10 @@ public class LocalHistorySettings {
     
     private static final String LAST_SELECTED_ENTRY = "RevertFileChanges.lastSelected";         // NOI18N  
     private static final String PROP_TTL = "timeToLive";                                        // NOI18N  
+    public static final String PROP_INCREMENTS = "history.increments";                          // NOI18N  
     private static final String PROP_CLEANUP_LABELED = "noLabelCleanUp";                        // NOI18N  
     private static final String PROP_KEEP_FOREVER = "keepForever";                              // NOI18N  
+    public static final String PROP_LOAD_ALL = "history.loadAll";                              // NOI18N  
     private static final String PROP_KEEP_STORED = "filesToKeepStored";                         // NOI18N  
     
             
@@ -80,8 +83,17 @@ public class LocalHistorySettings {
         getPreferences().putInt(PROP_TTL, ttl);
     }
     
+    public void setIncrements(int ttl) {
+        getPreferences().putInt(PROP_INCREMENTS, ttl);
+    }
+    
     public int getTTL() {
         return getPreferences().getInt(PROP_TTL, 7);
+    }    
+
+    public int getIncrements() {
+        int i = getPreferences().getInt(PROP_INCREMENTS, 30);
+        return i < 1 ? i = 7 : i;
     }    
 
     public void setCleanUpLabeled(boolean selected) {
@@ -110,6 +122,22 @@ public class LocalHistorySettings {
 
     public void setKeepForever(boolean forever) {
         getPreferences().putBoolean(PROP_KEEP_FOREVER, forever);
+    }
+    
+    public boolean getLoadAll() {
+        return getPreferences().getBoolean(PROP_LOAD_ALL, false);
+}
+
+    public void setLoadAll(boolean loadAll) {
+        getPreferences().putBoolean(PROP_LOAD_ALL, loadAll);
+    }
+
+    public void addPreferenceListener(PreferenceChangeListener l) {
+        getPreferences().addPreferenceChangeListener(l);
+    }
+    
+    public void removePreferenceListener(PreferenceChangeListener l) {
+        getPreferences().removePreferenceChangeListener(l);
     }
     
 }

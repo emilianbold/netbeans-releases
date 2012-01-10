@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -145,4 +147,25 @@ public class Utils {
         }
         return hasEditorPanes[0];
     }    
+    
+    public static int getDay(long ts) {
+        Date date = new Date(ts);
+                
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());        
+        
+        // set the cal at today midnight
+        int todayMillis = c.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000 +
+                          c.get(Calendar.MINUTE)      * 60 * 1000 + 
+                          c.get(Calendar.SECOND)      * 1000 + 
+                          c.get(Calendar.MILLISECOND);                
+        c.add(Calendar.MILLISECOND, -1 * todayMillis);                        
+        
+        if(c.getTime().compareTo(date) < 0) {
+            return 0;
+}
+        
+        return (int) ( (c.getTimeInMillis() - ts) / (24 * 60 * 60 * 1000) ) + 1;
+                
+    }
 }

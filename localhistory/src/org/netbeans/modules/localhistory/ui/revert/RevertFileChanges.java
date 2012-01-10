@@ -55,6 +55,7 @@ import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.view.LocalHistoryFileView;
 import org.netbeans.modules.localhistory.utils.Utils;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -74,7 +75,11 @@ public class RevertFileChanges implements PropertyChangeListener {
     private Node[] selectedNodes;
     
     RevertFileChanges () {
-        view = new LocalHistoryFileView();                                
+    }        
+    
+    void show(File root) {                                
+        
+        view = new LocalHistoryFileView(new File[] {root}, VersioningSupport.getOwner(root), null);                                
         view.getPanel().setPreferredSize(new Dimension(550, 250));        
         
         okButton = new JButton(NbBundle.getMessage(this.getClass(), "CTL_Revert"));
@@ -88,11 +93,8 @@ public class RevertFileChanges implements PropertyChangeListener {
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));        
         
         view.getExplorerManager().addPropertyChangeListener(this);
-    }        
     
-    void show(File root) {                                
-        long ts = LocalHistorySettings.getInstance().getLastSelectedEntry(root);        
-        view.refresh(new File[] {root}, ts);                
+        view.refresh();                
         if(show()) {            
             StoreEntry[] entries = getSelectedEntries();
             if(entries != null && entries.length > 0) {

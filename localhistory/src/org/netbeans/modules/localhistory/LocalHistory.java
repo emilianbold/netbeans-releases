@@ -49,13 +49,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -70,6 +64,7 @@ import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -120,6 +115,7 @@ public class LocalHistory {
     
     private LocalHistoryVCS lhvcs;
     private RequestProcessor parallelRP;
+    private Result<? extends VCSHyperlinkProvider> hpResult;
 
     public LocalHistory() {
         String include = System.getProperty("netbeans.localhistory.includeFiles");
@@ -243,6 +239,23 @@ public class LocalHistory {
         }
         return store;
     }
+    
+    /**
+     *
+     * @return registered hyperlink providers
+     */
+    public List<VCSHyperlinkProvider> getHyperlinkProviders() {
+        if (hpResult == null) {
+            hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+        }
+        if (hpResult == null) {
+            return Collections.emptyList();
+        }
+        Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
+        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
+        providersList.addAll(providersCol);
+        return Collections.unmodifiableList(providersList);
+    }    
     
     File isManagedByParent(File file) {
         if(roots == null) {
