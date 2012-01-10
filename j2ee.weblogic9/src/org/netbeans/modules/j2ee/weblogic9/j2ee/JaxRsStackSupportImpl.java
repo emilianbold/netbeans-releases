@@ -122,6 +122,10 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     @Override
     public boolean addJsr311Api(Project project) {
         if ( hasJee6Profile() ){
+            /*
+             *  This method should not be called if JAX-RS API is already in CP, 
+             *  so let's add required jar if it had been called even with JEE6 profile
+             */
             FileObject core = getJarFile("com.sun.jersey.core_");   // NOI18N
             if ( core!= null ){
                 try {
@@ -141,7 +145,7 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     @Override
     public boolean extendsJerseyProjectClasspath(Project project) {
         if ( hasJee6Profile() ){
-            try {
+            /*try {
                 List<URL> urls = getJerseyJars();
                 return addJars(project,  urls );
             }
@@ -150,7 +154,8 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
                 log(Level.WARNING, 
                         "Exception during extending a project classpath", e); //NOI18N
                 return false;
-            }
+            }*/
+            return true;
         }
         return extendsJerseyServerLibraries(project);
     }
