@@ -430,7 +430,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 //    }
 
     private void createBrowser() {
-        WebView view = new WebView();;
+        WebView view = new WebView();
         view.setMinSize(100, 100);
         final WebEngine eng = view.getEngine();
         eng.setOnStatusChanged( new EventHandler<WebEvent<String>> () {
