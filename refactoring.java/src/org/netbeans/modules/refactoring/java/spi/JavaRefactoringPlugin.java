@@ -57,6 +57,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindVisitor;
+import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
 import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -166,24 +167,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         return cpInfo;
     }
     
-    protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
+    protected static Problem createProblem(Problem result, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
-        if (result == null) {
-            return problem;
-        } else if (isFatal) {
-            problem.setNext(result);
-            return problem;
-        } else {
-            //problem.setNext(result.getNext());
-            //result.setNext(problem);
-            
-            // [TODO] performance
-            Problem p = result;
-            while (p.getNext() != null)
-                p = p.getNext();
-            p.setNext(problem);
-            return result;
-        }
+        return JavaPluginUtils.chainProblems(result, problem);
     }
 
     /**
