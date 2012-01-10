@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.23
+#Version 7.27
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -145,6 +145,17 @@ CLSS public abstract interface !annotation org.openide.modules.PatchedPublic
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[METHOD, CONSTRUCTOR])
 intf java.lang.annotation.Annotation
+
+CLSS public abstract org.openide.modules.Places
+cons protected init()
+meth protected abstract java.io.File findCacheDirectory()
+meth protected abstract java.io.File findUserDirectory()
+meth public static java.io.File getCacheDirectory()
+meth public static java.io.File getCacheSubdirectory(java.lang.String)
+meth public static java.io.File getCacheSubfile(java.lang.String)
+meth public static java.io.File getUserDirectory()
+supr java.lang.Object
+hfds LOG
 
 CLSS public final org.openide.modules.SpecificationVersion
 cons public init(java.lang.String)
