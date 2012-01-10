@@ -12,11 +12,13 @@ PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
+PACKAGE    TC                              [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
 PACKAGE    Test204925_02_C                 [PUBLIC]   null
@@ -136,6 +138,7 @@ CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
 CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
+CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
@@ -191,6 +194,7 @@ CLASS      Test204925_08_A                 [PUBLIC]   Test204925_08_P\a\b\c
 CLASS      Test204925_08_B                 [PUBLIC]   Test204925_08_C\d\e\f
 CLASS      TestCCOnMethods                 [PUBLIC]   test_cc_on_methods.php
 CLASS      TestCCOnMethodsParentClass      [PUBLIC]   test_cc_on_methods.php
+CLASS      TestCase                        [PUBLIC]   TC
 CLASS      TestClass                       [PUBLIC]   Extra
 CLASS      TestClass                       [PUBLIC]   function_return_type.php
 CLASS      TestClass                       [PUBLIC]   issue194875.php

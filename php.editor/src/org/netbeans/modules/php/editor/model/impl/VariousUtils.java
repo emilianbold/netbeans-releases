@@ -880,7 +880,7 @@ public class VariousUtils {
                         state = State.INVALID;
                         if (isString(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
-                            metaAll.insert(0, qualifyTypeNames(token.text().toString(), tokenSequence.offset(), varScope));
+                            metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token) || isStatic(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
@@ -951,6 +951,14 @@ public class VariousUtils {
                                     metaAll.insert(0, token.text().toString());
                                     break;
                                 }
+                            }
+                        } else {
+                            String currentMetaAll = metaAll.toString();
+                            int indexOfType = currentMetaAll.indexOf("@"); //NOI18N
+                            if (indexOfType != -1) {
+                                String lastType = currentMetaAll.substring(0, indexOfType);
+                                String qualifiedTypeName = qualifyTypeNames(lastType, tokenSequence.offset(), varScope);
+                                metaAll = new StringBuilder(qualifiedTypeName + currentMetaAll.substring(indexOfType));
                             }
                         }
                         state = State.STOP;
