@@ -52,6 +52,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 
@@ -66,6 +67,8 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
     actionsCategory="Mercurial",
     metadataFolderNames=".hg")
 public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
+
+    private HgHistoryProvider historyProvider;
 
     public MercurialVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName()); // NOI18N
@@ -84,6 +87,15 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         return collocationQueryImplementation;
     }
 
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        if(historyProvider == null) {
+            historyProvider = new HgHistoryProvider();
+        }
+        return historyProvider;
+    }
+
+    
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
         @Override
         public boolean areCollocated(File a, File b) {

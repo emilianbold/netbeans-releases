@@ -1,0 +1,254 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.mercurial;
+
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.ui.log.LogAction;
+import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.util.FileUtils;
+import org.openide.util.ChangeSupport;
+
+/**
+ *
+ * @author tomas
+ */
+public class HgHistoryProvider extends VCSHistoryProvider {
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private ChangeSupport support = new ChangeSupport(this);
+    
+    @Override
+    public void addChangeListener(ChangeListener l) {
+        support.addChangeListener(l);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        support.removeChangeListener(l);
+    }
+    
+    @Override
+    public synchronized HistoryEntry[] getHistory(File[] files, Date fromDate) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+        
+        if(!isClientAvailable()) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+            return null;
+        }
+        
+        Set<File> repositories = getRepositoryRoots(files);
+        if(repositories == null) {
+            return null;
+        }
+        
+        List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
+        Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
+        Map<String, HgLogMessage> rev2LMMap = new HashMap<String, HgLogMessage>();
+            
+        String fromRevision;
+        String toRevision;
+        if(fromDate == null) {
+            fromRevision = "0";
+            toRevision = "BASE";
+        } else {
+            fromRevision = dateFormat.format(fromDate);
+            toRevision = dateFormat.format(new Date(System.currentTimeMillis()));
+        }
+
+        for (File file : files) {
+            HgLogMessage[] history = 
+                    HgCommand.getLogMessages(
+                        repositories.iterator().next(), 
+                        new HashSet(Arrays.asList(files)), 
+                        fromRevision, 
+                        toRevision, 
+                        false, // show merges
+                        false, // get files info
+                        false, // get parents
+                        -1,    // limit 
+                        Collections.<String>emptyList(), // branch names
+                        null, // logger
+                        false); // asc order
+            for (HgLogMessage h : history) {
+                String r = h.getHgRevision().getRevisionNumber();
+                rev2LMMap.put(r, h);
+                Set<File> s = rev2FileMap.get(r);
+                if(s == null) {
+                    s = new HashSet<File>();
+                    rev2FileMap.put(r, s);
+                }
+                s.add(file);
+            }
+        }    
+
+        for(HgLogMessage h : rev2LMMap.values()) {
+            Set<File> s = rev2FileMap.get(h.getHgRevision().getRevisionNumber());
+            File[] involvedFiles = s.toArray(new File[s.size()]);
+            String username = h.getUsername();
+            String author = h.getAuthor();
+            if(username == null || "".equals(username.trim())) {
+                username = author;
+            }
+            
+            HistoryEntry e = new HistoryEntry(
+                    involvedFiles, 
+                    h.getDate(), 
+                    h.getMessage(), 
+                    author, 
+                    username, 
+                    h.getHgRevision().getRevisionNumber() + ":" + h.getHgRevision().getChangesetId(), 
+                    h.getHgRevision().getRevisionNumber(), 
+                    createActions(h.getHgRevision().getRevisionNumber()), 
+                    new RevisionProviderImpl(h.getHgRevision()));
+            ret.add(e);
+        }
+        return ret.toArray(new HistoryEntry[ret.size()]);
+    }
+
+    @Override
+    public Action createShowHistoryAction(File[] files) {
+        return new OpenHistoryAction(files);
+    }
+    
+    private static class RevisionProviderImpl implements RevisionProvider {
+        private HgRevision hgRevision;
+
+        public RevisionProviderImpl(HgRevision hgRevision) {
+            this.hgRevision = hgRevision;
+        }
+        
+        @Override
+        public void getRevisionFile(File originalFile, File revisionFile) {
+            try {
+                File file = VersionsCache.getInstance().getFileRevision(originalFile, hgRevision);
+                FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
+            } catch (IOException e) {
+                Mercurial.LOG.log(Level.WARNING, null, e);
+            }        
+        }
+    }
+
+    private static class OpenHistoryAction extends AbstractAction {
+        private final File[] files;
+
+        public OpenHistoryAction(File[] files) {
+            this.files = files;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            openHistory(files);
+        }
+        private void openHistory(File[] files) {
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+
+            if(!isClientAvailable()) {
+                org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+                return;
+            }
+
+            if(files == null || files.length == 0) {
+                return;
+            }
+            Set<File> repositories = getRepositoryRoots(files);
+            if(repositories == null) {
+                return;
+            }
+            LogAction.openHistory(repositories.iterator().next(), files);
+        }
+        
+    }
+
+    private Action[] createActions(String revision) {
+        return new Action[] {new AbstractAction("Revert ...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+            }
+        }, new AbstractAction("Diff to previous ...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+            }
+        }, new AbstractAction("Open " + revision) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+            }
+        }};
+    }
+    
+    /**
+     * Returns true if mercurial client is installed and has a supported version.<br/>
+     * Does not show any warning dialog.
+     * @return true if mercurial client is available.
+     */
+    private static boolean isClientAvailable() {
+        return isClientAvailable(false);
+    }
+
+    private static boolean isClientAvailable (boolean notifyUI) {
+        return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, notifyUI);
+    }
+
+    private static Set<File> getRepositoryRoots(File[] files) {
+        Set<File> repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(files)));
+        if (repositories.size() != 1) {
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size());
+            return null;
+        }
+        return repositories;
+    }
+}
+
