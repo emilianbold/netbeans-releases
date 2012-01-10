@@ -98,6 +98,13 @@ import org.openide.util.Utilities;
  * attempt is done (by another thread, presumably). 
  * <p/>
  * It should be thread-safe (according to Lucene docs) to use an IndexWriter while Readers are opened.
+ * <p/>
+ * As Reader and Writers can be used in parallel, all query+store operations use readLock so they can run in parallel.
+ * Operations which affect the whole index (close, clear) use write lock. RefreshReader called internally from writer's commit (close)
+ * is incompatible with parallel reads, as it closes the old reader - uses writeLock.
+ * <p/>
+ * Locks must be acquired in the order [rwLock, LuceneIndex]. The do* method synchronize on the DirCache instance and must be called 
+ * if the code already holds rwLock.
  *
  * @author Tomas Zezula
  */
@@ -317,26 +324,6 @@ public class LuceneIndex implements Index.Transactional {
     }
 
     @Override
-    public <S, T> void store (
-            final @NonNull Collection<T> toAdd,
-            final @NonNull Collection<S> toDelete,
-            final @NonNull Convertor<? super T, ? extends Document> docConvertor,
-            final @NonNull Convertor<? super S, ? extends Query> queryConvertor,
-            final boolean optimize) throws IOException{
-        try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    _store(toAdd, toDelete, docConvertor, queryConvertor, optimize);
-                    return null;
-                }
-            });
-        } catch (InterruptedException ie) {
-            throw new IOException("Interrupted");   //NOI18N
-        }
-    }
-
-    @Override
     public <S, T> void txStore(
             final Collection<T> toAdd, 
             final Collection<S> toDelete, final Convertor<? super T, ? extends Document> docConvertor, 
@@ -370,7 +357,7 @@ public class LuceneIndex implements Index.Transactional {
             Collection<S> toDelete, Convertor<? super T, ? extends Document> docConvertor, 
             Convertor<? super S, ? extends Query> queryConvertor, IndexWriter[] ret, boolean optimize) throws IOException {
         final boolean create = !dirCache.exists();
-        final IndexWriter out = dirCache.getWriter(create);
+        final IndexWriter out = dirCache.acquireWriter(create);
         try {
             ret[0] = out;
             if (!create) {
@@ -416,10 +403,13 @@ public class LuceneIndex implements Index.Transactional {
             throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
         } catch (IOException e) {
             throw Exceptions.attachMessage(e, "Lucene Index Folder: " + dirCache.folder.getAbsolutePath());
+        } finally {
+            dirCache.releaseWriter(out);
         }
     }
 
-    private <S, T> void _store (
+    @Override
+    public <S, T> void store (
             final @NonNull Collection<T> data,
             final @NonNull Collection<S> toDelete,
             final @NonNull Convertor<? super T, ? extends Document> docConvertor,
@@ -430,12 +420,8 @@ public class LuceneIndex implements Index.Transactional {
         try {
             _doStore(data, toDelete, docConvertor, queryConvertor, wr, optimize);
         } finally {
-            try {
-                LOGGER.log(Level.FINE, "Committing {0}", this);
-                dirCache.close(wr[0]);
-            } finally {
-                dirCache.refreshReader();
-            }
+            LOGGER.log(Level.FINE, "Committing {0}", this);
+            dirCache.close(wr[0]);
         }
     }
         
@@ -446,17 +432,7 @@ public class LuceneIndex implements Index.Transactional {
 
     @Override
     public void clear () throws IOException {
-        try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    dirCache.clear();
-                    return null;
-                }
-            });
-        } catch (InterruptedException ex) {
-            throw new IOException(ex);
-        }
+        dirCache.clear();
     }
     
     @Override
@@ -596,7 +572,7 @@ public class LuceneIndex implements Index.Transactional {
         private final File folder;
         private final CachePolicy cachePolicy;
         private final Analyzer analyzer;
-        private FSDirectory fsDir;
+        private volatile FSDirectory fsDir;
         private RAMDirectory memDir;
         private CleanReference ref;
         private IndexReader reader;
@@ -626,10 +602,20 @@ public class LuceneIndex implements Index.Transactional {
         Analyzer getAnalyzer() {
             return this.analyzer;
         }
+        
+        void clear() throws IOException {
+            rwLock.writeLock().lock();
+            try {
+                doClear();
+            } finally {
+                rwLock.writeLock().unlock();
+            }
+        }
                                 
-        synchronized void clear() throws IOException {
+        private synchronized void doClear() throws IOException {
             checkPreconditions();
-            close (false);
+            // already write locked
+            doClose(false);
             try {
                 final String[] content = fsDir.listAll();
                 boolean dirty = false;
@@ -675,49 +661,57 @@ public class LuceneIndex implements Index.Transactional {
                 }
             } finally {
                 //Need to recreate directory, see issue: #148374
-                this.close(true);
+                this.doClose(true);
                 this.fsDir = createFSDirectory(this.folder);
                 closed = false;
             }
         }
         
         void close(IndexWriter writer) throws IOException {
+            if (writer == null) {
+                return;
+            }
             try {
                 writer.close();
             } finally {
                 if (txWriter.get() == writer) {
                     LOGGER.log(Level.FINE, "TX writer cleared for {0}", this);
                     txWriter.remove();
+                    refreshReader();
                 }
             }
         }
         
-        synchronized void close (final boolean closeFSDir) throws IOException {
+        void close (final boolean closeFSDir) throws IOException {
             try {
                 rwLock.writeLock().lock();
-                try {
-                    rollbackTxWriter();
-                    if (this.reader != null) {
-                        this.reader.close();
-                        this.reader = null;
-                    }
-                } finally {                        
-                    if (memDir != null) {
-                        assert cachePolicy.hasMemCache();
-                        if (this.ref != null) {
-                            this.ref.clear();
-                        }
-                        final Directory tmpDir = this.memDir;
-                        memDir = null;
-                        tmpDir.close();
-                    }
-                }
+                doClose(closeFSDir);
             } finally {
+                rwLock.writeLock().unlock();
+            }                
+        }
+        
+        synchronized void doClose (final boolean closeFSDir) throws IOException {
+            try {
+                rollbackTxWriter();
+                if (this.reader != null) {
+                    this.reader.close();
+                    this.reader = null;
+                }
+            } finally {                        
+                if (memDir != null) {
+                    assert cachePolicy.hasMemCache();
+                    if (this.ref != null) {
+                        this.ref.clear();
+                    }
+                    final Directory tmpDir = this.memDir;
+                    memDir = null;
+                    tmpDir.close();
+                }
                 if (closeFSDir) {
                     this.closed = true;
                     this.fsDir.close();
                 }
-                rwLock.writeLock().unlock();
             }
         }
         
@@ -743,8 +737,10 @@ public class LuceneIndex implements Index.Transactional {
                         res = Status.WRITING;
                     } else {
                         LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
-                        for (String lockName : locks) {
-                            fsDir.deleteFile(lockName);
+                        synchronized (this) {
+                            for (String lockName : locks) {
+                                fsDir.deleteFile(lockName);
+                            }
                         }
                         if (force) {
                             clear();
@@ -775,13 +771,9 @@ public class LuceneIndex implements Index.Transactional {
         boolean closeTxWriter() throws IOException {
             IndexWriter writer = txWriter.get();
             if (writer != null) {
-                try {
-                    LOGGER.log(Level.FINE, "Committing {0}", this);
-                    close(writer);
-                    return true;
-                } finally {
-                    refreshReader();
-                }
+                LOGGER.log(Level.FINE, "Committing {0}", this);
+                close(writer);
+                return true;
             } else {
                 return false;
             }
@@ -803,38 +795,67 @@ public class LuceneIndex implements Index.Transactional {
         
         private static final long STALE_WRITER_THRESHOLD = 120 /* sec */ * 1000;
         
-        IndexWriter getWriter (final boolean create) throws IOException {
+        /**
+         * The writer operates under readLock(!) since we do not want to lock out readers,
+         * but just close, clear and commit operations. 
+         * 
+         * @param create
+         * @return
+         * @throws IOException 
+         */
+        IndexWriter acquireWriter (final boolean create) throws IOException {
             checkPreconditions();
             hit();
+
+            boolean ok = false;
             
+            rwLock.readLock().lock();
             IndexWriter writer = txWriter.get();
-            if (writer != null) {
-                long current = System.currentTimeMillis();
-                if (current - lastUsedWriter > STALE_WRITER_THRESHOLD) {
-                    LOGGER.log(Level.WARNING, "Using stale writer, possibly forgotten call to store ?", new Throwable());
-                }
-                lastUsedWriter = current;
-                return writer;
-            }
-            //Issue #149757 - logging
             try {
-                final IndexWriter iw = new FlushIndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
-                iw.setMergeScheduler(new SerialMergeScheduler());
-                lastUsedWriter = System.currentTimeMillis();
-                txWriter.set(iw);
-                return iw;
-            } catch (IOException ioe) {
-                throw annotateException (ioe);
+                if (writer != null) {
+                    long current = System.currentTimeMillis();
+                    if (current - lastUsedWriter > STALE_WRITER_THRESHOLD) {
+                        LOGGER.log(Level.WARNING, "Using stale writer, possibly forgotten call to store ?", new Throwable());
+                    }
+                    lastUsedWriter = current;
+                    ok = true;
+                    return writer;
+                }
+                //Issue #149757 - logging
+                try {
+                    // not synchronized, volatile var is accessed
+                    final IndexWriter iw = new FlushIndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
+                    iw.setMergeScheduler(new SerialMergeScheduler());
+                    lastUsedWriter = System.currentTimeMillis();
+                    txWriter.set(iw);
+                    ok = true;
+                    return iw;
+                } catch (IOException ioe) {
+                    throw annotateException (ioe);
+                }
+            } finally {
+                if (!ok) {
+                    rwLock.readLock().unlock();
+                }
             }
+        }
+        
+        void releaseWriter(IndexWriter w) {
+            assert w == txWriter.get();
+            rwLock.readLock().unlock();
         }
         
         IndexReader acquireReader() throws IOException {
             rwLock.readLock().lock();
-            IndexReader r = getReader();
-            if (r == null) {
-    	      rwLock.readLock().unlock();
-    	    }
-    	    return r;
+            IndexReader r = null;
+            try {
+                r = getReader();
+                return r;
+            } finally {
+                if (r == null) {
+                  rwLock.readLock().unlock();
+                }
+            }
         }
         
         void releaseReader(IndexReader r) {
@@ -845,7 +866,7 @@ public class LuceneIndex implements Index.Transactional {
             rwLock.readLock().unlock();
         }
         
-        synchronized IndexReader getReader () throws IOException {
+        private synchronized IndexReader getReader () throws IOException {
             checkPreconditions();
             hit();
             if (this.reader == null) {
@@ -882,7 +903,7 @@ public class LuceneIndex implements Index.Transactional {
         }
 
 
-        synchronized void refreshReader() throws IOException {
+        void refreshReader() throws IOException {
             if (IndexWriter.isLocked(fsDir)) {
                 IndexWriter.unlock(fsDir);
             }
@@ -890,18 +911,19 @@ public class LuceneIndex implements Index.Transactional {
                 if (cachePolicy.hasMemCache()) {
                     close(false);
                 } else {
-                    if (reader != null) {
-                        final IndexReader newReader = reader.reopen();
-                        if (newReader != reader) {
-                            
-                            rwLock.writeLock().lock();
-                            try {
-                                reader.close();
-                                reader = newReader;
-                            } finally {
-                                rwLock.writeLock().unlock();
+                    rwLock.writeLock().lock();
+                    try {
+                        synchronized (this) {
+                            if (reader != null) {
+                                final IndexReader newReader = reader.reopen();
+                                if (newReader != reader) {
+                                    reader.close();
+                                    reader = newReader;
+                                }
                             }
                         }
+                    } finally {
+                        rwLock.writeLock().unlock();
                     }
                 }
             } finally {
@@ -923,18 +945,10 @@ public class LuceneIndex implements Index.Transactional {
                     @Override
                     public void run () {
                         try {
-                            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                                @Override
-                                public Void run() throws IOException, InterruptedException {
-                                    close(false);
-                                    LOGGER.log(Level.FINE, "Evicted index: {0}", folder.getAbsolutePath()); //NOI18N
-                                    return null;
-                                }
-                            });
+                            close(false);
+                            LOGGER.log(Level.FINE, "Evicted index: {0}", folder.getAbsolutePath()); //NOI18N
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
-                        } catch (InterruptedException ie) {
-                            Exceptions.printStackTrace(ie);
                         }
                     }
                 });
