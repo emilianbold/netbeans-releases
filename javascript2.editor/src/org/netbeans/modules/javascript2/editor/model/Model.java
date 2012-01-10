@@ -53,9 +53,10 @@ public final class Model {
 
     private final JsParserResult parserResult;
 
+    private final OccurrencesSupport occurrencesSupport;
+
     private ModelVisitor visitor;
-    private OccurrencesSupport occurrencesSupport;
-    
+
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
@@ -76,9 +77,9 @@ public final class Model {
     public JsObject getGlobalObject() {
         return getModelVisitor().getGlobalObject();
     }
-    
+
     public OccurrencesSupport getOccurrencesSupport() {
         return occurrencesSupport;
     }
-    
+
 }
