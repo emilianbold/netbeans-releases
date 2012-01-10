@@ -48,8 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.localhistory.ui.actions.RevertDeletedAction;
-import org.netbeans.modules.localhistory.ui.revert.RevertToAction;
-import org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction;
+import org.netbeans.modules.versioning.ui.history.ShowLocalHistoryAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -85,7 +84,6 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(SystemAction.get(ShowLocalHistoryAction.class));
             actions.add(SystemAction.get(RevertDeletedAction.class));
-            actions.add(SystemAction.get(RevertToAction.class));            
         } else {
             actions.add(SystemActionBridge.createAction(
                                             SystemAction.get(ShowLocalHistoryAction.class), 
