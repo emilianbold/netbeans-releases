@@ -1568,10 +1568,10 @@ public class ActionFactory {
                         try {
                             boolean right = BaseKit.shiftLineRightAction.equals(getValue(Action.NAME));
                             if (Utilities.isSelectionShowing(caret)) {
-                                BaseKit.changeBlockIndent(
+                                BaseKit.shiftBlock(
                                     doc,
                                     target.getSelectionStart(), target.getSelectionEnd(),
-                                    right ? +1 : -1);
+                                    right);
                             } else {
                                 BaseKit.shiftLine(doc, caret.getDot(), right);
                             }
