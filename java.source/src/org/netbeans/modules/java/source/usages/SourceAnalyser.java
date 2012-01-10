@@ -96,20 +96,24 @@ import org.openide.util.Parameters;
 public class SourceAnalyser {
 
     private final ClassIndexImpl.Writer writer;
-    private final List<Pair<Pair<String, String>, Object[]>> references;
-    private final Set<Pair<String,String>> toDelete;
+    private final List<Pair<Pair<String, String>, Object[]>> references = new ArrayList<Pair<Pair<String, String>, Object[]>>();
+    private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private static final boolean fullIndex = Boolean.getBoolean(SourceAnalyser.class.getName()+".fullIndex");   //NOI18N
 
     /** Creates a new instance of SourceAnalyser */
     SourceAnalyser (final @NonNull ClassIndexImpl.Writer writer) {
         Parameters.notNull("writer", writer);   //NOI18N
         this.writer = writer;
-        this.references = new ArrayList<Pair<Pair<String, String>, Object[]>>();
-        this.toDelete = new HashSet<Pair<String,String>> ();
     }
 
+    SourceAnalyser () {
+        this.writer = null;
+    }
 
     public void store () throws IOException {
+        if (writer == null) {
+            throw new IllegalStateException("SourceAnalyser created with no Writer");   //NOI18N
+        }
         if (this.references.size() > 0 || this.toDelete.size() > 0) {
             try {
                 this.writer.deleteAndFlush(this.references, toDelete);
@@ -184,7 +188,11 @@ public class SourceAnalyser {
         }
     }
 
-    void analyseUnitAndStore (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
+    @CheckForNull
+    List<Pair<Pair<String, String>, Object[]>> analyseUnit (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
+        if (!references.isEmpty()) {
+            throw new IllegalStateException("Trying to reuse no store SourceAnalyser");
+        }
         try {
             final Map<Pair<String,String>,Data> usages = new HashMap<Pair<String,String>,Data> ();
             final Set<Pair<String,String>> topLevels = new HashSet<Pair<String,String>>();
@@ -195,13 +203,13 @@ public class SourceAnalyser {
                 final Data data = oe.getValue();
                 addClassReferences (key,data);
             }
-            this.writer.deleteEnclosedAndStore(this.references, topLevels);
+            //this.writer.deleteEnclosedAndStore(this.references, topLevels);
+            return this.references;
         } catch (IllegalArgumentException iae) {
             Exceptions.printStackTrace(iae);
+            return null;
         }catch (OutputFileManager.InvalidSourcePath e) {
-            //Deleted project, ignore
-        } finally {
-            this.references.clear();
+            return null;
         }
     }
 

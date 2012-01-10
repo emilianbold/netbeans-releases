@@ -117,17 +117,21 @@ public abstract class ClassIndexImpl {
             @NonNull ElementHandle<?> binaryName,
             @NonNull Set<? extends UsageType> usageType,
             @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
-            @NonNull Convertor<? super Document, T> convertor,
+            @NonNull Convertor<Document, T> convertor,
             @NonNull Set<? super T> result) throws IOException, InterruptedException;
 
     public abstract <T> void getDeclaredTypes (
             @NonNull String name,
             @NonNull ClassIndex.NameKind kind,
             @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
-            @NonNull Convertor<? super Document, T> convertor,
+            @NonNull Convertor<Document, T> convertor,
             @NonNull Set<? super T> result) throws IOException, InterruptedException;
 
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, Convertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
+    public abstract <T> void getDeclaredElements (
+            String ident,
+            ClassIndex.NameKind kind,
+            Convertor<Document, T> convertor,
+            Map<T,Set<String>> result) throws IOException, InterruptedException;
     
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     
