@@ -301,7 +301,7 @@ public class WritingQueue {
         public synchronized void entryDone(int entriesCount) {
             progressCurrent++;
             if (progressHandle != null) { // paranoya
-                if (progressTotal > 0) {
+                if (progressTotal > 0 && progressCurrent <= progressTotal) {
                     progressHandle.progress(Math.min(progressCurrent, progressTotal));
                 }
                 if (entriesCount == 0) {
