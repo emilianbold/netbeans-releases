@@ -222,7 +222,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
-            if (name == null) {
+            if (name == null || name.isEmpty()) {
                 name = new ArrayList<Identifier>(1);
                 name.add(new IdentifierImpl(functionNode.getIdent().getName(), 
                         new OffsetRange(functionNode.getIdent().getStart(), functionNode.getIdent().getFinish())));
