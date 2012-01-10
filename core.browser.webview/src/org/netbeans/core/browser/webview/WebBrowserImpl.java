@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -63,6 +64,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
+import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -70,7 +72,7 @@ import org.w3c.dom.Node;
 /**
  * Browser component implementation.
  *
- * @author S. Aubrecht
+ * @author S. Aubrecht, Jan Stola
  */
 class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     
@@ -359,15 +361,31 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     @Override
-    public void executeJavaScript(final String script) {
+    public Object executeJavaScript(final String script) {
         if( !isInitialized() )
-            return;
-        javafx.application.Platform.runLater( new Runnable() {
-            @Override
-            public void run() {
-                browser.getEngine().executeScript( script);
+            return null;
+        if (javafx.application.Platform.isFxApplicationThread()) {
+            return browser.getEngine().executeScript(script);
+        } else {
+            final Object[] result = new Object[1];
+            final CountDownLatch latch = new CountDownLatch(1);
+            javafx.application.Platform.runLater( new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        result[0] = browser.getEngine().executeScript(script);
+                    } finally {
+                        latch.countDown();
+                    }
+                }
+            });
+            try {
+                latch.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        });
+            return result[0];
+        }
     }
 
     private boolean isInitialized() {

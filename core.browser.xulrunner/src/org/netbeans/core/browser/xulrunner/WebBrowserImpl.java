@@ -413,10 +413,10 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     @Override
-    public void executeJavaScript(String script) {
+    public Object executeJavaScript(String script) {
         if( !isInitialized() )
-            return;
-        browser.jsexec(script);
+            return null;
+        return browser.jsexec(script);
     }
 
     private boolean isInitialized() {

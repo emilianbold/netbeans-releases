@@ -216,6 +216,6 @@ public abstract class WebBrowser {
      * Execute JavaScript
      * @param script
      */
-    public abstract void executeJavaScript( String script );
+    public abstract Object executeJavaScript( String script );
 
 }
