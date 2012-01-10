@@ -72,7 +72,7 @@ public class CMakeDataObject extends MultiDataObject {
     }
 
     @MultiViewElement.Registration(displayName = "#Source",
-    iconBase = "org/netbeans/modules/cnd/loaders/CMakefileDataIcon.gif", //NOI18N
+    iconBase = "org/netbeans/modules/cnd/loaders/CMakefileDataIcon.png", //NOI18N
     persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
     mimeType = MIMENames.CMAKE_MIME_TYPE,
     preferredID = "cmakefile.source", //NOI18N
