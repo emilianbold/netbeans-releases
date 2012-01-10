@@ -65,12 +65,13 @@
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
+                <!--dependency>
+		    This is disabled by BZ#206681 - Yahoo services shut down, should be removed from manager 
                     <code-name-base>org.netbeans.modules.websvc.saas.services.yahoo</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.websvc.saas.services.zillow</code-name-base>
                     <run-dependency>
