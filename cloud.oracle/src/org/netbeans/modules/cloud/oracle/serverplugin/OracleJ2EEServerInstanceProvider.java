@@ -111,7 +111,7 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
             if (ip == null) {
                 try {
                     Map<String, String>props = new HashMap<String, String>();
-                    props.put(OracleDeploymentFactory.IP_SERVICE_GROUP, inst.getOracleInstance().getServiceGroup());
+                    props.put(OracleDeploymentFactory.IP_SERVICE_GROUP, inst.getOracleInstance().getIdentityGroup());
                     props.put(OracleDeploymentFactory.IP_SERVICE_INSTANCE, inst.getOracleInstance().getServiceInstance());
                     props.put(OracleDeploymentFactory.IP_ADMIN_URL, ai.getAdminURL());
                     props.put(OracleDeploymentFactory.IP_INSTANCE_URL, ai.getInstanceURL());
