@@ -278,6 +278,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 fqName = getName((VarNode)lastVisited);
             } else if (lastVisited instanceof PropertyNode) {
                         fqName = getName((PropertyNode)lastVisited);
+                        isDeclaredInParent = true;
                     } else if (lastVisited instanceof BinaryNode) {
                         BinaryNode binNode = (BinaryNode)lastVisited;
                         fqName = getName(binNode);
@@ -306,16 +307,27 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node visit(PropertyNode propertyNode, boolean onset) {
-        if (onset && propertyNode.getKey() instanceof IdentNode
+        if (onset
+                && (propertyNode.getKey() instanceof IdentNode || propertyNode.getKey() instanceof LiteralNode)
                 && !(propertyNode.getValue() instanceof ObjectNode)) {
             JsObjectImpl scope = modelBuilder.getCurrentObject();
-            IdentNode key = (IdentNode)propertyNode.getKey();
-            Identifier name = ModelElementFactory.create(key);
-            scope.addProperty(name.getName(), new JsObjectImpl(scope, name, name.getOffsetRange()));
-            if(propertyNode.getValue() instanceof CallNode) {
-                // TODO for now, don't continue. There shoudl be handled cases liek
-                // in the testFiles/model/property02.js file
-                return null;
+            Identifier name = null;
+            Node key = propertyNode.getKey();
+            if (key instanceof IdentNode) {
+                name = ModelElementFactory.create((IdentNode)key);
+            } else if (key instanceof LiteralNode) {
+                name = ModelElementFactory.create((LiteralNode)key);
+            }
+            
+            if (name != null) {
+                JsObject property = new JsObjectImpl(scope, name, name.getOffsetRange());
+                ((JsObjectImpl)property).setDeclared(true);
+                scope.addProperty(name.getName(), property);
+                if(propertyNode.getValue() instanceof CallNode) {
+                    // TODO for now, don't continue. There shoudl be handled cases liek
+                    // in the testFiles/model/property02.js file
+                    return null;
+                }
             }
         }
         return super.visit(propertyNode, onset);

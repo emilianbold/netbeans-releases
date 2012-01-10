@@ -324,6 +324,35 @@ public class ModelTest extends JsTestBase {
         assertEquals(true, object.isDeclared());
     }
     
+    public void testPropertyAsLiteral() throws Exception {
+        Model model = getModel("testfiles/model/jQueryFragment01.js");
+        assertNotNull(model);
+        
+        JsObject  object = model.getGlobalObject();
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getPropery("jQuery");
+        assertEquals(false, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        
+        object = object.getPropery("event");
+        assertEquals(true, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        
+        object = object.getPropery("customEvent");
+        assertEquals(true, object.isDeclared());
+        assertEquals(4, object.getProperties().size());
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        
+        object = object.getPropery("getData");
+        assertEquals(true, object.isDeclared());
+        assertEquals(0, object.getProperties().size());
+        assertEquals(JsElement.Kind.PROPERTY, object.getJSKind());
+        
+    }
+    
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);
