@@ -395,6 +395,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         }
     }
 
+    @Override
     public boolean fireBrowserEvent(int type, String url) {
         WebBrowserEventImpl event = new WebBrowserEventImpl(type, this, url);
         urlToLoad = url;
@@ -406,6 +407,7 @@ class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         return event.isCancelled();
     }
 
+    @Override
     public void fireBrowserEvent(int type, AWTEvent e, Node n) {
         WebBrowserEvent event = new WebBrowserEventImpl(type, this, e, n);
         synchronized( browserListners ) {
