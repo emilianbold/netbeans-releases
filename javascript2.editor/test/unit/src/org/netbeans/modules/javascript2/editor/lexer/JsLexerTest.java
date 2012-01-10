@@ -194,6 +194,21 @@ public class JsLexerTest extends TestCase {
     }
 
     @SuppressWarnings("unchecked")
+    public void testRegexp8() {
+        String text = "f(x,/[s]/)";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP, "[s]");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
+    }
+
+    @SuppressWarnings("unchecked")
     public void testPartialRegexp() {
         String text = "x=/";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
@@ -231,9 +246,8 @@ public class JsLexerTest extends TestCase {
         String text = "/[ something";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.UNKNOWN, "/[");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "something");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.UNKNOWN, "[ something");
     }
 
     @SuppressWarnings("unchecked")
