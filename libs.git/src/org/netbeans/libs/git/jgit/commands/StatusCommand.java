@@ -219,7 +219,10 @@ public class StatusCommand extends GitCommand {
                             statusHeadWC = GitStatus.Status.STATUS_REMOVED;
                         } else if (mHead == FileMode.MISSING.getBits() && mWorking != FileMode.MISSING.getBits()) {
                             statusHeadWC = GitStatus.Status.STATUS_ADDED;
-                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mHead, mWorking, checkExecutable) || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId())))) {
+                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mHead, mWorking, checkExecutable) 
+                                || (mWorking != 0 && mWorking != FileMode.TREE.getBits() 
+                                    && (indexEntry == null || !indexEntry.isAssumeValid()) //no update-index --assume-unchanged
+                                    && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId())))) {
                             statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusHeadWC = GitStatus.Status.STATUS_NORMAL;
