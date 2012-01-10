@@ -66,7 +66,9 @@ public final class Model {
             long start = System.currentTimeMillis();
             visitor = new ModelVisitor(parserResult);
             FunctionNode root = parserResult.getRoot();
-            root.accept(visitor);
+            if (root != null) {
+                root.accept(visitor);
+            }
             long end = System.currentTimeMillis();
             System.out.println("Building model takes: " + (end - start));
         }
