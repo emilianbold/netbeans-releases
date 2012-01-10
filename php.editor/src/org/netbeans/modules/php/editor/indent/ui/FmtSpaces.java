@@ -77,10 +77,10 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
     private SpacesCategorySupport scs;
     private DefaultTreeModel model;
-  
-    private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();    
+
+    private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
     private JCheckBox renderer = new JCheckBox();
-    
+
     /** Creates new form FmtSpaces */
     private FmtSpaces() {
         initComponents();
@@ -92,17 +92,17 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         cfgTree.setEditable(false);
         cfgTree.addMouseListener(this);
         cfgTree.addKeyListener(this);
-        
+
         dr.setIcon(null);
         dr.setOpenIcon(null);
         dr.setClosedIcon(null);
-        
+
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)model.getRoot();
         for( int i = root.getChildCount(); i >= 0; i-- ) {
             cfgTree.expandRow(i);
         }
     }
-    
+
     public static PreferencesCustomizer.Factory getController() {
         return new PreferencesCustomizer.Factory() {
             @Override
@@ -117,7 +117,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             }
         };
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -152,27 +152,27 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtSpaces.class, "FmtSpaces.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTree cfgTree;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
-    
+
     // TreeCellRenderer implemetation ------------------------------------------
-    
+
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        
+
         renderer.setBackground( selected ? dr.getBackgroundSelectionColor() : dr.getBackgroundNonSelectionColor() );
         renderer.setForeground( selected ? dr.getTextSelectionColor() : dr.getTextNonSelectionColor() );
         renderer.setEnabled( true );
 
         Object data = ((DefaultMutableTreeNode)value).getUserObject();
-        
+
         if ( data instanceof Item ) {
             Item item = ((Item)data);
-            
+
             if ( ((DefaultMutableTreeNode)value).getAllowsChildren() ) {
                 Component c = dr.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
                 return c;
@@ -181,18 +181,18 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 renderer.setText( item.displayName );
                 renderer.setSelected( item.value );
             }
-        }        
+        }
         else {
-            Component c = dr.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);             
+            Component c = dr.getTreeCellRendererComponent(tree, value, leaf, expanded, leaf, row, hasFocus);
             return c;
         }
 
         return renderer;
     }
-    
-    
+
+
     // MouseListener implementation --------------------------------------------
-    
+
     @Override
     public void mouseClicked(MouseEvent e) {
         Point p = e.getPoint();
@@ -218,7 +218,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
     @Override
     public void mouseReleased(MouseEvent e) {}
-    
+
     // KeyListener implementation ----------------------------------------------
 
     @Override
@@ -241,17 +241,17 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             }
         }
     }
-    
+
     // Private methods ---------------------------------------------------------
-    
+
     private DefaultTreeModel createModel() {
-        
+
         Item[] categories = new Item[] {
             new Item("BeforeKeywords",                          // NOI18N
                 new Item(spaceBeforeWhile),
                 new Item(spaceBeforeElse),
                 new Item(spaceBeforeCatch)),
-    
+
             new Item("BeforeParentheses",                       // NOI18N
                 new Item(spaceBeforeMethodDeclParen),
                 new Item(spaceBeforeMethodCallParen),
@@ -262,7 +262,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceBeforeSwitchParen),
 		new Item(spaceBeforeArrayDeclParen)
                 ),
-    
+
             new Item("AroundOperators",                         // NOI18N
                 new Item(spaceAroundUnaryOps),
                 new Item(spaceAroundBinaryOps),
@@ -271,7 +271,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 		new Item(spaceAroundKeyValueOps),
                 new Item(spaceAroundAssignOps),
 		new Item(spaceAroundObjectOps)),
-            
+
             new Item("BeforeLeftBraces",                        // NOI18N
                 new Item(spaceBeforeClassDeclLeftBrace),
                 new Item(spaceBeforeMethodDeclLeftBrace),
@@ -282,7 +282,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceBeforeDoLeftBrace),
                 new Item(spaceBeforeSwitchLeftBrace),
                 new Item(spaceBeforeTryLeftBrace),
-                new Item(spaceBeforeCatchLeftBrace)
+                new Item(spaceBeforeCatchLeftBrace),
+                new Item(spaceBeforeUseTraitBodyLeftBrace)
 //                new Item(spaceBeforeSynchronizedLeftBrace),
 //                new Item(spaceBeforeStaticInitLeftBrace),
 //                new Item(spaceBeforeArrayInitLeftBrace) ),
@@ -304,8 +305,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 //                new Item(spaceWithinBraces),
                 new Item(spaceWithinArrayBrackets)
 		),
-                    
-                
+
+
              new Item("Other",                                  // NOI18N
                 new Item(spaceBeforeComma),
                 new Item(spaceAfterComma),
@@ -317,14 +318,14 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 		new Item(spaceCheckAfterKeywords),
                 new Item(spaceAfterShortPHPTag),
 		new Item(spaceBeforeClosePHPTag))
-                
+
         };
-         
-        
+
+
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root", true); // NOI18N
         DefaultTreeModel dtm = new DefaultTreeModel( root );
-        
-        
+
+
         for( Item item : categories ) {
             DefaultMutableTreeNode cn = new DefaultMutableTreeNode( item, true );
             root.add(cn);
@@ -333,12 +334,12 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 cn.add(in);
             }
         }
-        
+
         return dtm;
     }
-    
+
     private boolean toggle(TreePath treePath) {
-        
+
         if( treePath == null ) {
             return false;
         }
@@ -350,42 +351,42 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         if ( o instanceof Item ) {
             Item item = (Item)o;
-            
+
             if ( node.getAllowsChildren() ) {
                 return false;
             }
-            
-            item.value = !item.value;            
+
+            item.value = !item.value;
             dtm.nodeChanged(node);
             dtm.nodeChanged(node.getParent());
             scs.notifyChanged();
         }
-        
+
         return false;
     }
-    
+
     // Innerclasses ------------------------------------------------------------
-    
+
     private static class Item {
-        
-        String id;        
-        String displayName;        
-        boolean value;        
+
+        String id;
+        String displayName;
+        boolean value;
         Item[] items;
-        
+
         public Item(String id, Item... items) {
             this.id = id;
             this.items = items;
-            this.displayName = NbBundle.getMessage(FmtSpaces.class, "LBL_" + id ); // NOI18N            
+            this.displayName = NbBundle.getMessage(FmtSpaces.class, "LBL_" + id ); // NOI18N
         }
 
         @Override
         public String toString() {
             return displayName;
         }
-        
+
     }
-    
+
     private static final class SpacesCategorySupport extends FmtOptions.CategorySupport {
 
         public SpacesCategorySupport(Preferences preferences, FmtSpaces panel, String preview) {
@@ -422,7 +423,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                     preferences.putBoolean(item.id, item.value);
             }
         }
-        
+
         private List<Item> getAllItems() {
             List<Item> result = new LinkedList<FmtSpaces.Item>();
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) ((FmtSpaces) panel).model.getRoot();
@@ -436,7 +437,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                         result.add( item );
                     }
                 }
-            }            
+            }
             return result;
         }
     }

@@ -127,6 +127,15 @@ public class ModelUtils {
         return retval;
     }
 
+    public static Collection<? extends TraitScope> getDeclaredTraits(FileScope fileScope) {
+        List<TraitScope> retval = new ArrayList<TraitScope>();
+        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        for (NamespaceScope namespace : declaredNamespaces) {
+            retval.addAll(namespace.getDeclaredTraits());
+        }
+        return retval;
+    }
+
     public static Collection<? extends ConstantElement> getDeclaredConstants(FileScope fileScope) {
         List<ConstantElement> retval = new ArrayList<ConstantElement>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();

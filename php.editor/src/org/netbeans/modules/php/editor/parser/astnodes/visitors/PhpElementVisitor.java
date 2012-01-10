@@ -62,6 +62,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
@@ -92,6 +93,13 @@ public class PhpElementVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(InterfaceDeclaration node) {
+        final NamespaceElement namespace = elementQuery.getLast(NamespaceElement.class);
+        elementQuery.create(namespace, node);
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(TraitDeclaration node) {
         final NamespaceElement namespace = elementQuery.getLast(NamespaceElement.class);
         elementQuery.create(namespace, node);
         super.visit(node);

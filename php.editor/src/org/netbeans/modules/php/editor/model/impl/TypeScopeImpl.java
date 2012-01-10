@@ -59,9 +59,11 @@ import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 
 /**
@@ -93,6 +95,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
     }
 
+    TypeScopeImpl(Scope inScope, TraitDeclarationInfo nodeInfo) {
+        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
+    }
+
     protected TypeScopeImpl(Scope inScope, ClassElement element) {
         super(inScope, element, PhpElementKind.CLASS);
         fqIfaces = element.getFQSuperInterfaceNames();
@@ -107,6 +113,10 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         for (QualifiedName qualifiedName : element.getSuperInterfaces()) {
             ifaces.put(qualifiedName.toString(), null);
         }
+    }
+
+    protected TypeScopeImpl(Scope inScope, TraitElement element) {
+        super(inScope, element, PhpElementKind.TRAIT);
     }
 
     @Override
@@ -259,6 +269,11 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     @Override
     public final boolean isInterface() {
         return this.getPhpElementKind().equals(PhpElementKind.IFACE);
+    }
+
+    @Override
+    public final boolean isTrait() {
+        return this.getPhpElementKind().equals(PhpElementKind.TRAIT);
     }
 
 }
