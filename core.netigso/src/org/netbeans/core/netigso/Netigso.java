@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -95,7 +96,7 @@ import org.osgi.service.startlevel.StartLevel;
 })
 public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
-    private static final ThreadLocal<Boolean> SELF_QUERY = new ThreadLocal<Boolean>();
+    private static final AtomicBoolean SELF_QUERY = new AtomicBoolean();
     private static final String[] EMPTY = {};
 
     private Framework framework;
@@ -592,10 +593,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     public byte[] fromArchive(long bundleId, String resource, ArchiveResources ar) throws IOException {
-        if (Boolean.TRUE.equals(SELF_QUERY.get())) {
+        if (SELF_QUERY.get()) {
             return ar.resource(resource);
         }
         return fromArchive(ar, resource);
+    }
+
+    public boolean isArchiveActive() {
+        return !SELF_QUERY.get();
     }
 
     private static String toURI(final File file) {
@@ -617,4 +622,5 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         }
         return new VFile().toURI().toString();
     }
+
 }
