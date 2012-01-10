@@ -164,10 +164,11 @@ FLit3    = [0-9]+
 Exponent = [eE] [+-]? [0-9]+
 
 /* string and character literals */
-StringCharacter  = [^\r\n\"\\]|\\{LineTerminator}
-SStringCharacter = [^\r\n\'\\]|\\{LineTerminator}
-RegexpCharacter  = [^\r\n/\\]
-RegexpFirstCharacter  = [^\r\n/\\\*\[]
+StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
+SStringCharacter = [^\r\n\'\\] | \\{LineTerminator}
+
+RegexpCharacter  = [^\r\n/\\] | \\{InputCharacter}
+RegexpFirstCharacter  = [^\r\n/\\\*\[] | \\{InputCharacter}
 
 %state STRING
 %state STRINGEND
@@ -236,7 +237,7 @@ RegexpFirstCharacter  = [^\r\n/\\\*\[]
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"[\\\*\[]                    { return JsTokenId.UNKNOWN; }
+  "/"[\*\[]                      { return JsTokenId.UNKNOWN; }
   "/"
                                  {
                                      if (canFollowLiteral) {
