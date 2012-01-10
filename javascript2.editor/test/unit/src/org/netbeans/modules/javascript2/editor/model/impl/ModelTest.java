@@ -142,7 +142,7 @@ public class ModelTest extends JsTestBase {
         Model model = getModel("testfiles/model/variables01.js");
         assertNotNull(model);
         JsObject  global = model.getGlobalObject();
-        assertEquals(5, global.getProperties().size());
+        assertEquals(6, global.getProperties().size());
         
         JsObject variable = global.getPropery("address");
         assertEquals("address", variable.getName());
@@ -157,10 +157,16 @@ public class ModelTest extends JsTestBase {
         assertEquals(false, variable.isDeclared());
         assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
 
+        JsObject object = global.getPropery("formatter");
+        //assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        // needs to be object at the end
+        assertEquals(JsElement.Kind.VARIABLE, object.getJSKind());
+        assertEquals(false, variable.isDeclared());
+        
         JsObject address = global.getPropery("Address");
         assertEquals(JsElement.Kind.CONSTRUCTOR, address.getJSKind());
         assertEquals(true, address.isDeclared());
-        assertEquals(5, global.getProperties().size());
+        assertEquals(5, address.getProperties().size());
         
         variable = address.getPropery("city");
         assertEquals(true, variable.isDeclared());
@@ -209,7 +215,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject  global = model.getGlobalObject();
-        assertEquals(3, global.getProperties().size());
+        assertEquals(4, global.getProperties().size());
         
         JsObject object = global.getPropery("MyContext");
         assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
@@ -305,7 +311,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject  global = model.getGlobalObject();
-        assertEquals(1, global.getProperties().size());
+        assertEquals(3, global.getProperties().size());
         
         JsObject object = global.getPropery("Kolo");
         assertEquals(JsElement.Kind.CONSTRUCTOR, object.getJSKind());
