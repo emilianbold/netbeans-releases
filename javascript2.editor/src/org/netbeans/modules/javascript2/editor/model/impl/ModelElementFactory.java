@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
+import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.ObjectNode;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +83,10 @@ class ModelElementFactory {
     
     static IdentifierImpl create(IdentNode node) {
         return new IdentifierImpl(node.getName(), new OffsetRange(node.getStart(), node.getFinish()));
+    }
+    
+    static IdentifierImpl create(LiteralNode node) {
+        return new IdentifierImpl(node.getString(), new OffsetRange(node.getStart(), node.getFinish()));
     }
     
     static JsObjectImpl create(ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {

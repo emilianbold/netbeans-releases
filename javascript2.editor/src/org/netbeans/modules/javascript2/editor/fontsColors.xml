@@ -18,7 +18,7 @@
     <fontcolor name="mod-method">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="mod-class" >
+    <fontcolor name="mod-class" foreColor="000000">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-field" default="field"/>

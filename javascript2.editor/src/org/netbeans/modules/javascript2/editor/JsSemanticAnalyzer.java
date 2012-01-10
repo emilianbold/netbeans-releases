@@ -105,7 +105,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.METHOD_SET);
                     break;
                 case OBJECT:
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
+                    if (object.isDeclared()) {
+                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
+                    }
                     break;
                 case PROPERTY:
                     highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
