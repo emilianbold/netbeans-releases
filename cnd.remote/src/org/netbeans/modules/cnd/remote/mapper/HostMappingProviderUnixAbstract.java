@@ -134,7 +134,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
         try {
             return InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException ex) {
-            RemoteUtil.LOGGER.log(Level.INFO, "Exception when getting local host IP", ex); //NOI18N
+            RemoteUtil.LOGGER.log(Level.FINEST, "Exception when getting local host IP", ex); //NOI18N
             return null;
         }
     }
