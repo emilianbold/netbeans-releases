@@ -39,16 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.navigation;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -57,78 +58,50 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  *
  * @author Petr Pisl
  */
-public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
-    
-    private boolean cancelled;
-    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    
-    public JsSemanticAnalyzer() {
-        this.cancelled = false;
-        this.semanticHighlights = null;
-    }
+public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
+
+    private Map<OffsetRange, ColoringAttributes> range2Attribs;
+    private int caretPosition;
+    private volatile boolean cancelled;
     
     @Override
-    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
-        return semanticHighlights;
+    public void setCaretPosition(int position) {
+        this.caretPosition = position;
+    }
+
+    @Override
+    public Map<OffsetRange, ColoringAttributes> getOccurrences() {
+        System.out.println("getOccurrences returns " + range2Attribs.size());
+        return range2Attribs;
     }
 
     @Override
     public void run(JsParserResult result, SchedulerEvent event) {
-        resume();
-        
-        if (isCancelled()) {
-            return;
-        }
-        
-        Map<OffsetRange, Set<ColoringAttributes>> highlights =
-                new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
-        Model model = result.getModel();
-        JsObject global = model.getGlobalObject();
-        
-        highlights = count(global, highlights);
-        
-        if (highlights != null && highlights.size() > 0) {
-            semanticHighlights = highlights;
-        } else {
-            semanticHighlights = null;
-        }
-    }
-    
-    private Map<OffsetRange, Set<ColoringAttributes>> count (JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+        //remove the last occurrences - the CSL caches the last found occurences for us
+        range2Attribs = null;
 
-        for (Iterator<? extends JsObject> it = parent.getProperties().values().iterator(); it.hasNext();) {
-            JsObject object = it.next();
-            switch (object.getJSKind()) {
-                case CONSTRUCTOR:
-                case METHOD:
-                case FUNCTION:
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.METHOD_SET);
-                    break;
-                case OBJECT:
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
-                    break;
-                case PROPERTY:
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
-                    for(Occurrence occurence: object.getOccurrences()) {
-                        highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
-                    }
-                    break;
-                case VARIABLE:
-                    if (parent.getParent() == null) {
-                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
-                        for(Occurrence occurence: object.getOccurrences()) {
-                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
-                        }
-                    }
-            }
-            if (isCancelled()) {
-                highlights = null;
-                break;
-            }
-            highlights = count(object, highlights);
+        if(cancelled) {
+            cancelled = false;
+            return ;
         }
         
-        return highlights;
+        Model model = result.getModel();
+        OccurrencesSupport os = model.getOccurrencesSupport();
+        Occurrence occurrence = os.getOccurrence(caretPosition);
+        if (occurrence != null) {
+            range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
+            for(JsObject object: occurrence.getDeclarations()){
+                range2Attribs.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
+                for(Occurrence oc : object.getOccurrences()) {
+                    range2Attribs.put(oc.getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
+                    if(cancelled) {
+                        cancelled = false;
+                        return ;
+                    }
+                }
+            }
+                    
+        }
     }
 
     @Override
@@ -138,20 +111,12 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     @Override
     public void cancel() {
         cancelled = true;
-    }
-    
-    protected final synchronized boolean isCancelled() {
-        return cancelled;
-    }
-
-    protected final synchronized void resume() {
-        cancelled = false;
     }
     
 }
