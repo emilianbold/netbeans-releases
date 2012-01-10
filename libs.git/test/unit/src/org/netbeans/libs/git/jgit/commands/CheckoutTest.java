@@ -566,6 +566,53 @@ public class CheckoutTest extends AbstractGitTestCase {
         client.checkoutRevision("origin/master", true, NULL_PROGRESS_MONITOR);
     }
 
+    // must not checkout from nested repositories
+    public void testCheckoutIndexNested () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "file");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        File nested = new File(workDir, "nested");
+        nested.mkdirs();
+        File f2 = new File(nested, "f");
+        write(f2, "file");
+        GitClient clientNested = getClient(nested);
+        clientNested.init(NULL_PROGRESS_MONITOR);
+        clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
+        clientNested.commit(new File[] { f2 }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        write(f, "change");
+        write(f2, "change");
+        
+        client.checkout(new File[] { workDir }, null, true, NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        
+        clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
+        client.checkout(new File[] { workDir }, "HEAD", true, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        
+        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+    }
+
     private void unpack (String filename) throws IOException {
         File zipLarge = new File(getDataDir(), filename);
         ZipInputStream is = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipLarge)));

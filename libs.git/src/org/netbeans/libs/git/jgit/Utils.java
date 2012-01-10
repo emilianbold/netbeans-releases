@@ -59,6 +59,7 @@ import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefComparator;
@@ -319,5 +320,9 @@ public final class Utils {
             pref = "Bundle"; // NOI18N
         }
         return ResourceBundle.getBundle(pref);
+    }
+
+    public static boolean isFromNested (int fm) {
+        return fm == FileMode.TYPE_GITLINK;
     }
 }

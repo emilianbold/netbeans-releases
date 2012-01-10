@@ -400,6 +400,48 @@ public class ResetTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, file2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
     }
 
+    // must not checkout from nested repositories
+    public void testResetNested () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "file");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        File nested = new File(workDir, "nested");
+        nested.mkdirs();
+        File f2 = new File(nested, "f");
+        write(f2, "file");
+        GitClient clientNested = getClient(nested);
+        clientNested.init(NULL_PROGRESS_MONITOR);
+        clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
+        clientNested.commit(new File[] { f2 }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        write(f, "change");
+        add(f);
+        write(f2, "change");
+        clientNested.add(new File[] { f2 }, NULL_PROGRESS_MONITOR);
+        
+        client.reset(new File[] { workDir }, "HEAD", true, NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        
+        client.reset("master", ResetType.MIXED, NULL_PROGRESS_MONITOR);
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        
+        client.reset("master", ResetType.HARD, NULL_PROGRESS_MONITOR);
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+    }
+
     // TODO: more tests when branches are implemented
     // TODO: more tests when tags are implemented
     // TODO: more tests for conflicts reset
