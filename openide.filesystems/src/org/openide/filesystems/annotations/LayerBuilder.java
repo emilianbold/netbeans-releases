@@ -340,7 +340,11 @@ public final class LayerBuilder {
         if (searchClasspath) {
             for (Location loc : new Location[] {StandardLocation.SOURCE_PATH, /* #181355 */StandardLocation.CLASS_OUTPUT, StandardLocation.CLASS_PATH, StandardLocation.PLATFORM_CLASS_PATH}) {
                 try {
-                    return processingEnv.getFiler().getResource(loc, "", resource);
+                    FileObject f = processingEnv.getFiler().getResource(loc, "", resource);
+                    if (loc.isOutputLocation()) {
+                        f.openInputStream().close();
+                    }
+                    return f;
                 } catch (IOException ex) {
                     continue;
                 }

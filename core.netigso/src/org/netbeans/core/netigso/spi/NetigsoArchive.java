@@ -100,6 +100,18 @@ public final class NetigsoArchive {
     public byte[] fromArchive(String resource) throws IOException {
         return netigso.fromArchive(bundleId, resource, content);
     }
+    
+    /** Checks whether the archive should be used or not. During first
+     * start the Netigso system iterates through all bundle entries to 
+     * record so-called <em>covered packages</em>. During this iteration
+     * one should not try to use the archive - this method returns <code>false</code>.
+     * 
+     * @return true, if it is safe to use the {@link #fromArchive(java.lang.String)} method
+     * @since 1.14
+     */
+    public boolean isActive() {
+        return netigso.isArchiveActive();
+    }
 
     static {
         NetigsoArchiveFactory f = new NetigsoArchiveFactory() {
