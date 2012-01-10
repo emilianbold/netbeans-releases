@@ -81,7 +81,9 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
  * @author Ondrej Vrabec
+ * @author Tomas Stupka
  */
+// XXX move to versionig.util
 class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseListener, WindowFocusListener, KeyListener
 {
 
