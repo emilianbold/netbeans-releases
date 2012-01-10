@@ -179,6 +179,21 @@ public class JsLexerTest extends TestCase {
     }
 
     @SuppressWarnings("unchecked")
+    public void testRegexp7() {
+        String text = "f(x,/\\sre\\gexp/i)";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "f");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_COMMA, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP, "\\sre\\gexp");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/i");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
+    }
+
+    @SuppressWarnings("unchecked")
     public void testPartialRegexp() {
         String text = "x=/";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
