@@ -337,10 +337,10 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,ElementHandle<TypeElement>>>(){
+            new Convertor<ClassIndexImpl, Convertor<Document,ElementHandle<TypeElement>>>(){
                 @NonNull
                 @Override
-                public Convertor<? super Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
+                public Convertor<Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
                     return DocumentUtil.elementHandleConvertor();
                 }
             });
@@ -364,10 +364,10 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,ElementHandle<TypeElement>>>(){
+            new Convertor<ClassIndexImpl, Convertor<Document,ElementHandle<TypeElement>>>(){
                 @NonNull
                 @Override
-                public Convertor<? super Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
+                public Convertor<Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
                     return DocumentUtil.elementHandleConvertor();
                 }
             });
@@ -390,7 +390,7 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,FileObject>>() {
+            new Convertor<ClassIndexImpl, Convertor<Document,FileObject>>() {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
@@ -417,7 +417,7 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,FileObject>>() {
+            new Convertor<ClassIndexImpl, Convertor<Document,FileObject>>() {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
@@ -431,7 +431,7 @@ public final class ClassIndex {
             @NonNull final ElementHandle<? extends Element> element,
             @NonNull final Set<SearchKind> searchKind,
             @NonNull final Set<? extends SearchScopeType> scope,
-            @NonNull final Convertor<? super ClassIndexImpl,Convertor<? super Document, T>> convertor) {
+            @NonNull final Convertor<? super ClassIndexImpl,Convertor<Document, T>> convertor) {
         Parameters.notNull("element", element); //NOI18N
         Parameters.notNull("element.signatue", element.getSignature()[0]);  //NOI18N
         Parameters.notNull("searchKind", searchKind);   //NOI18N
@@ -480,7 +480,7 @@ public final class ClassIndex {
         assert kind != null;
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final Convertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
+        final Convertor<Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             for (ClassIndexImpl query : queries) {
                 try {
