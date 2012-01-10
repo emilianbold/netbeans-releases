@@ -357,6 +357,10 @@ public class ModelVisitor extends PathNodeVisitor {
             IdentNode ident = (IdentNode) propertyNode.getKey();
             name.add(new IdentifierImpl(ident.getName(),
                     new OffsetRange(ident.getStart(), ident.getFinish())));
+        } else if (propertyNode.getKey() instanceof LiteralNode){
+            LiteralNode lNode = (LiteralNode)propertyNode.getKey();
+            name.add(new IdentifierImpl(lNode.getString(), 
+                    new OffsetRange(lNode.getStart(), lNode.getFinish())));
         }
         return name;
     }
