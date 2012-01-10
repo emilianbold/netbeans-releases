@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,6 +58,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private HashMap<String, JsObject> properties;
     final private Identifier declarationName;
     final private JsObject parent;
+    final private List<Occurrence> occurrences;
     private boolean isDeclared;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
@@ -67,6 +67,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.declarationName = name;
         this.parent = parent;
         this.isDeclared = false;
+        this.occurrences = new ArrayList<Occurrence>();
     }
     
     public static JsObjectImpl createGlobal(FileObject file) {
@@ -80,6 +81,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.declarationName = name;
         this.parent = null;
         this.isDeclared = false;
+        this.occurrences = Collections.EMPTY_LIST;
     }
     @Override
     public Identifier getDeclarationName() {
@@ -135,7 +137,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public int getOffset() {
         return declarationName.getOffsetRange().getStart();
     }
+
+    @Override
+    public List<Occurrence> getOccurrences() {
+        return occurrences;
+    }
     
-    
-    
+    public void addOccurrence(OffsetRange offsetRange) {
+        occurrences.add(new OccurrenceImpl(offsetRange, this));
+    }    
 }

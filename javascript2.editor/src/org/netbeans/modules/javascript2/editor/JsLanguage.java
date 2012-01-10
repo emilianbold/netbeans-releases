@@ -39,11 +39,15 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
+import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParser;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Lookup;
@@ -87,6 +91,11 @@ public class JsLanguage extends DefaultLanguageConfig {
     }
 
     @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
     public StructureScanner getStructureScanner() {
         return new JsStructureScanner();
     }
@@ -95,4 +104,20 @@ public class JsLanguage extends DefaultLanguageConfig {
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new JsSemanticAnalyzer();
     }
+    
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new DeclarationFinderImpl();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new OccurrencesFinderImpl();
+    }
+    
 }

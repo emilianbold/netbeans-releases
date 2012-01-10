@@ -65,7 +65,6 @@ public class JsStructureScanner implements StructureScanner {
     
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
-        System.out.println("scan");
         final List<StructureItem> items = new ArrayList<StructureItem>();        
         JsParserResult result = (JsParserResult) info;
         final Model model = result.getModel();
@@ -76,7 +75,6 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private List<StructureItem> getEmbededItems(JsObject jsObject, List<StructureItem> collectedItems) {
-        System.out.println("getEmbededItems for "  + jsObject.getName());
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();

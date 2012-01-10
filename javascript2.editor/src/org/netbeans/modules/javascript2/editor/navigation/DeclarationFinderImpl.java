@@ -39,33 +39,53 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.navigation;
 
-import java.util.List;
-import java.util.Map;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getPropery(String name);
+public class DeclarationFinderImpl implements DeclarationFinder{
+
+    @Override
+    public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+        JsParserResult jsResult = (JsParserResult)info;
+        Model model = jsResult.getModel();
+        OccurrencesSupport os = model.getOccurrencesSupport();
+        Occurrence occurrence = os.getOccurrence(caretOffset);
+        if (occurrence != null) {
+            JsObject object = occurrence.getDeclarations().iterator().next();
+            return new DeclarationLocation(object.getFileObject(), object.getDeclarationName().getOffsetRange().getStart());
+        }
+        return DeclarationLocation.NONE;
+    }
+
+    @Override
+    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+        OffsetRange result = OffsetRange.NONE;
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        TokenSequence<JsTokenId> ts = th == null ? null : th.tokenSequence(JsTokenId.language());
+        if (ts != null) {
+            ts.move(caretOffset);
+            ts.moveNext();
+            if (ts.token().id() == JsTokenId.IDENTIFIER) {
+                result =  new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+            }
+        }
+        return result;
+    }
     
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();
-    
-    /**
-     * 
-     * @return if is really declared in the source
-     */
-    public boolean isDeclared();
-    
-    List<Occurrence> getOccurrences();
-   
 }

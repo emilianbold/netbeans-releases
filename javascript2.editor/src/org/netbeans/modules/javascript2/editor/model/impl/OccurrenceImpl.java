@@ -39,33 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getPropery(String name);
+public class OccurrenceImpl implements Occurrence {
+
+    private final OffsetRange offsetRange;
+    private final List<JsObject> declarations;
     
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();
+    public OccurrenceImpl(final OffsetRange offsetRange, final JsObject declaration) {
+        this.offsetRange = offsetRange;
+        this.declarations = new ArrayList<JsObject>();
+        this.declarations.add(declaration);
+    }
     
-    /**
-     * 
-     * @return if is really declared in the source
-     */
-    public boolean isDeclared();
+    @Override
+    public OffsetRange getOffsetRange() {
+        return offsetRange;
+    }
+
+    @Override
+    public Collection<? extends JsObject> getDeclarations() {
+        return declarations;
+    }
     
-    List<Occurrence> getOccurrences();
-   
 }

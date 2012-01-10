@@ -74,6 +74,35 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node visit(AccessNode accessNode, boolean onset) {
+        if(onset) {
+//            System.out.println("AccessNode: " + accessNode);
+            BinaryNode node = getPath().get(getPath().size() - 1) instanceof BinaryNode
+                    ? (BinaryNode)getPath().get(getPath().size() - 1) : null;
+            if (!(node != null && node.tokenType() == TokenType.ASSIGN)) {
+//                System.out.println("AccessNode: " + accessNode);
+                if (accessNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)accessNode.getBase()).getName())) { //NOI18N
+                    if (accessNode.getProperty() instanceof IdentNode) {
+                        IdentNode iNode = (IdentNode)accessNode.getProperty();
+                        JsObject current = modelBuilder.getCurrentObject();
+                        JsObject property = current.getPropery(iNode.getName());
+                        if (property == null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                                || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
+                            current = current.getParent();
+                            property = current.getPropery(iNode.getName());                            
+                        }
+                        if (property != null) {
+                            ((JsObjectImpl)property).addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                        }
+                    }
+                }
+            }
+        }
+        return super.visit(accessNode, onset);
+    }
+
+    
+    @Override
     public Node visit(BinaryNode binaryNode, boolean onset) {
         if (onset) {            
             if (binaryNode.tokenType() == TokenType.ASSIGN 
@@ -83,6 +112,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 JsObjectImpl parent = modelBuilder.getCurrentObject();
                 if (binaryNode.lhs() instanceof AccessNode) {
                     List<Identifier> name = getName(binaryNode);
+//                    System.out.println("in binarynode: " + binaryNode.lhs());
                     AccessNode aNode = (AccessNode)binaryNode.lhs();
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                         // a usage of field
@@ -120,8 +150,41 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node visit(CallNode callNode, boolean onset) {
+        if (onset) {
+            if (callNode.getFunction() instanceof AccessNode) {
+                AccessNode aNode = (AccessNode)callNode.getFunction();
+                if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) {
+                    
+                } else {
+                    List<Identifier> name = getName(aNode);
+                    JsObject parent = modelBuilder.getCurrentObject();
+                    JsObject property = parent.getPropery(name.get(0).getName());
+                    if (property ==  null && (parent.getParent() != null && (parent.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                                || parent.getParent().getJSKind() == JsElement.Kind.OBJECT))) {
+                        parent = parent.getParent();
+                        property = parent.getPropery(name.get(0).getName());
+                    }
+                    if (property == null) {
+                        parent = modelBuilder.getGlobal();
+                        property = parent.getPropery(name.get(0).getName());
+                    }
+                    if (property != null) {
+                        ((JsObjectImpl)property).addOccurrence(name.get(0).getOffsetRange());
+                    } else {
+                        property = new JsObjectImpl(parent, name.get(0), name.get(0).getOffsetRange());
+                        parent.addProperty(property.getName(), property);
+                    }
+                }
+            }
+        }
+        return super.visit(callNode, onset);
+    }
+
+    
+    @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
-        System.out.println("FunctionNode: " + functionNode.getName() + " , path: " + getPath().size() + " , onset: " + onset);
+//        System.out.println("FunctionNode: " + functionNode.getName() + " , path: " + getPath().size() + " , onset: " + onset);
 
         if (onset) {
             JsObjectImpl inObject = modelBuilder.getGlobal();

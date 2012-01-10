@@ -41,31 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getPropery(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();
-    
-    /**
-     * 
-     * @return if is really declared in the source
-     */
-    public boolean isDeclared();
-    
-    List<Occurrence> getOccurrences();
-   
+public interface Occurrence {
+    OffsetRange getOffsetRange();
+    Collection<? extends JsObject> getDeclarations();
 }

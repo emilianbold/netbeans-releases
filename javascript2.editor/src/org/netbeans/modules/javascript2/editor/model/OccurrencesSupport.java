@@ -41,31 +41,54 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceImpl;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getPropery(String name);
+public class OccurrencesSupport {
+    private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
     
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();
+    private final Model model;
     
-    /**
-     * 
-     * @return if is really declared in the source
-     */
-    public boolean isDeclared();
+
+    public OccurrencesSupport(Model model) {
+        this.model = model;
+    }
     
-    List<Occurrence> getOccurrences();
-   
+    
+    public Occurrence getOccurrence(int offset) {
+        Occurrence result;
+        long start = System.currentTimeMillis();
+        JsObject object = model.getGlobalObject();
+        result = findOccurrence(object, offset);
+        long end = System.currentTimeMillis();
+        LOGGER.log(Level.FINE, "Computing getOccurences({0}) took {1}ms. Returns {2}", new Object[]{offset, end - start, result});
+        return result;
+    }
+    
+    private Occurrence findOccurrence(JsObject object, int offset) {
+        Occurrence result = null;
+        if (object.getDeclarationName().getOffsetRange().containsInclusive(offset)) {
+            result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
+        } else {
+            for(Occurrence occurrence: object.getOccurrences()) {
+                if (occurrence.getOffsetRange().containsInclusive(offset)) {
+                    result = occurrence;
+                    break;
+                }
+            }
+            for(JsObject property: object.getProperties().values()) {
+                result = findOccurrence(property, offset);
+                if (result != null) {
+                    break;
+                }
+            }
+        }
+        
+        return result;
+    }
 }

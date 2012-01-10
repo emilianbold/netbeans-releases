@@ -54,10 +54,19 @@ function Kolo () {
         prumer: 22,
         guma: "cerna",
         print: function () {
-            println(addSpace(4) + "Prumer: " + this.prumer);
-            println(addSpace(4) + "guma: " + this.guma);
+            formatter.addIndent(4);
+            formatter.println("Prumer: " + this.prumer);
+            formatter.println("guma: " + this.guma);
+            formatter.removeIndent(4);
         }
     }
 
-    println("Executed Kolo()");
+    formatter.println("Executed Kolo()");
 }
+
+
+var kolo = new Kolo();
+formatter.addIndent(4);
+formatter.println("data:");
+kolo.data.print();
+formatter.removeIndent(4);
