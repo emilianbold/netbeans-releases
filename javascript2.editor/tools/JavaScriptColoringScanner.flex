@@ -167,8 +167,9 @@ Exponent = [eE] [+-]? [0-9]+
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 SStringCharacter = [^\r\n\'\\] | \\{LineTerminator}
 
-RegexpCharacter  = [^\r\n/\\] | \\{InputCharacter}
-RegexpFirstCharacter  = [^\r\n/\\\*\[] | \\{InputCharacter}
+SimpleRegexpCharacter  = [^\r\n/\\\[] | \\{InputCharacter}
+RegexpCharacter  = {SimpleRegexpCharacter} | \[{SimpleRegexpCharacter}+\]
+RegexpFirstCharacter  = [^\r\n/\\\[\*] | \\{InputCharacter} | \[{SimpleRegexpCharacter}+\]
 
 %state STRING
 %state STRINGEND
@@ -237,7 +238,7 @@ RegexpFirstCharacter  = [^\r\n/\\\*\[] | \\{InputCharacter}
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"[\*\[]                      { return JsTokenId.UNKNOWN; }
+  "/"[\*/]                       { return JsTokenId.UNKNOWN; }
   "/"
                                  {
                                      if (canFollowLiteral) {
