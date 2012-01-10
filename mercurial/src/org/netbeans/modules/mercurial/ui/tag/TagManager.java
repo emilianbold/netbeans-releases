@@ -70,6 +70,7 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -274,8 +275,7 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
                             tags = newTags.toArray(new HgTag[newTags.size()]);
                         }
                     } catch (HgException ex) {
-                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                        DialogDisplayer.getDefault().notifyLater(e);
+                        HgUtils.notifyException(ex);
                     } finally {
                         logger.outputInRed(NbBundle.getMessage(TagManager.class, "MSG_DELETE_TAG_DONE")); //NOI18N
                         logger.output(""); //NOI18N

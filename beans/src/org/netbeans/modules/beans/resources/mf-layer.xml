@@ -88,27 +88,12 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="Actions">
-        <folder name="Tools">
-            <file name="org-netbeans-modules-beans-beaninfo-GenerateBeanInfoAction.instance"/>
-        </folder>
-    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-java">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-beans-beaninfo-BIDataLoader.instance">
                         <attr name="position" intvalue="70000"/>
-                    </file>
-                </folder>
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-beans-beaninfo-GenerateBeanInfoAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-beans-beaninfo-GenerateBeanInfoAction.instance"/>
-                        <attr name="position" intvalue="2120"/>
-                    </file>
-                    <file name="beans-separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="2140"/>
                     </file>
                 </folder>
             </folder>

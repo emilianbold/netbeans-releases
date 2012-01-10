@@ -59,7 +59,7 @@ public class QCommitTable extends VCSCommitTable<QFileNode> {
     private String errroMessage;
     
     public QCommitTable (VCSCommitPanelModifier modifier) {
-        super(new VCSCommitTableModel(modifier), true);
+        super(new VCSCommitTableModel<QFileNode>(modifier), true);
     }
 
     @Override

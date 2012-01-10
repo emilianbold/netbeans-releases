@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.tax;
+package org.netbeans.libs.git.jgit;
 
-import org.openide.loaders.DataObject;
-
-import org.netbeans.modules.xml.DTDDataObject;
-import org.netbeans.modules.xml.XMLDataObject;
-import org.netbeans.modules.xml.XMLDataObjectLook;
-import org.netbeans.modules.xml.cookies.CookieFactory;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
-
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
- * Contains classes that are registered at module layer
  *
- * @author Petr Kuzel
+ * @author ondra
  */
-public class LayerInstall {
+public final class DelegatingGitProgressMonitor extends ProgressMonitor {
+    private final ProgressMonitor monitor;
 
-    public static final class TAXProvider
-    implements XMLDataObject.XMLCookieFactoryCreator,
-    DTDDataObject.DTDCookieFactoryCreator {
-
-        /**
-         */
-        public CookieFactory createCookieFactory (DataObject obj) {
-            return new TreeEditorCookieImpl.CookieFactoryImpl ((XMLDataObjectLook) obj);
-        }
-
+    public DelegatingGitProgressMonitor (ProgressMonitor monitor) {
+        this.monitor = monitor;
     }
 
+    @Override
+    public boolean isCanceled () {
+        return monitor.isCanceled();
+    }
+
+    @Override
+    public void started (String command) {
+    }
+
+    @Override
+    public void finished () {
+    }
+
+    @Override
+    public void preparationsFailed (String message) {
+    }
+
+    @Override
+    public void notifyError (String message) {
+    }
+
+    @Override
+    public void notifyWarning (String message) {
+    }
 
 }

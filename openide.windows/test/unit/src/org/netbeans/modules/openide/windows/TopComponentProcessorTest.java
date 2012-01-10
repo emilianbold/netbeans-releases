@@ -52,6 +52,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.TopComponent;
@@ -133,9 +134,7 @@ public class TopComponentProcessorTest extends  NbTestCase {
         FileObject jukLuk = FileUtil.getConfigFile("Juk/Luk/multi-use.shadow");
         assertNotNull("2nd reference found", jukLuk);
         
-        FileObject fo = FileUtil.getConfigFile("Actions/Windows/multi-use.instance");
-        assertNotNull("Action generated", fo);
-        Action a = (Action)fo.getAttribute("instanceCreate");
+        Action a = Actions.forID("Windows", "multi.use");
         assertNotNull("Action created", a);
         assertEquals("No call to withReferences factory yet", 0, TC.cnt2);
         a.actionPerformed(new ActionEvent(this, 0, null));

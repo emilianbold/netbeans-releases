@@ -73,6 +73,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.SearchCriteria;
+import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -132,8 +133,11 @@ public class LogCommand extends GitCommand {
                     }
                     walk.markStart(walk.lookupCommit(Utils.findCommit(repository, Constants.HEAD)));
                 } else {
-                    ListBranchCommand branchCommand = new ListBranchCommand(repository, getClassFactory(), false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    ListBranchCommand branchCommand = new ListBranchCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
                     branchCommand.execute();
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
                     for (Map.Entry<String, GitBranch> e : branchCommand.getBranches().entrySet()) {
                         walk.markStart(walk.lookupCommit(Utils.findCommit(repository, e.getValue().getId())));
                     }

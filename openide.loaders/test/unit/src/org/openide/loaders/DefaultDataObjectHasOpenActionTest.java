@@ -47,6 +47,7 @@ package org.openide.loaders;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -78,8 +79,7 @@ public final class DefaultDataObjectHasOpenActionTest extends NbTestCase {
     public void testOpenActionIsAlwaysFirst() throws Exception {
         Node n = obj.getNodeDelegate();
 
-        FileObject fo = FileUtil.getConfigFile("Actions/System/org-openide-actions-OpenAction.instance");
-        Action openAction = (Action) fo.getAttribute("instanceCreate");
+        Action openAction = Actions.forID("System", "org.openide.actions.OpenAction");
 
         assertEquals(
                 "Open action is the default one",

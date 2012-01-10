@@ -95,7 +95,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     
-    static class SvnLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
+    static final class SvnLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private RepositoryRevision revision;
         private List events = new ArrayList<SvnLogEvent>(10);
@@ -105,7 +105,12 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         public SvnLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
-            revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            if (revision.isEventsInitialized()) {
+                refreshEvents();
+                list = null;
+            } else {
+                revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
+            }
         }
 
         @Override

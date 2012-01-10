@@ -73,11 +73,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-java">
-                <file name="org-netbeans-modules-java-debug-HighlightsLayerFactoryImpl.instance" />
-            </folder>
-        </folder>
-    </folder>
 </filesystem>

@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
@@ -54,6 +55,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -73,11 +75,10 @@ import org.openide.util.NbBundle;
  */
 public class Unbalanced {
 
-    private static final Set<ElementKind> ACCEPTABLE_KIND = EnumSet.of(ElementKind.FIELD, ElementKind.LOCAL_VARIABLE);
     private static final Map<CompilationInfo, Map<Element, Set<State>>> seen = new WeakHashMap<CompilationInfo, Map<Element, Set<State>>>();
 
     private static boolean isAcceptable(Element el) {
-        return el != null && ACCEPTABLE_KIND.contains(el.getKind()) && el.getModifiers().contains(Modifier.PRIVATE);
+        return el != null && (el.getKind() == ElementKind.LOCAL_VARIABLE || (el.getKind() == ElementKind.FIELD && el.getModifiers().contains(Modifier.PRIVATE)));
     }
     
     private static void record(CompilationInfo info, VariableElement el, State... states) {
@@ -132,6 +133,8 @@ public class Unbalanced {
             Element el = ctx.getInfo().getTrees().getElement(ctx.getPath());
 
             if (!isAcceptable(el) || el.asType().getKind() != TypeKind.ARRAY) return null;
+
+            if (((ArrayType) el.asType()).getComponentType().getKind() == TypeKind.ARRAY) return null;
 
             return (VariableElement) el;
         }
@@ -216,7 +219,11 @@ public class Unbalanced {
                     }
                     return null;
                 } else if (WRITE_METHODS.contains(methodName)) {
-                    record(ctx.getInfo(), var, State.WRITE);
+                    if (tp.getParentPath().getParentPath().getParentPath().getLeaf().getKind() != Kind.EXPRESSION_STATEMENT) {
+                        record(ctx.getInfo(), var, State.WRITE, State.READ);
+                    } else {
+                        record(ctx.getInfo(), var, State.WRITE);
+                    }
                     return null;
                 }
             }
@@ -246,6 +253,11 @@ public class Unbalanced {
                 }
             }
 
+            if (   ctx.getPath().getParentPath().getLeaf().getKind() == Kind.ENHANCED_FOR_LOOP
+                && ((EnhancedForLoopTree) ctx.getPath().getParentPath().getLeaf()).getVariable() == ctx.getPath().getLeaf()) {
+                return null;
+            }
+            
             return produceWarning(ctx, "ERR_UnbalancedCollection");
         }
     }

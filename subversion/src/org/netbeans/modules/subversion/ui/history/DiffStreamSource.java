@@ -81,6 +81,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      */
     private File            remoteFile;
     private boolean isDirectory;
+    private final String baseFileName;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -91,6 +92,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      */
     public DiffStreamSource(File baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String title) {
         this.baseFile = baseFile;
+        this.baseFileName = baseFile.getName();
         this.revision = this.pegRevision = revision;
         this.title = title;
         this.url = fileUrl;
@@ -105,8 +107,9 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      * @param pegRevision file peg revision
      * @param title title to use in diff panel
      */
-    public DiffStreamSource(File baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
+    public DiffStreamSource(File baseFile, String baseFileName, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
         this.baseFile = baseFile;
+        this.baseFileName = baseFileName;
         this.revision = revision;
         this.pegRevision = pegRevision;
         this.title = title;
@@ -116,11 +119,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
 
     @Override
     public String getName() {
-        if (baseFile != null) {
-            return baseFile.getName();
-        } else {
-            return NbBundle.getMessage(DiffStreamSource.class, "LBL_Diff_Anonymous"); // NOI18N
-        }
+        return baseFileName;
     }
 
     @Override
@@ -156,12 +155,12 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
     }
 
     @Override
-    public boolean isEditable() {
+    public final boolean isEditable() {
         return false;
     }
 
     private boolean isPrimary() {
-        FileObject fo = FileUtil.toFileObject(baseFile);
+        FileObject fo = baseFile == null ? null : FileUtil.toFileObject(baseFile);
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
@@ -192,22 +191,22 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      */
     synchronized void init() throws IOException {
         if (remoteFile != null || revision == null) return;
-        if (baseFile.isDirectory() || isDirectory) {
-            mimeType = "content/unknown"; // NOI18N
+        if (isDirectory || baseFile != null && baseFile.isDirectory()) {
+            mimeType = "content/unknown"; //NOI18N
             return;
+        } else if (baseFile == null) {
+            mimeType = "content/unknown"; //NOI18N
+        } else {            
+            mimeType = SvnUtils.getMimeType(baseFile);
         }
-        mimeType = SvnUtils.getMimeType(baseFile);
         try {
-            if (isEditable()) {
-                // we cannot move editable documents because that would break Document sharing
-                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
-            } else {
-                File rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, pegRevision, baseFile.getName());
-                if (rf == null) {
-                    remoteFile = null;
-                    return;
-                }
-                remoteFile = rf;
+            File rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
+            if (rf == null) {
+                remoteFile = null;
+                return;
+            }
+            remoteFile = rf;
+            if (baseFile != null) {
                 Utils.associateEncoding(baseFile, rf);
             }
         } catch (IOException e) {
@@ -220,7 +219,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             }
             throw e;
         }
-        if (!baseFile.exists() && remoteFile != null && remoteFile.exists()) {
+        if ((baseFile == null || !baseFile.exists()) && remoteFile != null && remoteFile.exists()) {
             mimeType = SvnUtils.getMimeType(remoteFile);
         }
     }

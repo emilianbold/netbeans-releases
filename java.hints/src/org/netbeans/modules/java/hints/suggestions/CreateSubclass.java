@@ -113,6 +113,10 @@ public class CreateSubclass {
         SourcePositions sourcePositions = info.getTrees().getSourcePositions();
         int startPos = (int) sourcePositions.getStartPosition(tp.getCompilationUnit(), cls);
         int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(context.getInfo().getFileObject());
+        if (startPos < 0 || caret < 0 || caret < startPos) {
+            return null;
+        }
+        
         String headerText = context.getInfo().getText().substring(startPos, caret);
         int idx = headerText.indexOf('{'); //NOI18N
         if (idx >= 0) {

@@ -113,6 +113,7 @@ public abstract class SingleRepositoryAction extends GitAction {
      * Does this only once per a NB session and repository
      * @param repositoryRoot root of the local repository
      */
+    @SuppressWarnings("unchecked")
     private void logRemoteRepositoryAccess (final File repositoryRoot) {
         if (loggedRepositories.add(repositoryRoot)) {
             Git.getInstance().getRequestProcessor(repositoryRoot).post(new Runnable() {
@@ -121,7 +122,7 @@ public abstract class SingleRepositoryAction extends GitAction {
                     Set<String> urls = new HashSet<String>();
                     try {
                         GitClient client = Git.getInstance().getClient(repositoryRoot);
-                        Map<String, GitRemoteConfig> cfgs = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+                        Map<String, GitRemoteConfig> cfgs = client.getRemotes(GitUtils.NULL_PROGRESS_MONITOR);
                         for (Map.Entry<String, GitRemoteConfig> e : cfgs.entrySet()) {
                             GitRemoteConfig cfg = e.getValue();
                             for (List<String> uris : Arrays.asList(cfg.getUris(), cfg.getPushUris())) {

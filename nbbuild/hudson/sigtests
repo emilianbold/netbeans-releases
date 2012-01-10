@@ -9,7 +9,7 @@ sigtest_prev=$WORKSPACE/nbbuild/build/prevsigtest/snapshot
   mkdir -p $sigtest_prev && cd $sigtest_prev/.. && \
   wget "$JOB_URL""lastSuccessfulBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip" &&
   unzip snapshot.zip
-) || exit
+) || exit 0
 echo SigTest: Previous Snapshots
 ls $sigtest_prev
 echo SigTest: Checking All Changes
