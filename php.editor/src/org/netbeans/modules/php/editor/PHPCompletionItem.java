@@ -1489,6 +1489,26 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
     }
+    
+    static class LanguageConstructForTypeHint extends LanguageConstructItem {
+        public LanguageConstructForTypeHint(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getName());
+            builder.append("${cursor}"); // NOI18N
+            return builder.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            prependName(formatter);
+            return formatter.getText();
+        }
+    }
 
     static class TagItem extends KeywordItem {
         private int sortKey;

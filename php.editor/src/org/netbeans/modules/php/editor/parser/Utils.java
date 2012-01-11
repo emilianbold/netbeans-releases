@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
@@ -51,7 +51,7 @@ public class Utils {
 
     /**
      * This method is mainly used for debugging purpose.
-     * 
+     *
      * @param id token id
      * @return text representation for the token
      */
@@ -499,6 +499,12 @@ public class Utils {
             case ASTPHP5Symbols.T_NS_SEPARATOR:
                 name = "T_NS_SEPARATOR";
                 break;
+            case ASTPHP5Symbols.T_TRAIT:
+                name = "T_TRAIT";
+                break;
+            case ASTPHP5Symbols.T_INSTEADOF:
+                name = "T_INSTEADOF";
+                break;
             default:
                 name = "unknown";
         }
@@ -520,7 +526,7 @@ public class Utils {
         }
         return sb.toString();
     }
-    
+
     public static int getRowStart(String text, int offset) {
         // Search backwards
         for (int i = offset - 1; i >= 0; i--) {

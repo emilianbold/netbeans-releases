@@ -283,6 +283,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testNormalizeUnixPath() throws Exception {
         if (!Utilities.isWindows()) {
+            //assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("")));
             assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/..")));
             assertEquals("/", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../.")));
             assertEquals("/tmp", fileOperations.normalizeUnixPath(FileOperationsProvider.toFileProxy("/../../tmp")));
