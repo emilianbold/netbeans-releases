@@ -57,8 +57,8 @@ import org.openide.filesystems.FileObject;
  * @author ads
  *
  */
-@ProjectServiceProvider(service=CdiUtil.class, projectType = 
-    "org-netbeans-modules-j2ee-ejbjarproject")
+@ProjectServiceProvider(service=CdiUtil.class, projectType = {
+    "org-netbeans-modules-j2ee-ejbjarproject", "org-netbeans-modules-maven/ejb"})
 public class EjbCdiUtil extends CdiUtil {
 
     public EjbCdiUtil( Project project ) {
