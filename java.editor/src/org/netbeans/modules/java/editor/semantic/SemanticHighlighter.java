@@ -1190,6 +1190,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
 //            if (info.getTreeUtilities().isSynthetic(getCurrentPath()))
 //                return null;
 //            
+            Tree exp = tree.getEnclosingExpression();
+            if (exp instanceof IdentifierTree) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), exp), EnumSet.of(UseTypes.READ));
+            }
+            
             TreePath tp;
             Tree ident = tree.getIdentifier();
             

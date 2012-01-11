@@ -235,8 +235,9 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, true);
             Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
             if (!enclosingElement.equals(target)) {
-                Tree newIdent = make.setLabel(node, target.getSimpleName().toString() + "." + it.getName().toString()); //NOI18N
-                rewrite(it, newIdent);
+                ExpressionTree qualIdent = make.QualIdent(target);
+                MemberSelectTree memberSelect = make.MemberSelect(qualIdent, it.getName().toString());
+                rewrite(it, memberSelect);
             }
         } else {
             Scope scope = workingCopy.getTrees().getScope(currentPath);
