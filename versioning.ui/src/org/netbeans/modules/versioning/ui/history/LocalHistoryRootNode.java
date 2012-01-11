@@ -108,6 +108,19 @@ public class LocalHistoryRootNode extends AbstractNode {
     }
         
     private void addEntries(HistoryEntry[] entries, boolean vcs) {
+        // remove previous
+        Children children = getChildren();
+        List<Node> toRemove = new LinkedList<Node>();
+        Node[] nodes = children.getNodes();
+        for (Node node : nodes) {
+            HistoryEntry he = node.getLookup().lookup(HistoryEntry.class);
+            if(he != null && he.isLocalHistory() == !vcs) {
+                toRemove.add(node);
+            } 
+        }
+        children.remove(toRemove.toArray(new Node[toRemove.size()]));
+        
+        // add new
         for (HistoryEntry e : entries) {
             if(!revisionEntries.containsKey(e.getDateTime().getTime())) {
                 revisionEntries.put(e.getDateTime().getTime(), e);
