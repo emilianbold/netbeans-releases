@@ -66,10 +66,9 @@ import org.netbeans.modules.versioning.ui.history.LocalHistoryRootNode.WaitNode;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.MessageProperty;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEvent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
-import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.outline.DefaultOutlineCellRenderer;
 import org.netbeans.swing.outline.Outline;
@@ -87,7 +86,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryFileView implements VersioningListener, PreferenceChangeListener {
+public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
            
     private FileTablePanel tablePanel;             
     private File[] files;
@@ -98,6 +97,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
     private Task refreshTask;
     private Task vcsTask;
     private final VersioningSystem versioningSystem;
+    private final VersioningSystem lh;
     
     private Date currentDateFrom; 
     private LoadNextAction loadNextAction;
@@ -106,36 +106,22 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         this.tc = tc;
         this.files = files;
         this.versioningSystem = versioningSystem;
+        this.lh = History.getInstance().getLocalHistory(files);
+        
+        registerHistoryListener(versioningSystem, this);
+        registerHistoryListener(lh, this);
+         
         tablePanel = new FileTablePanel();
-//        History.getInstance().getLocalHistoryStore().addVersioningListener(this); XXX
+
         HistorySettings.getInstance().addPreferenceListener(this);
 
         loadNextAction = new LoadNextAction();
     }
     
     public void refresh() {
-        refreshTablePanel(-1);
+        refreshTablePanel(null);
     }
 
-    @Override
-    public void versioningEvent(VersioningEvent evt) {
-        // XXX
-//        File file = (File) evt.getParams()[0];
-//        if(!contains(file)) {
-//            return;
-//        }
-//        LocalHistoryRootNode rootNode = getRootNode();
-//        if(rootNode == null) {
-//            return;
-//        }    
-//        if(LocalHistoryStore.EVENT_HISTORY_CHANGED == evt.getId()) {
-//            StoreEntry entry = History.getInstance().getLocalHistoryStore().getStoreEntry(file, (Long) evt.getParams()[1]);
-//            rootNode.addLHEntries(Arrays.asList(RevisionEntry.createRevisionEntry(entry)));
-//        } else if (LocalHistoryStore.EVENT_ENTRY_DELETED == evt.getId()) {
-//            // don't do anything, node was already deleted via action
-//        }
-    }
-    
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if(HistorySettings.PROP_INCREMENTS.equals(evt.getKey()) ||
@@ -166,19 +152,11 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
     }
     
     public void close() {
-//        History.getInstance().getLocalHistoryStore().removeVersioningListener(this); XXX
+        unregisterHistoryListener(versioningSystem, this);
+        unregisterHistoryListener(lh, this);
     }    
     
-    private boolean contains(File file) {
-        for(File f : files) {
-            if(f.equals(file)) {
-                return true;
-            }
-        }
-        return false;
-    }                
-    
-    private synchronized void refreshTablePanel(int limit) {                  
+    private synchronized void refreshTablePanel(VCSHistoryProvider providerToRefresh) {                  
         if(refreshTask != null) {
             refreshTask.cancel();
             if(vcsTask != null) {
@@ -186,7 +164,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                 vcsTask = null;
             }
         }
-        refreshTask = rp.create(new RefreshTable());                    
+        refreshTask = rp.create(new RefreshTable(providerToRefresh));                    
         refreshTask.schedule(100);
     }
 
@@ -343,28 +321,77 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                     }
                 }
             });                                             
-        }            
+        }
+
+    @Override
+    public void fireHistoryChanged(HistoryEvent evt) {
+        Set<File> fileSet = new HashSet<File>();
+        for (File f : evt.getFiles()) {
+            if(f != null) {
+                fileSet.add(f);
+            }
+        }
+        if(fileSet.isEmpty()) {
+            return;
+        }
+        for (File file : files) {
+            if(fileSet.contains(file)) {
+                refreshTablePanel(evt.getSource());
+            }
+        }
+    }
+
+    private static void registerHistoryListener(VersioningSystem versioningSystem, VCSHistoryProvider.HistoryChangeListener l) {
+        VCSHistoryProvider hp = getHistoryProvider(versioningSystem);
+        if(hp != null) {
+            hp.addHistoryChangeListener(l);
+        }
+    }
+
+    private static void unregisterHistoryListener(VersioningSystem versioningSystem, VCSHistoryProvider.HistoryChangeListener l) {
+        VCSHistoryProvider hp = getHistoryProvider(versioningSystem);
+        if(hp != null) {
+            hp.addHistoryChangeListener(l);
+        }
+    }
+    
+    private static VCSHistoryProvider getHistoryProvider(VersioningSystem versioningSystem) {
+        if(versioningSystem == null) {
+            return null;
+        }
+        return  versioningSystem.getVCSHistoryProvider();
+    }
     
     /**
      * Selects a node with the timestamp = toSelect, otherwise the selection stays.
      * If there wasn't a selection set yet then the first node will be selected.
      */ 
-    private class RefreshTable implements Runnable {        
+    private class RefreshTable implements Runnable {
+        private final VCSHistoryProvider providerToRefresh;
 
-        RefreshTable() {}
+        RefreshTable(VCSHistoryProvider providerToRefresh) {
+            this.providerToRefresh = providerToRefresh;
+        }
         
         @Override
         public void run() {  
+            LocalHistoryRootNode root = getRootNode();
+            if(root == null) {
+                final String vcsName = (String) (versioningSystem != null ? 
+                                                    versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
+                                                    null);
+                root = new LocalHistoryRootNode(files, vcsName, loadNextAction, createActions()); 
+                tablePanel.getExplorerManager().setRootContext(root);
+            }
+            
             // refresh local history
-            final String vcsName = (String) (versioningSystem != null ? 
-                                                versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
-                                                null);
-            LocalHistoryRootNode root = new LocalHistoryRootNode(files, vcsName, loadNextAction, createActions()); 
-            root.addLHEntries(History.getInstance().loadLHEntries(files));
-            tablePanel.getExplorerManager().setRootContext(root);
-                
+            VCSHistoryProvider lhProvider = getHistoryProvider(History.getInstance().getLocalHistory(files));
+            if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
+                root.addLHEntries(loadLHEntries(files));
+            }
             // refresh vcs
-            if(tc != null && versioningSystem != null) {
+            VCSHistoryProvider vcsProvider = getHistoryProvider(versioningSystem);
+            if(tc != null && vcsProvider != null && (providerToRefresh != null || providerToRefresh == vcsProvider)) {
                 loadVCSEntries(files, false);
             }
             tablePanel.revalidate();
@@ -372,6 +399,23 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         }
     } 
     
+    private HistoryEntry[] loadLHEntries(File[] files) {
+        VersioningSystem lh = History.getInstance().getLocalHistory(files);
+        if(lh == null) {
+            return new HistoryEntry[0];
+        }
+        VCSHistoryProvider hp = lh.getVCSHistoryProvider();
+        if(hp == null) {
+            return new HistoryEntry[0];
+        }
+        VCSHistoryProvider.HistoryEntry[] vcsHistory = hp.getHistory(files, null);
+        HistoryEntry[] history = new HistoryEntry[vcsHistory.length];
+        for (int i = 0; i < vcsHistory.length; i++) {
+            history[i] = new HistoryEntry(vcsHistory[i], true);
+        }
+        return history;
+    }
+
     private Action[] createActions() {
         List<Action> actions = new LinkedList<Action>();
         actions.add(loadNextAction); 

@@ -100,23 +100,6 @@ public class History {
         return Collections.unmodifiableList(providersList);
     }
 
-    HistoryEntry[] loadLHEntries(File[] files) {
-        VersioningSystem lh = getLocalHistory(files);
-        if(lh == null) {
-            return new HistoryEntry[0];
-        }
-        VCSHistoryProvider hp = lh.getVCSHistoryProvider();
-        if(hp == null) {
-            return new HistoryEntry[0];
-        }
-        VCSHistoryProvider.HistoryEntry[] vcsHistory = hp.getHistory(files, null);
-        HistoryEntry[] history = new HistoryEntry[vcsHistory.length];
-        for (int i = 0; i < vcsHistory.length; i++) {
-            history[i] = new HistoryEntry(vcsHistory[i], true);
-        }
-        return history;
-    }
-    
     VersioningSystem getLocalHistory(File[] files) {
         org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem vs = Utils.getLocalHistory(files[0]);
         if(vs == null) {
