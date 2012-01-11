@@ -45,6 +45,7 @@ package org.netbeans.modules.versioning.spi;
 
 import org.netbeans.modules.versioning.Accessor;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider.MessageEditProvider;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider.RevisionProvider;
 
 /**
@@ -62,6 +63,11 @@ final class AccessorImpl extends Accessor {
     @Override
     public RevisionProvider getRevisionProvider(HistoryEntry entry) {
         return entry.getRevisionProvier();
+    }
+
+    @Override
+    public MessageEditProvider getMessageEditProvider(HistoryEntry entry) {
+        return entry.getMessageEditProvider();
     }
 
     

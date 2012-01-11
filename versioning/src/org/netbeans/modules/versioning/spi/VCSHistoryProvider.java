@@ -42,6 +42,7 @@
 package org.netbeans.modules.versioning.spi;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
@@ -71,6 +72,7 @@ public abstract class VCSHistoryProvider {
         private String revision;
         private Action[] actions;
         private RevisionProvider rp;
+        private MessageEditProvider mep;
         
         public HistoryEntry(
                 File[] files, 
@@ -98,11 +100,35 @@ public abstract class VCSHistoryProvider {
             this.rp = rp;
         }
         
+        public HistoryEntry(
+                File[] files, 
+                Date dateTime, 
+                String message, 
+                String username, 
+                String usernameShort, 
+                String revision, 
+                String revisionShort, 
+                Action[] actions, 
+                RevisionProvider rp,
+                MessageEditProvider mep) 
+        {
+            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, rp);
+            this.mep = mep;
+        }
+        
+        public boolean canEdit() {
+            return mep != null;
+        }
         public Date getDateTime() {
             return dateTime;
         }
         public String getMessage() {
             return message;
+        }
+        public void setMessage(String message) throws IOException {
+            if(!canEdit()) throw new IllegalStateException("This entry is read-only");
+            mep.setMessage(message);
+            this.message = message;
         }
         public File[] getFiles() {
             return files;
@@ -125,13 +151,19 @@ public abstract class VCSHistoryProvider {
         public void getRevisionFile(File originalFile, File revisionFile) {
             rp.getRevisionFile(originalFile, revisionFile);
         }
-
         RevisionProvider getRevisionProvier() {
             return rp;
+        }
+        MessageEditProvider getMessageEditProvider() {
+            return mep;
         }
     }
     
     public interface RevisionProvider {
         void getRevisionFile(File originalFile, File revisionFile);
+    }
+    
+    public interface MessageEditProvider {
+        void setMessage(String message) throws IOException;
     }
 }

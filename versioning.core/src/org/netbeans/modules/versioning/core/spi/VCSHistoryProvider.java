@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.core.spi;
 
+import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
@@ -71,6 +72,7 @@ public abstract class VCSHistoryProvider {
         private String revision;
         private Action[] actions;
         private RevisionProvider rp;
+        private MessageEditProvider mep;
         
         public HistoryEntry(
                 VCSFileProxy[] files, 
@@ -98,11 +100,34 @@ public abstract class VCSHistoryProvider {
             this.rp = rp;
         }
         
+        public HistoryEntry(
+                VCSFileProxy[] files, 
+                Date dateTime, 
+                String message, 
+                String username, 
+                String usernameShort, 
+                String revision, 
+                String revisionShort, 
+                Action[] actions, 
+                RevisionProvider rp,
+                MessageEditProvider mep) 
+        {
+            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, rp);
+            this.mep = mep;
+        }        
+        public boolean canEdit() {
+            return mep != null;
+        }
         public Date getDateTime() {
             return dateTime;
         }
         public String getMessage() {
             return message;
+        }
+        public void setMessage(String message) throws IOException {
+            if(!canEdit()) throw new IllegalStateException("This entry is read-only");
+            mep.setMessage(message);
+            this.message = message;
         }
         public VCSFileProxy[] getFiles() {
             return files;
@@ -130,4 +155,8 @@ public abstract class VCSHistoryProvider {
     public interface RevisionProvider {
         void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile);
     }
+    
+    public interface MessageEditProvider {
+        void setMessage(String message) throws IOException;
+    }    
 }

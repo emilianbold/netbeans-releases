@@ -71,4 +71,5 @@ public abstract class Accessor {
     public abstract VCSContext createVCSContext(org.netbeans.modules.versioning.core.spi.VCSContext delegate);
     
     public abstract VCSHistoryProvider.RevisionProvider getRevisionProvider(VCSHistoryProvider.HistoryEntry entry);
+    public abstract VCSHistoryProvider.MessageEditProvider getMessageEditProvider(VCSHistoryProvider.HistoryEntry entry);
 }
