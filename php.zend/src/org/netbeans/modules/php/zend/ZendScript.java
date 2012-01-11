@@ -166,8 +166,6 @@ public class ZendScript extends PhpProgram {
             ZendScript zendScript = command != null ? getCustom(command) : getDefault();
 
             ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                    .outProcessorFactory(ANSI_STRIPPING_FACTORY)
-                    .errProcessorFactory(ANSI_STRIPPING_FACTORY)
                     .optionsPath(getOptionsPath());
 
             // create config

@@ -76,6 +76,8 @@ public abstract class PhpProgram {
     /**
      * The {@link InputProcessorFactory input processor factory} that strips any
      * <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape sequences</a>.
+     * <p>
+     * <b>In fact, it is not needed anymore since the Output window understands ANSI escape sequences.</b>
      * @see InputProcessors#ansiStripping(InputProcessor)
      * @since 1.10
      */
