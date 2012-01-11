@@ -802,7 +802,8 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
             if(n == null) {
                 return;
             }
-            if(LocalHistoryRootNode.isLoadNext(Visualizer.findNode(n))) {
+            if(!e.isPopupTrigger() && LocalHistoryRootNode.isLoadNext(Visualizer.findNode(n))) {
+                e.consume();
                 loadNextAction.actionPerformed(null);
             } else {
                 Object value = getValue(e);
