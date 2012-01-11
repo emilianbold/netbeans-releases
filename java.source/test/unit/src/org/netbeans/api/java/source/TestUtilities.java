@@ -250,7 +250,7 @@ public final class TestUtilities {
         js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController parameter) throws Exception {                
                 for (final URL url : urls) {
-                    TransactionContext ctx = TransactionContext.beginStandardTx(false, url);
+                    TransactionContext ctx = TransactionContext.beginStandardTransaction(false, url);
                     try {
                         final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
                         ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
