@@ -235,13 +235,18 @@ public class PluginPropertyUtils {
             Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(property);
             if (source != null) {
+                String value = source.getValue();
+                if (value == null) {
+                    return null;
+                }
+                String valueT = value.trim();
                 try {
-                    Object evaluated = eval.evaluate(source.getValue().trim());
-                    return evaluated != null ? ("" + evaluated) : source.getValue().trim(); //NOI18N
+                    Object evaluated = eval.evaluate(valueT);
+                    return evaluated != null ? evaluated.toString() : valueT;
                 } catch (ExpressionEvaluationException ex) {
                     Exceptions.printStackTrace(ex);
+                    return valueT;
                 }
-                return source.getValue().trim();
             }
         }
         return null;
