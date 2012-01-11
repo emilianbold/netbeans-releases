@@ -55,6 +55,7 @@ import org.netbeans.modules.localhistory.ui.view.RevertFileAction;
 import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -87,8 +88,10 @@ public class LocalHistoryProvider extends VCSHistoryProvider {
                         files, 
                         se.getDate(), 
                         se.getLabel(), 
-                        "", "", 
-                        "Local", "Local", 
+                        "",                                                             // username         NOI18N
+                        "",                                                             // username short   NOI18N 
+                        NbBundle.getMessage(LocalHistoryProvider.class, "LBL_Local"),   // revision         NOI18N
+                        NbBundle.getMessage(LocalHistoryProvider.class, "LBL_Local"),   // revision short   NOI18N
                         getActions(), 
                         new RevisionProviderImpl(se),
                         new MessageEditImpl(se));
