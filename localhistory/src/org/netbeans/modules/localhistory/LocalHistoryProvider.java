@@ -90,7 +90,8 @@ public class LocalHistoryProvider extends VCSHistoryProvider {
                         "", "", 
                         "Local", "Local", 
                         getActions(), 
-                        null);
+                        new RevisionProviderImpl(se),
+                        new MessageEditImpl(se));
                 storeEntries.add(e);
             }
         }
@@ -99,7 +100,7 @@ public class LocalHistoryProvider extends VCSHistoryProvider {
 
     @Override
     public Action createShowHistoryAction(File[] files) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
     
     private Action[] getActions() {
@@ -125,6 +126,17 @@ public class LocalHistoryProvider extends VCSHistoryProvider {
             } catch (IOException e) {
                 LocalHistory.LOG.log(Level.WARNING, "Error while retrieving history for file {0} stored as {1}", new Object[]{se.getFile(), se.getStoreFile()}); // NOI18N
             }
+        }
+    }
+    
+    private class MessageEditImpl implements VCSHistoryProvider.MessageEditProvider {
+        private final StoreEntry se;
+        public MessageEditImpl(StoreEntry se) {
+            this.se = se;
+        }
+        @Override
+        public void setMessage(String message) throws IOException {
+            LocalHistory.getInstance().getLocalHistoryStore().setLabel(se.getFile(), se.getTimestamp(), message);
         }
     }
 }

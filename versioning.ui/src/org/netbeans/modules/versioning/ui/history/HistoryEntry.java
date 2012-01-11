@@ -42,6 +42,7 @@
 package org.netbeans.modules.versioning.ui.history;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
@@ -93,6 +94,14 @@ public class HistoryEntry {
 
     public Action[] getActions() {
         return entry.getActions();
+    }
+
+    public void setMessage(String message) throws IOException {
+        entry.setMessage(message);
+    }
+
+    public boolean canEdit() {
+        return entry.canEdit();
     }
     
     public boolean isLocalHistory() {

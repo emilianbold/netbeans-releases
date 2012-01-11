@@ -43,12 +43,16 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
+import java.io.IOException;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.logging.Level;
 import org.netbeans.swing.etable.QuickFilter;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -68,7 +72,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
     static final String PROPERTY_NAME_USER = "user";                            // NOI18N        
     static final String PROPERTY_NAME_VERSION = "version";                      // NOI18N                       
 
-    private List<HistoryEntry> entries;
+    private List<HistoryEntry> entries; // XXX one entry for all files!
     private static DateFormat dateFormat = DateFormat.getDateTimeInstance();                      
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
 
@@ -120,9 +124,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
                 
         ps.put(new RevisionProperty()); // XXX show only if VCS available
         ps.put(new UserProperty()); 
-//        XXX
-//        ps.put(entries.get(0).isLocalHistory() ? new EditableMessageProperty() : new MessageProperty());
-        ps.put(new MessageProperty());
+        ps.put(entries.get(0).canEdit() ? new EditableMessageProperty() : new MessageProperty());
         
         sheet.put(ps);
         setSheet(sheet);        
@@ -204,34 +206,37 @@ public class RevisionNode extends AbstractNode implements Comparable {
         
     }
     
-//    class EditableMessageProperty extends PropertySupport.ReadWrite<String> {
-//        public EditableMessageProperty() {
-//            super(PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
-//        }
-//        @Override
-//        public String getValue() throws IllegalAccessException, InvocationTargetException {
-//            return entries.get(0).getMessage();
-//        }    
-//        @Override        
-//        public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
-//        {        
-//            value = value.trim();
-//            List<HistoryEntry> newEntries = new ArrayList<HistoryEntry>(entries.size());
-//            for(HistoryEntry se : entries) {
-//                newEntries.add(HistoryEntry.createHistoryEntry(History.getInstance().getLocalHistoryStore().setLabel(se.getFile(), se.getTimestamp(), !value.equals("") ? value : null)));
-//            }            
-//            entries = newEntries;
-//        }        
-//        @Override
-//        public PropertyEditor getPropertyEditor() {
-//            return new PropertyEditorSupport();
-//        }           
-//        
-//        @Override
-//        public String toString() {
-//            return entries.get(0).getMessage();
-//        }        
-//    }                      
+    class EditableMessageProperty extends PropertySupport.ReadWrite<String> {
+        public EditableMessageProperty() {
+            super(PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+        }
+        @Override
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
+            return entries.get(0).getMessage();
+        }    
+        @Override        
+        public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
+        {        
+            value = value.trim();
+            for(HistoryEntry se : entries) {
+                try {
+                    se.setMessage(!value.equals("") ? value : null);
+                } catch (IOException ex) {
+                    History.LOG.log(Level.WARNING, null, ex);
+                    break;
+                }
+            }            
+        }        
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return new PropertyEditorSupport();
+        }           
+        
+        @Override
+        public String toString() {
+            return entries.get(0).getMessage();
+        }        
+    }                      
     
     class UserProperty extends PropertySupport.ReadOnly<String> {
         public UserProperty() {
