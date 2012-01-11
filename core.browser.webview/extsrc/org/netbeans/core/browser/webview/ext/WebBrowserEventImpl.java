@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.core.browser.webview;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
-import org.netbeans.core.browser.api.WebBrowser;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.core.browser.webview.ext;
+
+import org.netbeans.core.browser.api.*;
+import java.awt.AWTEvent;
+import org.w3c.dom.Node;
 
 /**
- * Factory producing embedded browsers wrapping {@code WebView} component from JavaFX.
+ * Browser event implementation.
  * 
- * @author Jan Stola
+ * @author S. Aubrecht
  */
-@ServiceProvider(service=EmbeddedBrowserFactory.class)
-public class EmbeddedBrowserFactoryImpl extends EmbeddedBrowserFactory {
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+class WebBrowserEventImpl extends WebBrowserEvent {
 
-    @Override
-    public boolean isEnabled() {
-        return true;
+    private final int type;
+    private final WebBrowser browser;
+    private final Node node;
+    private final AWTEvent event;
+    private boolean cancelled = false;
+    private final String url;
+
+    public WebBrowserEventImpl( int type, WebBrowser browser, String url ) {
+        this.type = type;
+        this.browser = browser;
+        this.url = url;
+        this.event = null;
+        this.node = null;
+    }
+
+    public WebBrowserEventImpl( int type, WebBrowser browser, AWTEvent event, Node node ) {
+        this.type = type;
+        this.browser = browser;
+        this.event = event;
+        this.node = node;
+        this.url = null;
     }
 
     @Override
-    public WebBrowser createEmbeddedBrowser() {
-        if(!isEnabled()) {
-            throw new IllegalStateException();
-        }
-        return WebBrowserImplProvider.createBrowser();
+    public int getType() {
+        return type;
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        propSupport.addPropertyChangeListener(l);
+    public WebBrowser getWebBrowser() {
+        return browser;
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        propSupport.removePropertyChangeListener(l);
+    public String getURL() {
+        return null != url ? url : browser.getURL();
+    }
+
+    @Override
+    public AWTEvent getAWTEvent() {
+        return event;
+    }
+
+    @Override
+    public Node getNode() {
+        return node;
+    }
+
+    @Override
+    public void cancel() {
+        cancelled = true;
+    }
+
+    boolean isCancelled() {
+        return cancelled;
     }
 }

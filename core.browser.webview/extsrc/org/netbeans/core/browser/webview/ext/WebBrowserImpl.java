@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.browser.webview;
+package org.netbeans.core.browser.webview.ext;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
@@ -64,6 +64,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
+import org.netbeans.core.browser.webview.BrowserCallback;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
@@ -74,7 +75,7 @@ import org.w3c.dom.Node;
  *
  * @author S. Aubrecht, Jan Stola
  */
-class WebBrowserImpl extends WebBrowser implements BrowserCallback {
+public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     
     private JFXPanel container;
     private String urlToLoad;

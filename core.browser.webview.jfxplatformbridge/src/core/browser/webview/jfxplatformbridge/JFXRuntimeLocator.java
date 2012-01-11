@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,76 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package core.browser.webview.jfxplatformbridge;
 
-package org.netbeans.core.browser.webview;
-
-import org.netbeans.core.browser.api.*;
-import java.awt.AWTEvent;
-import org.w3c.dom.Node;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.core.browser.webview.WebBrowserImplProvider;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Browser event implementation.
- * 
- * @author S. Aubrecht
+ *
+ * @author petrjiricka
  */
-class WebBrowserEventImpl extends WebBrowserEvent {
-
-    private final int type;
-    private final WebBrowser browser;
-    private final Node node;
-    private final AWTEvent event;
-    private boolean cancelled = false;
-    private final String url;
-
-    public WebBrowserEventImpl( int type, WebBrowser browser, String url ) {
-        this.type = type;
-        this.browser = browser;
-        this.url = url;
-        this.event = null;
-        this.node = null;
-    }
-
-    public WebBrowserEventImpl( int type, WebBrowser browser, AWTEvent event, Node node ) {
-        this.type = type;
-        this.browser = browser;
-        this.event = event;
-        this.node = node;
-        this.url = null;
-    }
+@ServiceProvider(service=WebBrowserImplProvider.JFXRuntimePathProvider.class)
+public class JFXRuntimeLocator implements WebBrowserImplProvider.JFXRuntimePathProvider {
 
     @Override
-    public int getType() {
-        return type;
+    public String getJFXRuntimePath() {
+        for (JavaPlatform jp: JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            if (JavaFXPlatformUtils.isJavaFXEnabled(jp)) {
+                String platformName = jp.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+                return JavaFXPlatformUtils.getJavaFXRuntimePath(platformName);
+            }
+        }
+        return null;
     }
-
-    @Override
-    public WebBrowser getWebBrowser() {
-        return browser;
-    }
-
-    @Override
-    public String getURL() {
-        return null != url ? url : browser.getURL();
-    }
-
-    @Override
-    public AWTEvent getAWTEvent() {
-        return event;
-    }
-
-    @Override
-    public Node getNode() {
-        return node;
-    }
-
-    @Override
-    public void cancel() {
-        cancelled = true;
-    }
-
-    boolean isCancelled() {
-        return cancelled;
-    }
+    
 }

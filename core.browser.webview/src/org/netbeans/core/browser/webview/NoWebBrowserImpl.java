@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,152 +37,154 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.core.browser.webview;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Collections;
+import java.util.Map;
+import javax.swing.JLabel;
 import org.netbeans.core.browser.api.WebBrowser;
-import org.openide.awt.HtmlBrowser;
+import org.netbeans.core.browser.api.WebBrowserListener;
+import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
 
 /**
- * HTML browser implementation which uses embedded native browser component.
- *
+ * Embedded browser implementation to use when the actual browser creation failed.
+ * 
  * @author S. Aubrecht
  */
-class HtmlBrowserImpl extends HtmlBrowser.Impl {
+class NoWebBrowserImpl extends WebBrowser {
 
-    private WebBrowser browser;
-    private final Object LOCK = new Object();
-
-    public HtmlBrowserImpl() {
-        super();
+    private final JLabel component;
+    
+    public NoWebBrowserImpl() {
+        component = new JLabel(NbBundle.getMessage(NoWebBrowserImpl.class, "Err_CannotCreateBrowser"));
+        component.setEnabled( false );
+        component.setHorizontalAlignment( JLabel.CENTER );
+        component.setVerticalAlignment( JLabel.CENTER );
     }
-
+    
     @Override
     public Component getComponent() {
-        return getBrowser().getComponent();
-    }
-
-    private WebBrowser getBrowser() {
-        synchronized( LOCK ) {
-            if( null == browser ) {
-                browser = WebBrowserImplProvider.createBrowser();
-            }
-            return browser;
-        }
+        return component;
     }
 
     @Override
     public void reloadDocument() {
-        getBrowser().reloadDocument();
+        //NOOP
     }
 
     @Override
     public void stopLoading() {
-        getBrowser().stopLoading();
+        //NOOP
     }
 
     @Override
-    public void setURL(final URL url) {
-//        if( !SwingUtilities.isEventDispatchThread() ) {
-//            SwingUtilities.invokeLater( new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    setURL( url );
-//                }
-//            });
-//            return;
-//        }
-        getBrowser().setURL(url.toString());
+    public void setURL( String url ) {
+        //NOOP
     }
 
     @Override
-    public URL getURL() {
-        String strUrl = getBrowser().getURL();
-        if( null == strUrl )
-            return null;
-        try {
-            return new URL(strUrl);
-        } catch( MalformedURLException ex ) {
-            Logger.getLogger(HtmlBrowserImpl.class.getName()).log(Level.FINE, null, ex);
-        }
+    public String getURL() {
         return null;
     }
 
     @Override
-    public String getLocation() {
-        return getBrowser().getURL();
-    }
-
-    @Override
-    public void setLocation(String str) {
-        getBrowser().setURL(str);
-    }
-
-    @Override
     public String getStatusMessage() {
-        return getBrowser().getStatusMessage();
+        return null;
     }
 
     @Override
     public String getTitle() {
-        return getBrowser().getTitle();
+        return null;
     }
 
     @Override
     public boolean isForward() {
-        return getBrowser().isForward();
+        return false;
     }
 
     @Override
     public void forward() {
-        getBrowser().forward();
+        //NOOP
     }
 
     @Override
     public boolean isBackward() {
-        return getBrowser().isBackward();
+        return false;
     }
 
     @Override
     public void backward() {
-        getBrowser().backward();
+        //NOOP
     }
 
     @Override
     public boolean isHistory() {
-        return getBrowser().isHistory();
+        return false;
     }
 
     @Override
     public void showHistory() {
-        getBrowser().showHistory();
+        //NOOP
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        getBrowser().addPropertyChangeListener(l);
+    public void addPropertyChangeListener( PropertyChangeListener l ) {
+        //NOOP
     }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        getBrowser().removePropertyChangeListener(l);
+    public void removePropertyChangeListener( PropertyChangeListener l ) {
+        //NOOP
+    }
+
+    @Override
+    public void setContent( String content ) {
+        //NOOP
+    }
+
+    @Override
+    public Document getDocument() {
+        return null;
     }
 
     @Override
     public void dispose() {
-        synchronized( LOCK ) {
-            if( null != browser ) {
-                browser.dispose();
-            }
-            browser = null;
-        }
+        //NOOP
     }
+
+    @Override
+    public void addWebBrowserListener( WebBrowserListener l ) {
+        //NOOP
+    }
+
+    @Override
+    public void removeWebBrowserListener( WebBrowserListener l ) {
+        //NOOP
+    }
+
+    @Override
+    public Map<String, String> getCookie( String domain, String name, String path ) {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public void deleteCookie( String domain, String name, String path ) {
+        //NOOP
+    }
+
+    @Override
+    public void addCookie( Map<String, String> cookie ) {
+        //NOOP
+    }
+
+    @Override
+    public Object executeJavaScript( String script ) {
+        return null;
+    }
+    
 }
