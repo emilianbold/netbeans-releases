@@ -82,6 +82,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
     };
     private JComponent panel;
     private final ExplorerManager manager = new ExplorerManager();
+    private final Lookup lookup = ExplorerUtils.createLookup(manager, new ActionMap());
     
     /**
      * Default constructor for layer instance.
@@ -102,7 +103,6 @@ public final class AntNavigatorPanel implements NavigatorPanel {
             view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             class Panel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
                 // Make sure action context works correctly:
-                private final Lookup lookup = ExplorerUtils.createLookup(manager, new ActionMap());
                 {
                     setLayout(new BorderLayout());
                     add(view, BorderLayout.CENTER);
@@ -135,7 +135,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
     }
     
     public Lookup getLookup() {
-        return null;
+        return lookup;
     }
     
     private void display(Collection<? extends DataObject> selectedFiles) {
