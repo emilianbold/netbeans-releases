@@ -3219,10 +3219,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             final TypeElement enclClass = scope.getEnclosingClass();
             final boolean isStatic = enclClass == null ? false :
                 (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
-            final Set<? extends Element> excludes = env.getExcludes();
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    if ((excludes == null || !excludes.contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))) {
+                    if ((env.getExcludes() == null || !env.getExcludes().contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))) {
                         String name = e.getSimpleName().toString();
                         return name.length() > 0 && !Character.isDigit(name.charAt(0)) && startsWith(env, name, prefix) &&
                                 (!isStatic || e.getModifiers().contains(STATIC) || e.getEnclosingElement() == enclMethod) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
@@ -3237,6 +3236,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case INTERFACE:
                     case ANNOTATION_TYPE:
                         results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, false, elements.isDeprecated(e), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, false, false, env.getWhiteList()));
+                        env.addToExcludes(e);
                         break;
                     case TYPE_PARAMETER:
                         results.add(JavaCompletionItem.createTypeParameterItem((TypeParameterElement)e, anchorOffset));
@@ -3246,7 +3246,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     if ((e.getKind().isClass() || e.getKind().isInterface())) {
-                        return (excludes == null || !excludes.contains(e)) && startsWith(env, e.getSimpleName().toString(), prefix) &&
+                        return (env.getExcludes() == null || !env.getExcludes().contains(e)) && startsWith(env, e.getSimpleName().toString(), prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) &&
                                 isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees));
                     }
