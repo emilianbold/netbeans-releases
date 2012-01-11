@@ -188,6 +188,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         
         @Override
         public void getRevisionFile(File originalFile, File revisionFile) {
+            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
             try {
                 File file = VersionsCache.getInstance().getFileRevision(originalFile, hgRevision);
                 FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
@@ -213,8 +214,6 @@ public class HgHistoryProvider implements VCSHistoryProvider {
             openHistory(files);
         }
         private void openHistory(File[] files) {
-            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
-
             if(!isClientAvailable()) {
                 org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
                 return;
