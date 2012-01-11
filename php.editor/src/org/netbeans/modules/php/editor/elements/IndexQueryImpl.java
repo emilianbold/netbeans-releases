@@ -651,7 +651,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public final Set<MethodElement> getMethods(final NameKind.Exact typeQuery, final NameKind methodQuery) {
-        return getMethodsImpl(typeQuery, methodQuery, EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE));
+        return getMethodsImpl(typeQuery, methodQuery, EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE, PhpElementKind.TRAIT));
     }
 
     private final Set<MethodElement> getMethodsImpl(final NameKind.Exact typeQuery, final NameKind methodQuery, EnumSet<PhpElementKind> typeKinds) {
@@ -672,6 +672,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     new String[]{InterfaceElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
             for (final IndexResult indexResult : ifaceResults) {
                 for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+                }
+            }
+        }
+        if (typeKinds.contains(PhpElementKind.TRAIT)) {
+            final Collection<? extends IndexResult> traitResults = results(TraitElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{TraitElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : traitResults) {
+                for (final TypeElement typeElement : TraitElementImpl.fromSignature(typeQuery, this, indexResult)) {
                     methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
                 }
             }
