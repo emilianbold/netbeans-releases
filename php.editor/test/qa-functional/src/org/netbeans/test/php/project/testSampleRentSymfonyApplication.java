@@ -48,23 +48,25 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author felipee
  */
-public class testSampleAirAllianceApplication extends project {
+public class testSampleRentSymfonyApplication extends project {
 
-    public testSampleAirAllianceApplication(String arg0) {
+    public testSampleRentSymfonyApplication(String arg0) {
         super(arg0);
     }
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(testSampleAirAllianceApplication.class).addTest(
-                "CreateAirAllianceSampleApplication"
-              ).enableModules(".*").clusters(".*") //.gui( true )
+                NbModuleSuite.createConfiguration(testSampleRentSymfonyApplication.class).addTest(
+                "CreateRentSymfonySampleApplication"
+                ).enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
 
-    public void CreateAirAllianceSampleApplication() {
+    public void CreateRentSymfonySampleApplication() {
         startTest();
-        String sProjectName = CreateSamplePHPApplication("AirAlliance");
+        String sProjectName = CreateSamplePHPApplication("RentSymfony");
         endTest();
     }
+
+  
 }
