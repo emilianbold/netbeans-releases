@@ -353,6 +353,20 @@ public class ModelTest extends JsTestBase {
         
     }
     
+    public void testAnonymousFunctions01() throws Exception {
+        Model model = getModel("testfiles/model/jQueryFragment02.js");
+        assertNotNull(model);
+        
+        JsObject  object = model.getGlobalObject();
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getPropery("$function");
+        assertEquals(true, object.isDeclared());
+        assertEquals(true, ((JsFunction)object).isAnonymous());
+        assertEquals(4, object.getProperties().size());
+        assertEquals(JsElement.Kind.FUNCTION, object.getJSKind());
+    }
+    
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);

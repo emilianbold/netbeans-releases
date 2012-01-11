@@ -152,7 +152,8 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(CallNode callNode, boolean onset) {
         if (onset) {
-            if (callNode.getFunction() instanceof AccessNode) {
+            Node calledFunction = callNode.getFunction();
+            if (calledFunction instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)callNode.getFunction();
                 if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) {
                     
@@ -176,7 +177,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         parent.addProperty(property.getName(), property);
                     }
                 }
-            }
+            } 
         }
         return super.visit(callNode, onset);
     }
@@ -233,6 +234,8 @@ public class ModelVisitor extends PathNodeVisitor {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 JsObjectImpl scope = modelBuilder.getCurrentObject();
                 JsFunctionImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
+                fncScope.setAnonymous(getPath().get(pathSize - 2) instanceof ReferenceNode 
+                        && getPath().get(pathSize - 3) instanceof CallNode);
                 if (isPrivate) {
 //                    Set<Modifier> modifier = fncScope.getModifiers();
 //                    modifier.clear();
@@ -248,7 +251,6 @@ public class ModelVisitor extends PathNodeVisitor {
 
             for (FunctionNode fn : functions) {
                 if (fn.getIdent().getStart() >= fn.getIdent().getFinish()) {
-                    System.out.println("   jeste nutno navstivit dalsi funkci:");
                     fn.accept(this);
                 }
             }
@@ -296,13 +298,12 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObjectImpl scope = modelBuilder.getCurrentObject();
             
             JsObjectImpl objectScope = ModelElementFactory.create(objectNode, fqName, modelBuilder, isDeclaredInParent);
-
             modelBuilder.setCurrentObject(objectScope);
         } else {
             modelBuilder.reset();
         }
 
-        return super.visit(functionNode, onset);
+        return super.visit(objectNode, onset);
     }
 
     @Override
@@ -357,6 +358,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 variable.getModifiers().add(Modifier.PRIVATE);
             }
             parent.addProperty(name.getName(), variable);
+            modelBuilder.setCurrentObject(variable);
+        }
+        if (!onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
+            modelBuilder.reset();
         }
         return super.visit(varNode, onset);
     }

@@ -49,4 +49,5 @@ import java.util.Collection;
  */
 public interface JsFunction  extends JsObject{
     public Collection<? extends Identifier> getParameters();
+    public boolean isAnonymous();
 }

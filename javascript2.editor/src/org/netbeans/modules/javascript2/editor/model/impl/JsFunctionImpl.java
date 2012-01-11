@@ -57,15 +57,14 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     final private List <? extends Identifier> parameters;
+    private boolean isAnonymous;
     
     public JsFunctionImpl(JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
         super(parentObject instanceof JsFunctionImpl ? (JsFunctionImpl)parentObject : null, parentObject, name, offsetRange);
         this.parameters = parameters; 
+        this.isAnonymous = false;
         setDeclared(true);
-    
     }
-
-    
     
     @Override
     public Collection<? extends Identifier> getParameters() {
@@ -88,6 +87,17 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         }
         return result;
     }
+
+    @Override
+    public boolean isAnonymous() {
+        return isAnonymous;
+    }
+
+    public void setAnonymous(boolean isAnonymous) {
+        this.isAnonymous = isAnonymous;
+    }
+    
+    
     
     
 }
