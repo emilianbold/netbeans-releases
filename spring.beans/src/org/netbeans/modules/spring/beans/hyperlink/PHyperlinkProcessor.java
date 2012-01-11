@@ -72,30 +72,28 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
     private BeansRefHyperlinkProcessor beansRefHyperlinkProcessor
             = new BeansRefHyperlinkProcessor(true);
 
-    public PHyperlinkProcessor() {
-    }
-
     @NbBundle.Messages("title.attribute.searching=Searching Attribute")
+    @Override
     public void process(HyperlinkEnv env) {
         String attribName = env.getAttribName();
-        if(env.getType().isValueHyperlink()) {
-            if(attribName.endsWith("-ref")) { // NOI18N
+        if (env.getType().isValueHyperlink()) {
+            if (attribName.endsWith("-ref")) { //NOI18N
                 beansRefHyperlinkProcessor.process(env);
             }
-        } else if(env.getType().isAttributeHyperlink()) {
+        } else if (env.getType().isAttributeHyperlink()) {
             String propName = ContextUtilities.getLocalNameFromTag(attribName);
-            if(propName.endsWith("-ref")) { //NOI18N
+            if (propName.endsWith("-ref")) { //NOI18N
                 propName = propName.substring(0, propName.indexOf("-ref")); //NOI18N
             }
 
             String className = new BeanClassFinder(env.getBeanAttributes(),
                     env.getFileObject()).findImplementationClass();
-            if(className == null) {
+            if (className == null) {
                 return;
             }
-            
+
             JavaSource js = JavaUtils.getJavaSource(env.getFileObject());
-            if(js == null) {
+            if (js == null) {
                 return;
             }
 
@@ -109,14 +107,14 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
 
     @Override
     public int[] getSpan(HyperlinkEnv env) {
-        if(env.getType().isValueHyperlink()) {
+        if (env.getType().isValueHyperlink()) {
             return super.getSpan(env);
         }
-        
-        if(env.getType().isAttributeHyperlink()) {
-            return new int[] { env.getTokenStartOffset(), env.getTokenEndOffset() };
+
+        if (env.getType().isAttributeHyperlink()) {
+            return new int[] {env.getTokenStartOffset(), env.getTokenEndOffset()};
         }
-        
+
         return null;
     }
 
