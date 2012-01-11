@@ -118,7 +118,6 @@ public class LuceneIndex implements Index.Transactional {
     private static final float DEFAULT_CACHE_SIZE = 0.05f;
     private static final CachePolicy cachePolicy = getCachePolicy();
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
-    private static final FieldSelector ALL_FIELDS = new AllFieldsSelector();
     
     private static LockFactory lockFactory;
     
@@ -154,7 +153,7 @@ public class LuceneIndex implements Index.Transactional {
         Parameters.notNull("result", result);       //NOI18N   
         
         if (selector == null) {
-            selector = ALL_FIELDS;
+            selector = AllFieldsSelector.INSTANCE;
         }
         IndexReader in = null;
         BitSet bs = null;
@@ -244,7 +243,7 @@ public class LuceneIndex implements Index.Transactional {
         Parameters.notNull("termConvertor", termConvertor); //NOI18N
         Parameters.notNull("result", result);               //NOI18N
         if (selector == null) {
-            selector = ALL_FIELDS;
+            selector = AllFieldsSelector.INSTANCE;
         }
         IndexReader in = null;
         try {
@@ -470,13 +469,6 @@ public class LuceneIndex implements Index.Transactional {
     
 
     //<editor-fold defaultstate="collapsed" desc="Private classes (NoNormsReader, TermComparator, CachePolicy)">
-    
-    private static class AllFieldsSelector implements FieldSelector {
-        @Override
-        public FieldSelectorResult accept(final String fieldName) {
-            return FieldSelectorResult.LOAD;
-        }
-    }
     
     private static class NoNormsReader extends FilterIndexReader {
 
