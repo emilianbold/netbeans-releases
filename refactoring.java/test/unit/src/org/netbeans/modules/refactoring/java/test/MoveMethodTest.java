@@ -196,7 +196,7 @@ public class MoveMethodTest extends MoveBaseTest {
         performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_PullUp_MemberAlreadyExists"));
     }
 
-    public void testMoveLibrary() throws Exception {
+    public void testMoveToLibrary() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -207,6 +207,18 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "    }\n"
                 + "}\n"));
         performMove(src.getFileObject("t/A.java"), new int[]{1}, "java.lang.String", Visibility.PUBLIC, new Problem(true, "ERR_MoveToLibrary"));
+    }
+    
+    public void testMoveFromLibrary() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    static int i() { return 1; }\n"
+                + "    public void foo() {\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"));
         performMove("java.lang.String", new int[]{1}, src.getFileObject("t/A.java"), Visibility.PUBLIC, new Problem(true, "ERR_MoveFromLibrary"));
     }
 
