@@ -70,7 +70,6 @@ import org.apache.lucene.LucenePackage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DefaultSimilarity;
@@ -85,7 +84,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -156,14 +154,13 @@ public class LuceneIndex implements Index.Transactional {
             selector = AllFieldsSelector.INSTANCE;
         }
         IndexReader in = null;
-        BitSet bs = null;
         try {
             in = dirCache.acquireReader();
             if (in == null) {
                 LOGGER.log(Level.FINE, "{0} is invalid!", this);
                 return;
             }
-            bs = new BitSet(in.maxDoc());
+            final BitSet bs = new BitSet(in.maxDoc());
             final Collector c = new BitSetCollector(bs);
             final Searcher searcher = new IndexSearcher(in);
             try {
@@ -176,18 +173,18 @@ public class LuceneIndex implements Index.Transactional {
             } finally {
                 searcher.close();
             }        
+            for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
+                if (cancel != null && cancel.get()) {
+                    throw new InterruptedException ();
+                }
+                final Document doc = in.document(docNum, selector);
+                final T value = convertor.convert(doc);
+                if (value != null) {
+                    result.add (value);
+                }
+            }
         } finally {
             dirCache.releaseReader(in);
-        }
-        for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (cancel != null && cancel.get()) {
-                throw new InterruptedException ();
-            }
-            final Document doc = in.document(docNum, selector);
-            final T value = convertor.convert(doc);
-            if (value != null) {
-                result.add (value);
-            }
         }
     }
     
