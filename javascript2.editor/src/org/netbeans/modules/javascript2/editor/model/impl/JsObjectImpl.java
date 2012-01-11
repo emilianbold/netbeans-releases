@@ -115,7 +115,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     @Override
-    public JsObject getPropery(String name) {
+    public JsObject getProperty(String name) {
         return properties.get(name);
     }
 

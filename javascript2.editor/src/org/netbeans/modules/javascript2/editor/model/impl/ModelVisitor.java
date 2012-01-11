@@ -85,11 +85,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (accessNode.getProperty() instanceof IdentNode) {
                         IdentNode iNode = (IdentNode)accessNode.getProperty();
                         JsObject current = modelBuilder.getCurrentObject();
-                        JsObject property = current.getPropery(iNode.getName());
+                        JsObject property = current.getProperty(iNode.getName());
                         if (property == null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                                 || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                             current = current.getParent();
-                            property = current.getPropery(iNode.getName());                            
+                            property = current.getProperty(iNode.getName());                            
                         }
                         if (property != null) {
                             ((JsObjectImpl)property).addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
@@ -120,7 +120,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         if(parent.getParent() instanceof JsFunctionImpl) {
                             parent = (JsObjectImpl)parent.getParent();
                         }
-                        if(parent.getPropery(fieldName) == null) {
+                        if(parent.getProperty(fieldName) == null) {
                             Identifier identifier = ModelElementFactory.create((IdentNode)aNode.getProperty());
                             parent.addProperty(fieldName, new JsObjectImpl(parent, identifier, identifier.getOffsetRange() ));
                         }
@@ -134,9 +134,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     IdentNode ident = (IdentNode)binaryNode.lhs();
                     final Identifier name = new IdentifierImpl(ident.getName(), new OffsetRange(ident.getStart(), ident.getFinish()));
                     final String newVarName = name.getName();
-                    boolean hasParent = parent.getPropery(newVarName) != null ;
-                    boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getPropery(newVarName) != null;
-                    if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getPropery(newVarName) == null) {
+                    boolean hasParent = parent.getProperty(newVarName) != null ;
+                    boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
+                    if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
                         // variable was not found -> it's not declared and it has to be
                         // added to the global scope (filescope) as implicit variable
                         JsObjectImpl variable = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange());
@@ -160,15 +160,15 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else {
                     List<Identifier> name = getName(aNode);
                     JsObject parent = modelBuilder.getCurrentObject();
-                    JsObject property = parent.getPropery(name.get(0).getName());
+                    JsObject property = parent.getProperty(name.get(0).getName());
                     if (property ==  null && (parent.getParent() != null && (parent.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                                 || parent.getParent().getJSKind() == JsElement.Kind.OBJECT))) {
                         parent = parent.getParent();
-                        property = parent.getPropery(name.get(0).getName());
+                        property = parent.getProperty(name.get(0).getName());
                     }
                     if (property == null) {
                         parent = modelBuilder.getGlobal();
-                        property = parent.getPropery(name.get(0).getName());
+                        property = parent.getProperty(name.get(0).getName());
                     }
                     if (property != null) {
                         ((JsObjectImpl)property).addOccurrence(name.get(0).getOffsetRange());

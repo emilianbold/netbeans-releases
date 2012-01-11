@@ -100,13 +100,13 @@ class ModelElementFactory {
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
             parent = ModelUtils.getJsObject(globalObject, objectName);
         }
-        result = parent.getPropery(name.getName());
+        result = parent.getProperty(name.getName());
         newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()));
         newObject.setDeclared(true);
         if (result != null) {
             // the object already exist due a definition of a property => needs to be copied
             for (String propertyName : result.getProperties().keySet()) {
-                newObject.addProperty(propertyName, result.getPropery(propertyName));
+                newObject.addProperty(propertyName, result.getProperty(propertyName));
             }
         }
         parent.addProperty(name.getName(), newObject);

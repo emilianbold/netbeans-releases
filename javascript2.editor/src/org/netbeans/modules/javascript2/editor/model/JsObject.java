@@ -52,7 +52,7 @@ public interface JsObject extends JsElement {
     public Identifier getDeclarationName();
     public Map <String, ? extends JsObject> getProperties();
     public void addProperty(String name, JsObject property);
-    public JsObject getPropery(String name);
+    public JsObject getProperty(String name);
     
     /**
      * 

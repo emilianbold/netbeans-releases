@@ -55,7 +55,7 @@ public class ModelUtils {
         JsObject result = inObject;
         JsObject tmpObject = inObject;
         for (Identifier name : fqName) {
-            result = tmpObject.getPropery(name.getName());
+            result = tmpObject.getProperty(name.getName());
             if (result == null) {
                 result = new JsObjectImpl(tmpObject, name, name.getOffsetRange());
                 tmpObject.addProperty(name.getName(), result);
