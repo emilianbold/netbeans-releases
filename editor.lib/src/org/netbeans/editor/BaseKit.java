@@ -3381,4 +3381,49 @@ public class BaseKit extends DefaultEditorKit {
         ind = Math.max(ind, 0);
         changeRowIndent(doc, dotPos, ind);
     }
+    
+    /** Shift block either left or right */
+    static void shiftBlock (final BaseDocument doc, final int startPos, final int endPos,
+                                  final boolean right) throws BadLocationException {
+        GuardedDocument gdoc = (doc instanceof GuardedDocument)
+                               ? (GuardedDocument)doc : null;
+        if (gdoc != null){
+            for (int i = startPos; i<endPos; i++){
+                if (gdoc.isPosGuarded(i)){
+                    java.awt.Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
+            }
+        }
+
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    int shiftWidth = doc.getShiftWidth();
+                    if (shiftWidth <= 0) {
+                        return;
+                    }
+                    int indentDelta = right ? shiftWidth : -shiftWidth;
+                    int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
+                        endPos - 1 : endPos;
+
+                    int lineStartOffset = Utilities.getRowStart(doc, startPos );
+                    int lineCount = Utilities.getRowCount(doc, startPos, end);
+                    for (int i = lineCount - 1; i >= 0; i--) {
+                        int indent = Utilities.getRowIndent(doc, lineStartOffset);
+                        int newIndent = (indent == -1) ? 0 : // Zero indent if row is white
+                                indent + indentDelta;
+                                
+                        changeRowIndent(doc, lineStartOffset, Math.max(newIndent, 0));
+                        lineStartOffset = Utilities.getRowStart(doc, lineStartOffset, +1);
+                    }
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
+                }
+            }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
+    }
 }

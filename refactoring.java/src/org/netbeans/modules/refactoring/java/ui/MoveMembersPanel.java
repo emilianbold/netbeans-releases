@@ -126,7 +126,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     private JToggleButton sortByPositionButton;
     private boolean naturalSort;
     private final Action[] actions;
-    private final Project project;
+    private Project project;
     private SourceGroup[] groups;
 
     /**
@@ -808,6 +808,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     }//GEN-LAST:event_chkDelegateItemStateChanged
 
     private void projectsComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_projectsComboBoxItemStateChanged
+        project = (Project) projectsComboBox.getSelectedItem();
         updateRoots();
         updatePackages();
         updateClasses();
