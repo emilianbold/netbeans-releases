@@ -109,9 +109,14 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
         assertOpts("<build><directory>${project.basedir}/build/maven/${project.artifactId}/target</directory></build>",
                 "enabled=[ON_SCAN, IN_EDITOR] run=null s=.../build/maven/prj/target/generated-sources/annotations/ opts={}", "src/main/java");
     }
+
+    public void testExplicitProcessors() throws Exception {
+        assertOpts("<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                + "<configuration><annotationProcessors><annotationProcessor>p1.Proc1</annotationProcessor><annotationProcessor>p2.Proc2</annotationProcessor></annotationProcessors></configuration></plugin></plugins></build>",
+            "enabled=[ON_SCAN, IN_EDITOR] run=[p1.Proc1, p2.Proc2] s=.../target/generated-sources/annotations/ opts={}", "src/main/java");
+    }
     
     // XXX compilerArgument unformatted vs. compilerArguments
-    // XXX annotationProcessors config
     // XXX <compilerArguments><Averbose>true</></> (MCOMPILER-135)
     // XXX test root
 
