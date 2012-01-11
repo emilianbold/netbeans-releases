@@ -224,6 +224,17 @@ abstract public class FilesystemInterceptorProvider {
             return defaultProvider;
         }
         defaultProvider = Lookup.getDefault().lookup(FilesystemInterceptorProvider.class);
+        if (defaultProvider == null) {
+            defaultProvider = NullProvider;
+        }
         return defaultProvider;
     }
+    
+    private static final FilesystemInterceptorProvider NullProvider = new FilesystemInterceptorProvider() {
+
+        @Override
+        public FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {
+            return null;
+        }
+    };
 }
