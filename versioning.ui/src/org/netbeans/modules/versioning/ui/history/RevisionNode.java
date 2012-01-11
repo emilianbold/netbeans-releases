@@ -41,29 +41,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
-import java.util.ArrayList;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.utils.Utils;
+import java.util.*;
 import org.netbeans.swing.etable.QuickFilter;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -77,45 +68,45 @@ public class RevisionNode extends AbstractNode implements Comparable {
     static final String PROPERTY_NAME_USER = "user";                            // NOI18N        
     static final String PROPERTY_NAME_VERSION = "version";                      // NOI18N                       
 
-    private List<RevisionEntry> entries;
+    private List<HistoryEntry> entries;
     private static DateFormat dateFormat = DateFormat.getDateTimeInstance();                      
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
 
-    private RevisionNode(List<RevisionEntry> childrenEntries) { 
+    private RevisionNode(List<HistoryEntry> childrenEntries) { 
         super(createChildren(childrenEntries));                        
         this.entries = childrenEntries;
         initProperties();
     }        
 
-    private RevisionNode(List<RevisionEntry> childrenEntries, Lookup l) {                
+    private RevisionNode(List<HistoryEntry> childrenEntries, Lookup l) {                
         super(Children.LEAF, l);                        
         this.entries = childrenEntries;
         initProperties();
     }        
 
-    static RevisionNode create(List<RevisionEntry> childrenEntries) {
+    static RevisionNode create(List<HistoryEntry> childrenEntries) {
         return create(childrenEntries, false);
     }
          
-    static RevisionNode create(List<RevisionEntry> childrenEntries, boolean forceMultifile) {
+    static RevisionNode create(List<HistoryEntry> childrenEntries, boolean forceMultifile) {
         
         assert childrenEntries != null && childrenEntries.size() > 0;
         
         if(childrenEntries.size() > 1 || forceMultifile) {
             // set siblings for every entry
-            for (RevisionEntry entry : childrenEntries) {
-                entry.setSiblings(childrenEntries);
-            }
+//            for (HistoryEntry entry : childrenEntries) {
+//                entry.setSiblings(childrenEntries);
+//            }
             return new RevisionNode(childrenEntries);
         } else {
             return new RevisionNode(childrenEntries, Lookups.fixed(new Object [] { childrenEntries.get(0) }));
         }
     }
     
-    private static Children createChildren(List<RevisionEntry> childrenEntries) {
+    private static Children createChildren(List<HistoryEntry> childrenEntries) {
         FileNode[] nodes = new FileNode[childrenEntries.size()];
         int i = 0;
-        for (RevisionEntry se : childrenEntries) {
+        for (HistoryEntry se : childrenEntries) {
             nodes[i++] = new FileNode(se);            
         }
         Children.SortedArray children = new Children.SortedArray();            
@@ -129,7 +120,9 @@ public class RevisionNode extends AbstractNode implements Comparable {
                 
         ps.put(new RevisionProperty()); // XXX show only if VCS available
         ps.put(new UserProperty()); 
-        ps.put(entries.get(0).isLocalHistory() ? new EditableMessageProperty() : new MessageProperty());
+//        XXX
+//        ps.put(entries.get(0).isLocalHistory() ? new EditableMessageProperty() : new MessageProperty());
+        ps.put(new MessageProperty());
         
         sheet.put(ps);
         setSheet(sheet);        
@@ -145,15 +138,35 @@ public class RevisionNode extends AbstractNode implements Comparable {
         return getFormatedDate(entries.get(0));
     }    
        
-    static String getFormatedDate(RevisionEntry se)  {
-        int day = Utils.getDay(se.getTimestamp());
+    static String getFormatedDate(HistoryEntry se)  {
+        int day = getDay(se.getDateTime().getTime());
         switch(day) {
-            case 0:  return NbBundle.getMessage(RevisionNode.class, "LBL_Today", new Object[] {timeFormat.format(se.getDate())});   
-            case 1:  return NbBundle.getMessage(RevisionNode.class, "LBL_Yesterday", new Object[] {timeFormat.format(se.getDate())});
-            default: return dateFormat.format(se.getDate());
+            case 0:  return NbBundle.getMessage(RevisionNode.class, "LBL_Today", new Object[] {timeFormat.format(se.getDateTime())});   
+            case 1:  return NbBundle.getMessage(RevisionNode.class, "LBL_Yesterday", new Object[] {timeFormat.format(se.getDateTime())});
+            default: return dateFormat.format(se.getDateTime());
         }
     }
     
+    private static int getDay(long ts) {
+        Date date = new Date(ts);
+                
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());        
+        
+        // set the cal at today midnight
+        int todayMillis = c.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000 +
+                          c.get(Calendar.MINUTE)      * 60 * 1000 + 
+                          c.get(Calendar.SECOND)      * 1000 + 
+                          c.get(Calendar.MILLISECOND);                
+        c.add(Calendar.MILLISECOND, -1 * todayMillis);                        
+        
+        if(c.getTime().compareTo(date) < 0) {
+            return 0;
+        }
+        
+        return (int) ( (c.getTimeInMillis() - ts) / (24 * 60 * 60 * 1000) ) + 1;
+                
+    }    
     @Override
     public Action[] getActions(boolean context) {
         return entries.get(0).getActions();          
@@ -166,9 +179,9 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
         RevisionNode node = (RevisionNode) obj;
 
-        if(node.entries.get(0).getTimestamp() > entries.get(0).getTimestamp()) {
+        if(node.entries.get(0).getDateTime().getTime() > entries.get(0).getDateTime().getTime()) {
             return 1;
-        } else if(node.entries.get(0).getTimestamp() < entries.get(0).getTimestamp()) {
+        } else if(node.entries.get(0).getDateTime().getTime() < entries.get(0).getDateTime().getTime()) {
             return -1;
         } else {
             return 0;
@@ -191,34 +204,34 @@ public class RevisionNode extends AbstractNode implements Comparable {
         
     }
     
-    class EditableMessageProperty extends PropertySupport.ReadWrite<String> {
-        public EditableMessageProperty() {
-            super(PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
-        }
-        @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entries.get(0).getMessage();
-        }    
-        @Override        
-        public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
-        {        
-            value = value.trim();
-            List<RevisionEntry> newEntries = new ArrayList<RevisionEntry>(entries.size());
-            for(RevisionEntry se : entries) {
-                newEntries.add(RevisionEntry.createRevisionEntry(LocalHistory.getInstance().getLocalHistoryStore().setLabel(se.getFile(), se.getTimestamp(), !value.equals("") ? value : null)));
-            }            
-            entries = newEntries;
-        }        
-        @Override
-        public PropertyEditor getPropertyEditor() {
-            return new PropertyEditorSupport();
-        }           
-        
-        @Override
-        public String toString() {
-            return entries.get(0).getMessage();
-        }        
-    }                      
+//    class EditableMessageProperty extends PropertySupport.ReadWrite<String> {
+//        public EditableMessageProperty() {
+//            super(PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+//        }
+//        @Override
+//        public String getValue() throws IllegalAccessException, InvocationTargetException {
+//            return entries.get(0).getMessage();
+//        }    
+//        @Override        
+//        public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
+//        {        
+//            value = value.trim();
+//            List<HistoryEntry> newEntries = new ArrayList<HistoryEntry>(entries.size());
+//            for(HistoryEntry se : entries) {
+//                newEntries.add(HistoryEntry.createHistoryEntry(History.getInstance().getLocalHistoryStore().setLabel(se.getFile(), se.getTimestamp(), !value.equals("") ? value : null)));
+//            }            
+//            entries = newEntries;
+//        }        
+//        @Override
+//        public PropertyEditor getPropertyEditor() {
+//            return new PropertyEditorSupport();
+//        }           
+//        
+//        @Override
+//        public String toString() {
+//            return entries.get(0).getMessage();
+//        }        
+//    }                      
     
     class UserProperty extends PropertySupport.ReadOnly<String> {
         public UserProperty() {
@@ -252,26 +265,21 @@ public class RevisionNode extends AbstractNode implements Comparable {
 
     private static class FileNode extends AbstractNode implements Comparable {        
 
-        private final RevisionEntry entry;
+        private final HistoryEntry entry;
         
-        FileNode(RevisionEntry entry) {
+        FileNode(HistoryEntry entry) {
             super(Children.LEAF, Lookups.fixed(new Object [] { entry }));                        
             this.entry = entry;
         }
     
         @Override
         public Action[] getActions(boolean context) {
-            List<RevisionEntry> entries = new ArrayList<RevisionEntry>(1);
-            entries.add(entry);
-            return new Action[] {
-                SystemAction.get(RevertFileAction.class),
-                SystemAction.get(DeleteAction.class)
-            };            
+            return entry.getActions();       
         }
 
         @Override
         public String getName() {
-            return entry.getFile().getName();
+            return entry.getFiles()[0].getName(); // XXX 
         }  
         
         @Override
@@ -286,21 +294,21 @@ public class RevisionNode extends AbstractNode implements Comparable {
     
     public static abstract class Filter implements QuickFilter {
         public abstract String getDisplayName();
-        protected Collection<RevisionEntry> getEntries(Object value) {
+        protected Collection<HistoryEntry> getEntries(Object value) {
             if(value instanceof Node) {
                 return getEntries((Node)value);
         }
             return null;
         }
  
-        private Collection<RevisionEntry> getEntries(Node node) {
+        private Collection<HistoryEntry> getEntries(Node node) {
             if(node instanceof RevisionNode) {
                 return ((RevisionNode)node).entries;
             } else if (node instanceof FileNode) {
-                return Arrays.asList(new RevisionEntry[] {((FileNode)node).entry});
+                return Arrays.asList(new HistoryEntry[] {((FileNode)node).entry});
             } else {
                 Node[] nodes = node.getChildren().getNodes();
-                List<RevisionEntry> ret = new LinkedList<RevisionEntry>();
+                List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
                 for (Node n : nodes) {
                     ret.addAll(getEntries(n));
                 }

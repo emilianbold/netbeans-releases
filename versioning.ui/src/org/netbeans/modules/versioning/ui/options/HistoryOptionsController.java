@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.options;
+package org.netbeans.modules.versioning.ui.options;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,7 +49,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.localhistory.LocalHistorySettings;
+import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -58,15 +58,15 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public final class LocalHistoryOptionsController extends OptionsPanelController implements DocumentListener, ActionListener {
+public final class HistoryOptionsController extends OptionsPanelController implements DocumentListener, ActionListener {
     
-    private final LocalHistoryOptionsPanel panel;
+    private final HistoryOptionsPanel panel;
     private boolean noLabelValue;
     private String daysValue;
     private String incrementsValue;
     
-    public LocalHistoryOptionsController() {
-        panel = new LocalHistoryOptionsPanel();
+    public HistoryOptionsController() {
+        panel = new HistoryOptionsPanel();
         panel.warningLabel.setVisible(false);
         panel.olderThanDaysTextField.getDocument().addDocumentListener(this);
         panel.keepForeverRadioButton.addActionListener(this);
@@ -76,35 +76,35 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
     }   
         
     public void update() {        
-        panel.olderThanDaysTextField.setText(daysValue = String.valueOf(LocalHistorySettings.getInstance().getTTL()));
-        panel.daysIncrementTextField.setText(daysValue = String.valueOf(LocalHistorySettings.getInstance().getIncrements()));
-        panel.noLabelCleanupCheckBox.setSelected(noLabelValue = !LocalHistorySettings.getInstance().getCleanUpLabeled());
-        if(LocalHistorySettings.getInstance().getKeepForever()) {
+        panel.olderThanDaysTextField.setText(daysValue = String.valueOf(HistorySettings.getInstance().getTTL()));
+        panel.daysIncrementTextField.setText(daysValue = String.valueOf(HistorySettings.getInstance().getIncrements()));
+        panel.noLabelCleanupCheckBox.setSelected(noLabelValue = !HistorySettings.getInstance().getCleanUpLabeled());
+        if(HistorySettings.getInstance().getKeepForever()) {
             panel.keepForeverRadioButton.setSelected(true);
         } else {
             panel.removeOlderRadioButton.setSelected(false);
         }
         updateForeverState();
-        updateLoadAllState(LocalHistorySettings.getInstance().getLoadAll());
+        updateLoadAllState(HistorySettings.getInstance().getLoadAll());
     }
 
     public void applyChanges() {
         if(!isValid()) return;
         if(panel.keepForeverRadioButton.isSelected()) {
-            LocalHistorySettings.getInstance().setKeepForever(true);
-            LocalHistorySettings.getInstance().setTTL(Integer.parseInt(daysValue));
-            LocalHistorySettings.getInstance().setCleanUpLabeled(!noLabelValue);
+            HistorySettings.getInstance().setKeepForever(true);
+            HistorySettings.getInstance().setTTL(Integer.parseInt(daysValue));
+            HistorySettings.getInstance().setCleanUpLabeled(!noLabelValue);
         } else {
-            LocalHistorySettings.getInstance().setKeepForever(false);
-            LocalHistorySettings.getInstance().setTTL(Integer.parseInt(panel.olderThanDaysTextField.getText()));
-            LocalHistorySettings.getInstance().setCleanUpLabeled(!panel.noLabelCleanupCheckBox.isSelected());
+            HistorySettings.getInstance().setKeepForever(false);
+            HistorySettings.getInstance().setTTL(Integer.parseInt(panel.olderThanDaysTextField.getText()));
+            HistorySettings.getInstance().setCleanUpLabeled(!panel.noLabelCleanupCheckBox.isSelected());
         }
         if(panel.loadAllRadioButton.isSelected()) {
-            LocalHistorySettings.getInstance().setLoadAll(true);
-            LocalHistorySettings.getInstance().setIncrements(Integer.parseInt(daysValue));
+            HistorySettings.getInstance().setLoadAll(true);
+            HistorySettings.getInstance().setIncrements(Integer.parseInt(daysValue));
         } else {
-            LocalHistorySettings.getInstance().setLoadAll(false);
-            LocalHistorySettings.getInstance().setIncrements(Integer.parseInt(panel.daysIncrementTextField.getText()));
+            HistorySettings.getInstance().setLoadAll(false);
+            HistorySettings.getInstance().setIncrements(Integer.parseInt(panel.daysIncrementTextField.getText()));
     }
     }
 
@@ -126,13 +126,13 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
     }
 
     public boolean isChanged() {       
-        String ttl = Long.toString(LocalHistorySettings.getInstance().getTTL());        
-        String increments = Long.toString(LocalHistorySettings.getInstance().getIncrements());        
+        String ttl = Long.toString(HistorySettings.getInstance().getTTL());        
+        String increments = Long.toString(HistorySettings.getInstance().getIncrements());        
         return !ttl.equals(panel.olderThanDaysTextField.getText()) &&
                !increments.equals(panel.daysIncrementTextField.getText()) &&
-               (panel.noLabelCleanupCheckBox.isSelected() != LocalHistorySettings.getInstance().getCleanUpLabeled()) &&
-               (panel.keepForeverRadioButton.isSelected() != LocalHistorySettings.getInstance().getKeepForever()) &&
-               (panel.loadAllRadioButton.isSelected() != LocalHistorySettings.getInstance().getLoadAll());
+               (panel.noLabelCleanupCheckBox.isSelected() != HistorySettings.getInstance().getCleanUpLabeled()) &&
+               (panel.keepForeverRadioButton.isSelected() != HistorySettings.getInstance().getKeepForever()) &&
+               (panel.loadAllRadioButton.isSelected() != HistorySettings.getInstance().getLoadAll());
     }
 
     public JComponent getComponent(Lookup masterLookup) {

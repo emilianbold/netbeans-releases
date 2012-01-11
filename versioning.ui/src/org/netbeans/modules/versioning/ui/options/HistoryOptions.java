@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.localhistory.options;
+package org.netbeans.modules.versioning.ui.options;
 
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -52,21 +52,21 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public final class LocalHistoryOptions extends AdvancedOption {
+public final class HistoryOptions extends AdvancedOption {
     public static final String OPTIONS_SUBPATH = "LocalHistory"; // NOI18N
 
-    public LocalHistoryOptions() {
+    public HistoryOptions() {
     }
     
     public String getDisplayName () {
-        return NbBundle.getMessage (LocalHistoryOptions.class, "LocalHistoryOptions.displayName");    // NOI18N
+        return NbBundle.getMessage (HistoryOptions.class, "LocalHistoryOptions.displayName");    // NOI18N
     }
 
     public String getTooltip () {
-        return NbBundle.getMessage (LocalHistoryOptions.class, "LocalHistoryOptions.toolTip");        // NOI18N
+        return NbBundle.getMessage (HistoryOptions.class, "LocalHistoryOptions.toolTip");        // NOI18N
     }
 
     public OptionsPanelController create () {
-        return new LocalHistoryOptionsController();
+        return new HistoryOptionsController();
     }
 }

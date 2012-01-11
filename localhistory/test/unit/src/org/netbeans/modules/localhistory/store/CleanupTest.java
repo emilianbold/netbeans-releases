@@ -34,7 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.localhistory.LocalHistorySettings;
+import org.netbeans.modules.versioning.ui.history.LocalHistorySettings;
 import org.netbeans.modules.localhistory.LogHandler;
 
 /**

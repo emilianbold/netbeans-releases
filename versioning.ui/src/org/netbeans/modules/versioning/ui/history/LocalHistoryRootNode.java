@@ -41,22 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.LocalHistorySettings;
-import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
@@ -77,7 +72,7 @@ public class LocalHistoryRootNode extends AbstractNode {
     
     private static DateFormat dateFormat = DateFormat.getDateInstance();
     
-    private Map<Long, RevisionEntry> revisionEntries = new HashMap<Long, RevisionEntry>();
+    private Map<Long, HistoryEntry> revisionEntries = new HashMap<Long, HistoryEntry>();
     private final File[] files;
     
     private LoadNextNode loadNextNode;
@@ -97,33 +92,29 @@ public class LocalHistoryRootNode extends AbstractNode {
         if(vcsName != null) {
             waitNode = new WaitNode(vcsName);
             getChildren().add(new Node[] {waitNode}); 
-                }
-            }
+        }
+    }
     
     static boolean isLoadNext(Object n) {
         return n instanceof LocalHistoryRootNode.LoadNextNode;
         }
                     
-    synchronized void addLHEntries(List<RevisionEntry> entries) {
-        addEntries(entries);
+    synchronized void addLHEntries(HistoryEntry[] entries) {
+        addEntries(entries, false);
     }
         
-    synchronized void addVCSEntries(List<RevisionEntry> entries) {
-        addEntries(entries);
-            }
+    synchronized void addVCSEntries(HistoryEntry[] entries) {
+        addEntries(entries, true);
+    }
         
-    private void addEntries(List<RevisionEntry> entries) {
-        Iterator<RevisionEntry> it = entries.iterator();
-        while(it.hasNext()) {
-            RevisionEntry e = it.next();
-            if(!revisionEntries.containsKey(e.getTimestamp())) {
-                revisionEntries.put(e.getTimestamp(), e);
-                if(!e.isLocalHistory()) {
+    private void addEntries(HistoryEntry[] entries, boolean vcs) {
+        for (HistoryEntry e : entries) {
+            if(!revisionEntries.containsKey(e.getDateTime().getTime())) {
+                revisionEntries.put(e.getDateTime().getTime(), e);
+                if(vcs) {
                     vcsCount++;
-        }
-            } else {
-                it.remove();
-            }
+                }
+            } 
         }
         if(loadNextNode != null) {
             loadNextNode.refreshMessage();
@@ -151,31 +142,31 @@ public class LocalHistoryRootNode extends AbstractNode {
         if(loadNextNode != null) {
             children.remove(new Node[] { loadNextNode });
         }
-        if(!LocalHistorySettings.getInstance().getLoadAll()) {
+        if(!HistorySettings.getInstance().getLoadAll()) {
             loadNextNode = new LoadNextNode(dateFrom);
             children.add(new Node[] {loadNextNode});
         }
     }
     
-    private Map<Long, List<RevisionEntry>> groupByTimestamp(Collection<RevisionEntry> entries) {
-        Map<Long, List<RevisionEntry>> byTSMap = new HashMap<Long, List<RevisionEntry>>();
-        for (RevisionEntry entry : entries) {
-            List<RevisionEntry> l = byTSMap.get(entry.getTimestamp());
+    private Map<Long, List<HistoryEntry>> groupByTimestamp(HistoryEntry[] entries) {
+        Map<Long, List<HistoryEntry>> byTSMap = new HashMap<Long, List<HistoryEntry>>();
+        for (HistoryEntry entry : entries) {
+            List<HistoryEntry> l = byTSMap.get(entry.getDateTime().getTime());
             if(l == null) {
-                l = new LinkedList<RevisionEntry>();
-                byTSMap.put(entry.getTimestamp(), l);
+                l = new LinkedList<HistoryEntry>();
+                byTSMap.put(entry.getDateTime().getTime(), l);
         }
             l.add(entry);
         }
         return byTSMap;
     }
         
-    private RevisionNode[] createPlainRevisionNodes(Map<Long, List<RevisionEntry>> revisionEntriesMap) {
+    private RevisionNode[] createPlainRevisionNodes(Map<Long, List<HistoryEntry>> revisionEntriesMap) {
         List<RevisionNode> nodes = new LinkedList<RevisionNode>();
         for (Long ts  : revisionEntriesMap.keySet()) {                      
-            List<RevisionEntry> entries = revisionEntriesMap.get(ts);
+            List<HistoryEntry> entries = revisionEntriesMap.get(ts);
             if(!entries.isEmpty()) {
-                nodes.add(createRevisionEntryNode(entries));
+                nodes.add(createHistoryEntryNode(entries));
     }
         }
         return nodes.toArray(new RevisionNode[nodes.size()]);
@@ -186,53 +177,56 @@ public class LocalHistoryRootNode extends AbstractNode {
      * Creates a RevisionNode for a list of files, where the files are related to one DataObject - e.g. MyForm.java, MyForm.form
      * 
      */
-    private RevisionNode createRevisionEntryNode(List<RevisionEntry> entries) {
-        if(files.length == 1) {
+    private RevisionNode createHistoryEntryNode(List<HistoryEntry> entries) {
+//        if(files.length == 1) {
             
             // it's only 1 file, so we also already have the 1 entry
             return RevisionNode.create(entries);
             
-        } else if(!entries.get(0).isLocalHistory()) {
-            // for vcs entries just force multifile mode, no matter if there was
-            // 1 entry returned by vcs or more. 
-            return RevisionNode.create(entries, true); 
-        } else {            
-            // the timestamp must be the same for all StoreEntries
-            long ts = entries.get(0).getTimestamp();           
-            
-            // get the entries for every file - 
-            // if there is no entry in the Storage then create a structural (fake) one 
-            List<RevisionEntry> entriesList = new ArrayList<RevisionEntry>();            
-            for(File f : files) {                
-                boolean fileInEntries = false;
-                // check if we already have an entry for the file
-                for(RevisionEntry e : entries) {
-                    if(f.equals(e.getFile())) {
-                        entriesList.add(e);
-                        fileInEntries = true;
-                        break;
-                    }
-                }
-                if(fileInEntries) {
-                    // continue if we already have an entry for the file 
-                    continue;
-                }
-                                
-                // if there was no entry for the the file then try to get it ...
-                StoreEntry e = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
-                if(e != null) {
-                    
-                    // XXX we probably don't have to do this anymore - see in createDateFolders( ... )
-                    
-                    // ... either by retrieving them from the storage
-                    entriesList.add(RevisionEntry.createRevisionEntry(e));
-                } else {
-                    // ... or by creating a structural (fake) one
-                    entriesList.add(RevisionEntry.createRevisionEntry(StoreEntry.createFakeStoreEntry(f, ts)));
-                }                
-            }            
-            return RevisionNode.create(entriesList);            
-        }
+//        } 
+        
+        // XXX
+//        else if(!entries.get(0).isLocalHistory()) {
+//            // for vcs entries just force multifile mode, no matter if there was
+//            // 1 entry returned by vcs or more. 
+//            return RevisionNode.create(entries, true); 
+//        } else {   
+//            // the timestamp must be the same for all StoreEntries
+//            long ts = entries.get(0).getTimestamp();           
+//            
+//            // get the entries for every file - 
+//            // if there is no entry in the Storage then create a structural (fake) one 
+//            List<HistoryEntry> entriesList = new ArrayList<HistoryEntry>();            
+//            for(File f : files) {                
+//                boolean fileInEntries = false;
+//                // check if we already have an entry for the file
+//                for(HistoryEntry e : entries) {
+//                    if(f.equals(e.getFile())) {
+//                        entriesList.add(e);
+//                        fileInEntries = true;
+//                        break;
+//                    }
+//                }
+//                if(fileInEntries) {
+//                    // continue if we already have an entry for the file 
+//                    continue;
+//                }
+//                                
+//                // if there was no entry for the the file then try to get it ...
+//                StoreEntry e = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
+//                if(e != null) {
+//                    
+//                    // XXX we probably don't have to do this anymore - see in createDateFolders( ... )
+//                    
+//                    // ... either by retrieving them from the storage
+//                    entriesList.add(HistoryEntry.createHistoryEntry(e));
+//                } else {
+//                    // ... or by creating a structural (fake) one
+//                    entriesList.add(HistoryEntry.createHistoryEntry(StoreEntry.createFakeStoreEntry(f, ts)));
+//                }                
+//            }            
+//            return RevisionNode.create(entriesList);            
+//        }
     }                                     
 
     public String getName() {
@@ -272,7 +266,7 @@ public class LocalHistoryRootNode extends AbstractNode {
 
         @Override
         public Action[] getActions(boolean context) {
-            if(!LocalHistorySettings.getInstance().getLoadAll()) {
+            if(!HistorySettings.getInstance().getLoadAll()) {
                 return actions;
             }
             return new Action[0];
@@ -341,7 +335,6 @@ public class LocalHistoryRootNode extends AbstractNode {
         public String getName() {
             return NODE_WAIT;
         }
-        
     }    
 }
 

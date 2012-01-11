@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -58,18 +58,16 @@ import javax.swing.*;
 import org.netbeans.api.diff.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.filesystems.FileObject;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.Lookups;
@@ -80,7 +78,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class LocalHistoryDiffView implements PropertyChangeListener, VersioningListener {
            
-    private final LocalHistoryTopComponent tc;
+    private final HistoryTopComponent tc;
     private DiffPanel panel;
     private Component diffComponent;
     private DiffController diffView;                
@@ -90,10 +88,10 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
     private PreparingDiffHandler preparingDiffPanel;
         
     /** Creates a new instance of LocalHistoryView */
-    public LocalHistoryDiffView(LocalHistoryTopComponent tc) {
+    public LocalHistoryDiffView(HistoryTopComponent tc) {
         this.tc = tc;
         panel = new DiffPanel();                                                              
-        LocalHistory.getInstance().addVersioningListener(this);
+//        History.getInstance().addVersioningListener(this); XXX
         showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
     }    
         
@@ -109,16 +107,17 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
       
     @Override
     public void versioningEvent(VersioningEvent event) {
-        if(event.getId() != LocalHistory.EVENT_FILE_CREATED) {
-            return;
-        }
-        File file = (File) event.getParams()[0];
-        if( file == null || prepareDiff == null || !selected ||
-            !file.equals(prepareDiff.entry.getFile()))
-        {
-            return;
-        }        
-        scheduleTask(prepareDiff);
+        // XXX
+//        if(event.getId() != LocalHistory.EVENT_FILE_CREATED) {
+//            return;
+//        }
+//        File file = (File) event.getParams()[0];
+//        if( file == null || prepareDiff == null || !selected ||
+//            !file.equals(prepareDiff.entry.getFile()))
+//        {
+//            return;
+//        }        
+//        scheduleTask(prepareDiff);
     }
     
     JPanel getPanel() {
@@ -128,7 +127,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
     private void selectionChanged(PropertyChangeEvent evt) {
         Node[] newSelection = ((Node[]) evt.getNewValue());
         if ((newSelection != null) && (newSelection.length == 1)) {
-            RevisionEntry se = newSelection[0].getLookup().lookup(RevisionEntry.class);
+            HistoryEntry se = newSelection[0].getLookup().lookup(HistoryEntry.class);
             if (se != null) {
                 selected = true;
                 refreshDiffPanel(se);
@@ -143,7 +142,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
         showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, msgKey));
     }           
     
-    private void refreshDiffPanel(RevisionEntry se) {  
+    private void refreshDiffPanel(HistoryEntry se) {  
         prepareDiff = new DiffPrepareTask(se);
         scheduleTask(prepareDiff);
     }        
@@ -153,7 +152,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
             prepareDiffTask.cancel();
             getPreparingDiffHandler().finish();
     }
-        prepareDiffTask = LocalHistory.getInstance().getParallelRequestProcessor().create(runnable);
+        prepareDiffTask = History.getInstance().getRequestProcessor().create(runnable);
         prepareDiffTask.schedule(0);        
     }
 
@@ -166,9 +165,9 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
     
     private class DiffPrepareTask implements Runnable {
         
-        private final RevisionEntry entry;
+        private final HistoryEntry entry;
 
-        public DiffPrepareTask(final RevisionEntry se) {
+        public DiffPrepareTask(final HistoryEntry se) {
             entry = se;
         }
 
@@ -177,22 +176,18 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
             // XXX how to get the mimetype
 
             File tmpFile;
-            final File file = entry.getFile();
+            final File file = entry.getFiles()[0]; // XXX
             getPreparingDiffHandler().start();
             try {
-                
-            final List<File> siblingTmpFiles = new LinkedList<File>();
-            try {
-                    tmpFile = entry.getHistoryFile();
-                    List<RevisionEntry> siblings = entry.getSiblingEntries();
-                    for (RevisionEntry siblingEntry : siblings) {
-                        File tmpHistorySiblingFile = siblingEntry.getHistoryFile();
-                    siblingTmpFiles.add(tmpHistorySiblingFile);
-                }
-            } catch (IOException ioe) {
-                LocalHistory.LOG.log(Level.WARNING, null, ioe);
-                return;
-            }
+                final List<File> siblingTmpFiles = new LinkedList<File>();
+                File tempFolder = Utils.getTempFolder();
+                tmpFile = new File(tempFolder, file.getName()); // XXX
+                entry.getRevisionFile(file, tmpFile);
+//                List<HistoryEntry> siblings = entry.getSiblingEntries(); // XXX
+//                for (HistoryEntry siblingEntry : siblings) {
+//                    File tmpHistorySiblingFile = siblingEntry.getHistoryFile();
+//                    siblingTmpFiles.add(tmpHistorySiblingFile);
+//                }
             } finally {
                 getPreparingDiffHandler().finish();
             }
@@ -202,16 +197,16 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
                 public void run() {            
                     try {   
                         
-                        StreamSource ss1 = new LHStreamSource(tmpHistoryFile, entry.getFile().getName() + " " + RevisionNode.getFormatedDate(entry), entry.getMIMEType());
+                        StreamSource ss1 = new LHStreamSource(tmpHistoryFile, file.getName() + " " + RevisionNode.getFormatedDate(entry), getMimeType(file));
                         
                         String title;
                         StreamSource ss2;                        
                         if(file.exists()) {
                             title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_CurrentFile");
-                            ss2 = new LHStreamSource(file, title, entry.getMIMEType());
+                            ss2 = new LHStreamSource(file, title, getMimeType(file));
                         } else {
                             title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_FileDeleted");
-                            ss2 = StreamSource.createSource("currentfile", title, entry.getMIMEType(), new StringReader(""));
+                            ss2 = StreamSource.createSource("currentfile", title, getMimeType(file), new StringReader(""));
                         }
                         
                         diffView = DiffController.create(ss1, ss2);
@@ -229,11 +224,22 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
                         panel.repaint();
 
                     } catch (IOException ioe)  {
-                        LocalHistory.LOG.log(Level.SEVERE, null, ioe);
+                        History.LOG.log(Level.SEVERE, null, ioe);
                     }                            
                 }
             });
+            
         }
+
+        private String getMimeType(File file) {
+            FileObject fo = FileUtils.toFileObject(file);
+            if(fo != null) {
+                return fo.getMIMEType();   
+            } else {
+                return "content/unknown"; // NOI18N
+            }                
+        }
+        
     }        
     
     private void showNoContent(String s) {

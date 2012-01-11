@@ -41,16 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.options;
+package org.netbeans.modules.versioning.ui.options;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
+public class HistoryOptionsPanel extends javax.swing.JPanel {
     
     /** Creates new form SvnOptionsPanel */
-    public LocalHistoryOptionsPanel() {
+    public HistoryOptionsPanel() {
         initComponents();
     }
     
@@ -69,34 +69,34 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
 
-        olderThanDaysTextField.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.olderThanDaysTextField.text")); // NOI18N
+        olderThanDaysTextField.setText(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.olderThanDaysTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(daysLabel2, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(daysLabel2, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.daysLabel2.text")); // NOI18N
 
         warningLabel.setForeground(java.awt.Color.red);
-        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.warningLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.warningLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(noLabelCleanupCheckBox, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noLabelCleanupCheckBox, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.noLabelCleanupCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.jLabel1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.jLabel2.text")); // NOI18N
 
-        daysIncrementTextField.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysIncrementTextField.text")); // NOI18N
+        daysIncrementTextField.setText(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.daysIncrementTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.jLabel4.text")); // NOI18N
 
         buttonGroup1.add(loadAllRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(loadAllRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.loadAllRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(loadAllRadioButton, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.loadAllRadioButton.text")); // NOI18N
 
         buttonGroup1.add(loadIncrementsRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(loadIncrementsRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.loadIncrementsRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(loadIncrementsRadioButton, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.loadIncrementsRadioButton.text")); // NOI18N
 
         buttonGroup2.add(removeOlderRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(removeOlderRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.removeOlderRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeOlderRadioButton, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.removeOlderRadioButton.text")); // NOI18N
 
         buttonGroup2.add(keepForeverRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(keepForeverRadioButton, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.keepForeverRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keepForeverRadioButton, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.keepForeverRadioButton.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -111,7 +111,7 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
                             .addComponent(loadAllRadioButton)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(loadIncrementsRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(daysIncrementTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel4))))
@@ -174,8 +174,8 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        olderThanDaysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
-        olderThanDaysTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSD_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
+        olderThanDaysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
+        olderThanDaysTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "ACSD_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

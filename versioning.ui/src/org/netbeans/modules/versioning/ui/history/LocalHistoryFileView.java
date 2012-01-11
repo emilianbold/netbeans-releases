@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -62,21 +62,12 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.LocalHistorySettings;
-import org.netbeans.modules.localhistory.store.LocalHistoryStore;
-import org.netbeans.modules.localhistory.store.StoreEntry;
-import org.netbeans.modules.localhistory.ui.view.LocalHistoryRootNode.WaitNode;
-import org.netbeans.modules.localhistory.ui.view.RevisionNode.Filter;
-import org.netbeans.modules.localhistory.ui.view.RevisionNode.MessageProperty;
-import org.netbeans.modules.localhistory.ui.view.RevisionNode.RevisionProperty;
-import org.netbeans.modules.localhistory.ui.view.RevisionNode.UserProperty;
-import org.netbeans.modules.localhistory.utils.Utils;
+import org.netbeans.modules.versioning.ui.history.LocalHistoryRootNode.WaitNode;
+import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
+import org.netbeans.modules.versioning.ui.history.RevisionNode.MessageProperty;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.swing.etable.ETableColumn;
@@ -86,10 +77,8 @@ import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -104,7 +93,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
     private File[] files;
 
     private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true);    
-    private final LocalHistoryTopComponent tc; 
+    private final HistoryTopComponent tc; 
     private Filter filter;
     private Task refreshTask;
     private Task vcsTask;
@@ -113,13 +102,13 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
     private Date currentDateFrom; 
     private LoadNextAction loadNextAction;
     
-    public LocalHistoryFileView(File[] files, VersioningSystem versioningSystem, LocalHistoryTopComponent tc) {                       
+    public LocalHistoryFileView(File[] files, VersioningSystem versioningSystem, HistoryTopComponent tc) {                       
         this.tc = tc;
         this.files = files;
         this.versioningSystem = versioningSystem;
         tablePanel = new FileTablePanel();
-        LocalHistory.getInstance().getLocalHistoryStore().addVersioningListener(this); 
-        LocalHistorySettings.getInstance().addPreferenceListener(this);
+//        History.getInstance().getLocalHistoryStore().addVersioningListener(this); XXX
+        HistorySettings.getInstance().addPreferenceListener(this);
 
         loadNextAction = new LoadNextAction();
     }
@@ -130,26 +119,27 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
 
     @Override
     public void versioningEvent(VersioningEvent evt) {
-        File file = (File) evt.getParams()[0];
-        if(!contains(file)) {
-            return;
-        }
-        LocalHistoryRootNode rootNode = getRootNode();
-        if(rootNode == null) {
-            return;
-    }    
-        if(LocalHistoryStore.EVENT_HISTORY_CHANGED == evt.getId()) {
-            StoreEntry entry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(file, (Long) evt.getParams()[1]);
-            rootNode.addLHEntries(Arrays.asList(RevisionEntry.createRevisionEntry(entry)));
-        } else if (LocalHistoryStore.EVENT_ENTRY_DELETED == evt.getId()) {
-            // don't do anything, node was already deleted via action
-        }
+        // XXX
+//        File file = (File) evt.getParams()[0];
+//        if(!contains(file)) {
+//            return;
+//        }
+//        LocalHistoryRootNode rootNode = getRootNode();
+//        if(rootNode == null) {
+//            return;
+//        }    
+//        if(LocalHistoryStore.EVENT_HISTORY_CHANGED == evt.getId()) {
+//            StoreEntry entry = History.getInstance().getLocalHistoryStore().getStoreEntry(file, (Long) evt.getParams()[1]);
+//            rootNode.addLHEntries(Arrays.asList(RevisionEntry.createRevisionEntry(entry)));
+//        } else if (LocalHistoryStore.EVENT_ENTRY_DELETED == evt.getId()) {
+//            // don't do anything, node was already deleted via action
+//        }
     }
     
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
-        if(LocalHistorySettings.PROP_INCREMENTS.equals(evt.getKey()) ||
-           LocalHistorySettings.PROP_LOAD_ALL.equals(evt.getKey())) 
+        if(HistorySettings.PROP_INCREMENTS.equals(evt.getKey()) ||
+           HistorySettings.PROP_LOAD_ALL.equals(evt.getKey())) 
         {
             LocalHistoryRootNode rootNode = getRootNode();
             if(rootNode != null) {
@@ -176,7 +166,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
     }
     
     public void close() {
-        LocalHistory.getInstance().getLocalHistoryStore().removeVersioningListener(this);
+//        History.getInstance().getLocalHistoryStore().removeVersioningListener(this); XXX
     }    
     
     private boolean contains(File file) {
@@ -217,20 +207,6 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         tablePanel.treeView.getOutline().setQuickFilter(0, filter);
     }
     
-    private List<RevisionEntry> loadLHEntries(File[] files) {
-        if(files == null || files.length == 0) {
-            return Collections.emptyList();
-        }
-        List<RevisionEntry> revisionEntries = new LinkedList<RevisionEntry>();
-        for (File f : files) {
-            StoreEntry[] ses = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntries(f);
-            for(StoreEntry se : ses) {
-                revisionEntries.add(RevisionEntry.createRevisionEntry(se));
-            }
-        }
-        return revisionEntries;
-    }    
-    
     // XXX serialize vcs calls
     // XXX on deserialization do not invoke for every opened TC, but only the activated one
     private void loadVCSEntries(final File[] files, final boolean forceLoadAll) {
@@ -238,7 +214,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
             return;
         }
         vcsTask = rp.post(new Runnable() {
-            @Override
+        @Override
         public void run() {                        
                 VCSHistoryProvider hp = versioningSystem.getVCSHistoryProvider();
                 if(hp == null) {
@@ -252,30 +228,28 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                     rootNode.loadingStarted();
             
                     VCSHistoryProvider.HistoryEntry[] vcsHistory;
-                    if(forceLoadAll || LocalHistorySettings.getInstance().getLoadAll()) {
+                    if(forceLoadAll || HistorySettings.getInstance().getLoadAll()) {
                         vcsHistory = hp.getHistory(files, (Date) null); // get all
                         // XXX need different text for "Showing Subversion revisions..."
                         // XXX shouldn't be possible to switch to loadNext anymore
                     } else {
-                        int increment = LocalHistorySettings.getInstance().getIncrements();
+                        int increment = HistorySettings.getInstance().getIncrements();
                         if(currentDateFrom == null) {
                             currentDateFrom = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * (long) increment); // last X days
                         } else {
                             currentDateFrom = new Date(currentDateFrom.getTime() - 1000 * 60 * 60 * 24 * (long) increment); // last X days
                         }                
-                        vcsHistory = hp.getHistory(files, currentDateFrom); // get all
                     }
+                    vcsHistory = hp.getHistory(files, currentDateFrom); // get all
 
                     if(vcsHistory == null || vcsHistory.length == 0) {
                         return;
                     }                
-                    List<RevisionEntry> revisionEntries = new LinkedList<RevisionEntry>();
-                    for (HistoryEntry revision : vcsHistory) {
-                        for(File file : revision.getFiles()) {
-                            revisionEntries.add(RevisionEntry.createRevisionEntry(revision, hp, file));
-                }             
+                    List<HistoryEntry> entries = new ArrayList<HistoryEntry>(vcsHistory.length);
+                    for (VCSHistoryProvider.HistoryEntry he : vcsHistory) {
+                        entries.add(new HistoryEntry(he, false));
                     }
-                    rootNode.addVCSEntries(revisionEntries);
+                    rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]));
                 } finally {
                     rootNode.loadingFinished(currentDateFrom);
                     // XXX yet select the first node on
@@ -360,7 +334,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         
     private void setSelection(final Node[] nodes) {
             SwingUtilities.invokeLater(new Runnable() {
-        @Override
+            @Override
                 public void run() {
                     try {
                         tablePanel.getExplorerManager().setSelectedNodes(nodes);
@@ -386,7 +360,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                                                     versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
                                                     null);
                 LocalHistoryRootNode root = new LocalHistoryRootNode(files, vcsName, loadNextAction, createActions()); 
-                root.addLHEntries(loadLHEntries(files));
+                root.addLHEntries(History.getInstance().loadLHEntries(files));
                 tablePanel.getExplorerManager().setRootContext(root);
                 
             }
@@ -411,7 +385,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         actions.add(new AbstractAction("Always Load All") { // XXX name
             @Override
             public void actionPerformed(ActionEvent e) {
-                LocalHistorySettings.getInstance().setLoadAll(true);
+                HistorySettings.getInstance().setLoadAll(true);
                 loadVCSEntries(files, true);
             }
         });
@@ -631,7 +605,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         return spans != null && spans.length >= 2;
     }
     private int[] getHyperlinkSpans(String message) throws IllegalAccessException {
-        List<VCSHyperlinkProvider> providers = LocalHistory.getInstance().getHyperlinkProviders();
+        List<VCSHyperlinkProvider> providers = History.getInstance().getHyperlinkProviders();
         for (VCSHyperlinkProvider hp : providers) {
             int[] spans = hp.getSpans(message);
             if (spans != null && spans.length >= 2) {
@@ -690,7 +664,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                         comp.setToolTipText(getTooltip((Node.Property) value));
         }
                 } catch (Exception ex) {
-                    LocalHistory.LOG.log(Level.WARNING, null, ex);
+                    History.LOG.log(Level.WARNING, null, ex);
                     renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
     }
             } else {
@@ -814,7 +788,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                     }
                 }
             } catch (Exception ex) {
-                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                History.LOG.log(Level.WARNING, null, ex);
             }
         }
 
@@ -842,7 +816,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                 try {
                     outline.getSelectedRow();
 
-                    RevisionEntry entry = n.getLookup().lookup(RevisionEntry.class);
+                    HistoryEntry entry = n.getLookup().lookup(HistoryEntry.class);
                     if(entry == null) {
                         return;
                     }
@@ -852,13 +826,13 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                     }
                     String author = entry.getUsername();
                     String revision = entry.getRevision();
-                    Date date = entry.getDate();
+                    Date date = entry.getDateTime();
                     MsgTooltipWindow ttw = new MsgTooltipWindow(outline, files[0], message, revision, author, date);
                     Point p = e.getPoint();
                     SwingUtilities.convertPointToScreen(p, outline);
                     ttw.show(new Point(p.x, p.y));
                 } catch (Exception ex) {
-                    LocalHistory.LOG.log(Level.WARNING, null, ex);
+                    History.LOG.log(Level.WARNING, null, ex);
                 } 
             }
         }
@@ -891,10 +865,10 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         }
         private void refreshName() {
             String name;
-            if(LocalHistorySettings.getInstance().getLoadAll()) {
+            if(HistorySettings.getInstance().getLoadAll()) {
                 name = NbBundle.getMessage(LocalHistoryRootNode.class,  "LBL_LoadAll"); // XXX
             } else {
-                name = "Load next " + LocalHistorySettings.getInstance().getIncrements() + " days"; // XXX
+                name = "Load next " + HistorySettings.getInstance().getIncrements() + " days"; // XXX
             }
             putValue(Action.NAME, name);
             LocalHistoryRootNode rootNode = getRootNode();

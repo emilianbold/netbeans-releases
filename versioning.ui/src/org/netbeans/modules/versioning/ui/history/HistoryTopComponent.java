@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -74,11 +74,11 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.options.LocalHistoryOptions;
 import org.netbeans.modules.versioning.history.LinkButton;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
+import org.netbeans.modules.versioning.ui.options.HistoryOptions;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -87,7 +87,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
-import org.netbeans.modules.localhistory.ui.view.RevisionNode.Filter;
 import org.openide.util.Lookup;
 
 /**
@@ -103,9 +102,9 @@ import org.openide.util.Lookup;
         mimeType="",
         position=1000000 // lets leave some space in case somebody really wants to be the last
 )
-final public class LocalHistoryTopComponent extends TopComponent implements MultiViewElement {
+final public class HistoryTopComponent extends TopComponent implements MultiViewElement {
 
-    private static LocalHistoryTopComponent instance;
+    private static HistoryTopComponent instance;
     private LocalHistoryFileView masterView;
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
@@ -113,15 +112,15 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     private boolean isPartOfMultiview = false;
     private LocalHistoryDiffView diffView;
     
-    public LocalHistoryTopComponent() {
+    public HistoryTopComponent() {
         initComponents();
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
         }
-        setToolTipText(NbBundle.getMessage(LocalHistoryTopComponent.class, "HINT_LocalHistoryTopComponent"));
+        setToolTipText(NbBundle.getMessage(HistoryTopComponent.class, "HINT_LocalHistoryTopComponent"));
     }
 
-    public LocalHistoryTopComponent(Lookup context) {
+    public HistoryTopComponent(Lookup context) {
         this();
         isPartOfMultiview = true;
         DataObject dataObject = context.lookup(DataObject.class);
@@ -158,7 +157,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         masterView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
-                    LocalHistoryTopComponent.this.setActivatedNodes((Node[]) evt.getNewValue());  
+                    HistoryTopComponent.this.setActivatedNodes((Node[]) evt.getNewValue());  
                 } /*else if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
                     System.out.println(" " + evt.getOldValue() +  " " + evt.getNewValue());
                 }*/
@@ -170,7 +169,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         splitPane.setBottomComponent(diffView.getPanel());                   
         masterView.requestActive();
         
-        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+        History.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 masterView.refresh();
@@ -216,9 +215,9 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
      * To obtain the singleton instance, use {@link findInstance}.
      */
-    public static synchronized LocalHistoryTopComponent getDefault() {
+    public static synchronized HistoryTopComponent getDefault() {
         if (instance == null) {
-            instance = new LocalHistoryTopComponent();
+            instance = new HistoryTopComponent();
         }
         return instance;
     }
@@ -281,7 +280,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException ex) {
-                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                History.LOG.log(Level.WARNING, null, ex);
                 return CloseOperationState.STATE_OK;
             }
             if(dataObject != null && dataObject.isModified()) {
@@ -293,7 +292,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
                             try {
                                 sc.save();
                             } catch (IOException ex) {
-                                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                                History.LOG.log(Level.WARNING, null, ex);
                             }
                         }
                     }
@@ -312,7 +311,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
-            return LocalHistoryTopComponent.getDefault();
+            return HistoryTopComponent.getDefault();
         }
     }
 
@@ -363,13 +362,13 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             setBackground(Color.white);
             setLayout(new GridBagLayout());
             
-            containsLabel = new JLabel(NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_Contains"));  // NOI18N
+            containsLabel = new JLabel(NbBundle.getMessage(HistoryTopComponent.class, "LBL_Contains"));  // NOI18N
             containsField = new JTextField();  
             containsField.setPreferredSize(new Dimension(150, containsField.getPreferredSize().height));
             containsField.getDocument().addDocumentListener(new ContainsListener());
             containsLabel.setVisible(false);
             containsField.setVisible(false);
-            filterLabel = new JLabel(NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_Filter"));  // NOI18N
+            filterLabel = new JLabel(NbBundle.getMessage(HistoryTopComponent.class, "LBL_Filter"));  // NOI18N
             filterCombo = new JComboBox();
             filterCombo.setRenderer(new DefaultListCellRenderer() {
                 @Override
@@ -386,13 +385,13 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
                     onFilterChange();
                 }
             });
-            nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-next.png"))); 
-            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-prev.png"))); 
+            nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-next.png"))); 
+            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); 
             nextButton.addActionListener(this);
             prevButton.addActionListener(this);
-            refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/refresh.png"))); 
+            refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); 
             refreshButton.addActionListener(this);
-            settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/options.png"))); 
+            settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); 
             settingsButton.addActionListener(this);
             Filter[] filters;
             if(vs != null && vs.getVCSHistoryProvider() != null) {
@@ -430,22 +429,22 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             final Action openSearchHistoryAction = vs != null && vs.getVCSHistoryProvider() != null ? vs.getVCSHistoryProvider().createShowHistoryAction(files) : null;
             if(openSearchHistoryAction != null) {
                 LinkButton searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)})); // NOI18N
-            searchHistoryButton.addActionListener(new ActionListener() {
-                @Override
+                searchHistoryButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(final ActionEvent e) {
-                    LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
+                        History.getInstance().getRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
                                 openSearchHistoryAction.actionPerformed(e);
                             }
-                    });
-                }
-            });
+                        }); 
+                    }
+                });
             
-            c = new GridBagConstraints();
-            c.anchor = GridBagConstraints.EAST;
+                c = new GridBagConstraints();
+                c.anchor = GridBagConstraints.EAST;
                 c.weightx = 1;
-            add(searchHistoryButton, c); 
+                add(searchHistoryButton, c); 
             }
         }
             
@@ -458,15 +457,15 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             } else if(e.getSource() == getToolbar().refreshButton) {
                 masterView.refresh();
             } else if(e.getSource() == getToolbar().settingsButton) {
-                OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Versioning/" + LocalHistoryOptions.OPTIONS_SUBPATH);
-        }
+                OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Versioning/" + HistoryOptions.OPTIONS_SUBPATH);
+            }
         }
     }
 
     void disableNavigationButtons() {
         getToolbar().prevButton.setEnabled(false);
         getToolbar().nextButton.setEnabled(false);
-        }
+    }
 
     void refreshNavigationButtons(int currentDifference, int diffCount) {
         getToolbar().prevButton.setEnabled(currentDifference > 0);
@@ -484,10 +483,10 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         @Override
         public boolean accept(Object value) {
             return true;
-}
+        }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_AllRevisionsFilter"); // NO18N   
+            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_AllRevisionsFilter"); // NO18N   
         }
     }    
     private class VCSFilter extends Filter {
@@ -497,9 +496,9 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         }
         @Override
         public boolean accept(Object value) {
-            Collection<RevisionEntry> entries = getEntries(value);
+            Collection<HistoryEntry> entries = getEntries(value);
             if(entries != null) {
-                for (RevisionEntry e : entries) {
+                for (HistoryEntry e : entries) {
                     if(!e.isLocalHistory()) return true;
                 }
             }
@@ -507,15 +506,15 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_VCSRevisionsFilter", new Object[] {vcsName}); // NO18N
+            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_VCSRevisionsFilter", new Object[] {vcsName}); // NO18N
         }
     }    
     private class LHFilter extends Filter {
         @Override
         public boolean accept(Object value) {
-            Collection<RevisionEntry> entries = getEntries(value);
+            Collection<HistoryEntry> entries = getEntries(value);
             if(entries != null) {
-                for (RevisionEntry e : entries) {
+                for (HistoryEntry e : entries) {
                     if(e.isLocalHistory()) return true;
                 }
             }
@@ -523,7 +522,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_LHRevisionsFilter"); // NO18N
+            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_LHRevisionsFilter"); // NO18N
         }
     }       
     private class ByUserFilter extends Filter {
@@ -532,9 +531,9 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             String byUser = getToolbar().containsField.getText();
             if(byUser == null || "".equals(byUser)) return true;                // NOI18N
             
-            Collection<RevisionEntry> entries = getEntries(value);
+            Collection<HistoryEntry> entries = getEntries(value);
             if(entries != null) {
-                for (RevisionEntry e : entries) {
+                for (HistoryEntry e : entries) {
                     String user = e.getUsernameShort();
                     if(user.toLowerCase().contains(byUser.toLowerCase())) return true;
                 }
@@ -543,7 +542,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_ByUserFilter"); // NO18N
+            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_ByUserFilter"); // NO18N
         }
         @Override
         public String getRendererValue(String value) {
@@ -556,9 +555,9 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
             String byMsg = getToolbar().containsField.getText();
             if(byMsg == null || "".equals(byMsg)) return true;
             
-            Collection<RevisionEntry> entries = getEntries(value);
+            Collection<HistoryEntry> entries = getEntries(value);
             if(entries != null) {
-                for (RevisionEntry e : entries) {
+                for (HistoryEntry e : entries) {
                     String msg = e.getMessage();
                     if(msg.toLowerCase().contains(byMsg.toLowerCase())) return true;
                 }
@@ -567,7 +566,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(LocalHistoryTopComponent.class, "LBL_ByMsgFilter"); // NO18N
+            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_ByMsgFilter"); // NO18N
         }
 
         @Override

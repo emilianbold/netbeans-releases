@@ -57,7 +57,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.LocalHistorySettings;
+import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.turbo.Turbo;
@@ -783,7 +783,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 }
                 if(ts < now - ttl) {
                     if(labels.size() > 0) {
-                        if(LocalHistorySettings.getInstance().getCleanUpLabeled()) {
+                        if(HistorySettings.getInstance().getCleanUpLabeled()) {
                             // remove label and file
                         labels.remove(ts);
                             f.delete();                            

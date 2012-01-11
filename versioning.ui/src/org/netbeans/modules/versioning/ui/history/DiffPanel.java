@@ -4,7 +4,7 @@
  * Created on February 8, 2007, 2:24 PM
  */
 
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
 import java.awt.Color;
 import javax.swing.UIManager;

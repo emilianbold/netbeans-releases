@@ -21,7 +21,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="diffPanel" alignment="1" pref="256" max="32767" attributes="0"/>
-          </Group>
+      </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
@@ -32,5 +32,5 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
-      </SubComponents>
+  </SubComponents>
 </Form>

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory;
+package org.netbeans.modules.versioning.ui.history;
 
 import java.io.File;
 import java.util.prefs.PreferenceChangeListener;
@@ -54,9 +54,9 @@ import org.openide.util.NbPreferences;
  * 
  * @author Tomas Stupka
  */
-public class LocalHistorySettings {
+public class HistorySettings {
     
-    private static final LocalHistorySettings INSTANCE = new LocalHistorySettings();
+    private static final HistorySettings INSTANCE = new HistorySettings();
     
     private static final String LAST_SELECTED_ENTRY = "RevertFileChanges.lastSelected";         // NOI18N  
     private static final String PROP_TTL = "timeToLive";                                        // NOI18N  
@@ -67,16 +67,16 @@ public class LocalHistorySettings {
     private static final String PROP_KEEP_STORED = "filesToKeepStored";                         // NOI18N  
     
             
-    /** Creates a new instance of LocalHistorySettings */
-    private LocalHistorySettings() {
+    /** Creates a new instance of HistorySettings */
+    private HistorySettings() {
     }
     
-    public static LocalHistorySettings getInstance() {        
+    public static HistorySettings getInstance() {        
         return INSTANCE;
     }
     
     private Preferences getPreferences() {
-        return NbPreferences.forModule(LocalHistorySettings.class);
+        return NbPreferences.forModule(HistorySettings.class);
     }
 
     public void setTTL(int ttl) {

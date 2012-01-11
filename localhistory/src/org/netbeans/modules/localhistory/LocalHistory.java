@@ -60,12 +60,12 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
-import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.ListenersSupport;
-import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -115,7 +115,6 @@ public class LocalHistory {
     
     private LocalHistoryVCS lhvcs;
     private RequestProcessor parallelRP;
-    private Result<? extends VCSHyperlinkProvider> hpResult;
 
     public LocalHistory() {
         String include = System.getProperty("netbeans.localhistory.includeFiles");
@@ -149,10 +148,10 @@ public class LocalHistory {
     }
 
     void init() {
-        if(!LocalHistorySettings.getInstance().getKeepForever()) {
+        if(!HistorySettings.getInstance().getKeepForever()) {
             LocalHistoryStore s = getLocalHistoryStore(false);
             if(s != null) {
-                getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+                getLocalHistoryStore().cleanUp(HistorySettings.getInstance().getTTLMillis());
             }
         }
         getParallelRequestProcessor().post(new Runnable() {
@@ -162,7 +161,7 @@ public class LocalHistory {
             }
         });
     }
-
+    
     private void setRoots(Project[] projects) {        
         Set<File> newRoots = new HashSet<File>();
         for(Project project : projects) {
@@ -239,23 +238,6 @@ public class LocalHistory {
         }
         return store;
     }
-    
-    /**
-     *
-     * @return registered hyperlink providers
-     */
-    public List<VCSHyperlinkProvider> getHyperlinkProviders() {
-        if (hpResult == null) {
-            hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
-        }
-        if (hpResult == null) {
-            return Collections.emptyList();
-        }
-        Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
-        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
-        providersList.addAll(providersCol);
-        return Collections.unmodifiableList(providersList);
-    }    
     
     File isManagedByParent(File file) {
         if(roots == null) {

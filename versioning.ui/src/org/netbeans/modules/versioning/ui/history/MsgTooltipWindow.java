@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -72,7 +72,6 @@ import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
@@ -310,7 +309,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
 //                
                 // commit msg
                 StyledDocumentHyperlink l = null;
-                List<VCSHyperlinkProvider> providers = LocalHistory.getInstance().getHyperlinkProviders();
+                List<VCSHyperlinkProvider> providers = History.getInstance().getHyperlinkProviders();
                 for (VCSHyperlinkProvider hp : providers) {
                     l = IssueLinker.create(hp, hyperlinkStyle, file, doc, message);
                     if (l != null) {
