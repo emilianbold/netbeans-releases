@@ -44,7 +44,6 @@ package org.netbeans.modules.versioning.core.spi;
 import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 
@@ -52,11 +51,11 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  *
  * @author Tomas Stupka
  */
-public abstract class VCSHistoryProvider {
+public interface VCSHistoryProvider {
     
-    public abstract void addChangeListener(ChangeListener l);
+    public void addHistoryChangeListener(HistoryChangeListener l);
     
-    public abstract void removeChangeListener(ChangeListener l);
+    public void removeHistoryChangeListener(HistoryChangeListener l);
     
     public abstract HistoryEntry[] getHistory(VCSFileProxy[] files, Date fromDate);
     
@@ -159,4 +158,25 @@ public abstract class VCSHistoryProvider {
     public interface MessageEditProvider {
         void setMessage(String message) throws IOException;
     }    
+    
+    public interface HistoryChangeListener {
+        public void fireHistoryChanged(HistoryEvent evt);
+    }
+    
+    public static final class HistoryEvent {
+        private final VCSFileProxy[] files;
+        private final VCSHistoryProvider source;
+        public HistoryEvent(VCSHistoryProvider source, VCSFileProxy[] files) {
+            this.files = files;
+            this.source = source;
+        }
+
+        public VCSFileProxy[] getFiles() {
+            return files;
+        }
+
+        public VCSHistoryProvider getSource() {
+            return source;
+        }
+    }
 }

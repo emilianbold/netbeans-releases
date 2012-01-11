@@ -45,18 +45,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
-import javax.swing.event.ChangeListener;
 
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class VCSHistoryProvider {
+public interface VCSHistoryProvider {
     
-    public abstract void addChangeListener(ChangeListener l);
+    public void addHistoryChangeListener(HistoryChangeListener l);
     
-    public abstract void removeChangeListener(ChangeListener l);
+    public void removeHistoryChangeListener(HistoryChangeListener l);
     
     public abstract HistoryEntry[] getHistory(File[] files, Date fromDate);
     
@@ -165,5 +164,25 @@ public abstract class VCSHistoryProvider {
     
     public interface MessageEditProvider {
         void setMessage(String message) throws IOException;
+    }
+    
+    public interface HistoryChangeListener {
+        public void fireHistoryChanged(HistoryEvent evt);
+    }
+    
+    public static final class HistoryEvent {
+        private final File[] files;
+        private final VCSHistoryProvider source;
+        public HistoryEvent(VCSHistoryProvider source, File[] files) {
+            this.files = files;
+            this.source = source;
+        }
+        public File[] getFiles() {
+            return files;
+        }
+
+        public VCSHistoryProvider getSource() {
+            return source;
+        }
     }
 }
