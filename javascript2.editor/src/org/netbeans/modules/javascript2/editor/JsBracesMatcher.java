@@ -41,27 +41,42 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
+import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 
 /**
  *
  * @author Petr Hejl
  */
+// major portion copied from java
 public class JsBracesMatcher implements BracesMatcher {
 
+    private static final char [] PAIRS = new char [] { '(', ')', '[', ']', '{', '}' }; //NOI18N
+
+    private static final JsTokenId [] PAIR_TOKEN_IDS = new JsTokenId [] {
+        JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN,
+        JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET,
+        JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY
+    };
+
     private final MatcherContext context;
+
+    private int originOffset;
+    private char originChar;
+    private char matchingChar;
+    private boolean backward;
+    private List<TokenSequence<?>> sequences;
 
     public JsBracesMatcher (MatcherContext context) {
         this.context = context;
@@ -71,49 +86,41 @@ public class JsBracesMatcher implements BracesMatcher {
     public int [] findOrigin() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
-            BaseDocument doc = (BaseDocument) context.getDocument();
-            int offset = context.getSearchOffset();
+            int [] origin = BracesMatcherSupport.findChar(
+                context.getDocument(),
+                context.getSearchOffset(),
+                context.getLimitOffset(),
+                PAIRS
+            );
 
-            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
+            if (origin != null) {
+                originOffset = origin[0];
+                originChar = PAIRS[origin[1]];
+                matchingChar = PAIRS[origin[1] + origin[2]];
+                backward = origin[2] < 0;
 
-            if (ts != null) {
-                ts.move(offset);
+                TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+                sequences = getEmbeddedTokenSequences(th, originOffset, backward, JsTokenId.language());
 
-                if (!ts.moveNext()) {
-                    return null;
+                if (!sequences.isEmpty()) {
+                    // Check special tokens
+                    TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+                    seq.move(originOffset);
+                    if (seq.moveNext()) {
+                        if (seq.token().id() == JsTokenId.BLOCK_COMMENT
+                                || seq.token().id() == JsTokenId.LINE_COMMENT
+                                // remove once we have a lagueage
+                                || seq.token().id() == JsTokenId.REGEXP
+                                || seq.token().id() == JsTokenId.STRING) {
+                            return null;
+                        }
+                    }
                 }
 
-                Token<?extends JsTokenId> token = ts.token();
-
-                if (token == null) {
-                    return null;
-                }
-
-                TokenId id = token.id();
-
-                if (id == JsTokenId.STRING_BEGIN) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.STRING_END) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.REGEXP_BEGIN) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.REGEXP_END) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.BRACKET_RIGHT_PAREN) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.BRACKET_RIGHT_BRACKET) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == JsTokenId.BRACKET_RIGHT_CURLY) {
-                    return new int [] { ts.offset(), ts.offset() + token.length() };
-                }
+                return new int [] { originOffset, originOffset + 1 };
+            } else {
+                return null;
             }
-            return null;
         } finally {
             ((AbstractDocument) context.getDocument()).readUnlock();
         }
@@ -123,64 +130,68 @@ public class JsBracesMatcher implements BracesMatcher {
     public int [] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
-            BaseDocument doc = (BaseDocument) context.getDocument();
-            int offset = context.getSearchOffset();
+            if (!sequences.isEmpty()) {
+                TokenSequence<?> seq = sequences.get(sequences.size() - 1);
 
-            TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
-
-            if (ts != null) {
-                ts.move(offset);
-
-                if (!ts.moveNext()) {
-                    return null;
+                TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+                List<TokenSequence<?>> list;
+                if (backward) {
+                    list = th.tokenSequenceList(seq.languagePath(), 0, originOffset);
+                } else {
+                    list = th.tokenSequenceList(seq.languagePath(), originOffset + 1, context.getDocument().getLength());
                 }
 
-                Token<?extends JsTokenId> token = ts.token();
+                JsTokenId originId = getTokenId(originChar);
+                JsTokenId lookingForId = getTokenId(matchingChar);
+                int counter = 0;
 
-                if (token == null) {
-                    return null;
-                }
+                for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
+                    TokenSequence<?> sq = tsi.getSequence();
 
-                TokenId id = token.id();
-
-                OffsetRange r;
-                if (id == JsTokenId.STRING_BEGIN) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.STRING_END) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.REGEXP_BEGIN) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.REGEXP_BEGIN, JsTokenId.REGEXP_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.REGEXP_END) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.REGEXP_BEGIN, JsTokenId.REGEXP_END);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.BRACKET_RIGHT_PAREN) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.BRACKET_RIGHT_BRACKET) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
-                    r = LexUtilities.findFwd(doc, ts, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
-                    return new int [] {r.getStart(), r.getEnd() };
-                } else if (id == JsTokenId.BRACKET_RIGHT_CURLY) {
-                    r = LexUtilities.findBwd(doc, ts, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
-                    return new int [] {r.getStart(), r.getEnd() };
+                    if (originId == sq.token().id()) {
+                        counter++;
+                    } else if (lookingForId == sq.token().id()) {
+                        if (counter == 0) {
+                            return new int [] { sq.offset(), sq.offset() + sq.token().length() };
+                        } else {
+                            counter--;
+                        }
+                    }
                 }
             }
+
             return null;
         } finally {
             ((AbstractDocument) context.getDocument()).readUnlock();
         }
     }
+
+    public static List<TokenSequence<?>> getEmbeddedTokenSequences(
+        TokenHierarchy<?> th, int offset, boolean backwardBias, Language<?> language) {
+        List<TokenSequence<?>> sequences = th.embeddedTokenSequences(offset, backwardBias);
+
+        for (int i = sequences.size() - 1; i >= 0; i--) {
+            TokenSequence<?> seq = sequences.get(i);
+            if (seq.language() == language) {
+                break;
+            } else {
+                sequences.remove(i);
+            }
+        }
+
+        return sequences;
+    }
+
+    private JsTokenId getTokenId(char ch) {
+        for(int i = 0; i < PAIRS.length; i++) {
+            if (PAIRS[i] == ch) {
+                return PAIR_TOKEN_IDS[i];
+            }
+        }
+        return null;
+    }
+
+
 
     @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = BracesMatcherFactory.class, position=0)
     public static class JsBracesMatcherFactory implements BracesMatcherFactory {
@@ -190,5 +201,76 @@ public class JsBracesMatcher implements BracesMatcher {
             return new JsBracesMatcher(context);
         }
 
+    }
+
+    private static final class TokenSequenceIterator {
+
+        private final List<TokenSequence<?>> list;
+        private final boolean backward;
+
+        private int index;
+
+        public TokenSequenceIterator(List<TokenSequence<?>> list, boolean backward) {
+            this.list = list;
+            this.backward = backward;
+            this.index = -1;
+        }
+
+        public boolean hasMore() {
+            return backward ? hasPrevious() : hasNext();
+        }
+
+        public TokenSequence<?> getSequence() {
+            assert index >= 0 && index < list.size() : "No sequence available, call hasMore() first."; //NOI18N
+            return list.get(index);
+        }
+
+        private boolean hasPrevious() {
+            boolean anotherSeq = false;
+
+            if (index == -1) {
+                index = list.size() - 1;
+                anotherSeq = true;
+            }
+
+            for( ; index >= 0; index--) {
+                TokenSequence<?> seq = list.get(index);
+                if (anotherSeq) {
+                    seq.moveEnd();
+                }
+
+                if (seq.movePrevious()) {
+                    return true;
+                }
+
+                anotherSeq = true;
+            }
+
+            return false;
+        }
+
+        private boolean hasNext() {
+            boolean anotherSeq = false;
+
+            if (index == -1) {
+                index = 0;
+                anotherSeq = true;
+            }
+
+            for( ; index < list.size(); index++) {
+                TokenSequence<?> seq = list.get(index);
+                if (anotherSeq) {
+                    seq.moveStart();
+                }
+
+                if (seq.moveNext()) {
+                    return true;
+                }
+
+                anotherSeq = true;
+            }
+
+            return false;
+        }
     }
 }
