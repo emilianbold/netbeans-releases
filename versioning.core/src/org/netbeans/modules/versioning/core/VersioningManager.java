@@ -68,6 +68,7 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationListener;
+import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.*;
@@ -201,6 +202,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         @Override public String getDisplayName() { throw new IllegalStateException(); }
         @Override public String getMenuLabel() { throw new IllegalStateException(); }
         @Override public boolean accept(VCSContext ctx) { throw new IllegalStateException(); }
+        @Override public VCSHistoryProvider getVCSHistoryProvider() {throw new IllegalStateException(); }
     };
     
     

@@ -60,6 +60,7 @@ import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Utilities;
@@ -134,6 +135,11 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     @Override
     public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) {
         getDelegate().getOriginalFile(workingCopy, originalFile);
+    }
+
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return getDelegate().getVCSHistoryProvider();
     }
 
     @Override

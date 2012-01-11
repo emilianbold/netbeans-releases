@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.spi;
+package org.netbeans.modules.versioning.core.spi;
 
-import java.io.File;
 import java.util.Date;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 
 /**
@@ -57,14 +57,14 @@ public abstract class VCSHistoryProvider {
     
     public abstract void removeChangeListener(ChangeListener l);
     
-    public abstract HistoryEntry[] getHistory(File[] files, Date fromDate);
+    public abstract HistoryEntry[] getHistory(VCSFileProxy[] files, Date fromDate);
     
-    public abstract Action createShowHistoryAction(File[] files);
+    public abstract Action createShowHistoryAction(VCSFileProxy[] files);
     
     public static final class HistoryEntry {
         private Date dateTime;
         private String message;
-        private File[] files;
+        private VCSFileProxy[] files;
         private String usernameShort;
         private String username;
         private String revisionShort;
@@ -73,7 +73,7 @@ public abstract class VCSHistoryProvider {
         private RevisionProvider rp;
         
         public HistoryEntry(
-                File[] files, 
+                VCSFileProxy[] files, 
                 Date dateTime, 
                 String message, 
                 String username, 
@@ -104,7 +104,7 @@ public abstract class VCSHistoryProvider {
         public String getMessage() {
             return message;
         }
-        public File[] getFiles() {
+        public VCSFileProxy[] getFiles() {
             return files;
         }
         public String getUsername() {
@@ -122,16 +122,12 @@ public abstract class VCSHistoryProvider {
         public Action[] getActions() {
             return actions;
         }
-        public void getRevisionFile(File originalFile, File revisionFile) {
+        public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
             rp.getRevisionFile(originalFile, revisionFile);
-        }
-
-        RevisionProvider getRevisionProvier() {
-            return rp;
         }
     }
     
     public interface RevisionProvider {
-        void getRevisionFile(File originalFile, File revisionFile);
+        void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile);
     }
 }
