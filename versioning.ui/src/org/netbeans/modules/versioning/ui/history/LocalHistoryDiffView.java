@@ -54,19 +54,25 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor.Task;
@@ -192,6 +198,9 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
                 getPreparingDiffHandler().finish();
             }
             final File tmpHistoryFile = tmpFile;
+            
+            
+            
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {            
@@ -222,10 +231,37 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
                         }
                         panel.revalidate();
                         panel.repaint();
+                        if("true".equals(System.getProperty("vcshistory.bindDiffRowToEditor", "false"))) {
+                            setBaseLocation(title);
+                        }
 
                     } catch (IOException ioe)  {
                         History.LOG.log(Level.SEVERE, null, ioe);
                     }                            
+                }
+
+                private void setBaseLocation(String title) throws DataObjectNotFoundException {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    DataObject dao = fo != null ? DataObject.find(fo) : null;
+                    EditorCookie cookie = dao != null ? dao.getLookup().lookup(EditorCookie.class) : null;
+                    if(cookie != null) {
+                        // hack - care only about dataObjects with opened editors.
+                        // otherwise we won't assume it's file were opened to be edited
+                        JEditorPane[] panes = cookie.getOpenedPanes();
+                        if(panes != null && panes.length > 0) {
+                            int p = panes[0].getCaretPosition();
+                            if(p > 0) {
+                                try {
+                                    int row = Utilities.getLineOffset((BaseDocument)panes[0].getDocument(), p);
+                                    if(row > 0) {
+                                        diffView.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, row);
+                                    } 
+                                } catch (BadLocationException ex) {
+                                    History.getInstance().LOG.log(Level.WARNING, title, ex);
+                                }
+                            }
+                        }
+                    }
                 }
             });
             
