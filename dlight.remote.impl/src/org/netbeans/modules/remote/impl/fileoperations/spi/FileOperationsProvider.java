@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
@@ -185,10 +185,18 @@ abstract public class FileOperationsProvider {
             return false;
         }
 
-        private boolean notExist(ExecutionException ex) {
-            // TODO refactor code.
-            if (ex.getCause()  != null && ex.getCause().getCause() instanceof FileNotFoundException) {
-                return true;
+        private boolean notExist(ExecutionException e) {
+            Throwable ex = e;
+            while (ex != null) {
+                if (ex instanceof SftpIOException) {
+                    switch(((SftpIOException)ex).getId()) {
+                        case SftpIOException.SSH_FX_NO_SUCH_FILE:
+                        case SftpIOException.SSH_FX_PERMISSION_DENIED:
+                        return true;
+                    }
+                    break;
+                }
+                ex = ex.getCause();
             }
             return false;
         }

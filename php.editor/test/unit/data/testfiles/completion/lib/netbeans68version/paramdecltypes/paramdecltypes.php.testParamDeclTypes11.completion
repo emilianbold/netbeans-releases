@@ -3,3 +3,5 @@ function paramsfnc($a,|$b,$c,$d) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CLASS      clsA                            [PUBLIC]   paramdecltypes.php
 CLASS      ifaceA                          [PUBLIC]   paramdecltypes.php
+------------------------------------
+KEYWORD    callable                                   Language Construct

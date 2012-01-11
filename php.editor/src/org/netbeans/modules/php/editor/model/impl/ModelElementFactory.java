@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 
 /**
  *
@@ -89,6 +90,10 @@ class ModelElementFactory {
     static InterfaceScopeImpl create(InterfaceDeclarationInfo nodeInfo, ModelBuilder context) {
         InterfaceScopeImpl iface = new InterfaceScopeImpl(context.getCurrentScope(), nodeInfo);
         return iface;
+    }
+
+    static TraitScopeImpl create(TraitDeclarationInfo nodeInfo, ModelBuilder context) {
+        return new TraitScopeImpl(context.getCurrentScope(), nodeInfo);
     }
 
     static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
