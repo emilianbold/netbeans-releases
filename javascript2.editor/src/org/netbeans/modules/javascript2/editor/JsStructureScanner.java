@@ -81,7 +81,11 @@ public class JsStructureScanner implements StructureScanner {
             children = getEmbededItems(child, children);
             if (child.getJSKind() == JsElement.Kind.FUNCTION || child.getJSKind() == JsElement.Kind.METHOD
                     || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                collectedItems.add(new JsFunctionStructureItem((JsFunction) child, children));
+                if (((JsFunction)child).isAnonymous()) {
+                    collectedItems.addAll(children);
+                } else {
+                    collectedItems.add(new JsFunctionStructureItem((JsFunction) child, children));
+                }
             } else if (child.getJSKind() == JsElement.Kind.OBJECT) {
                 collectedItems.add(new JsObjectStructureItem(child, children));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
@@ -89,7 +93,7 @@ public class JsStructureScanner implements StructureScanner {
                         || !(jsObject.getParent() instanceof JsFunction))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-")); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
-                    && (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)) {
+                    /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
                 collectedItems.add(new JsSimpleStructureItem(child, "var-")); //NOI18N
             }
          }
