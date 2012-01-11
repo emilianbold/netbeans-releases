@@ -84,8 +84,9 @@ public class GeneralPHP extends JellyTestCase {
     static final String PHP_CATEGORY_NAME = "PHP";
     static final String PHP_PROJECT_NAME = "PHP Application";
     static final String SAMPLES = "Samples";
-    static final String PROJECT_JOBEET = "Jobeet";
-    static final String PROJECT_AirAliance = "Air Alliance Sample Application";
+    static final String PROJECT_RentSymfony = "Rent a Flat - Symfony Framework Sample Application";
+    static final String PROJECT_RentZend = "Rent a Flat - Zend Framework Sample Application";
+    static final String PROJECT_TodoList = "TodoList - PHP Sample Application";
     static protected final int COMPLETION_LIST_THRESHOLD = 5000;
     protected static final String PHP_EXTENSION = ".php";
 
@@ -149,10 +150,12 @@ public class GeneralPHP extends JellyTestCase {
 
         String typeName = "";
 
-        if (type == "Jobeet") {
-            opNewProjectWizard.selectProject(PROJECT_JOBEET);
-        } else if (type == "AirAlliance") {
-            opNewProjectWizard.selectProject(PROJECT_AirAliance);
+        if (type == "RentZend") {
+            opNewProjectWizard.selectProject(PROJECT_RentZend);
+        } else if (type == "TodoList") {
+            opNewProjectWizard.selectProject(PROJECT_TodoList);
+        }else if(type == "RentSymfony"){
+            opNewProjectWizard.selectProject(PROJECT_RentSymfony);
         }
 
         opNewProjectWizard.next();
@@ -660,12 +663,10 @@ public class GeneralPHP extends JellyTestCase {
         }
         window.pressKey(KeyEvent.VK_TAB);
         Sleep(1000);
-        window.pressKey(KeyEvent.VK_DOWN);
-        Sleep(1000);
-        window.pressKey(KeyEvent.VK_DOWN);
-        Sleep(1000);
-        window.pressKey(KeyEvent.VK_DOWN);
-        Sleep(1000);
+        for(int i= 0; i<= 6; i++){ // in all bundle, PHP is 7th in the list
+            window.pressKey(KeyEvent.VK_DOWN);
+            Sleep(1000);
+        }
         window.pressKey(KeyEvent.VK_ENTER);
         Sleep(1000);
         
