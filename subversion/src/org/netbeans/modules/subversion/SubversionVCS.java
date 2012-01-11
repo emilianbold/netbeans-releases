@@ -84,7 +84,7 @@ import org.netbeans.modules.versioning.spi.*;
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
     
     private SubversionVisibilityQuery visibilityQuery;
-    private SVNHistoryProvider historyProvider;
+
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName());
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
@@ -132,10 +132,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
 
     @Override
     public VCSHistoryProvider getVCSHistoryProvider() {
-        if(historyProvider == null) {
-            historyProvider = new SVNHistoryProvider();
-        }
-        return historyProvider;
+        return Subversion.getInstance().getHistoryProvider();
     }
     
     @Override

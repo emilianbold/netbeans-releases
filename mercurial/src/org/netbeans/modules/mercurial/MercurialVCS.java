@@ -68,8 +68,6 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
     metadataFolderNames=".hg")
 public class MercurialVCS extends VersioningSystem implements PropertyChangeListener, PreferenceChangeListener {
 
-    private HgHistoryProvider historyProvider;
-
     public MercurialVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName()); // NOI18N
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
@@ -89,10 +87,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
 
     @Override
     public VCSHistoryProvider getVCSHistoryProvider() {
-        if(historyProvider == null) {
-            historyProvider = new HgHistoryProvider();
-        }
-        return historyProvider;
+        return Mercurial.getInstance().getMercurialHistoryProvider();
     }
 
     

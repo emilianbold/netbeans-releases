@@ -62,8 +62,24 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  *
  * @author Tomas Stupka
  */
-public class SVNHistoryProvider extends VCSHistoryProvider {
+public class HistoryProvider implements VCSHistoryProvider {
 
+    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
+
+    @Override
+    public void addHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
+        synchronized(listeners) {
+            listeners.add(l);
+        }
+    }
+
+    @Override
+    public void removeHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
+        synchronized(listeners) {
+            listeners.remove(l);
+        }
+    }
+    
     @Override
     public HistoryEntry[] getHistory(File[] files, Date fromDate) {
         
@@ -124,6 +140,21 @@ public class SVNHistoryProvider extends VCSHistoryProvider {
         return new OpenHistoryAction(files);
     }
 
+    public void fireHistoryChange(final File[] files) {
+        final HistoryChangeListener[] la;
+        synchronized(listeners) {
+            la = listeners.toArray(new HistoryChangeListener[listeners.size()]);
+        }
+        Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                for (HistoryChangeListener l : la) {
+                    l.fireHistoryChanged(new HistoryEvent(HistoryProvider.this, files));
+                }
+            }
+        });
+    }
+    
     private static class RevisionProviderImpl implements RevisionProvider {
         private SVNRevision revision;
 
@@ -186,15 +217,4 @@ public class SVNHistoryProvider extends VCSHistoryProvider {
         }};
     }
 
-    private ChangeSupport support = new ChangeSupport(this);
-    @Override
-    public void addChangeListener(ChangeListener l) {
-        support.addChangeListener(l);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener l) {
-        support.removeChangeListener(l);
-    }
-    
 }

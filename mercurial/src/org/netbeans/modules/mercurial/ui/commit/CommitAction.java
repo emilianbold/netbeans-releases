@@ -635,8 +635,10 @@ public class CommitAction extends ContextAction {
             void doCmd(File repository, List<File> candidates) throws HgException {
                 boolean commitAfterMerge = false;
                 Set<File> refreshFiles = new HashSet<File>(candidates);
+                List<File> commitedFiles = null;
                 try {                    
                     HgCommand.doCommit(repository, candidates, msg, closingBranch, logger);
+                    commitedFiles = candidates;
                 } catch (HgException.HgTooLongArgListException e) {
                     Mercurial.LOG.log(Level.INFO, null, e);
                     List<File> reducedCommitCandidates;
@@ -664,6 +666,7 @@ public class CommitAction extends ContextAction {
                     }
                     Mercurial.LOG.log(Level.INFO, "CommitAction: committing with a reduced set of files: {0}", reducedCommitCandidates.toString()); //NOI18N
                     HgCommand.doCommit(repository, reducedCommitCandidates, msg, closingBranch, logger);
+                    commitedFiles = reducedCommitCandidates;
                 } catch (HgException ex) {
                     if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
                         // committing after a merge, all modified files have to be committed, even excluded files
@@ -682,10 +685,13 @@ public class CommitAction extends ContextAction {
                     }
                 } finally {
                     refreshFilesPerRepository.put(repository, refreshFiles);
+                    if(commitedFiles != null) {
+                        Mercurial.getInstance().getMercurialHistoryProvider().fireHistoryChange(commitedFiles.toArray(new File[commitedFiles.size()]));
+                    }
                 }
 
                 HgLogMessage tip = HgCommand.doTip(repository, logger);
-
+                
                 context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(
                         tip.getMessage(),
                         tip.getAuthor(),

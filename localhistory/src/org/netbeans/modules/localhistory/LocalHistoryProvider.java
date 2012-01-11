@@ -48,13 +48,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.Action;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.ui.view.DeleteAction;
 import org.netbeans.modules.localhistory.ui.view.RevertFileAction;
 import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -62,16 +63,26 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryProvider extends VCSHistoryProvider {
+public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListener {
 
+    private final List<HistoryChangeListener> listeners = new LinkedList<HistoryChangeListener>();
+
+    public LocalHistoryProvider() {
+        LocalHistory.getInstance().getLocalHistoryStore().addVersioningListener(this);
+    }
+    
     @Override
-    public void addChangeListener(ChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void addHistoryChangeListener(HistoryChangeListener l) {
+        synchronized(listeners) {
+            listeners.add(l);
+        }
     }
 
     @Override
-    public void removeChangeListener(ChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void removeHistoryChangeListener(HistoryChangeListener l) {
+        synchronized(listeners) {
+            listeners.remove(l);
+        }
     }
 
     @Override
@@ -106,11 +117,29 @@ public class LocalHistoryProvider extends VCSHistoryProvider {
         return null;
     }
     
+    public void fireHistoryChange(File file) {
+        HistoryChangeListener[] la;
+        synchronized(listeners) {
+            la = listeners.toArray(new HistoryChangeListener[listeners.size()]);
+        }
+        for (HistoryChangeListener l : la) {
+            l.fireHistoryChanged(new HistoryEvent(this, new File[] {file}));
+        }
+    }
+    
     private Action[] getActions() {
         return new Action[] {
             SystemAction.get(RevertFileAction.class),
             SystemAction.get(DeleteAction.class)    
         };
+    }
+
+    @Override
+    public void versioningEvent(VersioningEvent event) {
+        Object[] params = event.getParams();
+        if(params[0] != null) {
+            fireHistoryChange((File) params[0]);
+        }
     }
     
     private class RevisionProviderImpl implements VCSHistoryProvider.RevisionProvider {

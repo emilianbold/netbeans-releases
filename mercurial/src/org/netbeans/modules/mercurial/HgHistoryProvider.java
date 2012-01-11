@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
@@ -58,24 +57,28 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
-import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class HgHistoryProvider extends VCSHistoryProvider {
+public class HgHistoryProvider implements VCSHistoryProvider {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private ChangeSupport support = new ChangeSupport(this);
     
+    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
+
     @Override
-    public void addChangeListener(ChangeListener l) {
-        support.addChangeListener(l);
+    public void addHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
+        synchronized(listeners) {
+            listeners.add(l);
+        }
     }
 
     @Override
-    public void removeChangeListener(ChangeListener l) {
-        support.removeChangeListener(l);
+    public void removeHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
+        synchronized(listeners) {
+            listeners.remove(l);
+        }
     }
     
     @Override
@@ -161,6 +164,21 @@ public class HgHistoryProvider extends VCSHistoryProvider {
         return new OpenHistoryAction(files);
     }
     
+    public void fireHistoryChange(final File[] files) {
+        final HistoryChangeListener[] la;
+        synchronized(listeners) {
+            la = listeners.toArray(new HistoryChangeListener[listeners.size()]);
+        }
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                for (HistoryChangeListener l : la) {
+                    l.fireHistoryChanged(new HistoryEvent(HgHistoryProvider.this, files));
+                }
+            }
+        });
+    }
+
     private static class RevisionProviderImpl implements RevisionProvider {
         private HgRevision hgRevision;
 
