@@ -147,7 +147,11 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         if (defaultType != null && defaultType.length() > 0) {
             String[] allTypeNames = defaultType.split("\\|");
             for (String typeName : allTypeNames) {
-                typeScopes.addAll(IndexScopeImpl.getTypes(QualifiedName.create(typeName), this));
+                String modifiedTypeName = typeName;
+                if (typeName.indexOf("[") != -1) {
+                    modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
+                }
+                typeScopes.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
             }
         }
         return typeScopes;
