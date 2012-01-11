@@ -102,17 +102,18 @@
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
+                <friend>com.sun.tools.devplatform.management</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>
-                <friend>com.sun.tools.tuxedo.project</friend>
-                <friend>com.sun.tools.tuxedo.source</friend>
-                <friend>com.sun.tools.tuxedo.model</friend>
-                <friend>com.sun.tools.tuxedo.componentproject</friend>
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.completion</friend>
-                <friend>com.sun.tools.tuxedo.ubb</friend>
+                <friend>com.sun.tools.tuxedo.componentproject</friend>
+                <friend>com.sun.tools.tuxedo.model</friend>
+                <friend>com.sun.tools.tuxedo.project</friend>
+                <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>com.sun.tools.tuxedo.suites</friend>
                 <friend>com.sun.tools.tuxedo.testrunner</friend>
+                <friend>com.sun.tools.tuxedo.ubb</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
                 <friend>org.netbeans.modules.cnd.api.project</friend>
