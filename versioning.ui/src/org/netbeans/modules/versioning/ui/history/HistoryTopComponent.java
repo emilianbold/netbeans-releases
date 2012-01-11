@@ -423,7 +423,6 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
             add(filterCombo, c); 
             add(containsLabel, c); 
             add(containsField, c); 
-            addSeparator(new Dimension(200, 5));
             add(settingsButton);
   
             final Action openSearchHistoryAction = vs != null && vs.getVCSHistoryProvider() != null ? vs.getVCSHistoryProvider().createShowHistoryAction(files) : null;
