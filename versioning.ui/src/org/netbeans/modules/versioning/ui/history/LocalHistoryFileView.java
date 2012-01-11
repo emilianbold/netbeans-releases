@@ -201,7 +201,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
     void setFilter(RevisionNode.Filter filter) {
         this.filter = filter;
         tablePanel.treeView.getOutline().setQuickFilter(0, filter);
-        }
+    }
     
     void fireFilterChanged() {
         tablePanel.treeView.getOutline().setQuickFilter(0, filter);
@@ -355,15 +355,15 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
         
         @Override
         public void run() {  
-            if(getRootNode() == null) {
-                final String vcsName = (String) (versioningSystem != null ? 
-                                                    versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
-                                                    null);
-                LocalHistoryRootNode root = new LocalHistoryRootNode(files, vcsName, loadNextAction, createActions()); 
-                root.addLHEntries(History.getInstance().loadLHEntries(files));
-                tablePanel.getExplorerManager().setRootContext(root);
+            // refresh local history
+            final String vcsName = (String) (versioningSystem != null ? 
+                                                versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
+                                                null);
+            LocalHistoryRootNode root = new LocalHistoryRootNode(files, vcsName, loadNextAction, createActions()); 
+            root.addLHEntries(History.getInstance().loadLHEntries(files));
+            tablePanel.getExplorerManager().setRootContext(root);
                 
-            }
+            // refresh vcs
             if(tc != null && versioningSystem != null) {
                 loadVCSEntries(files, false);
             }
@@ -634,7 +634,7 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                     Filter f = tc != null ? tc.getSelectedFilter() : null;
                     if(f != null) {
                         valueString = f.getRendererValue(valueString);
-        }
+                    }
                     if(value instanceof RevisionNode.MessageProperty) {
                         String[] lines = valueString.split("\n");
                         if(lines.length > 0) {
@@ -662,14 +662,14 @@ public class LocalHistoryFileView implements VersioningListener, PreferenceChang
                     if(renderer instanceof JComponent) {
                         JComponent comp = (JComponent)renderer;
                         comp.setToolTipText(getTooltip((Node.Property) value));
-        }
+                    }
                 } catch (Exception ex) {
                     History.LOG.log(Level.WARNING, null, ex);
                     renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-    }
+                }
             } else {
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-}
+            }
             renderer.setBackground (isSelected ? outline.getSelectionBackground() : outline.getBackground());
             return renderer;
         }
