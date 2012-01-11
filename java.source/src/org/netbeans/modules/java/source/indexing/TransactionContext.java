@@ -50,7 +50,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.PersistentIndexTransaction;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -107,11 +106,6 @@ public final class TransactionContext {
         return (T) services.get(type);
     }
 
-    @CheckForNull
-    public static TransactionContext getIfExists() {
-        return ctx.get();
-    }
-
     @NonNull
     public static TransactionContext beginTrans() {
         if (ctx.get() != null) {
@@ -134,23 +128,9 @@ public final class TransactionContext {
     public static abstract class Service {
         protected abstract void commit() throws IOException;
         protected abstract void rollBack() throws IOException;
-    }
+    }    
     
-    public static TransactionContext beginTxNoOutput() throws IOException {
-        return TransactionContext.beginTrans().
-            register(
-                FileManagerTransaction.class,
-                FileManagerTransaction.nullWrite()).
-            register(
-                PersistentIndexTransaction.class, 
-                PersistentIndexTransaction.create()).
-            register(
-                ClassIndexEventsTransaction.class,
-                ClassIndexEventsTransaction.create()
-            );
-    }
-    
-    public static TransactionContext beginStandardTx(boolean srcIndex, URL root) throws IOException {
+    public static TransactionContext beginStandardTransaction(boolean srcIndex, URL root) {
         boolean hasCache;
         if (srcIndex) {
             hasCache = JavaIndex.hasSourceCache(root, false);

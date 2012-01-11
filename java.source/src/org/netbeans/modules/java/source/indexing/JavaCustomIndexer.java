@@ -789,20 +789,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
-            TransactionContext.beginTrans().
-                    register(
-                        FileManagerTransaction.class,
-                        JavaIndex.hasSourceCache(
-                            context.getRootURI(), false)?
-                            FileManagerTransaction.writeBack(context.getRootURI()):
-                            FileManagerTransaction.writeThrough()).
-                    register(
-                        PersistentIndexTransaction.class, 
-                        PersistentIndexTransaction.create()).
-                    register(
-                        ClassIndexEventsTransaction.class,
-                        ClassIndexEventsTransaction.create()
-                    );
+            TransactionContext.beginStandardTransaction(true, context.getRootURI());
             boolean vote = true;
             try {
                 boolean classIndexConsistent = IndexManager.writeAccess(new IndexManager.Action<Boolean>() {

@@ -2240,6 +2240,11 @@ public class JavaSourceTest extends NbTestCase {
             return instance;
         }
 
+        @Override
+        public Index createMemoryIndex(Analyzer analyzer) throws IOException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 
     private static class TestIndex implements Index {

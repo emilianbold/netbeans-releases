@@ -266,7 +266,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                TransactionContext.beginStandardTx(false, context.getRootURI());
+                TransactionContext.beginStandardTransaction(false, context.getRootURI());
                 return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
                     @Override
                     public Boolean run() throws IOException, InterruptedException {

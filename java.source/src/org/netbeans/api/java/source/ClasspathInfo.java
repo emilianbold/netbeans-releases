@@ -190,16 +190,10 @@ public final class ClasspathInfo {
         }
         if (backgroundCompilation) {
             final TransactionContext txCtx = TransactionContext.get();
-            assert txCtx != null : "No transaction context associated with current thread"; //NOI18N
             fmTx = txCtx.get(FileManagerTransaction.class);
         } else {
-            final TransactionContext txCtx = TransactionContext.getIfExists();
-            if (txCtx != null) {
-                fmTx = txCtx.get(FileManagerTransaction.class);
-            } else {
-                //No real transaction, read-only mode.
-                fmTx = FileManagerTransaction.nullWrite();
-            }
+            //No real transaction, read-only mode.
+            fmTx = FileManagerTransaction.nullWrite();
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N
     }
