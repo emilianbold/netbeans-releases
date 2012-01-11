@@ -547,7 +547,6 @@ final class NbInstaller extends ModuleInstaller {
                 theseurls = new LinkedHashSet<URL>(1000);
                 urls.put(host, theseurls);
             }
-            ClassLoader cl = m.getClassLoader();
             String s = layers.get(m);
             if (s != null) {
                 Util.err.log(Level.FINE, "loadLayer: {0} load={1}", new Object[] { s, load });
@@ -564,13 +563,10 @@ final class NbInstaller extends ModuleInstaller {
                 boolean foundSomething = false;
                 for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                     String resource = base + suffix + ext;
-                    URL u;
-                    if (cl instanceof ProxyClassLoader) {
-                        u = ((ProxyClassLoader)cl).findResource(resource);
-                    } else {
-                        u = cl.getResource(resource);
-                    }
-                    if (u != null) {
+                    Enumeration<URL> en = m.findResources(resource);
+                    if (en.hasMoreElements()) {
+                        URL u = en.nextElement();
+                        assert !en.hasMoreElements() : "At most one resource per module: " + m;
                         theseurls.add(u);
                         foundSomething = true;
                     }
@@ -581,18 +577,10 @@ final class NbInstaller extends ModuleInstaller {
                     continue;
                 }
             }
-            try { // #149136
-                // Cannot use getResources because we do not wish to delegate to parents.
-                // In fact both URLClassLoader and ProxyClassLoader override this method to be public.
-                Method findResources = ClassLoader.class.getDeclaredMethod("findResources", String.class); // NOI18N
-                findResources.setAccessible(true);
-                Enumeration e = (Enumeration) findResources.invoke(cl, "META-INF/generated-layer.xml"); // NOI18N
-                while (e.hasMoreElements()) {
-                    URL u = (URL)e.nextElement();
-                    theseurls.add(u);
-                }
-            } catch (Exception x) {
-                Exceptions.printStackTrace(x);
+            Enumeration e = m.findResources("META-INF/generated-layer.xml"); // NOI18N
+            while (e.hasMoreElements()) {
+                URL u = (URL)e.nextElement();
+                theseurls.add(u);
             }
         }
         // Now actually do it.

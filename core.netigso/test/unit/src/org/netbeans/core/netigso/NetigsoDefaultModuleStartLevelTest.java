@@ -69,7 +69,7 @@ public class NetigsoDefaultModuleStartLevelTest extends SetupHid {
     }
 
     protected @Override void setUp() throws Exception {
-        Locale.setDefault(new Locale("def", "ST"));
+        Locale.setDefault(new Locale("def", "xyz"));
         clearWorkDir();
         File ud = new File(getWorkDir(), "ud");
         ud.mkdirs();
