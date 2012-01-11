@@ -336,7 +336,7 @@ public class LocalHistoryRootNode extends AbstractNode {
         public WaitNode(String vcsName) {
             super(Children.LEAF);
             setDisplayName("Loading" + (vcsName != null ? " from " + vcsName : "") + ". Please wait...");
-            setIconBaseWithExtension("org/netbeans/modules/localhistory/resources/icons/wait.gif");  // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/versioning/ui/resources/icons/wait.gif");  // NOI18N
         }
 
         @Override
