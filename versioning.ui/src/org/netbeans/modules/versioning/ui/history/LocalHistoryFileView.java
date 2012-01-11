@@ -169,7 +169,18 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
     }
 
     void requestActive() {
-         tablePanel.requestActivate();
+        if(getRootNode() == null) {
+            // invoked for the first time -> refresh
+            History.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    refresh();
+                    tablePanel.requestActivate();
+                }
+            });
+        } else {
+            tablePanel.requestActivate();
+        }
     }
 
     File[] getFiles() {
@@ -192,8 +203,8 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
             return;
         }
         vcsTask = rp.post(new Runnable() {
-        @Override
-        public void run() {                        
+            @Override
+            public void run() {                        
                 VCSHistoryProvider hp = versioningSystem.getVCSHistoryProvider();
                 if(hp == null) {
                     return;
@@ -204,12 +215,11 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                 }    
                 try {
                     rootNode.loadingStarted();
-            
+
                     VCSHistoryProvider.HistoryEntry[] vcsHistory;
                     if(forceLoadAll || HistorySettings.getInstance().getLoadAll()) {
                         vcsHistory = hp.getHistory(files, (Date) null); // get all
                         // XXX need different text for "Showing Subversion revisions..."
-                        // XXX shouldn't be possible to switch to loadNext anymore
                     } else {
                         int increment = HistorySettings.getInstance().getIncrements();
                         if(currentDateFrom == null) {
@@ -217,8 +227,8 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                         } else {
                             currentDateFrom = new Date(currentDateFrom.getTime() - 1000 * 60 * 60 * 24 * (long) increment); // last X days
                         }                
+                        vcsHistory = hp.getHistory(files, currentDateFrom); // get all
                     }
-                    vcsHistory = hp.getHistory(files, currentDateFrom); // get all
 
                     if(vcsHistory == null || vcsHistory.length == 0) {
                         return;
@@ -391,7 +401,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
             }
             // refresh vcs
             VCSHistoryProvider vcsProvider = getHistoryProvider(versioningSystem);
-            if(tc != null && vcsProvider != null && (providerToRefresh != null || providerToRefresh == vcsProvider)) {
+            if(tc != null && vcsProvider != null && (providerToRefresh == null || providerToRefresh == vcsProvider)) {
                 loadVCSEntries(files, false);
             }
             tablePanel.revalidate();

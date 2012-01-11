@@ -161,21 +161,13 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
                 } /*else if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
                     System.out.println(" " + evt.getOldValue() +  " " + evt.getNewValue());
                 }*/
-                }
+            }
         });
         
         // XXX should be solved in a more general way - not ony for LocalHistoryFileView 
         splitPane.setTopComponent(masterView.getPanel());   
         splitPane.setBottomComponent(diffView.getPanel());                   
-        masterView.requestActive();
-        
-        History.getInstance().getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                masterView.refresh();
-            }
-                });
-            }
+    }
     
     Filter getSelectedFilter() {
         return (Filter) getToolbar().filterCombo.getSelectedItem();
