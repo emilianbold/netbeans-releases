@@ -61,6 +61,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -86,6 +87,7 @@ public class LocalHistory {
     private static LocalHistory instance;
     private VCSInterceptor vcsInterceptor;
     private VCSAnnotator vcsAnnotator;
+    private VCSHistoryProvider vcsHistoryProvider;
     private LocalHistoryStore store;
 
     private ListenersSupport listenerSupport = new ListenersSupport(this);
@@ -219,6 +221,13 @@ public class LocalHistory {
         return vcsAnnotator;
     }    
 
+    VCSHistoryProvider getVCSHistoryProvider() {
+        if(vcsHistoryProvider == null) {
+            vcsHistoryProvider = new LocalHistoryProvider();
+        } 
+        return vcsHistoryProvider;
+    }
+    
     /**
      * Creates the LocalHistoryStore
      * @return
