@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="MemoryIndex">
+    <api name="LuceneSupport"/>
+    <summary>Added RAM implementation of Index</summary>
+    <version major="2" minor="8"/>
+    <date day="11" month="1" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added the factory method into <code>IndexManager</code> creating the
+            RAM based implementation of <code>Index</code>
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+  </change>
   <change id="ScanSuspendImplementation">
     <api name="LuceneSupport"/>
     <summary>Added ScanSuspendImplementation</summary>

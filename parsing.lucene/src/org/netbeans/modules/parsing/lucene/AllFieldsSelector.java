@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.parsing.lucene;
 
-import java.io.File;
-import java.io.IOException;
-import org.apache.lucene.analysis.Analyzer;
-import org.netbeans.modules.parsing.lucene.support.Index;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.FieldSelectorResult;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexFactory implements IndexFactory {
-
+final class AllFieldsSelector implements FieldSelector {
+    
+    static final FieldSelector INSTANCE = new AllFieldsSelector();
+    
+    private AllFieldsSelector(){}
+    
     @Override
-    public Index createIndex(File cacheFolder, Analyzer analyzer) throws IOException {
-        return LuceneIndex.create(cacheFolder, analyzer);
+    public FieldSelectorResult accept(final String fieldName) {
+        return FieldSelectorResult.LOAD;
     }
-
-    @Override
-    public Index createMemoryIndex(Analyzer analyzer) throws IOException {
-        return MemoryIndex.create(analyzer);
-    }
-
 }

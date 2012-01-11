@@ -191,6 +191,20 @@ public final class IndexManager {
         indexes.put(cacheFolder, new Ref(cacheFolder,index));
         return index;
     }
+    
+    /**
+     * Creates a transient {@link Index} stored in the RAM.
+     * @param analyzer the lucene Analyzer used to split fields into tokens.
+     * @return the created {@link Index}
+     * @throws IOException in case of IO problem.
+     * @since 2.8
+     */
+    public static Index createMemoryIndex(final @NonNull Analyzer analyzer) throws IOException {        
+        Parameters.notNull("analyzer", analyzer);       //NOI18N
+        final Index index = factory.createMemoryIndex(analyzer);
+        assert index != null;
+        return index;
+    }
 
     /**
      * Returns existing {@link Index}es.
