@@ -192,7 +192,11 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                 File file = VersionsCache.getInstance().getFileRevision(originalFile, hgRevision);
                 FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
-                Mercurial.LOG.log(Level.WARNING, null, e);
+                if(e.getCause() instanceof HgException.HgCommandCanceledException)  {
+                    Mercurial.LOG.log(Level.FINE, null, e);
+                } else {
+                    Mercurial.LOG.log(Level.WARNING, null, e);
+                }
             }        
         }
     }
