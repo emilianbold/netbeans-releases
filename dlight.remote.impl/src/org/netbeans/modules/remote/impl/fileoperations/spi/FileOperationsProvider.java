@@ -233,6 +233,7 @@ abstract public class FileOperationsProvider {
                 if (notExist(ex)) {
                     return false;
                 }
+                System.err.println("Exception on file "+file.getPath());
                 ex.printStackTrace(System.err);
             }
             return false;

@@ -183,8 +183,10 @@ public abstract class CsmFileTaskFactory {
                 CsmFile csmFile = getCsmFile(v, true);
                 if (csmFile != null) {
                     TaskData oldTaskData = fobj2task.get(v);
-                    if (!csmFile.equals(oldTaskData.file)) {
-                        toRemove.put(v, fobj2task.remove(v));
+                    if (oldTaskData == null || !csmFile.equals(oldTaskData.file)) {
+                        if (oldTaskData != null) {
+                            toRemove.put(v, fobj2task.remove(v));
+                        }
 
                         PhaseRunner task = createTask(v);
                         TaskData data = new TaskData(task, csmFile);

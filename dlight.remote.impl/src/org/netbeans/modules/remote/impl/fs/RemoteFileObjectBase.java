@@ -84,7 +84,14 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private final FileLock lock = new FileLock();
     static final long serialVersionUID = 1931650016889811086L;
-    public static final boolean USE_VCS = Boolean.getBoolean("remote.vcs.suport");
+    public static final boolean USE_VCS;
+    static {
+        if ("false".equals(System.getProperty("remote.vcs.suport"))) { //NOI18N
+            USE_VCS = false;
+        } else {
+            USE_VCS = true;
+        }
+    }
 
     private volatile byte flags;
     
