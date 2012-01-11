@@ -98,9 +98,9 @@ public abstract class VCSSystemProvider {
         
         public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file);
 
-        public VCSAnnotator getAnnotator();
+        public VCSAnnotator getVCSAnnotator();
 
-        public VCSInterceptor getInterceptor();
+        public VCSInterceptor getVCSInterceptor();
 
         public VCSHistoryProvider getVCSHistoryProvider();
         
@@ -108,7 +108,7 @@ public abstract class VCSSystemProvider {
 
         public CollocationQueryImplementation getCollocationQueryImplementation();
 
-        public VCSVisibilityQuery getVisibility();
+        public VCSVisibilityQuery getVisibilityQuery();
 
         public void addPropertyCL(PropertyChangeListener listener);
 

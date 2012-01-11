@@ -256,12 +256,12 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
 
         @Override
-        public VCSAnnotator getAnnotator() {
+        public VCSAnnotator getVCSAnnotator() {
             return null;
         }
 
         @Override
-        public VCSInterceptor getInterceptor() {
+        public VCSInterceptor getVCSInterceptor() {
             return null;
         }
 
@@ -274,7 +274,7 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
 
         @Override
-        public VCSVisibilityQuery getVisibility() {
+        public VCSVisibilityQuery getVisibilityQuery() {
             return null;
         }
 

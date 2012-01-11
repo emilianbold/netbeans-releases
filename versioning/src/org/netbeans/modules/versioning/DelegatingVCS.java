@@ -127,21 +127,6 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
     
     @Override
-    public org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery getVisibilityQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public org.netbeans.modules.versioning.core.spi.VCSInterceptor getVCSInterceptor() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public org.netbeans.modules.versioning.core.spi.VCSAnnotator getVCSAnnotator() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) {
         getDelegate().getOriginalFile(workingCopy.toFile(), originalFile.toFile());
     }
@@ -220,7 +205,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
 
     @Override
-    public VCSAnnotator getAnnotator() {
+    public VCSAnnotator getVCSAnnotator() {
         if(annotator == null && getDelegate().getVCSAnnotator() != null) {
             annotator = new VCSAnnotator() {
                 @Override
@@ -257,7 +242,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
     
     @Override
-    public VCSVisibilityQuery getVisibility() { 
+    public VCSVisibilityQuery getVisibilityQuery() { 
         if(visibilityQuery == null && getDelegate().getVisibilityQuery() != null) {
             visibilityQuery = new VCSVisibilityQuery() {
                 @Override
@@ -270,7 +255,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
     
     @Override
-    public VCSInterceptor getInterceptor() {
+    public VCSInterceptor getVCSInterceptor() {
         if(interceptor == null && getDelegate().getVCSInterceptor() != null) {
             interceptor = new VCSInterceptor() {
 
@@ -422,7 +407,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     
     private Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {       
         if(map == null || isAlive()) {
-            VCSAnnotator tmp = getAnnotator();
+            VCSAnnotator tmp = getVCSAnnotator();
             return tmp != null ? tmp.getActions(ctx, actionDestination) : new Action[0];
         } else {
             Action[] ia = getInitActions(ctx);
