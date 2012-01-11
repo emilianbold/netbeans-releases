@@ -68,6 +68,8 @@ public abstract class PhpProgram {
     private static final ExecutionDescriptor DEFAULT_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true)
             .frontWindow(true)
+            // @since 1.62
+            .frontWindowOnError(true)
             .inputVisible(true)
             .showProgress(true);
 
@@ -187,6 +189,7 @@ public abstract class PhpProgram {
      * <ul>
      *   <li>{@link ExecutionDescriptor#isControllable() controllable}</li>
      *   <li>{@link ExecutionDescriptor#isFrontWindow() displays the Output window}</li>
+     *   <li>{@link ExecutionDescriptor#isFrontWindowOnError()  displays the Output window on error (since 1.62)}</li>
      *   <li>{@link ExecutionDescriptor#isInputVisible() has visible user input}</li>
      *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
      * </ul>
