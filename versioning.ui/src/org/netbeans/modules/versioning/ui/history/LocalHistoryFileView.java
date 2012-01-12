@@ -821,7 +821,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
     
     private class TableMouseListener implements MouseListener, MouseMotionListener {
         private final Outline outline;
-
+        private boolean pressedPopup = false;
         public TableMouseListener(Outline outline) {
             this.outline = outline;
         }
@@ -856,14 +856,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
             if(n == null) {
                 return;
             }
-            
-            if(!e.isPopupTrigger()) {
-                e.consume();
-            } else {
-                return; // let the outline take care of the popup
-            }
-            
-            if(!e.isPopupTrigger() && LocalHistoryRootNode.isLoadNext(Visualizer.findNode(n))) {
+            if(!pressedPopup && LocalHistoryRootNode.isLoadNext(Visualizer.findNode(n))) {
                 loadNextAction.actionPerformed(null);
             } else {
                 Object value = getValue(e);
@@ -896,7 +889,9 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         }
 
         @Override
-        public void mousePressed(MouseEvent e) {}
+        public void mousePressed(MouseEvent e) {
+            pressedPopup = e.isPopupTrigger();
+        }
         
         @Override
         public void mouseReleased(MouseEvent e) {}
