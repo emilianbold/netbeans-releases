@@ -897,7 +897,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
 
         @Override
         public void mousePressed(MouseEvent e) {}
-
+        
         @Override
         public void mouseReleased(MouseEvent e) {}
 
@@ -924,9 +924,9 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         private void refreshName() {
             String name;
             if(HistorySettings.getInstance().getLoadAll()) {
-                name = NbBundle.getMessage(LocalHistoryRootNode.class,  "LBL_LoadAll"); // XXX
+                name = NbBundle.getMessage(LocalHistoryRootNode.class,  "LBL_LoadAll"); // NOI18N
             } else {
-                name = "Load next " + HistorySettings.getInstance().getIncrements() + " days"; // XXX
+                name = NbBundle.getMessage(LocalHistoryRootNode.class,  "LBL_LoadNext", HistorySettings.getInstance().getIncrements()); // NOI18N
             }
             putValue(Action.NAME, name);
             LocalHistoryRootNode rootNode = getRootNode();
