@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,8 +34,11 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.source.usages;
 
 import com.sun.source.tree.*;
@@ -49,9 +46,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import java.io.*;
@@ -79,8 +74,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
-import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
-import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.openide.filesystems.FileObject;
@@ -93,165 +87,177 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public class SourceAnalyser {
-
-    private final ClassIndexImpl.Writer writer;
-    private final List<Pair<Pair<String, String>, Object[]>> references = new ArrayList<Pair<Pair<String, String>, Object[]>>();
-    private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
-    private static final boolean fullIndex = Boolean.getBoolean(SourceAnalyser.class.getName()+".fullIndex");   //NOI18N
-
-    /** Creates a new instance of SourceAnalyser */
-    SourceAnalyser (final @NonNull ClassIndexImpl.Writer writer) {
-        Parameters.notNull("writer", writer);   //NOI18N
-        this.writer = writer;
+public final class SourceAnalyzerFactory {
+    
+    private static final boolean fullIndex = Boolean.getBoolean("org.netbeans.modules.java.source.usages.SourceAnalyser.fullIndex");   //NOI18N
+    private static final Logger LOG = Logger.getLogger(SourceAnalyzerFactory.class.getName());
+    
+    private SourceAnalyzerFactory() {}
+    
+    public static StorableAnalyzer createStorableAnalyzer(@NonNull final ClassIndexImpl.Writer writer) {
+        return new StorableAnalyzer(writer);
     }
-
-    SourceAnalyser () {
-        this.writer = null;
+    
+    public static SimpleAnalyzer createSimpleAnalyzer() {
+        return new SimpleAnalyzer();
     }
-
-    public void store () throws IOException {
-        if (writer == null) {
-            throw new IllegalStateException("SourceAnalyser created with no Writer");   //NOI18N
+    
+    public static final class StorableAnalyzer extends BaseAnalyzer {
+        private final ClassIndexImpl.Writer writer;
+        
+        private StorableAnalyzer(@NonNull final ClassIndexImpl.Writer writer) {
+            Parameters.notNull("writer", writer);   //NOI18N
+            this.writer = writer;
         }
-        if (this.references.size() > 0 || this.toDelete.size() > 0) {
-            try {
-                this.writer.deleteAndFlush(this.references, toDelete);
-            } finally {
-                this.references.clear();
-                this.toDelete.clear();
-            }
-        }
-    }
-
-    public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
-        final CompileTuple tuple,
-        Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
-        final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
-        for (CompilationUnitTree cu : data) {
-            try {
-                UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, tuple);
-                uv.scan(cu,usages);
-                mainMethod[0] |= uv.mainMethod;
-                if (uv.rsList != null && uv.rsList.size()>0) {
-                    final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
-                    final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
-                    final String simpleName = index == -1 ? uv.sourceName : uv.sourceName.substring(index+1);
-                    String ext;
-                    if (tuple.virtual) {
-                        ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
-                    }
-                    else {
-                        ext = FileObjects.RS;
-                    }
-                    final String rsName = simpleName + '.' + ext;   //NOI18N
-                    javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, tuple.jfo);
-                    assert fo != null;
-                    try {
-                        BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
+        
+        public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
+            final JavaCustomIndexer.CompileTuple tuple,
+            Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
+            final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
+            for (CompilationUnitTree cu : data) {
+                try {
+                    UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, tuple);
+                    uv.scan(cu,usages);
+                    mainMethod[0] |= uv.mainMethod;
+                    if (uv.rsList != null && uv.rsList.size()>0) {
+                        final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
+                        final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
+                        final String simpleName = index == -1 ? uv.sourceName : uv.sourceName.substring(index+1);
+                        String ext;
+                        if (tuple.virtual) {
+                            ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
+                        }
+                        else {
+                            ext = FileObjects.RS;
+                        }
+                        final String rsName = simpleName + '.' + ext;   //NOI18N
+                        javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, tuple.jfo);
+                        assert fo != null;
                         try {
-                            String line;
-                            while ((line = in.readLine())!=null) {
-                                uv.rsList.add (line);
+                            BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
+                            try {
+                                String line;
+                                while ((line = in.readLine())!=null) {
+                                    uv.rsList.add (line);
+                                }
+                            } finally {
+                                in.close();
+                            }
+                        } catch (FileNotFoundException e) {
+                            //The manager.getFileForInput() should be used which returns null when file doesn't exist.
+                            //but the javac API doesn't allow to specify siblink  which will not work if there are two roots
+                            //with the same class name in the same wrong package.
+                            //workarond: use manager.getFileForOutput() which may return non existing javac FileObject and
+                            //cahch FileNotFoundException when it doens't exist, there is nothing to add into rsList
+                        }
+                        PrintWriter rsOut = new PrintWriter( new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
+                        try {
+                            for (String sig : uv.rsList) {
+                                rsOut.println(sig);
                             }
                         } finally {
-                            in.close();
+                            rsOut.close();
                         }
-                    } catch (FileNotFoundException e) {
-                        //The manager.getFileForInput() should be used which returns null when file doesn't exist.
-                        //but the javac API doesn't allow to specify siblink  which will not work if there are two roots
-                        //with the same class name in the same wrong package.
-                        //workarond: use manager.getFileForOutput() which may return non existing javac FileObject and
-                        //cahch FileNotFoundException when it doens't exist, there is nothing to add into rsList
                     }
-                    PrintWriter rsOut = new PrintWriter( new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
-                    try {
-                        for (String sig : uv.rsList) {
-                            rsOut.println(sig);
-                        }
-                    } finally {
-                        rsOut.close();
-                    }
+                } catch (IllegalArgumentException iae) {
+                    Exceptions.printStackTrace(iae);
                 }
+            }
+            //Ideally not even usegas will be calculated but it will propagate the storeIndex
+            //through the UsagesVisitor
+            if (tuple.index) {
+                for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
+                    final Pair<String,String> key = oe.getKey();
+                    final Data value = oe.getValue();
+                    addClassReferences (key,value);
+                }
+            }
+        }
+        
+        public void delete (final Pair<String,String>name) throws IOException {
+            this.toDelete.add(name);
+        }
+        
+        public void store () throws IOException {
+            if (this.references.size() > 0 || this.toDelete.size() > 0) {
+                try {
+                    this.writer.deleteAndFlush(this.references, toDelete);
+                } finally {
+                    this.references.clear();
+                    this.toDelete.clear();
+                }
+            }
+        }
+    }
+    
+    public static final class SimpleAnalyzer extends BaseAnalyzer {
+        private boolean used;
+        @CheckForNull
+        public List<Pair<Pair<String, String>, Object[]>> analyseUnit (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
+            if (used) {
+                throw new IllegalStateException("Trying to reuse SimpleAnalyzer");  //NOI18N
+            }
+            used = true;
+            try {
+                final Map<Pair<String,String>,Data> usages = new HashMap<Pair<String,String>,Data> ();
+                final Set<Pair<String,String>> topLevels = new HashSet<Pair<String,String>>();
+                final UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
+                uv.scan(cu,usages);
+                for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
+                    final Pair<String,String> key = oe.getKey();
+                    final Data data = oe.getValue();
+                    addClassReferences (key,data);
+                }
+                //this.writer.deleteEnclosedAndStore(this.references, topLevels);
+                return this.references;
             } catch (IllegalArgumentException iae) {
                 Exceptions.printStackTrace(iae);
-            }
-        }
-        //Ideally not even usegas will be calculated but it will propagate the storeIndex
-        //through the UsagesVisitor
-        if (tuple.index) {
-            for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
-                final Pair<String,String> key = oe.getKey();
-                final Data value = oe.getValue();
-                addClassReferences (key,value);
+                return null;
+            }catch (OutputFileManager.InvalidSourcePath e) {
+                return null;
             }
         }
     }
-
-    @CheckForNull
-    List<Pair<Pair<String, String>, Object[]>> analyseUnit (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
-        if (!references.isEmpty()) {
-            throw new IllegalStateException("Trying to reuse no store SourceAnalyser");
-        }
-        try {
-            final Map<Pair<String,String>,Data> usages = new HashMap<Pair<String,String>,Data> ();
-            final Set<Pair<String,String>> topLevels = new HashSet<Pair<String,String>>();
-            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
-            uv.scan(cu,usages);
-            for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
-                final Pair<String,String> key = oe.getKey();
-                final Data data = oe.getValue();
-                addClassReferences (key,data);
+    
+    private static class BaseAnalyzer {
+        protected final List<Pair<Pair<String, String>, Object[]>> references = new ArrayList<Pair<Pair<String, String>, Object[]>>();
+        protected final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
+        
+        protected final void addClassReferences (final Pair<String,String> name, final Data data) {
+            assert name != null;
+            assert data != null;
+            final Object[] result = new Object[3];
+            final Map<String,Set<ClassIndexImpl.UsageType>> usages = data.usages;
+            final Set<CharSequence> fids = data.featuresIdents;
+            final Set<CharSequence> ids = data.idents;
+            final List<String> ru = new LinkedList<String>();
+            for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : usages.entrySet()) {
+                ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
             }
-            //this.writer.deleteEnclosedAndStore(this.references, topLevels);
-            return this.references;
-        } catch (IllegalArgumentException iae) {
-            Exceptions.printStackTrace(iae);
-            return null;
-        }catch (OutputFileManager.InvalidSourcePath e) {
-            return null;
+            final StringBuilder fidents = new StringBuilder();
+            for (CharSequence id : fids) {
+                fidents.append(id);
+                fidents.append(' '); //NOI18N
+            }
+            final StringBuilder idents = new StringBuilder();
+            for (CharSequence id : ids) {
+                idents.append(id);
+                idents.append(' '); //NOI18N
+            }
+            result[0] = ru;
+            result[1] = fidents.toString();
+            result[2] = idents.toString();
+            this.references.add(Pair.<Pair<String,String>,Object[]>of(name,result));
         }
     }
 
-    public void delete (final Pair<String,String>name) throws IOException {
-        this.toDelete.add(name);
-    }
-
-    private void addClassReferences (final Pair<String,String> name, final Data data) {
-        assert name != null;
-        assert data != null;
-        final Object[] result = new Object[3];
-        final Map<String,Set<ClassIndexImpl.UsageType>> usages = data.usages;
-        final Set<CharSequence> fids = data.featuresIdents;
-        final Set<CharSequence> ids = data.idents;
-        final List<String> ru = new LinkedList<String>();
-        for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : usages.entrySet()) {
-            ru.add (DocumentUtil.encodeUsage(ue.getKey(),ue.getValue()));
-        }
-        final StringBuilder fidents = new StringBuilder();
-        for (CharSequence id : fids) {
-            fidents.append(id);
-            fidents.append(' '); //NOI18N
-        }
-        final StringBuilder idents = new StringBuilder();
-        for (CharSequence id : ids) {
-            idents.append(id);
-            idents.append(' '); //NOI18N
-        }
-        result[0] = ru;
-        result[1] = fidents.toString();
-        result[2] = idents.toString();
-        this.references.add(Pair.<Pair<String,String>,Object[]>of(name,result));
-    }
-
-
-    static class Data {
+    private static class Data {
         final Map<String, Set<ClassIndexImpl.UsageType>> usages = new HashMap<String, Set<ClassIndexImpl.UsageType>>();
         final Set<CharSequence> featuresIdents = new HashSet<CharSequence>();
         final Set<CharSequence> idents = new HashSet<CharSequence>();
     }
-
-    static class UsagesVisitor extends TreeScanner<Void,Map<Pair<String,String>,Data>> {
+    
+    private static class UsagesVisitor extends TreeScanner<Void,Map<Pair<String,String>,Data>> {
 
         enum State {EXTENDS, IMPLEMENTS, GT, OTHER, IMPORT, PACKAGE_ANN};
 
@@ -287,7 +293,7 @@ public class SourceAnalyser {
                 JavaFileManager manager,
                 javax.tools.JavaFileObject sibling,
                 Set<? super ElementHandle<TypeElement>> newTypes,
-                final CompileTuple tuple) throws MalformedURLException, IllegalArgumentException {
+                final JavaCustomIndexer.CompileTuple tuple) throws MalformedURLException, IllegalArgumentException {
 
             assert jt != null;
             assert cu != null;
@@ -534,7 +540,7 @@ public class SourceAnalyser {
         @Override
         @CheckForNull
         public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<String,String>,Data> p) {
-            final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;
+            final Symbol.ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;
             boolean errorInDecl = false;
             boolean errorIgnorSubtree = true;
             boolean topLevel = false;
@@ -553,8 +559,7 @@ public class SourceAnalyser {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                             name = Pair.<String,String>of(classNameType, null);
                         } else {
-                            Logger.getLogger(
-                                SourceAnalyser.class.getName()).log(
+                            LOG.log(
                                 Level.WARNING,
                                 "Cannot resolve {0}, ignoring whole subtree.",  //NOI18N
                                 sym);
@@ -665,7 +670,7 @@ public class SourceAnalyser {
         public Void visitMethod(@NonNull final MethodTree node, @NonNull final Map<Pair<String,String>, Data> p) {
             Element old = enclosingElement;
             try {
-                enclosingElement = ((JCMethodDecl) node).sym;
+                enclosingElement = ((JCTree.JCMethodDecl) node).sym;
                 if (enclosingElement != null && enclosingElement.getKind() == ElementKind.METHOD) {
                     mainMethod |= SourceUtils.isMainMethod((ExecutableElement) enclosingElement);
                 }
@@ -881,4 +886,5 @@ public class SourceAnalyser {
             return null;
         }
     }
+    
 }

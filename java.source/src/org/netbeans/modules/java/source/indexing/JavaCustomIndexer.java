@@ -128,7 +128,6 @@ public class JavaCustomIndexer extends CustomIndexer {
     protected void index(final Iterable<? extends Indexable> files, final Context context) {
         JavaIndex.LOG.log(Level.FINE, context.isSupplementaryFilesIndexing() ? "index suplementary({0})" :"index({0})", context.isAllFilesIndexing() ? context.getRootURI() : files); //NOI18N
         final TransactionContext txCtx = TransactionContext.get();
-        assert  txCtx != null;
         final FileManagerTransaction fmTx = txCtx.get(FileManagerTransaction.class);
         assert fmTx != null;
         final ClassIndexEventsTransaction ciTx = txCtx.get(ClassIndexEventsTransaction.class);
@@ -260,7 +259,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             ciTx.removedTypes(context.getRootURI(), _rt);
             ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
             if (!context.checkForEditorModifications()) { // #152222
-                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+                ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
+                ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
             }
         } catch (NoSuchAlgorithmException ex) {
             Exceptions.printStackTrace(ex);
@@ -348,7 +348,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 javaContext.checkSums.store();
                 javaContext.fqn2Files.store();
                 javaContext.sa.store();
-                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
+                ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
                 javaContext.finish();
