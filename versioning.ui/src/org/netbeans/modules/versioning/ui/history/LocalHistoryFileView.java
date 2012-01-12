@@ -876,9 +876,6 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                         return;
                     }
                     String message = entry.getMessage();
-                    if(!containsHyperlink(message)) {
-                        return;
-                    }
                     String author = entry.getUsername();
                     String revision = entry.getRevision();
                     Date date = entry.getDateTime();
