@@ -139,7 +139,7 @@ public class TypeRepository implements ITypeRepository {
         }
     }
     private void fillTypeElement(Class<?> type){
-        types.put(type.getName(), new JavaType(TypeRepository.this, type));
+        types.put(type.getName(), new Type(TypeRepository.this, type));
     }
     
 }
