@@ -127,7 +127,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         if (framework == null) {
             readBundles();
             
-            Map<String, Object> configMap = new HashMap<String, Object>();
+            Map configMap = new HashMap();
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
