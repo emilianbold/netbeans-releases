@@ -1085,6 +1085,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
             try {
                 suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+                threadName = ThreadReferenceWrapper.name(threadReference);
             } catch (IllegalThreadStateExceptionWrapper ex) {
                 // Thrown when thread has exited
             } catch (ObjectCollectedExceptionWrapper ocex) {
@@ -1115,6 +1116,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
             try {
                 suspendCount = ThreadReferenceWrapper.suspendCount(threadReference);
+                threadName = ThreadReferenceWrapper.name(threadReference);
             } catch (IllegalThreadStateExceptionWrapper ex) {
                 return null; // Thrown when thread has exited
             } catch (ObjectCollectedExceptionWrapper ocex) {
