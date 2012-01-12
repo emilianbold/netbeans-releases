@@ -49,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -81,6 +82,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private final Object LOCK = new Object();
     private WebView browser;
     private String status;
+    private boolean initialized;
 
     @Override
     public Component getComponent() {
@@ -93,6 +95,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                         createBrowser();
                     }
                 });
+                initialized = true;
             }
         }
         return container;
@@ -146,11 +149,18 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public String getURL() {
-        if( !isInitialized() )
-            return null;
-        String url = browser.getEngine().getLocation();
-        if( null == url )
+        String url = null;
+        if (isInitialized()) {
+            url = runInFXThread(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return browser.getEngine().getLocation();
+                }
+            });
+        }
+        if (url == null) {
             url = urlToLoad;
+        }
         return url;
     }
 
@@ -163,9 +173,16 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public String getTitle() {
-        if( !isInitialized() )
-            return null;
-        return browser.getEngine().getTitle();
+        String title = null;
+        if (isInitialized()) {
+            title = runInFXThread(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    return browser.getEngine().getTitle();
+                }
+            });
+        }
+        return title;
     }
 
     @Override
@@ -237,9 +254,16 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public Document getDocument() {
-        if( !isInitialized() )
-            return null;
-        return browser.getEngine().getDocument();
+        Document document = null;
+        if (isInitialized()) {
+            document = runInFXThread(new Callable<Document>() {
+                @Override
+                public Document call() throws Exception {
+                    return browser.getEngine().getDocument();
+                }
+            });
+        }
+        return document;
     }
 
     @Override
@@ -248,6 +272,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             if( isInitialized() ) {
                 container.removeAll();
                 browser = null;
+                initialized = false;
             }
             browserListners.clear();
             container = null;
@@ -285,35 +310,21 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public Object executeJavaScript(final String script) {
-        if( !isInitialized() )
-            return null;
-        if (javafx.application.Platform.isFxApplicationThread()) {
-            return browser.getEngine().executeScript(script);
-        } else {
-            final Object[] result = new Object[1];
-            final CountDownLatch latch = new CountDownLatch(1);
-            javafx.application.Platform.runLater( new Runnable() {
+        Object result = null;
+        if (isInitialized()) {
+            result = runInFXThread(new Callable<Object>() {
                 @Override
-                public void run() {
-                    try {
-                        result[0] = browser.getEngine().executeScript(script);
-                    } finally {
-                        latch.countDown();
-                    }
+                public Object call() throws Exception {
+                    return browser.getEngine().executeScript(script);
                 }
             });
-            try {
-                latch.await();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return result[0];
         }
+        return result;
     }
 
     private boolean isInitialized() {
         synchronized( LOCK ) {
-            return null != browser;
+            return initialized;
         }
     }
 
@@ -386,4 +397,38 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             urlToLoad = null;
         }
     }
+
+    private <T> T runInFXThread(final Callable<T> task) {
+        T result = null;
+        try {
+            if (javafx.application.Platform.isFxApplicationThread()) {
+                result = task.call();
+            } else {
+                final Object[] resultWrapper = new Object[1];
+                final CountDownLatch latch = new CountDownLatch(1);
+                javafx.application.Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            resultWrapper[0] = task.call();
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            latch.countDown();
+                        }
+                    }
+                });
+                try {
+                    latch.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                result = (T)resultWrapper[0];
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result;
+    }
+    
 }
