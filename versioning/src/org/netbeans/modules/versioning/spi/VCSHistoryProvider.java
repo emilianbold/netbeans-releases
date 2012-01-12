@@ -48,19 +48,70 @@ import javax.swing.Action;
 
 
 /**
- *
+ * Provides history relevant data for versioned files.
+ * 
  * @author Tomas Stupka
+ * 
+ * @since 1.26
  */
 public interface VCSHistoryProvider {
     
-    public void addHistoryChangeListener(HistoryChangeListener l);
-    
-    public void removeHistoryChangeListener(HistoryChangeListener l);
-    
+    /**
+     * Returns a list of all HistoryEntries for the given files ranging
+     * between fromDate and now. 
+     * 
+     * @param files the files for which the history should be returned
+     * @param fromDate timedate starting from which the history shoudl be returned
+     * 
+     * @return a list of HistoryEntries
+     * 
+     * @since 1.26
+     */
     public abstract HistoryEntry[] getHistory(File[] files, Date fromDate);
     
+    /**
+     * Returns an action which is expected to open the particular versioning systems
+     * history view.
+     * 
+     * @param files the files for which the history view should be opened
+     * 
+     * @return an action opening the history view or null if not available
+     * 
+     * @since 1.26
+     */
     public abstract Action createShowHistoryAction(File[] files);
     
+    /**
+     * A history entry (revision) in a versioning repository.
+     * As such sometimes may apply for more then one file, it is also expected 
+     * that only one instance, containing all relevant files, is created in such case.
+     * 
+     * <p>
+     * The <code>usernameShort</code> and <code>revisionShort</code> will be displayed 
+     * in places with limited space, but should be descriptive enough to identify the 
+     * particular user or revision - e.g in case of Mercurial it would be something like:
+     * 
+     * <table border="0" cellpadding="1" cellspacing="1">
+     *   <tr align="left">
+     *     <th bgcolor="#CCCCFF"></th>
+     *     <th bgcolor="#CCCCFF">short</th>
+     *     <th bgcolor="#CCCCFF">long</th>
+     *   </tr>
+     *   <tr align="left">
+     *     <td>revision</td>
+     *     <td>210767</td>
+     *     <td>210767:2dd617e260fc</td>
+     *   </tr>
+     *   <tr align="left">
+     *     <td>user</td>
+     *     <td>john.doe@netbeans.org</td>
+     *     <td>John Doe &lt;john.doe@netbeans.org&gt;</td>
+     *   </tr>
+     * </table>
+     * </p> 
+     * 
+     * @since 1.26
+     */
     public static final class HistoryEntry {
         private Date dateTime;
         private String message;
@@ -70,9 +121,24 @@ public interface VCSHistoryProvider {
         private String revisionShort;
         private String revision;
         private Action[] actions;
-        private RevisionProvider rp;
-        private MessageEditProvider mep;
+        private RevisionProvider revisionProvider;
+        private MessageEditProvider messageEditProvider;
         
+        /**
+         * Creates a new HistoryEntry instance.
+         * 
+         * @param files involved files
+         * @param dateTime the date and time when the versioning revision was created
+         * @param message the message describing the versioning revision 
+         * @param username full description of the user who created the versioning revision 
+         * @param usernameShort short description of the user who created the versioning revision 
+         * @param revision full description of the versioning revision
+         * @param revisionShort short description of the versioning revision
+         * @param actions actions which might be called in regard with this revision
+         * @param revisionProvider a RevisionProvider to get access to a files contents in this revision
+         *
+         * @since 1.26
+         */
         public HistoryEntry(
                 File[] files, 
                 Date dateTime, 
@@ -82,11 +148,11 @@ public interface VCSHistoryProvider {
                 String revision, 
                 String revisionShort, 
                 Action[] actions, 
-                RevisionProvider rp) 
+                RevisionProvider revisionProvider) 
         {
             assert files != null && files.length > 0 : "a history entry must have at least one file"; // NOI18N
             assert revision != null && revision != null : "a history entry must have a revision";     // NOI18N
-            assert dateTime != null : "a history entry must have a date";                                 // NOI18N
+            assert dateTime != null : "a history entry must have a date";                             // NOI18N
             
             this.files = files;
             this.dateTime = dateTime;
@@ -96,9 +162,25 @@ public interface VCSHistoryProvider {
             this.revision = revision;
             this.revisionShort = revisionShort;
             this.actions = actions;
-            this.rp = rp;
+            this.revisionProvider = revisionProvider;
         }
         
+        /**
+         * Creates a new HistoryEntry instance.
+         * 
+         * @param files involved files
+         * @param dateTime the date and time when the versioning revision was created
+         * @param message the message describing the versioning revision 
+         * @param username full description of the user who created the versioning revision 
+         * @param usernameShort short description of the user who created the versioning revision 
+         * @param revision full description of the versioning revision
+         * @param revisionShort short description of the versioning revision
+         * @param actions actions which might be called in regard with this revision
+         * @param revisionProvider a RevisionProvider to get access to a files contents in this revision
+         * @param messageEditProvider a MessageEditProvider to change a revisions message
+         * 
+         * @since 1.26
+         */
         public HistoryEntry(
                 File[] files, 
                 Date dateTime, 
@@ -108,79 +190,266 @@ public interface VCSHistoryProvider {
                 String revision, 
                 String revisionShort, 
                 Action[] actions, 
-                RevisionProvider rp,
-                MessageEditProvider mep) 
+                RevisionProvider revisionProvider,
+                MessageEditProvider messageEditProvider) 
         {
-            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, rp);
-            this.mep = mep;
+            this(files, dateTime, message, username, usernameShort, revision, revisionShort, actions, revisionProvider);
+            this.messageEditProvider = messageEditProvider;
         }
         
+        /**
+         * Determines if this HistoryEntry instance supports changes.
+         * 
+         * @return true if it is possible to access setter methods in this instance
+         * 
+         * @since 1.26
+         */
         public boolean canEdit() {
-            return mep != null;
+            return messageEditProvider != null;
         }
+        
+        /**
+         * Returns the date and time when this HistoryEntry was created in the versioning repository.
+         * 
+         * @return the date and time
+         * 
+         * @since 1.26
+         */
         public Date getDateTime() {
             return dateTime;
         }
+        
+        /**
+         * Returns the message describing the HistoryEntry. 
+         * 
+         * @return the message describing the HistoryEntry. 
+         * 
+         * @since 1.26
+         */
         public String getMessage() {
             return message;
         }
+        
+        /**
+         * Changes the message for this HistoryEntry in the relevant versioning system in case this
+         * a <code>MessageEditProvider</code> instance was passed into the constructor.
+         * 
+         * @param message new message text
+         * 
+         * @throws IOException if it wasn't possible to set the message
+         * 
+         * @throws IllegalStateException if no {@link #MessageEditProvider} was passed to this HistoryEntry instance
+         *
+         * @since 1.26
+         */
         public void setMessage(String message) throws IOException {
             if(!canEdit()) throw new IllegalStateException("This entry is read-only");
-            mep.setMessage(message);
+            messageEditProvider.setMessage(message);
             this.message = message;
         }
+        
+        /**
+         * Returns the files this HistoryEntry applies to.
+         * 
+         * @return a fields of files
+         * 
+         * @since 1.26
+         */
         public File[] getFiles() {
             return files;
         }
+        
+        /**
+         * Returns the full form of the users name which created this HistoryEntry in the versioning system.
+         *
+         * @return the full form of the users name
+         * 
+         * @since 1.26
+         */
         public String getUsername() {
             return username;
         }
+        
+        /**
+         * Returns a short form of the users name which created this HistoryEntry in the versioning system.
+         * 
+         * @return 
+         * 
+         * @since 1.26
+         */
         public String getUsernameShort() {
             return usernameShort;
         }
+        
+        /**
+         * Returns the full form of the revision value which identifies this HistoryEntry in
+         * the relevant versionig repository.
+         * 
+         * @return 
+         * 
+         * @since 1.26
+         */
         public String getRevision() {
             return revision;
         }
+        
+        /**
+         * Returns the short form of the revision value which identifies this HistoryEntry in
+         * the relevant versionig repository.
+         * 
+         * @return 
+         * 
+         * @since 1.26
+         */
         public String getRevisionShort() {
             return revisionShort;
         }
+        
+        /**
+         * Returns actions which might be called for this HistoryEntry.
+         * 
+         * @return a field of actions
+         * 
+         * @since 1.26
+         */
         public Action[] getActions() {
             return actions;
         }
+        
+        /**
+         * Get the copy of a file as it was in the revision given by this HistoryEntry. 
+         * In case a {@link RevisionProvider} wasn't provided this method does nothing.
+         * 
+         * @param originalFile placeholder File for the original (unmodified) copy of the working file
+         * @param revisionFile a File in the working copy  
+         * 
+         * @since 1.26
+         */
         public void getRevisionFile(File originalFile, File revisionFile) {
-            rp.getRevisionFile(originalFile, revisionFile);
+            if(revisionProvider != null) {
+                revisionProvider.getRevisionFile(originalFile, revisionFile);
+            } 
         }
+        
+        /**
+         * Returns the RevisionProvider
+         * @return the RevisionProvider
+         */
         RevisionProvider getRevisionProvier() {
-            return rp;
+            return revisionProvider;
         }
+        
+        /**
+         * Returns the MessageEditProvider or null 
+         * @return the MessageEditProvider
+         */
         MessageEditProvider getMessageEditProvider() {
-            return mep;
+            return messageEditProvider;
         }
     }
     
+    /**
+     * Adds a listener for history change events.
+     * 
+     * @param l listener
+     * 
+     * @since 1.26
+     */
+    public void addHistoryChangeListener(HistoryChangeListener l);
+    
+    /**
+     * Removes a listener for history change events.
+     * 
+     * @param l listener
+     * 
+     * @since 1.26
+     */
+    public void removeHistoryChangeListener(HistoryChangeListener l);
+
+    /**
+     * Provides files in a revision. 
+     */
     public interface RevisionProvider {
+       
+       /**
+        * Get the copy of a file as it was in a revision given by a {@link HistoryEntry}. 
+        * In case the versioning system cannot provide the file in the requested revision 
+        * then this method should do nothing.<br>
+        * Note that for versioning systems that support keyword expansion, 
+        * the original file must expand all keywords.
+        * 
+        * @param originalFile placeholder File for the original (unmodified) copy of the working file
+        * @param revisionFile a File in the working copy  
+        *
+        * @since 1.26
+        */
         void getRevisionFile(File originalFile, File revisionFile);
     }
     
+    /**
+     * Changes the message in a revision given by a {@link HistoryEntry}. 
+     * 
+     * @since 1.26
+     */
     public interface MessageEditProvider {
+        
+        /**
+         * Set a new message 
+         * @param message the message
+         * @throws IOException in case it wasn't possible to change the message by the versioning system.
+         */
         void setMessage(String message) throws IOException;
     }
     
+    /**
+     * Listener to changes in a versioning history
+     * 
+     * @since 1.26
+     */
     public interface HistoryChangeListener {
         public void fireHistoryChanged(HistoryEvent evt);
     }
     
+    /**
+     * Event notifying a change in the history of some files.
+     * 
+     * @since 1.26
+     */
     public static final class HistoryEvent {
         private final File[] files;
         private final VCSHistoryProvider source;
+        
+        /**
+         * Creates a new HistoryEvent
+         * 
+         * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * @param files the files which history has changed
+         * 
+         * @since 1.26
+         */
         public HistoryEvent(VCSHistoryProvider source, File[] files) {
             this.files = files;
             this.source = source;
         }
+        
+        /**
+         * Returns files which history has changed.
+         * 
+         * @return files
+         * 
+         * @since 1.26
+         */
         public File[] getFiles() {
             return files;
         }
-
+        
+        /**
+         * Returns the {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * 
+         * @return {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * 
+         * @since 1.26
+         */
         public VCSHistoryProvider getSource() {
             return source;
         }
