@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.java.source.usages;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,7 +52,9 @@ import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -63,6 +67,8 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     private final Collection<ElementHandle<TypeElement>> addedTypes;
     private final Collection<ElementHandle<TypeElement>> removedTypes;
     private final Collection<ElementHandle<TypeElement>> changedTypes;
+    private final Collection<File> addedFiles;
+    private final Collection<File> removedFiles;
     private URL addedRoot;
     private URL changesInRoot;
 
@@ -71,6 +77,8 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         addedTypes = new HashSet<ElementHandle<TypeElement>>();
         removedTypes = new HashSet<ElementHandle<TypeElement>>();
         changedTypes = new HashSet<ElementHandle<TypeElement>>();
+        addedFiles = new ArrayDeque<File>();
+        removedFiles = new ArrayDeque<File>();
     }
 
 
@@ -117,16 +125,50 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         changedTypes.addAll(changed);
         changesInRoot = root;
     }
+    
+    public void addedCacheFiles(
+        @NonNull final URL root,
+        @NonNull final Collection<? extends File> files) {
+        Parameters.notNull("root", root); //NOI18N
+        Parameters.notNull("files", files); //NOI18N
+        assert changesInRoot == null || changesInRoot.equals(root);
+        assert addedRoot == null || addedRoot.equals(root);
+        addedFiles.addAll(files);
+        changesInRoot = root;
+    }
+    
+    public void removedCacheFiles(
+        @NonNull final URL root,
+        @NonNull final Collection<? extends File> files) {
+        Parameters.notNull("root", root);   //NOI18N
+        Parameters.notNull("files", files); //NOI18N
+        assert changesInRoot == null || changesInRoot.equals(root);
+        assert addedRoot == null || addedRoot.equals(root);
+        removedFiles.addAll(files);
+        changesInRoot = root;
+    }
 
     @Override
     protected void commit() throws IOException {
-        final ClassIndexManager ciManager = ClassIndexManager.getDefault();
-        ciManager.fire(Collections.<URL>singleton(addedRoot), removedRoots);
-        final ClassIndexImpl ci = changesInRoot == null ?
-            null:
-            ciManager.getUsagesQuery(changesInRoot, false);
-        if (ci != null) {
-            ci.typesEvent(addedTypes, removedTypes, changedTypes);
+        try {
+            if (!addedFiles.isEmpty() || !removedFiles.isEmpty()) {
+                assert changesInRoot != null;
+                BuildArtifactMapperImpl.classCacheUpdated(
+                    changesInRoot,
+                    JavaIndex.getClassFolder(changesInRoot),
+                    removedFiles,
+                    addedFiles,
+                    false);
+            }
+        } finally {
+            final ClassIndexManager ciManager = ClassIndexManager.getDefault();
+            ciManager.fire(Collections.<URL>singleton(addedRoot), removedRoots);
+            final ClassIndexImpl ci = changesInRoot == null ?
+                null:
+                ciManager.getUsagesQuery(changesInRoot, false);
+            if (ci != null) {
+                ci.typesEvent(addedTypes, removedTypes, changedTypes);
+            }
         }
     }
 
