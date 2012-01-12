@@ -74,7 +74,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
     @NbBundle.Messages("title.property.searching=Property Searching")
     public void process(HyperlinkEnv env) {
         String className = new BeanClassFinder(env.getBeanAttributes(),
-                env.getFileObject()).findImplementationClass();
+                env.getFileObject()).findImplementationClass(false);
         if (className == null) {
             return;
         }
