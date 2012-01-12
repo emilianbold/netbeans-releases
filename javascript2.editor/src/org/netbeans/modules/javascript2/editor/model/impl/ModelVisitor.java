@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 
 import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.parser.Token;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -271,36 +272,48 @@ public class ModelVisitor extends PathNodeVisitor {
     
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
+        Node previousVisited = getPath().get(getPath().size() - (onset ? 1 : 2));
+        System.out.println("previous node : " + previousVisited.getClass().getSimpleName() + ", onset: " + onset);
         if (onset) {
-            List<Identifier> fqName = null;
-            int pathSize = getPath().size();
-            boolean isDeclaredInParent = false;
-            Node lastVisited = getPath().get(pathSize - 1);
-            if ( lastVisited instanceof VarNode) {
-                fqName = getName((VarNode)lastVisited);
-            } else if (lastVisited instanceof PropertyNode) {
-                        fqName = getName((PropertyNode)lastVisited);
-                        isDeclaredInParent = true;
-                    } else if (lastVisited instanceof BinaryNode) {
-                        BinaryNode binNode = (BinaryNode)lastVisited;
-                        fqName = getName(binNode);
-                        if(binNode.lhs() instanceof AccessNode 
-                                && ((AccessNode)binNode.lhs()).getBase() instanceof IdentNode
-                                && ((IdentNode)((AccessNode)binNode.lhs()).getBase()).getName().equals("this")) {
-                            isDeclaredInParent = true;
-                        }
-                    }
-            if (fqName == null || fqName.size() == 0) {
-                fqName = new ArrayList<Identifier>(1);
-                fqName.add(new IdentifierImpl("UNKNOWN",   //NOI18N
-                        new OffsetRange(objectNode.getStart(), objectNode.getFinish())));
+            if(previousVisited instanceof CallNode) {
+                // TODO there should be handled anonymous object that are going as parameter to a funciton
+                return null;
             }
-            JsObjectImpl scope = modelBuilder.getCurrentObject();
-            
-            JsObjectImpl objectScope = ModelElementFactory.create(objectNode, fqName, modelBuilder, isDeclaredInParent);
-            modelBuilder.setCurrentObject(objectScope);
+            if (!(previousVisited instanceof ReturnNode 
+                    || previousVisited instanceof CallNode)) {
+                List<Identifier> fqName = null;
+                int pathSize = getPath().size();
+                boolean isDeclaredInParent = false;
+                Node lastVisited = getPath().get(pathSize - 1);
+                if ( lastVisited instanceof VarNode) {
+                    fqName = getName((VarNode)lastVisited);
+                } else if (lastVisited instanceof PropertyNode) {
+                            fqName = getName((PropertyNode)lastVisited);
+                            isDeclaredInParent = true;
+                        } else if (lastVisited instanceof BinaryNode) {
+                            BinaryNode binNode = (BinaryNode)lastVisited;
+                            fqName = getName(binNode);
+                            if(binNode.lhs() instanceof AccessNode 
+                                    && ((AccessNode)binNode.lhs()).getBase() instanceof IdentNode
+                                    && ((IdentNode)((AccessNode)binNode.lhs()).getBase()).getName().equals("this")) {
+                                isDeclaredInParent = true;
+                            }
+                        }
+                if (fqName == null || fqName.size() == 0) {
+                    fqName = new ArrayList<Identifier>(1);
+                    fqName.add(new IdentifierImpl("UNKNOWN",   //NOI18N
+                            new OffsetRange(objectNode.getStart(), objectNode.getFinish())));
+                }
+                JsObjectImpl scope = modelBuilder.getCurrentObject();
+
+                JsObjectImpl objectScope = ModelElementFactory.create(objectNode, fqName, modelBuilder, isDeclaredInParent);
+                modelBuilder.setCurrentObject(objectScope);
+            }
         } else {
-            modelBuilder.reset();
+            if (!(previousVisited instanceof ReturnNode
+                    || previousVisited instanceof CallNode)) {
+                modelBuilder.reset();
+            }
         }
 
         return super.visit(objectNode, onset);
@@ -344,6 +357,7 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return super.visit(referenceNode, onset);
     }
+
     
     @Override
     public Node visit(VarNode varNode, boolean onset) {
