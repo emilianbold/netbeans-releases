@@ -47,11 +47,9 @@ import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.JFXPanel;
@@ -80,28 +78,11 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private JFXPanel container;
     private String urlToLoad;
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
-    private final List<WebBrowserListener> browserListners = new ArrayList<WebBrowserListener>(10);
+    private final List<WebBrowserListener> browserListners = new ArrayList<WebBrowserListener>();
     private final Object LOCK = new Object();
     private PropertyChangeListener tcListener;
-    
     private WebView browser;
-
-
-    private static final Logger LOG = Logger.getLogger(WebBrowserImpl.class.getName());
-
-    private static final String CA_DOMAIN = "domain"; //NOI18N
-    private static final String CA_PATH = "path"; //NOI18N
-    private static final String CA_NAME = "name"; //NOI18N
-    private static final String CA_VALUE = "value"; //NOI18N
-    private static final String CA_IS_SECURE = "isSecure"; //NOI18N
-    private static final String CA_IS_HTTP_ONLY = "isHttpOnly"; //NOI18N
-    private static final String CA_IS_SESSION = "isSession"; //NOI18N
-    private static final String CA_EXPIRY = "expiry"; //NOI18N
-    
     private String status;
-
-    public WebBrowserImpl() {
-    }
 
     @Override
     public Component getComponent() {
@@ -109,7 +90,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             if( null == container ) {
                 container = new JFXPanel();
                 javafx.application.Platform.runLater( new Runnable() {
-
                     @Override
                     public void run() {
                         createBrowser();
@@ -263,7 +243,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         synchronized( LOCK ) {
             if( isInitialized() ) {
                 container.removeAll();
-//                browser.getEngine().isposeNativePeer();
                 browser = null;
             }
             browserListners.clear();
@@ -290,76 +269,17 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public Map<String, String> getCookie(String domain, String name, String path) {
-        if( isInitialized() ) {
-//            nsICookieManager cm = XPCOMUtils.getService(SERVICE_COOKIE_MANAGER, nsICookieManager.class);
-//            if( null != cm ) {
-//                nsISimpleEnumerator enumerator = cm.getEnumerator();
-//                nsICookie theCookie = null;
-//                while( enumerator.hasMoreElements() ) {
-//                    nsISupports obj = enumerator.getNext();
-//                    nsICookie cookie = XPCOMUtils.qi(obj, nsICookie.class);
-//                    if( null == cookie )
-//                        continue;
-//                    LOG.log(Level.FINER, "Cookie: domain={0}, name={1}, path={2}, value={3}", //NOI18N
-//                        new Object[] { cookie.getHost(), cookie.getName(), cookie.getPath(), cookie.getValue() });
-//
-//                    if( (null == domain || domain.equals(cookie.getHost()))
-//                            && (null == name || name.equals(cookie.getName()))
-//                            && (null == path || path.equals(cookie.getPath()))) {
-//                        theCookie = cookie;
-//                        break;
-//                    }
-//                }
-//                if( null == theCookie ) {
-//                    LOG.log(Level.FINE, "Cookie not found, domain={0}, name={1}, path={2}", //NOI18N
-//                            new Object[] {domain, name, path} );
-//                } else {
-//                    return cookie2map( theCookie );
-//                }
-//            } else {
-//                LOG.info("CookieManager interface not found."); //NOI18N
-//            }
-        }
-        return new HashMap<String, String>(0);
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteCookie(String domain, String name, String path) {
-        if( !isInitialized() )
-            return;
-//        nsICookieManager cm = XPCOMUtils.getService(SERVICE_COOKIE_MANAGER, nsICookieManager.class);
-//        if( null != cm ) {
-//            cm.remove(domain, name, path, false);
-//            LOG.log(Level.FINE, "Cookie removed, domain={0}, name={1}, path={2}",  //NOI18N
-//                    new Object[] {domain, name, path} );
-//        } else {
-//            LOG.info("CookieManager interface not found."); //NOI18N
-//        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void addCookie(Map<String, String> cookie) {
-        if( !isInitialized() )
-            return;
-//        nsICookieManager2 cm = XPCOMUtils.getService(SERVICE_COOKIE_MANAGER, nsICookieManager2.class);
-//        if( null != cm ) {
-//            String aDomain = cookie.get(CA_DOMAIN);
-//            String aPath = cookie.get(CA_PATH);
-//            String aName = cookie.get(CA_NAME);
-//            String aValue = cookie.get(CA_VALUE);
-//            boolean aIsSecure = Boolean.valueOf(cookie.get(CA_IS_SECURE));
-//            boolean aIsHttpOnly = Boolean.valueOf(cookie.get(CA_IS_HTTP_ONLY));
-//            boolean aIsSession = Boolean.valueOf(cookie.get(CA_IS_SESSION));
-//            long aExpiry = 0; //TODO use default expiration interval
-//            String expiry = cookie.get(CA_EXPIRY);
-//            if( null != expiry ) {
-//                aExpiry = Long.valueOf(expiry).longValue();
-//            }
-//            cm.add(aDomain, aPath, aName, aValue, aIsSecure, aIsHttpOnly, aIsSession, aExpiry);
-//        } else {
-//            LOG.info("CookieManager2 interface not found."); //NOI18N
-//        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -417,20 +337,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             }
         }
     }
-
-
-//    private static Map<String, String> cookie2map(nsICookie cookie) {
-//        Map<String, String> res = new HashMap<String, String>(10);
-//        res.put(CA_PATH, cookie.getPath());
-//        res.put(CA_DOMAIN, cookie.getHost());
-////        res.put(CA_EXPIRY, String.valueOf(cookie.getExpiry()));
-////        res.put(CA_IS_HTTP_ONLY, String.valueOf(cookie.getIsHttpOnly()));
-//        res.put(CA_IS_SECURE, String.valueOf(cookie.getIsSecure()));
-////        res.put(CA_IS_SESSION, String.valueOf(cookie.getIsSession()));
-//        res.put(CA_NAME, cookie.getName());
-//        res.put(CA_VALUE, cookie.getValue());
-//        return res;
-//    }
 
     private void createBrowser() {
         WebView view = new WebView();
