@@ -172,40 +172,46 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public boolean isForward() {
-        if( !isInitialized() )
-            return false;
-        return false;
+        return true;
     }
 
     @Override
     public void forward() {
-        if( !isInitialized() )
-            return;
-//        browser.navigateForward();
+        if (isInitialized()) {
+            javafx.application.Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    browser.getEngine().executeScript("window.history.forward()"); // NOI18N
+                }
+            });
+        }
     }
 
     @Override
     public boolean isBackward() {
-        if( !isInitialized() )
-            return false;
-        return false; //browser.isBackNavigationEnabled();
+        return true;
     }
 
     @Override
     public void backward() {
-        if( !isInitialized() )
-            return;
-//        browser.navigateBack();
+        if (isInitialized()) {
+            javafx.application.Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    browser.getEngine().executeScript("window.history.back()"); // NOI18N
+                }
+            });
+        }
     }
 
     @Override
     public boolean isHistory() {
-        return false; //TODO implement this
+        return false;
     }
 
     @Override
     public void showHistory() {
-        //TODO implement this
+        throw new UnsupportedOperationException();
     }
 
     @Override
