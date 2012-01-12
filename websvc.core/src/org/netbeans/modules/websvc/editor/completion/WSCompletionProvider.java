@@ -131,7 +131,7 @@ public class WSCompletionProvider implements CompletionProvider {
                 NbEditorUtilities.getFileObject(doc);
                 JavaSource js = JavaSource.forDocument(doc);
                 if (js!=null) {
-                    js.runWhenScanFinished(this, true);
+                    js.runUserActionTask(this, true);
                     if (isTaskCancelled()) {
                         return;
                     }
