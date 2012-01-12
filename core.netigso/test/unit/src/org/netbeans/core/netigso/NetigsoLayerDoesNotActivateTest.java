@@ -63,22 +63,25 @@ import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.osgi.framework.Bundle;
 
 /**
- * How does OSGi integration deals with layer registration?
+ * How does OSGi integration deals with layer registration? Can we read
+ * it without resolving the bundle?
  *
  * @author Jaroslav Tulach
  */
-public class NetigsoLayerTest extends SetupHid {
+public class NetigsoLayerDoesNotActivateTest extends SetupHid {
     private static Module m1;
     private static ModuleManager mgr;
 
-    public NetigsoLayerTest(String name) {
+    public NetigsoLayerDoesNotActivateTest(String name) {
         super(name);
     }
 
     protected @Override void setUp() throws Exception {
-        Locale.setDefault(Locale.US);
+        // changes minimal start level to 10
+        Locale.setDefault(new Locale("def", "ST"));
         clearWorkDir();
 
         
@@ -99,8 +102,7 @@ public class NetigsoLayerTest extends SetupHid {
             mgr = ms.getManager();
             mgr.mutexPrivileged().enterWriteAccess();
             try {
-                File j1 = new File(jars, "simple-module.jar");
-                m1 = mgr.create(j1, null, false, false, false);
+                m1 = mgr.create(simpleModule, null, false, false, false);
                 mgr.enable(Collections.<Module>singleton(m1));
             } finally {
                 mgr.mutexPrivileged().exitWriteAccess();
@@ -120,7 +122,6 @@ public class NetigsoLayerTest extends SetupHid {
                 "Bundle-Version: 1.1.0\n" +
                 "Bundle-ManifestVersion: 2\n" +
                 "Import-Package: org.foo\n" +
-                "Export-Package: org.bar\n" +
                 "OpenIDE-Module-Layer: org/bar/layer.xml\n" +
                 "\n\n";
 
@@ -133,16 +134,16 @@ public class NetigsoLayerTest extends SetupHid {
         try {
             mgr.mutexPrivileged().enterWriteAccess();
             fo = FileUtil.getConfigFile("TestFolder");
-            assertNotNull("Folder found", fo);
+            assertNotNull("Layer found and its entries registered", fo);
 
-            URL u = mgr.getClassLoader().getResource("org/bar/layer.xml");
-            assertNotNull("System ClassLoader can load resources", u);
+            Bundle b = NetigsoServicesTest.findBundle(m2.getCodeNameBase());
+            assertNotNull("Bundle for m2 found", b);
+            assertEquals("It still remains in installed state only", Bundle.INSTALLED, b.getState());
         } finally {
             mgr.disable(m2);
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-
     public void testOSGiCanProvideImpl() throws Exception {
         FileObject fo;
         Module m2;
@@ -154,7 +155,6 @@ public class NetigsoLayerTest extends SetupHid {
                 "Import-Package: org.foo\n" +
                 "OpenIDE-Module-Layer: org/bar/impl/layer.xml\n" +
                 "\n\n";
-
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
             m2 = mgr.create(j2, null, false, false, false);
             mgr.enable(m2);
@@ -164,16 +164,17 @@ public class NetigsoLayerTest extends SetupHid {
         try {
             mgr.mutexPrivileged().enterWriteAccess();
             fo = FileUtil.getConfigFile("TestImplFolder");
-            assertNotNull("Folder found", fo);
+            assertNotNull("Layer found and its entries registered", fo);
 
-            URL u = mgr.getClassLoader().getResource("org/bar/impl/layer.xml");
-            assertNotNull("System ClassLoader can load resources", u);
+            Bundle b = NetigsoServicesTest.findBundle(m2.getCodeNameBase());
+            assertNotNull("Bundle for m2 found", b);
+            assertEquals("It still remains in installed state only", Bundle.INSTALLED, b.getState());
         } finally {
             mgr.disable(m2);
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
+
     private File changeManifest(File orig, String manifest) throws IOException {
         File f = new File(getWorkDir(), orig.getName());
         Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("utf-8")));
