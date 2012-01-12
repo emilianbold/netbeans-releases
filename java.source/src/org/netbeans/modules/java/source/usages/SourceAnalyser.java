@@ -540,6 +540,7 @@ public class SourceAnalyser {
             boolean topLevel = false;
             String className = null;
             Pair<String,String> name = null;
+            String simpleName = null;
 
             if (sym != null) {
                 errorInDecl = hasErrorName(sym);
@@ -552,6 +553,7 @@ public class SourceAnalyser {
                         if (className != null) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                             name = Pair.<String,String>of(classNameType, null);
+                            simpleName = className.substring(className.lastIndexOf('.') + 1);
                         } else {
                             Logger.getLogger(
                                 SourceAnalyser.class.getName()).log(
@@ -588,6 +590,7 @@ public class SourceAnalyser {
                         resourceName = activeClass.peek().second;
                     }
                     name = Pair.<String,String>of(classNameType, resourceName);
+                    simpleName = sym.getSimpleName().toString();
                 }
             }
             if (name != null) {
@@ -601,7 +604,8 @@ public class SourceAnalyser {
                         addAndClearImports(name, p);
                     }
                     addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
-                    addIdent(name, className, p, true);
+                    // index only simple name, not FQN for classes
+                    addIdent(name, simpleName, p, true);
                     if (newTypes !=null) {
                         newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS,className));
                     }
@@ -669,7 +673,10 @@ public class SourceAnalyser {
                 if (enclosingElement != null && enclosingElement.getKind() == ElementKind.METHOD) {
                     mainMethod |= SourceUtils.isMainMethod((ExecutableElement) enclosingElement);
                 }
-                addIdent(activeClass.peek(), node.getName(), p, true);
+                // do not add idents for constructors, they always match their class' name, which is added as an ident separately
+                if (!(enclosingElement != null && enclosingElement.getKind() == ElementKind.CONSTRUCTOR)) {
+                    addIdent(activeClass.peek(), node.getName(), p, true);
+                }
                 return super.visitMethod(node, p);
             } finally {
                 enclosingElement = old;
