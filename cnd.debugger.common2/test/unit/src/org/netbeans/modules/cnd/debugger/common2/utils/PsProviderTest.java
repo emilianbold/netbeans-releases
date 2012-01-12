@@ -162,16 +162,19 @@ public class PsProviderTest {
         assertEquals("29270", res.get(0).get(1));
     }
     
-    private PsProvider.PsData prepareMacData() {
+    private static String MAC_HEADER     = "  UID   PID  PPID   C     STIME TTY           TIME CMD";
+    private static String MAC_107_HEADER = "  UID   PID  PPID   C STIME   TTY           TIME CMD";
+    
+    private PsProvider.PsData prepareMacData(String header) {
         PsProvider provider = new PsProvider.MacOSPsProvider(Host.getLocal());
         PsProvider.PsData data = provider.new PsData();
-        data.setHeader(provider.parseHeader("  UID   PID  PPID   C     STIME TTY           TIME CMD"));
+        data.setHeader(provider.parseHeader(header));
         return data;
     }
     
     @Test
     public void testMacPs() {
-        PsProvider.PsData data = prepareMacData();
+        PsProvider.PsData data = prepareMacData(MAC_HEADER);
         data.addProcess("    0   625   615   0   0:00.00 ttys000    0:00.00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
@@ -180,10 +183,28 @@ public class PsProviderTest {
     
     @Test
     public void testMacPsLong() {
-        PsProvider.PsData data = prepareMacData();
+        PsProvider.PsData data = prepareMacData(MAC_HEADER);
         data.addProcess("longusername   625   615   0   0:00.00 ttys000    0:00.00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
         assertEquals("625", res.get(0).get(1));
+    }
+    
+    @Test // IZ 206862
+    public void test107MacPs() {
+        PsProvider.PsData data = prepareMacData(MAC_107_HEADER);
+        data.addProcess("  502   632   631   0  7Nov11 ttys000    0:00.19 -bash");
+        Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
+        assertEquals("-bash", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("632", res.get(0).get(1));
+    }
+    
+    @Test // IZ 206862
+    public void test107MacPsLong() {
+        PsProvider.PsData data = prepareMacData(MAC_107_HEADER);
+        data.addProcess("longusername   632   631   0  7Nov11 ttys000    0:00.19 -bash");
+        Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
+        assertEquals("-bash", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("632", res.get(0).get(1));
     }
 }
