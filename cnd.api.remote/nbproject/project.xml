@@ -109,6 +109,7 @@
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
+                <friend>com.sun.tools.devplatform.management</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>

@@ -99,6 +99,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     private final Map<Component, Dimension> toolbarButtonsPrefferedSize = new HashMap<Component, Dimension>();
     private final Map<Mode, Reference<TopComponent>> lastSelectedTopComponents = new WeakHashMap<Mode, Reference<TopComponent>>();
     private ToolbarContainerListener toolbarContainerListener;
+    private static final RequestProcessor RP = new RequestProcessor("Debugger Engine Setup", 1);        // NOI18N
 
     private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
 
@@ -124,9 +125,10 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 }
                 RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
                 if (rp == null) {
-                    rp = RequestProcessor.getDefault();
+                    rp = RP;
                 }
                 rp.post (new Runnable () {
+                    @Override
                     public void run () {
                         List<Component> cs = new ArrayList<Component>(componentProxies.size());
                         try {
@@ -136,6 +138,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 final boolean[] doOpen = new boolean[] { false };
                                 try {
                                     SwingUtilities.invokeAndWait(new Runnable() {
+                                        @Override
                                         public void run() {
                                             c[0] = cp.getComponent();
                                             doOpen[0] = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
@@ -162,6 +165,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 } else {
                                     if (doOpen[0]) {
                                         SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
                                             public void run() {
                                                 c[0].setVisible(true);
                                             }
@@ -171,6 +175,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             }
                             if (topComponentsToOpen.size() > 0) {
                                 SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
                                     public void run() {
                                         openTopComponents(topComponentsToOpen);
                                     }
@@ -183,7 +188,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 openedComponents.notifyAll();
                             }
                             synchronized (OPENED_COMPONENTS) {
-                                if (componentsInitiallyOpened.size() == 0) {
+                                if (componentsInitiallyOpened.isEmpty()) {
                                     OPENED_COMPONENTS.addAll(cs);
                                 } else {
                                     List<Component> ocs = new ArrayList<Component>(cs);
@@ -201,6 +206,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 if (openedGroups.isEmpty()) {
                     // Open debugger TopComponentGroup.
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             TopComponentGroup group = WindowManager.getDefault ().
                                 findTopComponentGroup ("debugger"); // NOI18N
@@ -279,7 +285,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                         a = (Action) l;
                         break;
                     }
-                };
+                }
             }
             if (a != null && a instanceof DebuggerAction) {
                 return (DebuggerAction) a;
@@ -288,12 +294,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         return null;
     }
 
-    private final void setupToolbar(final DebuggerEngine engine) {
-        List<? extends ActionsProvider> actionsProviderList = engine.lookup(null, ActionsProvider.class);
-        final Set engineActions = new HashSet();
-        for (ActionsProvider ap : actionsProviderList) {
-            engineActions.addAll(ap.getActions());
-        }
+    private void setupToolbar(final DebuggerEngine engine) {
         final List<Component> buttonsToClose = new ArrayList<Component>();
         buttonsToClose.add(new java.awt.Label("EMPTY"));
         final boolean isFirst;
@@ -301,55 +302,70 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             isFirst = closedToolbarButtons.isEmpty();
             closedToolbarButtons.put(engine, buttonsToClose);
         }
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                List<Component> buttonsClosed = new ArrayList<Component>();
-                List<Component> buttonsUsed = new ArrayList<Component>();
-                try {
-                    if (ToolbarPool.getDefault ().getConfiguration ().equals(ToolbarPool.DEFAULT_CONFIGURATION)) {
-                        ToolbarPool.getDefault ().setConfiguration("Debugging"); // NOI18N
-                    }
-                    Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
-                    if (debugToolbar == null) return ;
-                    registerToolbarListener(debugToolbar);
-                    for (Component c : debugToolbar.getComponents()) {
-                        DebuggerAction a = getDebuggerAction(c);
-                        if (a != null) {
-                            Object action = a.getAction();
-                            //System.err.println("Engine "+engine+" contains action "+a+"("+action+") = "+engineActions.contains(action));
-                            boolean containsAction = engineActions.contains(action);
-                            if (isFirst && !containsAction) {
-                                // For the first engine disable toolbar buttons for actions that are not provided
-                                c.setVisible(false);
-                                buttonsClosed.add(c);
-                                toolbarButtonsPrefferedSize.put(c, c.getPreferredSize());
-                                c.setPreferredSize(new Dimension(0, 0));
+        RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
+        if (rp == null) {
+            rp = RP;
+        }
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                List<? extends ActionsProvider> actionsProviderList = engine.lookup(null, ActionsProvider.class);
+                final Set engineActions = new HashSet();
+                for (ActionsProvider ap : actionsProviderList) {
+                    engineActions.addAll(ap.getActions());
+                }
+                SwingUtilities.invokeLater (new Runnable () {
+                    @Override
+                    public void run () {
+                        List<Component> buttonsClosed = new ArrayList<Component>();
+                        List<Component> buttonsUsed = new ArrayList<Component>();
+                        try {
+                            if (ToolbarPool.getDefault ().getConfiguration ().equals(ToolbarPool.DEFAULT_CONFIGURATION)) {
+                                ToolbarPool.getDefault ().setConfiguration("Debugging"); // NOI18N
                             }
-                            if (!isFirst && containsAction) {
-                                // For next engine enable toolbar buttons that could be previously disabled
-                                // and are used for actions that are provided.
-                                Dimension d = toolbarButtonsPrefferedSize.remove(c);
-                                if (d != null) {
-                                    c.setPreferredSize(d);
+                            Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
+                            if (debugToolbar == null) return ;
+                            registerToolbarListener(debugToolbar);
+                            for (Component c : debugToolbar.getComponents()) {
+                                DebuggerAction a = getDebuggerAction(c);
+                                if (a != null) {
+                                    Object action = a.getAction();
+                                    //System.err.println("Engine "+engine+" contains action "+a+"("+action+") = "+engineActions.contains(action));
+                                    boolean containsAction = engineActions.contains(action);
+                                    if (isFirst && !containsAction) {
+                                        // For the first engine disable toolbar buttons for actions that are not provided
+                                        c.setVisible(false);
+                                        buttonsClosed.add(c);
+                                        toolbarButtonsPrefferedSize.put(c, c.getPreferredSize());
+                                        c.setPreferredSize(new Dimension(0, 0));
+                                    }
+                                    if (!isFirst && containsAction) {
+                                        // For next engine enable toolbar buttons that could be previously disabled
+                                        // and are used for actions that are provided.
+                                        Dimension d = toolbarButtonsPrefferedSize.remove(c);
+                                        if (d != null) {
+                                            c.setPreferredSize(d);
+                                        }
+                                        c.setVisible(true);
+                                    }
+                                    if (containsAction) {
+                                        // Keep track of buttons used by individual engines.
+                                        buttonsUsed.add(c);
+                                    }
                                 }
-                                c.setVisible(true);
                             }
-                            if (containsAction) {
-                                // Keep track of buttons used by individual engines.
-                                buttonsUsed.add(c);
+                            debugToolbar.revalidate();
+                            debugToolbar.repaint();
+                        } finally {
+                            synchronized (closedToolbarButtons) {
+                                usedToolbarButtons.put(engine, buttonsUsed);
+                                buttonsToClose.clear();
+                                buttonsToClose.addAll(buttonsClosed);
+                                closedToolbarButtons.notifyAll();
                             }
                         }
                     }
-                    debugToolbar.revalidate();
-                    debugToolbar.repaint();
-                } finally {
-                    synchronized (closedToolbarButtons) {
-                        usedToolbarButtons.put(engine, buttonsUsed);
-                        buttonsToClose.clear();
-                        buttonsToClose.addAll(buttonsClosed);
-                        closedToolbarButtons.notifyAll();
-                    }
-                }
+                });
             }
         });
     }
@@ -378,6 +394,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 }
                 if (!windowsToClose.isEmpty()) {
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             final List<TopComponent> topComponentsToClose = new ArrayList<TopComponent>(windowsToClose.size());
                             for (Component c : windowsToClose) {
@@ -404,6 +421,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 openedGroups.remove(engine);
                 if (openedGroups.isEmpty()) {
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             TopComponentGroup group = WindowManager.getDefault ().
                                 findTopComponentGroup ("debugger"); // NOI18N
@@ -428,7 +446,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         closeToolbar(engine);
     }
 
-    private final void closeToolbar(DebuggerEngine engine) {
+    private void closeToolbar(DebuggerEngine engine) {
         final boolean doCloseToolbar;
         synchronized (closedToolbarButtons) {
             List<? extends Component> closedButtons = closedToolbarButtons.remove(engine);
@@ -458,6 +476,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     buttonsToClose.removeAll(usedByAllButtons);
                     if (!buttonsToClose.isEmpty()) {
                         SwingUtilities.invokeLater (new Runnable () {
+                            @Override
                             public void run () {
                                 for (Component c : buttonsToClose) {
                                     c.setVisible(false);
@@ -471,6 +490,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     }
                 } else {
                     SwingUtilities.invokeLater (new Runnable () {
+                        @Override
                         public void run () {
                             for (Component c : debugToolbar.getComponents()) {
                                 if (c instanceof AbstractButton) {
@@ -490,6 +510,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
         if (doCloseToolbar) {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
                     unregisterToolbarListener(debugToolbar);
@@ -525,6 +546,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             doCloseDebuggerUI();
         } else {
             SwingUtilities.invokeLater(new Runnable () {
+                @Override
                 public void run () {
                     doCloseDebuggerUI();
                 }
