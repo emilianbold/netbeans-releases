@@ -82,7 +82,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryDiffView implements PropertyChangeListener, VersioningListener {
+public class HistoryDiffView implements PropertyChangeListener, VersioningListener {
            
     private final HistoryTopComponent tc;
     private DiffPanel panel;
@@ -94,11 +94,11 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
     private PreparingDiffHandler preparingDiffPanel;
         
     /** Creates a new instance of LocalHistoryView */
-    public LocalHistoryDiffView(HistoryTopComponent tc) {
+    public HistoryDiffView(HistoryTopComponent tc) {
         this.tc = tc;
         panel = new DiffPanel();                                                              
 //        History.getInstance().addVersioningListener(this); XXX
-        showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
+        showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
     }    
         
     @Override
@@ -145,7 +145,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
         String msgKey = (newSelection == null) || (newSelection.length == 0)
                         ? "MSG_DiffPanel_NoVersion"                     //NOI18N
                         : "MSG_DiffPanel_IllegalSelection";             //NOI18N
-        showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, msgKey));
+        showNoContent(NbBundle.getMessage(HistoryDiffView.class, msgKey));
     }           
     
     private void refreshDiffPanel(HistoryEntry se) {  
@@ -211,15 +211,15 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
                         String title;
                         StreamSource ss2;                        
                         if(file.exists()) {
-                            title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_CurrentFile");
+                            title = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_CurrentFile");
                             ss2 = new LHStreamSource(file, title, getMimeType(file));
                         } else {
-                            title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_FileDeleted");
+                            title = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted");
                             ss2 = StreamSource.createSource("currentfile", title, getMimeType(file), new StringReader(""));
                         }
                         
                         diffView = DiffController.create(ss1, ss2);
-                        diffView.addPropertyChangeListener(LocalHistoryDiffView.this);
+                        diffView.addPropertyChangeListener(HistoryDiffView.this);
                         
                         JComponent c = diffView.getJComponent();
                         setDiffComponent(c);
@@ -392,7 +392,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
         private ProgressHandle handle;
         private final Timer timer;
         public PreparingDiffHandler() {
-            label.setText(NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_PreparingDiff"));
+            label.setText(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff"));
             this.setBackground(UIManager.getColor("TextArea.background")); // NOI18N
 
             setLayout(new GridBagLayout());
@@ -408,7 +408,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, VersioningL
         }
         
         private synchronized void startProgress() throws MissingResourceException {
-            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_PreparingDiff"));
+            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff"));
             setProgressComponent(ProgressHandleFactory.createProgressComponent(handle));
             handle.start();
             handle.switchToIndeterminate();                    

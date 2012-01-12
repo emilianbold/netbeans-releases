@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  *
  */
-public class LocalHistoryRootNode extends AbstractNode {
+public class HistoryRootNode extends AbstractNode {
     
     static final String NODE_GET_MORE   = "getmoreno"; // NOI18N
     static final String NODE_WAIT       = "waitnode";  // NOI18N
@@ -83,7 +83,7 @@ public class LocalHistoryRootNode extends AbstractNode {
     private final Action loadNextAction;
     private final Action[] actions;
         
-    LocalHistoryRootNode(File[] files, String vcsName, Action loadNextAction, Action... actions) {
+    HistoryRootNode(File[] files, String vcsName, Action loadNextAction, Action... actions) {
         super(new Children.SortedArray());
         this.files = files;
         this.vcsName = vcsName;
@@ -96,7 +96,7 @@ public class LocalHistoryRootNode extends AbstractNode {
     }
     
     static boolean isLoadNext(Object n) {
-        return n instanceof LocalHistoryRootNode.LoadNextNode;
+        return n instanceof HistoryRootNode.LoadNextNode;
         }
                     
     synchronized void addLHEntries(HistoryEntry[] entries) {
@@ -247,7 +247,7 @@ public class LocalHistoryRootNode extends AbstractNode {
     }
     
     public String getDisplayName() {
-        return NbBundle.getMessage(LocalHistoryRootNode.class, "LBL_LocalHistory_Column_Version"); // NOI18N
+        return NbBundle.getMessage(HistoryRootNode.class, "LBL_LocalHistory_Column_Version"); // NOI18N
     }            
         
     public Action[] getActions(boolean context) {

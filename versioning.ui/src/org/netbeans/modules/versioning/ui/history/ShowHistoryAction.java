@@ -78,10 +78,10 @@ import org.openide.windows.TopComponent.Registry;
  *
  * @author Tomas Stupka
  */
-public class ShowLocalHistoryAction extends NodeAction {
+public class ShowHistoryAction extends NodeAction {
     
-    /** Creates a new instance of ShowLocalHistoryAction */
-    public ShowLocalHistoryAction() {
+    /** Creates a new instance of ShowHistoryAction */
+    public ShowHistoryAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
@@ -244,7 +244,7 @@ public class ShowLocalHistoryAction extends NodeAction {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowLocalHistoryAction.class);
+        return new HelpCtx(ShowHistoryAction.class);
     }
 
     private class TCOpenedListener implements PropertyChangeListener {

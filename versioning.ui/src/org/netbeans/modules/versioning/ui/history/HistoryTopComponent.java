@@ -105,12 +105,12 @@ import org.openide.util.Lookup;
 final public class HistoryTopComponent extends TopComponent implements MultiViewElement {
 
     private static HistoryTopComponent instance;
-    private LocalHistoryFileView masterView;
+    private HistoryFileView masterView;
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
     private Toolbar toolBar;
     private boolean isPartOfMultiview = false;
-    private LocalHistoryDiffView diffView;
+    private HistoryDiffView diffView;
     
     public HistoryTopComponent() {
         initComponents();
@@ -150,8 +150,8 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
     }        
 
     public void init(VersioningSystem vs, final File... files) {   
-        masterView = new LocalHistoryFileView(files, vs, this);
-        diffView = new LocalHistoryDiffView(this); 
+        masterView = new HistoryFileView(files, vs, this);
+        diffView = new HistoryDiffView(this); 
         
         masterView.getExplorerManager().addPropertyChangeListener(diffView); 
         masterView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
@@ -164,7 +164,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
             }
         });
         
-        // XXX should be solved in a more general way - not ony for LocalHistoryFileView 
+        // XXX should be solved in a more general way - not ony for HistoryFileView 
         splitPane.setTopComponent(masterView.getPanel());   
         splitPane.setBottomComponent(diffView.getPanel());                   
     }

@@ -62,7 +62,7 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.modules.versioning.ui.history.LocalHistoryRootNode.WaitNode;
+import org.netbeans.modules.versioning.ui.history.HistoryRootNode.WaitNode;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.MessageProperty;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
@@ -86,7 +86,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
+public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
            
     private FileTablePanel tablePanel;             
     private File[] files;
@@ -102,7 +102,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
     private Date currentDateFrom; 
     private LoadNextAction loadNextAction;
     
-    public LocalHistoryFileView(File[] files, VersioningSystem versioningSystem, HistoryTopComponent tc) {                       
+    public HistoryFileView(File[] files, VersioningSystem versioningSystem, HistoryTopComponent tc) {                       
         this.tc = tc;
         this.files = files;
         this.versioningSystem = versioningSystem;
@@ -127,7 +127,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         if(HistorySettings.PROP_INCREMENTS.equals(evt.getKey()) ||
            HistorySettings.PROP_LOAD_ALL.equals(evt.getKey())) 
         {
-            LocalHistoryRootNode rootNode = getRootNode();
+            HistoryRootNode rootNode = getRootNode();
             if(rootNode != null) {
                 loadNextAction.refreshName();
             }    
@@ -135,12 +135,12 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         }
     }
     
-    private LocalHistoryRootNode getRootNode() {
+    private HistoryRootNode getRootNode() {
         Node rootContext = tablePanel.getExplorerManager().getRootContext();
-        if(rootContext == null || !(rootContext instanceof LocalHistoryRootNode)) {
+        if(rootContext == null || !(rootContext instanceof HistoryRootNode)) {
             return null;
         }  
-        return (LocalHistoryRootNode) rootContext;
+        return (HistoryRootNode) rootContext;
     }
     
     public ExplorerManager getExplorerManager() {
@@ -209,7 +209,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                 if(hp == null) {
                     return;
                 }
-                LocalHistoryRootNode rootNode = getRootNode();
+                HistoryRootNode rootNode = getRootNode();
                 if(rootNode == null) {
                     return;
                 }    
@@ -246,7 +246,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         });
     }
 
-    private void restoreSelection(final LocalHistoryRootNode root, Node[] oldSelection) {
+    private void restoreSelection(final HistoryRootNode root, Node[] oldSelection) {
         tablePanel.getExplorerManager().setRootContext(root);
         if(root.getChildren().getNodesCount() > 0) {                
                 if (oldSelection != null && oldSelection.length > 0) {                        
@@ -385,12 +385,12 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         
         @Override
         public void run() {  
-            LocalHistoryRootNode root = getRootNode();
+            HistoryRootNode root = getRootNode();
             if(root == null) {
                 final String vcsName = (String) (versioningSystem != null ? 
                                                     versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
                                                     null);
-                root = new LocalHistoryRootNode(files, vcsName, loadNextAction, createActions()); 
+                root = new HistoryRootNode(files, vcsName, loadNextAction, createActions()); 
                 tablePanel.getExplorerManager().setRootContext(root);
             }
             
@@ -473,7 +473,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
             Object obj = event.getPath().getLastPathComponent();
             if(obj == null) return;
             Node n = Visualizer.findNode(obj);
-            if(LocalHistoryRootNode.isLoadNext(n)) { // XXX move to lhrootnode
+            if(HistoryRootNode.isLoadNext(n)) { // XXX move to lhrootnode
                 loadNextAction.actionPerformed(null);
             }
         }
@@ -485,7 +485,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         
         private class BrowserTreeTableView extends OutlineView {    
             BrowserTreeTableView() {
-                super( NbBundle.getMessage(LocalHistoryFileView.class, "LBL_LocalHistory_Column_Date")); //NOI18N
+                super( NbBundle.getMessage(HistoryFileView.class, "LBL_LocalHistory_Column_Date")); //NOI18N
                 setupColumns();
 
                 getOutline().setShowHorizontalLines(true);
@@ -510,9 +510,9 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                 column.setNestedComparator(new Comparator<Object>() {
                     @Override
                     public int compare(Object o1, Object o2) {
-                        if(LocalHistoryRootNode.isLoadNext(o1)) {
+                        if(HistoryRootNode.isLoadNext(o1)) {
                             return column.isAscending() ? 1 : -1;
-                        } else if(LocalHistoryRootNode.isLoadNext(o2)) {
+                        } else if(HistoryRootNode.isLoadNext(o2)) {
                             return column.isAscending() ? -1 : 1;
             }
 
@@ -588,7 +588,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                 @Override
                 public String getDisplayName(Object o) {
                     Node n = Visualizer.findNode(o);
-                    if(LocalHistoryRootNode.isLoadNext(n)) {
+                    if(HistoryRootNode.isLoadNext(n)) {
                         StringBuilder sb = new StringBuilder();
                         sb.append("<html><font color=#0000FF>");
                         sb.append(delegate.getDisplayName(o));
@@ -601,7 +601,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                 @Override
                 public boolean isHtmlDisplayName(Object o) {
                     Node n = Visualizer.findNode(o);
-                    if(LocalHistoryRootNode.isLoadNext(n)) {
+                    if(HistoryRootNode.isLoadNext(n)) {
                         return true;
                     }
                     return delegate.isHtmlDisplayName(o);
@@ -629,7 +629,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
                     if(n instanceof WaitNode) {
                         return delegate.getIcon(o);
                     }
-                    if(getOutline().getOutlineModel().isLeaf(o) || LocalHistoryRootNode.isLoadNext(n))
+                    if(getOutline().getOutlineModel().isLeaf(o) || HistoryRootNode.isLoadNext(n))
                         return NO_ICON;
                     return null;
                 }
@@ -856,7 +856,7 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
             if(n == null) {
                 return;
             }
-            if(!pressedPopup && LocalHistoryRootNode.isLoadNext(Visualizer.findNode(n))) {
+            if(!pressedPopup && HistoryRootNode.isLoadNext(Visualizer.findNode(n))) {
                 loadNextAction.actionPerformed(null);
             } else {
                 Object value = getValue(e);
@@ -919,12 +919,12 @@ public class LocalHistoryFileView implements PreferenceChangeListener, VCSHistor
         private void refreshName() {
             String name;
             if(HistorySettings.getInstance().getLoadAll()) {
-                name = NbBundle.getMessage(LocalHistoryRootNode.class,  "LBL_LoadAll"); // NOI18N
+                name = NbBundle.getMessage(HistoryRootNode.class,  "LBL_LoadAll"); // NOI18N
             } else {
-                name = NbBundle.getMessage(LocalHistoryRootNode.class,  "LBL_LoadNext", HistorySettings.getInstance().getIncrements()); // NOI18N
+                name = NbBundle.getMessage(HistoryRootNode.class,  "LBL_LoadNext", HistorySettings.getInstance().getIncrements()); // NOI18N
             }
             putValue(Action.NAME, name);
-            LocalHistoryRootNode rootNode = getRootNode();
+            HistoryRootNode rootNode = getRootNode();
             if(rootNode != null) {
                 rootNode.refreshLoadNextName();
             }
