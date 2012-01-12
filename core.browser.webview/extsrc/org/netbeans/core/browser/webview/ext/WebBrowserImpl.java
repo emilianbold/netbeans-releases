@@ -64,7 +64,6 @@ import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
 import org.netbeans.core.browser.webview.BrowserCallback;
 import org.openide.util.Exceptions;
-import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -80,7 +79,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final List<WebBrowserListener> browserListners = new ArrayList<WebBrowserListener>();
     private final Object LOCK = new Object();
-    private PropertyChangeListener tcListener;
     private WebView browser;
     private String status;
 
@@ -253,9 +251,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             }
             browserListners.clear();
             container = null;
-        }
-        if( null != tcListener ) {
-            TopComponent.getRegistry().removePropertyChangeListener( tcListener );
         }
     }
 
