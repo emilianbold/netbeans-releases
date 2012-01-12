@@ -3732,14 +3732,15 @@ public class Reformatter implements ReformatTask {
                                                     col++;
                                                 }
                                                 String subs = text.substring(currWSPos, i);
-                                                if (!noFormat && !SPACE.equals(subs)) {
+                                                String s = getSpaces(align < 0 ? 1 : i - currWSPos);
+                                                if (!noFormat && !s.equals(subs)) {
                                                     if (pendingDiff != null) {
                                                         String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
                                                         if (!sub.equals(pendingDiff.text)) {
                                                             addDiff(pendingDiff);
                                                         }
                                                     }
-                                                    pendingDiff = new Diff(offset + currWSPos, offset + i, SPACE);                                                    
+                                                    pendingDiff = new Diff(offset + currWSPos, offset + i, s);                                                    
                                                 }
                                             }
                                             lastNewLinePos = -1;
@@ -3749,12 +3750,23 @@ public class Reformatter implements ReformatTask {
                                     }
                                 } else {
                                     if (cs.addLeadingStarInComment()) {
+                                        int num = Math.max(align - col - 1, 1);
+                                        String s = getSpaces(num);
                                         if (pendingDiff != null) {
-                                            pendingDiff.text += (LEADING_STAR + SPACE);
+                                            pendingDiff.text += (LEADING_STAR + s);
                                         } else {
-                                            pendingDiff = new Diff(offset + i, offset + i, LEADING_STAR + SPACE);
+                                            pendingDiff = new Diff(offset + i, offset + i, LEADING_STAR + s);
                                         }
-                                        col += 2;
+                                        col += (num + 1);
+                                    } else if (align > col) {
+                                        int num = align - col;
+                                        String s = getSpaces(num);
+                                        if (pendingDiff != null) {
+                                            pendingDiff.text += s;
+                                        } else {
+                                            pendingDiff = new Diff(offset + i, offset + i, s);
+                                        }
+                                        col += num;                                        
                                     }
                                     lastNewLinePos = -1;
                                 }

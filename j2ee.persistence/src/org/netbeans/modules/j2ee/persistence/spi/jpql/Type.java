@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.persistence.spi.jpql;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -68,6 +69,7 @@ public class Type implements IType{
     private final Class<?> type;
     private Collection<IConstructor> constructors;
     private String[] enumConstants;
+    private  String typeName;
 
     public Type(ITypeRepository typeRepository, Element element){
         this.element = element;
@@ -80,6 +82,16 @@ public class Type implements IType{
         this.repository = typeRepository;
         element = null;
     }
+    
+    Type(ITypeRepository typeRepository, String typeName){
+        this.repository = typeRepository;
+        this.typeName = typeName;
+        element = null;
+        //
+        enumConstants = new String[]{};
+        constructors = Collections.emptyList();
+        type = null;
+    } 
     
     @Override
     public Iterable<IConstructor> constructors() {
@@ -141,25 +153,28 @@ public class Type implements IType{
 
     @Override
     public String getName() {
-        if(element != null){
-            if(element instanceof TypeElement) return ((TypeElement) element).getQualifiedName().toString();
-            else return element.asType().toString();
-        } else {
-            return type.getName();
+        if(typeName == null){
+            if(element != null){
+                if(element instanceof TypeElement) typeName = ((TypeElement) element).getQualifiedName().toString();
+                else typeName = element.asType().toString();
+            } else if (type != null) {
+                typeName = type.getName();
+            }
         }
+        return typeName;
     }
 
     @Override
     public ITypeDeclaration getTypeDeclaration() {
         if(tDeclaration == null){
-            tDeclaration = element != null ? new TypeDeclaration(this, new ITypeDeclaration[0], 0) : new JavaTypeDeclaration(repository, this, null, (type != null) ? type.isArray() : false);
+            tDeclaration = type != null ? new JavaTypeDeclaration(repository, this, null, type.isArray()) : new TypeDeclaration(this, new ITypeDeclaration[0], 0);
         }
         return tDeclaration;
     }
 
     @Override
     public boolean hasAnnotation(Class<? extends Annotation> type) {
-        return element != null ? (element.getAnnotation(type) != null) : type.isAnnotationPresent(type);
+        return element != null ? (element.getAnnotation(type) != null) : (type!=null && type.isAnnotationPresent(type));
     }
 
     @Override
@@ -186,7 +201,7 @@ public class Type implements IType{
 
     @Override
     public boolean isResolvable() {
-        return true;//is it always true?
+        return type!=null || element!=null;
     }
 
     @Override

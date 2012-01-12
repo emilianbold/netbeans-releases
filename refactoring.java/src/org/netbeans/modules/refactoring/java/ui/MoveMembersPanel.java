@@ -344,12 +344,14 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                                     for (ElementHandle<TypeElement> elementHandle : result) {
                                         TypeElement element = elementHandle.resolve(parameter);
                                         if (element != null) {
-                                            Icon icon = ElementIcons.getElementIcon(element.getKind(), element.getModifiers());
                                             String fqn = element.getQualifiedName().toString();
-                                            String packageName = packageSet.iterator().next();
-                                            String className = packageName.length() > 0 ? fqn.substring(packageName.length()+1) : fqn;
-                                            ClassItem classItem = new ClassItem(className, icon, TreePathHandle.create(element, parameter));
-                                            items.add(classItem);
+                                            if (!fqn.isEmpty()) {
+                                                Icon icon = ElementIcons.getElementIcon(element.getKind(), element.getModifiers());
+                                                int packageNameLength = packageSet.iterator().next().length();
+                                                String className = packageNameLength > 0 && packageNameLength < fqn.length() ? fqn.substring(packageNameLength + 1) : fqn;
+                                                ClassItem classItem = new ClassItem(className, icon, TreePathHandle.create(element, parameter));
+                                                items.add(classItem);
+                                            }
                                         }
                                     }
                                 }

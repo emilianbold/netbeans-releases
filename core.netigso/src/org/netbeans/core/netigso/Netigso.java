@@ -69,6 +69,7 @@ import org.netbeans.Stamps;
 import org.netbeans.core.startup.Main;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -103,6 +104,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     private ClassLoader frameworkLoader;
     private NetigsoActivator activator;
     private Integer defaultStartLevel;
+    private String defaultCoveredPkgs;
 
     Framework getFramework() {
         return framework;
@@ -125,7 +127,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         if (framework == null) {
             readBundles();
             
-            Map<String, Object> configMap = new HashMap<String, Object>();
+            Map configMap = new HashMap();
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
@@ -249,17 +251,19 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             if (knownPkgs == EMPTY) {
                 try {
                     SELF_QUERY.set(true);
-                    Enumeration en = b.findEntries("", null, true);
-                    if (en == null) {
-                        LOG.log(Level.INFO, "Bundle {0}: {1} is empty", new Object[] { b.getBundleId(), b.getSymbolicName() });
-                    } else {
-                        while (en.hasMoreElements()) {
-                            URL url = (URL) en.nextElement();
-                            if (url.getFile().startsWith("/META-INF")) {
-                                pkgs.add(url.getFile().substring(9));
-                                continue;
+                    if (findCoveredPkgs()) {
+                        Enumeration en = b.findEntries("", null, true);
+                        if (en == null) {
+                            LOG.log(Level.INFO, "Bundle {0}: {1} is empty", new Object[] { b.getBundleId(), b.getSymbolicName() });
+                        } else {
+                            while (en.hasMoreElements()) {
+                                URL url = (URL) en.nextElement();
+                                if (url.getFile().startsWith("/META-INF")) {
+                                    pkgs.add(url.getFile().substring(9));
+                                    continue;
+                                }
+                                pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                             }
-                            pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
                     }
                     Object exported = b.getHeaders("").get("Export-Package");
@@ -292,7 +296,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 LOG.log(Level.FINE, "Starting bundle {0}: {1}", new Object[] { m.getCodeNameBase(), start });
                 if (start) {
                     b.start();
-                    if (b.getState() == Bundle.INSTALLED && isRealBundle(b)) {
+                    if (
+                        findCoveredPkgs() &&
+                        b.getState() == Bundle.INSTALLED && isRealBundle(b)
+                    ) {
                         throw new IOException("Cannot start " + m.getCodeName() + " state remains INSTALLED after start()"); // NOI18N
                     }
                 }
@@ -330,6 +337,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         } catch (BundleException ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    @Override
+    protected Enumeration<URL> findResources(Module m, String resName) {
+        Bundle b = findBundle(m.getCodeNameBase());
+        URL u = b.getEntry(resName);
+        return u == null ? Enumerations.<URL>empty() : Enumerations.singleton(u);
     }
 
     @Override
@@ -621,6 +635,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             }
         }
         return new VFile().toURI().toString();
+    }
+
+    private boolean findCoveredPkgs() {
+        if (defaultCoveredPkgs == null) {
+            defaultCoveredPkgs = NbBundle.getMessage(Netigso.class, "FIND_COVERED_PKGS"); // NOI18N
+        }
+        return "findEntries".equals(defaultCoveredPkgs); // NOI18N
     }
 
 }
