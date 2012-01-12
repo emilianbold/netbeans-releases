@@ -99,7 +99,11 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         for (ParameterInfo parameter : parameters) {
             String parmName = parameter.getName();
             String parmTypeName = parameter.getTypeName();
-            String def = (String) parameter.getDefaultValue();
+            Object value = parameter.getDefaultValue();
+            String def = null;
+            if ( value != null ){
+                def= value.toString();
+            }
             if (def != null) {
                 params.append("'" + parmName + "'" + "=> \"" + def + "\", \n");
             } else {
