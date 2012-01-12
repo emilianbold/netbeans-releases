@@ -69,7 +69,7 @@ class ModelElementFactory {
         if (fqName.size() > 1) {
             JsObject globalObject = modelBuilder.getGlobal();
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
-            parentObject = ModelUtils.getJsObject(globalObject, objectName);
+            parentObject = ModelUtils.getJsObject(modelBuilder, objectName);
             result = new JsFunctionImpl(parentObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(functionNode.getStart(), functionNode.getFinish()));
             if (!"prototype".equals(parentObject.getName())) {
                 result.addModifier(Modifier.STATIC);
@@ -96,9 +96,8 @@ class ModelElementFactory {
         Identifier name = fqName.get(fqName.size() - 1);
         JsObjectImpl newObject;
         if (!belongsToParent) {
-            JsObject globalObject = modelBuilder.getGlobal();
-            List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
-            parent = ModelUtils.getJsObject(globalObject, objectName);
+            List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
+            parent = ModelUtils.getJsObject(modelBuilder, objectName);
         }
         result = parent.getProperty(name.getName());
         newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()));

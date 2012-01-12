@@ -51,9 +51,20 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class ModelUtils {
       
-    public static JsObjectImpl getJsObject (JsObject inObject, List<Identifier> fqName) {
-        JsObject result = inObject;
-        JsObject tmpObject = inObject;
+    public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName) {
+        JsObject result = builder.getCurrentObject();
+        JsObject tmpObject = null;
+        String firstName = fqName.get(0).getName();
+        
+        while (tmpObject == null && result.getParent() != null) {
+            if (result.getProperty(firstName) != null) {
+                tmpObject = result;
+            }
+            result = result.getParent();
+        }
+        if (tmpObject == null) {
+            tmpObject = builder.getGlobal();
+        }
         for (Identifier name : fqName) {
             result = tmpObject.getProperty(name.getName());
             if (result == null) {

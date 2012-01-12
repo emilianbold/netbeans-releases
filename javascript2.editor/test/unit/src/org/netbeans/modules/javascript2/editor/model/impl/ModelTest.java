@@ -158,9 +158,6 @@ public class ModelTest extends JsTestBase {
         assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
 
         JsObject object = global.getProperty("formatter");
-        //assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
-        // needs to be object at the end
-        assertEquals(JsElement.Kind.VARIABLE, object.getJSKind());
         assertEquals(false, variable.isDeclared());
         
         JsObject address = global.getProperty("Address");
@@ -365,6 +362,33 @@ public class ModelTest extends JsTestBase {
         assertEquals(true, ((JsFunction)object).isAnonymous());
         assertEquals(4, object.getProperties().size());
         assertEquals(JsElement.Kind.FUNCTION, object.getJSKind());
+    }
+    
+    public void testClosers01() throws Exception {
+        Model model = getModel("testfiles/model/closers01.js");
+        assertNotNull(model);
+        
+        JsObject  global = model.getGlobalObject();
+        assertEquals(2, global.getProperties().size());
+        
+        JsObject object = global.getProperty("formatter");
+        assertEquals(false, object.isDeclared());
+        assertNotNull(object.getProperty("println"));
+        
+        object = global.getProperty("$function");
+        assertEquals(true, object.isDeclared());
+        assertEquals(true, ((JsFunction)object).isAnonymous());
+        assertEquals(2, object.getProperties().size());
+        assertEquals(JsElement.Kind.FUNCTION, object.getJSKind());
+        
+        object = object.getProperty("MyContext");
+        assertEquals(true, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getProperty("createTextWrapper");
+        assertEquals(true, object.isDeclared());
+        assertEquals(5, object.getProperties().size());
+        
     }
     
 //    public void testPrivateMethod01() throws Exception {

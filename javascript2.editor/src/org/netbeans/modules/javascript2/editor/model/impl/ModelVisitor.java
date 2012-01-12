@@ -128,7 +128,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     } else {
                         // probably a property of an object
                         List<Identifier> fqName = getName(aNode);
-                        ModelUtils.getJsObject(modelBuilder.getGlobal(), fqName);
+                        ModelUtils.getJsObject(modelBuilder, fqName);
                     }
                     
                 } else {
@@ -160,23 +160,41 @@ public class ModelVisitor extends PathNodeVisitor {
                     
                 } else {
                     List<Identifier> name = getName(aNode);
-                    JsObject parent = modelBuilder.getCurrentObject();
-                    JsObject property = parent.getProperty(name.get(0).getName());
-                    if (property ==  null && (parent.getParent() != null && (parent.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
-                                || parent.getParent().getJSKind() == JsElement.Kind.OBJECT))) {
-                        parent = parent.getParent();
-                        property = parent.getProperty(name.get(0).getName());
+                    JsObject parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, 1));
+                    JsObject property;
+                    
+                    if(!parent.getDeclarationName().getOffsetRange().overlaps(name.get(0).getOffsetRange())) {
+                        ((JsObjectImpl)parent).addOccurrence(name.get(0).getOffsetRange());
                     }
-                    if (property == null) {
-                        parent = modelBuilder.getGlobal();
-                        property = parent.getProperty(name.get(0).getName());
+                    for (int i = 1; i < name.size(); i++) {
+                        Identifier iden = name.get(i);
+                        property = parent.getProperty(iden.getName());
+                        System.out.println("parent: " + parent.isDeclared());
+                        if (property == null) {
+                            if(!parent.isDeclared()) {
+                                property = new JsObjectImpl(parent, iden, iden.getOffsetRange());
+                                parent.addProperty(property.getName(), property);
+                            }
+                        } else {
+                            ((JsObjectImpl)property).addOccurrence(iden.getOffsetRange());
+                        }
                     }
-                    if (property != null) {
-                        ((JsObjectImpl)property).addOccurrence(name.get(0).getOffsetRange());
-                    } else {
-                        property = new JsObjectImpl(parent, name.get(0), name.get(0).getOffsetRange());
-                        parent.addProperty(property.getName(), property);
-                    }
+//                    JsObject property = parent.getProperty(name.get(name.size() - 1).getName());
+//                    if (property ==  null && (parent.getParent() != null && (parent.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+//                                || parent.getParent().getJSKind() == JsElement.Kind.OBJECT))) {
+//                        parent = parent.getParent();
+//                        property = parent.getProperty(name.get(0).getName());
+//                    }
+//                    if (property == null) {
+//                        parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, name.size() - 1));
+//                        property = parent.getProperty(name.get(name.size() - 1).getName());
+//                    }
+//                    if (property != null) {
+//                        ((JsObjectImpl)property).addOccurrence(name.get(0).getOffsetRange());
+//                    } else {
+//                        property = new JsObjectImpl(parent, name.get(0), name.get(0).getOffsetRange());
+//                        parent.addProperty(property.getName(), property);
+//                    }
                 }
             } 
         }
@@ -194,12 +212,6 @@ public class ModelVisitor extends PathNodeVisitor {
             List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions().size());
             for (FunctionNode fn : functionNode.getFunctions()) {
                 functions.add(fn);
-            }
-
-            for (FunctionNode fn : functions) {
-                if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
-                    fn.accept(this);
-                }
             }
 
             List<Identifier> name = null;
@@ -245,6 +257,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
             }
 
+            for (FunctionNode fn : functions) {
+                if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
+                    fn.accept(this);
+                }
+            }
+            
             for (Node node : functionNode.getStatements()) {
                 node.accept(this);
             }
@@ -287,19 +305,20 @@ public class ModelVisitor extends PathNodeVisitor {
                 Node lastVisited = getPath().get(pathSize - 1);
                 if ( lastVisited instanceof VarNode) {
                     fqName = getName((VarNode)lastVisited);
+                    isDeclaredInParent = true;
                 } else if (lastVisited instanceof PropertyNode) {
-                            fqName = getName((PropertyNode)lastVisited);
-                            isDeclaredInParent = true;
-                        } else if (lastVisited instanceof BinaryNode) {
-                            BinaryNode binNode = (BinaryNode)lastVisited;
-                            fqName = getName(binNode);
-                            if(binNode.lhs() instanceof AccessNode 
-                                    && ((AccessNode)binNode.lhs()).getBase() instanceof IdentNode
-                                    && ((IdentNode)((AccessNode)binNode.lhs()).getBase()).getName().equals("this")) {
-                                isDeclaredInParent = true;
-                            }
-                        }
-                if (fqName == null || fqName.size() == 0) {
+                    fqName = getName((PropertyNode) lastVisited);
+                    isDeclaredInParent = true;
+                } else if (lastVisited instanceof BinaryNode) {
+                    BinaryNode binNode = (BinaryNode) lastVisited;
+                    fqName = getName(binNode);
+                    if (binNode.lhs() instanceof AccessNode
+                            && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this")) {
+                        isDeclaredInParent = true;
+                    }
+                }
+                if (fqName == null || fqName.isEmpty()) {
                     fqName = new ArrayList<Identifier>(1);
                     fqName.add(new IdentifierImpl("UNKNOWN",   //NOI18N
                             new OffsetRange(objectNode.getStart(), objectNode.getFinish())));
