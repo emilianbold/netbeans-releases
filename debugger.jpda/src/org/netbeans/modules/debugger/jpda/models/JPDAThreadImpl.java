@@ -658,7 +658,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             //}
             return frames;
         } catch (IncompatibleThreadStateException ex) {
-            AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
+            String msg = ex.getLocalizedMessage() + " " + getThreadStateLog();
+            AbsentInformationException aiex = new AbsentInformationException(msg);
             aiex.initCause(ex);
             throw aiex;
         } catch (InvalidStackFrameException ex) {
@@ -811,7 +812,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         if (can) {
             try {
                 resumeAfterClean();
-                setAsResumed();
+                setAsResumed(false);
             } catch (InternalExceptionWrapper ex) {
             } catch (VMDisconnectedExceptionWrapper ex) {
             } finally {
@@ -951,20 +952,29 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
 
-    public void setAsResumed() {
-        suspendCount = 0;
-        //System.err.println("resume("+getName()+") suspended = false");
-        suspended = false;
-        suspendedNoFire = false;
-        methodInvokingDisabledUntilResumed = false;
+    public void setAsResumed(boolean reduceSuspendCountOnly) {
+        if (reduceSuspendCountOnly) {
+            suspendCount--;
+        } else {
+            suspendCount = 0;
+        }
+        if (suspendCount == 0) {
+            //System.err.println("resume("+getName()+") suspended = false");
+            suspended = false;
+            suspendedNoFire = false;
+            methodInvokingDisabledUntilResumed = false;
+        }
     }
 
     public void fireAfterResume() {
         List<PropertyChangeEvent> evts = resumeChangeEvents;
         resumeChangeEvents = null;
+        boolean fire = suspendCount == 0;
         accessLock.writeLock().unlock();
-        for (PropertyChangeEvent evt : evts) {
-            pch.firePropertyChange(evt);
+        if (fire) {
+            for (PropertyChangeEvent evt : evts) {
+                pch.firePropertyChange(evt);
+            }
         }
     }
     
@@ -1067,6 +1077,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
             return Collections.emptyList();
         }
+    }
+    
+    public void updateSuspendCount(int suspendCount) {
+        accessLock.writeLock().lock();
+        this.suspendCount = suspendCount;
+        accessLock.writeLock().unlock();
     }
     
     public void notifySuspended() {
@@ -1934,7 +1950,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         pch.firePropertyChange(PROP_STEP_SUSPENDED_BY_BREAKPOINT, null, breakpoint);
     }
 
-    private String getThreadStateLog() {
+    public String getThreadStateLog() {
         return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", invoking a method = "+methodInvoking;
     }
 

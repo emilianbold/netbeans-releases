@@ -1453,12 +1453,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
         List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>(threads.size());
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl) {
+            if (threadOrGroup instanceof JPDAThreadImpl &&
+                    (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
                 int status = ((JPDAThreadImpl) threadOrGroup).getState();
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
                                    status == JPDAThread.STATE_ZOMBIE);
-                if (!invalid && (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
+                if (!invalid) {
                     try {
                         PropertyChangeEvent event = ((JPDAThreadImpl) threadOrGroup).notifySuspended(doFire, explicitelyPaused);
                         if (event != null) {
@@ -1476,10 +1477,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void notifySuspendAllNoFire() {
+        notifySuspendAllNoFire(null);
+    }
+
+    public void notifySuspendAllNoFire(Set<ThreadReference> ignoredThreads) {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl) {
+            if (threadOrGroup instanceof JPDAThreadImpl &&
+                    (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
                 int status = ((JPDAThreadImpl) threadOrGroup).getState();
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
@@ -1558,13 +1564,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     // Resuming all
                     VirtualMachineWrapper.resume(vm);
                     for (JPDAThreadImpl t : threadsToResume) {
-                        t.setAsResumed();
+                        t.setAsResumed(true);
                     }
                     logger.finer("All threads resumed.");
                 } else {
                     for (JPDAThreadImpl t : threadsToResume) {
                         t.resumeAfterClean();
-                        t.setAsResumed();
+                        t.setAsResumed(false);
                     }
                 }
             } catch (VMDisconnectedExceptionWrapper e) {
@@ -1638,10 +1644,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void notifyToBeResumedAllNoFire() {
+        notifyToBeResumedAllNoFire(null);
+    }
+    
+    public void notifyToBeResumedAllNoFire(Set<ThreadReference> ignoredThreads) {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl) {
+            if (threadOrGroup instanceof JPDAThreadImpl &&
+                    (ignoredThreads == null || !ignoredThreads.contains(threadOrGroup))) {
                 int status = ((JPDAThreadImpl) threadOrGroup).getState();
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
