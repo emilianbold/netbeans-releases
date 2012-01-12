@@ -48,7 +48,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.eclipse.persistence.jpa.jpql.spi.IMappingType;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embedded;
@@ -59,7 +58,6 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
-import org.netbeans.modules.j2ee.persistence.spi.jpql.DefaultType;
 
 /**
  *
