@@ -113,6 +113,10 @@ public abstract class VersioningSystem {
         return null;
     }
 
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return null;
+    }
+    
     /**
      * Get the original (unmodified) copy of a file. If the versioning system cannot provide it then this method should do nothing.
      * For version control systems that support keyword expansion, the original file must expand all keywords so the

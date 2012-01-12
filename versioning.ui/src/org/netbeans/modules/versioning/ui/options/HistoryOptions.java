@@ -41,69 +41,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.revert;
-import java.io.File;
-import java.util.Set;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.LifecycleManager;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+
+package org.netbeans.modules.versioning.ui.options;
+
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RevertToAction extends NodeAction {
-        
-    public RevertToAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }                
-        
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());
-    }   
-    
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    protected void performAction(final Node[] activatedNodes) {
-        // XXX try to save files in invocation context only
-        // list somehow modified file in the context and save
-        // just them.
-        // The same (global save) logic is in CVS, no complaint        
-        LifecycleManager.getDefault().saveAll();
-               
-        VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        final Set<File> rootSet = ctx.getRootFiles();        
-        File[] roots = rootSet.toArray(new File[rootSet.size()]);
+public final class HistoryOptions extends AdvancedOption {
+    public static final String OPTIONS_SUBPATH = "LocalHistory"; // NOI18N
 
-        RevertFileChanges revertChanges = new RevertFileChanges();
-        revertChanges.show(roots[0]);        
+    public HistoryOptions() {
     }
-       
-    protected boolean enable(Node[] activatedNodes) {
-        // XXX multi- or single node?
-        if(activatedNodes == null || activatedNodes.length != 1) {
-            return false;
-        }        
-        VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        Set<File> rootSet = ctx.getRootFiles();        
-        if(rootSet == null) {
-            return false;
-        }
-        File[] roots = rootSet.toArray(new File[rootSet.size()]);
-        return roots.length == 1 && roots[0].isFile();
+    
+    public String getDisplayName () {
+        return NbBundle.getMessage (HistoryOptions.class, "LocalHistoryOptions.displayName");    // NOI18N
     }
 
-    public String getName() {
-        return getMenuName();
-    }       
-    
-    public static String getMenuName() {
-        return NbBundle.getMessage(RevertToAction.class, "LBL_RevertToAction");
+    public String getTooltip () {
+        return NbBundle.getMessage (HistoryOptions.class, "LocalHistoryOptions.toolTip");        // NOI18N
+    }
+
+    public OptionsPanelController create () {
+        return new HistoryOptionsController();
     }
 }

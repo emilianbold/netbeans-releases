@@ -41,10 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.localhistory.ui.view;
+package org.netbeans.modules.versioning.ui.history;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -52,72 +51,79 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 
 import org.netbeans.api.diff.*;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.store.StoreEntry;
-import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.filesystems.FileObject;
+import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryDiffView implements PropertyChangeListener, ActionListener, VersioningListener {
+public class LocalHistoryDiffView implements PropertyChangeListener, VersioningListener {
            
-    private final LocalHistoryTopComponent master;
+    private final HistoryTopComponent tc;
     private DiffPanel panel;
     private Component diffComponent;
     private DiffController diffView;                
-    private DiffPrepareTask prepareTask = null;
+    private DiffPrepareTask prepareDiff = null;
+    private Task prepareDiffTask = null;
     private boolean selected;
+    private PreparingDiffHandler preparingDiffPanel;
         
     /** Creates a new instance of LocalHistoryView */
-    public LocalHistoryDiffView(LocalHistoryTopComponent master) {
-        this.master = master;
+    public LocalHistoryDiffView(HistoryTopComponent tc) {
+        this.tc = tc;
         panel = new DiffPanel();                                                              
-        panel.nextButton.addActionListener(this);
-        panel.prevButton.addActionListener(this);
-        LocalHistory.getInstance().addVersioningListener(this);
+//        History.getInstance().addVersioningListener(this); XXX
         showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
     }    
         
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            disableNavigationButtons();
+            tc.disableNavigationButtons();
             selectionChanged(evt);            
         } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
-            refreshNavigationButtons();
+            tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
         }
     }
       
     @Override
     public void versioningEvent(VersioningEvent event) {
-        if(event.getId() != LocalHistory.EVENT_FILE_CREATED) {
-            return;
-        }
-        File file = (File) event.getParams()[0];
-        if( file == null || prepareTask == null || !selected ||
-            !file.equals(prepareTask.entry.getFile()))
-        {
-            return;
-        }        
-        scheduleTask(prepareTask);
+        // XXX
+//        if(event.getId() != LocalHistory.EVENT_FILE_CREATED) {
+//            return;
+//        }
+//        File file = (File) event.getParams()[0];
+//        if( file == null || prepareDiff == null || !selected ||
+//            !file.equals(prepareDiff.entry.getFile()))
+//        {
+//            return;
+//        }        
+//        scheduleTask(prepareDiff);
     }
     
     JPanel getPanel() {
@@ -127,7 +133,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     private void selectionChanged(PropertyChangeEvent evt) {
         Node[] newSelection = ((Node[]) evt.getNewValue());
         if ((newSelection != null) && (newSelection.length == 1)) {
-            StoreEntry se = newSelection[0].getLookup().lookup(StoreEntry.class);
+            HistoryEntry se = newSelection[0].getLookup().lookup(HistoryEntry.class);
             if (se != null) {
                 selected = true;
                 refreshDiffPanel(se);
@@ -142,34 +148,32 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, msgKey));
     }           
     
-    private void refreshDiffPanel(StoreEntry se) {  
-        prepareTask = new DiffPrepareTask(se);
-        scheduleTask(prepareTask);
+    private void refreshDiffPanel(HistoryEntry se) {  
+        prepareDiff = new DiffPrepareTask(se);
+        scheduleTask(prepareDiff);
     }        
 
-    private static void scheduleTask(Runnable runnable) {          
-        RequestProcessor.Task task = LocalHistory.getInstance().getParallelRequestProcessor().create(runnable);
-        task.schedule(0);        
+    private void scheduleTask(Runnable runnable) {          
+        if(prepareDiffTask != null) {
+            prepareDiffTask.cancel();
+            getPreparingDiffHandler().finish();
+    }
+        prepareDiffTask = History.getInstance().getRequestProcessor().create(runnable);
+        prepareDiffTask.schedule(0);        
     }
 
-    /**
-     * Copies entry file's content to the given temporary file
-     * @param entry contains the file's content
-     * @param tmpHistoryFile target temporary file
-     * @throws java.io.IOException
-     */
-    private static void extractHistoryFile (StoreEntry entry, File tmpHistoryFile) throws IOException {
-        File file = entry.getFile();
-        tmpHistoryFile.deleteOnExit();
-        FileUtils.copy(entry.getStoreFileInputStream(), tmpHistoryFile);
-        Utils.associateEncoding(file, tmpHistoryFile);
+    private PreparingDiffHandler getPreparingDiffHandler() {
+        if(preparingDiffPanel == null) {
+            preparingDiffPanel = new PreparingDiffHandler();
+    }
+        return preparingDiffPanel;
     }
     
     private class DiffPrepareTask implements Runnable {
         
-        private final StoreEntry entry;
+        private final HistoryEntry entry;
 
-        public DiffPrepareTask(final StoreEntry se) {
+        public DiffPrepareTask(final HistoryEntry se) {
             entry = se;
         }
 
@@ -177,41 +181,41 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         public void run() {
             // XXX how to get the mimetype
 
-            final File file = entry.getFile();
-            File tempFolder = Utils.getTempFolder();
-            // we have to hold references to these files, otherwise associated encoding for them will be lost
-            // Utils.associateEncoding holds only a weak reference
-            final File tmpHistoryFile = new File(tempFolder, file.getName());
-            final List<File> siblingTmpFiles = new LinkedList<File>();
+            File tmpFile;
+            final File file = entry.getFiles()[0]; // XXX
+            getPreparingDiffHandler().start();
             try {
-                extractHistoryFile(entry, tmpHistoryFile);
-                List<StoreEntry> siblings = entry.getSiblingEntries();
-                for (StoreEntry siblingEntry : siblings) {
-                    File tmpHistorySiblingFile = new File(tempFolder, siblingEntry.getFile().getName());
-                    siblingTmpFiles.add(tmpHistorySiblingFile);
-                    extractHistoryFile(siblingEntry, tmpHistorySiblingFile);
-                }
-            } catch (IOException ioe) {
-                LocalHistory.LOG.log(Level.WARNING, "Error while retrieving history for file {0} stored as {1}", new Object[]{entry.getFile(), entry.getStoreFile()}); // NOI18N
-                LocalHistory.LOG.log(Level.WARNING, null, ioe);
-                return;
+                final List<File> siblingTmpFiles = new LinkedList<File>();
+                File tempFolder = Utils.getTempFolder();
+                tmpFile = new File(tempFolder, file.getName()); // XXX
+                entry.getRevisionFile(file, tmpFile);
+//                List<HistoryEntry> siblings = entry.getSiblingEntries(); // XXX
+//                for (HistoryEntry siblingEntry : siblings) {
+//                    File tmpHistorySiblingFile = siblingEntry.getHistoryFile();
+//                    siblingTmpFiles.add(tmpHistorySiblingFile);
+//                }
+            } finally {
+                getPreparingDiffHandler().finish();
             }
-
+            final File tmpHistoryFile = tmpFile;
+            
+            
+            
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {            
                     try {   
                         
-                        StreamSource ss1 = new LHStreamSource(tmpHistoryFile, entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType());
+                        StreamSource ss1 = new LHStreamSource(tmpHistoryFile, file.getName() + " " + RevisionNode.getFormatedDate(entry), getMimeType(file));
                         
                         String title;
                         StreamSource ss2;                        
                         if(file.exists()) {
                             title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_CurrentFile");
-                            ss2 = new LHStreamSource(file, title, entry.getMIMEType());
+                            ss2 = new LHStreamSource(file, title, getMimeType(file));
                         } else {
                             title = NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_Diff_FileDeleted");
-                            ss2 = StreamSource.createSource("currentfile", title, entry.getMIMEType(), new StringReader(""));
+                            ss2 = StreamSource.createSource("currentfile", title, getMimeType(file), new StringReader(""));
                         }
                         
                         diffView = DiffController.create(ss1, ss2);
@@ -219,21 +223,59 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                         
                         JComponent c = diffView.getJComponent();
                         setDiffComponent(c);
-                        master.setDiffView(c);
+                        tc.setDiffView(c);
                         if(diffView.getDifferenceCount() > 0) {
                             setCurrentDifference(0);
                         } else {
-                            refreshNavigationButtons();
+                            tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
                         }
                         panel.revalidate();
                         panel.repaint();
+                        if("true".equals(System.getProperty("vcshistory.bindDiffRowToEditor", "false"))) {
+                            setBaseLocation(title);
+                        }
 
                     } catch (IOException ioe)  {
-                        LocalHistory.LOG.log(Level.SEVERE, null, ioe);
+                        History.LOG.log(Level.SEVERE, null, ioe);
                     }                            
                 }
+
+                private void setBaseLocation(String title) throws DataObjectNotFoundException {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    DataObject dao = fo != null ? DataObject.find(fo) : null;
+                    EditorCookie cookie = dao != null ? dao.getLookup().lookup(EditorCookie.class) : null;
+                    if(cookie != null) {
+                        // hack - care only about dataObjects with opened editors.
+                        // otherwise we won't assume it's file were opened to be edited
+                        JEditorPane[] panes = cookie.getOpenedPanes();
+                        if(panes != null && panes.length > 0) {
+                            int p = panes[0].getCaretPosition();
+                            if(p > 0) {
+                                try {
+                                    int row = Utilities.getLineOffset((BaseDocument)panes[0].getDocument(), p);
+                                    if(row > 0) {
+                                        diffView.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, row);
+                                    } 
+                                } catch (BadLocationException ex) {
+                                    History.getInstance().LOG.log(Level.WARNING, title, ex);
+                                }
+                            }
+                        }
+                    }
+                }
             });
+            
         }
+
+        private String getMimeType(File file) {
+            FileObject fo = FileUtils.toFileObject(file);
+            if(fo != null) {
+                return fo.getMIMEType();   
+            } else {
+                return "content/unknown"; // NOI18N
+            }                
+        }
+        
     }        
     
     private void showNoContent(String s) {
@@ -252,16 +294,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         //panel.splitPane.setDividerLocation(dl);                
     }       
     
-    @Override
-    public void actionPerformed(ActionEvent evt) {
-        if(evt.getSource() == panel.nextButton) {
-            onNextButton();
-        } else if(evt.getSource() == panel.prevButton) {
-            onPrevButton();
-        }
-    }
-
-    private void onNextButton() {
+    void onNextButton() {
         if(diffView == null) {
             return;
         }          
@@ -271,7 +304,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         }                        
     }
 
-    private void onPrevButton() {
+    void onPrevButton() {
         if(diffView == null) {
             return;
         }
@@ -283,19 +316,8 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     
     private void setCurrentDifference(int idx) {
         diffView.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, idx);    
-        refreshNavigationButtons();
+        tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
     }
-    
-    private void disableNavigationButtons() {
-        panel.prevButton.setEnabled(false);
-        panel.nextButton.setEnabled(false);
-    }    
-
-    private void refreshNavigationButtons() {
-        int currentDifference = diffView.getDifferenceIndex();
-        panel.prevButton.setEnabled(currentDifference > 0);
-        panel.nextButton.setEnabled(currentDifference < diffView.getDifferenceCount() - 1);
-    }    
     
     private class LHStreamSource extends StreamSource {
         
@@ -363,4 +385,62 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         }
     }
 
+    private class PreparingDiffHandler extends JPanel implements ActionListener {
+
+        private JLabel label = new JLabel();
+        private Component progressComponent;
+        private ProgressHandle handle;
+        private final Timer timer;
+        public PreparingDiffHandler() {
+            label.setText(NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_PreparingDiff"));
+            this.setBackground(UIManager.getColor("TextArea.background")); // NOI18N
+
+            setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            add(label, c);
+            label.setEnabled(false);
+            timer = new Timer(800, this);
+}
+
+        
+        void start() {
+            timer.start();
+        }
+        
+        private synchronized void startProgress() throws MissingResourceException {
+            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(LocalHistoryDiffView.class, "LBL_PreparingDiff"));
+            setProgressComponent(ProgressHandleFactory.createProgressComponent(handle));
+            handle.start();
+            handle.switchToIndeterminate();                    
+            setDiffComponent(PreparingDiffHandler.this);
+        }
+        
+        synchronized void finish() {
+            timer.stop();
+            if(handle != null) {
+                handle.finish();
+                handle = null;
+            }
+        }
+        
+        void setProgressComponent(Component component) {
+            if(progressComponent != null) remove(progressComponent);
+            if(component != null) {
+                this.progressComponent = component;
+                GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+                gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+                add(component, gridBagConstraints);
+            } 
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    startProgress();
+                }
+            });
+        }        
+    }
 }
