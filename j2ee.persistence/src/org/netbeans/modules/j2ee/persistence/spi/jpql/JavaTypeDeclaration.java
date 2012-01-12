@@ -137,12 +137,12 @@ public class JavaTypeDeclaration implements ITypeDeclaration {
             parameterTypes.add(buildTypeDeclaration(genericArrayType.getGenericComponentType()));
         } // Example: Class
         else if (genericType.getClass() == Class.class) {
-            ITypeDeclaration typeParameter = buildTypeDeclaration((Class<?>) genericType);
+            ITypeDeclaration typeParameter = new JavaTypeDeclaration(typeRepository, typeRepository.getType((Class<?>)genericType), null, ((Class<?>)genericType).isArray());
             parameterTypes.add(typeParameter);
         } // Example: <K, V>
         else if (genericType.getClass() == Class[].class) {
             for (Class<?> javaType : ((Class<?>[]) genericType)) {
-                ITypeDeclaration typeParameter = buildTypeDeclaration(javaType);
+                ITypeDeclaration typeParameter = new JavaTypeDeclaration(typeRepository, typeRepository.getType(javaType), null, javaType.isArray());
                 parameterTypes.add(typeParameter);
             }
         } // Example: <K, V>
@@ -154,14 +154,6 @@ public class JavaTypeDeclaration implements ITypeDeclaration {
         }
 
         return parameterTypes.toArray(new ITypeDeclaration[parameterTypes.size()]);
-    }
-
-    private JavaTypeDeclaration buildTypeDeclaration(Class<?> javaType) {
-        return new JavaTypeDeclaration(
-                typeRepository,
-                typeRepository.getType(javaType),
-                null,
-                javaType.isArray());
     }
 
     private JavaTypeDeclaration buildTypeDeclaration(Object genericType) {
@@ -178,7 +170,7 @@ public class JavaTypeDeclaration implements ITypeDeclaration {
             for (java.lang.reflect.Type tp : typeVariable.getBounds()) {
                 return buildTypeDeclaration(tp);
             }
-            return buildTypeDeclaration(Object.class);
+            return new JavaTypeDeclaration(typeRepository, typeRepository.getType((Object.class)), null, (Object.class).isArray());
         }
 
         // ?
@@ -187,7 +179,7 @@ public class JavaTypeDeclaration implements ITypeDeclaration {
             for (java.lang.reflect.Type tp : wildcardType.getUpperBounds()) {
                 return buildTypeDeclaration(tp);
             }
-            return buildTypeDeclaration(Object.class);
+            return new JavaTypeDeclaration(typeRepository, typeRepository.getType((Object.class)), null, (Object.class).isArray());
         }
 
         // T[]
@@ -203,7 +195,7 @@ public class JavaTypeDeclaration implements ITypeDeclaration {
                     true);
         }
 
-        return buildTypeDeclaration((Class<?>) genericType);
+        return new JavaTypeDeclaration(typeRepository, typeRepository.getType(((Class<?>) genericType)), null, ((Class<?>) genericType).isArray());
     }
 
     private String elementType(String typeName) {

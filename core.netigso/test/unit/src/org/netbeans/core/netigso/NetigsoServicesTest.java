@@ -221,6 +221,7 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         assertEquals("The right class", Netigso.class, o.getClass());
         Netigso f = (Netigso)o;
         final Framework frame = f.getFramework();
+        assertNotNull("Framework found", frame);
         return frame;
     }
 }

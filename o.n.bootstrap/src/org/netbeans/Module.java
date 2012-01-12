@@ -47,15 +47,10 @@ package org.netbeans;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.CodeSource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -63,6 +58,7 @@ import java.util.logging.Logger;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Union2;
@@ -121,6 +117,7 @@ public abstract class Module extends ModuleInfo {
 
     private final static PackageExport[] ZERO_PACKAGE_ARRAY = new PackageExport[0];
     private final static String[] ZERO_STRING_ARRAY = new String[0];
+    private static Method findResources;
 
     /** Use ModuleManager.create as a factory. */
     protected Module(ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
@@ -633,6 +630,32 @@ public abstract class Module extends ModuleInfo {
         String s = "Module:" + getCodeNameBase(); // NOI18N
         if (!isValid()) s += "[invalid]"; // NOI18N
         return s;
+    }
+
+    /** Locates resource in this module. May search only the main JAR
+     * of the module (which is what it does in case of OSGi bundles). 
+     * Should be as lightweight as possible - e.g. if it is OK to not
+     * initialize something in the module while perfoming this method,
+     * the something should not be initialized (e.g. OSGi bundles are
+     * not resolved).
+     * 
+     * @param resources path to the resources we are looking for
+     * @since 2.49
+     */
+    public Enumeration<URL> findResources(String resources) {
+        try { // #149136
+            // Cannot use getResources because we do not wish to delegate to parents.
+            // In fact both URLClassLoader and ProxyClassLoader override this method to be public.
+            if (findResources == null) {
+                findResources = ClassLoader.class.getDeclaredMethod("findResources", String.class); // NOI18N
+                findResources.setAccessible(true);
+            }
+            ClassLoader cl = getClassLoader();
+            return (Enumeration<URL>) findResources.invoke(cl, resources); // NOI18N
+        } catch (Exception x) {
+            Exceptions.printStackTrace(x);
+            return Enumerations.empty();
+        }
     }
 
     /** Struct representing a package exported from a module.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,81 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.spi.jpql;
+package org.netbeans.modules.php.editor.verification;
 
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import org.eclipse.persistence.jpa.jpql.spi.IConstructor;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
+import java.util.prefs.Preferences;
 
 /**
  *
- * @author sp153251
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class DefaultType implements IType {
-    
-    private final String typeName;
-    private final ITypeRepository typeRepository;
-    private ITypeDeclaration typeDeclaration;
-    
-    DefaultType(ITypeRepository typeRepository, String typeName){
-        this.typeRepository = typeRepository;
-        this.typeName = typeName;
+public class PHPUninitializedVariableHintTest extends PHPHintsTestBase {
+
+    public PHPUninitializedVariableHintTest(String testName) {
+        super(testName);
+    }
+
+    public void testWithRefs() throws Exception {
+        checkHintsInStartEndFile(new UninitializedVariableHintStub(true), "testUninitializedVariableHint.php");
+    }
+
+    public void testWithoutRefs() throws Exception {
+        checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testUninitializedVariableHint.php");
     }
     
+    private class UninitializedVariableHintStub extends UninitializedVariableHint {
+        private final boolean uninitializedVariable;
 
-    @Override
-    public Iterable<IConstructor> constructors() {
-            return Collections.emptyList();
+        public UninitializedVariableHintStub(boolean uninitializedVariable) {
+            this.uninitializedVariable = uninitializedVariable;
+        }
+
+        @Override
+        public boolean checkVariablesInitializedByReference(Preferences preferences) {
+            return uninitializedVariable;
+        }
+
     }
 
-
-    @Override
-    public String getName() {
-        return typeName;
-    }
-
-    @Override
-    public boolean equals(IType itype) {
-        return typeName.equals(itype.getName());
-    }
-
-    @Override
-    public String[] getEnumConstants() {
-        return new String[]{};
-    }
-
-    @Override
-    public ITypeDeclaration getTypeDeclaration() {
-		if (typeDeclaration == null) {
-			typeDeclaration = new TypeDeclaration(this, new ITypeDeclaration[0], 0);
-		}
-		return typeDeclaration;
-    }
-
-    @Override
-    public boolean hasAnnotation(Class<? extends Annotation> type) {
-        return false;
-    }
-
-    @Override
-    public boolean isAssignableTo(IType itype) {
-        return false;//TODO ???
-    }
-
-    @Override
-    public boolean isEnum() {
-        return false;
-    }
-
-    @Override
-    public boolean isResolvable() {
-        return false;
-    }
-    
-    
 }
