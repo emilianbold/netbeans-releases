@@ -112,6 +112,16 @@ public class CodeUtils {
         }
         return false;
     }
+    
+    public static  boolean isPhp_54(FileObject file) {
+        Parameters.notNull("file", file);
+        boolean result = false;
+        PhpLanguageOptions.Properties props = PhpLanguageOptions.getDefault().getProperties(file);
+        if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_54) {
+            result = true;
+        }
+        return result;
+    }
 
     //TODO: extracting name needs to be take into account namespaces
     @CheckForNull
