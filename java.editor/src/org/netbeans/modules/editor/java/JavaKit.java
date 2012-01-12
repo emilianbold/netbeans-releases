@@ -595,9 +595,12 @@ public class JavaKit extends NbEditorKit {
         }
 
         @Override
-        public void remove(Context context) throws BadLocationException {
+        public void remove(Context context) throws BadLocationException {            
             if (context.getText().length() == 1) {
-                BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset() - 1, context.getComponent().getCaret(), context.getText().charAt(0));
+                if (context.isBackwardDelete())
+                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset() - 1, context.getComponent().getCaret(), context.getText().charAt(0));
+                else
+                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), context.getText().charAt(0));
             }
         }
 

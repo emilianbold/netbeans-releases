@@ -1121,6 +1121,20 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         );
     }
     
+    public void testRemoveBracketBackSpace() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "()(|)");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("()|");
+    }
+
+    public void testRemoveBracketDelete() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "()|()");
+        ctx.typeChar('\f');
+        ctx.assertDocumentTextEquals("()|");
+    }
+
     public void testCorrectHandlingOfStringEscapes184059() throws Exception {
         assertTrue(isInsideString("foo\n\"bar|\""));
         assertTrue(isInsideString("foo\n\"bar\\\"|\""));
@@ -1189,14 +1203,26 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                     @Override
                     public void run() {
                         KeyEvent keyEvent;
-                        if (ch != '\n') {
-                            keyEvent = new KeyEvent(pane, KeyEvent.KEY_TYPED,
-                                EventQueue.getMostRecentEventTime(),
-                                0, KeyEvent.VK_UNDEFINED, ch);
-                        } else { // Simulate pressing of Enter
-                            keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
-                                EventQueue.getMostRecentEventTime(),
-                                0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED);
+                        switch (ch) {
+                            case '\n':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Enter
+                                break;
+                            case '\b':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_BACK_SPACE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of BackSpace
+                                break;
+                            case '\f':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_DELETE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Delete
+                                break;
+                            default:
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_TYPED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_UNDEFINED, ch);
                         }
                         SwingUtilities.processKeyBindings(keyEvent);
                     }
