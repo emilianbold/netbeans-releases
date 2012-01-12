@@ -246,7 +246,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             assert removedRoots != null;
             final TransactionContext txCtx = TransactionContext.beginTrans().register(
                 ClassIndexEventsTransaction.class,
-                ClassIndexEventsTransaction.create());
+                ClassIndexEventsTransaction.create(false));
             try {
                 final ClassIndexManager cim = ClassIndexManager.getDefault();
                 for (URL removedRoot : removedRoots) {

@@ -44,11 +44,7 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
@@ -63,6 +59,7 @@ import org.openide.util.Parameters;
 //@NotThreadSafe
 public final class ClassIndexEventsTransaction extends TransactionContext.Service {
 
+    private final boolean source;
     private final Set<URL> removedRoots;
     private final Collection<ElementHandle<TypeElement>> addedTypes;
     private final Collection<ElementHandle<TypeElement>> removedTypes;
@@ -71,8 +68,10 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     private final Collection<File> removedFiles;
     private URL addedRoot;
     private URL changesInRoot;
+    private boolean commited;
 
-    private ClassIndexEventsTransaction() {
+    private ClassIndexEventsTransaction(final boolean src) {
+        source = src;
         removedRoots = new HashSet<URL>();
         addedTypes = new HashSet<ElementHandle<TypeElement>>();
         removedTypes = new HashSet<ElementHandle<TypeElement>>();
@@ -85,6 +84,7 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     public void rootAdded(@NonNull final URL root) {
         assert root != null;
         assert addedRoot == null;
+        assert changesInRoot == null || changesInRoot.equals(root);
         addedRoot = root;
     }
 
@@ -131,6 +131,9 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         @NonNull final Collection<? extends File> files) {
         Parameters.notNull("root", root); //NOI18N
         Parameters.notNull("files", files); //NOI18N
+        if (!source) {
+            throw new IllegalStateException("The addedCacheFiles can be called only for source root."); //NOI18N
+        }
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
         addedFiles.addAll(files);
@@ -142,6 +145,9 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         @NonNull final Collection<? extends File> files) {
         Parameters.notNull("root", root);   //NOI18N
         Parameters.notNull("files", files); //NOI18N
+        if (!source) {
+            throw new IllegalStateException("The removedCacheFiles can be called only for source root.");   //NOI18N
+        }
         assert changesInRoot == null || changesInRoot.equals(root);
         assert addedRoot == null || addedRoot.equals(root);
         removedFiles.addAll(files);
@@ -150,6 +156,10 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
 
     @Override
     protected void commit() throws IOException {
+        if (commited) {
+            throw new IllegalStateException("Already commited transaction");    //NOI18N
+        }
+        commited = true;
         try {
             if (!addedFiles.isEmpty() || !removedFiles.isEmpty()) {
                 assert changesInRoot != null;
@@ -177,8 +187,8 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     }
 
     @NonNull
-    public static ClassIndexEventsTransaction create() {
-        return new ClassIndexEventsTransaction();
+    public static ClassIndexEventsTransaction create(final boolean source) {
+        return new ClassIndexEventsTransaction(source);
     }
 
 }

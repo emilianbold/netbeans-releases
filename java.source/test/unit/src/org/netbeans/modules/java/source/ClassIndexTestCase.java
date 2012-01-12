@@ -88,7 +88,7 @@ public class ClassIndexTestCase extends NbTestCase {
         try {
             return TransactionContext.beginTrans().
                     register(ClassIndexEventsTransaction.class, 
-                             ClassIndexEventsTransaction.create()).
+                             ClassIndexEventsTransaction.create(true)).
                     register(FileManagerTransaction.class, FileManagerTransaction.writeThrough());
         } catch (IllegalStateException ise) {
             // ignore, tx may have been created by a previous test
