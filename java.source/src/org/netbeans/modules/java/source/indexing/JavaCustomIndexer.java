@@ -888,7 +888,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             assert removedRoots != null;
             JavaIndex.LOG.log(Level.FINE, "roots removed: {0}", removedRoots);
             final TransactionContext txCtx = TransactionContext.beginTrans().
-                    register(ClassIndexEventsTransaction.class, ClassIndexEventsTransaction.create());
+                    register(ClassIndexEventsTransaction.class, ClassIndexEventsTransaction.create(true));
             try {
                 APTUtils.sourceRootUnregistered(removedRoots);
                 final ClassIndexManager cim = ClassIndexManager.getDefault();

@@ -148,7 +148,7 @@ public final class TransactionContext {
                 PersistentIndexTransaction.create()).
             register(
                 ClassIndexEventsTransaction.class,
-                ClassIndexEventsTransaction.create()
+                ClassIndexEventsTransaction.create(srcIndex)
             );
     }
 }
