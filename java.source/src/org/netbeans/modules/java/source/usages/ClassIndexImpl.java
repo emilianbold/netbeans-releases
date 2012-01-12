@@ -139,7 +139,7 @@ public abstract class ClassIndexImpl {
    
     public abstract BinaryAnalyser getBinaryAnalyser ();
     
-    public abstract SourceAnalyser getSourceAnalyser ();
+    public abstract SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser ();
     
     public abstract String getSourceName (String binaryName) throws IOException, InterruptedException;
     

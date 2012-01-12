@@ -118,14 +118,14 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
     
     @Override
-    public SourceAnalyser getSourceAnalyser () {        
+    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {        
         Writer writer = new PIWriter();
         final TransactionContext txCtx = TransactionContext.get();
         assert  txCtx != null;
         
         PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
         pit.addIndexWriter(writer);
-        return new SourceAnalyser (writer);        
+        return SourceAnalyzerFactory.createStorableAnalyzer(writer);        
     }
 
     @Override
@@ -547,7 +547,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                         return;
                                     }
                                     try {
-                                        final SourceAnalyser sa = new SourceAnalyser();
+                                        final SourceAnalyzerFactory.SimpleAnalyzer sa = SourceAnalyzerFactory.createSimpleAnalyzer();
                                         dataHolder[0] = sa.analyseUnit(
                                             controller.getCompilationUnit(),
                                             JavaSourceAccessor.getINSTANCE().getJavacTask(controller),

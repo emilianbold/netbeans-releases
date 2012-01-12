@@ -74,7 +74,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.SourceAnalyser;
+import org.netbeans.modules.java.source.usages.SourceAnalyzerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
@@ -90,7 +90,7 @@ class JavaParsingContext {
     final ClassIndexImpl uq;
     final CheckSums checkSums;
     final FQN2Files fqn2Files;
-    final SourceAnalyser sa;
+    final SourceAnalyzerFactory.StorableAnalyzer sa;
     private final Iterable<? extends JavaIndexerPlugin> pluginsCache;
 
     JavaParsingContext(final Context context, final boolean allowNonExistentRoot) throws IOException, NoSuchAlgorithmException {
