@@ -87,7 +87,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
             }
 
             String className = new BeanClassFinder(env.getBeanAttributes(),
-                    env.getFileObject()).findImplementationClass();
+                    env.getFileObject()).findImplementationClass(false);
             if (className == null) {
                 return;
             }
