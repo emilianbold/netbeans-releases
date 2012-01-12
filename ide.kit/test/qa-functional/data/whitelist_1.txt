@@ -5995,4 +5995,55 @@ org.netbeans.modules.sendopts.DefaultProcessor
 org.netbeans.modules.sendopts.DefaultProcessor$Type
 org.netbeans.spi.sendopts.Arg
 
+# Generic Version Control Infrastructure
+org.netbeans.modules.versioning.FileBasedVCSProvider
+org.netbeans.modules.versioning.core.APIAccessor
+org.netbeans.modules.versioning.core.DelegatingVCS
+org.netbeans.modules.versioning.core.FileProxyBasedVCSProvider
+org.netbeans.modules.versioning.core.FlatFolder
+org.netbeans.modules.versioning.core.SPIAccessor
+org.netbeans.modules.versioning.core.Utils
+org.netbeans.modules.versioning.core.VersioningAnnotationProvider
+org.netbeans.modules.versioning.core.VersioningAnnotationProvider$Cache
+org.netbeans.modules.versioning.core.VersioningAnnotationProvider$Cache$AnnotationRefreshTask
+org.netbeans.modules.versioning.core.VersioningAnnotationProvider$Cache$Item
+org.netbeans.modules.versioning.core.VersioningAnnotationProvider$Cache$ItemKey
+org.netbeans.modules.versioning.core.VersioningConfig
+org.netbeans.modules.versioning.core.VersioningManager
+org.netbeans.modules.versioning.core.api.APIAccessorImpl
+org.netbeans.modules.versioning.core.api.VCSFileProxy
+org.netbeans.modules.versioning.core.api.VersioningSupport
+org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor
+org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor$DelegatingInterceptor
+org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor$FileEx
+org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor$IOHandler
+org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor$VCSAnnotationEvent
+org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor$VCSAnnotationListener
+org.netbeans.modules.versioning.core.spi.SPIAccessorImpl
+org.netbeans.modules.versioning.core.spi.VCSAnnotator
+org.netbeans.modules.versioning.core.spi.VCSAnnotator$ActionDestination
+org.netbeans.modules.versioning.core.spi.VCSContext
+org.netbeans.modules.versioning.core.spi.VCSInterceptor
+org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery
+org.netbeans.modules.versioning.core.spi.VersioningSystem
+org.netbeans.modules.versioning.core.util.VCSSystemProvider
+org.netbeans.modules.versioning.core.util.VCSSystemProvider$VersioningSystem
+org.netbeans.modules.versioning.masterfs.FilesystemInterceptor
+org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider
+
+# OK on Jan 12, 2012
+org.openide.explorer.view.TreeView$ExplorerTree$SubstringSearchResult
+org.openide.util.HelpCtx$Displayer
+org.netbeans.spi.navigator.NavigatorDisplayer
+org.netbeans.modules.navigator.NavigatorController$PanelLookupWithNodes
+org.netbeans.modules.masterfs.providers.Notifier
+org.netbeans.modules.masterfs.watcher.NotifierAccessor
+org.netbeans.modules.masterfs.watcher.linux.LinuxNotifier
+org.netbeans.modules.masterfs.watcher.linux.LinuxNotifier$InotifyImpl
+javax.swing.plaf.basic.BasicTreeUI
+org.eclipse.osgi.framework.adaptor.FilePath
+org.eclipse.osgi.framework.internal.reliablefile.ReliableFileInputStream
+org.eclipse.osgi.framework.util.ObjectPool
+org.eclipse.osgi.internal.resolver.ReadOnlyState
+org.eclipse.osgi.internal.resolver.StateReader
 
