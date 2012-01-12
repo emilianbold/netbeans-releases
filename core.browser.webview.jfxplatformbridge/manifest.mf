@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: core.browser.webview.jfxplatformbridge
+OpenIDE-Module: org.netbeans.core.browser.webview.jfxplatformbridge
 OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Localizing-Bundle: core/browser/webview/jfxplatformbridge/Bundle.properties
+OpenIDE-Module-Localizing-Bundle: org/netbeans/core/browser/webview/jfxplatformbridge/Bundle.properties
 
