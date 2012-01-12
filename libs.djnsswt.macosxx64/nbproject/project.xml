@@ -26,7 +26,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/swt_macosxx64.jar</runtime-relative-path>
-                <binary-origin>external/swt_macosx64.jar</binary-origin>
+                <binary-origin>external/swt_macosxx64.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/DJNativeSwing-SWTCore.jar</runtime-relative-path>
