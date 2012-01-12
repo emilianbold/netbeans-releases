@@ -166,7 +166,7 @@ public class MemoryIndex implements Index {
             final BitSet bs = new BitSet(in.maxDoc());
             final Collector c = new BitSetCollector(bs);
             final Searcher searcher = new IndexSearcher(in);
-            final TermCollector termCollector = new TermCollector();
+            final TermCollector termCollector = new TermCollector(c);
             try {
                 for (Query q : queries) {
                     if (cancel != null && cancel.get()) {
@@ -179,7 +179,7 @@ public class MemoryIndex implements Index {
                                 String.format("Query: %s does not implement TermCollecting",    //NOI18N
                                 q.getClass().getName()));
                     }
-                    searcher.search(q, c);
+                    searcher.search(q, termCollector);
                 }
             } finally {
                 searcher.close();
