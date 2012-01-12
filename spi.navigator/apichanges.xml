@@ -108,7 +108,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
-
+    <change id="NavigatorPanel.Registration">
+        <api name="navigator_api"/>
+        <summary>Added <code>@NavigatorPanel.Registration</code></summary>
+        <version major="1" minor="22"/>
+        <date year="2012" month="1" day="12"/>
+        <author login="glick"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes">
+            <p>
+                Upgrade manual layer registrations.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Added <code>@NavigatorPanel.Registration</code> for ease of use and lazy loading.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.navigator" name="NavigatorPanel"/>
+        <issue number="206954"/>
+    </change>
     <change id="NavigatorDisplayer">
         <api name="navigator_api"/>
         <summary>Added SPI interface NavigatorDisplayer</summary>

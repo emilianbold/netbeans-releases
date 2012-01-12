@@ -50,6 +50,7 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import org.apache.tools.ant.module.loader.AntProjectDataObject;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -66,6 +67,7 @@ import org.openide.util.NbBundle;
  * Displays Ant targets in the Navigator.
  * @author Jesse Glick
  */
+@NavigatorPanel.Registration(mimeType=AntProjectDataObject.MIME_TYPE, displayName="#ANP_label")
 public final class AntNavigatorPanel implements NavigatorPanel {
     
     private Lookup.Result<DataObject> selection;
