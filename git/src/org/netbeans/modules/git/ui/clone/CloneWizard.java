@@ -52,7 +52,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -144,6 +144,7 @@ class CloneWizard  implements ChangeListener {
         private CloneDestinationStep cloneDestinationStep;        
 
         @Override
+        @SuppressWarnings("unchecked")
         protected Panel<WizardDescriptor>[] initializePanels () {
             repositoryStep = new RepositoryStep(forPath);
             repositoryStep.addChangeListener(CloneWizard.this);

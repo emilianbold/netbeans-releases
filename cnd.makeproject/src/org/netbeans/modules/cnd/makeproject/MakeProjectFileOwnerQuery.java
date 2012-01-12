@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -69,6 +70,7 @@ import org.openide.util.Lookup.Provider;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=98)
 public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
+    private static final String PATH_SEPARATOR = "/"; //NOI18N
 
     @Override
     public Project getOwner(URI uri) {
@@ -97,7 +99,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             Exceptions.printStackTrace(ex);
             return null;
         }        
-        String path = fo.getPath();
+        String path = CndPathUtilitities.normalizeSlashes(fo.getPath());
         for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
             Provider project = nativeProject.getProject();
             if (project instanceof Project) {
@@ -113,19 +115,14 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                             mine = descriptor.findProjectItemByPath(path) != null || descriptor.findExternalItemByPath(path) != null;
                         } else if (fo.isFolder()) {
                             mine = descriptor.findFolderByPath(path) != null;
-                            if (!mine) {
-                                List<String> absRoots = new ArrayList<String>();
-                                absRoots.addAll(descriptor.getAbsoluteSourceRoots());
-                                absRoots.addAll(descriptor.getAbsoluteTestRoots());
-                                for (String srcPath : absRoots) {
-                                    if (path.startsWith(srcPath)) {
-                                        mine = true;
-                                        break;
-                                    }
-                                }
-                            }
                         }
                         if (mine) {
+                            return (Project) project;
+                        }
+                        if (isMine(descriptor.getAbsoluteSourceRoots(), fo, path)) {
+                             return (Project) project;
+                        }
+                        if (isMine(descriptor.getAbsoluteTestRoots(), fo, path)) {
                             return (Project) project;
                         }
                     }
@@ -133,5 +130,25 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             }
         }
         return null;
+    }
+    
+    private boolean isMine(List<String> list, FileObject fo, String path) {
+        if (!list.isEmpty()) {
+            if (fo.isFolder()) {
+                if (!path.endsWith(PATH_SEPARATOR)) {
+                    path = path + PATH_SEPARATOR;
+                }
+            }
+            for (String srcPath : list) {
+                srcPath = CndPathUtilitities.normalizeSlashes(srcPath);
+                if (!srcPath.endsWith(PATH_SEPARATOR)) {
+                    srcPath = srcPath + PATH_SEPARATOR;
+                }
+                if (path.startsWith(srcPath)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

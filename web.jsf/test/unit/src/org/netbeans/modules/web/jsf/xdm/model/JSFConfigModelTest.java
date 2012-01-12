@@ -21,19 +21,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
-import org.netbeans.modules.web.jsf.api.facesmodel.Description;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
-import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
-import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
-import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.Model;
@@ -46,39 +34,39 @@ import org.openide.filesystems.FileUtil;
  * @author Petr Pisl
  */
 public class JSFConfigModelTest extends NbTestCase {
-    
+
     public JSFConfigModelTest(String testName) {
         super(testName);
     }
-    
-    
+
+
     @Override
     protected Level logLevel() {
         return Level.INFO;
     }
-    
+
     protected void setUp() throws Exception {
         Logger.getLogger(JSFConfigModelImpl.class.getName()).setLevel(Level.FINEST);
     }
-    
+
     protected void tearDown() throws Exception {
     }
-    
+
     public static Test suite() {
         TestSuite suite = new TestSuite(JSFConfigModelTest.class);
         return suite;
     }
-    
+
     // for collecting and testing events
     Hashtable <String, PropertyChangeEvent> events = new Hashtable<String, PropertyChangeEvent>();
-    
+
     private void checkEvent (String name, String oldValue, String newValue) {
         PropertyChangeEvent event = events.get(name);
         assertNotNull(event);
         assertEquals(oldValue, ((String)event.getOldValue()).trim());
         assertEquals(newValue, ((String)event.getNewValue()).trim());
     }
-    
+
     public void testReadJSFVersion1_1() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-01.xml");
         FacesConfig facesConfig = model.getRootComponent();
@@ -89,7 +77,25 @@ public class JSFConfigModelTest extends NbTestCase {
             System.out.println(elem.getManagedBeanName() + ", " + elem.getManagedBeanClass() + ", " + elem.getManagedBeanScope());
         }
     }
-    
+
+    public void testReadJSFVersion2_1() throws Exception {
+        JSFConfigModel model = Util.loadRegistryModel("faces-config_2_1.xml");
+        FacesConfig facesConfig = model.getRootComponent();
+        assertNotNull(facesConfig);
+        System.out.println("facesConfig: " + facesConfig);
+        Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+        for (ManagedBean elem : managedBeans) {
+            System.out.println(elem.getManagedBeanName() + ", " + elem.getManagedBeanClass() + ", " + elem.getManagedBeanScope());
+        }
+        List<Factory> factories = facesConfig.getFactories();
+        for (Factory factory : factories) {
+            List<FaceletCacheFactory> faceletCacheFactories = factory.getFaceletCacheFactories();
+            assertEquals(1, faceletCacheFactories.size());
+            assertEquals("my.bean.FaceletCacheFactory", faceletCacheFactories.get(0).getFullyQualifiedClassType());
+            System.out.println(faceletCacheFactories.get(0).getFullyQualifiedClassType());
+        }
+    }
+
     public void testReadJSFJPAExample() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
         FacesConfig facesConfig = model.getRootComponent();
@@ -129,7 +135,7 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals(0, navigationCase.getDescriptions().size());
         assertNull(navigationCase.getFromAction());
     }
-    
+
     final String newDescription = "Some text.\n Test description\nnew line\n\nnew second line.";
     final String newFromViewID = "/haha.jsp";
     public void testChangeNavigationRuleJSFJPAExample() throws Exception {
@@ -141,7 +147,7 @@ public class JSFConfigModelTest extends NbTestCase {
         NavigationRule navigationRule = navigationRules.iterator().next();
         assertEquals("Rule description ", 0,  navigationRule.getDescriptions().size());
         assertNull("Rule from-view-id ", navigationRule.getFromViewId());
-        
+
         // provide change in the NavigationRule
         model.startTransaction();
         Description description = model.getFactory().createDescription();
@@ -156,7 +162,7 @@ public class JSFConfigModelTest extends NbTestCase {
         navigationRule = navigationRules.iterator().next();
         assertEquals(newDescription, navigationRule.getDescriptions().get(0).getValue());
         assertEquals(newFromViewID, navigationRule.getFromViewId());
-        
+
         // save the model into a tmp file and reload. then test again.
         dumpModelToFile(model, "test-config-01.xml");
         navigationRules = model.getRootComponent().getNavigationRules();
@@ -164,39 +170,39 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         assertEquals(newDescription, navigationRule.getDescriptions().get(0).getValue());
         assertEquals(newFromViewID, navigationRule.getFromViewId());
-        
+
         // delete change in the NavigationRule
         model.startTransaction();
         navigationRule.removeDescription(navigationRule.getDescriptions().get(0));
         navigationRule.setFromViewId(null);
         model.endTransaction();
-        
+
         navigationRules = model.getRootComponent().getNavigationRules();
         navigationRule = navigationRules.iterator().next();
         assertEquals(0, navigationRule.getDescriptions().size());
         assertNull(navigationRule.getFromViewId());
         dumpModelToFile(model, "test-config-02.xml");
     }
-    
+
     public void testAddRemoveNavigationRuleJSFJPAExample() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
-        
+
         Collection<NavigationRule> navigationRules = facesConfig.getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
-        
+
         NavigationRule newRule = model.getFactory().createNavigationRule();
-        
+
         Description description = model.getFactory().createDescription();
         description.setValue(newDescription);
         newRule.addDescription(description);
         newRule.setFromViewId(newFromViewID);
-        
+
         model.startTransaction();
         facesConfig.addNavigationRule(newRule);
         model.endTransaction();
-        
+
         // save the model into a tmp file and reload. then test.
         dumpModelToFile(model, "test-config-03.xml");
         navigationRules = model.getRootComponent().getNavigationRules();
@@ -206,28 +212,28 @@ public class JSFConfigModelTest extends NbTestCase {
         newRule = iterator.next();
         assertEquals(newDescription, newRule.getDescriptions().get(0).getValue());
         assertEquals(newFromViewID, newRule.getFromViewId());
-        
+
         model.startTransaction();
         model.getRootComponent().removeNavigationRule(newRule);
         model.endTransaction();
-        
+
         dumpModelToFile(model, "test-config-04.xml");
         navigationRules = model.getRootComponent().getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
     }
-    
+
     public void testChangeNavigationCase() throws Exception{
         JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
-        
+
         Collection<NavigationRule> navigationRules = facesConfig.getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         NavigationRule navigationRule = navigationRules.iterator().next();
         Collection<NavigationCase> navigationCases = navigationRule.getNavigationCases();
         assertEquals("Number of navigation cases ", 3, navigationCases.size());
         NavigationCase navigationCase = navigationCases.iterator().next();
-        
+
         model.startTransaction();
         Description description = navigationCase.getModel().getFactory().createDescription();
         description.setValue("Test Description");
@@ -237,21 +243,21 @@ public class JSFConfigModelTest extends NbTestCase {
         navigationCase.setToViewId("welcomme.test");
         navigationCase.setRedirected(false);
         model.endTransaction();
-        
+
         dumpModelToFile(model, "test-config-01.xml");
-        
+
         model.startTransaction();
         navigationCase.setRedirected(true);
         model.endTransaction();
         dumpModelToFile(model, "test-config-02.xml");
-        
+
     }
-    
+
     public void testAddRemoveNavigationCaseJSFJPAExample() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
-        
+
         Collection<NavigationRule> navigationRules = facesConfig.getNavigationRules();
         assertEquals("Number of navigation rules ", 1, navigationRules.size());
         NavigationRule navigationRule = navigationRules.iterator().next();
@@ -264,11 +270,11 @@ public class JSFConfigModelTest extends NbTestCase {
         newCase.addDescription(description);
         newCase.setFromOutcome("/fromOutcame.jsp");
         newCase.setToViewId("/toviewide.jsp");
-        
+
         navigationRule.getModel().startTransaction();
         navigationRule.addNavigationCase(newCase);
         navigationRule.getModel().endTransaction();
-        
+
         System.out.println("pridam case");
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
         //model = Util.dumpAndReloadModel(model);
@@ -277,27 +283,27 @@ public class JSFConfigModelTest extends NbTestCase {
         navigationRule = navigationRules.iterator().next();
         navigationCases = navigationRule.getNavigationCases();
         assertEquals("Number of navigation cases ", 4, navigationCases.size());
-        
+
     }
-    
+
     public void testJSFVersion() throws Exception{
         JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
         assertEquals(JSFVersion.JSF_1_2, model.getVersion());
         model = Util.loadRegistryModel("faces-config-01.xml");
         assertEquals(JSFVersion.JSF_1_1, model.getVersion());
     }
-    
+
     public void testComments() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
         facesConfig.getPeer();
-        
+
     }
-    
+
     public void testEditable() throws Exception {
         File file = new File(getDataDir(), "faces-config1.xml");
-        
+
         FileObject fileObject = FileUtil.toFileObject(file);
         ModelSource model = TestCatalogModel.getDefault().createModelSource(fileObject, false);
         //JSFConfigModel jsfConfig1 = JSFConfigModelFactory.getInstance().getModel(model);
@@ -308,24 +314,24 @@ public class JSFConfigModelTest extends NbTestCase {
         //assertTrue("The model should be editable ", jsfConfig2.getModelSource().isEditable());
         assertTrue(model2.isEditable());
     }
-    
+
     private File dumpModelToFile(JSFConfigModel model, String fileName) throws Exception{
         File file = new File(getWorkDir(), fileName);
         System.out.println("workfile: " + file.getAbsolutePath());
         Util.dumpToFile(model, file);
         return file;
     }
-    
+
     public void testConverter() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
-        
+
         List <Converter> converters = facesConfig.getConverters();
         assertEquals("Number of converters ", 1, converters.size());
-        
+
     }
-    
+
     public void testManagedBeanID() throws Exception{
         JSFConfigModel model = Util.loadRegistryModel("faces-config-02.xml");
         List <ManagedBean> beans = model.getRootComponent().getManagedBeans();
@@ -344,7 +350,7 @@ public class JSFConfigModelTest extends NbTestCase {
         managedBean.getModel().endTransaction();
         assertEquals("girl", managedBean.getAttribute(FacesAttributes.ID));
     }
-    
+
     public void test98276() throws Exception{
         JSFConfigModel model = Util.loadRegistryModel("faces-config-98276.xml");
         model.addPropertyChangeListener(
@@ -352,7 +358,7 @@ public class JSFConfigModelTest extends NbTestCase {
             public void propertyChange(PropertyChangeEvent event) {
                 assertNotSame(Model.STATE_PROPERTY, event.getPropertyName());
             }
-            
+
         });
         List <NavigationRule> rules = model.getRootComponent().getNavigationRules();
         NavigationRule rule = rules.get(0);
@@ -364,56 +370,56 @@ public class JSFConfigModelTest extends NbTestCase {
         model.sync();
         assertEquals("RealPage4.jsp", rule.getFromViewId());
     }
-    
-    
-    
+
+
+
     public void testDescriptionGroup() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-description.xml");
-        
+
         model.addPropertyChangeListener(new PropertyChangeListener(){
             public void propertyChange(PropertyChangeEvent event) {
                 System.out.println("property: " +  event.getPropertyName());
-            } 
+            }
         });
-        
+
         NavigationRule rule = model.getRootComponent().getNavigationRules().get(0);
-        
-        
+
+
         assertEquals("Count of Descriptions ", 2, rule.getDescriptions().size());
         Description description = rule.getDescriptions().get(0);
         assertEquals("cz", description.getLang());
         description = rule.getDescriptions().get(1);
         assertEquals("en", description.getLang());
-        
+
         assertEquals("Count of DisplayNames ", 1, rule.getDisplayNames().size());
         assertEquals("Count of Icons ", 2, rule.getIcons().size());
     }
-    
+
     public void testManagedBeanScopeOrdering() throws Exception{
         assertTrue(ManagedBean.Scope.REQUEST.compareTo(ManagedBean.Scope.SESSION) < 0);
         assertTrue(ManagedBean.Scope.SESSION.compareTo(ManagedBean.Scope.APPLICATION) < 0);
         assertTrue(ManagedBean.Scope.APPLICATION.compareTo(ManagedBean.Scope.NONE) < 0);
     }
-    
-    
+
+
     public void testApplication() throws Exception {
-        
+
         JSFConfigModel model = Util.loadRegistryModel("faces-config-application.xml");
-        
+
         model.addPropertyChangeListener(new PropertyChangeListener(){
             public void propertyChange(PropertyChangeEvent event) {
                 System.out.println("property: " +  event.getPropertyName());
                 events.put(event.getPropertyName(), event);
-            } 
+            }
         });
-        
+
         List<Application> applications = model.getRootComponent().getApplications();
         assertEquals("Number of applications ", 1, applications.size());
-        
+
         List<ViewHandler> viewHandlers = applications.get(0).getViewHandlers();
         assertEquals("Number of view hadlers ", 1, viewHandlers.size());
         assertEquals("Name of handler ", "org.test.ViewHandler", viewHandlers.get(0).getFullyQualifiedClassType());
-     
+
         List<LocaleConfig> localeConfigs = applications.get(0).getLocaleConfig();
         assertEquals("Number of locale-config ", 1, localeConfigs.size());
         LocaleConfig locale = localeConfigs.get(0);
@@ -422,7 +428,7 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("Number of supported-locale ", 2, supportedLocales.size());
         assertEquals("Suported locale ", "cz", supportedLocales.get(0).getLocale());
         assertEquals("Suported locale ", "jn", supportedLocales.get(1).getLocale());
-        
+
         List<ResourceBundle> resourceBundles = applications.get(0).getResourceBundles();
         assertEquals("Number of resource-bundle ", 2, resourceBundles.size());
         ResourceBundle resourceBundle = resourceBundles.get(0);
@@ -433,9 +439,9 @@ public class JSFConfigModelTest extends NbTestCase {
         resourceBundle = resourceBundles.get(1);
         assertEquals("Base name of resource-bundle ", "org.test.Messages", resourceBundle.getBaseName());
         assertEquals("Var of resource-bundle ", "msg", resourceBundle.getVar());
-        
+
         events.clear();
-        
+
         model.startTransaction();
         viewHandlers.get(0).setFullyQualifiedClassType("a.b.c.Handler");
         locale.getDefaultLocale().setLocale("cz");
@@ -443,18 +449,18 @@ public class JSFConfigModelTest extends NbTestCase {
         resourceBundles.get(0).setVar("testMessages");
         model.endTransaction();
         model.sync();
-        
+
         checkEvent(ViewHandler.VIEW_HANDLER, "org.test.ViewHandler", "a.b.c.Handler");
         checkEvent(LocaleConfig.DEFAULT_LOCALE, "en", "cz");
         checkEvent(LocaleConfig.SUPPORTED_LOCALE, "cz", "en");
         checkEvent(ResourceBundle.VAR, "test", "testMessages");
-        
+
         assertEquals("Name of handler ", "a.b.c.Handler", viewHandlers.get(0).getFullyQualifiedClassType());
-        
+
         Application newApplication = model.getFactory().createApplication();
         model.startTransaction();
         model.getRootComponent().addApplication(newApplication);
-        
+
         ViewHandler viewHandler = model.getFactory().createViewHandler();
         viewHandler.setFullyQualifiedClassType("a.b.c.Handler2");
         newApplication.addViewHandler(viewHandler);
@@ -467,7 +473,7 @@ public class JSFConfigModelTest extends NbTestCase {
          * viewHandler = model.getFactory().createViewHandler();
         viewHandler.setFullyQualifiedClassType("a.b.c.Handler1");
         newApplication.addViewHandler(0, viewHandler);*/
-        
+
         LocaleConfig newLocale = model.getFactory().createLocaleConfig();
         newLocale.setDefaultLocale(model.getFactory().createDefatultLocale());
         newLocale.getDefaultLocale().setLocale("cz");
@@ -476,18 +482,18 @@ public class JSFConfigModelTest extends NbTestCase {
         newLocale.addSupportedLocales(0,model.getFactory().createSupportedLocale());
         newLocale.getSupportedLocales().get(0).setLocale("hr");
         newApplication.addLocaleConfig(newLocale);
-        
+
         ResourceBundle newResourceBundle = model.getFactory().createResourceBundle();
         newResourceBundle.setVar("czech");
         newResourceBundle.setBaseName("org.test.Messages");
-        
+
         newApplication.addResourceBundle( newResourceBundle);
         model.endTransaction();
         model.sync();
-        
+
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
         // very bad idea to check XML files against golden files assertFile(dumpModelToFile(model, "test-application.xml"), getGoldenFile("gold-application.xml"));
     }
-    
-    
+
+
 }

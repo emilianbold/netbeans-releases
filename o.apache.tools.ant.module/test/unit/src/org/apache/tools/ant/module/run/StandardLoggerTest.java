@@ -97,6 +97,7 @@ public class StandardLoggerTest extends NbTestCase {
         session.sendTargetFinished(makeAntEvent(realSession, null, -1, null, "some-target", null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
         List<Message> expectedMessages = Arrays.asList(new Message[] {
+            new Message("ant -f " + MockAntSession.MOCK_SCRIPT + " " + MockAntSession.MOCK_TARGET, false, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", "some-target"), false, null),
             new Message("some message", true, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_printed", new Integer(0), new Integer(15)), false, null),
@@ -121,6 +122,7 @@ public class StandardLoggerTest extends NbTestCase {
             AntEvent.LOG_WARN, null, null, null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
         List<Message> expectedMessages = Arrays.asList(
+            new Message("ant -f " + MockAntSession.MOCK_SCRIPT + " " + MockAntSession.MOCK_TARGET, false, null),
             new Message("Stack trace in separate lines:", false, null),
             new Message("\tat Foo.java:3", false, new MockHyperlink("file:/src/Foo.java", "stack trace", 3, -1, -1, -1)),
             new Message("\tat Bar.java:5", false, new MockHyperlink("file:/src/Bar.java", "stack trace", 5, -1, -1, -1)),
@@ -165,6 +167,7 @@ public class StandardLoggerTest extends NbTestCase {
         session.sendTargetFinished(makeAntEvent(realSession, null, -1, null, "some-target", null));
         session.sendBuildFinished(makeAntEvent(realSession, null, -1, null, null, null));
         List<Message> expectedMessages = Arrays.asList(
+            new Message("ant -f " + MockAntSession.MOCK_SCRIPT + " " + MockAntSession.MOCK_TARGET, false, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "MSG_target_started_printed", "some-target"), false, null),
             /*
             new Message("c:\\temp\\foo: malformed", true, new MockHyperlink("c:\\temp\\foo", "malformed", -1, -1, -1, -1)),
@@ -206,6 +209,9 @@ public class StandardLoggerTest extends NbTestCase {
      * Display name always "Mock Session"; orig target is "mock-target"; orig script is "/tmp/mock-script".
      */
     private static final class MockAntSession implements LoggerTrampoline.AntSessionImpl {
+
+        static final File MOCK_SCRIPT = new File("/tmp/mock-script");
+        static final String MOCK_TARGET = "mock-target";
         
         private final AntLogger[] loggers;
         private final int verbosity;
@@ -318,15 +324,19 @@ public class StandardLoggerTest extends NbTestCase {
         }
 
         public String[] getOriginatingTargets() {
-            return new String[] {"mock-target"};
+            return new String[] {MOCK_TARGET};
         }
 
         public File getOriginatingScript() {
-            return new File(System.getProperty("java.io.tmpdir"), "mock-script");
+            return MOCK_SCRIPT;
         }
 
         public String getDisplayName() {
             return "Mock Session";
+        }
+
+        @Override public Map<String, String> getProperties() {
+            return Collections.emptyMap();
         }
         
     }

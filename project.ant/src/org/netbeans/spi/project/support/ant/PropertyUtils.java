@@ -75,6 +75,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -94,7 +95,7 @@ public class PropertyUtils {
      * May be null if <code>netbeans.user</code> is not set.
      */
     static File userBuildProperties() {
-        String nbuser = System.getProperty("netbeans.user"); // NOI18N
+        File nbuser = Places.getUserDirectory();
         if (nbuser != null) {
             return FileUtil.normalizeFile(new File(nbuser, "build.properties")); // NOI18N
         } else {

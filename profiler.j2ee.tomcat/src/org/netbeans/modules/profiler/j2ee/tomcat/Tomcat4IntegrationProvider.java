@@ -43,18 +43,21 @@
 
 package org.netbeans.modules.profiler.j2ee.tomcat;
 
-import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "TomcatIntegrationProvider_Tomcat4xString=Tomcat 4.x"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class Tomcat4IntegrationProvider extends AbstractTomcatIntegrationProvider {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return "Tomcat 4.x"; // NOI18N
+        return Bundle.TomcatIntegrationProvider_Tomcat4xString();
     }
 
     protected int getAttachWizardPriority() {

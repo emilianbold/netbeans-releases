@@ -160,7 +160,11 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
 
                             } else {
-                                retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(typeName), this));
+                                String modifiedTypeName = typeName;
+                                if (typeName.indexOf("[") != -1) {
+                                    modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
+                                }
+                                retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
                             }
                         }
                     } finally {

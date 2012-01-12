@@ -54,6 +54,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.specs.support.api.EjbSupport;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -65,12 +66,14 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
  */
 public final class J2eeProjectCapabilities {
 
+    private final Project project;
     private final J2eeModuleProvider provider;
     private final Profile ejbJarProfile;
     private final Profile webProfile;
 
-    private J2eeProjectCapabilities(J2eeModuleProvider provider,
+    private J2eeProjectCapabilities(Project project, J2eeModuleProvider provider,
             Profile ejbJarProfile, Profile webProfile) {
+        this.project = project;
         this.provider = provider;
         this.ejbJarProfile = ejbJarProfile;
         this.webProfile = webProfile;
@@ -98,7 +101,7 @@ public final class J2eeProjectCapabilities {
                 }
             }
         }
-        return new J2eeProjectCapabilities(provider, ejbJarProfile, webProfile);
+        return new J2eeProjectCapabilities(project, provider, ejbJarProfile, webProfile);
     }
 
     /**
@@ -133,31 +136,25 @@ public final class J2eeProjectCapabilities {
         return isEjb31Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee6Web);
     }
 
-    /*
+    /**
      * Returns <code>true</code> if the server used by project supports EJB lite.
      *
      * @return <code>true</code> if the server used by project supports EJB lite
      * @since 1.66
+     * @deprecated use {@link EjbSupport} instead
      */
+    @Deprecated
     public boolean isEjbLiteIncluded() {
-        if (webProfile == null || !webProfile.equals(Profile.JAVA_EE_6_FULL)
-                && !webProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        J2eePlatform platform = Util.getPlatform(project);
+        if (platform == null) {
             return false;
         }
-        String projectServerInstanceID = provider.getServerInstanceID();
-        try {
-            ServerInstance inst = Deployment.getDefault().getServerInstance(projectServerInstanceID);
-            Set<Profile> profiles = inst.getJ2eePlatform().getSupportedProfiles();
-            return profiles.contains(Profile.JAVA_EE_6_FULL)
-                    || (profiles.contains(Profile.JAVA_EE_6_WEB)
-                        && !provider.getServerID().startsWith("Tomcat")); // NOI18N
-        } catch (InstanceRemovedException ex) {
-            return false;
-        }
+
+        return EjbSupport.getInstance(platform).isEjb31LiteSupported(platform);
     }
 
     public boolean hasDefaultPersistenceProvider() {
-        J2eePlatform platform  = getPlatform();
+        J2eePlatform platform  = Util.getPlatform(project);
         if (platform == null) {
             // server probably not registered, can't resolve whether default provider is supported (see #79856)
             return false;
@@ -169,17 +166,5 @@ public final class J2eeProjectCapabilities {
         }
         JpaSupport support = JpaSupport.getInstance(platform);
         return support != null && support.getDefaultProvider() != null;
-    }
-
-    private J2eePlatform getPlatform() {
-        try {
-            String instance = provider.getServerInstanceID();
-            if (instance != null) {
-                return Deployment.getDefault().getServerInstance(provider.getServerInstanceID()).getJ2eePlatform();
-            }
-        } catch (InstanceRemovedException ex) {
-            // will return null
-        }
-        return null;
     }
 }

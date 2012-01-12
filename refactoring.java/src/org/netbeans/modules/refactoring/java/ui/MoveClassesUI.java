@@ -43,32 +43,21 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import java.awt.BorderLayout;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JScrollPane;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
-import org.openide.awt.Mnemonics;
-import org.openide.explorer.view.NodeRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
@@ -88,9 +77,9 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
     
     private List<FileObject> resources;
     private Set<FileObject> javaObjects;
-    private MovePanel panel;
+    private MoveClassPanel panel;
     private MoveRefactoring refactoring;
-    private String targetPkgName = "";
+    private String targetPkgName = ""; //NOI18N
     private boolean disable;
     private FileObject targetFolder;
     private PasteType pasteType;
@@ -109,22 +98,26 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         this.javaObjects=javaObjects;
         this.pasteType = paste;
         if (!disable) {
-            resources = new ArrayList(javaObjects);
+            resources = new ArrayList<FileObject>(javaObjects);
         }
     }
     
+    @Override
     public String getName() {
         return getString ("LBL_MoveClasses");
     }
      
+    @Override
     public String getDescription() {
         return getName();
     }
     
+    @Override
     public boolean isQuery() {
         return false;
     }
         
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             String pkgName = null;
@@ -133,9 +126,12 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
                 if (cp != null)
                     pkgName = cp.getResourceName(targetFolder, '.', false);
             }
-            panel = new MovePanel (parent, 
-                    pkgName != null ? pkgName : getDOPackageName(((FileObject)javaObjects.iterator().next()).getParent()),
-                    getString("LBL_MoveClassesHeadline")
+            panel = new MoveClassPanel (parent, 
+                    pkgName != null ? pkgName : getDOPackageName(javaObjects.iterator().next().getParent()),
+                    getString("LBL_MoveClassesHeadline"),
+                    getString("LBL_MoveWithoutReferences"),
+                    targetFolder != null ? targetFolder : javaObjects.iterator().next(),
+                    disable, getNodes()
             );
         }
         return panel;
@@ -177,22 +173,25 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         }
     }
     
+    @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
     
+    @Override
     public Problem setParameters() {
         return setParameters(false);
     }
     
+    @Override
     public AbstractRefactoring getRefactoring() {
         if (refactoring == null) {
             if (disable) {
                 refactoring = new MoveRefactoring(Lookups.fixed(javaObjects.toArray()));
-                refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(javaObjects.toArray(new FileObject[javaObjects.size()])));
+                refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(javaObjects.toArray(new FileObject[javaObjects.size()])));
             } else {
                 refactoring = new MoveRefactoring (Lookups.fixed(resources.toArray()));
-                refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(resources.toArray(new FileObject[resources.size()])));
+                refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(resources.toArray(new FileObject[resources.size()])));
             }
         }
         return refactoring;
@@ -222,36 +221,22 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         return result;
     }
  
+    @Override
     public boolean hasParameters() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(MoveClassesUI.class);
     }
 
+    @Override
     public boolean isRefactoringBypassRequired() {
-        return !panel.isUpdateReferences();
+        return panel != null && panel.isRefactoringBypassRequired();
     }
+    @Override
     public void doRefactoringBypass() throws IOException {
         pasteType.paste();
-    }
-
-    // MovePanel ...............................................................
-    class MovePanel extends MoveClassPanel {
-        public MovePanel (final ChangeListener parent, String startPackage, String headLine) {
-            super(parent, startPackage, headLine, targetFolder != null ? targetFolder : (FileObject) javaObjects.iterator().next() );
-            setCombosEnabled(!disable);
-            JList list = new JList(getNodes());
-            list.setCellRenderer(new NodeRenderer()); 
-            list.setVisibleRowCount(5);
-            JScrollPane pane = new JScrollPane(list);
-            bottomPanel.setBorder(new EmptyBorder(8,0,0,0));
-            bottomPanel.setLayout(new BorderLayout());
-            bottomPanel.add(pane, BorderLayout.CENTER);
-            JLabel listOf = new JLabel();
-            Mnemonics.setLocalizedText(listOf, NbBundle.getMessage(MoveClassesUI.class, "LBL_ListOfClasses"));
-            bottomPanel.add(listOf, BorderLayout.NORTH);
-        }
     }
 }

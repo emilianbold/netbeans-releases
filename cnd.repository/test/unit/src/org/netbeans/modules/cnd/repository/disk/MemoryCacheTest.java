@@ -129,6 +129,7 @@ public class MemoryCacheTest extends NbTestCase {
             this.stopFlag = stopFlag;
         }
 
+        @Override
         public void run() {
             if (TRACE) {
                 System.out.println("Started " + process);

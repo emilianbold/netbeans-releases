@@ -96,13 +96,11 @@ public interface CsmModel {
      * These notifications come directly in parser thread or project initialization thread.
      * Calling findFile from these threads may cause deadlock.
      *
-     * TODO: add CsmFile[] findFiles(String absPath) since there might be multiple CsmFile instances,
-     * associated with the same path, in the case the same file is included into different projects
-     *
      * @param absPath absolute file path
      * @since 1.13.2
      */
     public abstract CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot);
+    public abstract CsmFile[] findFiles(FSPath absPath, boolean createIfPossible, boolean snapShot);
     
     /**
      * Returns the state of the model

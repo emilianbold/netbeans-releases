@@ -87,11 +87,7 @@ public class CommonTestCase extends JavaSourceTestCase {
     
     public MetadataModel<WebBeansModel> createBeansModel() throws IOException, InterruptedException {
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
-        ModelUnit modelUnit = ModelUnit.create(
-                ClassPath.getClassPath(srcFO, ClassPath.BOOT),
-                ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
-                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
-        return WebBeansModelFactory.createMetaModel(modelUnit);
+        return myUtilities.createBeansModel();
     }
     
     public TestWebBeansModelImpl createModelImpl() throws IOException {

@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <file>
         <ext name="patch"/>
         <ext name="diff"/>
+        <ext name="rej"/>
         <resolver mime="text/x-diff"/>
     </file>
 </MIME-resolver>

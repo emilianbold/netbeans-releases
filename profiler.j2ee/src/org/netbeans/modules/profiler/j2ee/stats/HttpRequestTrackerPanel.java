@@ -68,6 +68,12 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "HttpRequestTrackerPanel_NoMethodString=No method selected",
+    "HttpRequestTrackerPanel_NoDataString=No data available",
+    "HttpRequestTrackerPanel_RequestTrackerString=HTTP Request tracker",
+    "HttpRequestTrackerPanel_RequestTrackerDescr=Shows URLs of all HTTP Requests the selected method has participated in"
+})
 @org.openide.util.lookup.ServiceProvider(service=ProjectAwareStatisticalModule.class)
 public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
@@ -171,25 +177,11 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String NO_METHOD_STRING = NbBundle.getMessage(HttpRequestTrackerPanel.class,
-                                                                       "HttpRequestTrackerPanel_NoMethodString"); // NOI18N
-    private static final String NO_DATA_STRING = NbBundle.getMessage(HttpRequestTrackerPanel.class,
-                                                                     "HttpRequestTrackerPanel_NoDataString"); // NOI18N
-    private static final String REQUEST_TRACKER_STRING = NbBundle.getMessage(HttpRequestTrackerPanel.class,
-                                                                             "HttpRequestTrackerPanel_RequestTrackerString"); // NOI18N
-    private static final String REQUEST_TRACKER_DESCR = NbBundle.getMessage(HttpRequestTrackerPanel.class,
-                                                                            "HttpRequestTrackerPanel_RequestTrackerDescr"); // NOI18N
-                                                                                                                            // -----
-
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private HttpRequestTrackerModel model;
-    private JLabel noData = new JLabel(NO_DATA_STRING);
-    private JLabel noMethods = new JLabel(NO_METHOD_STRING);
+    private JLabel noData = new JLabel(Bundle.HttpRequestTrackerPanel_NoDataString());
+    private JLabel noMethods = new JLabel(Bundle.HttpRequestTrackerPanel_NoMethodString());
     private RuntimeCPUCCTNode lastAppNode;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -250,8 +242,8 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         setLayout(layout);
         setOpaque(false);
         setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        setName(REQUEST_TRACKER_STRING);
-        setToolTipText(REQUEST_TRACKER_DESCR);
+        setName(Bundle.HttpRequestTrackerPanel_RequestTrackerString());
+        setToolTipText(Bundle.HttpRequestTrackerPanel_RequestTrackerDescr());
 
         noMethods.setOpaque(false);
         noMethods.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0), noMethods.getBorder()));

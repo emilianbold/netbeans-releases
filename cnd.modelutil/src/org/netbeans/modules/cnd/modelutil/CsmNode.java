@@ -74,6 +74,7 @@ public class CsmNode extends AbstractCsmNode {
 	}
     }
     
+    @Override
     public CsmObject getCsmObject() {
 	return (data == null) ? null : data.get();
     }

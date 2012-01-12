@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
 /**
@@ -75,12 +76,15 @@ final class RemoteTransferFile extends TransferFile {
         if (!baseDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Base directory '" + baseDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
-        String parentDirectory = file.getParentDirectory();
+        String parentDirectory = getParentDirectory();
         if (!parentDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
         }
-        if (!parentDirectory.startsWith(baseDirectory)) {
-            throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseDirectory + "'");
+        checkParentDirectory(baseDirectory, parentDirectory);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            // #204874 (non-standard ssh server?)
+            LOGGER.log(Level.FINE, "Absolute remote path \"{0}\" -> remote path \"{1}\" (base directory \"{2}\")",
+                    new Object[] {getAbsolutePath(), getRemotePath(), baseDirectory});
         }
     }
 
@@ -93,15 +97,16 @@ final class RemoteTransferFile extends TransferFile {
 
     @Override
     public String getRemotePath() {
-        String absolutePath;
-        synchronized (file) {
-            absolutePath = file.getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
-        }
+        String absolutePath = getAbsolutePath();
         if (absolutePath.equals(baseDirectory)) {
             return REMOTE_PROJECT_ROOT;
         }
-        // +1 => remove '/' from the beginning of the relative path
-        return absolutePath.substring(baseDirectory.length() + REMOTE_PATH_SEPARATOR.length());
+        String relativePath = absolutePath.substring(baseDirectory.length());
+        if (relativePath.startsWith(REMOTE_PATH_SEPARATOR)) {
+            // happens for base directory different from "/", see #205399
+            relativePath = relativePath.substring(REMOTE_PATH_SEPARATOR.length());
+        }
+        return relativePath;
     }
 
     @Override
@@ -109,7 +114,8 @@ final class RemoteTransferFile extends TransferFile {
         try {
             return remoteClient.listFiles(this);
         } catch (RemoteException ex) {
-            LOGGER.log(Level.WARNING, "Error while getting children for " + this, ex);
+            LOGGER.log(Level.INFO, "Error while getting children for " + this, ex);
+            RemoteUtils.processRemoteException(ex);
         }
         return Collections.emptyList();
     }
@@ -149,6 +155,32 @@ final class RemoteTransferFile extends TransferFile {
     protected long getTimestampImpl() {
         synchronized (file) {
             return file.getTimestamp();
+        }
+    }
+
+    // #204874 - some servers return ending '/' for directories => remove it
+    private String getParentDirectory() {
+        synchronized (file) {
+            return RemoteUtils.sanitizeDirectoryPath(file.getParentDirectory());
+        }
+    }
+
+    String getAbsolutePath() {
+        synchronized (file) {
+            String parentDirectory = getParentDirectory();
+            if (!parentDirectory.endsWith(REMOTE_PATH_SEPARATOR)) {
+                // does not apply for base directory "/", see #205399
+                parentDirectory = parentDirectory + REMOTE_PATH_SEPARATOR;
+            }
+            return parentDirectory + getName();
+        }
+    }
+
+    static void checkParentDirectory(String baseDirectory, String parentDirectory) {
+        boolean root = baseDirectory.equals(REMOTE_PATH_SEPARATOR);
+        if ((root && !parentDirectory.startsWith(REMOTE_PATH_SEPARATOR))
+                || (!root && !(parentDirectory + REMOTE_PATH_SEPARATOR).startsWith(baseDirectory + REMOTE_PATH_SEPARATOR))) {
+            throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseDirectory + "'");
         }
     }
 

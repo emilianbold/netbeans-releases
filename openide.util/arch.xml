@@ -329,6 +329,10 @@ made subject to such option by the copyright holder.
         used on few places
         </api>.
     </li>
+    <li><api type="export" group="systemproperty" name="org.openide.util.RequestProcessor.inactiveTime" category="private">
+    Specifies the time in ms unused <a href="@TOP@org/openide/util/RequestProcessor.html">RequestProcessor</a>
+    processor threads remain around, until 
+    they get GCed. By default 60s. Primarily used from tests.</api></li>
   </ul>
  </answer>
 

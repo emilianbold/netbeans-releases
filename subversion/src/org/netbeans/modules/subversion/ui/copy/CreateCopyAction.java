@@ -82,6 +82,7 @@ public class CreateCopyAction extends ContextAction {
     @Override
     protected int getFileEnabledStatus() {
         return    FileInformation.STATUS_MANAGED
+               & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 

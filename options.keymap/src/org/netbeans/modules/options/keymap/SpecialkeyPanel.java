@@ -90,6 +90,8 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
         rightButton.addActionListener(this);
         tabButton.addActionListener(this);
         upButton.addActionListener(this);
+        wheelUpButton.addActionListener(this);
+        wheelDownButton.addActionListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -108,10 +110,12 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
         leftButton = new javax.swing.JButton();
         downButton = new javax.swing.JButton();
         rightButton = new javax.swing.JButton();
+        wheelUpButton = new javax.swing.JButton();
+        wheelDownButton = new javax.swing.JButton();
 
         tabButton.setText("Tab"); // NOI18N
 
-        escButton.setFont(new java.awt.Font("Lucida Grande", 0, 9));
+        escButton.setFont(new java.awt.Font("Lucida Grande", 0, 9)); // NOI18N
         escButton.setText("ESC"); // NOI18N
         escButton.setAlignmentY(0.0F);
         escButton.setIconTextGap(0);
@@ -130,6 +134,10 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
         rightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/right.png"))); // NOI18N
         rightButton.setText(org.openide.util.NbBundle.getMessage(SpecialkeyPanel.class, "SpecialkeyPanel.rightButton.text")); // NOI18N
 
+        wheelUpButton.setText(org.openide.util.NbBundle.getMessage(SpecialkeyPanel.class, "SpecialkeyPanel.wheelUpButton.text_1")); // NOI18N
+
+        wheelDownButton.setText(org.openide.util.NbBundle.getMessage(SpecialkeyPanel.class, "SpecialkeyPanel.wheelDownButton.text_1")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -144,11 +152,17 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
                     .addComponent(downButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(upButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(enterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(rightButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(rightButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(wheelDownButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(enterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(wheelUpButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addComponent(tabButton, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+            .addComponent(tabButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {downButton, enterButton, escButton, leftButton, rightButton, upButton});
@@ -158,16 +172,17 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
             .addGroup(layout.createSequentialGroup()
                 .addComponent(tabButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(upButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(enterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(escButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(upButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(enterButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(escButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(wheelUpButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(rightButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(rightButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(downButton, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(leftButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(leftButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(wheelDownButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -184,6 +199,8 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
     private javax.swing.JButton rightButton;
     private javax.swing.JButton tabButton;
     private javax.swing.JButton upButton;
+    private javax.swing.JButton wheelDownButton;
+    private javax.swing.JButton wheelUpButton;
     // End of variables declaration//GEN-END:variables
 
     public void actionPerformed(ActionEvent e) {
@@ -205,6 +222,10 @@ public class SpecialkeyPanel extends javax.swing.JPanel implements ActionListene
                 text = "ENTER"; // NOI18N
             } else if (source == escButton) {
                 text = "ESCAPE"; // NOI18N
+            } else if (source == wheelUpButton) {
+                text = "MOUSE_WHEEL_UP"; // NOI18N
+            } else if (source == wheelDownButton) {
+                text = "MOUSE_WHEEL_DOWN"; // NOI18N
             } else {
                 text = ((JButton) source).getText().toUpperCase().replaceAll(" ", "_"); // NOI18N
             }

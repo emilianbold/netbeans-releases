@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -68,7 +68,7 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     public void testGoto() throws Exception {
         performTest("jump01");
         performTest("jump02");
@@ -84,7 +84,7 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
         performTest("jump12");
         performTest("jump13");
     }
-    
+
     public void testNowDoc() throws Exception {
         performTest("nowdoc_000");
         performTest("nowdoc_001");
@@ -103,7 +103,7 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
         performTest("nowdoc_014");
         performTest("nowdoc_015");
     }
-    
+
     public void testHereDoc53() throws Exception {
         performTest("heredoc_001");
         performTest("heredoc_002");
@@ -119,5 +119,6 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
         performTest("heredoc_012");
         performTest("heredoc_013");
         performTest("heredoc_014");
+        performTest("heredoc_015");
     }
 }

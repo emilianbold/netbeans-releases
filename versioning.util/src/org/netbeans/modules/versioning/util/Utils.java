@@ -96,6 +96,7 @@ import org.openide.awt.AcceleratorBinding;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -127,7 +128,7 @@ public final class Utils {
     /**
      * Metrics logger
      */
-    private static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.vcs");
+    private static final Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.vcs");
 
     /**
      * Keeps track about already logged metrics events
@@ -799,9 +800,15 @@ public final class Utils {
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
-                OpenCookie oc = dao.getCookie(OpenCookie.class);
+                final OpenCookie oc = dao.getLookup().lookup(OpenCookie.class);
                 if (oc != null) {
-                    oc.open();
+                    Mutex.EVENT.readAccess(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            oc.open();
+                        }
+                    });
                 }
             } catch (DataObjectNotFoundException e) {
                 // nonexistent DO, do nothing
@@ -952,6 +959,22 @@ public final class Utils {
     }
 
     /**
+     * Logs a vcs external repository name.
+     *
+     * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", "GIT", ...
+     * @param repositoryUrl - external repository url to log
+     */
+    public static void logVCSExternalRepository (String vcs, String repositoryUrl) {
+        String repositoryIdent = getKnownRepositoryFor(repositoryUrl);
+        String key = "USG_VCS_REPOSITORY" + vcs + repositoryIdent; //NOI18N
+        if (checkMetricsKey(key)) return;
+        LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_REPOSITORY"); //NOI18N
+        rec.setParameters(new Object[] { vcs, repositoryIdent });
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
+    }
+
+    /**
      * Logs a vcs client action usage.
      *
      * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", ...
@@ -974,6 +997,29 @@ public final class Utils {
             }
         }
         return false;
+    }
+
+    private static String getKnownRepositoryFor (String repositoryUrl) {
+        repositoryUrl = repositoryUrl.toLowerCase();
+        if (repositoryUrl.contains("github.com")) { //NOI18N
+            return "GITHUB"; //NOI18N
+        } else if (repositoryUrl.contains("gitorious.org")) { //NOI18N
+            return "GITORIOUS"; //NOI18N
+        } else if (repositoryUrl.contains("bitbucket.org")) { //NOI18N
+            return "BITBUCKET"; //NOI18N
+        } else if (repositoryUrl.contains("sourceforge.net")) { //NOI18N
+            return "SOURCEFORGE"; //NOI18N
+        } else if (repositoryUrl.contains("googlecode.com")) { //NOI18N
+            return "GOOGLECODE"; //NOI18N
+        } else if (repositoryUrl.contains("kenai.com")) { //NOI18N
+            return "KENAI"; //NOI18N
+        } else if (repositoryUrl.contains("java.net")) { //NOI18N
+            return "JAVANET"; //NOI18N
+        } else if (repositoryUrl.contains("netbeans.org")) { //NOI18N
+            return "NETBEANS"; //NOI18N
+        } else {
+            return "OTHER"; //NOI18N
+        }
     }
 
     /**
@@ -1499,6 +1545,7 @@ public final class Utils {
     }
     
     public static Action getAcceleratedAction(String path) {
+        // or use Actions.forID
         Action a = FileUtil.getConfigObject(path, Action.class);
         FileObject fo = FileUtil.getConfigFile(path);
         if(fo != null) {

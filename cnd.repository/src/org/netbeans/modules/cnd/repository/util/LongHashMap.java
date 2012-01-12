@@ -742,6 +742,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
             index = i;
         }
 
+        @Override
         public boolean hasNext() {
             return next != null;
         }
@@ -766,6 +767,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
             return current = e;
         }
 
+        @Override
         public void remove() {
             if (current == null) {
                 throw new IllegalStateException();
@@ -782,6 +784,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
 
     private class KeyIterator extends HashIterator<K> {
 
+        @Override
         public K next() {
             return nextEntry().getKey();
         }
@@ -789,6 +792,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
 
     private class EntryIterator extends HashIterator<LongHashMap.Entry<K>> {
 
+        @Override
         public LongHashMap.Entry<K> next() {
             return nextEntry();
         }
@@ -829,10 +833,12 @@ public class LongHashMap<K> //extends AbstractMap<K>
 
     private class KeySet extends AbstractSet<K> {
 
+        @Override
         public Iterator<K> iterator() {
             return newKeyIterator();
         }
 
+        @Override
         public int size() {
             return size;
         }
@@ -873,6 +879,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
 
     private class EntrySet extends AbstractSet<LongHashMap.Entry<K>> {
 
+        @Override
         public Iterator<LongHashMap.Entry<K>> iterator() {
             return newEntryIterator();
         }
@@ -893,6 +900,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
             return removeMapping(o) != null;
         }
 
+        @Override
         public int size() {
             return size;
         }

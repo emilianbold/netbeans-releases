@@ -54,15 +54,17 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.java.ui.UIUtilities;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.refactoring.java.ui.WhereUsedPanel;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionBounds;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -79,10 +81,12 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             ElementGripFactory.getDefault().put(parentFile, tp, info);
     }
 
+    @Override
     public String getDisplayText() {
         return displayText;
     }
 
+    @Override
     public Lookup getLookup() {
         Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
         if (composite==null) 
@@ -90,17 +94,21 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         return Lookups.singleton(composite);
     }
 
+    @Override
     public PositionBounds getPosition() {
         return bounds;
     }
 
+    @Override
     public String getText() {
         return displayText;
     }
 
+    @Override
     public void performChange() {
     }
 
+    @Override
     public FileObject getParentFile() {
         return parentFile;
     }
@@ -215,18 +223,18 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         int eof = content.length();
         long lastLine = lm.getLineNumber(eof);
         long en = lastLine > endLine ? lm.getStartPosition(endLine + 1) - 1 : eof;
-        StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
+        StringBuilder sb = new StringBuilder();
+        sb.append(UIUtilities.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
         sb.append("<b>"); //NOI18N
         sb.append(content.subSequence(start, end));
         sb.append("</b>");//NOI18N
-        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
+        sb.append(UIUtilities.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
         
         DataObject dob = null;
         try {
             dob = DataObject.find(compiler.getFileObject());
         } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         CloneableEditorSupport ces = JavaWhereUsedQueryPlugin.findCloneableEditorSupport(dob);
         PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
@@ -235,7 +243,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         TreePath tr = getEnclosingTree(tree);
         return new WhereUsedElement(
                 bounds,
-                start==end && anonClassNameBug128074 ? NbBundle.getMessage(UIUtilities.class, "LBL_AnonymousClass"):sb.toString().trim(),
+                start==end && anonClassNameBug128074 ? NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"):sb.toString().trim(),
                 compiler.getFileObject(),
                 tr,
                 compiler);
@@ -272,18 +280,18 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         int eof = content.length();
         long lastLine = lm.getLineNumber(eof);
         long en = lastLine > endLine ? lm.getStartPosition(endLine + 1) - 1 : eof;
-        StringBuffer sb = new StringBuffer();
-        sb.append(RetoucheUtils.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
+        StringBuilder sb = new StringBuilder();
+        sb.append(UIUtilities.getHtml(trimStart(content.subSequence((int) sta, start).toString())));
         sb.append("<b>"); //NOI18N
         sb.append(content.subSequence(start, end));
         sb.append("</b>");//NOI18N
-        sb.append(RetoucheUtils.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
+        sb.append(UIUtilities.getHtml(trimEnd(content.subSequence(end, (int) en).toString())));
         
         DataObject dob = null;
         try {
             dob = DataObject.find(compiler.getFileObject());
         } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         CloneableEditorSupport ces = JavaWhereUsedQueryPlugin.findCloneableEditorSupport(dob);
         PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);

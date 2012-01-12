@@ -113,6 +113,8 @@
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
+                <friend>org.netbeans.modules.dlight.annotationsupport</friend>
+                <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>

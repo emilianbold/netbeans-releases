@@ -76,4 +76,10 @@ public class PidParserTestCase extends TestCase {
         MIRecord res = createRecord("Current language:  auto\nThe current source language is \"auto; currently asm\".\nprocess 12345\ncmdline = '/home/irad/private/work/edgeci-lib/reuters-analyser/trunk/projects/hotspot_tester/build_linux/source/hotspot_tester'\ncwd = '/home/irad/private/work/edgeci-lib/reuters-analyser/trunk/projects/hotspot_tester'\nexe = '/home/irad/private/work/edgeci-lib/reuters-analyser/trunk/projects/hotspot_tester/build_linux/source/hotspot_tester'\n");
         assertEquals(12345, GdbDebuggerImpl.extractPid1(res));
     }
+    
+    @Test
+    public void test204711() {
+        MIRecord res = createRecord("  Id   Target Id         Frame \n  2    Thread 1920.0xc7c 0x77a9f8f5 in ntdll!RtlUpdateClonedSRWLock () from /cygdrive/c/Windows/system32/ntdll.dll\n* 1    Thread 1920.0xf34 main (argc=1, argv=0xf99eb0) at main.c:319\n");
+        assertEquals(1920, GdbDebuggerImpl.extractPidThreads(res));
+    }
 }

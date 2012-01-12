@@ -62,12 +62,12 @@ import org.openide.filesystems.FileUtil;
 @ProjectServiceProvider(service=AccessibilityQueryImplementation.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI)
 public class AccessQueryImpl implements AccessibilityQueryImplementation {
 
-    private final NbMavenProject mavenProject;
+    private final Project prj;
     private WeakReference<List<Pattern>> ref;
     private static String DEFAULT_IMP = "*";
     
     public AccessQueryImpl(Project prj) {
-        mavenProject = prj.getLookup().lookup(NbMavenProject.class);
+        this.prj = prj;
     }
     
     /**
@@ -76,7 +76,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
      * @return
      */
     public Boolean isPubliclyAccessible(FileObject pkg) {
-        FileObject srcdir = org.netbeans.modules.maven.api.FileUtilities.convertStringToFileObject(mavenProject.getMavenProject().getBuild().getSourceDirectory());
+        FileObject srcdir = org.netbeans.modules.maven.api.FileUtilities.convertStringToFileObject(prj.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory());
         if (srcdir != null) {
             String path = FileUtil.getRelativePath(srcdir, pkg);
             if (path != null) {
@@ -89,11 +89,11 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     }
     
     private Boolean check(String value) {
-        String[] exps = PluginPropertyUtils.getPluginPropertyList(mavenProject.getMavenProject(),
+        String[] exps = PluginPropertyUtils.getPluginPropertyList(prj,
                 OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN,
                 OSGiConstants.PARAM_INSTRUCTIONS, OSGiConstants.EXPORT_PACKAGE,
                 OSGiConstants.GOAL_MANIFEST);
-        String[] imps = PluginPropertyUtils.getPluginPropertyList(mavenProject.getMavenProject(),
+        String[] imps = PluginPropertyUtils.getPluginPropertyList(prj,
                 OSGiConstants.GROUPID_FELIX, OSGiConstants.ARTIFACTID_BUNDLE_PLUGIN,
                 OSGiConstants.PARAM_INSTRUCTIONS, OSGiConstants.PRIVATE_PACKAGE,
                 OSGiConstants.GOAL_MANIFEST);

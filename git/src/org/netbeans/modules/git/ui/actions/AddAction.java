@@ -43,10 +43,10 @@
 package org.netbeans.modules.git.ui.actions;
 
 import java.io.File;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -76,17 +76,13 @@ public class AddAction extends SingleRepositoryAction {
                 try {
                     client = getClient();
                     client.addNotificationListener(new DefaultFileListener(actionRoots));
-                    client.add(actionRoots, this);
+                    client.add(actionRoots, getProgressMonitor());
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 } finally {
                     setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                     Git.getInstance().getFileStatusCache().refreshAllRoots(actionRoots);                    
                 }               
-            }
-            @Override
-            public void finished() {
-                super.finished();
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(AddAction.class, "LBL_AddProgress"));

@@ -86,7 +86,8 @@ public abstract class CopyDialog {
     private DialogDescriptor dialogDescriptor;
     private JButton okButton, cancelButton;
     private JPanel panel;
-    private static final Pattern TEMPLATE_PATTERN = Pattern.compile("^(branches|tags)/(.+?)(/.*)+$"); //NOI18N
+    private static final Pattern TEMPLATE_PATTERN_BRANCH = Pattern.compile("^(.*/)*?((?:branches|tags)/(?:.+?))(/.*)+$"); //NOI18N
+    private static final Pattern TEMPLATE_PATTERN_TRUNK = Pattern.compile("^(.*/)*?(trunk)(/.*)+$"); //NOI18N
     private static final String BRANCHES_FOLDER = "branches"; //NOI18N
     private static final String TRUNK_FOLDER = "trunk"; //NOI18N
     private static final String BRANCH_TEMPLATE = "[BRANCH_NAME]"; //NOI18N
@@ -116,9 +117,6 @@ public abstract class CopyDialog {
         }
         List<String> recentFolders = new LinkedList<String>(Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName()));
         Map<String, String> comboItems = setupModel(cbo, repositoryFile, recentFolders);
-        SelectionListener list = new SelectionListener(repositoryFile, cbo);
-        cbo.addActionListener(list);
-        cbo.addPopupMenuListener(list);
         cbo.setRenderer(new LocationRenderer(comboItems));
         getUrlComboBoxes().add(cbo);
     }    
@@ -188,15 +186,17 @@ public abstract class CopyDialog {
         TreeMap<String, String> branchLocations = new TreeMap<String, String>(comparator);
         String relativePath = SVNUrlUtils.getRelativePath(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl());
         String fileName = repositoryFile.getName();
-        String pathInBranch = getPathInBranch(relativePath);
+        String[] branchPathSegments = getBranchPathSegments(relativePath);
+        String pathInBranch = branchPathSegments[2];
         String preselectedPath = null;
         for (String recentUrl : recentFolders) {
             if (pathInBranch != null && branchLocations.size() < 10) {
                 // repository seems to have the recommended branch structure
-                String branchPrefix = getBranchOrTagPrefix(recentUrl);
-                if (branchPrefix != null) {
-                    // this is a branch or a tag, so get the branch ot tag name and build the url relevant for the given file
-                    String loc = branchPrefix + "/" + pathInBranch;
+                String[] pathSegments = getBranchPathSegments(recentUrl);
+                if (branchPathSegments[0].equals(pathSegments[0]) && !TRUNK_FOLDER.equals(pathSegments[1])) {
+                    // this is a branch or a tag, so get the branch or tag name and build the url relevant for the given file
+                    String branchPrefix = pathSegments[0] + pathSegments[1];
+                    String loc = branchPrefix + '/' + pathInBranch;
                     // we also emphasize branch/tag name in the renderer, so build the rendered string
                     branchLocations.put(loc, getHtmlVersion(branchPrefix, pathInBranch));
                     if (preselectedPath == null) {
@@ -215,8 +215,12 @@ public abstract class CopyDialog {
         if (pathInBranch != null) {
             // now let's do some corrections
             // add the single item to cat 1
-            String loc = TRUNK_FOLDER + "/" + pathInBranch;
-            locations.put(loc, getHtmlVersion(TRUNK_FOLDER, pathInBranch));
+            String pref = TRUNK_FOLDER;
+            if (branchPathSegments[0] != null) {
+                pref = branchPathSegments[0] + pref;
+            }
+            String loc = pref + "/" + pathInBranch;
+            locations.put(loc, getHtmlVersion(pref, pathInBranch));
             model.add(loc);
             model.add(SEP);
             // add cat 2 to the model
@@ -224,15 +228,22 @@ public abstract class CopyDialog {
             locations.putAll(branchLocations);
             model.add(MORE_BRANCHES);
             if (preselectedPath == null) {
-                preselectedPath = BRANCHES_FOLDER + "/" + BRANCH_TEMPLATE + "/" + pathInBranch; //NOI18N
+                pref = BRANCHES_FOLDER;
+                if (branchPathSegments[0] != null) {
+                    pref = branchPathSegments[0] + pref;
+                }
+                preselectedPath = pref + "/" + BRANCH_TEMPLATE + "/" + pathInBranch; //NOI18N
             }
-        }
-        if (!model.isEmpty() && !relatedLocations.isEmpty()) {
-            model.add(SEP);
+            SelectionListener list = new SelectionListener(repositoryFile, cbo, branchPathSegments[0]);
+            cbo.addActionListener(list);
+            cbo.addPopupMenuListener(list);
         }
         // do not duplicate entries, so remove all items from (3) that are already in (2)
         relatedLocations.keySet().removeAll(locations.keySet());
         locations.putAll(relatedLocations);
+        if (!model.isEmpty() && !relatedLocations.isEmpty()) {
+            model.add(SEP);
+        }
         model.addAll(relatedLocations.keySet());
         
         ComboBoxModel rootsModel = new DefaultComboBoxModel(model.toArray(new String[model.size()]));
@@ -242,7 +253,8 @@ public abstract class CopyDialog {
             comp.setText(preselectedPath);
             if (pathInBranch != null) {
                 // select the branch name in the offered text - for easy editing
-                String branchPrefix = getBranchOrTagPrefix(preselectedPath);
+                String[] pathSegments = getBranchPathSegments(preselectedPath);
+                String branchPrefix = pathSegments[0] + pathSegments[1];
                 int pos = branchPrefix.lastIndexOf('/') + 1;
                 if (pos > 0) {
                     comp.setCaretPosition(pos);
@@ -253,27 +265,36 @@ public abstract class CopyDialog {
         return locations;
     }
 
-    private static String getPathInBranch (String relativePath) {
-        String path = null;
-        Matcher m = TEMPLATE_PATTERN.matcher(relativePath);
-        if (m.matches()) {
-            path = m.group(3);
-            if (path != null) {
-                path = path.substring(1);
-            }
-        } else if (relativePath.startsWith(TRUNK_FOLDER + "/")) { //NOI18N
-            path = relativePath.substring(TRUNK_FOLDER.length() + 1);
-        }
-        return path;
-    }
-
-    private static String getBranchOrTagPrefix (String relativePath) {
+    /**
+     * Splits a given relative path into segments:
+     * <ol>
+     * <li>folder prefix where branches/tags/trunk lies in the repository. <code>null</code> for url where trunk/branches/tags are directly in the root folder</li>
+     * <li>name of a branch or tag prefixed with the branches or tags prefix, or just simply "trunk" if the url is part of the trunk</li>
+     * <li>path to the resource inside trunk/branch/tag</li>
+     * </ol>
+     * @param relativePath
+     * @return 
+     */
+    private static String[] getBranchPathSegments (String relativePath) {
         String prefix = null;
-        Matcher m = TEMPLATE_PATTERN.matcher(relativePath);
-        if (m.matches()) {
-            prefix = relativePath.substring(0, m.start(3));
+        String path = null;
+        String branchName = null;
+        for (Pattern p : new Pattern[] { TEMPLATE_PATTERN_BRANCH, TEMPLATE_PATTERN_TRUNK}) {
+            Matcher m = p.matcher(relativePath);
+            if (m.matches()) {
+                prefix = m.group(1);
+                if (prefix == null) {
+                    prefix = ""; //NOI18N
+                }
+                branchName = m.group(2);
+                path = m.group(3);
+                break;
+            }
         }
-        return prefix;
+        if (path != null) {
+            path = path.substring(1);
+        }
+        return new String[] { prefix, branchName, path };
     }
     
     private static String getHtmlVersion (String branchPrefix, String relativePathInBranch) {
@@ -307,10 +328,12 @@ public abstract class CopyDialog {
         private final RepositoryFile repositoryFile;
         private final JComboBox combo;
         private boolean popupOn;
+        private final String branchesFolderPath;
 
-        public SelectionListener (RepositoryFile repositoryFile, JComboBox combo) {
+        public SelectionListener (RepositoryFile repositoryFile, JComboBox combo, String branchesFolderPath) {
             this.repositoryFile = repositoryFile;
             this.combo = combo;
+            this.branchesFolderPath = branchesFolderPath;
         }
 
         @Override
@@ -322,10 +345,10 @@ public abstract class CopyDialog {
                         if (!popupOn && (combo.getSelectedItem() == SEP || combo.getSelectedItem() == MORE_BRANCHES)) {
                             String text = ""; //NOI18N
                             if (combo.getSelectedItem() == MORE_BRANCHES) {
-                                BranchPicker picker = new BranchPicker(repositoryFile);
+                                BranchPicker picker = new BranchPicker(repositoryFile, branchesFolderPath);
                                 if (picker.openDialog()) {
                                     String relativePath = SVNUrlUtils.getRelativePath(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl());
-                                    text = picker.getSelectedPath() + "/" + getPathInBranch(relativePath); //NOI18N
+                                    text = picker.getSelectedPath() + "/" + getBranchPathSegments(relativePath)[2]; //NOI18N
                                 }
                             }
                             ((JTextComponent) combo.getEditor().getEditorComponent()).setText(text); //NOI18N

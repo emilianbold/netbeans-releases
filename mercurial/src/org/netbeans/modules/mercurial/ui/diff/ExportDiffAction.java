@@ -206,8 +206,7 @@ public class ExportDiffAction extends ContextAction {
                 }
             }
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             logger.outputInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_DONE")); // NOI18N
             logger.output(""); // NOI18N
@@ -242,8 +241,7 @@ public class ExportDiffAction extends ContextAction {
             }
         }
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             logger.outputInRed(NbBundle.getMessage(ExportDiffAction.class, "MSG_EXPORT_FILE_DONE")); // NOI18N
             logger.output(""); // NOI18N

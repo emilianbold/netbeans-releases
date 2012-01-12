@@ -65,7 +65,7 @@ public final class EntitySelectionPanel extends AbstractPanel {
     
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(EntitySelectionPanel.class);
+        return null;
     }
     
     @Override

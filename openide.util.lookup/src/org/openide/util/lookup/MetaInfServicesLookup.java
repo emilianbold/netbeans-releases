@@ -49,9 +49,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.net.UnknownServiceException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -76,16 +76,20 @@ import org.openide.util.lookup.implspi.SharedClassObjectBridge;
 final class MetaInfServicesLookup extends AbstractLookup {
 
     private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
-    static final Executor RP;
-    static {
-        Executor res = null;
-        try {
-            Class<?> seek = Class.forName("org.openide.util.RequestProcessor");
-            res = (Executor)seek.newInstance();
-        } catch (Throwable t) {
-            res = Executors.newSingleThreadExecutor();
+    private static Reference<Executor> RP = new WeakReference<Executor>(null);
+    
+    static synchronized Executor getRP() {
+        Executor res = RP.get();
+        if (res == null) {
+            try {
+                Class<?> seek = Class.forName("org.openide.util.RequestProcessor");
+                res = (Executor)seek.newInstance();
+            } catch (Throwable t) {
+                res = Executors.newSingleThreadExecutor();
+            }
+            RP = new SoftReference<Executor>(res);
         }
-        RP = res;
+        return res;
     }
     /*TBD: Inject RequestProcessor somehow
      new RequestProcessor(MetaInfServicesLookup.class.getName(), 1);
@@ -160,7 +164,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 arr.addAll(toAdd);
-                setPairs(arr, RP);
+                setPairs(arr, getRP());
             }
         }
     }
@@ -420,6 +424,10 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return "MetaInfServicesLookup.Item[" + clazz.getName() + "]"; // NOI18N
         }
     }
+    
+    static P createPair(Class<?> clazz) {
+        return new P(clazz);
+    }
 
     /** Pair that holds name of a class and maybe the instance.
      */
@@ -439,7 +447,9 @@ final class MetaInfServicesLookup extends AbstractLookup {
          */
         private Class<? extends Object> clazz() {
             Object o = object;
-
+            if (o instanceof CantInstantiate) {
+                return ((CantInstantiate)o).clazz;
+            }
             if (o instanceof Class<?>) {
                 return (Class<? extends Object>) o;
             } else if (o != null) {
@@ -474,14 +484,16 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
         public @Override Object getInstance() {
             Object o = object; // keeping local copy to avoid another
+            if (o instanceof CantInstantiate) {
+                return null;
+            }
 
             // thread to modify it under my hands
             if (o instanceof Class<?>) {
                 synchronized (o) { // o is Class and we will not create 
                                    // 2 instances of the same class
-
+                    Class<?> c = ((Class<?>) o);
                     try {
-                        Class<?> c = ((Class<?>) o);
                         o = null;
 
                         synchronized (knownInstances) { // guards only the static cache
@@ -543,10 +555,12 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         object = o;
                     } catch (Exception ex) {
                         LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
-                        object = null;
+                        object = new CantInstantiate(c);
+                        return null;
                     } catch (LinkageError x) { // #174055 + NoClassDefFoundError
                         LOGGER.log(Level.WARNING, "Cannot create " + object, x);
-                        object = null;
+                        object = new CantInstantiate(c);
+                        return null;
                     }
                 }
             }
@@ -587,5 +601,13 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
         }
 
+    }
+    private static final class CantInstantiate {
+        final Class<?> clazz;
+
+        public CantInstantiate(Class<?> clazz) {
+            assert clazz != null;
+            this.clazz = clazz;
+        }
     }
 }

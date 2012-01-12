@@ -44,16 +44,68 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryState;
+import org.netbeans.libs.git.jgit.GitClassFactory;
+import org.netbeans.libs.git.jgit.JGitCredentialsProvider;
+import org.netbeans.libs.git.jgit.JGitRepository;
+import org.netbeans.libs.git.jgit.commands.AddCommand;
+import org.netbeans.libs.git.jgit.commands.BlameCommand;
+import org.netbeans.libs.git.jgit.commands.CatCommand;
+import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
+import org.netbeans.libs.git.jgit.commands.CheckoutRevisionCommand;
+import org.netbeans.libs.git.jgit.commands.CleanCommand;
+import org.netbeans.libs.git.jgit.commands.CommitCommand;
+import org.netbeans.libs.git.jgit.commands.ConflictCommand;
+import org.netbeans.libs.git.jgit.commands.CopyCommand;
+import org.netbeans.libs.git.jgit.commands.CreateBranchCommand;
+import org.netbeans.libs.git.jgit.commands.CreateTagCommand;
+import org.netbeans.libs.git.jgit.commands.DeleteBranchCommand;
+import org.netbeans.libs.git.jgit.commands.DeleteTagCommand;
+import org.netbeans.libs.git.jgit.commands.ExportCommitCommand;
+import org.netbeans.libs.git.jgit.commands.ExportDiffCommand;
+import org.netbeans.libs.git.jgit.commands.FetchCommand;
+import org.netbeans.libs.git.jgit.commands.GetCommonAncestorCommand;
+import org.netbeans.libs.git.jgit.commands.GetPreviousCommitCommand;
+import org.netbeans.libs.git.jgit.commands.GetRemotesCommand;
+import org.netbeans.libs.git.jgit.commands.IgnoreCommand;
+import org.netbeans.libs.git.jgit.commands.InitRepositoryCommand;
+import org.netbeans.libs.git.jgit.commands.ListBranchCommand;
+import org.netbeans.libs.git.jgit.commands.ListModifiedIndexEntriesCommand;
+import org.netbeans.libs.git.jgit.commands.ListRemoteBranchesCommand;
+import org.netbeans.libs.git.jgit.commands.ListRemoteTagsCommand;
+import org.netbeans.libs.git.jgit.commands.ListTagCommand;
+import org.netbeans.libs.git.jgit.commands.LogCommand;
+import org.netbeans.libs.git.jgit.commands.MergeCommand;
+import org.netbeans.libs.git.jgit.commands.PullCommand;
+import org.netbeans.libs.git.jgit.commands.PushCommand;
+import org.netbeans.libs.git.jgit.commands.RemoveCommand;
+import org.netbeans.libs.git.jgit.commands.RemoveRemoteCommand;
+import org.netbeans.libs.git.jgit.commands.RenameCommand;
+import org.netbeans.libs.git.jgit.commands.ResetCommand;
+import org.netbeans.libs.git.jgit.commands.RevertCommand;
+import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
+import org.netbeans.libs.git.jgit.commands.StatusCommand;
+import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
+import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.RevisionInfoListener;
+import org.netbeans.libs.git.progress.StatusListener;
 
 /**
  *
  * @author ondra
  */
-public interface GitClient {
+public final class GitClient {
+    private final DelegateListener delegateListener;
+    private GitClassFactory gitFactory;
 
     public enum ResetType {
         SOFT {
@@ -79,6 +131,16 @@ public interface GitClient {
         HEAD_VS_WORKINGTREE,
         INDEX_VS_WORKINGTREE
     }
+    
+    private final JGitRepository gitRepository;
+    private final Set<NotificationListener> listeners;
+    private JGitCredentialsProvider credentialsProvider;
+
+    GitClient (JGitRepository gitRepository) {
+        this.gitRepository = gitRepository;
+        listeners = new HashSet<NotificationListener>();
+        delegateListener = new DelegateListener();
+    }
 
     /**
      * Adds all files under the given roots to the index
@@ -86,9 +148,17 @@ public interface GitClient {
      * @param monitor
      * @throws GitException an error occurs
      */
-    public void add(File[] roots, ProgressMonitor monitor) throws GitException;
+    public void add (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        AddCommand cmd = new AddCommand(repository, getClassFactory(), roots, monitor, delegateListener);
+        cmd.execute();
+    }
 
-    public void addNotificationListener (NotificationListener listener);
+    public void addNotificationListener (NotificationListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
 
     /**
      * Annotates lines of a given file in a given revision
@@ -99,7 +169,12 @@ public interface GitClient {
      * @throws org.netbeans.libs.git.GitException.MissingObjectException
      * @throws GitException 
      */
-    public GitBlameResult blame (File file, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public GitBlameResult blame (File file, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        BlameCommand cmd = new BlameCommand(repository, getClassFactory(), file, revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
+    }
 
     /**
      * Prints file's content in the given revision to output stream
@@ -110,7 +185,12 @@ public interface GitClient {
      * @throws GitException
      * @throws GitException.MissingObjectException if the given revision does not exist
      */
-    public boolean catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public boolean catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        CatCommand cmd = new CatCommand(repository, getClassFactory(), file, revision, out, monitor);
+        cmd.execute();
+        return cmd.foundInRevision();
+    }
 
     /**
      * Prints content of an index entry accordant with the given file to output stream
@@ -120,7 +200,12 @@ public interface GitClient {
      * @return true if the file was found in the index and printed to out, otherwise false
      * @throws GitException
      */
-    public boolean catIndexEntry (File file, int stage, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
+    public boolean catIndexEntry (File file, int stage, java.io.OutputStream out, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CatCommand cmd = new CatCommand(repository, getClassFactory(), file, stage, out, monitor);
+        cmd.execute();
+        return cmd.foundInRevision();
+    }
 
     /**
      * Checks out the index into the working copy root. Does not move HEAD.
@@ -129,7 +214,17 @@ public interface GitClient {
      * @param recursively if set to <code>true</code>, all files under given roots will be checked out, otherwise only roots and direct file children will be affected.
      * @throws GitException other error
      */
-    public void checkout(File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void checkout(File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        if (revision != null) {
+            ResetCommand cmd = new ResetCommand(repository, getClassFactory(), revision, roots, recursively, monitor, delegateListener);
+            cmd.execute();
+        }
+        if (!monitor.isCanceled()) {
+            CheckoutIndexCommand cmd = new CheckoutIndexCommand(repository, getClassFactory(), roots, recursively, monitor, delegateListener);
+            cmd.execute();
+        }
+    }
 
     /**
      * Checks out a given revision.
@@ -138,7 +233,14 @@ public interface GitClient {
      * @param failOnConflict if set to false, the command tries to merge local changes into the new branch
      * @throws GitException other error
      */
-    public void checkoutRevision (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void checkoutRevision (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        if (!failOnConflict) {
+            throw new IllegalArgumentException("Currently unsupported. failOnConflict must be set to true. JGit lib is buggy."); //NOI18N
+        }
+        Repository repository = gitRepository.getRepository();
+        CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, getClassFactory(), revision, failOnConflict, monitor, delegateListener);
+        cmd.execute();
+    }
 
     /**
      * Cleans the working tree by recursively removing files that are not under 
@@ -147,7 +249,11 @@ public interface GitClient {
      * @param monitor
      * @throws GitException 
      */
-    public void clean(File[] roots, ProgressMonitor monitor) throws GitException;
+    public void clean(File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CleanCommand cmd = new CleanCommand(repository, getClassFactory(), roots, monitor, delegateListener);
+        cmd.execute();        
+    }
     
     /**
      * Commits all changes made in the index to all files under the given roots
@@ -158,7 +264,12 @@ public interface GitClient {
      * @param monitor
      * @throws GitException an error occurs
      */
-    public GitRevisionInfo commit(File[] roots, String commitMessage, GitUser author, GitUser commiter, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo commit(File[] roots, String commitMessage, GitUser author, GitUser commiter, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CommitCommand cmd = new CommitCommand(repository, getClassFactory(), roots, commitMessage, author, commiter, monitor);
+        cmd.execute();
+        return cmd.revision;
+    }
 
     /**
      * Modifies the index. The entries representing files under the source are copied and the newly created entries represent the corresponding files under the target.
@@ -167,7 +278,11 @@ public interface GitClient {
      * @param monitor
      * @throws GitException
      */
-    public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException;
+    public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CopyCommand cmd = new CopyCommand(repository, getClassFactory(), source, target, monitor, delegateListener);
+        cmd.execute();
+    }
 
     /**
      * Creates a new branch with a given name, starting at revision
@@ -177,7 +292,11 @@ public interface GitClient {
      * @return created branch
      * @throws GitException  an error occurs
      */
-    public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException;
+    public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException {
+        CreateBranchCommand cmd = new CreateBranchCommand(gitRepository.getRepository(), getClassFactory(), branchName, revision, monitor);
+        cmd.execute();
+        return cmd.getBranch();
+    }
 
     /**
      * Creates a tag for any object represented by a given taggedObjectId. 
@@ -191,7 +310,11 @@ public interface GitClient {
      * @return
      * @throws GitException 
      */
-    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException;
+    public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException {
+        CreateTagCommand cmd = new CreateTagCommand(gitRepository.getRepository(), getClassFactory(), tagName, taggedObject, message, signed, forceUpdate, monitor);
+        cmd.execute();
+        return cmd.getTag();
+    }
 
     /**
      * Deletes a given branch from the repository
@@ -201,7 +324,10 @@ public interface GitClient {
      * @throws GitException.NotMergedException branch has not been fully merged yet and forceDeleteUnmerged is set to false
      * @throws GitException 
      */
-    public void deleteBranch (String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) throws GitException.NotMergedException, GitException;
+    public void deleteBranch (String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) throws GitException.NotMergedException, GitException {
+        DeleteBranchCommand cmd = new DeleteBranchCommand(gitRepository.getRepository(), getClassFactory(), branchName, forceDeleteUnmerged, monitor);
+        cmd.execute();
+    }
 
     /**
      * Deletes a given tag from the repository
@@ -209,7 +335,10 @@ public interface GitClient {
      * @param monitor
      * @throws GitException 
      */
-    public void deleteTag (String tagName, ProgressMonitor monitor) throws GitException;
+    public void deleteTag (String tagName, ProgressMonitor monitor) throws GitException {
+        DeleteTagCommand cmd = new DeleteTagCommand(gitRepository.getRepository(), getClassFactory(), tagName, monitor);
+        cmd.execute();
+    }
 
     /**
      * Exports a given commit in the format accepted by git am
@@ -218,7 +347,10 @@ public interface GitClient {
      * @param monitor 
      * @throws GitException
      */
-    public void exportCommit (String commit, OutputStream out, ProgressMonitor monitor) throws GitException;
+    public void exportCommit (String commit, OutputStream out, ProgressMonitor monitor) throws GitException {
+        ExportCommitCommand cmd = new ExportCommitCommand(gitRepository.getRepository(), getClassFactory(), commit, out, monitor, delegateListener);
+        cmd.execute();
+    }
     
     /**
      * Exports changes in files under given roots to the given output stream
@@ -228,7 +360,10 @@ public interface GitClient {
      * @param monitor
      * @throws GitException 
      */
-    public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException;
+    public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException {
+        ExportDiffCommand cmd = new ExportDiffCommand(gitRepository.getRepository(), getClassFactory(), roots, mode, out, monitor, delegateListener);
+        cmd.execute();
+    }
     
     /**
      * Fetches remote changes for references specified in the config file under a given remote.
@@ -238,7 +373,12 @@ public interface GitClient {
      * @throws GitException 
      * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), getClassFactory(), remote, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getUpdates();
+    }
     
     /**
      * Fetches remote changes for given reference specifications.
@@ -249,14 +389,23 @@ public interface GitClient {
      * @throws GitException 
      * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
+        FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), getClassFactory(), remote, fetchRefSpecifications, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getUpdates();
+    }
     
     /**
      * Returns all branches
      * @param all if false then only local branches will be returned
      * @return
      */
-    public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
+    public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException {
+        ListBranchCommand cmd = new ListBranchCommand(gitRepository.getRepository(), getClassFactory(), all, monitor);
+        cmd.execute();
+        return cmd.getBranches();
+    }
 
     /**
      * Returns all tags in the repository
@@ -265,7 +414,11 @@ public interface GitClient {
      * @return
      * @throws GitException 
      */
-    public Map<String, GitTag> getTags (ProgressMonitor monitor, boolean allTags) throws GitException;
+    public Map<String, GitTag> getTags (ProgressMonitor monitor, boolean allTags) throws GitException {
+        ListTagCommand cmd = new ListTagCommand(gitRepository.getRepository(), getClassFactory(), allTags, monitor);
+        cmd.execute();
+        return cmd.getTags();
+    }
 
     /**
      * Returns a common ancestor for given revisions or null if none found.
@@ -274,7 +427,11 @@ public interface GitClient {
      * @return
      * @throws GitException 
      */
-    public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException {
+        GetCommonAncestorCommand cmd = new GetCommonAncestorCommand(gitRepository.getRepository(), getClassFactory(), revisions, monitor);
+        cmd.execute();
+        return cmd.getRevision();
+    }
 
     /**
      * Returns an ancestor revision that modified a given file in any way
@@ -284,7 +441,11 @@ public interface GitClient {
      * @return
      * @throws GitException 
      */
-    public GitRevisionInfo getPreviousRevision (File file, String revision, ProgressMonitor monitor) throws GitException;
+    public GitRevisionInfo getPreviousRevision (File file, String revision, ProgressMonitor monitor) throws GitException {
+        GetPreviousCommitCommand cmd = new GetPreviousCommitCommand(gitRepository.getRepository(), getClassFactory(), file, revision, monitor);
+        cmd.execute();
+        return cmd.getRevision();
+    }
 
     /**
      * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
@@ -292,7 +453,12 @@ public interface GitClient {
      * @param monitor
      * @return
      */
-    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException;
+    public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ConflictCommand cmd = new ConflictCommand(repository, getClassFactory(), roots, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getStatuses();
+    }
 
     /**
      * Returns an array of statuses for files under given roots
@@ -300,7 +466,12 @@ public interface GitClient {
      * @return status array
      * @throws GitException when an error occurs
      */
-    public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
+    public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        StatusCommand cmd = new StatusCommand(repository, getClassFactory(), roots, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getStatuses();
+    }
 
     /**
      * Returns remote configuration set up for this repository identified by a given remoteName
@@ -309,7 +480,9 @@ public interface GitClient {
      * @return
      * @throws GitException 
      */
-    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException;
+    public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException {
+        return getRemotes(monitor).get(remoteName);
+    }
 
     /**
      * Returns all remote configurations set up for this repository
@@ -317,14 +490,23 @@ public interface GitClient {
      * @return
      * @throws GitException 
      */
-    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException;
+    public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        GetRemotesCommand cmd = new GetRemotesCommand(repository, getClassFactory(), monitor);
+        cmd.execute();
+        return cmd.getRemotes();
+    }
     
     /**
      * Returns the current state of the repository this client is associated with.
      * @return current repository state
      * @throws GitException an error occurs
      */
-    public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException;
+    public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RepositoryState state = repository.getRepositoryState();
+        return GitRepositoryState.getStateFor(state);
+    }
 
     /**
      * Ignores given files
@@ -333,22 +515,34 @@ public interface GitClient {
      * @return array of .gitignore modified during the ignore process
      * @throws GitException an error occurs
      */
-    public File[] ignore (File[] files, ProgressMonitor monitor) throws GitException;
+    public File[] ignore (File[] files, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        IgnoreCommand cmd = new IgnoreCommand(repository, getClassFactory(), files, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getModifiedIgnoreFiles();
+    }
 
     /**
-     * Initializes an empty git repository
+     * Initializes an empty git repository in a folder specified in the constructor
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
-     * XXX init what???
      */
-    public void init (ProgressMonitor monitor) throws GitException;
+    public void init (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        InitRepositoryCommand cmd = new InitRepositoryCommand(repository, getClassFactory(), monitor);
+        cmd.execute();
+    }
 
     /**
-     * TODO is this method really necessary?
      * Returns files that are marked as modified between the HEAD and Index.
      * @param roots
      * @throws GitException when an error occurs
      */
-    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException;
+    public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ListModifiedIndexEntriesCommand cmd = new ListModifiedIndexEntriesCommand(repository, getClassFactory(), roots, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getFiles();
+    }
     
     /**
      * Returns branches in a given remote repository
@@ -358,7 +552,13 @@ public interface GitClient {
      * @throws GitException 
      * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
+        Repository repository = gitRepository.getRepository();
+        ListRemoteBranchesCommand cmd = new ListRemoteBranchesCommand(repository, getClassFactory(), remoteRepositoryUrl, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getBranches();
+    }
     
     /**
      * Returns pairs tag name/id from a given remote repository
@@ -368,7 +568,13 @@ public interface GitClient {
      * @throws GitException 
      * @throws GitException.AuthorizationException unauthorized access
      */
-    public Map<String, String> listRemoteTags (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    public Map<String, String> listRemoteTags (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
+        Repository repository = gitRepository.getRepository();
+        ListRemoteTagsCommand cmd = new ListRemoteTagsCommand(repository, getClassFactory(), remoteRepositoryUrl, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getTags();
+    }
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
@@ -378,7 +584,13 @@ public interface GitClient {
      * @throws GitException.MissingObjectException no such revision exists
      * @throws GitException other error occurs
      */
-    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        LogCommand cmd = new LogCommand(repository, getClassFactory(), revision, monitor, delegateListener);
+        cmd.execute();
+        GitRevisionInfo[] revisions = cmd.getRevisions();
+        return revisions.length == 0 ? null : revisions[0];
+    }
 
     /**
      * Digs through the repository's history and returns revisions according to the given search criteria.
@@ -388,7 +600,12 @@ public interface GitClient {
      * @throws GitException.MissingObjectException revision specified in search criteria (or head if no such revision is specified) does not exist
      * @throws GitException other error occurs
      */
-    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        LogCommand cmd = new LogCommand(repository, getClassFactory(), searchCriteria, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getRevisions();
+    }
     
     /**
      * Merges a given revision with the current head
@@ -398,7 +615,12 @@ public interface GitClient {
      * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
      * @throws GitException an error occurs
      */
-    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException;
+    public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
+        Repository repository = gitRepository.getRepository();
+        MergeCommand cmd = new MergeCommand(repository, getClassFactory(), revision, monitor);
+        cmd.execute();
+        return cmd.getResult();
+    }
     
     /**
      * Pulls changes from a remote repository and merges a given remote branch to an active one.
@@ -413,7 +635,12 @@ public interface GitClient {
      * @throws GitException.MissingObjectException given branch to merge does not exist
      */
     public GitPullResult pull (String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) throws GitException.AuthorizationException, 
-            GitException.CheckoutConflictException, GitException.MissingObjectException, GitException;
+            GitException.CheckoutConflictException, GitException.MissingObjectException, GitException {
+        PullCommand cmd = new PullCommand(gitRepository.getRepository(), getClassFactory(), remote, fetchRefSpecifications, branchToMerge, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getResult();
+    }
     
     /**
      * Pushes changes for given reference specifications.
@@ -425,7 +652,12 @@ public interface GitClient {
      * @throws GitException 
      * @throws GitException.AuthorizationException unauthorized access
      */
-    public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException;
+    public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
+        PushCommand cmd = new PushCommand(gitRepository.getRepository(), getClassFactory(), remote, pushRefSpecifications, fetchRefSpecifications, monitor);
+        cmd.setCredentialsProvider(this.credentialsProvider);
+        cmd.execute();
+        return cmd.getResult();
+    }
 
     /**
      * Removes given files/folders from the index and/or from the working tree
@@ -433,15 +665,28 @@ public interface GitClient {
      * @param cached if <code>true</code> the working tree will not be affected
      * @param monitor
      */
-    public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException;
-    public void removeNotificationListener (NotificationListener listener);
+    public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RemoveCommand cmd = new RemoveCommand(repository, getClassFactory(), roots, cached, monitor, delegateListener);
+        cmd.execute();
+    }
+
+    public void removeNotificationListener (NotificationListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
     
     /**
      * Removes remote configuration from the config file
      * @param remote name of the remote
      * @param monitor 
      */
-    public void removeRemote (String remote, ProgressMonitor monitor) throws GitException;
+    public void removeRemote (String remote, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RemoveRemoteCommand cmd = new RemoveRemoteCommand(repository, getClassFactory(), remote, monitor);
+        cmd.execute();
+    }
 
     /**
      * Renames source file or folder to target
@@ -450,7 +695,11 @@ public interface GitClient {
      * @param after set to true if you don't only want to correct the index
      * @throws GitException
      */
-    public void rename (File source, File target, boolean after, ProgressMonitor monitor) throws GitException;
+    public void rename (File source, File target, boolean after, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RenameCommand cmd = new RenameCommand(repository, getClassFactory(), source, target, after, monitor, delegateListener);
+        cmd.execute();
+    }
     
     /**
      * Updates entries for given files in the index with those from the given revision
@@ -459,7 +708,11 @@ public interface GitClient {
      * @param recursively if set to <code>true</code>, all files under given roots will be affected, otherwise only roots and direct file children will be modified in the index.
      * @throws GitException
      */
-    public void reset (File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void reset (File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        ResetCommand cmd = new ResetCommand(repository, getClassFactory(), revision, roots, recursively, monitor, delegateListener);
+        cmd.execute();
+    }
 
     /**
      * Sets HEAD to the given revision and updates index and working copy accordingly to the given reset type
@@ -467,7 +720,11 @@ public interface GitClient {
      * @param resetType type of reset, see git help reset
      * @throws GitException
      */
-    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
+    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        Repository repository = gitRepository.getRepository();
+        ResetCommand cmd = new ResetCommand(repository, getClassFactory(), revision, resetType, monitor, delegateListener);
+        cmd.execute();
+    }
 
     /**
      * Reverts already committed changes
@@ -479,19 +736,31 @@ public interface GitClient {
      * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
      * @throws GitException 
      */
-    public GitRevertResult revert (String revision, String commitMessage, boolean commit, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException.CheckoutConflictException, GitException;
+    public GitRevertResult revert (String revision, String commitMessage, boolean commit, ProgressMonitor monitor)
+            throws GitException.MissingObjectException, GitException.CheckoutConflictException, GitException {
+        Repository repository = gitRepository.getRepository();
+        RevertCommand cmd = new RevertCommand(repository, getClassFactory(), revision, commitMessage, commit, monitor);
+        cmd.execute();
+        return cmd.getResult();
+    }
 
     /**
      * Sets callback for this client. Some actions (like inter-repository commands) may need it for its work.
      */
-    public void setCallback (GitClientCallback callback);
+    public void setCallback (GitClientCallback callback) {
+        this.credentialsProvider = callback == null ? null : new JGitCredentialsProvider(callback);
+    }
     
     /**
      * Sets the remote configuration in the configuration file.
      * @param remoteConfig
      * @param monitor 
      */
-    public void setRemote (GitRemoteConfig remoteConfig, ProgressMonitor monitor) throws GitException;
+    public void setRemote (GitRemoteConfig remoteConfig, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        SetRemoteCommand cmd = new SetRemoteCommand(repository, getClassFactory(), remoteConfig, monitor);
+        cmd.execute();
+    }
 
     /**
      * Unignores given files
@@ -500,10 +769,80 @@ public interface GitClient {
      * @return array of .gitignore modified during the unignore process
      * @throws GitException an error occurs
      */
-    public File[] unignore (File[] files, ProgressMonitor monitor) throws GitException;
+    public File[] unignore (File[] files, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        UnignoreCommand cmd = new UnignoreCommand(repository, getClassFactory(), files, monitor, delegateListener);
+        cmd.execute();
+        return cmd.getModifiedIgnoreFiles();
+    }
 
     /**
      * Returns the user from this clients repository
      */
-    public GitUser getUser() throws GitException;
+    public GitUser getUser() throws GitException {        
+        return getClassFactory().createUser(new PersonIdent(gitRepository.getRepository()));
+    }
+
+    private GitClassFactory getClassFactory () {
+        if (gitFactory == null) {
+            gitFactory = GitClassFactoryImpl.getInstance();
+        }
+        return gitFactory;
+    }
+    
+    private class DelegateListener implements StatusListener, FileListener, RevisionInfoListener {
+
+        @Override
+        public void notifyStatus (GitStatus status) {
+            GitClient.this.notifyStatus(status);
+        }
+
+        @Override
+        public void notifyFile (File file, String relativePathToRoot) {
+            GitClient.this.notifyFile(file, relativePathToRoot);
+        }
+
+        @Override
+        public void notifyRevisionInfo (GitRevisionInfo revisionInfo) {
+            GitClient.this.notifyRevisionInfo(revisionInfo);
+        }
+        
+    }
+    
+    // <editor-fold defaultstate="collapsed" desc="listener methods">
+    private void notifyFile (File file, String relativePathToRoot) {
+        List<NotificationListener> lists;
+        synchronized (listeners) {
+            lists = new LinkedList<NotificationListener>(listeners);
+        }
+        for (NotificationListener list : lists) {
+            if (list instanceof FileListener) {
+                ((FileListener) list).notifyFile(file, relativePathToRoot);
+            }
+        }
+    }
+
+    private void notifyStatus (GitStatus status) {
+        List<NotificationListener> lists;
+        synchronized (listeners) {
+            lists = new LinkedList<NotificationListener>(listeners);
+        }
+        for (NotificationListener list : lists) {
+            if (list instanceof StatusListener) {
+                ((StatusListener) list).notifyStatus(status);
+            }
+        }
+    }
+
+    private void notifyRevisionInfo (GitRevisionInfo info) {
+        List<NotificationListener> lists;
+        synchronized (listeners) {
+            lists = new LinkedList<NotificationListener>(listeners);
+        }
+        for (NotificationListener list : lists) {
+            if (list instanceof RevisionInfoListener) {
+                ((RevisionInfoListener) list).notifyRevisionInfo(info);
+            }
+        }
+    }// </editor-fold>
 }

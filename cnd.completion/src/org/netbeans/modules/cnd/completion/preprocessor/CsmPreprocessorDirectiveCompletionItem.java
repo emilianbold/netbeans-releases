@@ -97,6 +97,7 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
         return sortItemText + appendItemText;
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
@@ -106,6 +107,7 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
         }
     }
 
+    @Override
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             JTextComponent component = (JTextComponent) evt.getSource();
@@ -118,6 +120,7 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
         }
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent component) {
         if (supportInstantSubst) {
             defaultAction(component);
@@ -127,20 +130,24 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
         }
     }
 
+    @Override
     public CompletionTask createDocumentationTask() {
         CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
 
         return p != null ? p.createDocumentationTask(this) : null;
     }
 
+    @Override
     public CompletionTask createToolTipTask() {
         return null;
     }
 
+    @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(true), getRightHtmlText(true), g, defaultFont);
     }
 
+    @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(true), getRightHtmlText(true), g, defaultFont, defaultColor, width, height, selected);
     }
@@ -153,14 +160,17 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
         return out.toString();
     }
 
+    @Override
     public int getSortPriority() {
         return this.priority;
     }
 
+    @Override
     public CharSequence getSortText() {
         return sortItemText;
     }
 
+    @Override
     public CharSequence getInsertPrefix() {
         return sortItemText;
     }
@@ -180,6 +190,7 @@ public class CsmPreprocessorDirectiveCompletionItem implements CompletionItem {
     protected void substituteText(final JTextComponent c, final int offset, final int origLen) {
         final BaseDocument doc = (BaseDocument) c.getDocument();
         doc.runAtomicAsUser(new Runnable() {
+            @Override
             public void run() {
                 try {
                     if (origLen > 0) {

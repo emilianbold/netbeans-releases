@@ -68,18 +68,22 @@ public class GroovyHintsProvider implements HintsProvider {
     public static final Logger LOG = Logger.getLogger(GroovyHintsProvider.class.getName()); // NOI18N
     private boolean cancelled;
 
+    @Override
     public RuleContext createRuleContext() {
         return new GroovyRuleContext();
     }
-    
+
+    @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
         return;
     }
 
+    @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
         return;
     }
 
+    @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> result, int start, int end) {
         cancelled = false;
         ParserResult parserResult = context.parserResult;
@@ -106,6 +110,7 @@ public class GroovyHintsProvider implements HintsProvider {
         applyRules(context, hints, start, end, result);
     }
 
+    @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> result, List<Error> unhandled) {
         // Return all the errors we -haven't- added custom error hints for:
         
@@ -122,7 +127,7 @@ public class GroovyHintsProvider implements HintsProvider {
         List<? extends Error> errors = rpr.getDiagnostics();
         LOG.log(Level.FINEST, "@@@ errors.size() : {0}", errors.size());
 
-        if (errors == null || errors.size() == 0) {
+        if (errors == null || errors.isEmpty()) {
             return;
         }
 
@@ -157,10 +162,12 @@ public class GroovyHintsProvider implements HintsProvider {
         LOG.log(Level.FINEST, "@@@ result.size() =  {0}", result.size());
     }
 
+    @Override
     public void cancel() {
         return;
     }
 
+    @Override
     public List<Rule> getBuiltinRules() {
         return null;
     }

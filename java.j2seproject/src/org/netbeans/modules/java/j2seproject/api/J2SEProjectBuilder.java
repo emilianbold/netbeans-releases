@@ -53,8 +53,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -118,6 +116,7 @@ public class J2SEProjectBuilder {
     private String manifest;
     private String librariesDefinition;
     private String buildXmlName;
+    private String distFolder;
     private String mainClassTemplate;
     
     /**
@@ -256,7 +255,20 @@ public class J2SEProjectBuilder {
         this.buildXmlName = name;
         return this;
     }
-    
+
+    /**
+     * Sets a name of dist (build artifact) folder
+     * @param distFolderName the name of the dist folder
+     * if null the default 'dist' is used
+     * @return the builder
+     * @since 1.49
+     */
+    @NonNull
+    public J2SEProjectBuilder setDistFolder(@NullAllowed final String distFolderName) {
+        this.distFolder = distFolderName;
+        return this;
+    }
+
     /**
      * Sets a main class template
      * @param mainClassTemplatePath the path to main class template on the system filesystem,
@@ -302,6 +314,7 @@ public class J2SEProjectBuilder {
                         hasDefaultRoots ? "test" : null,    //NOI18N
                         skipTests,
                         buildXmlName,
+                        distFolder,
                         mainClass,
                         manifest,
                         manifest == null,
@@ -357,6 +370,7 @@ public class J2SEProjectBuilder {
             String testRoot,
             boolean skipTests,
             String buildXmlName,
+            String distFolder,
             String mainClass,
             String manifestFile,
             boolean isLibrary,
@@ -395,7 +409,7 @@ public class J2SEProjectBuilder {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
-        ep.setProperty("dist.dir", "dist"); // NOI18N
+        ep.setProperty("dist.dir", distFolder != null ? distFolder : "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", compileClassPath); // NOI18N
@@ -551,15 +565,10 @@ public class J2SEProjectBuilder {
         } else {
             final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             final SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
-            if (v.equals(new SpecificationVersion("1.7"))) {    //NOI18N
-                // #89131, #194283 - default source level for JDK 6 & JDK 7 is 1.6. The 1.5 causes AP problems                
-                return new SpecificationVersion("1.6");         //NOI18N
-            } else {
-                return v;
-            }
+            return v;
         }
     }
-    
+
     private String[] toClassPathElements(
             final @NonNull Collection<? extends Library> libraries,
             final @NonNull String... additionalEntries) {

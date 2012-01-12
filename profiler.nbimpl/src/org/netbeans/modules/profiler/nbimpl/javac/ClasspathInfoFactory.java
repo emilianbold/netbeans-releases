@@ -90,7 +90,6 @@ public class ClasspathInfoFactory {
                                         final boolean includeSources, final boolean includeLibraries) {
         FileObject[] sourceRoots = ProjectUtilities.getSourceRoots(prj, includeSubprojects);
         Set<FileObject> srcRootSet = new HashSet<FileObject>(sourceRoots.length);
-        java.util.List<URL> urlList = new ArrayList<URL>();
 
         srcRootSet.addAll(Arrays.asList(sourceRoots));
 
@@ -100,27 +99,33 @@ public class ClasspathInfoFactory {
 
         final ClassPath cpEmpty = ClassPathSupport.createClassPath(new FileObject[0]);
 
-        if (sourceRoots.length == 0) {
-            return null; // fail early
+        ClassPath cpSource = cpEmpty;
+        if (includeSources) {
+            if (sourceRoots.length == 0) {
+                return null; // fail early
+            }
+
+            cpSource = ClassPathSupport.createClassPath(sourceRoots);
         }
+        
+        ClassPath cpCompile = cpEmpty;
+        if (includeLibraries) {
+            java.util.List<URL> urlList = new ArrayList<URL>();
+            cpCompile = ClassPath.getClassPath(sourceRoots[0], ClassPath.COMPILE);
+            
+            // cleaning up compile classpatth; we need to get rid off all project's class file references in the classpath
+            for (ClassPath.Entry entry : cpCompile.entries()) {
+                SourceForBinaryQuery.Result rslt = SourceForBinaryQuery.findSourceRoots(entry.getURL());
+                FileObject[] roots = rslt.getRoots();
 
-        ClassPath cpSource = ClassPathSupport.createClassPath(sourceRoots);
-
-        // cleaning up compile classpatth; we need to get rid off all project's class file references in the classpath
-        ClassPath cpCompile = ClassPath.getClassPath(sourceRoots[0], ClassPath.COMPILE);
-
-        for (ClassPath.Entry entry : cpCompile.entries()) {
-            SourceForBinaryQuery.Result rslt = SourceForBinaryQuery.findSourceRoots(entry.getURL());
-            FileObject[] roots = rslt.getRoots();
-
-            if ((roots == null) || (roots.length == 0)) {
-                urlList.add(entry.getURL());
+                if ((roots == null) || (roots.length == 0)) {
+                    urlList.add(entry.getURL());
+                }
+                cpCompile = ClassPathSupport.createClassPath(urlList.toArray(new URL[urlList.size()]));
             }
         }
 
-        cpCompile = ClassPathSupport.createClassPath(urlList.toArray(new URL[urlList.size()]));
-
         return ClasspathInfo.create(includeLibraries ? ClassPath.getClassPath(sourceRoots[0], ClassPath.BOOT) : cpEmpty,
-                includeLibraries ? cpCompile : cpEmpty, includeSources ? cpSource : cpEmpty);
+               cpCompile, cpSource);
     }
 }

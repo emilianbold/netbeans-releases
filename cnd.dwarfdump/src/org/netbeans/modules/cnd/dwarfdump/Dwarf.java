@@ -198,7 +198,7 @@ public class Dwarf {
             if (FileMagic.isElfMagic(bytes) || FileMagic.isCoffMagic(bytes) || FileMagic.isMachoMagic(bytes)) {
                 offsetsList.add(new MemberHeader(pointer,length));
             }
-            reader.skipBytes(length-8-nameLength);
+            int skipBytes = reader.skipBytes(length-8-nameLength);
             if (length % 2 == 1){
                 reader.skipBytes(1);
             }

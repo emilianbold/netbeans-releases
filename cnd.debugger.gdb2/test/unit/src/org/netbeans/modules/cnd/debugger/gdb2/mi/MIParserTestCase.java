@@ -80,4 +80,13 @@ public class MIParserTestCase extends TestCase {
         MIRecord result = parser.parse();
         assertEquals(testLine, result.results().valueOf("value").asConst().value());
     }
+    
+    @Test
+    public void testCorruptedStopped() {
+        String testLine = "*stopped,{name=\"var6\",value=\"false\",in_scope=\"true\",type_changed=\"false\",has_more=\"0\"}";
+        MIParser parser = new MIParser("Cp1251");
+        parser.setup(testLine);
+        MIRecord result = parser.parse();
+        result.results().valueOf("xxx");
+    }
 }

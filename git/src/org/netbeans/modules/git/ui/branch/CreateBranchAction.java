@@ -47,7 +47,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -86,7 +86,7 @@ public class CreateBranchAction extends SingleRepositoryAction {
                         GitClient client = getClient();
                         String revision = createBranch.getRevision();
                         LOG.log(Level.FINE, "Creating a branch: {0}", revision); //NOI18N
-                        GitBranch branch = client.createBranch(createBranch.getBranchName(), createBranch.getRevision(), this);
+                        GitBranch branch = client.createBranch(createBranch.getBranchName(), createBranch.getRevision(), getProgressMonitor());
                         log(revision, branch);
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);

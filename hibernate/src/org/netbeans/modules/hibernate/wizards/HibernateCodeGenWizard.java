@@ -379,6 +379,12 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
 
             FileObject pkg = SourceGroups.getFolderForPackage(HibernateUtil.getFirstSourceGroup(project), helper.getPackageName(), false);
+            boolean useJavaSourceLocation = false;//hack(need a lot of changes in hibernate support), currently hibernate support have mixed support for different source/resources location, and also getSOurce... is used to get source roots/folders etc for resources and not for java sources.
+            if(pkg == null && helper.getDomainGen() && helper.getEjbAnnotation() && !helper.getHbmGen()){//in some cases resource root and java is different
+                String relativePkgName = helper.getPackageName().replace('.', '/');
+                pkg = helper.getLocation().getRootFolder().getFileObject(relativePkgName);
+                useJavaSourceLocation = true;
+            }
             if (pkg != null && pkg.isFolder()) {
                 // bugfix: 137052
                 pkg.getFileSystem().refresh(true);
@@ -392,7 +398,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                         if (fo.getNameExt() != null && fo.getMIMEType().equals("text/x-java")) { // NOI18N
 
                             int mappingIndex = sf.addMapping(true);
-                            String javaFileName = HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation());
+                            String javaFileName = useJavaSourceLocation ? HibernateUtil.getRelativeSourcePath(fo, helper.getLocation().getRootFolder()) : HibernateUtil.getRelativeSourcePath(fo, hibernateEnv.getSourceLocation());
                             String fileName = javaFileName.replaceAll("/", ".").substring(0, javaFileName.indexOf(".java", 0)); // NOI18N
 
                             sf.setAttributeValue(SessionFactory.MAPPING, mappingIndex, classAttr, fileName);

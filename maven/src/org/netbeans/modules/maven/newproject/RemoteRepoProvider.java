@@ -52,7 +52,9 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
+import org.openide.util.lookup.ServiceProvider;
 
+@ServiceProvider(service=ArchetypeProvider.class, position=400)
 public class RemoteRepoProvider implements ArchetypeProvider {
 
     @Override public List<Archetype> getArchetypes() {

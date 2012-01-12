@@ -82,7 +82,7 @@ public class CatTest extends AbstractGitTestCase {
         add(f);
         GitClient client = getClient(workDir);
         try {
-            client.catFile(f, Constants.HEAD, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR);
+            client.catFile(f, Constants.HEAD, new FileOutputStream(f), NULL_PROGRESS_MONITOR);
             fail();
         } catch (GitException.MissingObjectException ex) {
             assertEquals(GitObjectType.COMMIT, ex.getObjectType());
@@ -90,17 +90,17 @@ public class CatTest extends AbstractGitTestCase {
         }
         commit(f);
 
-        assertTrue(client.catFile(f, Constants.HEAD, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertTrue(client.catFile(f, Constants.HEAD, new FileOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
         String revision = new Git(repository).log().call().iterator().next().getId().getName();
-        assertTrue(client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertTrue(client.catFile(f, revision, new FileOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
         write(f, "blablabla");
         add(f);
         commit(f);
-        assertTrue(client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertTrue(client.catFile(f, revision, new FileOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
     }
 
@@ -111,11 +111,11 @@ public class CatTest extends AbstractGitTestCase {
         copyFile(getGoldenFile(), f);
         assertFile(getGoldenFile(), f);
         GitClient client = getClient(workDir);
-        assertFalse(client.catIndexEntry(f, 0, new FileOutputStream(new File("temp")), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertFalse(client.catIndexEntry(f, 0, new FileOutputStream(new File("temp")), NULL_PROGRESS_MONITOR));
         
         add(f);
 
-        assertTrue(client.catIndexEntry(f, 0, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertTrue(client.catIndexEntry(f, 0, new FileOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
     }
 
@@ -130,11 +130,11 @@ public class CatTest extends AbstractGitTestCase {
         String revision = new Git(repository).log().call().iterator().next().getId().getName();
 
         // remove and commit
-        client.remove(new File[] { f }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.remove(new File[] { f }, false, NULL_PROGRESS_MONITOR);
         commit(f);
-        assertTrue(client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertTrue(client.catFile(f, revision, new FileOutputStream(f), NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
-        assertFalse(client.catFile(f, Constants.HEAD, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertFalse(client.catFile(f, Constants.HEAD, new FileOutputStream(f), NULL_PROGRESS_MONITOR));
     }
 }

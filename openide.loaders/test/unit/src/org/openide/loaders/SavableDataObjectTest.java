@@ -49,6 +49,7 @@ import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.actions.AbstractSavable;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
@@ -102,18 +103,14 @@ public class SavableDataObjectTest extends NbTestCase {
     
     
     private static ContextAwareAction findSaveAction() {
-        FileObject fo = FileUtil.getConfigFile("Actions/System/org-openide-actions-SaveAction.instance");
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertTrue("action found: " + obj, obj instanceof ContextAwareAction);
-        return (ContextAwareAction)obj;
+        Action a = Actions.forID("System", "org.openide.actions.SaveAction");
+        assertTrue(a instanceof ContextAwareAction);
+        return (ContextAwareAction) a;
     }
     private static Action findSaveAllAction() {
-        FileObject fo = FileUtil.getConfigFile("Actions/System/org-openide-actions-SaveAllAction.instance");
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertTrue("action found: " + obj, obj instanceof ContextAwareAction);
-        return (Action)obj;
+        Action a = Actions.forID("System", "org.openide.actions.SaveAllAction");
+        assertNotNull("action found: " + a, a);
+        return a;
     }
     
     public static final class Pool extends DataLoaderPool {

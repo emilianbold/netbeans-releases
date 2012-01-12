@@ -70,6 +70,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     </locjar>
 
     <locjar warnMissingDir="true"
+      basedir="core.netigso/src"
+      jarfile="${cluster}/modules/org-netbeans-core-netigso.jar">
+      <branding name="nb"/>
+    </locjar>
+
+    <locjar warnMissingDir="true"
       basedir="core.windows/src"
       jarfile="${cluster}/modules/org-netbeans-core-windows.jar">
       <branding name="nb"/>

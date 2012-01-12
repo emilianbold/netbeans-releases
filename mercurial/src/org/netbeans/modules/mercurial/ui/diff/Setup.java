@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
+import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
 
@@ -113,7 +114,7 @@ public final class Setup extends AbstractDiffSetup {
 
     private final HgRevision    firstRevision;
     private final HgRevision    secondRevision;
-    private FileInformation info;
+    private final FileInformation info;
 
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
@@ -128,6 +129,7 @@ public final class Setup extends AbstractDiffSetup {
         this.propertyName = propertyName;
         info = Mercurial.getInstance().getFileStatusCache().getStatus(baseFile);
         int status = info.getStatus();
+        FileStatus fileStatus = info.getStatus(null);
         
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
         String firstTitle;
@@ -143,8 +145,12 @@ public final class Setup extends AbstractDiffSetup {
                 if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     firstRevision = HgRevision.BASE;
-
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision.getRevisionNumber() }); // NOI18N
+                    File originalFile = null;
+                    if (fileStatus != null && fileStatus.isCopied()) {
+                        originalFile = fileStatus.getOriginalFile();
+                    }
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { //NOI18N
+                        originalFile == null ? firstRevision.getRevisionNumber() : originalFile.getName() });
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     firstRevision = null;
                     firstTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
@@ -177,7 +183,15 @@ public final class Setup extends AbstractDiffSetup {
                 } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     secondRevision = HgRevision.CURRENT;
-                    secondTitle = loc.getString("MSG_DiffPanel_LocalNew"); // NOI18N
+                    if (fileStatus != null && fileStatus.isCopied()) {
+                        if (fileStatus.getOriginalFile() != null && !fileStatus.getOriginalFile().exists()) {
+                            secondTitle = loc.getString("MSG_DiffPanel_LocalRenamed"); // NOI18N
+                        } else {
+                            secondTitle = loc.getString("MSG_DiffPanel_LocalCopied"); // NOI18N
+                        }
+                    } else {
+                        secondTitle = loc.getString("MSG_DiffPanel_LocalNew"); // NOI18N
+                    }
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     secondRevision = null;
                     secondTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
@@ -205,12 +219,17 @@ public final class Setup extends AbstractDiffSetup {
      * @param firstRevision first revision or <code>null</code> for inital.
      * @param secondRevision second revision
      */
-    public Setup(File baseFile, HgRevision firstRevision, HgRevision secondRevision, final boolean forceNonEditable) {
+    public Setup(File baseFile, HgRevision firstRevision, HgRevision secondRevision, FileInformation info, final boolean forceNonEditable) {
         this.baseFile = baseFile;
         this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision.getRevisionNumber());
+        this.info = info;
+        File firstSourceBaseFile = baseFile;
+        if (info != null && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) {
+            firstSourceBaseFile = info.getStatus(null).getOriginalFile();
+        }
+        firstSource = new DiffStreamSource(firstSourceBaseFile, firstRevision, firstRevision.getRevisionNumber());
         // XXX delete when UndoAction works correctly
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision.getRevisionNumber()) {
             @Override

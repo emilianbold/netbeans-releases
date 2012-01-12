@@ -56,7 +56,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 
 @ActionID(category="Project", id="org.netbeans.modules.maven.coverage.CoveragePopup")
-@ActionRegistration(displayName="Maven Coverage") // NOI18N
+@ActionRegistration(displayName="Maven Coverage", lazy=false) // NOI18N
 @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position=1205)
 public class CoveragePopup extends AbstractAction implements ContextAwareAction {
 

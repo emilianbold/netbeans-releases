@@ -656,6 +656,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                 RP.execute(new Runnable() {
                     @Override
                     public void run() {
+                        boolean frameworksRefreshed = false;
                         for (PhpModule.Change change : changes) {
                             switch (change) {
                                 case SOURCES_CHANGE:
@@ -669,6 +670,13 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                                     break;
                                 case IGNORED_FILES_CHANGE:
                                     project.fireIgnoredFilesChange();
+                                    break;
+                                case FRAMEWORK_CHANGE:
+                                    // refresh frameworks, just once
+                                    if (!frameworksRefreshed) {
+                                        frameworksRefreshed = true;
+                                        project.resetFrameworks();
+                                    }
                                     break;
                                 default:
                                     throw new IllegalStateException("Unknown change: " + change);

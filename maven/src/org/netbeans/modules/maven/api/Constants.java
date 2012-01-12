@@ -47,7 +47,11 @@ package org.netbeans.modules.maven.api;
  * @author mkleint
  */
 public interface Constants {
-    
+
+    /**
+     * MIME type for {@code *.pom}.
+     */
+    String POM_MIME_TYPE = "text/x-maven-pom+xml";
     /**
      * Maven property that hints netbeans to use a given license template.
      */ 

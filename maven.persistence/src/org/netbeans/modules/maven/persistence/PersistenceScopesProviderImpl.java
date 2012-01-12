@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.persistence;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
@@ -61,6 +62,7 @@ public class PersistenceScopesProviderImpl implements PersistenceScopesProvider,
 {
     private PersistenceScopesHelper scopesHelper = null;
     private PersistenceScopeProvider scopeProvider = null;
+    private final AtomicBoolean checked = new AtomicBoolean();
     
     /**
      * Creates a new instance of PersistenceScopesProviderImpl
@@ -70,7 +72,6 @@ public class PersistenceScopesProviderImpl implements PersistenceScopesProvider,
     {
         scopesHelper = new PersistenceScopesHelper();
         scopeProvider = provider;
-        checkScope();
     }
     
     /**
@@ -79,6 +80,9 @@ public class PersistenceScopesProviderImpl implements PersistenceScopesProvider,
      */
     public PersistenceScopes getPersistenceScopes()
     {
+        if (checked.compareAndSet(false, true)) {
+            checkScope();
+        }
         return scopesHelper.getPersistenceScopes();
     }
     

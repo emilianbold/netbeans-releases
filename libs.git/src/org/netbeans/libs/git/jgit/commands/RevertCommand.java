@@ -43,7 +43,6 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
-import org.netbeans.libs.git.jgit.JGitRevertResult;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,7 +68,7 @@ import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevertResult;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -85,8 +84,8 @@ public class RevertCommand extends GitCommand {
     private final String message;
     private final boolean commit;
 
-    public RevertCommand (Repository repository, String revision, String message, boolean commit, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public RevertCommand (Repository repository, GitClassFactory gitFactory, String revision, String message, boolean commit, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.monitor = monitor;
         this.revisionStr = revision;
         this.message = message;
@@ -109,6 +108,7 @@ public class RevertCommand extends GitCommand {
         RevCommit revertedCommit = Utils.findCommit(repository, revisionStr);
         RevWalk revWalk = new RevWalk(repository);
         DirCache dc = null;
+        GitRevertResult NO_CHANGE_INSTANCE = getClassFactory().createRevertResult(GitRevertResult.Status.NO_CHANGE, null, null, null);
         try {
             Ref headRef = repository.getRef(Constants.HEAD);
             if (headRef == null) {
@@ -129,27 +129,27 @@ public class RevertCommand extends GitCommand {
                     : message;
             if (merger.merge(headCommit, srcParent)) {
                 if (AnyObjectId.equals(headCommit.getTree().getId(), merger.getResultTreeId())) {
-                    result = JGitRevertResult.NO_CHANGE_INSTANCE;
+                    result = NO_CHANGE_INSTANCE;
                 } else {
                     DirCacheCheckout dco = new DirCacheCheckout(repository, headCommit.getTree(), dc = repository.lockDirCache(), merger.getResultTreeId());
                     dco.setFailOnConflict(true);
                     dco.checkout();
                     if (commit) {
                         RevCommit newHead = new Git(getRepository()).commit().setMessage(commitMessage).call();
-                        result = new JGitRevertResult(GitRevertResult.Status.REVERTED, new JGitRevisionInfo(newHead, repository), null, null);
+                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED, getClassFactory().createRevisionInfo(newHead, repository), null, null);
                     } else {
-                        result = new JGitRevertResult(GitRevertResult.Status.REVERTED_IN_INDEX, null, null, null);
+                        result = getClassFactory().createRevertResult(GitRevertResult.Status.REVERTED_IN_INDEX, null, null, null);
                     }
                 }
             } else {
                 if (merger.getFailingPaths() != null) {
-                    result = new JGitRevertResult(GitRevertResult.Status.FAILED, null,
+                    result = getClassFactory().createRevertResult(GitRevertResult.Status.FAILED, null,
                             merger.getMergeResults() == null ? null : getFiles(repository.getWorkTree(), merger.getMergeResults().keySet()),
                             getFiles(repository.getWorkTree(), merger.getFailingPaths().keySet()));
                 } else {
                     String mergeMessageWithConflicts = new MergeMessageFormatter().formatWithConflicts(commitMessage, merger.getUnmergedPaths());
                     repository.writeMergeCommitMsg(mergeMessageWithConflicts);
-                    result = new JGitRevertResult(GitRevertResult.Status.CONFLICTING, null, 
+                    result = getClassFactory().createRevertResult(GitRevertResult.Status.CONFLICTING, null, 
                             merger.getMergeResults() == null ? null : getFiles(repository.getWorkTree(), merger.getMergeResults().keySet()),
                             null);
                 }

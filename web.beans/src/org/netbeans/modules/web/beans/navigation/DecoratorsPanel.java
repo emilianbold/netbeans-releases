@@ -113,7 +113,7 @@ public class DecoratorsPanel extends BindingsPanel {
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
             Element annotation = controller.getTypes().asElement( 
                     annotationMirror.getAnnotationType());
-            if ( annotation.equals( delegate )){
+            if ( annotation!= null && annotation.equals( delegate )){
                 return true;
             }
         }

@@ -84,10 +84,12 @@ public final class Context extends Lookup {
         instanceContent.add(value);
     }
 
+    @Override
     public <T> T lookup(Class<T> clazz) {
         return delegate.lookup(clazz);
     }
 
+    @Override
     public <T> Result<T> lookup(Template<T> template) {
         return delegate.lookup(template);
     }

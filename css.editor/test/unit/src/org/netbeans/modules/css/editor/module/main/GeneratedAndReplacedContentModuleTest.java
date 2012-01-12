@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.properties.parser.GrammarResolver;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+
 /**
  *
  * @author mfukala@netbeans.org
@@ -50,30 +54,39 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
     public GeneratedAndReplacedContentModuleTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+    }
+
     public void testContent() {
-        assertPropertyDeclaration("content: attr(title)");
+        assertPropertyDeclaration("content: string(title)");
         assertPropertyDeclaration("content: \"Note: \" ");
-        assertPropertyDeclaration("content: \"after1\" pending(example1);");
+        assertPropertyDeclaration("content: \"after1\" string(example1);");
         assertPropertyDeclaration("content: \"Chapter \" counter(chapter) \"\\A\"; ");
         assertPropertyDeclaration("content: counter(item, decimal) '.';");
-        
+
         assertPropertyDeclaration("content: url(\"link\")");
-        assertPropertyDeclaration("content: url(\"link\"), normal");
-        assertPropertyDeclaration("content: url(\"link\"), counter(anid, anotherid)");
-        
     }
-        
+
+    public void testContent2() {
+        PropertyModel model = CssModuleSupport.getPropertyModel("content");
+
+        assertResolve(model.getGrammar(), "url(\"link\") normal");
+        assertResolve(model.getGrammar(), "url(\"link\") counter(anid, anotherid)");
+    }
+
     public void testCounter() {
         assertPropertyDeclaration("counter-increment: chapter;");
         assertPropertyDeclaration("counter-increment: chapter 10;");
         assertPropertyDeclaration("counter-reset: chapter;");
         assertPropertyDeclaration("counter-reset: chapter 2;");
     }
-    
+
     public void testQuotes() {
         assertPropertyDeclaration("quotes: 'arg1' 'arg2'");
         assertPropertyDeclaration("quotes: \"arg1\" 'arg2' 'arg3' 'arg4'");
     }
-    
 }

@@ -91,7 +91,7 @@ public class LibrariesChildrenFactory extends ChildFactory<ResourceNode>
     protected boolean createKeys(List<ResourceNode> nodes) {
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-        WLConnectionSupport support = new WLConnectionSupport(manager);
+        WLConnectionSupport support = manager.getConnectionSupport();
         try {
             Map<String,String> libraries = support.executeAction(
                     new WLConnectionSupport.JMXRuntimeAction<Map<String,String>>() {

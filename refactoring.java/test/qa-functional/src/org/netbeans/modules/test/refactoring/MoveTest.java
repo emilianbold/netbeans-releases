@@ -47,6 +47,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.MovePopupAction;
@@ -66,24 +67,40 @@ public class MoveTest extends ModifyingRefactoring {
     public MoveTest(String name) {
         super(name);
     }
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(MoveTest.class).addTest(
+                "testMoveClass",
+                "testMoveToTest",
+                "testMoveToNewPackage",
+                "performMove"
+                ).enableModules(".*").clusters(".*"));
+    }
 
     public void testMoveClass() {
-        performMove("Move.java", "moveSource", "modeDest", false, TargetDestination.SOURCE);
+        performMove("Move.java", "moveSource", "modeDest", false, MoveTest.TargetDestination.SOURCE);
     }
-    
+
     public void testMoveToTest() {
-        performMove("MoveToTest.java", "moveSource", "dest", true, TargetDestination.TESTS);
+        performMove("MoveToTest.java", "moveSource", "dest", true, MoveTest.TargetDestination.TESTS);
     }
 
     public void testMoveToNewPackage() {
-        performMove("MoveToNewPkg.java", "moveSource", "moveDestNew", true, TargetDestination.SOURCE);
+        performMove("MoveToNewPkg.java", "moveSource", "moveDestNew", true, MoveTest.TargetDestination.SOURCE);
     }
 
-    private void performMove(String fileName, String pkgName, String newPkg, boolean performInEditor, TargetDestination target) {
+    private void performMove(String fileName, String pkgName, String newPkg, boolean performInEditor, MoveTest.TargetDestination target) {
         if (performInEditor) {
             openSourceFile(pkgName, fileName);
+            new EventTool().waitNoEvent(1000);
             EditorOperator editor = new EditorOperator(fileName);
+            new EventTool().waitNoEvent(1000);
             editor.setCaretPosition(1, 1);
+            new EventTool().waitNoEvent(500);
+            editor.select(1, 1, 1);
+            new EventTool().waitNoEvent(1000);
+            editor.clickMouse();
+            new EventTool().waitNoEvent(1000);
             new MovePopupAction().perform(editor);
         } else {
             ProjectsTabOperator pto = ProjectsTabOperator.invoke();
@@ -91,11 +108,12 @@ public class MoveTest extends ModifyingRefactoring {
             SourcePackagesNode src = new SourcePackagesNode(prn);
             Node node = new Node(src, pkgName + treeSeparator + fileName);
             node.select();
+            new EventTool().waitNoEvent(1000);
             new MovePopupAction().perform(node);
         }
         MoveOperator mo = new MoveOperator();
         JComboBoxOperator location = mo.getLocationCombo();
-        switch(target) {
+        switch (target) {
             case SOURCE:
                 location.selectItem(0);
                 break;
@@ -109,8 +127,5 @@ public class MoveTest extends ModifyingRefactoring {
         dumpRefactoringResults();
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MoveTest.class).enableModules(".*").clusters(".*"));
-    }
+    
 }

@@ -1,5 +1,0 @@
-#!/bin/sh
-#Used to copy input nb.dir to build dir during installer build.
-#Native cp must be used because ant copy task does not keep
-#file permissions. Direct usage of cp from exec does not work with *.
-cp -p -r $*

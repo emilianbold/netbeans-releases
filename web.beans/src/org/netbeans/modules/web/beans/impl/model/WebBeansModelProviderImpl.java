@@ -252,14 +252,14 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
         for (BindingQualifier named : objects) {
             TypeElement element = named.getTypeElement();
             // filter stereotypes
-            if ( element.getKind() != ElementKind.ANNOTATION_TYPE) {
+            if ( element!= null && element.getKind() != ElementKind.ANNOTATION_TYPE) {
                 result.add( element );
             }
         }
         List<Element> members = AbstractObjectProvider.getNamedMembers( 
                 getModel().getHelper() );
         for (Element element : members) {
-            if ( element.getKind()!= ElementKind.METHOD ){
+            if ( element== null || element.getKind()!= ElementKind.METHOD ){
                 continue;
             }
             Set<Element> childSpecializes = getChildSpecializes( element, getModel() );
@@ -275,7 +275,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
             for (StereotypedObject bean : beans) {
                 TypeElement element = bean.getTypeElement();
                 // filter stereotypes
-                if ( element.getKind() != ElementKind.ANNOTATION_TYPE) {
+                if ( element!= null && element.getKind() != ElementKind.ANNOTATION_TYPE) {
                     result.add( element );
                 }
             }

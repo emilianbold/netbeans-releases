@@ -87,6 +87,7 @@ public class GlassfishWizardProvider implements ServerWizardProvider {
             ServerDetails.GLASSFISH_SERVER_3_1,
         },
                 new ServerDetails[] { 
+            ServerDetails.GLASSFISH_SERVER_3_1_2, 
             ServerDetails.GLASSFISH_SERVER_3_1_1, 
             ServerDetails.GLASSFISH_SERVER_3_0_1, 
         });

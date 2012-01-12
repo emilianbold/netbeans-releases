@@ -105,6 +105,7 @@ public class RefreshManager {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 } catch (ExecutionException ex) {
+                    System.err.println("Exception on file "+fo.getPath());
                     ex.printStackTrace(System.err);
                 }
             }

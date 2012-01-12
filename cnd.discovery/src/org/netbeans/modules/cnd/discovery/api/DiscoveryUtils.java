@@ -67,46 +67,42 @@ public class DiscoveryUtils {
 
     private DiscoveryUtils() {
     }
-    public static List<String> getSystemIncludePaths(ProjectProxy project, boolean isCPP) {
+    
+    public static ProjectBridge getProjectBridge(ProjectProxy project) {
         Project p = project.getProject();
         if (p != null){
             ProjectBridge bridge = new ProjectBridge(p);
             if (bridge.isValid()) {
-                return bridge.getSystemIncludePaths(isCPP);
+                return bridge;
             }
+        }
+        return null;
+    }
+    
+    public static List<String> getSystemIncludePaths(ProjectBridge bridge, boolean isCPP) {
+        if (bridge != null) {
+            return bridge.getSystemIncludePaths(isCPP);
         }
         return new ArrayList<String>();
     }
     
-    public static CompilerFlavor getCompilerFlavor(ProjectProxy project){
-        Project p = project.getProject();
-        if (p != null){
-            ProjectBridge bridge = new ProjectBridge(p);
-            if (bridge.isValid()) {
-                return bridge.getCompilerFlavor();
-            }
+    public static CompilerFlavor getCompilerFlavor(ProjectBridge bridge){
+        if (bridge != null) {
+            return bridge.getCompilerFlavor();
         }
         return null;
     }
 
-    public static String getCygwinDrive(ProjectProxy project){
-        Project p = project.getProject();
-        if (p != null){
-            ProjectBridge bridge = new ProjectBridge(p);
-            if (bridge.isValid()) {
-                return bridge.getCygwinDrive();
-            }
+    public static String getCygwinDrive(ProjectBridge bridge){
+        if (bridge != null) {
+            return bridge.getCygwinDrive();
         }
         return null;
     }
 
-    public static Map<String,String> getSystemMacroDefinitions(ProjectProxy project, boolean isCPP) {
-        Project p = project.getProject();
-        if (p != null){
-            ProjectBridge bridge = new ProjectBridge(p);
-            if (bridge.isValid()) {
-                return bridge.getSystemMacroDefinitions(isCPP);
-            }
+    public static Map<String,String> getSystemMacroDefinitions(ProjectBridge bridge, boolean isCPP) {
+        if (bridge != null) {
+            return bridge.getSystemMacroDefinitions(isCPP);
         }
         return new HashMap<String,String>();
     }
@@ -246,7 +242,7 @@ public class DiscoveryUtils {
      * parse compile line
      */
     public static List<String> gatherCompilerLine(String line, boolean isScriptOutput,
-            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts){
+            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
         for(String s : list){
@@ -278,22 +274,21 @@ public class DiscoveryUtils {
             list = newList;
         }
         Iterator<String> st = list.iterator();
-        String option = null; 
         if (st.hasNext()) {
-            option = st.next();
+            String option = st.next();
             if (option.equals("+") && st.hasNext()) { // NOI18N
-                option = st.next();
+                st.next();
             }
         }
-        return gatherCompilerLine(st, isScriptOutput, userIncludes, userMacros, libraries, languageArtifacts);
+        return gatherCompilerLine(st, isScriptOutput, userIncludes, userMacros, libraries, languageArtifacts, bridge, isCpp);
     }
     /**
      * parse compile line
      */
     public static List<String> gatherCompilerLine( Iterator<String> st, boolean isScriptOutput,
-            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts){
+            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
         boolean TRACE = false;
-        String option = null; 
+        String option; 
         List<String> what = new ArrayList<String>(1);
         while(st.hasNext()){
             option = st.next();
@@ -483,13 +478,8 @@ public class DiscoveryUtils {
                 if (st.hasNext()){
                     st.next();
                 }
-            // end of generation 2    
-            } else if (option.equals("-fopenmp")){ // NOI18N
-                userMacros.put("_OPENMP", "200505"); // NOI18N
-            } else if (option.equals("-xopenmp") || option.equals("-xopenmp=parallel") || option.equals("-xopenmp=noopt")){ // NOI18N
-                userMacros.put("_OPENMP", null); // NOI18N
             } else if (option.startsWith("-")){ // NOI18N
-                // Skip option
+                addMacrosByFlags(option, userMacros, bridge, isCpp);
             } else if (option.startsWith("ccfe")){ // NOI18N
                 // Skip option
             } else if (option.startsWith(">")){ // NOI18N
@@ -522,6 +512,22 @@ public class DiscoveryUtils {
         return what;
     }
 
+    private static void addMacrosByFlags(String option, Map<String, String> userMacros, ProjectBridge bridge, boolean isCpp) {
+        if (bridge != null) {
+            List<String> optionToMacros = bridge.getOptionToMacros(option, isCpp);
+            if (optionToMacros != null) {
+                for(String macro : optionToMacros) {
+                    int i = macro.indexOf('=');
+                    if (i > 0) {
+                        userMacros.put(macro.substring(0, i), macro.substring(i+1));
+                    } else {
+                        userMacros.put(macro, null);
+                    }
+                }
+            }
+        }
+    }
+    
     private static String removeQuotes(String path) {
         if (path.length() >= 2 && (path.charAt(0) == '\'' && path.charAt(path.length() - 1) == '\'' || // NOI18N
             path.charAt(0) == '"' && path.charAt(path.length() - 1) == '"')) {// NOI18N

@@ -76,8 +76,9 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
 import org.codehaus.plexus.util.FileUtils;
+import org.netbeans.api.actions.Openable;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -109,14 +110,11 @@ import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -139,9 +137,15 @@ import org.openide.util.lookup.Lookups;
  * @author  Milos Kleint 
  */
 public class DependencyNode extends AbstractNode implements PreferenceChangeListener {
-    private static final String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
-    private static final String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
-    private static final String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
+    private static final @StaticResource String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
+    private static final @StaticResource String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
+    private static final @StaticResource String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
+    private static final @StaticResource String ARTIFACT_ICON = "org/netbeans/modules/maven/ArtifactIcon.png";
+    private static final @StaticResource String DEPENDENCY_ICON = "org/netbeans/modules/maven/DependencyIcon.png";
+    private static final @StaticResource String MAVEN_ICON = "org/netbeans/modules/maven/resources/Maven2Icon.gif";
+    private static final @StaticResource String TRANSITIVE_ARTIFACT_ICON = "org/netbeans/modules/maven/TransitiveArtifactIcon.png";
+    private static final @StaticResource String TRANSITIVE_DEPENDENCY_ICON = "org/netbeans/modules/maven/TransitiveDependencyIcon.png";
+    private static final @StaticResource String TRANSITIVE_MAVEN_ICON = "org/netbeans/modules/maven/TransitiveMaven2Icon.gif";
 
     private Artifact art;
     private NbMavenProjectImpl project;
@@ -235,20 +239,20 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private void setIconBase(boolean longLiving) {
         if (longLiving && isDependencyProjectAvailable()) {
             if (isTransitive()) {
-                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveMaven2Icon.gif"); //NOI18N
+                setIconBaseWithExtension(TRANSITIVE_MAVEN_ICON);
             } else {
-                setIconBaseWithExtension("org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
+                setIconBaseWithExtension(MAVEN_ICON);
             }
         } else if (isTransitive()) {
             if (isAddedToCP()) {
-                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveDependencyIcon.png"); //NOI18N
+                setIconBaseWithExtension(TRANSITIVE_DEPENDENCY_ICON);
             } else {
-                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveArtifactIcon.png"); //NOI18N
+                setIconBaseWithExtension(TRANSITIVE_ARTIFACT_ICON);
             }
-        } else if (isAddedToCP()) { //NOI18N
-            setIconBaseWithExtension("org/netbeans/modules/maven/DependencyIcon.png"); //NOI18N
+        } else if (isAddedToCP()) {
+            setIconBaseWithExtension(DEPENDENCY_ICON);
         } else {
-            setIconBaseWithExtension("org/netbeans/modules/maven/ArtifactIcon.png"); //NOI18N
+            setIconBaseWithExtension(ARTIFACT_ICON);
         }
     }
 
@@ -258,6 +262,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         "DESC_Dep3=Version:",
         "DESC_Dep4=Type:",
         "DESC_Dep5=Classifier:",
+        "DESC_scope=Scope:",
         "DESC_via=Via:"
     })
     @Override public String getShortDescription() {
@@ -269,6 +274,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         if (art.getClassifier() != null) {
             buf.append("<i>").append(DESC_Dep5()).append("</i><b> ").append(art.getClassifier()).append("</b><br>");//NOI18N
         }
+        buf.append("<i>").append(DESC_scope()).append("</i><b> ").append(art.getScope()).append("</b><br>");
         List<String> trail = art.getDependencyTrail();
         for (int i = trail.size() - 2; i > 0 && /* just to be safe */ i < trail.size(); i--) {
             String[] id = trail.get(i).split(":"); // g:a:t[:c]:v
@@ -318,11 +324,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     @Override
     public String getHtmlDisplayName() {
-        String version = ""; //NOI18N
+        StringBuilder n = new StringBuilder("<html>");
+        n.append(getDisplayName());
         if (ArtifactUtils.isSnapshot(art.getVersion()) && art.getVersion().indexOf("SNAPSHOT") < 0) { //NOI18N
-            version = " <b>[" + art.getVersion() + "]</b>"; //NOI18N
+            n.append(" <b>[").append(art.getVersion()).append("]</b>");
         }
-        return "<html>" + getDisplayName() + version + ("compile".equalsIgnoreCase(art.getScope()) ? "" : "  <i>[" + art.getScope() + "]</i>") + "</html>"; // - not sure if shall ne translated..
+        if (!art.getArtifactHandler().isAddedToClasspath() && !Artifact.SCOPE_COMPILE.equals(art.getScope())) {
+            n.append("  <i>[").append(art.getScope()).append("]</i>");
+        }
+        n.append("</html>");
+        return n.toString();
     }
 
     private String createName() {
@@ -345,7 +356,6 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
 //        acts.add(new EditAction());
 //        acts.add(RemoveDepAction.get(RemoveDepAction.class));
-//        acts.add(new DownloadJavadocAndSourcesAction());
         if (!hasJavadocInRepository()) {
             acts.add(new DownloadJavadocSrcAction(true));
             if (isAddedToCP()) {
@@ -1004,7 +1014,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return null;
         }
 
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override public boolean contains(FileObject file) {
             return true;
         }
 
@@ -1078,52 +1088,34 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
             public void actionPerformed(ActionEvent e) {
                 DataObject dobj = getOriginal().getLookup().lookup(DataObject.class);
-                if (dobj != null && (javadoc || !dobj.getPrimaryFile().isFolder())) {
+                if (dobj == null) {
+                    return;
+                }
+                if (javadoc) {
                     try {
                         FileObject fil = dobj.getPrimaryFile();
                         FileObject jar = FileUtil.getArchiveFile(fil);
                         FileObject root = FileUtil.getArchiveRoot(jar);
                         String rel = FileUtil.getRelativePath(root, fil);
-                        if (rel.endsWith(".class")) { //NOI18N
-                            rel = rel.replaceAll("class$", javadoc ? "html" : ""); //NOI18N
+                        rel = rel.replaceAll("[.]class$", ".html"); //NOI18N
+                        JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.getURL());
+                        if (fil.isFolder()) {
+                            rel = rel + "/package-summary.html"; //NOI18N
                         }
-                        if (javadoc) {
-                            JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.getURL());
-                            if (fil.isFolder()) {
-                                rel = rel + "/package-summary.html"; //NOI18N
-                            }
-                            URL javadocUrl = findJavadoc(rel, res.getRoots());
-                            if (javadocUrl != null) {
-                                HtmlBrowser.URLDisplayer.getDefault().showURL(javadocUrl);
-                            } else {
-                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
-                            }
-                            return;
+                        URL javadocUrl = findJavadoc(rel, res.getRoots());
+                        if (javadocUrl != null) {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(javadocUrl);
                         } else {
-                            SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(root.getURL());
-                            for (FileObject srcRoot : res.getRoots()) {
-                                FileObject src = srcRoot.getFileObject(rel + "java"); //NOI18N
-                                if (src == null) {
-                                    src = srcRoot.getFileObject(rel + "scala"); //NOI18N
-                                }
-                                if (src == null) {
-                                    src = srcRoot.getFileObject(rel + "groovy"); //NOI18N
-                                }
-                                if (src != null) {
-                                    DataObject dobj2 = DataObject.find(src);
-                                    if (tryOpen(dobj2)) {
-                                        return;
-                                    }
-                                }
-                            }
+                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
                         }
                     } catch (FileStateInvalidException ex) {
                         Exceptions.printStackTrace(ex);
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
-                    //applies to  show source only..
-                    tryOpen(dobj);
+                } else if (!dobj.getPrimaryFile().isFolder()) {
+                    Openable oc = dobj.getLookup().lookup(Openable.class);
+                    if (oc != null) {
+                        oc.open();
+                    }
                 }
             }
 
@@ -1153,20 +1145,6 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 return null;
             }
 
-            private boolean tryOpen(DataObject dobj2) {
-                EditCookie ec = dobj2.getLookup().lookup(EditCookie.class);
-                if (ec != null) {
-                    ec.edit();
-                    return true;
-                } else {
-                    OpenCookie oc = dobj2.getLookup().lookup(OpenCookie.class);
-                    if (oc != null) {
-                        oc.open();
-                        return true;
-                    }
-                }
-                return false;
-            }
         }
     }
 

@@ -730,7 +730,7 @@ public final class GeneratorUtilities {
                     el = imp.isStatic()
                             ? impElement.getKind().isClass() || impElement.getKind().isInterface() ? impElement : elementUtilities.enclosingTypeElement(impElement)
                             : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
-                    if (currentToImportElement == impElement || isStar && currentToImportElement == el) {
+                    if (isStatic == imp.isStatic() && (currentToImportElement == impElement || isStar && currentToImportElement == el)) {
                         imports.remove(currentExisting);                        
                     } else if (comparator.compare(currentToImportElement, imp) > 0) {
                         break;
@@ -772,7 +772,7 @@ public final class GeneratorUtilities {
             TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
-            AssignComments translator = new AssignComments(info, original, false, seq, unit);
+            AssignComments translator = new AssignComments(info, original, seq, unit);
             
             translator.scan(toMap, null);
 

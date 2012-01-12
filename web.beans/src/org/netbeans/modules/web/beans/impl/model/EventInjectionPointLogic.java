@@ -66,6 +66,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.ReferenceType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
@@ -107,7 +108,7 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
         }
         
         TypeMirror type = getParameterType(element, parent, EVENT_INTERFACE);
-        if ( type == null ){
+        if ( type == null || type.getKind() == TypeKind.ERROR ){
             return Collections.emptyList();
         }
         
@@ -359,6 +360,9 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
                 DeclaredType annotationType = annotationMirror.getAnnotationType();
                 TypeElement annotation = (TypeElement)annotationType.asElement();
+                if ( annotation == null ){
+                    continue;
+                }
                 if ( OBSERVES_ANNOTATION.contentEquals( annotation.getQualifiedName())){
                     return new Triple<VariableElement, Integer, Void>(parameter, index, null);
                 }
@@ -411,6 +415,9 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
     private boolean isAssignable( TypeMirror subject , TypeMirror toType ,
             AbstractAssignabilityChecker checker)
     {
+        if ( subject == null ){
+            return false;
+        }
         boolean assignable = false;
         
         Element typeElement = getCompilationController().getTypes().asElement( toType );
@@ -446,6 +453,9 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             getModel().getHelper().getCompilationController();
         TypeElement observesType = compilationController.getElements().getTypeElement(
                 OBSERVES_ANNOTATION);
+        if ( observesType == null ){
+            return result;
+        }
         ElementHandle<TypeElement> observesHandle = ElementHandle.create(observesType);
         final Set<ElementHandle<TypeElement>> elementHandles = compilationController.
             getClasspathInfo().getClassIndex().getElements(
@@ -484,6 +494,9 @@ abstract class EventInjectionPointLogic extends ParameterInjectionPointLogic {
             DeclaredType annotationType = annotationMirror.getAnnotationType();
             Element annotationElement = annotationType.asElement();
             TypeElement annotation = (TypeElement) annotationElement;
+            if ( annotation == null ){
+                continue;
+            }
             annotationFqns.add( annotation.getQualifiedName().toString());
         }
         return annotationFqns;

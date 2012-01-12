@@ -70,7 +70,7 @@ public class ActionUtilsTest extends NbTestCase {
         super(name);
     }
     
-    private FileObject dir, f1, f2, subdir, f3, fx, subdir2, f3a, f4, subsubdir, f5, f5a;
+    private FileObject dir, f1, f1form, f2, subdir, f3, fx, subdir2, f3a, f4, subsubdir, f5, f5a;
     private DataObject d1, d2, d3, dx;
     private Node n1, n2, n3, nx;
     
@@ -80,6 +80,7 @@ public class ActionUtilsTest extends NbTestCase {
         clearWorkDir();
         dir = FileUtil.toFileObject(getWorkDir());
         f1 = dir.createData("f1.data");
+        f1form = dir.createData("f1.form");
         f2 = dir.createData("f2");
         subdir = dir.createFolder("sub");
         f3 = subdir.createData("f3.data");
@@ -116,6 +117,8 @@ public class ActionUtilsTest extends NbTestCase {
         assertEquals("one sub/*.data", Collections.singletonList(f3), filesFrom(new Node[] {n3}, subdir, ".data", true));
         assertEquals("duplicates removed (cf. #50644)", Collections.singletonList(f1), filesFrom(new Node[] {n1, n1}, null, null, true));
         assertEquals("duplicates removed #2 (cf. #50644)", Arrays.asList(new FileObject[] {f1, f2}), filesFrom(new Node[] {n1, n2, n1}, null, null, true));
+        assertEquals("two selected files", Arrays.asList(new FileObject[] {f1, f2}), files2List(ActionUtils.findSelectedFiles(Lookups.fixed(f1, f2), null, null, true)));
+        assertEquals("one form, one selection", Collections.singletonList(f1), files2List(ActionUtils.findSelectedFiles(Lookups.fixed(f1, f1form), null, ".data", true)));
     }
     
     private static Lookup context(Node[] sel) {

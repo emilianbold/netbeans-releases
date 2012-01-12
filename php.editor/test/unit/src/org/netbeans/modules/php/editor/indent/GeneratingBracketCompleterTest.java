@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -64,26 +64,26 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Jan Lahoda
  */
 public class GeneratingBracketCompleterTest extends TestBase {
-    
+
     public GeneratingBracketCompleterTest(String testName) {
         super(testName);
-    }            
+    }
 
     public static TestSuite suite() {
         TestSuite ts = new TestSuite();
-        
+
         ts.addTest(new GeneratingBracketCompleterTest("testFoo"));
-        
+
         return ts;
     }
-    
+
     public void testFoo() throws Exception {}
-    
+
     public void testFunctionDocumentationParam() throws Exception {
         performInsertBreak( "<?php\n" +
                             "/**^\n" +
                             "function foo($i) {\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n",
                             "<?php\n" +
                             "/**\n" +
@@ -91,17 +91,17 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             " * @param " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $i\n" +
                             " */\n" +
                             "function foo($i) {\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n");
     }
-    
+
     public void testFunctionDocumentationGlobalVar() throws Exception {
         performInsertBreak( "<?php\n" +
                             "$r = 1;\n" +
                             "/**^\n" +
                             "function foo() {\n" +
                             "    global $r;\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n",
                             "<?php\n" +
                             "$r = 1;\n" +
@@ -111,16 +111,16 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             " */\n" +
                             "function foo() {\n" +
                             "    global $r;\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n");
     }
-    
+
     public void testFunctionDocumentationStaticVar() throws Exception {
         performInsertBreak( "<?php\n" +
                             "/**^\n" +
                             "function foo() {\n" +
                             "    static $r;\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n",
                             "<?php\n" +
                             "/**\n" +
@@ -129,16 +129,16 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             " */\n" +
                             "function foo() {\n" +
                             "    static $r;\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n");
     }
-    
+
     public void testFunctionDocumentationReturn() throws Exception {
         performInsertBreak( "<?php\n" +
                             "/**^\n" +
                             "function foo() {\n" +
                             "    return \"\";\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n",
                             "<?php\n" +
                             "/**\n" +
@@ -147,10 +147,10 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             " */\n" +
                             "function foo() {\n" +
                             "    return \"\";\n" +
-                            "}\n" + 
+                            "}\n" +
                             "?>\n");
     }
-    
+
     public void testGlobalVariableDocumentation() throws Exception {
         performInsertBreak( "<?php\n" +
                             "/**^\n" +
@@ -165,7 +165,7 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             "$GLOBALS['test'] = \"\";\n" +
                             "?>\n");
     }
-    
+
     public void testFieldDocumentation() throws Exception {
         performInsertBreak( "<?php\n" +
                             "class foo {\n" +
@@ -183,7 +183,7 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             "}\n" +
                             "?>\n");
     }
-    
+
     public void testMethodDocumentation() throws Exception {
         performInsertBreak( "<?php\n" +
                             "class foo {\n" +
@@ -203,7 +203,7 @@ public class GeneratingBracketCompleterTest extends TestBase {
                             "}\n" +
                             "?>\n");
     }
-    
+
     private void performInsertBreak(final String original, final String expected) throws Exception {
         final int insertOffset = original.indexOf('^');
         final int finalCaretPos = expected.indexOf('^');
@@ -211,24 +211,26 @@ public class GeneratingBracketCompleterTest extends TestBase {
         final String expectedFin = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos + 1);
         performTest(new String[] {originalFin}, new UserTask() {
             public void cancel() {}
-            
+
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                insertBreak(parameter, originalFin, expectedFin, insertOffset, finalCaretPos);
+                if (parameter != null) {
+                    insertBreak(parameter, originalFin, expectedFin, insertOffset, finalCaretPos);
+                }
             }
         });
     }
-    
+
     private void insertBreak(ParserResult info, String original, String expected, int insertOffset, int finalCaretPos) throws BadLocationException, DataObjectNotFoundException, IOException {
-        
+
         BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);//PHPBracketCompleterTest.getDocument(original);
         assertNotNull(doc);
-        
+
         doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
         doc.putProperty("mimeType", FileUtils.PHP_MIME_TYPE);
 //        doc.putProperty(Document.StreamDescriptionProperty, DataObject.find(info.getFileObject()));
-        
+
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(insertOffset);

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -54,9 +55,16 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.netbeans.modules.editor.lib2.view.EditorViewFactory;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  * View factory creating views for collapsed folds.
@@ -65,7 +73,7 @@ import org.netbeans.modules.editor.lib2.view.ViewUtils;
  */
 
 @SuppressWarnings("ClassWithMultipleLoggers")
-public final class FoldViewFactory extends EditorViewFactory implements FoldHierarchyListener {
+public final class FoldViewFactory extends EditorViewFactory implements FoldHierarchyListener, LookupListener {
 
     /**
      * Component's client property which can be set to view folds expanded for tooltip fold preview.
@@ -93,12 +101,40 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     private Iterator<Fold> collapsedFoldIterator;
 
     private boolean viewFoldsExpanded;
+    
+    /**
+     * Composite Color settings from MIME lookup
+     */
+    private FontColorSettings   colorSettings;
+
+    /**
+     * Lookup results for color settings, being listened for changes.
+     */
+    private Lookup.Result       colorSource;
 
     public FoldViewFactory(View documentView) {
         super(documentView);
         foldHierarchy = FoldHierarchy.get(textComponent());
         foldHierarchy.addFoldHierarchyListener(this);
         viewFoldsExpanded = Boolean.TRUE.equals(textComponent().getClientProperty(VIEW_FOLDS_EXPANDED_PROPERTY));
+        
+        String mime = DocumentUtilities.getMimeType(document());
+        
+        Lookup lkp = MimeLookup.getLookup(mime);
+        colorSource = lkp.lookupResult(FontColorSettings.class);
+        colorSource.addLookupListener(WeakListeners.create(LookupListener.class, this, colorSource));
+        colorSettings = (FontColorSettings)colorSource.allInstances().iterator().next();
+    }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        refreshColors();
+    }
+
+    private void refreshColors() {
+        colorSettings = (FontColorSettings)colorSource.allInstances().iterator().next();
+        int end = document().getLength();
+        fireEvent(Collections.singletonList(EditorViewFactory.createChange(0, end)));
     }
 
     @Override
@@ -138,12 +174,12 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     public EditorView createView(int startOffset, int limitOffset) {
         assert (startOffset == foldStartOffset) : "startOffset=" + startOffset + " != foldStartOffset=" + foldStartOffset; // NOI18N
         if (fold.getEndOffset() <= limitOffset) {
-            return new FoldView(textComponent(), fold);
+            return new FoldView(textComponent(), fold, colorSettings);
         } else {
             return null;
         }
     }
-
+    
     @Override
     public int viewEndOffset(int startOffset, int limitOffset) {
         int foldEndOffset = fold.getEndOffset();

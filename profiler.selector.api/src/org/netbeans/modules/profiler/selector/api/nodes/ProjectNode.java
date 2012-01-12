@@ -57,7 +57,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jaroslav Bachorik
  */
 public class ProjectNode extends ContainerNode {
-
+    final private Lookup.Provider project;
+    
     private static class Children extends SelectorChildren<ProjectNode> {
 
         private final boolean includeSubprojects;
@@ -79,9 +80,7 @@ public class ProjectNode extends ContainerNode {
     /** Creates a new instance of ProjectNode */
     public ProjectNode(final Lookup.Provider project, ContainerNode root) {
         super(ProjectUtilities.getDisplayName(project), ProjectUtilities.getIcon(project), root, new ProxyLookup(project.getLookup(), Lookups.singleton(project))); // NOI18N
-        // TODO
-//        ProfilerTypeUtils.getMainClasses(project);
-//        setValid(ClasspathInfoFactory.infoFor(project, true) != null);
+        this.project = project;
     }
 
     public ProjectNode(Lookup.Provider project) {
@@ -102,5 +101,15 @@ public class ProjectNode extends ContainerNode {
 
     protected SelectorChildren getChildren() {
         return new Children(false);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj) && project.equals(((ProjectNode)obj).project);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() + (project != null ? project.hashCode() : 0);
     }
 }

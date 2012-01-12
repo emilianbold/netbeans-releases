@@ -144,6 +144,20 @@ public class TldLibrary extends LibraryDescriptor {
                 }
             }
 
+            //scan the <function> nodes content - the tag descriptions
+            NodeList functionNodes = doc.getElementsByTagName("function"); //NOI18N
+            if (functionNodes != null) {
+                for (int i = 0; i < functionNodes.getLength(); i++) {
+                    Node function = functionNodes.item(i);
+                    String funcName = getTextContent(function, "name"); //NOI18N
+                    String funcSignature = getTextContent(function, "function-signature"); //NOI18N
+                    String funcDescription = getTextContent(function, "description"); //NOI18N
+                    String funcExample = getTextContent(function, "example"); //NOI18N
+
+                    functions.put(funcName, new FunctionImpl(funcName, funcSignature, funcDescription, funcExample));
+                }
+            }
+
         } catch (ParserConfigurationException ex) {
             throw new LibraryDescriptorException("Error parsing TLD library: ", ex); //NOI18N
         } catch (SAXException ex) {

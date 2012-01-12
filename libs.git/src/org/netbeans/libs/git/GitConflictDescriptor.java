@@ -42,35 +42,40 @@
 
 package org.netbeans.libs.git;
 
-import org.openide.util.NbBundle;
+import org.netbeans.libs.git.jgit.Utils;
 
 /**
  *
  * @author ondra
  */
-public interface GitConflictDescriptor {
+public final class GitConflictDescriptor {
+    private Type type;
 
+    public GitConflictDescriptor (Type type) {
+        this.type = type;
+    }
+    
     public static enum Type {
         BOTH_DELETED {
             @Override
             public String getDescription () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_BOTH_DELETED.desc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_DELETED.desc"); //NOI18N
             }
 
             @Override
             public String toString () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_BOTH_DELETED.shortDesc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_DELETED.shortDesc"); //NOI18N
             }
         },
         ADDED_BY_US {
             @Override
             public String getDescription () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_ADDED_BY_US.desc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_ADDED_BY_US.desc"); //NOI18N
             }
 
             @Override
             public String toString () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_ADDED_BY_US.shortDesc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_ADDED_BY_US.shortDesc"); //NOI18N
             }
         },
         /**
@@ -79,23 +84,23 @@ public interface GitConflictDescriptor {
         DELETED_BY_THEM {
             @Override
             public String getDescription () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_DELETED_BY_THEM.desc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_DELETED_BY_THEM.desc"); //NOI18N
             }
 
             @Override
             public String toString () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_DELETED_BY_THEM.shortDesc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_DELETED_BY_THEM.shortDesc"); //NOI18N
             }
         },
         ADDED_BY_THEM {
             @Override
             public String getDescription () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_ADDED_BY_THEM.desc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_ADDED_BY_THEM.desc"); //NOI18N
             }
 
             @Override
             public String toString () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_ADDED_BY_THEM.shortDesc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_ADDED_BY_THEM.shortDesc"); //NOI18N
             }
         },
         /**
@@ -104,12 +109,12 @@ public interface GitConflictDescriptor {
         DELETED_BY_US {
             @Override
             public String getDescription () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_DELETED_BY_US.desc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_DELETED_BY_US.desc"); //NOI18N
             }
 
             @Override
             public String toString () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_DELETED_BY_US.shortDesc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_DELETED_BY_US.shortDesc"); //NOI18N
             }
         },
         /**
@@ -118,12 +123,12 @@ public interface GitConflictDescriptor {
         BOTH_ADDED {
             @Override
             public String getDescription () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_BOTH_ADDED.desc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_ADDED.desc"); //NOI18N
             }
 
             @Override
             public String toString () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_BOTH_ADDED.shortDesc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_ADDED.shortDesc"); //NOI18N
             }
         },
         /**
@@ -132,17 +137,19 @@ public interface GitConflictDescriptor {
         BOTH_MODIFIED {
             @Override
             public String getDescription () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_BOTH_MODIFIED.desc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_MODIFIED.desc"); //NOI18N
             }
 
             @Override
             public String toString () {
-                return NbBundle.getMessage(GitConflictDescriptor.class, "MSG_GitConflictDescriptor_BOTH_MODIFIED.shortDesc"); //NOI18N
+                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_MODIFIED.shortDesc"); //NOI18N
             }
         };
 
         public abstract String getDescription ();
     }
 
-    Type getType ();
+    public Type getType () {
+        return type;
+    }
 }

@@ -226,14 +226,17 @@ public class ProgressSupportTest {
     private static class PL implements ProgressListener {
         private ProgressEvent event;
 
+        @Override
         public void start(ProgressEvent event) {
             this.event = event;
         }
 
+        @Override
         public void step(ProgressEvent event) {
             this.event = event;
         }
 
+        @Override
         public void stop(ProgressEvent event) {
             this.event = event;
         }

@@ -41,60 +41,47 @@
  */
 package org.netbeans.modules.coherence;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.coherence.generators.CodegenUtils;
 import org.netbeans.modules.coherence.generators.Constants;
 import org.netbeans.modules.coherence.generators.Implements;
 import org.netbeans.modules.coherence.generators.NullParameterException;
 import org.netbeans.modules.coherence.generators.ReadExternal;
 import org.netbeans.modules.coherence.generators.WriteExternal;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.coherence.project.CoherenceProjectUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-public class POFMethodGenerator implements CodeGenerator {
+public final class POFMethodGenerator implements CodeGenerator {
 
-    private static final Logger logger = Logger.getLogger(POFMethodGenerator.class.getCanonicalName());
-    JTextComponent textComp;
-
-    /**
-     * 
-     * @param context containing JTextComponent and possibly other items registered by {@link CodeGeneratorContextProvider}
-     */
-    private POFMethodGenerator(Lookup context) { // Good practice is not to save Lookup outside ctor
-        textComp = context.lookup(JTextComponent.class);
-    }
-
-    public static class Factory implements CodeGenerator.Factory {
-
-        @Override
-        public List<? extends CodeGenerator> create(Lookup context) {
-            return Collections.singletonList(new POFMethodGenerator(context));
-        }
-    }
-
-    /**
-     * The name which will be inserted inside Insert Code dialog
-     */
-    @Override
-    public String getDisplayName() {
-        return "Coherence PortableObject Methods";
-    }
+    private static final Logger LOGGER = Logger.getLogger(POFMethodGenerator.class.getCanonicalName());
+    private final JTextComponent textComp;
     private GeneratorFactory factory = null;
     private Implements pofImplements = null;
     private Constants pofConstants = null;
@@ -102,9 +89,23 @@ public class POFMethodGenerator implements CodeGenerator {
     private WriteExternal pofWriteExternal = null;
 
     /**
-     * This will be invoked when user chooses this Generator from Insert Code
-     * dialog
+     * Created new POF method generator.
+     *
+     * @param textComp {@code JTextComponent) of the related file
      */
+    @NbBundle.Messages({
+        "name.pom.method.generator.action=Coherence PortableObject Methods",
+        "msg.overwrite.portable.object=PortableObject has already been implemented. Overwrite?"
+    })
+    private POFMethodGenerator(JTextComponent textComp) {
+        this.textComp = textComp;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return Bundle.name_pom_method_generator_action();
+    }
+
     @Override
     public void invoke() {
         try {
@@ -117,8 +118,7 @@ public class POFMethodGenerator implements CodeGenerator {
             Document doc = textComp.getDocument();
             JavaSource javaSource = JavaSource.forDocument(doc);
 
-            // First we need to check if the code already exists within the java
-            // and if so is it ok to replace
+            // Should not be did here but in the create method of the factory!
             if (isOkToModify(javaSource)) {
                 modifyJava(javaSource);
             }
@@ -127,10 +127,11 @@ public class POFMethodGenerator implements CodeGenerator {
             Exceptions.printStackTrace(e);
         }
     }
-    // Build Variables
-    boolean insertOverwriteCode = true;
 
     protected boolean isOkToModify(JavaSource javaSource) throws IOException {
+
+        final AtomicBoolean insertOverwriteCode = new AtomicBoolean(true);
+
         // Create a working Task to check the code
         CancellableTask task = new CancellableTask<WorkingCopy>() {
 
@@ -149,8 +150,9 @@ public class POFMethodGenerator implements CodeGenerator {
                                 || pofWriteExternal.isWriteExternalPresent(workingCopy, clazz)
                                 || pofReadExternal.isReadExternalPresent(workingCopy, clazz)
                                 || pofConstants.isConstantsPresent(workingCopy, clazz)) {
-                            int option = JOptionPane.showConfirmDialog(null, "PortableObject has already been implemented. Overwrite ?");
-                            insertOverwriteCode = (option == 0);
+                            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.msg_overwrite_portable_object());
+                            Object ret = DialogDisplayer.getDefault().notify(desc);
+                            insertOverwriteCode.set(ret == NotifyDescriptor.YES_OPTION);
                         }
                         break;
                     }
@@ -159,10 +161,11 @@ public class POFMethodGenerator implements CodeGenerator {
         };
         ModificationResult result = javaSource.runModificationTask(task);
 
-        return insertOverwriteCode;
+        return insertOverwriteCode.get();
     }
 
     protected void modifyJava(JavaSource javaSource) throws IOException {
+
         /*
          * Create Code Removal Task
          * ========================
@@ -262,6 +265,7 @@ public class POFMethodGenerator implements CodeGenerator {
                         }
                     }
                 } catch (NullParameterException e) {
+                    LOGGER.log(Level.WARNING, null, e);
                 }
             }
 
@@ -272,8 +276,34 @@ public class POFMethodGenerator implements CodeGenerator {
         // Commit the Code Changes
         ModificationResult insertResult = javaSource.runModificationTask(insertTask);
         insertResult.commit();
-
     }
 
+    public static class Factory implements CodeGenerator.Factory {
 
+        @Override
+        public List<? extends CodeGenerator> create(Lookup context) {
+            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+
+            path = path != null ? CodegenUtils.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
+            if (component == null || controller == null || path == null) {
+                return ret;
+            }
+
+            // check class
+            TypeElement typeElement = (TypeElement) controller.getTrees().getElement(path);
+            if (typeElement == null || !typeElement.getKind().isClass()) {
+                return ret;
+            }
+
+            // check Coherence library availability
+            Project owner = FileOwnerQuery.getOwner(controller.getFileObject());
+            if (CoherenceProjectUtils.isCoherenceProject(owner)) {
+                ret.add(new POFMethodGenerator(component));
+            }
+            return ret;
+        }
+    }
 }

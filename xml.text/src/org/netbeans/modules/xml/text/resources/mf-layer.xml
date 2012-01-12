@@ -51,6 +51,9 @@ made subject to such option by the copyright holder.
                 <folder name="xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
+                <folder name="xsd+xml">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
                 <folder name="xml-wsdl">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>

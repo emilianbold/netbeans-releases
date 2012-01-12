@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -95,12 +96,13 @@ import org.osgi.service.startlevel.StartLevel;
 })
 public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
-    private static final ThreadLocal<Boolean> SELF_QUERY = new ThreadLocal<Boolean>();
+    private static final AtomicBoolean SELF_QUERY = new AtomicBoolean();
     private static final String[] EMPTY = {};
 
     private Framework framework;
     private ClassLoader frameworkLoader;
     private NetigsoActivator activator;
+    private Integer defaultStartLevel;
 
     Framework getFramework() {
         return framework;
@@ -130,6 +132,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this)); // NOI18N
             configMap.put("felix.log.level", "4"); // NOI18N
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
+            String startLevel = NbBundle.getMessage(Netigso.class, "FRAMEWORK_START_LEVEL");
+            if (!startLevel.isEmpty()) {
+                configMap.put("org.osgi.framework.startlevel.beginning", startLevel); // NOI18N
+            }
             FrameworkFactory frameworkFactory = lkp.lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
                 throw new IllegalStateException(
@@ -164,10 +170,6 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     @Override
     protected void start() {
         try {
-            String startLevel = NbBundle.getMessage(Netigso.class, "FRAMEWORK_START_LEVEL");
-            if (startLevel.length() > 0) {
-                setFrameworkStartLevel(framework.getBundleContext(), Integer.parseInt(startLevel));
-            }
             framework.start();
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
@@ -220,6 +222,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         } catch (BundleException ex) {
             LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
         }
+    }
+
+    @Override
+    protected int defaultStartLevel() {
+        if (defaultStartLevel == null) {
+            defaultStartLevel = Integer.parseInt(NbBundle.getMessage(Netigso.class, "DEFAULT_BUNDLE_START_LEVEL"));
+        }
+        return defaultStartLevel;
     }
 
     @Override
@@ -402,6 +412,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                     LOG.log(Level.FINE, "Installing bundle {0}", loc);
                     b = bc.installBundle(loc);
                     int startLevel = m.getStartLevel();
+                    if (startLevel == -1) {
+                        startLevel = defaultStartLevel();
+                    }
                     if (startLevel > 0) {
                         setBundleStartLevel(bc, b, startLevel);
                     }
@@ -580,10 +593,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     public byte[] fromArchive(long bundleId, String resource, ArchiveResources ar) throws IOException {
-        if (Boolean.TRUE.equals(SELF_QUERY.get())) {
+        if (SELF_QUERY.get()) {
             return ar.resource(resource);
         }
         return fromArchive(ar, resource);
+    }
+
+    public boolean isArchiveActive() {
+        return !SELF_QUERY.get();
     }
 
     private static String toURI(final File file) {
@@ -605,4 +622,5 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         }
         return new VFile().toURI().toString();
     }
+
 }

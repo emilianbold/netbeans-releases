@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -68,11 +69,11 @@ import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRefUpdateResult;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.jgit.index.CheckoutIndex;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -88,8 +89,8 @@ public class ResetCommand extends GitCommand {
     private final boolean moveHead;
     private final boolean recursively;
 
-    public ResetCommand (Repository repository, String revision, File[] roots, boolean recursively, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public ResetCommand (Repository repository, GitClassFactory gitFactory, String revision, File[] roots, boolean recursively, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.listener = listener;
         this.monitor = monitor;
@@ -99,8 +100,8 @@ public class ResetCommand extends GitCommand {
         moveHead = false;
     }
 
-    public ResetCommand (Repository repository, String revision, ResetType resetType, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public ResetCommand (Repository repository, GitClassFactory gitFactory, String revision, ResetType resetType, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = new File[0];
         this.listener = listener;
         this.monitor = monitor;
@@ -211,7 +212,7 @@ public class ResetCommand extends GitCommand {
                             RefUpdate u = repository.updateRef(Constants.HEAD);
                             u.setNewObjectId(commit);
                             if (u.forceUpdate() == RefUpdate.Result.LOCK_FAILURE) {
-                                throw new GitException.RefUpdateException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr), GitRefUpdateResult.valueOf(RefUpdate.Result.LOCK_FAILURE.name())); //NOI18N
+                                throw new GitException.RefUpdateException(MessageFormat.format(Utils.getBundle(ResetCommand.class).getString("MSG_Exception_CannotUpdateHead"), revisionStr), GitRefUpdateResult.valueOf(RefUpdate.Result.LOCK_FAILURE.name())); //NOI18N
                             }
                         }
                     } finally {

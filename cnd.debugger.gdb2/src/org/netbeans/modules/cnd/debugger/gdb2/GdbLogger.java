@@ -64,14 +64,17 @@ import java.io.IOException;
 public class GdbLogger {
     
     private final FileWriter logFile;
+    private final String filename;
     //private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
     /** Creates a new instance of GdbLogger */
     public GdbLogger() {
-        FileWriter logFileValue;
+        FileWriter logFileValue = null;
+        String logFilename = null;
         try {
 //            if (!GdbDebugger.isUnitTest()) {
                 File tmpfile = File.createTempFile("gdb-cmds", ".log"); // NOI18N
+                logFilename = tmpfile.getAbsolutePath();
                 if (!Boolean.getBoolean("gdb.console.savelog")) { // NOI18N - This lets me save logss
                     tmpfile.deleteOnExit();
                 }
@@ -80,9 +83,9 @@ public class GdbLogger {
 //            }
             logFileValue = new FileWriter(tmpfile);
         } catch (IOException ex) {
-            logFileValue = null;
         }
         this.logFile = logFileValue;
+        this.filename = logFilename;
     }
     
     /**
@@ -105,5 +108,9 @@ public class GdbLogger {
                 }
             }
         }
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }

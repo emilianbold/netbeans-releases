@@ -107,7 +107,6 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         beanTreeView.setPopupAllowed(false);
         beanTreeView.setRootVisible(false);
         beanTreeView.setDefaultActionAllowed(true);
-        beanTreeView.setUseSubstringInQuickSearch(true);
         addButton.setEnabled(false);
 
         txtClassName.setText(clazz);

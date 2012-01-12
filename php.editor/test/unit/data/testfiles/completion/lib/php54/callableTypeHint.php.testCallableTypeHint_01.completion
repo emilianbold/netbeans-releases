@@ -1,0 +1,10 @@
+Code completion result for source line:
+function callableTypeHint(|callable $arg) {
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
+------------------------------------
+CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
+CLASS      BaseClass                       [PUBLIC]   traits.php
+CLASS      TraitedClass                    [PUBLIC]   traits.php
+CLASS      WithMultiUses                   [PUBLIC]   traitsMultiUse.php
+KEYWORD    callable                                   Language Construct

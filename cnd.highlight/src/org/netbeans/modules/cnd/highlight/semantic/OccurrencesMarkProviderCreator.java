@@ -53,6 +53,7 @@ public class OccurrencesMarkProviderCreator implements MarkProviderCreator{
     public OccurrencesMarkProviderCreator() {
     }
 
+    @Override
     public MarkProvider createMarkProvider(JTextComponent pane) {
         return OccurrencesMarkProvider.get(pane.getDocument());
     }

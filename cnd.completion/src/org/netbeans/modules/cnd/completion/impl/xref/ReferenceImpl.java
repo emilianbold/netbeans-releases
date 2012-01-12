@@ -78,7 +78,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private FileReferencesContext fileReferencesContext;
 
     public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<TokenId> token, CsmReferenceKind kind) {
-        super(doc, file, offset);
+        super(doc, file, token.offset() < 0 ? offset : token.offset());
         this.token = token;
         this.offset = offset;
         // could be null or known kind like CsmReferenceKind.DIRECT_USAGE or CsmReferenceKind.AFTER_DEREFERENCE_USAGE

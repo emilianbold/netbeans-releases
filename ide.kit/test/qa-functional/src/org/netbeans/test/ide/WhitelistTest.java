@@ -55,8 +55,8 @@ import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -71,7 +71,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mrkam@netbeans.org
  */
-public class WhitelistTest extends JellyTestCase {
+public class WhitelistTest extends NbTestCase {
 
     private static int stage;
 
@@ -114,8 +114,8 @@ public class WhitelistTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
-        ).clusters(".*").honorAutoloadEager(true).
-        enableModules(".*").reuseUserDir(stage > 1);        
+        ).clusters("(?!ergonomics).*").honorAutoloadEager(true).reuseUserDir(stage > 1)
+        .enableClasspathModules(false).addStartupArgument("--branding", "nb");
         
         conf = conf.addTest("testWhitelist" + stage);
         
@@ -206,6 +206,7 @@ public class WhitelistTest extends JellyTestCase {
 
         class R implements Runnable {
             boolean done;
+            @Override
             public void run() {
                 if (done) {
                     return;

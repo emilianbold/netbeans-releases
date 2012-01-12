@@ -69,9 +69,11 @@ public class NewCndFileChooserPanel extends CndPanel {
 
     @Override
     public Component getComponent() {
-        if (gui == null) {
-            gui = new NewCndFileChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
-            gui.addChangeListener(this);
+        synchronized (guiLock) {
+            if (gui == null) {
+                gui = new NewCndFileChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), es, defaultExt);
+                gui.addChangeListener(this);
+            }
         }
         return gui;
     }

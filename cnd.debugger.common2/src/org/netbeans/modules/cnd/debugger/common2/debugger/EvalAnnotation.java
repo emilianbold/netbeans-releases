@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,6 +46,11 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.io.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
 
@@ -109,10 +114,10 @@ public final class EvalAnnotation extends Annotation {
         try {
             Line line = lp.getLine();
             Lookup lineLookup = line.getLookup();
-            DataObject dO = lineLookup.lookup(DataObject.class);
+            DataObject dobj = lineLookup.lookup(DataObject.class);
 
-            final EditorCookie ec = dO.getCookie(EditorCookie.class);
-            StyledDocument doc = ec.openDocument();
+            final EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            final StyledDocument doc = ec.openDocument();
 
             JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
             if (ep == null) {
@@ -120,9 +125,10 @@ public final class EvalAnnotation extends Annotation {
             }
 
             int pos = lp.getColumn();
+            final int offset = NbDocument.findLineOffset(doc, line.getLineNumber()) + pos;
+            
             // 6630840
-            String expr = getExpr(doc, ep,
-                    NbDocument.findLineOffset(doc, line.getLineNumber()) + pos);
+            String expr = getSelectedExpr(ep, offset);
             if (expr == null) {
                 Element lineElem =
                     NbDocument.findLineRootElement(doc).
@@ -135,6 +141,31 @@ public final class EvalAnnotation extends Annotation {
                 int lineStartOffset = lineElem.getStartOffset();
                 int lineLen = lineElem.getEndOffset() - lineStartOffset;
                 expr = doc.getText(lineStartOffset, lineLen);
+                
+                // do not evaluate comments etc. (see 166207)
+                final AtomicBoolean skip = new AtomicBoolean(false);
+
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        TokenItem<TokenId> token = CndTokenUtilities.getToken(doc, offset, true);
+                        if (token != null) {
+                            String category = token.id().primaryCategory();
+                            if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
+                                    CppTokenId.COMMENT_CATEGORY.equals(category) ||
+                                    CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
+                                    CppTokenId.STRING_CATEGORY.equals(category) ||
+                                    CppTokenId.NUMBER_CATEGORY.equals(category) ||
+                                    CppTokenId.OPERATOR_CATEGORY.equals(category)) {
+                                skip.set(true);
+                            }
+                        }
+                    }
+                });
+
+                if (skip.get()) {
+                    return;
+                }
             } else {
                 // selected expression
                 // expr has the expression that user wants to evaluate
@@ -143,8 +174,7 @@ public final class EvalAnnotation extends Annotation {
                 pos = -1;
             }
 
-            NativeDebugger debugger;
-            debugger = DebuggerManager.get().currentNativeDebugger();
+            NativeDebugger debugger = DebuggerManager.get().currentNativeDebugger();
             if (debugger != null) {
                 lastAnnotation = this;
                 debugger.balloonEvaluate(pos, expr);
@@ -154,7 +184,6 @@ public final class EvalAnnotation extends Annotation {
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        return;
     }
 
     /*
@@ -164,12 +193,11 @@ public final class EvalAnnotation extends Annotation {
      *             care of parsing on it's own (dbx can handle C/C++/Fortran) or
      *             call back to EvalAnnotation.extractExpression().
      */
-    private static String getExpr(StyledDocument doc, JEditorPane ep, int offset) {
-        String t = null;
+    private static String getSelectedExpr(JEditorPane ep, int offset) {
         if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
-            t = ep.getSelectedText();
+            return ep.getSelectedText();
         }
-	return t;
+	return null;
     }
 
 
@@ -220,7 +248,14 @@ public final class EvalAnnotation extends Annotation {
                     }
                     break;
                 case '*': // Allow *'s: for example in "foo[*bar]"
+                    break;
                 case ':': // Foo::bar
+                    // pass only scope members, see IZ 206740
+                    if (str[ep+1] != ':') {
+                        foundEnd = true;
+                    } else {
+                        ep++;
+                    }
                     break;
                 default:
                     foundEnd = true;

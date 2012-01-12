@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -76,7 +75,6 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -140,10 +138,6 @@ public final class CreateTestsAction extends NodeAction {
         final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
-            return;
-        }
-
-        if (!Utils.validatePhpUnitForProject(phpUnit, phpProject)) {
             return;
         }
 
@@ -283,7 +277,7 @@ public final class CreateTestsAction extends NodeAction {
         proceeded.add(sourceFo);
 
         final ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
-        final String paramSkeleton = PhpUnit.hasValidVersion(phpUnit) ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
+        final String paramSkeleton = PhpUnit.PARAM_SKELETON;
         final File sourceFile = FileUtil.toFile(sourceFo);
         final File parent = FileUtil.toFile(sourceFo.getParent());
         final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
@@ -306,29 +300,34 @@ public final class CreateTestsAction extends NodeAction {
                 toOpen.add(testFile);
                 continue;
             }
-
-            // test does not exist yet
-            Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
-            try {
-                final File generatedFile = getGeneratedFile(className, parent);
-                if (result.get() != 0
-                        || !generatedFile.isFile()) {
-                    // test not generated or not found
-                    failed.add(sourceFo);
-                    if (!generatedFile.isFile()) {
-                        LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found [PHPUnit version {1}].",
-                                new Object[] {generatedFile.getName(), Arrays.toString(PhpUnit.getVersions(phpUnit))});
-                    }
+            // # 205135
+            final File generatedFile = getGeneratedFile(className, parent);
+            if (generatedFile.isFile()) {
+                // test already exists, next to source file
+                if (!useExistingTestInSources(generatedFile)) {
                     continue;
                 }
-                File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
-                if (moved == null) {
-                    failed.add(sourceFo);
-                } else {
-                    toOpen.add(moved);
+            } else {
+                // test does not exist yet
+                Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
+                try {
+                    if (result.get() != 0) {
+                        // test not generated
+                        failed.add(sourceFo);
+                        if (!generatedFile.isFile()) {
+                            LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found.", generatedFile.getName());
+                        }
+                        continue;
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+            }
+            File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
+            if (moved == null) {
+                failed.add(sourceFo);
+            } else {
+                toOpen.add(moved);
             }
         }
     }
@@ -386,6 +385,13 @@ public final class CreateTestsAction extends NodeAction {
         File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
 
         return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
+    }
+
+    private boolean useExistingTestInSources(File testFile) {
+        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(CreateTestsAction.class, "MSG_UseTestFileInSources", testFile.getName()),
+                NotifyDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
     }
 
     private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File sourceFile) {

@@ -58,6 +58,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
@@ -168,17 +169,35 @@ public class Tiny {
         }
 
         LiteralTree lt = (LiteralTree) toSearch.getLeaf();
-        String data = (String) lt.getValue();
+        final String data = (String) lt.getValue();
 
         if (data.length() != 1) {
             return null;
         }
 
-        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_LengthOneStringIndexOf");
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, toSearch, "'" + (data.equals("'") ? "\\" : "") + data + "'");
         int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), toSearch.getLeaf());
         int end   = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getInfo().getCompilationUnit(), toSearch.getLeaf());
-        String literal = ctx.getInfo().getText().substring(start, end);
+        final String literal = ctx.getInfo().getText().substring(start, end);
+
+        Fix f = JavaFix.toEditorFix(new JavaFix(ctx.getInfo(), toSearch) {
+            @Override protected String getText() {
+                return NbBundle.getMessage(Tiny.class, "FIX_LengthOneStringIndexOf");
+            }
+            @Override protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+                String content;
+
+                if ("'".equals(data)) content = "\\'";
+                else if ("\"".equals(data)) content = "\"";
+                else {
+                    content = literal;
+                    if (content.length() > 0 && content.charAt(0) == '"') content = content.substring(1);
+                    if (content.length() > 0 && content.charAt(content.length() - 1) == '"') content = content.substring(0, content.length() - 1);
+                }
+
+                wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
+            }
+        });
+        
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_LengthOneStringIndexOf", literal);
         
         return ErrorDescriptionFactory.forTree(ctx, toSearch, displayName, f);

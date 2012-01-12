@@ -54,9 +54,9 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 
 import org.openide.ErrorManager;
+import org.openide.awt.Actions;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.*;
-import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.loaders.DataObject;
@@ -69,13 +69,6 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 
 class NbApplicationAdapter implements ApplicationListener {
-    
-    private static final String OPTIONS_ACTION = 
-        "Actions/Window/org-netbeans-modules-options-OptionsWindowAction.instance"; //NOI18N
-    private static final String ABOUT_ACTION = 
-        "Actions/Help/org-netbeans-core-actions-AboutAction.instance"; //NOI18N
-    private static final String EXIT_ACTION = 
-        "Actions/System/org-netbeans-core-actions-SystemExit.instance"; //NOI18N
     
     private static ApplicationListener al = null;
     
@@ -107,7 +100,7 @@ class NbApplicationAdapter implements ApplicationListener {
     }
     
     public void handleAbout(ApplicationEvent e) {
-        e.setHandled (performAction (ABOUT_ACTION));
+        e.setHandled(performAction("Help", "org.netbeans.core.actions.AboutAction"));
     }
     
     public void handleOpenApplication (ApplicationEvent e) {
@@ -145,7 +138,7 @@ class NbApplicationAdapter implements ApplicationListener {
     }
     
     public void handlePreferences (ApplicationEvent e) {
-        e.setHandled(performAction(OPTIONS_ACTION));
+        e.setHandled(performAction("Window", "org.netbeans.modules.options.OptionsWindowAction"));
     }
     
     public void handlePrintFile (ApplicationEvent e) {
@@ -154,26 +147,18 @@ class NbApplicationAdapter implements ApplicationListener {
     
     public void handleQuit (ApplicationEvent e) {
         //Set it to false to abort the quit, our code will handle shutdown
-        e.setHandled (!performAction (EXIT_ACTION));
+        e.setHandled(!performAction("System", "org.netbeans.core.actions.SystemExit"));
     }
     
     public void handleReOpenApplication (ApplicationEvent e) {
     }
     
-    private boolean performAction (String key) {
-        return performAction (key, null);
-    }
-    
-    private boolean performAction (String key, String command) {
-        Action a = findAction (key);
+    private boolean performAction(String category, String id) {
+        Action a = Actions.forID(category, id);
         if (a == null) {
             return false;
         }
-        if (command == null) {
-            command = "foo"; //XXX ???
-        }
-        ActionEvent ae = new ActionEvent (this, ActionEvent.ACTION_PERFORMED, 
-            command);
+        ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "whatever");
         try {
             a.actionPerformed(ae);
             return true;
@@ -183,24 +168,4 @@ class NbApplicationAdapter implements ApplicationListener {
         }
     }
     
-    private Action findAction (String key) {
-        FileObject fo = FileUtil.getConfigFile(key);
-        
-        if (fo != null && fo.isValid()) {
-            try {
-                DataObject dob = DataObject.find (fo);
-                InstanceCookie ic = dob.getCookie(InstanceCookie.class);
-                if (ic != null) {
-                    Object instance = ic.instanceCreate();
-                    if (instance instanceof Action) {
-                        return (Action) instance;
-                    }
-                }
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                return null;
-            }
-        }
-        return null;
-    }
 }

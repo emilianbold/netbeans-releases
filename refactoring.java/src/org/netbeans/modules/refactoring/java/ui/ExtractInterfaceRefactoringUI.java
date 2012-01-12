@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -51,8 +50,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -77,7 +76,7 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
     public static ExtractInterfaceRefactoringUI create(TreePathHandle selectedElement, CompilationInfo info) {
         TreePath path = selectedElement.resolve(info);
 
-        path = RetoucheUtils.findEnclosingClass(info, path, true, true, true, true, false);
+        path = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, false);
 
         if (path != null) {
             return new ExtractInterfaceRefactoringUI(path, info);
@@ -97,10 +96,12 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             panel = new ExtractInterfacePanel(refactoring, parent);
@@ -108,32 +109,39 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
         return panel;
     }
 
+    @Override
     public Problem setParameters() {
         captureParameters();
         return refactoring.checkParameters();
     }
     
+    @Override
     public Problem checkParameters() {
         captureParameters();
         return refactoring.fastCheckParameters();
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ExtractInterfaceAction.class, "DSC_ExtractInterface", name); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(ExtractInterfaceAction.class, "LBL_ExtractInterface"); // NOI18N
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ExtractInterfaceRefactoringUI.class.getName());
     }

@@ -194,13 +194,6 @@ public final class RequestProcessor implements ScheduledExecutorService {
     /** the static instance for users that do not want to have own processor */
     private static final RequestProcessor DEFAULT = new RequestProcessor();
 
-
-    /** A shared timer used to pass timed-out tasks to pending queue */
-    private static final TickTac TICK = new TickTac();
-    static {
-        TICK.start();
-    }
-
     /** logger */
     private static final Logger logger = Logger.getLogger("org.openide.util.RequestProcessor"); // NOI18N
 
@@ -1480,7 +1473,7 @@ outer:  do {
             if (delay == 0) { // Place it to pending queue immediatelly
                 enqueue(localItem);
             } else { // Post the starter
-                TICK.schedule(localItem, delay);
+                TickTac.schedule(localItem, delay);
             }
         }
 
@@ -1746,7 +1739,7 @@ outer:  do {
                 action = processor;
                 ret = enqueued ? owner.queue.remove(this) : true;
             }
-            TICK.cancel(this);
+            TickTac.cancel(this);
             return ret;
         }
 
@@ -1838,7 +1831,7 @@ outer:  do {
         private static final Stack<Processor> pool = new Stack<Processor>();
 
         /* One minute of inactivity and the Thread will die if not assigned */
-        private static final int INACTIVE_TIMEOUT = 60000;
+        private static final int INACTIVE_TIMEOUT = Integer.getInteger("org.openide.util.RequestProcessor.inactiveTime", 60000); // NOI18N
 
         /** Internal variable holding the Runnable to be run.
          * Used for passing Runnable through Thread boundaries.
@@ -2164,6 +2157,7 @@ outer:  do {
     }
     
     private static final class TickTac extends Thread implements Comparator<Item> {
+        private static TickTac TICK;
         private final PriorityQueue<Item> queue;
         
         public TickTac() {
@@ -2183,19 +2177,39 @@ outer:  do {
             return 0;
         }
 
-        synchronized final void schedule(Item localItem, long delay) {
-            localItem.when = System.currentTimeMillis() + delay;
-            queue.add(localItem);
-            notifyAll();
+        synchronized static final void schedule(Item localItem, long delay) {
+            if (TICK == null) {
+                TICK = new TickTac();
+                TICK.scheduleImpl(localItem, delay);
+                TICK.start();
+            } else {
+                TICK.scheduleImpl(localItem, delay);
+            }
+            TickTac.class.notifyAll();
         }
         
-        synchronized final void cancel(Item localItem) {
+        private void scheduleImpl(Item localItem, long delay) {
+            assert Thread.holdsLock(TickTac.class);
+            
+            localItem.when = System.currentTimeMillis() + delay;
+            queue.add(localItem);
+        }
+        
+        synchronized static final void cancel(Item localItem) {
+            if (TICK != null) {
+                TICK.cancelImpl(localItem);
+                TickTac.class.notifyAll();
+            }
+        }
+        
+        private void cancelImpl(Item localItem) {
+            assert Thread.holdsLock(TickTac.class);
             queue.remove(localItem);
         }
 
         @Override
         public void run() {
-            for (;;) {
+            while (TICK == this) {
                 try {
                     Item first = obtainFirst();
                     if (first != null) {
@@ -2205,18 +2219,23 @@ outer:  do {
                     continue;
                 }
             }
+            
         }
         
-        private synchronized Item obtainFirst() throws InterruptedException {
-            Item first = queue.poll();
+        private static synchronized Item obtainFirst() throws InterruptedException {
+            if (TICK == null) {
+                return null;
+            }
+            PriorityQueue<Item> q = TICK.queue;
+            Item first = q.poll();
             if (first == null) {
-                wait();
+                TICK = null;
                 return null;
             }
             long delay = first.when - System.currentTimeMillis();
             if (delay > 0) {
-                queue.add(first);
-                wait(delay);
+                q.add(first);
+                TickTac.class.wait(delay);
                 return null;
             }
             return first;

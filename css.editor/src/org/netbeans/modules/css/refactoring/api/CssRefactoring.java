@@ -49,7 +49,7 @@ import java.util.Map;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
-import org.netbeans.modules.css.indexing.CssIndex;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;

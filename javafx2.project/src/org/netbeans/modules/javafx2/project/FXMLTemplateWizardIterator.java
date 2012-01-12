@@ -59,7 +59,7 @@ import org.openide.loaders.DataObject;
 public class FXMLTemplateWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     private transient WizardDescriptor wiz;
-    private transient WizardDescriptor.InstantiatingIterator delegateIterator;
+    private transient WizardDescriptor.InstantiatingIterator<WizardDescriptor> delegateIterator;
 
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> create() {
         return new FXMLTemplateWizardIterator();
@@ -83,7 +83,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 
     @Override
     public Set instantiate() throws IOException, IllegalArgumentException {
-        Set set = new HashSet(3);
+        Set<FileObject> set = new HashSet<FileObject>(3);
         //set.addAll(delegateIterator.instantiate());
         
         FileObject dir = Templates.getTargetFolder(wiz);
@@ -112,7 +112,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     }
 
     @Override
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return delegateIterator.current();
     }
 

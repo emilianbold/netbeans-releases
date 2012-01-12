@@ -318,6 +318,7 @@ public final class LayerBuilder {
      * <p>Note that resources found in the binary classpath (if permitted)
      * cannot actually be located when running inside javac on JDK 6 (see #196933 for discussion), in which case
      * no exception is thrown but the return value may not permit {@link FileObject#openInputStream}.
+     * <span class="nonnormative">{@code AnnotationProcessorTestUtils.searchClasspathBroken} should be used in unit tests affected by this bug.</span>
      * <p>Also remember that the binary compilation classpath for an Ant-based NetBeans module does
      * not include non-public packages.
      * (As of the 7.1 harness it does include non-classfile resources from public packages of module dependencies.)
@@ -339,7 +340,11 @@ public final class LayerBuilder {
         if (searchClasspath) {
             for (Location loc : new Location[] {StandardLocation.SOURCE_PATH, /* #181355 */StandardLocation.CLASS_OUTPUT, StandardLocation.CLASS_PATH, StandardLocation.PLATFORM_CLASS_PATH}) {
                 try {
-                    return processingEnv.getFiler().getResource(loc, "", resource);
+                    FileObject f = processingEnv.getFiler().getResource(loc, "", resource);
+                    if (loc.isOutputLocation()) {
+                        f.openInputStream().close();
+                    }
+                    return f;
                 } catch (IOException ex) {
                     continue;
                 }

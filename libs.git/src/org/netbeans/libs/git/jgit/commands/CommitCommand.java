@@ -73,10 +73,9 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitUser;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -91,8 +90,8 @@ public class CommitCommand extends GitCommand {
     private final GitUser commiter;
     public GitRevisionInfo revision;
 
-    public CommitCommand (Repository repository, File[] roots, String message, GitUser author, GitUser commiter, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CommitCommand (Repository repository, GitClassFactory gitFactory, File[] roots, String message, GitUser author, GitUser commiter, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.message = message;
         this.monitor = monitor;
@@ -107,7 +106,7 @@ public class CommitCommand extends GitCommand {
         if (retval) {
             RepositoryState state = getRepository().getRepositoryState();
             if (RepositoryState.MERGING.equals(state)) {
-                String errorMessage = NbBundle.getMessage(CommitCommand.class, "MSG_Error_Commit_ConflictsInIndex"); //NOI18N
+                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_ConflictsInIndex"); //NOI18N
                 monitor.preparationsFailed(errorMessage);
                 throw new GitException(errorMessage);
             } else if (RepositoryState.MERGING_RESOLVED.equals(state) && roots.length > 0) {
@@ -120,12 +119,12 @@ public class CommitCommand extends GitCommand {
                     }
                 }
                 if (!fullWorkingTree) {
-                    String errorMessage = NbBundle.getMessage(CommitCommand.class, "MSG_Error_Commit_PartialCommitAfterMerge"); //NOI18N
+                    String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_PartialCommitAfterMerge"); //NOI18N
                     monitor.preparationsFailed(errorMessage);
                     throw new GitException(errorMessage);
                 }
             } else if (!state.canCommit()) {
-                String errorMessage = NbBundle.getMessage(CommitCommand.class, "MSG_Error_Commit_NotAllowedInCurrentState"); //NOI18N
+                String errorMessage = Utils.getBundle(CommitCommand.class).getString("MSG_Error_Commit_NotAllowedInCurrentState"); //NOI18N
                 monitor.preparationsFailed(errorMessage);
                 throw new GitException(errorMessage);
             }
@@ -153,7 +152,7 @@ public class CommitCommand extends GitCommand {
                 
                 commit.setMessage(message);
                 RevCommit rev = commit.call();
-                revision = new JGitRevisionInfo(rev, repository);
+                revision = getClassFactory().createRevisionInfo(rev, repository);
             } finally {
                 backup.lock();
                 try {

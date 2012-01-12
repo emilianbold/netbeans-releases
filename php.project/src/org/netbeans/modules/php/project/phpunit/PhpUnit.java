@@ -48,25 +48,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -77,16 +70,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
- * PHP Unit 3.x support, the common part.
+ * PHPUnit 3.4+ support.
  * @author Tomas Mysik
  */
-public abstract class PhpUnit extends PhpProgram {
+public final class PhpUnit extends PhpProgram {
 
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     protected static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
 
     // for keeping log files to able to evaluate and fix issues
@@ -103,15 +95,13 @@ public abstract class PhpUnit extends PhpProgram {
     private static final String REQUIRE_ONCE_TPL_START = "require_once '"; // NOI18N
     private static final String REQUIRE_ONCE_TPL_END = "%s';"; // NOI18N
     // cli options
-    public static final String PARAM_VERSION = "--version"; // NOI18N
+    public static final String PARAM_JUNIT_LOG = "--log-junit"; // NOI18N
     public static final String PARAM_FILTER = "--filter"; // NOI18N
     public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
     public static final String PARAM_LIST_GROUPS = "--list-groups"; // NOI18N
     public static final String PARAM_GROUP = "--group"; // NOI18N
 
-    // for older PHP Unit versions
-    public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
     // bootstrap & config
     public static final String PARAM_BOOTSTRAP = "--bootstrap"; // NOI18N
     private static final String BOOTSTRAP_FILENAME = "bootstrap%s.php"; // NOI18N
@@ -133,19 +123,6 @@ public abstract class PhpUnit extends PhpProgram {
     public static final String REQUIRE_ONCE_REL_PART = "'" + DIRNAME_FILE; // NOI18N
 
     public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
-
-    // unknown version
-    static final int[] UNKNOWN_VERSION = new int[0];
-    // minimum supported version
-    static final int[] MINIMAL_VERSION = new int[] {3, 3, 0};
-    static final int[] MINIMAL_VERSION_PHP53 = new int[] {3, 4, 0};
-
-    /**
-     * volatile is enough because:
-     *  - never mind if the version is detected 2x
-     *  - we don't change array values but only the array itself (local variable created and then assigned to 'version')
-     */
-    static volatile int[] version = null;
 
     // #200489
     private static volatile File suite; // ok if it is fetched more times
@@ -169,7 +146,7 @@ public abstract class PhpUnit extends PhpProgram {
         COVERAGE_LOG = new File(logDirName, "nb-phpunit-coverage.xml"); // NOI18N
      }
 
-    PhpUnit(String command) {
+    private PhpUnit(String command) {
         super(command);
     }
 
@@ -181,18 +158,7 @@ public abstract class PhpUnit extends PhpProgram {
     }
 
     public static PhpUnit getDefault() throws InvalidPhpProgramException {
-        String command = PhpOptions.getInstance().getPhpUnit();
-        String error = validate(command);
-        if (error != null) {
-            throw new InvalidPhpProgramException(error);
-        }
-        // a bit ugly :/
-        if (hasValidVersion(new PhpUnitCustom(command))
-                && version[0] >= MINIMAL_VERSION_PHP53[0]
-                && version[1] >= MINIMAL_VERSION_PHP53[1]) {
-            return new PhpUnitImpl(command);
-        }
-        return new PhpUnit33(command);
+        return getCustom(PhpOptions.getInstance().getPhpUnit());
     }
 
     public static PhpUnit getCustom(String command) throws InvalidPhpProgramException {
@@ -200,10 +166,8 @@ public abstract class PhpUnit extends PhpProgram {
         if (error != null) {
             throw new InvalidPhpProgramException(error);
         }
-        return new PhpUnitCustom(command);
+        return new PhpUnit(command);
     }
-
-    public abstract String getXmlLogParam();
 
     public static boolean isRequireOnceSourceFile(String line, String filename) {
         return line.startsWith(REQUIRE_ONCE_TPL_START)
@@ -274,142 +238,6 @@ public abstract class PhpUnit extends PhpProgram {
             return configFiles.configuration.getParentFile();
         }
         return defaultWorkingDirectory;
-    }
-
-    // XXX see 2nd paragraph
-    /**
-     * The minimum version of PHPUnit is <b>3.3.0</b> because:
-     * - of XML log format changes (used for parsing of test results)
-     * - running project action Test (older versions don't support directory as a parameter to run)
-     * <p>
-     * Since issue #167519 is fixed, this is not necessary true any more:
-     * - test listener could be used instead of XML file (this would be more reliable and XML file independent)
-     * - all tests are run using suite file, so no need to support directory as a parameter
-     * @return <code>null</code> if invalid or not the minimal version of PHPUnit found, an error message otherwise
-     */
-    public static String validateVersion(PhpUnit phpUnit) {
-        if (phpUnit == null) {
-            return NbBundle.getMessage(PhpUnit.class, "MSG_NoPhpUnit");
-        }
-        String error = phpUnit.validate();
-        if (error == null) {
-            phpUnit.getVersion();
-            if (version == null
-                    || version == UNKNOWN_VERSION
-                    || (version[0] <= MINIMAL_VERSION[0] && version[1] < MINIMAL_VERSION[1])) {
-                error = NbBundle.getMessage(PhpUnit.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit));
-            }
-        }
-        return error;
-    }
-
-    /**
-     * Check whether the PHPUnit is valid for the given project
-     * (currently, this is false for PHP 5.3 project and PHPUnit 3.3.x).
-     */
-    public static String validateVersion(PhpUnit phpUnit, PhpProject project) {
-        String error = validateVersion(phpUnit);
-        if (error != null) {
-            return error;
-        }
-        PhpVersion phpVersion = ProjectPropertiesSupport.getPhpVersion(project);
-        switch (phpVersion) {
-            case PHP_53:
-                if (version[0] <= MINIMAL_VERSION_PHP53[0]
-                        && version[1] < MINIMAL_VERSION_PHP53[1]) {
-                    // this instanceof PhpUnitImpl; - would not work with PhpUnit35 etc.
-                    error = NbBundle.getMessage(PhpUnit.class, "MSG_OldPhpUnitPhp53", PhpUnit.getVersions(phpUnit, project));
-                }
-                break;
-            case PHP_5:
-                // noop
-                break;
-            default:
-                throw new IllegalStateException("Unknown PHP version: " + phpVersion);
-        }
-        return error;
-    }
-
-    public static boolean hasValidVersion(PhpUnit phpUnit) {
-        return validateVersion(phpUnit) == null;
-    }
-
-    public static boolean hasValidVersion(PhpUnit phpUnit, PhpProject project) {
-        return validateVersion(phpUnit, project) == null;
-    }
-
-    public static void resetVersion() {
-        version = null;
-    }
-
-    /**
-     * Get the version of PHPUnit in the form of [major][minor][revision].
-     * @return
-     */
-    private int[] getVersion() {
-        if (!isValid()) {
-            return UNKNOWN_VERSION;
-        }
-        if (version != null) {
-            return version;
-        }
-
-        version = UNKNOWN_VERSION;
-        ExternalProcessBuilder externalProcessBuilder = getProcessBuilder()
-                .addArgument(PARAM_VERSION);
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new OutputProcessorFactory());
-        String message = NbBundle.getMessage(PhpUnit.class, "LBL_ValidatingPhpUnit");
-        execute(externalProcessBuilder, executionDescriptor, message, message);
-
-        return version;
-    }
-
-    /**
-     * Get an array with actual and minimal PHPUnit versions.
-     * <p>
-     * Return three times "?" if the actual version is not known or <code>null</code>.
-     */
-    public static String[] getVersions(PhpUnit phpUnit) {
-        return getVersions(phpUnit, MINIMAL_VERSION);
-    }
-
-    /**
-     * Get an array with actual and minimal PHPUnit versions for the given project.
-     * <p>
-     * Return three times "?" if the actual version is not known or <code>null</code>.
-     */
-    public static String[] getVersions(PhpUnit phpUnit, PhpProject project) {
-        int[] minimalVersion = null;
-        PhpVersion phpVersion = ProjectPropertiesSupport.getPhpVersion(project);
-        switch (phpVersion) {
-            case PHP_53:
-                minimalVersion = MINIMAL_VERSION_PHP53;
-                break;
-            case PHP_5:
-                minimalVersion = MINIMAL_VERSION;
-                break;
-            default:
-                throw new IllegalStateException("Unknown PHP version: " + phpVersion);
-        }
-        return getVersions(phpUnit, minimalVersion);
-    }
-
-    private static String[] getVersions(PhpUnit phpUnit, int[] minimalVersion) {
-        List<String> params = new ArrayList<String>(6);
-        if (phpUnit == null || phpUnit.getVersion() == UNKNOWN_VERSION) {
-            String questionMark = NbBundle.getMessage(PhpUnit.class, "LBL_QuestionMark");
-            params.add(questionMark); params.add(questionMark); params.add(questionMark);
-        } else {
-            for (Integer i : phpUnit.getVersion()) {
-                params.add(String.valueOf(i));
-            }
-        }
-        for (Integer i : minimalVersion) {
-            params.add(String.valueOf(i));
-        }
-        return params.toArray(new String[params.size()]);
     }
 
     public static ConfigFiles getConfigFiles(PhpProject project, boolean withSuite) {
@@ -646,27 +474,18 @@ public abstract class PhpUnit extends PhpProgram {
         return String.format(filename, i == 0 ? "" : i); // NOI18N
     }
 
+    @NbBundle.Messages("PhpUnit.script.error=PHPUnit: {0}")
     @Override
     public String validate() {
-        if (!StringUtils.hasText(getProgram())) {
-            return NbBundle.getMessage(PhpUnit.class, "MSG_NoPhpUnit");
-        }
-
-        File file = new File(getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(PhpUnit.class, "MSG_PhpUnitCannotRead");
+        String error = FileUtils.validateFile(getProgram(), false);
+        if (error != null) {
+            return Bundle.PhpUnit_script_error(error);
         }
         return null;
     }
 
     public static String validate(String command) {
-        return new PhpUnitCustom(command).validate();
+        return new PhpUnit(command).validate();
     }
 
     public static final class ConfigFiles {
@@ -683,51 +502,4 @@ public abstract class PhpUnit extends PhpProgram {
         }
     }
 
-    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
-        //                                                              PHPUnit 3.3.1 by Sebastian Bergmann.
-        private static final Pattern PHPUNIT_VERSION = Pattern.compile("PHPUnit\\s+(\\d+)\\.(\\d+)\\.(\\d+)\\w*\\s+"); // NOI18N
-
-        @Override
-        public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
-            return InputProcessors.bridge(new LineProcessor() {
-                @Override
-                public void processLine(String line) {
-                    int[] match = match(line);
-                    if (match != null) {
-                        version = match;
-                    }
-                }
-                @Override
-                public void reset() {
-                    try {
-                        defaultProcessor.reset();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                @Override
-                public void close() {
-                    try {
-                        defaultProcessor.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-        }
-
-        static int[] match(String text) {
-            assert text != null;
-            if (StringUtils.hasText(text)) {
-                Matcher matcher = PHPUNIT_VERSION.matcher(text);
-                if (matcher.find()) {
-                    int major = Integer.parseInt(matcher.group(1));
-                    int minor = Integer.parseInt(matcher.group(2));
-                    int release = Integer.parseInt(matcher.group(3));
-                    return new int[] {major, minor, release};
-                }
-            }
-            return null;
-        }
-    }
 }

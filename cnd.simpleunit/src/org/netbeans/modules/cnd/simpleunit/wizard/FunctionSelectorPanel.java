@@ -69,7 +69,6 @@ public final class FunctionSelectorPanel extends JPanel implements ExplorerManag
     public FunctionSelectorPanel(boolean singleSelection) {
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
-        elementView.setUseSubstringInQuickSearch(true);
         add(elementView, BorderLayout.CENTER);
     }
 

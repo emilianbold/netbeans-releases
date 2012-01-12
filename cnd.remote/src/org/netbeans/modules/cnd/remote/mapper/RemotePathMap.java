@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,9 @@ import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -596,9 +599,17 @@ public abstract class RemotePathMap extends PathMap {
 
     public static String getRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
         for (MirrorPathProvider mpp : Lookup.getDefault().lookupAll(MirrorPathProvider.class)) {
-            String result = mpp.getRemoteMirror(executionEnvironment);
-            if (result != null) {
-                return result;
+            try {
+                String result = mpp.getRemoteMirror(executionEnvironment);
+                if (result != null) {
+                    return result;
+                }
+            } catch (ConnectException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (CancellationException ex) {
+                // don't report CancellationException
             }
         }
         return null;

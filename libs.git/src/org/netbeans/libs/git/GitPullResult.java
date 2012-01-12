@@ -47,11 +47,11 @@ import java.util.Map;
  *
  * @author ondra
  */
-public class GitPullResult {
+public final class GitPullResult {
     private final Map<String, GitTransportUpdate> fetchResult;
     private final GitMergeResult mergeResult;
     
-    public GitPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult) {
+    GitPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult) {
         this.fetchResult = fetchUpdates;
         this.mergeResult = mergeResult;
     }

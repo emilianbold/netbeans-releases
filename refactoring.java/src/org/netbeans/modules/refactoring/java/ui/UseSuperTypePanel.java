@@ -47,16 +47,10 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.awt.Component;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -79,13 +73,13 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
      * Creates new form UseSuperTypePanel
      * @param refactoring The use super type refactoring that is
      * used by this panel
+     * @param className  
      */
-    public UseSuperTypePanel(UseSuperTypeRefactoring refactoring) {
+    public UseSuperTypePanel(UseSuperTypeRefactoring refactoring, String className) {
         this.refactoring = refactoring;
         initComponents();
         TreePathHandle subType = (TreePathHandle) refactoring.getTypeElement();
         String title = null;
-        String className = RetoucheUtils.getSimpleName(subType);
         title = NbBundle.getMessage(UseSuperTypePanel.class, "LBL_UseSyperTypeTitle", className);
         setName(title);
         superTypeList.setCellRenderer(new DefaultListCellRenderer() {
@@ -112,13 +106,16 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         superTypeList.setSelectedIndex(0);
     }
 
+    @Override
     public void requestFocus() {
         superTypeList.requestFocus();
     }
     
+    @Override
     public void initialize() {
     }
     
+    @Override
     public Component getComponent(){
         return this;
     }

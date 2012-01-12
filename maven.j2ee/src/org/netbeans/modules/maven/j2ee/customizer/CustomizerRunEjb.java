@@ -43,19 +43,13 @@
 package org.netbeans.modules.maven.j2ee.customizer;
 
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import org.netbeans.modules.maven.j2ee.POHImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.maven.j2ee.LoggingUtils;
-import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 
 
-/**
- *
- * @author  mkleint
- */
-public class CustomizerRunEjb extends AbstractCustomizer {
+public class CustomizerRunEjb extends BaseRunCustomizer {
 
     private EjbJar module;
 
@@ -63,19 +57,19 @@ public class CustomizerRunEjb extends AbstractCustomizer {
     public CustomizerRunEjb(ModelHandle handle, Project project) {
         super(handle, project);
         initComponents();
-
+        
         module = EjbJar.getEjbJar(project.getProjectDirectory());
-        loadServerModel(comServer, J2eeModule.Type.EJB, module.getJ2eeProfile());
         if (module != null) {
-            txtJ2EEVersion.setText(module.getJ2eePlatformVersion());
+            loadServerModel(comServer, J2eeModule.Type.EJB, module.getJ2eeProfile());
+            txtJ2EEVersion.setText(module.getJ2eeProfile().getDisplayName());
         }
         
         initDeployOnSaveComponent(jCheckBoxDeployOnSave, dosDescription);
         initServerComponent(comServer, lblServer);
     }
-
+    
     @Override
-    void applyChangesInAWT() {
+    public void applyChangesInAWT() {
         Object obj = comServer.getSelectedItem();
         if (obj != null) {
             LoggingUtils.logUsage(CustomizerRunEjb.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { obj.toString() }, "maven"); //NOI18N
@@ -83,16 +77,8 @@ public class CustomizerRunEjb extends AbstractCustomizer {
     }
 
     @Override
-    void applyChanges() {
-        //#109507 workaround -
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (listener.getValue() != null) {
-            sc.setServerInstanceId(null);
-        }
-        //TODO - not sure this is necessary since the PoHImpl listens on project changes.
-        //any save of teh project shall effectively caus ethe module server change..
-        POHImpl poh = project.getLookup().lookup(POHImpl.class);
-        poh.hackModuleServerChange(true);
+    public void applyChanges() {
+        changeServer(comServer);
     }
 
     /** This method is called from within the constructor to

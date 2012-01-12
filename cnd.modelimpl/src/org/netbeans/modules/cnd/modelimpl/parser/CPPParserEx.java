@@ -68,9 +68,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.lang.Integer;
 import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
@@ -120,11 +124,16 @@ public class CPPParserEx extends CPPParser {
         this.lazyCompound = lazy;
     }
 
-    public static CPPParserEx getInstance(String file, TokenStream ts, int flags) {
+    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags) {
+        return getInstance(file, ts, flags, null);
+    }
+    
+    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, Map<Integer, CsmObject> objects) {
         assert (ts != null);
         assert (file != null);
         CPPParserEx parser = new CPPParserEx(ts);
-        parser.init(file, flags);
+        parser.init(file.getName().toString(), flags);
+        parser.init2(file, objects);
         return parser;
 
     }
@@ -137,6 +146,10 @@ public class CPPParserEx extends CPPParser {
         setASTFactory(new AstFactoryEx(getTokenTypeToASTClassMap()));
         getASTFactory().setASTNodeClass(CsmAST.class);
         super.init(filename, flags);
+    }
+
+    protected final void init2(CsmFile file, Map<Integer, CsmObject> objects) {
+        action = new CppParserActionImpl(file, objects);        
     }
 
     private static int strcmp(String s1, String s2) {

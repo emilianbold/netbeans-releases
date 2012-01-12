@@ -101,7 +101,7 @@ public enum ServerDetails {
         "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-1.txt" // NOI18N
             ),
     /**
-     * details for an instance of GlassFish Server 3.1.1
+     * details for an instance of GlassFish Server 3.1.2
      */
     GLASSFISH_SERVER_3_1_2(NbBundle.getMessage(ServerDetails.class, "STR_312_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
@@ -109,10 +109,10 @@ public enum ServerDetails {
         new String[0],
         312,
         "http://download.java.net/glassfish/3.1.2/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
-        "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-2.txt" // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v3-1-2.txt" // NOI18N
     ),
     /**
-     * details for an instance of GlassFish Server 3.1.1
+     * details for an instance of GlassFish Server 4.0.0
      */
     GLASSFISH_SERVER_4_0(NbBundle.getMessage(ServerDetails.class, "STR_40_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
@@ -120,7 +120,7 @@ public enum ServerDetails {
         new String[0],
         400,
         "http://download.java.net/glassfish/4.0/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
-        "http://serverplugins.netbeans.org/glassfishv3/post701v4-0.txt" // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v4-0.txt" // NOI18N
     );
 
     /**

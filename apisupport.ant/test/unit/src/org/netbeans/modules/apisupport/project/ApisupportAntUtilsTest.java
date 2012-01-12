@@ -61,6 +61,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -227,12 +228,25 @@ public class ApisupportAntUtilsTest extends TestBase {
     public void testAddDependency() throws Exception {
         NbModuleProject p = generateStandaloneModule("module");
         assertEquals("no dependencies", 0, new ProjectXMLManager(p).getDirectDependencies().size());
-        assertTrue("successfully added", ApisupportAntUtils.addDependency(p, "org.openide.util", null, null, true));
+        assertTrue("successfully added", ApisupportAntUtils.addDependency(p, "org.openide.util", null, new SpecificationVersion("6.1"), true));
         ProjectManager.getDefault().saveProject(p);
         assertEquals("one dependency", 1, new ProjectXMLManager(p).getDirectDependencies().size());
         assertFalse("does not exist", ApisupportAntUtils.addDependency(p, "org.openide.i_do_not_exist", null, null, true));
         ProjectManager.getDefault().saveProject(p);
         assertEquals("still one dependency", 1, new ProjectXMLManager(p).getDirectDependencies().size());
+        assertFalse("already there", ApisupportAntUtils.addDependency(p, "org.openide.util", null, new SpecificationVersion("6.1"), true));
+        assertTrue("upgraded", ApisupportAntUtils.addDependency(p, "org.openide.util", null, new SpecificationVersion("6.2"), true));
+        ProjectManager.getDefault().saveProject(p);
+        SortedSet<ModuleDependency> deps = new ProjectXMLManager(p).getDirectDependencies();
+        assertEquals("still one dependency", 1, deps.size());
+        assertEquals("6.2", deps.iterator().next().getSpecificationVersion());
+        assertFalse("not downgraded", ApisupportAntUtils.addDependency(p, "org.openide.util", null, new SpecificationVersion("6.0"), true));
+        new ProjectXMLManager(p).addDependency(new ModuleDependency(p.getModuleList().getEntry("org.openide.awt"), null, null, true, true));
+        assertFalse("not switched to spec dep", ApisupportAntUtils.addDependency(p, "org.openide.awt", null, new SpecificationVersion("6.0"), true));
+        ProjectManager.getDefault().saveProject(p);
+        deps = new ProjectXMLManager(p).getDirectDependencies();
+        assertEquals("still two deps", 2, deps.size());
+        assertTrue(deps.iterator().next().hasImplementationDependency());
     }
     
     public void testScanProjectForPackageNames() throws Exception {

@@ -41,17 +41,16 @@
  */
 package org.netbeans.jellytools.modules.j2ee;
 
-import org.netbeans.jemmy.JemmyException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
-import java.lang.reflect.Method;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -60,15 +59,16 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
 import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV3ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
-import static org.netbeans.junit.NbModuleSuite.Configuration;
+import org.netbeans.junit.NbModuleSuite.Configuration;
 
 /**
  * Registers application servers to IDE and adds test cases to suite only
@@ -407,10 +407,19 @@ public class J2eeTestCase extends JellyTestCase {
             return;
         }
         try {
-            Class<?> regClass = Class.forName("org.netbeans.modules.glassfish.common.registration.AutomaticRegistration", true, getLoader(GLASSFISH));
-            Method method = regClass.getDeclaredMethod("autoregisterGlassFishInstance", String.class, String.class);
-            method.setAccessible(true);
-            int result = (Integer) method.invoke(null, findCluster("enterprise"), glassFishHome + "/glassfish");
+            int result = registerServer(
+                    GLASSFISH,
+                    "org.netbeans.modules.glassfish.common.registration.AutomaticRegistration",
+                    findCluster("enterprise"),
+                    glassFishHome + "/glassfish");
+            if (result != 0) {
+                // try to register server within this JVM but it can influence test cases
+                // by loading classes too early
+                Class<?> regClass = Class.forName("org.netbeans.modules.glassfish.common.registration.AutomaticRegistration", true, getLoader(GLASSFISH));
+                Method method = regClass.getDeclaredMethod("autoregisterGlassFishInstance", String.class, String.class);
+                method.setAccessible(true);
+                result = (Integer) method.invoke(null, findCluster("enterprise"), glassFishHome + "/glassfish");
+            }
             if (result == 0) {
                 alreadyRegistered.add(GLASSFISH);
             }
@@ -458,16 +467,40 @@ public class J2eeTestCase extends JellyTestCase {
             return;
         }
         try {
-            Class<?> regClass = Class.forName("org.netbeans.modules.tomcat5.registration.AutomaticRegistration", true, getLoader(TOMCAT));
-            Method method = regClass.getDeclaredMethod("registerTomcatInstance", String.class, String.class);
-            method.setAccessible(true);
-            int result = (Integer) method.invoke(null, findCluster("enterprise"), tomcatHome);
+            int result = registerServer(
+                    TOMCAT,
+                    "org.netbeans.modules.tomcat5.registration.AutomaticRegistration",
+                    findCluster("enterprise"),
+                    tomcatHome);
+            if (result != 0) {
+                // try to register server within this JVM but it can influence test cases
+                // by loading classes too early
+                Class<?> regClass = Class.forName("org.netbeans.modules.tomcat5.registration.AutomaticRegistration", true, getLoader(TOMCAT));
+                Method method = regClass.getDeclaredMethod("registerTomcatInstance", String.class, String.class);
+                method.setAccessible(true);
+                result = (Integer) method.invoke(null, findCluster("enterprise"), tomcatHome);
+            }
             if (result == 0) {
                 alreadyRegistered.add(TOMCAT);
             }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Registering Tomcat server failed.", ex);
         }
+    }
+
+    /** Returns class path for loading classes for automatic registration
+     * of server instances.
+     * @param server server to be registered
+     * @return class path
+     */
+    private static String getClassPath(Server server) {
+        StringBuilder sb = new StringBuilder();
+        for(File file : getJars(server)) {
+            sb.append(file.getAbsolutePath());
+            sb.append(File.pathSeparatorChar);
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 
     /** Returns class loader for loading classes for automatic registration
@@ -477,21 +510,58 @@ public class J2eeTestCase extends JellyTestCase {
      */
     private static URLClassLoader getLoader(Server server) throws MalformedURLException {
         List<URL> urls = new ArrayList<URL>();
-        urls.add(new File(findCluster("platform"), "core/core.jar").toURI().toURL());
-        urls.add(new File(findCluster("platform"), "lib/boot.jar").toURI().toURL());
-        urls.add(new File(findCluster("platform"), "lib/org-openide-modules.jar").toURI().toURL());
-        urls.add(new File(findCluster("platform"), "core/org-openide-filesystems.jar").toURI().toURL());
-        urls.add(new File(findCluster("platform"), "lib/org-openide-util.jar").toURI().toURL());
-        urls.add(new File(findCluster("platform"), "lib/org-openide-util-lookup.jar").toURI().toURL());
-        urls.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeapis.jar").toURI().toURL());
-        urls.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeserver.jar").toURI().toURL());
-        if (server == GLASSFISH) {
-            urls.add(new File(findCluster("ide"), "modules/org-netbeans-modules-glassfish-common.jar").toURI().toURL());
-        } else if (server == TOMCAT) {
-            urls.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-tomcat5.jar").toURI().toURL());
-        }
+        for(File file : getJars(server)) {
+            urls.add(file.toURI().toURL());
+        }        
         URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
         return loader;
+    }
+    
+    /** Returns list of jars needed for loading classes for automatic registration
+     * of server instances.
+     * @param server server to be registered
+     * @return list of jars
+     */
+    private static List<File> getJars(Server server) {
+        List<File> jars = new ArrayList<File>();
+        jars.add(new File(findCluster("platform"), "core/core.jar"));
+        jars.add(new File(findCluster("platform"), "lib/boot.jar"));
+        jars.add(new File(findCluster("platform"), "lib/org-openide-modules.jar"));
+        jars.add(new File(findCluster("platform"), "core/org-openide-filesystems.jar"));
+        jars.add(new File(findCluster("platform"), "lib/org-openide-util.jar"));
+        jars.add(new File(findCluster("platform"), "lib/org-openide-util-lookup.jar"));
+        jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeapis.jar"));
+        jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeserver.jar"));
+        if (server == GLASSFISH) {
+            jars.add(new File(findCluster("ide"), "modules/org-netbeans-modules-glassfish-common.jar"));
+        } else if (server == TOMCAT) {
+            jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-tomcat5.jar"));
+        }
+        return jars;
+    }
+
+    /**
+     * Registers server by calling class in separate JVM to not influence test cases.
+     * @param server server type
+     * @param mainClass main class
+     * @param clusterDir cluster dir
+     * @param serverHome server home
+     * @return result of execution, 0 if successful
+     * @throws Exception 
+     */
+    private static int registerServer(Server server, String mainClass, String clusterDir, String serverHome) throws Exception {
+        String jvm = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        List<String> command = new ArrayList<String>();
+        command.add(jvm);
+        command.add("-cp");
+        command.add(getClassPath(server));
+        command.add(mainClass);
+        command.add(clusterDir);
+        command.add(serverHome);
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        Process process = processBuilder.start();
+        int result = process.waitFor();
+        return result;
     }
 
     /** Returns absolute path to given cluster or null if not found.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,39 +44,16 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.*;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.text.ParseException;
-import java.util.jar.JarEntry;
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,6 +65,8 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.modules.autoupdate.updateprovider.DummyModuleInfo;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.updater.ModuleDeactivator;
@@ -95,17 +74,8 @@ import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
 import org.netbeans.updater.UpdaterDispatcher;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.Dependency;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.modules.ModuleInfo;
-import org.openide.modules.Places;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import org.openide.modules.*;
+import org.openide.util.*;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -119,6 +89,10 @@ import org.xml.sax.SAXException;
  * @author Jiri Rechtacek, Radek Matous
  */
 public class Utilities {
+    public static final String UNSIGNED = "UNSIGNED";
+    public static final String N_A = "N/A";
+    public static final String TRUSTED = "TRUSTED";
+    public static final String UNTRUSTED = "UNTRUSTED";
 
     private Utilities() {}
 
@@ -146,8 +120,7 @@ public class Utilities {
     
     public static Collection<KeyStore> getKeyStore () {
         if (result == null) {            
-            result = Lookup.getDefault ().lookup (
-                    new Lookup.Template<KeyStoreProvider> (KeyStoreProvider.class));
+            result = Lookup.getDefault ().lookupResult (KeyStoreProvider.class);
             result.addLookupListener (new KeyStoreProviderListener ());
         }
         Collection<? extends KeyStoreProvider> c = result.allInstances ();
@@ -164,6 +137,67 @@ public class Utilities {
         }
         
         return kss;
+    }
+    
+    public static String verifyCertificates(Collection<Certificate> archiveCertificates, Collection<Certificate> trustedCertificates) {
+        if (archiveCertificates == null) {
+            return N_A;
+        }
+        if (! archiveCertificates.isEmpty()) {
+            Collection<Certificate> c = new HashSet<Certificate>(trustedCertificates);
+            c.retainAll(archiveCertificates);
+            if (! c.isEmpty()) {
+            //if (trustedCertificates.containsAll(archiveCertificates)) {
+                return TRUSTED;
+            } else {
+                return UNTRUSTED;
+            }
+        }
+        return UNSIGNED;
+    }
+    
+    public static Collection<Certificate> getCertificates (KeyStore keyStore) throws KeyStoreException {
+        List<Certificate> certs = new ArrayList<Certificate> ();
+        for (String alias: Collections.list (keyStore.aliases ())) {
+            certs.add (keyStore.getCertificate (alias));
+        }
+        return certs;
+    }
+    
+    public static Collection<Certificate> getNbmCertificates (File nbmFile) throws IOException {
+        Set<Certificate> certs = new HashSet<Certificate>();
+        JarFile jf = new JarFile(nbmFile);
+        boolean empty = true;
+        try {
+            for (JarEntry entry : Collections.list(jf.entries())) {
+                verifyEntry(jf, entry);
+                if (!entry.getName().startsWith("META-INF/")) {
+                    empty = false;
+                    if (entry.getCertificates() != null) {
+                        certs.addAll(Arrays.asList(entry.getCertificates()));
+                    }
+                }
+            }
+        } finally {
+            jf.close();
+        }
+
+        return empty ? null : certs;
+    }
+    
+    /**
+     * @throws SecurityException
+     */
+    @SuppressWarnings("empty-statement")
+    private static void verifyEntry (JarFile jf, JarEntry je) throws IOException {
+        InputStream is = null;
+        try {
+            is = jf.getInputStream (je);
+            byte[] buffer = new byte[8192];
+            while ((is.read (buffer, 0, buffer.length)) != -1);
+        } finally {
+            if (is != null) is.close ();
+        }
     }
     
     static private class KeyStoreProviderListener implements LookupListener {
@@ -906,7 +940,7 @@ public class Utilities {
     }
     
     private static Node getModuleConfiguration (File moduleUpdateTracking) {
-        Document document = null;
+        Document document;
         InputStream is;
         try {
             is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
@@ -1060,15 +1094,15 @@ public class Utilities {
      * @return a set (possibly empty) of modules managed by this manager, never including m
      */
     public static Set<Module> findRequiredModules (Module m, ModuleManager mm, Map<Module, Set<Module>> m2reqs) {
-        Set<Module> res = null;
+        Set<Module> res;
         if (m2reqs != null) {
             res = m2reqs.get (m);
             if (res == null) {
-                res = mm.getModuleInterdependencies(m, false, false);
+                res = mm.getModuleInterdependencies(m, false, false, true);
                 m2reqs.put (m, res);
             }
         } else {
-            res = mm.getModuleInterdependencies(m, false, false);
+            res = mm.getModuleInterdependencies(m, false, false, true);
         }
         return res;
     }
@@ -1078,15 +1112,15 @@ public class Utilities {
      * @return a set (possibly empty) of modules managed by this manager, never including m
      */
     public static Set<Module> findDependingModules (Module m, ModuleManager mm, Map<Module, Set<Module>> m2deps) {
-        Set<Module> res = null;
+        Set<Module> res;
         if (m2deps != null) {
             res = m2deps.get (m);
             if (res == null) {
-                res = mm.getModuleInterdependencies(m, true, false);
+                res = mm.getModuleInterdependencies(m, true, false, true);
                 m2deps.put (m, res);
             }
         } else {
-            res = mm.getModuleInterdependencies(m, true, false);
+            res = mm.getModuleInterdependencies(m, true, false, true);
         }
         return res;
     }
@@ -1109,7 +1143,7 @@ public class Utilities {
             return false;
         }
         if (cluster.exists () && cluster.isDirectory ()) {
-            File dir4test = null;
+            File dir4test;
             File update = new File (cluster, UPDATE_DIR);
             File download = new File (cluster, DOWNLOAD_DIR);
             if (download.exists ()) {

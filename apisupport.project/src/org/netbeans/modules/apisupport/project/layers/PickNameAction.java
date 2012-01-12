@@ -51,6 +51,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
@@ -119,7 +120,7 @@ public class PickNameAction extends CookieAction {
         try {
             FileObject properties = p.getSourceDirectory().getFileObject(bundlePath);
             EditableProperties ep = Util.loadProperties(properties);
-            final String key = LayerUtils.generateBundleKeyForFile(f.getPath());
+            final String key = LayerUtil.generateBundleKeyForFile(f.getPath());
             ep.setProperty(key, name);
             Util.storeProperties(properties, ep);
             f.setAttribute("displayName", "bundlevalue:"

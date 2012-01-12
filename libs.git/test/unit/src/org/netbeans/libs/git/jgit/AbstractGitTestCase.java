@@ -56,6 +56,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
@@ -73,6 +75,7 @@ public class AbstractGitTestCase extends NbTestCase {
     private Repository repository;
     private final File repositoryLocation;
     private JGitRepository localRepository;
+    protected static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor ();
     
     public AbstractGitTestCase (String testName) throws IOException {
         super(testName);
@@ -171,28 +174,28 @@ public class AbstractGitTestCase extends NbTestCase {
         repository.create(true);
 
         if (createLocalClone()) {
-            JGitClientFactory fact = JGitClientFactory.getInstance();
-            fact.getClient(wc).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
-            Field f = JGitClientFactory.class.getDeclaredField("repositoryPool");
+            GitClientFactory fact = GitClientFactory.getInstance();
+            fact.getClient(wc).init(NULL_PROGRESS_MONITOR);
+            Field f = GitClientFactory.class.getDeclaredField("repositoryPool");
             f.setAccessible(true);
             localRepository = ((Map<File, JGitRepository>) f.get(fact)).get(wc);
         }
     }
 
     protected GitClient getClient (File repository) throws GitException {
-        return JGitClientFactory.getInstance().getClient(repository);
+        return GitClientFactory.getInstance().getClient(repository);
     }
 
     protected void add (File... files) throws GitException {
-        getClient(wc).add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(wc).add(files, NULL_PROGRESS_MONITOR);
     }
 
     protected void commit (File... files) throws GitException {
-        getClient(wc).commit(files, "commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(wc).commit(files, "commit", null, null, NULL_PROGRESS_MONITOR);
     }
 
     protected void remove (boolean cached, File... files) throws GitException {
-        getClient(wc).remove(files, cached, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(wc).remove(files, cached, NULL_PROGRESS_MONITOR);
     }
 
     protected void copyFile(File source, File target) throws IOException {
@@ -212,7 +215,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
     
     protected void clearRepositoryPool() throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException {
-        JGitClientFactory.getInstance().clearRepositoryPool();
+        ApiUtils.clearRepositoryPool(GitClientFactory.getInstance());
     }
 
     protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {
@@ -264,7 +267,36 @@ public class AbstractGitTestCase extends NbTestCase {
         }
     }
     
-    public static JGitClientFactory getJGitClientFactory() {
-        return JGitClientFactory.getInstance();
+    public static GitClientFactory getGitClientFactory() {
+        return GitClientFactory.getInstance();
+    }
+
+    private static class NullProgressMonitor extends ProgressMonitor {
+
+        @Override
+        public boolean isCanceled () {
+            return false;
+        }
+
+        @Override
+        public void started (String command) {
+        }
+
+        @Override
+        public void finished () {
+        }
+
+        @Override
+        public void preparationsFailed (String message) {
+        }
+
+        @Override
+        public void notifyError (String message) {
+        }
+
+        @Override
+        public void notifyWarning (String message) {
+        }
+
     }
 }

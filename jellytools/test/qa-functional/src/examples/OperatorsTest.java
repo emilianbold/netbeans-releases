@@ -103,7 +103,7 @@ public class OperatorsTest extends JellyTestCase {
         new TopComponentOperator("Projects");
 
         new JavaNode(sourceNode, "sample1|SampleClass1.java").delete();
-        new NbDialogOperator("Delete").cancel();
+        new NbDialogOperator("Delet").close();
     }
 
     /** Wait for something using Jemmy. If time to wait expires and condition

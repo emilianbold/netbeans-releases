@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -466,10 +465,7 @@ implements PropertyChangeListener, LookupListener {
                 first = false;
             }
             LOG.info(cnb);
-            Object clean = module.getAttribute("removeWritables"); // NOI18N
-            if (clean instanceof Callable) {
-                ((Callable)clean).call();
-            }
+            module.revert();
         }
     }
 

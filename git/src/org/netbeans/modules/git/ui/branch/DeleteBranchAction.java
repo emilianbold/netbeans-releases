@@ -47,7 +47,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -90,7 +90,7 @@ public class DeleteBranchAction extends SingleRepositoryAction {
                         do {
                             try {
                                 LOG.log(Level.FINE, "Deleting a branch: {0}/{1}", new Object[] { branchName, forceDelete }); //NOI18N
-                                client.deleteBranch(branchName, forceDelete, this);
+                                client.deleteBranch(branchName, forceDelete, getProgressMonitor());
                                 cont = false;
                             } catch (GitException.NotMergedException ex) {
                                 cont = handleException(ex);

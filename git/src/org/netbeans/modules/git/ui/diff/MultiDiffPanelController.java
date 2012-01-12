@@ -65,6 +65,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -117,7 +119,7 @@ import org.openide.windows.TopComponent;
  *
  * @author ondra
  */
-public class MultiDiffPanelController implements ActionListener, PropertyChangeListener {
+public class MultiDiffPanelController implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
     private final VCSContext context;
     private EnumSet<Status> displayStatuses;
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo();
@@ -165,6 +167,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private final DiffLookup lookup = new DiffLookup();
 
     private GitProgressSupport statusRefreshSupport;
+    private PreferenceChangeListener prefList;
 
     public MultiDiffPanelController (VCSContext context) {
         this.context = context;
@@ -253,6 +256,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         panel.btnRevert.addActionListener(this);
         panel.btnRefresh.addActionListener(this);
         Git.getInstance().getFileStatusCache().addPropertyChangeListener(list = WeakListeners.propertyChange(this, Git.getInstance().getFileStatusCache()));
+        GitModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(
+                prefList = WeakListeners.create(PreferenceChangeListener.class, this, GitModuleConfig.getDefault().getPreferences()));
     }
 
     Lookup getLookup () {
@@ -629,11 +634,17 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
                 applyChange(changedEvent);
             }
-            return;
         } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
             refreshComponents();
         } else if (VCSStatusTable.PROP_SELECTED_FILES.equals(evt.getPropertyName())) {
             tableRowSelected((File[]) evt.getNewValue());
+        }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(GitModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            panel.repaint();
         }
     }
 

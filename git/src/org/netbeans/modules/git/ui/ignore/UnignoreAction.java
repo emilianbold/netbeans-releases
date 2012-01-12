@@ -51,7 +51,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.modules.git.FileInformation;
@@ -80,7 +80,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
 
     @Override
     protected Task performAction (File repository, File[] roots, VCSContext context) {
-        return ignore(repository, roots);
+        return unignore(repository, roots);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
         return enabled;
     }
 
-    public Task ignore (File repository, File[] roots) {
+    public Task unignore (File repository, File[] roots) {
         final File[] toUnignore = filterRoots(roots);
         if (toUnignore.length == 0) {
             return null;
@@ -118,7 +118,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
                                 notifiedFiles.add(file);
                             }
                         });
-                        modifiedIgnores = client.unignore(toUnignore, this);
+                        modifiedIgnores = client.unignore(toUnignore, getProgressMonitor());
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     } finally {

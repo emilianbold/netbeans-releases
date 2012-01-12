@@ -62,14 +62,6 @@ import org.openide.util.actions.SystemAction;
  * @author Tomas Hurka
  */
 public class CustomizeProfilingPointAction extends SystemAction implements ContextAwareAction {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(CustomizeProfilingPointAction.class,
-                                                                  "CustomizeProfilingPointAction_ActionName"); // NOI18N
-                                                                                                               // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public CustomizeProfilingPointAction() {
@@ -85,9 +77,10 @@ public class CustomizeProfilingPointAction extends SystemAction implements Conte
         return new HelpCtx(CustomizeProfilingPointAction.class);
     }
 
+    @NbBundle.Messages("CustomizeProfilingPointAction_ActionName=Edit")
     @Override
     public String getName() {
-        return ACTION_NAME;
+        return Bundle.CustomizeProfilingPointAction_ActionName();
     }
 
     @Override

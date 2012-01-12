@@ -203,11 +203,16 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
         
     }
 
+    /** Suppress the de-initialization of editor infrastructure, as this
+     * is not real TopComponent, rather just an element embedded in real
+     * components. Those components are responsible for cleaning up.
+     * @return 
+     */
     @Override
     protected boolean closeLast() {
-        return super.closeLast(false);
+        return true;
     }
-
+    
     @Messages({
         "# {0} - file name", "MSG_SaveModified=File {0} is modified. Save?",
         "MSG_SaveModified_no_name=File is modified. Save?"

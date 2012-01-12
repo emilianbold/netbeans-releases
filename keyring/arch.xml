@@ -612,7 +612,8 @@
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+   The API methods may be called from any thread. The SPI implementors may
+   assume that they will not be called directly from EDT.
   </p>
  </answer>
 

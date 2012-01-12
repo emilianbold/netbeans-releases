@@ -132,17 +132,68 @@ public class RemoveUnnecessaryReturnTest extends TestBase {
                             "}\n");
     }
 
-    public void testSwitchRemove() throws Exception {
+    public void testNegCase() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
                             "    public void test(boolean b) {\n" +
                             "        switch (b) {\n" +
-                            "            case true: if (b) { return ; } else break;\n" +
+                            "            case true: { return ; }\n" +
+                            "            case false: { System.err.println(1); break; }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
+
+    public void testSwitchRemove1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public void test(boolean b) {\n" +
+                            "        switch (b) {\n" +
+                            "            case true: if (b) { return ; } break;\n" +
                             "            case false: System.err.println(); break;\n" +
                             "    }\n" +
                             "}\n",
                             "4:32-4:40:verifier:ERR_UnnecessaryReturnStatement");
+    }
+
+    public void testSwitchRemove2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public void test(boolean b) {\n" +
+                            "        switch (b) {\n" +
+                            "            case true: { if (b) { return ; } break };\n" +
+                            "            case false: System.err.println(); break;\n" +
+                            "    }\n" +
+                            "}\n",
+                            "4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
+    }
+
+    public void testSwitchRemove3() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public void test(boolean b) {\n" +
+                            "        switch (b) {\n" +
+                            "            case true: { if (b) { return ; } };\n" +
+                            "            case false: break;\n" +
+                            "    }\n" +
+                            "}\n",
+                            "4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
+    }
+
+    public void testSwitchRemove4() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public void test(boolean b) {\n" +
+                            "        switch (b) {\n" +
+                            "            case true: { if (b) { return ; } };\n" +
+                            "            case false: { ; break; }\n" +
+                            "    }\n" +
+                            "}\n",
+                            "4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testLastCase() throws Exception {

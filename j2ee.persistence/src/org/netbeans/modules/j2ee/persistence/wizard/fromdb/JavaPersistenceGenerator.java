@@ -57,6 +57,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -809,6 +810,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 for (MethodTree method : methods) {
                     newClassTree = make.addClassMember(newClassTree, method);
                 }
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Rewrite entity tree with name: {0}", entityClass.getTableName()); //NOI18N
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Rewrite entity tree with annotations: length = {0}, annotations = {1}", new Object[]{newClassTree.getModifiers().getAnnotations().size(),  newClassTree.getModifiers().getAnnotations()}); //NOI18N
                 copy.rewrite(originalClassTree, newClassTree);
             }
 
@@ -873,9 +876,23 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         make.addComment(field, comment, true);
                     }
                     if (xmlTransient) {
-                        AnnotationTree xmlTransientAn = genUtils.createAnnotation("javax.xml.bind.annotation.XmlTransient"); //NOI18N
+                        AnnotationTree xmlTransientAn = genUtils.createAnnotation(
+                                "javax.xml.bind.annotation.XmlTransient"); //NOI18N
+                        TypeElement jsonIgnore = copy.getElements().getTypeElement(
+                            "org.codehaus.jackson.annotate.JsonIgnore");    // NOI18N
+                        List<AnnotationTree> annotationTrees = null;
+                        if ( jsonIgnore == null ){
+                            annotationTrees = Collections.singletonList(xmlTransientAn);
+                        }
+                        else {
+                            AnnotationTree jsonIgnoreAn = genUtils.createAnnotation(
+                                jsonIgnore.getQualifiedName().toString());
+                            annotationTrees = new ArrayList<AnnotationTree>(2);
+                            annotationTrees.add( xmlTransientAn);
+                            annotationTrees.add(jsonIgnoreAn);
+                        }
                         getter = genUtils.createPropertyGetterMethod(
-                                make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.<AnnotationTree>singletonList(xmlTransientAn)),
+                                make.Modifiers(EnumSet.of(Modifier.PUBLIC), annotationTrees ),
                                 name,
                                 typeTree);
                     } else {

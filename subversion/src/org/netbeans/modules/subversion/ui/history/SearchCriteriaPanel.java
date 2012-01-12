@@ -138,16 +138,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         return null;    
     }  
     
-    public String getCommitMessage() {
-        String s = tfCommitMessage.getText().trim();
-        return s.length() > 0 ? s : null;
-    }
-
-    public String getUsername() {
-        String s = tfUsername.getText().trim();
-        return s.length() > 0 ? s : null;
-    }
-
     public void setFrom(String from) {
         if (from == null) from = "";  // NOI18N
         tfFrom.setText(from);
@@ -158,21 +148,13 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         tfTo.setText(to);
     }
     
-    public void setCommitMessage(String message) {
-        if (message == null) message = ""; // NOI18N
-        tfCommitMessage.setText(message);
-    }
-
-    public void setUsername(String username) {
-        if (username == null) username = ""; // NOI18N
-        tfUsername.setText(username);
-    }
-    
+    @Override
     public void addNotify() {
         super.addNotify();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                tfCommitMessage.requestFocusInWindow();
+                tfFrom.requestFocusInWindow();
             }
         });
     }
@@ -180,10 +162,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     // <editor-fold desc="UI Layout Code" defaultstate="collapsed">
     private void initComponents() {
 
-        JLabel jLabel1      = new JLabel();
-        tfCommitMessage     = new JTextField();
-        JLabel jLabel2      = new JLabel();
-        tfUsername          = new JTextField();
         JLabel jLabel3      = new JLabel();
         JLabel jLabel4      = new JLabel();
         JLabel jLabel5      = new JLabel();
@@ -191,23 +169,13 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         JButton bBrowseFrom = new JButton();
         JButton bBrowseTo   = new JButton();
 
-        jLabel1.setLabelFor(tfCommitMessage);
-        jLabel2.setLabelFor(tfUsername);
         jLabel3.setLabelFor(tfFrom);
         jLabel4.setLabelFor(tfTo);
 
-        tfCommitMessage.setColumns(20);
-        tfUsername.setColumns(20);
         tfFrom.setColumns(20);
         tfTo.setColumns(20);
 
         ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle"); // NOI18N
-
-        Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_UseCommitMessage")); // NOI18N
-        jLabel1.setToolTipText(bundle.getString("TT_CommitMessage")); // NOI18N
-
-        Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_UseUsername")); // NOI18N
-        jLabel2.setToolTipText(bundle.getString("TT_Username")); // NOI18N
 
         Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_UseFrom")); // NOI18N
         jLabel3.setToolTipText(bundle.getString("TT_From")); // NOI18N
@@ -231,14 +199,10 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
                 layout.createSequentialGroup()
                         .addGap(12)
                         .addGroup(layout.createParallelGroup(LEADING)
-                                .addComponent(jLabel1)
-                                .addComponent(jLabel2)
                                 .addComponent(jLabel3)
                                 .addComponent(jLabel4))
                         .addPreferredGap(RELATED)
                         .addGroup(layout.createParallelGroup(LEADING)
-                                .addComponent(tfCommitMessage)
-                                .addComponent(tfUsername)
                                 .addGroup(layout.createSequentialGroup()
                                         .addComponent(tfFrom)
                                         .addPreferredGap(RELATED)
@@ -256,14 +220,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
                         .addGap(8)
-                        .addGroup(layout.createParallelGroup(BASELINE)
-                                .addComponent(jLabel1)
-                                .addComponent(tfCommitMessage))
-                        .addPreferredGap(RELATED)
-                        .addGroup(layout.createParallelGroup(BASELINE)
-                                .addComponent(jLabel2)
-                                .addComponent(tfUsername))
-                        .addPreferredGap(RELATED)
                         .addGroup(layout.createParallelGroup(BASELINE)
                                 .addComponent(jLabel3)
                                 .addComponent(tfFrom)
@@ -322,50 +278,16 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
             return;
         }
         
-//        final SVNUrl tagURL = repositoryFiles[0].getFileUrl();
-//        destination.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_PleaseWait")); // NOI18N
-
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 destination.setText(repositoryFiles[0].getRevision().toString());
             }
         });
         
-//        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
-//        SvnProgressSupport support = new SvnProgressSupport() {
-//            public void perform() {                    
-//                processTagSelection(destination, repositoryUrl, tagURL, this);
-//            }
-//        };
-//        support.start(rp, repositoryUrl, NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_ResolvingTagProgress")); // NOI18N
     }
-//
-//    private void processTagSelection(final JTextField destination, SVNUrl repositoryURL, final SVNUrl tagURL, SvnProgressSupport progress) {
-//        SvnClient client;
-//        try {
-//            client = Subversion.getInstance().getClient(repositoryURL, progress);
-//        } catch (SVNClientException ex) {
-//            SvnClientExceptionHandler.notifyException(ex, true, true);
-//            return;
-//        }
-//        ISVNLogMessage[] log = new org.tigris.subversion.svnclientadapter.ISVNLogMessage[0];
-//        try {
-//            log = client.getLogMessages(tagURL, null, new SVNRevision.Number(1), SVNRevision.HEAD, true, false, 1);
-//        } catch (SVNClientException e) {
-//            SvnClientExceptionHandler.notifyException(e, true, true);
-//            return;
-//        }
-//        final SVNRevision.Number revision = log[0].getRevision();
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                destination.setText(Long.toString(revision.getNumber()));
-//            }
-//        });
-//    }
     
         // Variables declaration
-        private JTextField tfCommitMessage;
-        private JTextField tfUsername;
         final JTextField tfFrom = new JTextField();
         final JTextField tfTo = new JTextField();
         // End of variables declaration

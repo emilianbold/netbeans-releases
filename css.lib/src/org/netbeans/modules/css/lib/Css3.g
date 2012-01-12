@@ -487,7 +487,7 @@ typeSelector
  	 	 
  nsPred
  	:	
- 	(IDENT | STAR) PIPE
+ 	(IDENT | STAR)? PIPE
  	;
     
  /*
@@ -591,10 +591,16 @@ attrib_value
 
 pseudo
     : ( COLON | DCOLON )
-            ( IDENT | GEN )
-                ( // Function
-                    WS* LPAREN WS* (( IDENT | GEN ) WS*)? RPAREN
-                )?
+             (
+                ( 
+                    ( IDENT | GEN )
+                    ( // Function
+                        WS* LPAREN WS* ( expr | '*' )? RPAREN
+                    )?
+                )
+                |
+                ( NOT WS* LPAREN WS* simpleSelectorSequence? RPAREN )
+             )
     ;
 
 declaration
@@ -628,7 +634,7 @@ syncToFollow
     
     
 prio
-    : IMPORTANT_SYM
+    : IMPORTANT_SYM WS*
     ;
     
 expr
@@ -648,6 +654,7 @@ term
             | TIME
             | FREQ
             | RESOLUTION
+            | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
         )
     | STRING
     | IDENT
