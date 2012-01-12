@@ -233,7 +233,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 props = PhpLanguageOptions.getDefault().getProperties(fileObject);
                 PROPERTIES_CACHE.save(fileObject, props);
             }
-            if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
+            if (props.getPhpVersion() != PhpLanguageOptions.PhpVersion.PHP_5) {
                 if (generateAs == null) {
                     CodeCompletionType codeCompletionType = OptionsUtils.codeCompletionType();
                     switch (codeCompletionType) {
