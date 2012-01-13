@@ -379,24 +379,24 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     }
 
     public void testSharability() throws Exception {
-        assertSharability(SharabilityQuery.UNKNOWN, "libs/index.properties");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "libs/index-private.properties");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/libs/index.properties");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "prj/libs/index-private.properties");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/libs/");
+        assertSharability(SharabilityQuery.Sharability.UNKNOWN, "libs/index.properties");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "libs/index-private.properties");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/libs/index.properties");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "prj/libs/index-private.properties");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/libs/");
         storeDefs(project, "libs/index.properties");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/libs/index.properties");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "prj/libs/index-private.properties");
-        assertSharability(SharabilityQuery.MIXED, "prj/libs/");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/libs/index.properties");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "prj/libs/index-private.properties");
+        assertSharability(SharabilityQuery.Sharability.MIXED, "prj/libs/");
     }
-    private void assertSharability(int mode, String path) throws Exception {
+    private void assertSharability(SharabilityQuery.Sharability mode, String path) throws Exception {
         File f = new File(getWorkDir(), path.replace('/', File.separatorChar));
         if (path.endsWith("/")) {
             FileUtil.createFolder(f);
         } else {
             FileUtil.createData(f);
         }
-        assertEquals(mode, SharabilityQuery.getSharability(f));
+        assertEquals(mode, SharabilityQuery.getSharability(f.toURI()));
     }
 
     private void writeProperties(String path, String... properties) throws IOException {
