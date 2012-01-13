@@ -219,7 +219,9 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
         checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
         File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
         FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
-        if (fo != null) {
+        if (fo == null || !fo.isFolder()) {
+            return;
+        } else {
             ProjectUtilities.scanForProjects(fo, checkedOutProjects);
         }
         if (support != null && support.isCanceled()) {
