@@ -42,12 +42,9 @@
 
 package org.netbeans.modules.projectapi;
 
-import java.io.File;
-import java.io.IOException;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -70,14 +67,14 @@ public class FileOwnerCollocationQueryImplTest extends NbTestCase {
     /**
      * Test of findRoot method, of class FileOwnerCollocationQueryImpl.
      */
-    public void testFindRoot() throws IOException {
+    public void testFindRoot() throws Exception {
         FileObject root =  scratch.createFolder("root");
         FileObject projdir = root.createFolder("prj1");
         projdir.createFolder("testproject");
         
         //root/prj1/foo
         FileOwnerCollocationQueryImpl instance = new FileOwnerCollocationQueryImpl();
-        assertEquals(instance.findRoot(FileUtil.toFile(projdir.createData("foo"))), FileUtil.toFile(projdir));
+        assertEquals(projdir.getURL().toURI(), instance.findRoot(projdir.createData("foo").getURL().toURI()));
         
         //root/prj2/foo/prj3/bar
         projdir = root.createFolder("prj2");
@@ -85,43 +82,43 @@ public class FileOwnerCollocationQueryImplTest extends NbTestCase {
         projdir.createFolder("testproject");
         projdir = projdir.createFolder("foo").createFolder("prj3");
         projdir.createFolder("testproject");
-        assertEquals(instance.findRoot(FileUtil.toFile(projdir.createData("bar"))), FileUtil.toFile(expected));
+        assertEquals(expected.getURL().toURI(), instance.findRoot(projdir.createData("bar").getURL().toURI()));
         
         //root
-        assertEquals(instance.findRoot(FileUtil.toFile(root)), null);
+        assertEquals(null, instance.findRoot(root.getURL().toURI()));
     }
 
     /**
      * Test of areCollocated method, of class FileOwnerCollocationQueryImpl.
      */
-    public void testAreCollocated() throws IOException {
+    public void testAreCollocated() throws Exception {
         FileObject root =  scratch.createFolder("root");
         FileObject projdir = scratch.createFolder("prj1");
         projdir.createFolder("testproject");
         FileObject lib = root.createFolder("libs");
 
         
-        File file1 = FileUtil.toFile(lib.createData("pron"));
-        File file2 = FileUtil.toFile(projdir.createData("xxx"));
+        FileObject file1 = lib.createData("pron");
+        FileObject file2 = projdir.createData("xxx");
         FileOwnerCollocationQueryImpl instance = new FileOwnerCollocationQueryImpl();
-        assertFalse(instance.areCollocated(file1, file2));
-        file1 = FileUtil.toFile(projdir.createData("pron"));
-        assertTrue(instance.areCollocated(file1, file2));
+        assertFalse(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
+        file1 = projdir.createData("pron");
+        assertTrue(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
         
         
-        file1 = FileUtil.toFile(projdir);
-        file2 = FileUtil.toFile(lib);
-        assertFalse(instance.areCollocated(file1, file2));
+        file1 = projdir;
+        file2 = lib;
+        assertFalse(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
         
         projdir = root.createFolder("noproj").createFolder("proj1");
         projdir.createFolder("testproject");
         FileObject projdir2 = root.createFolder("noproj2").createFolder("proj2");
         projdir2.createFolder("testproject");
-        file1 = FileUtil.toFile(projdir.createData("foo"));
-        file2 = FileUtil.toFile(projdir2.createData("bar"));
-//        System.out.println("root1=" + instance.findRoot(file1));
-//        System.out.println("root2=" + instance.findRoot(file2));
-        assertFalse(instance.areCollocated(file1, file2));
+        file1 = projdir.createData("foo");
+        file2 = projdir2.createData("bar");
+//        System.out.println("root1=" + instance.findRoot(file1.getURL().toURI()));
+//        System.out.println("root2=" + instance.findRoot(file2.getURL().toURI()));
+        assertFalse(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
         
     }
 

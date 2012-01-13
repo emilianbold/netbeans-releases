@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.projectapi;
 
-import java.io.File;
 import java.net.URI;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -56,41 +54,38 @@ import org.openide.util.lookup.ServiceProvider;
  * projects they are in.
  * @author Milos Kleint
  */
-@ServiceProvider(service=CollocationQueryImplementation.class, position=500)
-public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation {
+@ServiceProvider(service=CollocationQueryImplementation2.class, position=500)
+public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation2 {
 
-    @Override public File findRoot(File file) {
-        File f = file;
-        URI uri = f.toURI();
-        Project prj = FileOwnerQuery.getOwner(uri);
-        if (prj == null) {
+    @Override public URI findRoot(URI uri) {
+        if (FileOwnerQuery.getOwner(uri) == null) {
             return null;
         }
-        File parentF = f;
-        while (prj != null && parentF != null) {
-            f = parentF;
-            parentF = parentF.getParentFile();
-            if (parentF != null) {
-                prj = FileOwnerQuery.getOwner(parentF.toURI());
-            } else {
-                prj = null;
+        URI parent = uri;
+        while (true) {
+            uri = parent;
+            parent = parent.resolve(parent.toString().endsWith("/") ? ".." : ".");
+            if (FileOwnerQuery.getOwner(parent) == null) {
+                break;
+            }
+            if (parent.getPath().equals("/")) {
+                break;
             }
         }
-        return f;
+        return uri;
         
     }
 
-    @Override public boolean areCollocated(File file1, File file2) {
-        File root = findRoot (file1);
+    @Override public boolean areCollocated(URI file1, URI file2) {
+        URI root = findRoot(file1);
         boolean first = true;
         if (root == null) {
-            root = findRoot (file2);
+            root = findRoot(file2);
             first = false;
         }
         if (root != null) {
-            String rootpath = root.getAbsolutePath() + File.separator;
-            String check = (first ? file2.getAbsolutePath() : file1.getAbsolutePath()) + File.separator;
-            return check.startsWith(rootpath);
+            String check = (first ? file2.toString() : file1.toString()) + '/';
+            return check.startsWith(root.toString());
         }
         return false;
     }
