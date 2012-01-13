@@ -73,6 +73,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.history.LinkButton;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -105,7 +106,7 @@ import org.openide.util.lookup.ProxyLookup;
         mimeType="",
         position=1000000 // lets leave some space in case somebody really wants to be the last
 )
-final public class HistoryComponent extends JPanel implements MultiViewElement, HelpCtx.Provider {
+final public class HistoryComponent extends JPanel implements MultiViewElement, HelpCtx.Provider, PropertyChangeListener {
 
     private HistoryFileView masterView;
     static final String PREFERRED_ID = "text.history";
@@ -116,12 +117,14 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private File[] files;
     private InstanceContent activatedNodesContent;
     private ProxyLookup lookup;
+    private VersioningSystem versioningSystem;
         
     public HistoryComponent() {
         initComponents();
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
         }
+        Utils.addPropertyChangeListener(this);
         activatedNodesContent = new InstanceContent();
     }
     
@@ -156,6 +159,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
     
     public void init(VersioningSystem vs, boolean refresh, final File... files) {   
+        this.versioningSystem = vs;
         toolBar = new Toolbar(vs, files);
         masterView = new HistoryFileView(files, vs, this);
         diffView = new HistoryDiffView(this); 
@@ -181,7 +185,26 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         
         // XXX should be solved in a more general way - not ony for HistoryFileView 
         splitPane.setTopComponent(masterView.getPanel());   
-        splitPane.setBottomComponent(diffView.getPanel());                   
+        splitPane.setBottomComponent(diffView.getPanel());   
+        
+        if(refresh) {
+            masterView.refresh();
+        }
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(Utils.EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
+            final VersioningSystem vs = VersioningSupport.getOwner(files[0]);
+            if(versioningSystem != vs) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        init(vs, true, files);
+                    }
+                });
+            }
+        }
     }
     
     Filter getSelectedFilter() {
@@ -281,6 +304,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public void componentClosed() {
+        Utils.removePropertyChangeListener(this);
         if(masterView != null) {
             masterView.close();
         }

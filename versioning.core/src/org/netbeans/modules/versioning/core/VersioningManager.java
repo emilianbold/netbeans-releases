@@ -558,6 +558,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             } else {
                 versionedRootsChanged(null);
             }
+            propertyChangeSupport.firePropertyChange(EVENT_VERSIONED_ROOTS, null, null);
         }
     }
 

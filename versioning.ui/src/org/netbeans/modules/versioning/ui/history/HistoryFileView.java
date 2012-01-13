@@ -108,14 +108,12 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         this.versioningSystem = versioningSystem;
         this.lh = History.getInstance().getLocalHistory(files);
         
-        registerHistoryListener(versioningSystem, this);
-        registerHistoryListener(lh, this);
-         
         tablePanel = new FileTablePanel();
-
-        HistorySettings.getInstance().addPreferenceListener(this);
-
         loadNextAction = new LoadNextAction();
+        
+        registerHistoryListener(versioningSystem, this);
+        HistorySettings.getInstance().addPreferenceListener(this);
+        registerHistoryListener(lh, this);
     }
     
     public void refresh() {
