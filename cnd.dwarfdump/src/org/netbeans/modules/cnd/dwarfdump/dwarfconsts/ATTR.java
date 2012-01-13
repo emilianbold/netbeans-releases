@@ -169,7 +169,25 @@ public enum ATTR {
     DW_AT_body_begin(0x2105),
     DW_AT_body_end(0x2106),
     DW_AT_GNU_vector(0x2107),
-    DW_AT_GNU_hi(0x2110),
+    DW_AT_GNU_guarded_by(0x2108),
+    DW_AT_GNU_pt_guarded_by(0x2109),
+    DW_AT_GNU_guarded(0x210a),
+    DW_AT_GNU_pt_guarded(0x210b),
+    DW_AT_GNU_locks_excluded(0x210c),
+    DW_AT_GNU_exclusive_locks_required(0x210d),
+    DW_AT_GNU_shared_locks_required(0x210e),
+    DW_AT_GNU_odr_signature(0x210f),
+    DW_AT_GNU_template_name(0x2110),
+    DW_AT_GNU_call_site_value(0x2111),
+    DW_AT_GNU_call_site_data_value(0x2112),
+    DW_AT_GNU_call_site_target(0x2113),
+    DW_AT_GNU_call_site_target_clobbered(0x2114),
+    DW_AT_GNU_tail_call(0x2115),
+    DW_AT_GNU_all_tail_call_sites(0x2116),
+    DW_AT_GNU_all_call_sites(0x2117),
+    DW_AT_GNU_all_source_call_sites(0x2118),
+    DW_AT_GNU_macros(0x2119),
+    DW_AT_GNU_hi(0x21ff),
     
     DW_AT_SUN_lo(0x2201),
     DW_AT_SUN_template(0x2201),
@@ -237,6 +255,9 @@ public enum ATTR {
     
     public static ATTR get(int val) {
         ATTR attr = hashmap.get(val);
+        //if (attr == null) {
+        //    System.err.println("");
+        //}
         return (attr != null) ? attr : DW_AT_unknown;
     }
     

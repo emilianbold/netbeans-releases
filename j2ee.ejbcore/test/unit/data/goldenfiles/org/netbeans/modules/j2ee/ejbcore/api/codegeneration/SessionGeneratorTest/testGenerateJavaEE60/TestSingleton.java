@@ -13,8 +13,8 @@ import javax.ejb.Singleton;
  */
 @Singleton
 public class TestSingleton {
-    
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
- 
+
 }
