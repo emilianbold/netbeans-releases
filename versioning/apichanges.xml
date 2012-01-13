@@ -121,7 +121,7 @@ is the proper place.
                 provide information about a files history which is then used in that files editor history tab.
             </description>
             <class package="org.netbeans.modules.versioning.spi" name="VersioningSupport"/>
-            <issue number="199986"/>
+            <issue number="207126"/>
         </change>
         <change>
             <api name="versioning_spi"/>
