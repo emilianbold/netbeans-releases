@@ -92,7 +92,7 @@ public class HistoryDiffView implements PropertyChangeListener {
     public HistoryDiffView(HistoryComponent tc) {
         this.tc = tc;
         panel = new DiffPanel();                                                              
-        showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
+        showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersion"));  // NOI18N                
     }    
         
     @Override
@@ -205,11 +205,11 @@ public class HistoryDiffView implements PropertyChangeListener {
             }
             String title2;
             if(file.exists()) {
-                title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_CurrentFile");
+                title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_CurrentFile"); // NOI18N
             } else {
-                title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted");
+                title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted"); // NOI18N
             }            
-            prepareDiffView(tmpFile, file, file.getName() + " " + RevisionNode.getFormatedDate(entry), title2);
+            prepareDiffView(tmpFile, file, file.getName() + " " + RevisionNode.getFormatedDate(entry), title2); // NOI18N
         }
 
     }        
@@ -247,9 +247,9 @@ public class HistoryDiffView implements PropertyChangeListener {
         private String getTitle(HistoryEntry entry, File file) throws MissingResourceException {
             String title1;
             if(file.exists()) {
-                title1 = file.getName() + " " + RevisionNode.getFormatedDate(entry);
+                title1 = file.getName() + " " + RevisionNode.getFormatedDate(entry); // NOI18N
             } else {
-                title1 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted");
+                title1 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted"); // NOI18N
             }
             return title1;
         }
@@ -275,7 +275,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                     if(file2.exists()) {
                         ss2 = new LHStreamSource(file2, title2, getMimeType(file2));
                     } else {
-                        ss2 = StreamSource.createSource("currentfile", title2, getMimeType(file2), new StringReader(""));
+                        ss2 = StreamSource.createSource("currentfile", title2, getMimeType(file2), new StringReader("")); // NOI18N
                     }
 
                     diffView = DiffController.create(ss1, ss2);
@@ -291,7 +291,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                     }
                     panel.revalidate();
                     panel.repaint();
-                    if("true".equals(System.getProperty("vcshistory.bindDiffRowToEditor", "false"))) {
+                    if("true".equals(System.getProperty("vcshistory.bindDiffRowToEditor", "false"))) { // NOI18N
                         setBaseLocation();
                     }
 
@@ -305,8 +305,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                 DataObject dao = fo != null ? DataObject.find(fo) : null;
                 EditorCookie cookie = dao != null ? dao.getLookup().lookup(EditorCookie.class) : null;
                 if(cookie != null) {
-                    // hack - care only about dataObjects with opened editors.
-                    // otherwise we won't assume it's file were opened to be edited
+                    // find an editor
                     JEditorPane[] panes = cookie.getOpenedPanes();
                     if(panes != null && panes.length > 0) {
                         int p = panes[0].getCaretPosition();
@@ -341,7 +340,6 @@ public class HistoryDiffView implements PropertyChangeListener {
     }
 
     private void setDiffComponent(Component component) {
-        //int dl = panel.splitPane.getDividerLocation();
         if(diffComponent != null) {
             panel.diffPanel.remove(diffComponent);     
         }       
@@ -349,7 +347,6 @@ public class HistoryDiffView implements PropertyChangeListener {
         diffComponent = component;   
         panel.diffPanel.revalidate();
         panel.diffPanel.repaint();
-        //panel.splitPane.setDividerLocation(dl);                
     }       
     
     void onNextButton() {
@@ -450,7 +447,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         private ProgressHandle handle;
         private final Timer timer;
         public PreparingDiffHandler() {
-            label.setText(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff"));
+            label.setText(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
             this.setBackground(UIManager.getColor("TextArea.background")); // NOI18N
 
             setLayout(new GridBagLayout());
@@ -466,7 +463,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         
         private synchronized void startProgress() throws MissingResourceException {
-            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff"));
+            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
             setProgressComponent(ProgressHandleFactory.createProgressComponent(handle));
             handle.start();
             handle.switchToIndeterminate();                    
