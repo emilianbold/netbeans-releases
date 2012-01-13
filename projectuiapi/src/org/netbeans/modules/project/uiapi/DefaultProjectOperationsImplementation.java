@@ -558,7 +558,7 @@ public final class DefaultProjectOperationsImplementation {
         }
         
         //#109580
-        if (SharabilityQuery.getSharability(FileUtil.toFile(from)) == SharabilityQuery.NOT_SHARABLE) {
+        if (SharabilityQuery.getSharability(from) == SharabilityQuery.Sharability.NOT_SHARABLE) {
             return;
         }
         

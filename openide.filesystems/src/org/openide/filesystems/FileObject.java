@@ -72,6 +72,19 @@ import org.openide.util.UserQuestionException;
 * @author Jaroslav Tulach, Petr Hamernik, Ian Formanek
 */
 public abstract class FileObject extends Object implements Serializable {
+    /**
+     * Name of default line separator attribute.
+     * File object can provide default line separator if it differs from
+     * <code>System.getProperty("line.separator")</code>. Call
+     * <code>fo.getAttribute(DEFAULT_LINE_SEPARATOR_PROP)</code> returns string with
+     * default line separator. Default line separator will be used by the text
+     * editor if saving new content to an initially empty file. Any other code
+     * which creates file content programmatically must manually read this
+     * property if it cares.
+     * @since 7.56
+     */
+    public static final String DEFAULT_LINE_SEPARATOR_ATTR = "default-line-separator"; //NOI18N
+
     /** generated Serialized Version UID */
     static final long serialVersionUID = 85305031923497718L;
 
