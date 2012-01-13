@@ -113,6 +113,11 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
 
         for (File file : files) {
+            FileInformation info = Mercurial.getInstance().getFileStatusCache().getStatus(file);
+            int status = info.getStatus();
+            if ((status & FileInformation.STATUS_VERSIONED) == 0) {
+                continue;
+            }
             HgLogMessage[] history = 
                     HgCommand.getLogMessages(
                         repositories.iterator().next(), 

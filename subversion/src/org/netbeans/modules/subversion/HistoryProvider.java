@@ -93,6 +93,11 @@ public class HistoryProvider implements VCSHistoryProvider {
             Map<String, ISVNLogMessage> rev2LMMap = new HashMap<String, ISVNLogMessage>();
 
             for (File file : files) {
+                FileInformation info = Subversion.getInstance().getStatusCache().getStatus(file);
+                if ((info.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+                    continue;
+                }
+                
                 ISVNLogMessage[] messages = 
                     client.getLogMessages(
                                 file, 
