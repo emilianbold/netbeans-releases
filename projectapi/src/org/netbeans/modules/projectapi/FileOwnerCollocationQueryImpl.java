@@ -42,34 +42,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.projectapi;
 
 import java.io.File;
 import java.net.URI;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * A CollocationQueryImplementation implementation that collocates files based on
  * projects they are in.
  * @author Milos Kleint
- * @since org.netbeans.modules.project.ant/1 1.18
- * 
- * TODO should this class move to project.api module? Som that the behaviour stays
- * even if ant based projects are disabled or missing
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation.class, position=500)
+@ServiceProvider(service=CollocationQueryImplementation.class, position=500)
 public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation {
 
-
-    /** Creates a new instance of FileOwnerCollocationQueryImpl */
-    public FileOwnerCollocationQueryImpl() {
-    }
-
-    public File findRoot(File file) {
+    @Override public File findRoot(File file) {
         File f = file;
         URI uri = f.toURI();
         Project prj = FileOwnerQuery.getOwner(uri);
@@ -90,7 +80,7 @@ public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementa
         
     }
 
-    public boolean areCollocated(File file1, File file2) {
+    @Override public boolean areCollocated(File file1, File file2) {
         File root = findRoot (file1);
         boolean first = true;
         if (root == null) {
@@ -104,7 +94,5 @@ public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementa
         }
         return false;
     }
-
-
 
 }

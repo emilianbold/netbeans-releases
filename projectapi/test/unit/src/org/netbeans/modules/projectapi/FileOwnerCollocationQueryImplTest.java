@@ -40,10 +40,8 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.projectapi;
 
-import org.netbeans.modules.project.ant.*;
-import org.netbeans.modules.project.ant.FileOwnerCollocationQueryImpl;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.TestUtil;
@@ -69,12 +67,6 @@ public class FileOwnerCollocationQueryImplTest extends NbTestCase {
         MockLookup.setInstances(TestUtil.testProjectFactory());
         scratch = TestUtil.makeScratchDir(this);
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     /**
      * Test of findRoot method, of class FileOwnerCollocationQueryImpl.
      */
