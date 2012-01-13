@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -116,7 +116,7 @@ public final class AutoUpgrade {
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
     final static private List<String> VERSION_TO_CHECK = 
-            Arrays.asList (new String[] { ".netbeans/7.0", ".netbeans/6.9" });//NOI18N
+            Arrays.asList (new String[] { ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9" });//NOI18N
 
             
     static private File checkPrevious (String[] version, final List<String> versionsToCheck) {        

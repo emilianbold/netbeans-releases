@@ -480,6 +480,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
         final FileObject fo = this.getDataObject().getPrimaryFile();
+        doc.putProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR, fo.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR));
         final Reader r;
         if (warnedEncodingFiles.contains(fo)) {
             r = new InputStreamReader (stream, c);

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.40
+#Version 6.48
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -436,6 +436,15 @@ meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract interface java.util.EventListener
 
+CLSS public java.util.EventObject
+cons public init(java.lang.Object)
+fld protected java.lang.Object source
+intf java.io.Serializable
+meth public java.lang.Object getSource()
+meth public java.lang.String toString()
+supr java.lang.Object
+hfds serialVersionUID
+
 CLSS public abstract interface javax.accessibility.Accessible
 meth public abstract javax.accessibility.AccessibleContext getAccessibleContext()
 
@@ -766,6 +775,7 @@ fld public final static int PERSISTENCE_ALWAYS = 0
 fld public final static int PERSISTENCE_NEVER = 2
 fld public final static int PERSISTENCE_ONLY_OPENED = 1
 fld public final static java.lang.String PROP_CLOSING_DISABLED = "netbeans.winsys.tc.closing_disabled"
+fld public final static java.lang.String PROP_DND_COPY_DISABLED = "netbeans.winsys.tc.draganddrop_copy_disabled"
 fld public final static java.lang.String PROP_DRAGGING_DISABLED = "netbeans.winsys.tc.dragging_disabled"
 fld public final static java.lang.String PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"
 fld public final static java.lang.String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"
@@ -799,7 +809,6 @@ meth public boolean canClose()
 meth public boolean canClose(org.openide.windows.Workspace,boolean)
  anno 0 java.lang.Deprecated()
 meth public boolean requestFocusInWindow()
- anno 0 java.lang.Deprecated()
 meth public final boolean close()
 meth public final boolean close(org.openide.windows.Workspace)
  anno 0 java.lang.Deprecated()
@@ -837,7 +846,6 @@ meth public void open(org.openide.windows.Workspace)
 meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
 meth public void requestActive()
 meth public void requestFocus()
- anno 0 java.lang.Deprecated()
 meth public void requestVisible()
 meth public void setDisplayName(java.lang.String)
 meth public void setHtmlDisplayName(java.lang.String)
@@ -888,6 +896,7 @@ CLSS public abstract interface static !annotation org.openide.windows.TopCompone
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String[] roles()
 meth public abstract boolean openAtStartup()
 meth public abstract java.lang.String mode()
 
@@ -971,9 +980,13 @@ meth public final org.openide.windows.Workspace createWorkspace(java.lang.String
  anno 0 java.lang.Deprecated()
 meth public final static org.openide.windows.WindowManager getDefault()
 meth public java.lang.String findTopComponentID(org.openide.windows.TopComponent)
+meth public java.lang.String getRole()
 meth public org.openide.windows.TopComponent$Registry getRegistry()
 meth public org.openide.windows.TopComponent[] getOpenedTopComponents(org.openide.windows.Mode)
+meth public void addWindowSystemListener(org.openide.windows.WindowSystemListener)
 meth public void invokeWhenUIReady(java.lang.Runnable)
+meth public void removeWindowSystemListener(org.openide.windows.WindowSystemListener)
+meth public void setRole(java.lang.String)
 supr java.lang.Object
 hfds activeComponent,dummyInstance,registry,serialVersionUID
 
@@ -994,6 +1007,17 @@ meth public abstract void requestFocus()
 meth public abstract void requestVisible()
 meth public abstract void setActivatedNodes(org.openide.nodes.Node[])
 meth public abstract void setIcon(java.awt.Image)
+
+CLSS public final org.openide.windows.WindowSystemEvent
+cons public init(java.lang.Object)
+supr java.util.EventObject
+
+CLSS public abstract interface org.openide.windows.WindowSystemListener
+intf java.util.EventListener
+meth public abstract void afterLoad(org.openide.windows.WindowSystemEvent)
+meth public abstract void afterSave(org.openide.windows.WindowSystemEvent)
+meth public abstract void beforeLoad(org.openide.windows.WindowSystemEvent)
+meth public abstract void beforeSave(org.openide.windows.WindowSystemEvent)
 
 CLSS public abstract interface org.openide.windows.Workspace
 fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"

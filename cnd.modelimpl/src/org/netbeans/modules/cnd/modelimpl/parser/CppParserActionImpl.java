@@ -95,9 +95,9 @@ public class CppParserActionImpl implements CppParserAction {
     public void end_enum_declaration(Token token) {
         //System.out.println("end_enum_declaration " + ((APTToken)token).getOffset());
 
-        if(enumBuilder != null) {
+        if(enumBuilder != null && objects != null) {
             EnumImpl e = enumBuilder.create(true);
-            if(e != null && objects != null) {
+            if(e != null) {
                 objects.put(e.getStartOffset(), e);
                 SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
                 enumEntry.setAttribute(CppAttributes.DEFINITION, e);

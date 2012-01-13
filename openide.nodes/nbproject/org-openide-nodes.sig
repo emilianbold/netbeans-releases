@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.21
+#Version 7.25
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -748,6 +748,11 @@ meth public abstract void open()
 CLSS public abstract interface org.netbeans.api.actions.Printable
 meth public abstract void print()
 
+CLSS public abstract interface org.netbeans.api.actions.Savable
+fld public final static org.openide.util.Lookup REGISTRY
+meth public abstract java.lang.String toString()
+meth public abstract void save() throws java.io.IOException
+
 CLSS public abstract interface org.netbeans.api.actions.Viewable
 meth public abstract void view()
 
@@ -818,8 +823,8 @@ intf org.netbeans.api.actions.Printable
 intf org.openide.nodes.Node$Cookie
 
 CLSS public abstract interface org.openide.cookies.SaveCookie
+intf org.netbeans.api.actions.Savable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void save() throws java.io.IOException
 
 CLSS public abstract interface org.openide.cookies.ViewCookie
 intf org.netbeans.api.actions.Viewable
@@ -983,7 +988,7 @@ meth public boolean add(org.openide.nodes.Node[])
 meth public boolean remove(org.openide.nodes.Node[])
 meth public java.lang.Object clone()
 supr org.openide.nodes.Children
-hfds nodesEntry
+hfds COLLECTION_LOCK,nodesEntry
 hcls AE
 
 CLSS public abstract static org.openide.nodes.Children$Keys<%0 extends java.lang.Object>
@@ -1501,6 +1506,7 @@ hfds LOG,defaultActions
 
 CLSS public abstract org.openide.nodes.NodeOperation
 cons protected init()
+meth public !varargs void showCustomEditorDialog(org.openide.nodes.Node$Property<?>,java.lang.Object[])
 meth public abstract boolean customize(org.openide.nodes.Node)
 meth public abstract org.openide.nodes.Node[] select(java.lang.String,java.lang.String,org.openide.nodes.Node,org.openide.nodes.NodeAcceptor,java.awt.Component) throws org.openide.util.UserCancelException
 meth public abstract void explore(org.openide.nodes.Node)

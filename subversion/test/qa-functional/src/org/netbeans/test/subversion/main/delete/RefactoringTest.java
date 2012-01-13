@@ -17,6 +17,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -130,6 +131,7 @@ public class RefactoringTest extends JellyTestCase {
             node.select();
             node.performPopupActionNoBlock("Refactor|Rename...");
             NbDialogOperator dialog = new NbDialogOperator("Rename");
+            new EventTool().waitNoEvent(2000);
             JTextFieldOperator txt = new JTextFieldOperator(dialog);
             txt.setText("javaapp_ren");
             JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
@@ -138,21 +140,21 @@ public class RefactoringTest extends JellyTestCase {
             Thread.sleep(2000);
 
             vo = VersioningOperator.invoke();
-            String[] expected = new String[]{"Main.java", "Main.java", "javaapp_ren"};
+            String[] expected = new String[]{"Main.java", "Main.java", "javaapp" ,"javaapp_ren"};
             String[] actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
                 actual[i] = vo.tabFiles().getValueAt(i, 0).toString().trim();
             }
             int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong files in Versioning View", 3, result);
+            assertEquals("Wrong files in Versioning View", 4, result);
 
-            expected = new String[]{"Locally Deleted", "Locally Added", "Locally Copied"};
+            expected = new String[]{"Locally Deleted", "Locally Added", "Locally Deleted", "Locally Added"};
             actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
                 actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();
             }
             result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong status in Versioning View", 3, result);
+            assertEquals("Wrong status in Versioning View", 4, result);
 
 //            mh = new MessageHandler("Refreshing");
 //            TestKit.removeHandlers(log);
@@ -167,21 +169,21 @@ public class RefactoringTest extends JellyTestCase {
             TestKit.removeHandlers(log);
             log.addHandler(mh);
 
-            expected = new String[]{"Main.java", "Main.java", "javaapp_ren"};
+            expected = new String[]{"Main.java", "Main.java", "javaapp" ,  "javaapp_ren"};
             actual = new String[cmo.tabFiles().getRowCount()];
             for (int i = 0; i < actual.length; i++) {
                 actual[i] = cmo.tabFiles().getValueAt(i, 1).toString();
             }
             result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong files in Commit dialog", 3, result);
+            assertEquals("Wrong files in Commit dialog", 4, result);
 
-            expected = new String[]{"Locally Deleted", "Locally Added", "Locally Copied"};
+            expected = new String[]{"Locally Deleted", "Locally Added", "Locally Deleted", "Locally Added"};
             actual = new String[cmo.tabFiles().getRowCount()];
             for (int i = 0; i < actual.length; i++) {
                 actual[i] = cmo.tabFiles().getValueAt(i, 2).toString();
             }
             result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong status in Commit dialog", 3, result);
+            assertEquals("Wrong status in Commit dialog", 4, result);
             cmo.commit();
 
             TestKit.waitText(mh);
@@ -196,13 +198,17 @@ public class RefactoringTest extends JellyTestCase {
             }
             assertNotNull("Unexpected behavior - Versioning view should be empty!!!", e);
 
+            /*
             e = null;
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+                node.select();
             } catch (Exception ex) {
                 e = ex;
             }
             assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
+            *
+            */
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {

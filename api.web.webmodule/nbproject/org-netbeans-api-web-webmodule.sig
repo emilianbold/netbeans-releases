@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.23
+#Version 1.26
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -129,6 +129,7 @@ hfds description,name
 
 CLSS public abstract org.netbeans.modules.web.spi.webmodule.WebModuleExtender
 cons public init()
+innr public abstract interface static Savable
 meth public abstract boolean isValid()
 meth public abstract java.util.Set<org.openide.filesystems.FileObject> extend(org.netbeans.modules.web.api.webmodule.WebModule)
 meth public abstract javax.swing.JComponent getComponent()
@@ -137,6 +138,11 @@ meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void update()
 supr java.lang.Object
+
+CLSS public abstract interface static org.netbeans.modules.web.spi.webmodule.WebModuleExtender$Savable
+ outer org.netbeans.modules.web.spi.webmodule.WebModuleExtender
+meth public abstract void save(org.netbeans.modules.web.api.webmodule.WebModule)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public final org.netbeans.modules.web.spi.webmodule.WebModuleFactory
 meth public static org.netbeans.modules.web.api.webmodule.WebModule createWebModule(org.netbeans.modules.web.spi.webmodule.WebModuleImplementation)
@@ -289,6 +295,7 @@ fld public final static java.lang.String PROP_LEFT_DIMENSION = "WizardPanel_left
 fld public final static java.lang.String PROP_WARNING_MESSAGE = "WizardPanel_warningMessage"
 innr public abstract interface static AsynchronousInstantiatingIterator
 innr public abstract interface static AsynchronousValidatingPanel
+innr public abstract interface static BackgroundInstantiatingIterator
 innr public abstract interface static FinishPanel
 innr public abstract interface static FinishablePanel
 innr public abstract interface static InstantiatingIterator
@@ -319,7 +326,7 @@ meth public void setOptions(java.lang.Object[])
 meth public void setTitleFormat(java.text.MessageFormat)
 meth public void setValue(java.lang.Object)
 supr org.openide.DialogDescriptor
-hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,logged,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
+hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,addedWindowListener,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,isWizardWideHelpSet,logged,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
 hcls BoundedHtmlBrowser,EmptyPanel,FinishAction,FixedHeightLabel,FixedHeightPane,ImagedPanel,Listener,PropL,SettingsAndIterator,WizardPanel,WrappedCellRenderer
 
 CLSS public abstract interface static org.openide.WizardDescriptor$Panel<%0 extends java.lang.Object>

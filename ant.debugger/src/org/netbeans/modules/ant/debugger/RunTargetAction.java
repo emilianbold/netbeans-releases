@@ -43,27 +43,40 @@
 package org.netbeans.modules.ant.debugger;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(category="Build", id="org.netbeans.modules.ant.debugger.RunTargetAction")
-@ActionRegistration(displayName="#LBL_debug_target", asynchronous=true)
+@ActionRegistration(displayName="#LBL_debug_target", asynchronous=true, lazy=false)
 @ActionReference(path="org-apache-tools-ant-module/target-actions", position=400)
 @Messages("LBL_debug_target=Debug Target")
-public final class RunTargetAction implements ActionListener {
+public final class RunTargetAction extends AbstractAction implements ContextAwareAction {
 
-    private final TargetLister.Target target;
+    private final Lookup context;
 
-    public RunTargetAction(TargetLister.Target target) {
-        this.target = target;
+    public RunTargetAction() {
+        this(null);
+    }
+
+    @Override public Action createContextAwareInstance(Lookup context) {
+        return new RunTargetAction(context);
+    }
+
+    private RunTargetAction(Lookup context) {
+        super(Bundle.LBL_debug_target());
+        this.context = context;
     }
 
     @Override public void actionPerformed(ActionEvent e) {
-        new RunTargetsAction.TargetMenuItemHandler(target.getScript(), target.getName()).run();
+        new RunTargetsAction.TargetMenuItemHandler(context.lookup(AntProjectCookie.class), context.lookup(TargetLister.Target.class).getName()).run();
     }
 
 }

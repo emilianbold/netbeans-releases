@@ -60,7 +60,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -186,7 +185,7 @@ public final class SourceJavadocAttacherUtil {
                 if (currentFolder[0] != null) {
                     chooser.setCurrentDirectory(currentFolder[0]);
                 }
-                if (chooser.showOpenDialog(null) == chooser.APPROVE_OPTION) {
+                if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     currentFolder[0] = chooser.getCurrentDirectory();
                     final File[] files = chooser.getSelectedFiles();
                     final List<String> result = new ArrayList<String>(files.length);
@@ -233,13 +232,7 @@ public final class SourceJavadocAttacherUtil {
 
     @NonNull
     private static String getDisplayName(@NonNull final URL root) {
-        final URL file;
-        if (FileUtil.getArchiveFile(root) != null) {
-            file = FileUtil.getArchiveFile(root);
-        } else {
-            file = root;
-        }
-        final FileObject fo = URLMapper.findFileObject(file);
-        return fo != null ? fo.getNameExt() : file.getPath();
+        File f = FileUtil.archiveOrDirForURL(root);
+        return f == null ? root.toString() : f.isFile() ? f.getName() : f.getAbsolutePath();
     }
 }
