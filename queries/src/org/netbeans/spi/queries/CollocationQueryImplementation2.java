@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,11 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.spi.queries;
 
-import java.io.File;
+import java.net.URI;
 
 /**
  * A query which should typically be provided by a VCS to give information
@@ -67,10 +64,11 @@ import java.io.File;
  * {@link org.openide.filesystems} with respect to threading semantics.
  * </p>
  * @see org.netbeans.api.queries.CollocationQuery
+ * @since 1.27
  * @author Jesse Glick
- * @deprecated Use {@link org.netbeans.spi.queries.CollocationQueryImplementation2} instead.
+ * @author Alexander Simon
  */
-@Deprecated public interface CollocationQueryImplementation {
+public interface CollocationQueryImplementation2 {
     
     /**
      * Check whether two files are logically part of one directory tree.
@@ -83,7 +81,7 @@ import java.io.File;
      * @param file2 another file
      * @return true if they are probably part of one logical tree
      */
-    boolean areCollocated(File file1, File file2);
+    boolean areCollocated(URI file1, URI file2);
     
     /**
      * Find a root of a logical tree containing this file, if any.
@@ -92,6 +90,7 @@ import java.io.File;
      * @return an ancestor directory which is the root of a logical tree,
      *         if any (else null) (must be an absolute URI)
      */
-    File findRoot(File file);
+    URI findRoot(URI file);
     
 }
+
