@@ -53,10 +53,13 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
+import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -152,7 +155,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                     username, 
                     h.getHgRevision().getRevisionNumber() + ":" + h.getHgRevision().getChangesetId(), 
                     h.getHgRevision().getRevisionNumber(), 
-                    createActions(h.getHgRevision().getRevisionNumber()), 
+                    createActions(h.getHgRevision(), files), 
                     new RevisionProviderImpl(h.getHgRevision()));
             ret.add(e);
         }
@@ -190,6 +193,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         public void getRevisionFile(File originalFile, File revisionFile) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
             try {
+                // XXX fails for moved/renamed files
                 File file = VersionsCache.getInstance().getFileRevision(originalFile, hgRevision);
                 FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
@@ -215,7 +219,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
         private void openHistory(File[] files) {
             if(!isClientAvailable()) {
-                org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+                org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable"); // NOI18N
                 return;
             }
 
@@ -231,23 +235,57 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         
     }
 
-    private Action[] createActions(String revision) {
-        return new Action[] {new AbstractAction("Revert ...") {
+    private Action[] createActions(final HgRevision revision, final File... files) {
+        return new Action[] {new AbstractAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_RollbackTo", "" + revision.getRevisionNumber())) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                
+                final File root = Mercurial.getInstance().getRepositoryRoot(files[0]);
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+                HgProgressSupport support = new HgProgressSupport() {
+                    @Override
+                    public void perform() {
+                        RevertModificationsAction.performRevert(
+                            root,   
+                            revision.getRevisionNumber(),                           
+                            files, 
+                            HgModuleConfig.getDefault().getBackupOnRevertModifications(), 
+                            false, 
+                            this.getLogger());
+                    }
+                };
+                support.start(rp, root, NbBundle.getMessage(LogAction.class, "MSG_Revert_Progress")); // NOI18N
+            }    
+        }, 
+        new AbstractAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_View")) { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                view(revision, false, files);
             }
-        }, new AbstractAction("Diff to previous ...") {
+
+        },
+        new AbstractAction(NbBundle.getMessage(LogAction.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                
-            }
-        }, new AbstractAction("Open " + revision) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                
+                view(revision, true, files);
             }
         }};
+    }
+    
+    private void view(final HgRevision revision, final boolean showAnnotations, final File... files) {
+        final File root = Mercurial.getInstance().getRepositoryRoot(files[0]);
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                for (File f : files) {
+                    try {
+                        HgUtils.openInRevision(f, -1, revision, showAnnotations);
+                    } catch (IOException ex) {
+                        // Ignore if file not available in cache
+                    }
+                }
+            }
+        });
     }
     
     /**
@@ -266,7 +304,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
     private static Set<File> getRepositoryRoots(File[] files) {
         Set<File> repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(files)));
         if (repositories.size() != 1) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size());
+            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size()); // NOI18N
             return null;
         }
         return repositories;
