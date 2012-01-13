@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -100,12 +101,18 @@ public class GoToSourceActionGroup extends EJBActionGroup {
             javaSource.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    ejbClass[0] = SourceUtils.getPublicTopLevelElement(controller).getQualifiedName().toString();
+                    TypeElement publicTopLevelElement = SourceUtils.getPublicTopLevelElement(controller);
+                    if (publicTopLevelElement != null) {
+                        ejbClass[0] = publicTopLevelElement.getQualifiedName().toString();
+                    }
                 }
             }, true);
 
-            final EjbViewController controller = new EjbViewController(ejbClass[0], model);
+            if (ejbClass[0] == null) {
+                return new Action[0];
+            }
 
+            final EjbViewController controller = new EjbViewController(ejbClass[0], model);
             metadata.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass[0]);
