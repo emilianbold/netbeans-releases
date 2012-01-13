@@ -112,7 +112,7 @@ is the proper place.
 
         <change id="AntSession.getProperties">
             <api name="general"/>
-            <summary>Added <code>AntSession.getPropertes</code></summary>
+            <summary>Added <code>AntSession.getProperties</code></summary>
             <version major="3" minor="52"/>
             <date year="2011" month="12" day="15"/>
             <author login="jglick"/>

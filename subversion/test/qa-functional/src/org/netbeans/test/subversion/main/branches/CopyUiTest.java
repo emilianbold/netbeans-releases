@@ -72,7 +72,7 @@ public class CopyUiTest extends JellyTestCase{
      }
     
     public void testInvokeCloseCopy() throws Exception{
-        try {
+       // try {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
@@ -133,10 +133,10 @@ public class CopyUiTest extends JellyTestCase{
             rbio.ok();
             assertEquals("New folder for copy purpose wasn't created", "branches/release01-" + PROJECT_NAME, cto.getRepositoryFolder());
             cto.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        //} catch (Exception e) {
+          //  throw new Exception("Test failed: " + e);
+        //} finally {
             TestKit.closeProject(PROJECT_NAME); 
-        }    
+       // }    
     }
 }

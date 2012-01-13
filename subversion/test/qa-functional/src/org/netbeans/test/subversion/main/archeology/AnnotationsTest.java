@@ -134,7 +134,7 @@ public class AnnotationsTest extends JellyTestCase {
             EditorOperator eo = new EditorOperator("Main.java");
             // XXX: broken
             // in the meantime, call popup manually
-            eo.clickMouse(40, 50, 1, InputEvent.BUTTON3_MASK);
+            eo.clickForPopup(60, 70);
             JPopupMenuOperator pmo = new JPopupMenuOperator();
             pmo.pushMenu("Hide Annotations");
 

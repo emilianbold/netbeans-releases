@@ -99,7 +99,7 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
      }
 
     public void testFilesViewDoubleRefactoring() throws Exception {
-        try {
+        
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -183,7 +183,7 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             }
             int result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong files in Versioning View", expected.length, result);
-            expected = new String[]{"Locally Deleted", "Locally Copied"};
+            expected = new String[]{"Locally Added", "Locally Deleted"};
             actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
                 actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();
@@ -211,10 +211,8 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             txt.setText("AClass");
             refBut = new JButtonOperator(nbdialog, "Refactor");
             refBut.push();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        
             TestKit.closeProject(PROJECT_NAME);
-        }
+        
     }
 }

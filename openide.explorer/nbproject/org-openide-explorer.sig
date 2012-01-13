@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.35
+#Version 6.40
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1315,6 +1315,7 @@ fld public final static java.lang.Object STATE_INVALID
 fld public final static java.lang.Object STATE_NEEDS_VALIDATION
 fld public final static java.lang.Object STATE_VALID
 fld public final static java.lang.String PROP_STATE = "state"
+meth public !varargs static org.openide.explorer.propertysheet.PropertyEnv create(java.beans.FeatureDescriptor,java.lang.Object[])
 meth public java.beans.FeatureDescriptor getFeatureDescriptor()
 meth public java.lang.Object getState()
 meth public java.lang.Object[] getBeans()
@@ -1425,6 +1426,7 @@ meth public boolean getDisplayWritableOnly()
  anno 0 java.lang.Deprecated()
 meth public boolean getPlastic()
  anno 0 java.lang.Deprecated()
+meth public boolean isQuickSearchAllowed()
 meth public boolean requestFocusInWindow()
 meth public boolean setCurrentPage(java.lang.String)
  anno 0 java.lang.Deprecated()
@@ -1454,6 +1456,7 @@ meth public void setPlastic(boolean)
  anno 0 java.lang.Deprecated()
 meth public void setPropertyPaintingStyle(int)
  anno 0 java.lang.Deprecated()
+meth public void setQuickSearchAllowed(boolean)
 meth public void setSortingMode(int) throws java.beans.PropertyVetoException
 meth public void setValueColor(java.awt.Color)
  anno 0 java.lang.Deprecated()
@@ -1763,7 +1766,7 @@ meth public void setTreeHorizontalScrollBarPolicy(int)
 meth public void setTreeSortable(boolean)
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JScrollPane
-hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,manager,managerListener,managerLock,model,outline,popupFactory,popupListener,rowModel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
+hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,logger,manager,managerListener,managerLock,model,outline,popupFactory,popupListener,rowModel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
 hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineScrollLayout,OutlineViewOutline,PopupAction,PopupAdapter,PrototypeProperty,ScrollListener,Selection,TableSelectionListener
 
 CLSS public org.openide.explorer.view.TableView
@@ -1869,7 +1872,7 @@ meth public void setUseSubstringInQuickSearch(boolean)
 meth public void updateUI()
 meth public void validate()
 supr javax.swing.JScrollPane
-hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,allowedQuickSearch,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,isSynth,lastSearchField,manager,managerListener,origSelectionPaths,originalScrollMode,popupListener,quickSearchKeyAdapter,quickSearchUsingSubstring,removedNodeWasSelected,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
+hfds LOG,MIN_TREEVIEW_HEIGHT,MIN_TREEVIEW_WIDTH,TIME_TO_COLLAPSE,allowedDragActions,allowedDropActions,allowedQuickSearch,autoWaitCursor,defaultActionEnabled,defaultActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,lastSearchField,manager,managerListener,origSelectionPaths,originalScrollMode,popupListener,quickSearchKeyAdapter,quickSearchUsingSubstring,removedNodeWasSelected,searchTextField,searchpanel,serialVersionUID,treeModel,visHolder,wlpc,wlvc
 hcls CursorR,DummyTransferHandler,ExplorerScrollPaneLayout,ExplorerTree,PopupAdapter,PopupSupport,SearchPanel,TreePropertyListener,VisualizerHolder
 
 CLSS public org.openide.explorer.view.Visualizer

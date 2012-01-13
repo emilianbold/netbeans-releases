@@ -139,11 +139,10 @@ public class DirectoryGroup extends Group {
         while (e.hasMoreElements()) {
             try {
                 FileObject em = e.nextElement();
-                File f = FileUtil.toFile(fo);
-                int share = SharabilityQuery.UNKNOWN;
+                SharabilityQuery.Sharability share = SharabilityQuery.Sharability.UNKNOWN;
                 if (checkShare) {
-                    share = SharabilityQuery.getSharability(f);
-                    if (share == SharabilityQuery.NOT_SHARABLE) {
+                    share = SharabilityQuery.getSharability(fo);
+                    if (share == SharabilityQuery.Sharability.NOT_SHARABLE) {
                         continue;
                     }
                 }
@@ -154,7 +153,7 @@ public class DirectoryGroup extends Group {
                         h.progress(progressMessage(p), Math.min(++counter.start, counter.end));
                     }
                 }
-                checkShare = share != SharabilityQuery.SHARABLE;
+                checkShare = share != SharabilityQuery.Sharability.SHARABLE;
                 // don't need to check the sharability if the current folder is marked as recursively sharable
                 
                 processFolderChildren(em, projects, h, counter, checkShare);

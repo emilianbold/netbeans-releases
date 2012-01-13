@@ -307,7 +307,7 @@ public final class NewProjectIterator extends BasicWizardIterator {
         SourceGroup group = grps[0];
         Collection<FileObject> files = new ArrayList<FileObject>();
         collectFiles(group.getRootFolder(), files,
-                SharabilityQuery.getSharability(FileUtil.toFile(group.getRootFolder())));
+                SharabilityQuery.getSharability(group.getRootFolder()));
         createZipFile(target, group.getRootFolder(), files);
     }
 
@@ -320,19 +320,19 @@ public final class NewProjectIterator extends BasicWizardIterator {
         ImageIO.write(image, "png", target);
     }
     
-    private static void collectFiles(FileObject parent, Collection<FileObject> accepted, int parentSharab) {
+    private static void collectFiles(FileObject parent, Collection<FileObject> accepted, SharabilityQuery.Sharability parentSharab) {
         for (FileObject fo : parent.getChildren()) {
             if (!VisibilityQuery.getDefault().isVisible(fo)) {
                 // #66765: ignore invisible files/folders, like CVS subdirectory
                 continue;
             }
-            int sharab;
-            if (parentSharab == SharabilityQuery.UNKNOWN || parentSharab == SharabilityQuery.MIXED) {
-                sharab = SharabilityQuery.getSharability(FileUtil.toFile(fo));
+            SharabilityQuery.Sharability sharab;
+            if (parentSharab == SharabilityQuery.Sharability.UNKNOWN || parentSharab == SharabilityQuery.Sharability.MIXED) {
+                sharab = SharabilityQuery.getSharability(fo);
             } else {
                 sharab = parentSharab;
             }
-            if (sharab == SharabilityQuery.NOT_SHARABLE) {
+            if (sharab == SharabilityQuery.Sharability.NOT_SHARABLE) {
                 continue;
             }
             if (fo.isData() && !fo.isVirtual()) {
