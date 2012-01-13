@@ -1180,7 +1180,13 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 URI u;
                 FileObject newFO;
                 String name;
-                if (CollocationQuery.areCollocated(libBaseFolder, FileUtil.toFile(libEntryFO))) {
+                URI libEntryU;
+                try {
+                    libEntryU = libEntryFO.getURL().toURI();
+                } catch (Exception x) {
+                    libEntryU = null;
+                }
+                if (libEntryU != null && CollocationQuery.areCollocated(libBaseFolder.toURI(), libEntryU)) {
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
                     newFO = libEntryFO;

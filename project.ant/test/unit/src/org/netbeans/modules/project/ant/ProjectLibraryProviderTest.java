@@ -95,7 +95,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         libraryProvider = new TestLibraryProvider();
-        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()), libraryProvider),
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI()), libraryProvider),
                 // Filter out standard CQIs since they are bogus.
                 Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
         projdir = TestUtil.makeScratchDir(this).createFolder("prj");
@@ -507,7 +507,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals("jar:"+(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").toURI())+"!/docs/api/", 
                 result.getContent("sources").get(0).toExternalForm());
         // enable test collocation query:
-        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()), libraryProvider),
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI()), libraryProvider),
                 // Filter out standard CQIs since they are bogus.
                 Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
         u = f4.toURI().toURL();
