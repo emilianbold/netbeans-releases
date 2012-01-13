@@ -97,6 +97,6 @@ public class TestVCS extends VersioningSystem {
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
         return vq;
-}
+    }
 
 }
