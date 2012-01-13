@@ -45,7 +45,6 @@ import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.core.util.Utils;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
@@ -62,13 +61,9 @@ public class History {
     private static History instance;
     private Result<? extends VCSHyperlinkProvider> hpResult;
     private RequestProcessor rp;
-    private VersioningSystem localHistory;
-
     
-    private History() {
-        
-    }
-
+    private History() { }
+    
     public static synchronized History getInstance() {
         if(instance == null) {
             instance = new History();
