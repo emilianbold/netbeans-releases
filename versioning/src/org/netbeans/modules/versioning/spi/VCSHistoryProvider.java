@@ -367,7 +367,13 @@ public interface VCSHistoryProvider {
     public void removeHistoryChangeListener(HistoryChangeListener l);
 
     /**
-     * Provides files in a revision. 
+     * Implement and pass over to {@link HisotryEntry} in case 
+     * {@link HistoryEntry#getRevisionFile(java.io.File, java.io.File)}
+     * is expected to work.
+     * 
+     * @see HistoryEntry#getRevisionFile(java.io.File, java.io.File) 
+     * 
+     * @since 1.26
      */
     public interface RevisionProvider {
        
@@ -387,16 +393,24 @@ public interface VCSHistoryProvider {
     }
     
     /**
-     * Changes the message in a revision given by a {@link HistoryEntry}. 
+     * Implement and pass over to {@link HisotryEntry} in case 
+     * {@link HistoryEntry#setMessage(java.lang.String)}
+     * is expected to work.
      * 
+     * @see HistoryEntry#setMessage(java.lang.String) 
      * @since 1.26
      */
     public interface MessageEditProvider {
         
         /**
          * Set a new message 
+         * 
          * @param message the message
+         * 
          * @throws IOException in case it wasn't possible to change the message by the versioning system.
+         * 
+         * @since 1.26 
+         * 
          */
         void setMessage(String message) throws IOException;
     }
@@ -407,6 +421,12 @@ public interface VCSHistoryProvider {
      * @since 1.26
      */
     public interface HistoryChangeListener {
+        /** 
+         * Notifies listener about a change in the history of a few files.
+         * @param evt event describing the change
+         * 
+         * @since 1.26
+         */        
         public void fireHistoryChanged(HistoryEvent evt);
     }
     
@@ -444,7 +464,7 @@ public interface VCSHistoryProvider {
         }
         
         /**
-         * Returns the {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
+         * Returns the {@link VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * 
          * @return {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * 
