@@ -107,7 +107,7 @@ public class IgnoreTest extends JellyTestCase {
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             
             rso.next();
@@ -204,7 +204,7 @@ public class IgnoreTest extends JellyTestCase {
     }
     
     public void testIgnoreUnignorePackage() throws Exception {
-        try {
+     //   try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -225,7 +225,7 @@ public class IgnoreTest extends JellyTestCase {
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             
             rso.next();
@@ -313,15 +313,15 @@ public class IgnoreTest extends JellyTestCase {
             
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+      //  } catch (Exception e) {
+       //     throw new Exception("Test failed: " + e);
+     //   } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }    
+       // }    
     }
     
     public void testIgnoreUnignoreFilePackage() throws Exception {
-        try {
+     //   try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -342,7 +342,7 @@ public class IgnoreTest extends JellyTestCase {
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             
             rso.next();
@@ -425,11 +425,11 @@ public class IgnoreTest extends JellyTestCase {
             assertEquals("Wrong records in Versioning view", 2, result);
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        //} catch (Exception e) {
+        //    throw new Exception("Test failed: " + e);
+       // } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }    
+       // }    
     }
     
     public void testFinalRemove() throws Exception {
