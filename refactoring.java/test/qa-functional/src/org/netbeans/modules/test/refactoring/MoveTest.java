@@ -72,8 +72,7 @@ public class MoveTest extends ModifyingRefactoring {
                 NbModuleSuite.createConfiguration(MoveTest.class).addTest(
                 "testMoveClass",
                 "testMoveToTest",
-                "testMoveToNewPackage",
-                "performMove"
+                "testMoveToNewPackage"
                 ).enableModules(".*").clusters(".*"));
     }
 

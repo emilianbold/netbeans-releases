@@ -167,7 +167,7 @@ public class Type implements IType{
     @Override
     public ITypeDeclaration getTypeDeclaration() {
         if(tDeclaration == null){
-            tDeclaration = type != null ? new JavaTypeDeclaration(repository, this, null, type.isArray()) : new TypeDeclaration(this, new ITypeDeclaration[0], 0);
+            tDeclaration = type != null ? new TypeDeclaration(repository, this, null, type.isArray()) : new TypeDeclaration(this, new ITypeDeclaration[0], 0);
         }
         return tDeclaration;
     }
