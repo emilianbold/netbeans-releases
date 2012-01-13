@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.spi.queries;
 
-import java.io.File;
+import java.net.URI;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
 
 /**
- * A query which should typically be provided by a VCS to give information
- * about whether some files can be considered part of one logical directory tree.
+ * Determine whether files should be shared (for example in a VCS) or are intended
+ * to be unshared.
+ * <div class="nonnormative">
  * <p>
- * This should be treated as a heuristic, useful when deciding whether to use
- * absolute or relative links between path locations.
+ * Could be implemented e.g. by project types which know that certain files or folders in
+ * a project (e.g. <samp>src/</samp>) are intended for VCS sharing while others
+ * (e.g. <samp>build/</samp>) are not.
  * </p>
  * <p>
- * The file names might refer to nonexistent files. A provider may or may not
- * be able to say anything useful about them in this case.
+ * Note that the Project API module registers a default implementation of this query
+ * which delegates to the project which owns the queried file, if there is one.
+ * This is more efficient than searching instances in global lookup, so use that
+ * facility wherever possible.
  * </p>
- * <p>
- * File names passed to this query will already have been normalized according to
- * the semantics of {@link org.openide.filesystems.FileUtil#normalizeFile}.
- * </p>
+ * </div>
  * <p>
  * Threading note: implementors should avoid acquiring locks that might be held
  * by other threads. Generally treat this interface similarly to SPIs in
  * {@link org.openide.filesystems} with respect to threading semantics.
  * </p>
- * @see org.netbeans.api.queries.CollocationQuery
+ * @see org.netbeans.api.queries.SharabilityQuery
+ * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/AntProjectHelper.html#createSharabilityQuery(java.lang.String[],%20java.lang.String[])"><code>AntProjectHelper.createSharabilityQuery(...)</code></a>
  * @author Jesse Glick
- * @deprecated Use {@link org.netbeans.spi.queries.CollocationQueryImplementation2} instead.
+ * @author Alexander Simon
+ * @since 1.27
  */
-@Deprecated public interface CollocationQueryImplementation {
+public interface SharabilityQueryImplementation2 {
     
     /**
-     * Check whether two files are logically part of one directory tree.
-     * For example, if both files are stored in CVS, with the same server
-     * (<code>CVSROOT</code>) they might be considered collocated.
-     * If they are to be collocated their absolute paths must share a
-     * prefix directory, i.e. they must be located in the same filesystem root.
-     * If nothing is known about them, return false.
-     * @param file1 one file
-     * @param file2 another file
-     * @return true if they are probably part of one logical tree
+     * Check whether a file or directory should be shared.
+     * If it is, it ought to be committed to a VCS if the user is using one.
+     * If it is not, it is either a disposable build product, or a per-user
+     * private file which is important but should not be shared.
+     * @param uri a normalized URI to check for sharability (may or may not yet exist).
+     * @return one of the {@link org.netbeans.api.queries.SharabilityQuery.Sharability}'s constant
      */
-    boolean areCollocated(File file1, File file2);
-    
-    /**
-     * Find a root of a logical tree containing this file, if any.
-     * The path of the root (if there is one) must be a prefix of the path of the file.
-     * @param file a file on disk (must be an absolute URI)
-     * @return an ancestor directory which is the root of a logical tree,
-     *         if any (else null) (must be an absolute URI)
-     */
-    File findRoot(File file);
-    
+    Sharability getSharability(URI uri);
 }

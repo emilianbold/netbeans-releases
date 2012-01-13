@@ -561,6 +561,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     @Override
     public Object getAttribute(String attrName) {
+        if (attrName.equals(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)) {
+            return "\n"; // NOI18N
+        }
         if (attrName.equals("isRemoteAndSlow")) { // NOI18N
             return Boolean.TRUE;
         }
