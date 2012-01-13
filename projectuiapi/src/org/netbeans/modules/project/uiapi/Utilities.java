@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport.Item;
+import org.netbeans.spi.project.ui.support.FileActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.WizardDescriptor;
@@ -155,6 +156,9 @@ public class Utilities {
             }
             @Override public Action fileCommandAction(String command, String name, Icon icon) {
                 return new Dummy("fileCommand:" + command);
+            }
+            @Override public Action fileSensitiveAction(FileActionPerformer performer, String name, Icon icon) {
+                return new Dummy("fileCommand");
             }
         };
     }
