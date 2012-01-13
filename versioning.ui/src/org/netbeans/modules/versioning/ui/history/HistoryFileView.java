@@ -235,7 +235,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     }                
                     List<HistoryEntry> entries = new ArrayList<HistoryEntry>(vcsHistory.length);
                     for (VCSHistoryProvider.HistoryEntry he : vcsHistory) {
-                        entries.add(new HistoryEntry(he, false));
+                        entries.add(new HistoryEntry(he, files, false));
                     }
                     rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]));
                 } finally {
@@ -421,7 +421,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         VCSHistoryProvider.HistoryEntry[] vcsHistory = hp.getHistory(files, null);
         HistoryEntry[] history = new HistoryEntry[vcsHistory.length];
         for (int i = 0; i < vcsHistory.length; i++) {
-            history[i] = new HistoryEntry(vcsHistory[i], true);
+            history[i] = new HistoryEntry(vcsHistory[i], files, true);
         }
         return history;
     }

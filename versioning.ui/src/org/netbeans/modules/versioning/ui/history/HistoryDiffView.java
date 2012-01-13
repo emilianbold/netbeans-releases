@@ -134,9 +134,13 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
         Node[] newSelection = ((Node[]) evt.getNewValue());
         if ((newSelection != null) && (newSelection.length == 1)) {
             HistoryEntry se = newSelection[0].getLookup().lookup(HistoryEntry.class);
+            File file = newSelection[0].getLookup().lookup(File.class);
             if (se != null) {
+                if(file == null) {
+                    file = se.getFiles()[0];
+                }
                 selected = true;
-                refreshDiffPanel(se);
+                refreshDiffPanel(se, file);
                 return;
             }
         }
@@ -148,8 +152,8 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
         showNoContent(NbBundle.getMessage(HistoryDiffView.class, msgKey));
     }           
     
-    private void refreshDiffPanel(HistoryEntry se) {  
-        prepareDiff = new DiffPrepareTask(se);
+    private void refreshDiffPanel(HistoryEntry entry, File file) {  
+        prepareDiff = new DiffPrepareTask(entry, file);
         scheduleTask(prepareDiff);
     }        
 
@@ -172,9 +176,11 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
     private class DiffPrepareTask implements Runnable {
         
         private final HistoryEntry entry;
+        private final File file;
 
-        public DiffPrepareTask(final HistoryEntry se) {
-            entry = se;
+        public DiffPrepareTask(final HistoryEntry entry, File file) {
+            this.entry = entry;
+            this.file = file;
         }
 
         @Override
@@ -182,24 +188,24 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
             // XXX how to get the mimetype
 
             File tmpFile;
-            final File file = entry.getFiles()[0]; // XXX
             getPreparingDiffHandler().start();
             try {
-                final List<File> siblingTmpFiles = new LinkedList<File>();
+//                final List<File> siblingTmpFiles = new LinkedList<File>();
                 File tempFolder = Utils.getTempFolder();
                 tmpFile = new File(tempFolder, file.getName()); // XXX
                 entry.getRevisionFile(file, tmpFile);
-//                List<HistoryEntry> siblings = entry.getSiblingEntries(); // XXX
-//                for (HistoryEntry siblingEntry : siblings) {
-//                    File tmpHistorySiblingFile = siblingEntry.getHistoryFile();
-//                    siblingTmpFiles.add(tmpHistorySiblingFile);
+//                File[] files = entry.getFiles(); 
+//                for (File sf : files) {
+//                    if(!sf.equals(file)) {
+//                        File tmpHistorySiblingFile = new File(tempFolder, sf.getName());
+//                        entry.getRevisionFile(sf, tmpHistorySiblingFile);
+//                        siblingTmpFiles.add(tmpHistorySiblingFile);
+//                    }
 //                }
             } finally {
                 getPreparingDiffHandler().finish();
             }
             final File tmpHistoryFile = tmpFile;
-            
-            
             
             SwingUtilities.invokeLater(new Runnable() {
                 @Override

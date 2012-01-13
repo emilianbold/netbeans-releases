@@ -55,7 +55,7 @@ public class HistoryEntry {
     private final VCSHistoryProvider.HistoryEntry entry;
     private final boolean local;
 
-    HistoryEntry(VCSHistoryProvider.HistoryEntry entry, boolean local) {
+    HistoryEntry(VCSHistoryProvider.HistoryEntry entry, File[] files, boolean local) {
         this.entry = entry;
         this.local = local;
     }

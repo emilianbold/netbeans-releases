@@ -45,6 +45,7 @@ package org.netbeans.modules.versioning.ui.history;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
@@ -72,50 +73,33 @@ public class RevisionNode extends AbstractNode implements Comparable {
     static final String PROPERTY_NAME_USER = "user";                            // NOI18N        
     static final String PROPERTY_NAME_VERSION = "version";                      // NOI18N                       
 
-    private List<HistoryEntry> entries; // XXX one entry for all files!
+    private HistoryEntry entry; 
     private static DateFormat dateFormat = DateFormat.getDateTimeInstance();                      
     private static DateFormat timeFormat = DateFormat.getTimeInstance();
 
-    private RevisionNode(List<HistoryEntry> childrenEntries) { 
-        super(createChildren(childrenEntries));                        
-        this.entries = childrenEntries;
+    private RevisionNode(HistoryEntry entry, Lookup l) {                
+        super(createChildren(entry), l);                        
+        this.entry = entry;
         initProperties();
     }        
-
-    private RevisionNode(List<HistoryEntry> childrenEntries, Lookup l) {                
-        super(Children.LEAF, l);                        
-        this.entries = childrenEntries;
-        initProperties();
-    }        
-
-    static RevisionNode create(List<HistoryEntry> childrenEntries) {
-        return create(childrenEntries, false);
-    }
          
-    static RevisionNode create(List<HistoryEntry> childrenEntries, boolean forceMultifile) {
-        
-        assert childrenEntries != null && childrenEntries.size() > 0;
-        
-        if(childrenEntries.size() > 1 || forceMultifile) {
-            // set siblings for every entry
-//            for (HistoryEntry entry : childrenEntries) {
-//                entry.setSiblings(childrenEntries);
-//            }
-            return new RevisionNode(childrenEntries);
-        } else {
-            return new RevisionNode(childrenEntries, Lookups.fixed(new Object [] { childrenEntries.get(0) }));
-        }
+    static RevisionNode create(HistoryEntry entry) {
+        return new RevisionNode(entry, Lookups.fixed(new Object [] { entry }));
     }
     
-    private static Children createChildren(List<HistoryEntry> childrenEntries) {
-        FileNode[] nodes = new FileNode[childrenEntries.size()];
-        int i = 0;
-        for (HistoryEntry se : childrenEntries) {
-            nodes[i++] = new FileNode(se);            
+    private static Children createChildren(HistoryEntry entry) {
+        if(entry.getFiles().length == 0) {
+            return Children.LEAF;
+        } else {
+            FileNode[] nodes = new FileNode[entry.getFiles().length];
+            int i = 0;
+            for (File file : entry.getFiles()) {
+                nodes[i++] = new FileNode(entry, file);            
+            }
+            Children.SortedArray children = new Children.SortedArray();            
+            children.add(nodes);
+            return children;        
         }
-        Children.SortedArray children = new Children.SortedArray();            
-        children.add(nodes);
-        return children;        
     }
         
     private void initProperties() {
@@ -124,7 +108,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
                 
         ps.put(new RevisionProperty()); // XXX show only if VCS available
         ps.put(new UserProperty()); 
-        ps.put(entries.get(0).canEdit() ? new EditableMessageProperty() : new MessageProperty());
+        ps.put(entry.canEdit() ? new EditableMessageProperty() : new MessageProperty());
         
         sheet.put(ps);
         setSheet(sheet);        
@@ -137,7 +121,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
 
     @Override
     public String getName() {                
-        return getFormatedDate(entries.get(0));
+        return getFormatedDate(entry);
     }    
        
     static String getFormatedDate(HistoryEntry se)  {
@@ -171,7 +155,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
     }    
     @Override
     public Action[] getActions(boolean context) {
-        return entries.get(0).getActions();          
+        return entry.getActions();          
     }
 
     @Override
@@ -181,9 +165,9 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
         RevisionNode node = (RevisionNode) obj;
 
-        if(node.entries.get(0).getDateTime().getTime() > entries.get(0).getDateTime().getTime()) {
+        if(node.entry.getDateTime().getTime() > entry.getDateTime().getTime()) {
             return 1;
-        } else if(node.entries.get(0).getDateTime().getTime() < entries.get(0).getDateTime().getTime()) {
+        } else if(node.entry.getDateTime().getTime() < entry.getDateTime().getTime()) {
             return -1;
         } else {
             return 0;
@@ -196,12 +180,12 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entries.get(0).getMessage();
+            return entry.getMessage();
         }
 
         @Override
         public String toString() {
-            return entries.get(0).getMessage();
+            return entry.getMessage();
         }
         
     }
@@ -212,20 +196,17 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entries.get(0).getMessage();
+            return entry.getMessage();
         }    
         @Override        
         public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
         {        
             value = value.trim();
-            for(HistoryEntry se : entries) {
-                try {
-                    se.setMessage(!value.equals("") ? value : null);
-                } catch (IOException ex) {
-                    History.LOG.log(Level.WARNING, null, ex);
-                    break;
-                }
-            }            
+            try {
+                entry.setMessage(!value.equals("") ? value : null);
+            } catch (IOException ex) {
+                History.LOG.log(Level.WARNING, null, ex);
+            }
         }        
         @Override
         public PropertyEditor getPropertyEditor() {
@@ -234,7 +215,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
         
         @Override
         public String toString() {
-            return entries.get(0).getMessage();
+            return entry.getMessage();
         }        
     }                      
     
@@ -244,12 +225,12 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entries.get(0).getUsernameShort();
+            return entry.getUsernameShort();
         }
 
         @Override
         public String toString() {
-            return entries.get(0).getUsername();
+            return entry.getUsername();
         }
     }        
     
@@ -259,22 +240,24 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entries.get(0).getRevisionShort();
+            return entry.getRevisionShort();
         }
 
         @Override
         public String toString() {
-            return entries.get(0).getRevision();
+            return entry.getRevision();
         }
     } 
 
     private static class FileNode extends AbstractNode implements Comparable {        
 
         private final HistoryEntry entry;
+        private final File file;
         
-        FileNode(HistoryEntry entry) {
-            super(Children.LEAF, Lookups.fixed(new Object [] { entry }));                        
+        FileNode(HistoryEntry entry, File file) {
+            super(Children.LEAF, Lookups.fixed(new Object [] { file, entry }));                        
             this.entry = entry;
+            this.file = file;
         }
     
         @Override
@@ -284,7 +267,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
 
         @Override
         public String getName() {
-            return entry.getFiles()[0].getName(); // XXX 
+            return file.getName(); 
         }  
         
         @Override
@@ -299,25 +282,21 @@ public class RevisionNode extends AbstractNode implements Comparable {
     
     public static abstract class Filter implements QuickFilter {
         public abstract String getDisplayName();
-        protected Collection<HistoryEntry> getEntries(Object value) {
+        protected HistoryEntry getEntry(Object value) {
             if(value instanceof Node) {
-                return getEntries((Node)value);
+                return getEntry((Node)value);
         }
             return null;
         }
  
-        private Collection<HistoryEntry> getEntries(Node node) {
+        private HistoryEntry getEntry(Node node) {
             if(node instanceof RevisionNode) {
-                return ((RevisionNode)node).entries;
+                return ((RevisionNode)node).entry;
             } else if (node instanceof FileNode) {
-                return Arrays.asList(new HistoryEntry[] {((FileNode)node).entry});
+                return ((FileNode)node).entry;
             } else {
                 Node[] nodes = node.getChildren().getNodes();
-                List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
-                for (Node n : nodes) {
-                    ret.addAll(getEntries(n));
-                }
-                return ret;
+                return getEntry(nodes[0]);
             }
         }
         

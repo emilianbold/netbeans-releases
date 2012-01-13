@@ -132,7 +132,11 @@ public class HistoryRootNode extends AbstractNode {
         if(loadNextNode != null) {
             loadNextNode.refreshMessage();
         }
-        getChildren().add(createPlainRevisionNodes(groupByTimestamp(entries)));
+        nodes = new Node[entries.length];
+        for (int i = 0; i < nodes.length; i++) {
+            nodes[i] = RevisionNode.create(entries[i]);
+        }
+        getChildren().add(nodes);
     }
 
     synchronized void loadingStarted() {
@@ -161,87 +165,6 @@ public class HistoryRootNode extends AbstractNode {
         }
     }
     
-    private Map<Long, List<HistoryEntry>> groupByTimestamp(HistoryEntry[] entries) {
-        Map<Long, List<HistoryEntry>> byTSMap = new HashMap<Long, List<HistoryEntry>>();
-        for (HistoryEntry entry : entries) {
-            List<HistoryEntry> l = byTSMap.get(entry.getDateTime().getTime());
-            if(l == null) {
-                l = new LinkedList<HistoryEntry>();
-                byTSMap.put(entry.getDateTime().getTime(), l);
-        }
-            l.add(entry);
-        }
-        return byTSMap;
-    }
-        
-    private RevisionNode[] createPlainRevisionNodes(Map<Long, List<HistoryEntry>> revisionEntriesMap) {
-        List<RevisionNode> nodes = new LinkedList<RevisionNode>();
-        for (Long ts  : revisionEntriesMap.keySet()) {                      
-            List<HistoryEntry> entries = revisionEntriesMap.get(ts);
-            if(!entries.isEmpty()) {
-                nodes.add(createHistoryEntryNode(entries));
-    }
-        }
-        return nodes.toArray(new RevisionNode[nodes.size()]);
-    }
-    
-    /**
-     * 
-     * Creates a RevisionNode for a list of files, where the files are related to one DataObject - e.g. MyForm.java, MyForm.form
-     * 
-     */
-    private RevisionNode createHistoryEntryNode(List<HistoryEntry> entries) {
-//        if(files.length == 1) {
-            
-            // it's only 1 file, so we also already have the 1 entry
-            return RevisionNode.create(entries);
-            
-//        } 
-        
-        // XXX
-//        else if(!entries.get(0).isLocalHistory()) {
-//            // for vcs entries just force multifile mode, no matter if there was
-//            // 1 entry returned by vcs or more. 
-//            return RevisionNode.create(entries, true); 
-//        } else {   
-//            // the timestamp must be the same for all StoreEntries
-//            long ts = entries.get(0).getTimestamp();           
-//            
-//            // get the entries for every file - 
-//            // if there is no entry in the Storage then create a structural (fake) one 
-//            List<HistoryEntry> entriesList = new ArrayList<HistoryEntry>();            
-//            for(File f : files) {                
-//                boolean fileInEntries = false;
-//                // check if we already have an entry for the file
-//                for(HistoryEntry e : entries) {
-//                    if(f.equals(e.getFile())) {
-//                        entriesList.add(e);
-//                        fileInEntries = true;
-//                        break;
-//                    }
-//                }
-//                if(fileInEntries) {
-//                    // continue if we already have an entry for the file 
-//                    continue;
-//                }
-//                                
-//                // if there was no entry for the the file then try to get it ...
-//                StoreEntry e = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(f, ts);
-//                if(e != null) {
-//                    
-//                    // XXX we probably don't have to do this anymore - see in createDateFolders( ... )
-//                    
-//                    // ... either by retrieving them from the storage
-//                    entriesList.add(HistoryEntry.createHistoryEntry(e));
-//                } else {
-//                    // ... or by creating a structural (fake) one
-//                    entriesList.add(HistoryEntry.createHistoryEntry(StoreEntry.createFakeStoreEntry(f, ts)));
-//                }                
-//            }            
-//            return RevisionNode.create(entriesList);            
-//        }
-    }                                     
-
     public String getName() {
         return NODE_ROOT; 
     }

@@ -44,8 +44,10 @@ package org.netbeans.modules.localhistory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.modules.localhistory.store.StoreEntry;
@@ -90,26 +92,29 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         if(files == null || files.length == 0) {
             return new HistoryEntry[0];
         }
-        List<HistoryEntry> storeEntries = new LinkedList<HistoryEntry>();
+        Map<Long, HistoryEntry> storeEntries = new HashMap<Long, HistoryEntry>();
         for (File f : files) {
             StoreEntry[] ses = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntries(f);
             for(StoreEntry se : ses) {
-                HistoryEntry e = 
-                    new HistoryEntry(
-                        files, 
-                        se.getDate(), 
-                        se.getLabel(), 
-                        "",                                                             // username         NOI18N
-                        "",                                                             // username short   NOI18N 
-                        NbBundle.getMessage(LocalHistoryProvider.class, "LBL_Local"),   // revision         NOI18N
-                        NbBundle.getMessage(LocalHistoryProvider.class, "LBL_Local"),   // revision short   NOI18N
-                        getActions(), 
-                        new RevisionProviderImpl(se),
-                        new MessageEditImpl(se));
-                storeEntries.add(e);
+                if(!storeEntries.keySet().contains(se.getTimestamp())) { 
+                    HistoryEntry e = 
+                        new HistoryEntry(
+                            files, 
+                            se.getDate(), 
+                            se.getLabel(), 
+                            "",                                                             // username         NOI18N
+                            "",                                                             // username short   NOI18N 
+                            NbBundle.getMessage(LocalHistoryProvider.class, "LBL_Local"),   // revision         NOI18N
+                            NbBundle.getMessage(LocalHistoryProvider.class, "LBL_Local"),   // revision short   NOI18N
+                            getActions(), 
+                            new RevisionProviderImpl(se),
+                            new MessageEditImpl(se));
+                    storeEntries.put(se.getTimestamp(), e);
+                }
             }
+            
         }
-        return storeEntries.toArray(new HistoryEntry[storeEntries.size()]);
+        return storeEntries.values().toArray(new HistoryEntry[storeEntries.size()]);
     }
 
     @Override
@@ -152,9 +157,14 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         @Override
         public void getRevisionFile(File originalFile, File revisionFile) {
             try {
-                File file = se.getFile();
-                FileUtils.copy(se.getStoreFileInputStream(), revisionFile);
-                Utils.associateEncoding(file, revisionFile);
+                // we won't use the member store entry as that might have been 
+                // set for e.g. a stored .form while this is the according .java
+                // file beeing requested. In case the storage can't find a revision it 
+                // return next nearest in time 
+                long ts = se.getTimestamp();
+                StoreEntry storeEntry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(originalFile, ts);
+                FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile);
+                Utils.associateEncoding(originalFile, revisionFile);
             } catch (IOException e) {
                 LocalHistory.LOG.log(Level.WARNING, "Error while retrieving history for file {0} stored as {1}", new Object[]{se.getFile(), se.getStoreFile()}); // NOI18N
             }

@@ -487,11 +487,9 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         }
         @Override
         public boolean accept(Object value) {
-            Collection<HistoryEntry> entries = getEntries(value);
-            if(entries != null) {
-                for (HistoryEntry e : entries) {
-                    if(!e.isLocalHistory()) return true;
-                }
+            HistoryEntry e = getEntry(value);
+            if(e != null) {
+                if(!e.isLocalHistory()) return true;
             }
             return false;
         }
@@ -503,11 +501,9 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
     private class LHFilter extends Filter {
         @Override
         public boolean accept(Object value) {
-            Collection<HistoryEntry> entries = getEntries(value);
-            if(entries != null) {
-                for (HistoryEntry e : entries) {
-                    if(e.isLocalHistory()) return true;
-                }
+            HistoryEntry e = getEntry(value);
+            if(e != null) {
+                if(e.isLocalHistory()) return true;
             }
             return false;
         }
@@ -522,12 +518,10 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
             String byUser = getToolbar().containsField.getText();
             if(byUser == null || "".equals(byUser)) return true;                // NOI18N
             
-            Collection<HistoryEntry> entries = getEntries(value);
-            if(entries != null) {
-                for (HistoryEntry e : entries) {
-                    String user = e.getUsernameShort();
-                    if(user.toLowerCase().contains(byUser.toLowerCase())) return true;
-                }
+            HistoryEntry e = getEntry(value);
+            if(e != null) {
+                String user = e.getUsernameShort();
+                if(user.toLowerCase().contains(byUser.toLowerCase())) return true;
             }
             return false;
         }
@@ -546,12 +540,10 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
             String byMsg = getToolbar().containsField.getText();
             if(byMsg == null || "".equals(byMsg)) return true;
             
-            Collection<HistoryEntry> entries = getEntries(value);
-            if(entries != null) {
-                for (HistoryEntry e : entries) {
-                    String msg = e.getMessage();
-                    if(msg.toLowerCase().contains(byMsg.toLowerCase())) return true;
-                }
+            HistoryEntry e = getEntry(value);
+            if(e != null) {
+                String msg = e.getMessage();
+                if(msg.toLowerCase().contains(byMsg.toLowerCase())) return true;
             }
             return false;
         }
