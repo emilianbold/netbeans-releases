@@ -59,6 +59,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -156,18 +157,42 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public boolean renameTo(File dest) {
-        Future<Integer> result = renameTo(env, getPath(), dest.getPath(), new StringWriter());
-        try {
-            return result.get() == 0;
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
+        if (fo == null) {
+            fo = FileSystemProvider.getFileObject(env, path);
         }
-        return false;
+        if (fo == null) {
+            Future<Integer> result = renameTo(env, getPath(), dest.getPath(), new StringWriter());
+            try {
+                return result.get() == 0;
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
+            return false;
+        } else {
+            String name = dest.getName();
+            String ext = "";
+            int pos = name.lastIndexOf('.');
+            if (pos > 0) {
+                ext = name.substring(pos + 1);
+                name = name.substring(0, pos);                        
+            }
+            try {
+                FileLock lock = fo.lock();
+                try {
+                    fo.rename(lock, name, ext);
+                    return true;
+                } finally {
+                    lock.releaseLock();
+                }
+            } catch (IOException ex) {
+                return false;
+            }
+        }
     }
-
+    
     @Override
     public boolean mkdirs() {
-        if (fo == null) {                        
+        if (fo == null) {
             try {
                 fo = FileUtil.createFolder(FileSystemProvider.getFileSystem(env).getRoot(), path);
             } catch (IOException ex) {
@@ -217,6 +242,11 @@ public class FileObjectBasedFile extends File {
         }
         FileObject parent = fo.getParent();
         return parent == null ? null : new FileObjectBasedFile(env, parent);
+    }
+    
+    @Override
+    public String getName() {
+        return (fo == null) ? PathUtilities.getBaseName(path): fo.getNameExt();
     }
 
     @Override
@@ -333,5 +363,5 @@ public class FileObjectBasedFile extends File {
 
         processor.post(ftask);
         return ftask;
-    }
+    }    
 }

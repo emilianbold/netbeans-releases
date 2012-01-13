@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
@@ -64,7 +65,9 @@ import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -168,7 +171,7 @@ public class CGSInfo {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    ParserResult info = (ParserResult) resultIterator.getParserResult();
+                    PHPParseResult info = (PHPParseResult) resultIterator.getParserResult();
                     if (info != null) {
                         int caretOffset = textComp.getCaretPosition();
                         ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
@@ -178,7 +181,8 @@ public class CGSInfo {
                                 FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                                 Index index = ElementQueryFactory.getIndexQuery(info);
                                 final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
-                                Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(className)));
+                                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(className), caretOffset, info.getModel().getVariableScope(caretOffset));
+                                Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(fullyQualifiedName)));
                                 for (ClassElement classElement : classes) {
                                     ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
                                     final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();

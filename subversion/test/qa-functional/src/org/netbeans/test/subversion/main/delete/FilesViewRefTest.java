@@ -40,6 +40,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -140,9 +141,13 @@ public class FilesViewRefTest extends JellyTestCase {
             TestKit.waitForScanFinishedSimple();
 
             TestKit.createNewPackage(PROJECT_NAME, "a.b.c");
+            new EventTool().waitEvent(2000);
             TestKit.createNewElement(PROJECT_NAME, "a", "AClass");
+            new EventTool().waitEvent(2000);
             TestKit.createNewElement(PROJECT_NAME, "a.b", "BClass");
+            new EventTool().waitEvent(2000);
             TestKit.createNewElement(PROJECT_NAME, "a.b.c", "CClass");
+            new EventTool().waitEvent(2000);
 
             mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
