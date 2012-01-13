@@ -46,8 +46,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.openide.util.NbBundle;
 
@@ -171,4 +173,19 @@ public final class TimerOptions {
             return invalidAttributes.substring(0, invalidAttributes.length() - 2);
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<Entry<String, String>> iterator = timerOptions.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Entry<String, String> entry = iterator.next();
+            sb.append(entry.getKey()).append(" = ").append("\"").append(entry.getValue()).append("\""); //NOI18N
+            if (iterator.hasNext()) {
+                sb.append(", "); //NOI18N
+            }
+        }
+        return sb.toString();
+    }
+
 }
