@@ -112,8 +112,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
     private Toolbar toolBar;
     private HistoryDiffView diffView;
-    private MultiViewElementCallback callback;
     
+    private File[] files;
     private InstanceContent activatedNodesContent;
     private ProxyLookup lookup;
         
@@ -137,12 +137,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             Collection<File> doFiles = toFileCollection(dataObject.files());
             filesList.addAll(doFiles);
         }
-        lookup = new ProxyLookup(new Lookup[] {
-            Lookups.fixed((Object[]) filesList.toArray(new File[filesList.size()])),
-            new AbstractLookup(activatedNodesContent)
-        });
-        
-        File[] files = filesList.toArray(new File[filesList.size()]);
+        files = filesList.toArray(new File[filesList.size()]);
         VersioningSystem vs = VersioningSupport.getOwner(files[0]);
         init(vs, files);    
     }
@@ -238,7 +233,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
-        this.callback = callback;
+        
     }
 
     @NbBundle.Messages({
@@ -313,6 +308,12 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public Lookup getLookup() {
+        if(lookup == null) {
+            lookup = new ProxyLookup(new Lookup[] {
+                Lookups.fixed((Object[]) files),
+                new AbstractLookup(activatedNodesContent)
+            });
+        }
         return lookup;
     }
 
