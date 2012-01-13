@@ -91,7 +91,8 @@ class ModelElementFactory {
     }
     
     static IdentifierImpl create(LiteralNode node) {
-        return new IdentifierImpl(node.getString(), new OffsetRange(node.getStart(), node.getFinish()));
+        String name = node.getValue() instanceof String ? (String)node.getValue() : "UNKNOWN"; // NOI18N
+        return new IdentifierImpl(name, new OffsetRange(node.getStart(), node.getFinish()));
     }
     
     static JsObjectImpl create(ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {
