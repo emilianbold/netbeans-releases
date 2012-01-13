@@ -61,12 +61,12 @@ import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation, MoveOrRenameOperationImplementation {
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private MakeProject project;
+    private String storedOriginalPath = null;
 
     public MakeProjectOperations(MakeProject project) {
         this.project = project;
@@ -136,9 +136,28 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
     }
 
+    /*package*/ String getStoredOriginalPath() {
+        return storedOriginalPath;
+    }
+
+    private String getOriginalPath(Project originalProject, File originalPath) {
+        if (originalPath != null) {
+            return originalPath.getPath();
+        } else {
+            if (originalProject != null) {
+                MakeProjectOperations ops = originalProject.getLookup().lookup(MakeProjectOperations.class);
+                if (ops != null) {
+                    return ops.getStoredOriginalPath();
+                }
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void notifyCopying() {
         LOGGER.log(Level.FINE, "notify Copying MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        storedOriginalPath = project.getProjectDirectory().getPath();
         //project.save();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
@@ -153,9 +172,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
 
         // Update all external relative paths
-        String originalFilePath = originalPath.getPath();
-        String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
-        if (!originalFilePath.equals(newFilePath)) {
+        String originalFilePath = getOriginalPath(original, originalPath);
+        String newFilePath = project.getProjectDirectory().getPath();
+        if (originalFilePath != null && !originalFilePath.equals(newFilePath)) {
             //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
             String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
             fromNewToOriginal = CndPathUtilitities.normalizeSlashes(fromNewToOriginal);
@@ -176,6 +195,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public void notifyMoving() throws IOException {
         LOGGER.log(Level.FINE, "notify Moving MakeProject@{0}", new Object[]{System.identityHashCode(project)}); // NOI18N
+        storedOriginalPath = project.getProjectDirectory().getPath();
         project.setDeleted();
         // Also move private
         MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
@@ -189,9 +209,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
             return;
         }
         // Update all external relative paths
-        String originalFilePath = originalPath.getPath();
-        String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
-        if (!originalFilePath.equals(newFilePath)) {
+        String originalFilePath = getOriginalPath(original, originalPath);
+        String newFilePath = project.getProjectDirectory().getPath();
+        if (originalFilePath != null && !originalFilePath.equals(newFilePath)) {
             //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
             String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
             fromNewToOriginal = CndPathUtilitities.normalizeSlashes(fromNewToOriginal);
