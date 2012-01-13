@@ -79,13 +79,13 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Stupka
  */
-public class HistoryDiffView implements PropertyChangeListener, VersioningListener {
+public class HistoryDiffView implements PropertyChangeListener {
            
     private final HistoryComponent tc;
     private DiffPanel panel;
     private Component diffComponent;
     private DiffController diffView;                
-    private DiffPrepareTask prepareDiff = null;
+    private Runnable prepareDiff = null;
     private Task prepareDiffTask = null;
     private boolean selected;
     private PreparingDiffHandler preparingDiffPanel;
@@ -94,7 +94,6 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
     public HistoryDiffView(HistoryComponent tc) {
         this.tc = tc;
         panel = new DiffPanel();                                                              
-//        History.getInstance().addVersioningListener(this); XXX
         showNoContent(NbBundle.getMessage(HistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
     }    
         
@@ -108,40 +107,51 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
         }
     }
       
-    @Override
-    public void versioningEvent(VersioningEvent event) {
-        // XXX
-//        if(event.getId() != LocalHistory.EVENT_FILE_CREATED) {
-//            return;
-//        }
-//        File file = (File) event.getParams()[0];
-//        if( file == null || prepareDiff == null || !selected ||
-//            !file.equals(prepareDiff.entry.getFile()))
-//        {
-//            return;
-//        }        
-//        scheduleTask(prepareDiff);
-    }
-    
     JPanel getPanel() {
         return panel;
     }    
     
     private void selectionChanged(PropertyChangeEvent evt) {
         Node[] newSelection = ((Node[]) evt.getNewValue());
-        if ((newSelection != null) && (newSelection.length == 1)) {
-            HistoryEntry se = newSelection[0].getLookup().lookup(HistoryEntry.class);
-            File file = newSelection[0].getLookup().lookup(File.class);
-            if (se != null) {
-                if(file == null) {
-                    file = se.getFiles()[0];
+        if(newSelection != null) {
+            if (newSelection.length == 1) {
+                HistoryEntry entry = newSelection[0].getLookup().lookup(HistoryEntry.class);
+                if (entry != null) {
+                    File file = newSelection[0].getLookup().lookup(File.class);
+                    if(file == null) {
+                        file = entry.getFiles()[0];
+                    }
+                    selected = true;
+                    refreshDiffPanel(entry, file);
+                    return;
                 }
-                selected = true;
-                refreshDiffPanel(se, file);
-                return;
+            } else if (newSelection.length == 2) {
+                HistoryEntry entry1 = newSelection[0].getLookup().lookup(HistoryEntry.class);
+                File file1 = null;
+                if (entry1 != null) {
+                    file1 = newSelection[0].getLookup().lookup(File.class);
+                    if(file1 == null) {
+                        file1 = entry1.getFiles()[0];
+                    }
+                }
+                
+                File file2 = null;
+                HistoryEntry entry2 = newSelection[1].getLookup().lookup(HistoryEntry.class);
+                if (entry2 != null) {
+                    file2 = newSelection[1].getLookup().lookup(File.class);
+                    if(file2 == null) {
+                        file2 = entry1.getFiles()[0];
+                    }
+                }
+                
+                if(entry1 != null && entry2 != null && file1 != null && file2 != null) {
+                    refreshDiffPanel(entry1, entry2, file1, file2);
+                    selected = true;
+                    return;
+                }
             }
-        }
-
+        } 
+        
         selected = false;
         String msgKey = (newSelection == null) || (newSelection.length == 0)
                         ? "MSG_DiffPanel_NoVersion"                     //NOI18N
@@ -149,8 +159,12 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
         showNoContent(NbBundle.getMessage(HistoryDiffView.class, msgKey));
     }           
     
+    private void refreshDiffPanel(HistoryEntry entry1, HistoryEntry entry2, File file1, File file2) { 
+        prepareDiff = new RevisionDiffPrepareTask(entry1, entry2, file1, file2);
+        scheduleTask(prepareDiff);
+    } 
     private void refreshDiffPanel(HistoryEntry entry, File file) {  
-        prepareDiff = new DiffPrepareTask(entry, file);
+        prepareDiff = new CurrentDiffPrepareTask(entry, file);
         scheduleTask(prepareDiff);
     }        
 
@@ -170,117 +184,160 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
         return preparingDiffPanel;
     }
     
-    private class DiffPrepareTask implements Runnable {
+    private class CurrentDiffPrepareTask implements Runnable {
         
         private final HistoryEntry entry;
         private final File file;
 
-        public DiffPrepareTask(final HistoryEntry entry, File file) {
+        public CurrentDiffPrepareTask(final HistoryEntry entry, File file) {
             this.entry = entry;
             this.file = file;
         }
 
         @Override
         public void run() {
-            // XXX how to get the mimetype
-
             File tmpFile;
             getPreparingDiffHandler().start();
             try {
-//                final List<File> siblingTmpFiles = new LinkedList<File>();
                 File tempFolder = Utils.getTempFolder();
                 tmpFile = new File(tempFolder, file.getName()); // XXX
                 entry.getRevisionFile(file, tmpFile);
-//                File[] files = entry.getFiles(); 
-//                for (File sf : files) {
-//                    if(!sf.equals(file)) {
-//                        File tmpHistorySiblingFile = new File(tempFolder, sf.getName());
-//                        entry.getRevisionFile(sf, tmpHistorySiblingFile);
-//                        siblingTmpFiles.add(tmpHistorySiblingFile);
-//                    }
-//                }
             } finally {
                 getPreparingDiffHandler().finish();
             }
-            final File tmpHistoryFile = tmpFile;
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {            
-                    try {   
-                        
-                        StreamSource ss1 = new LHStreamSource(tmpHistoryFile, file.getName() + " " + RevisionNode.getFormatedDate(entry), getMimeType(file));
-                        
-                        String title;
-                        StreamSource ss2;                        
-                        if(file.exists()) {
-                            title = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_CurrentFile");
-                            ss2 = new LHStreamSource(file, title, getMimeType(file));
-                        } else {
-                            title = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted");
-                            ss2 = StreamSource.createSource("currentfile", title, getMimeType(file), new StringReader(""));
-                        }
-                        
-                        diffView = DiffController.create(ss1, ss2);
-                        diffView.addPropertyChangeListener(HistoryDiffView.this);
-                        
-                        JComponent c = diffView.getJComponent();
-                        setDiffComponent(c);
-                        tc.setDiffView(c);
-                        if(diffView.getDifferenceCount() > 0) {
-                            setCurrentDifference(0);
-                        } else {
-                            tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
-                        }
-                        panel.revalidate();
-                        panel.repaint();
-                        if("true".equals(System.getProperty("vcshistory.bindDiffRowToEditor", "false"))) {
-                            setBaseLocation(title);
-                        }
+            String title2;
+            if(file.exists()) {
+                title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_CurrentFile");
+            } else {
+                title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted");
+            }            
+            prepareDiffView(tmpFile, file, file.getName() + " " + RevisionNode.getFormatedDate(entry), title2);
+        }
 
-                    } catch (IOException ioe)  {
-                        History.LOG.log(Level.SEVERE, null, ioe);
-                    }                            
-                }
+    }        
 
-                private void setBaseLocation(String title) throws DataObjectNotFoundException {
-                    FileObject fo = FileUtil.toFileObject(file);
-                    DataObject dao = fo != null ? DataObject.find(fo) : null;
-                    EditorCookie cookie = dao != null ? dao.getLookup().lookup(EditorCookie.class) : null;
-                    if(cookie != null) {
-                        // hack - care only about dataObjects with opened editors.
-                        // otherwise we won't assume it's file were opened to be edited
-                        JEditorPane[] panes = cookie.getOpenedPanes();
-                        if(panes != null && panes.length > 0) {
-                            int p = panes[0].getCaretPosition();
-                            if(p > 0) {
-                                try {
-                                    int row = Utilities.getLineOffset((BaseDocument)panes[0].getDocument(), p);
-                                    if(row > 0) {
-                                        diffView.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, row);
-                                    } 
-                                } catch (BadLocationException ex) {
-                                    History.getInstance().LOG.log(Level.WARNING, title, ex);
-                                }
+    private class RevisionDiffPrepareTask implements Runnable {
+        
+        private final HistoryEntry entry1;
+        private final HistoryEntry entry2;
+        private final File file1;
+        private final File file2;
+
+        public RevisionDiffPrepareTask(final HistoryEntry entry1, HistoryEntry entry2, File file1, File file2) {
+            this.entry1 = entry1;
+            this.entry2 = entry2;
+            this.file1 = file1;
+            this.file2 = file2;
+        }
+
+        @Override
+        public void run() {
+            File revisionFile1;
+            File revisionFile2;
+            getPreparingDiffHandler().start();
+            try {
+                revisionFile1 = getRevisionFile(entry1, file1);
+                revisionFile2 = getRevisionFile(entry2, file2);
+            } finally {
+                getPreparingDiffHandler().finish();
+            }
+            String title1 = getTitle(entry1, file1);
+            String title2 = getTitle(entry2, file2);
+            prepareDiffView(revisionFile1, revisionFile2, title1, title2);
+        }
+
+        private String getTitle(HistoryEntry entry, File file) throws MissingResourceException {
+            String title1;
+            if(file.exists()) {
+                title1 = file.getName() + " " + RevisionNode.getFormatedDate(entry);
+            } else {
+                title1 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted");
+            }
+            return title1;
+        }
+
+        private File getRevisionFile(HistoryEntry entry, File file) {
+            File tempFolder = Utils.getTempFolder();
+            File revFile = new File(tempFolder, file.getName()); // XXX
+            entry.getRevisionFile(file, revFile);
+            return revFile;
+        }
+
+    }  
+
+    private void prepareDiffView(final File file1, final File file2, final String title1, final String title2) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {            
+                try {   
+
+                    StreamSource ss1 = new LHStreamSource(file1, title1, getMimeType(file2));
+
+                    StreamSource ss2;                        
+                    if(file2.exists()) {
+                        ss2 = new LHStreamSource(file2, title2, getMimeType(file2));
+                    } else {
+                        ss2 = StreamSource.createSource("currentfile", title2, getMimeType(file2), new StringReader(""));
+                    }
+
+                    diffView = DiffController.create(ss1, ss2);
+                    diffView.addPropertyChangeListener(HistoryDiffView.this);
+
+                    JComponent c = diffView.getJComponent();
+                    setDiffComponent(c);
+                    tc.setDiffView(c);
+                    if(diffView.getDifferenceCount() > 0) {
+                        setCurrentDifference(0);
+                    } else {
+                        tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
+                    }
+                    panel.revalidate();
+                    panel.repaint();
+                    if("true".equals(System.getProperty("vcshistory.bindDiffRowToEditor", "false"))) {
+                        setBaseLocation();
+                    }
+
+                } catch (IOException ioe)  {
+                    History.LOG.log(Level.SEVERE, null, ioe);
+                }                            
+            }
+
+            private void setBaseLocation() throws DataObjectNotFoundException {
+                FileObject fo = FileUtil.toFileObject(file2);
+                DataObject dao = fo != null ? DataObject.find(fo) : null;
+                EditorCookie cookie = dao != null ? dao.getLookup().lookup(EditorCookie.class) : null;
+                if(cookie != null) {
+                    // hack - care only about dataObjects with opened editors.
+                    // otherwise we won't assume it's file were opened to be edited
+                    JEditorPane[] panes = cookie.getOpenedPanes();
+                    if(panes != null && panes.length > 0) {
+                        int p = panes[0].getCaretPosition();
+                        if(p > 0) {
+                            try {
+                                int row = Utilities.getLineOffset((BaseDocument)panes[0].getDocument(), p);
+                                if(row > 0) {
+                                    diffView.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, row);
+                                } 
+                            } catch (BadLocationException ex) {
+                                History.LOG.log(Level.WARNING, null, ex);
                             }
                         }
                     }
                 }
-            });
+            }
             
-        }
-
-        private String getMimeType(File file) {
-            FileObject fo = FileUtils.toFileObject(file);
-            if(fo != null) {
-                return fo.getMIMEType();   
-            } else {
-                return "content/unknown"; // NOI18N
-            }                
-        }
+            private String getMimeType(File file) {
+                FileObject fo = FileUtils.toFileObject(file);
+                if(fo != null) {
+                    return fo.getMIMEType();   
+                } else {
+                    return "content/unknown"; // NOI18N
+                }                
+            }        
+        });
         
-    }        
-    
+    }
+
     private void showNoContent(String s) {
         setDiffComponent(new NoContentPanel(s));
     }

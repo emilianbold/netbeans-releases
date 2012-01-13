@@ -497,7 +497,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 
         //        treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
         //        treeView.getAccessibleContext().setAccessibleName(browserAcsn);           
-                getOutline().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);            
+                getOutline().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);            
                 setPopupAllowed(true);    
                 setDragSource(false);
                 setDropTarget(false);
