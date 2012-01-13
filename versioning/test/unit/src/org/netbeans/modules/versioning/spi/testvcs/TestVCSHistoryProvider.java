@@ -42,25 +42,25 @@
 package org.netbeans.modules.versioning.spi.testvcs;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 
 /**
  *
  * @author tomas
  */
 public class TestVCSHistoryProvider implements VCSHistoryProvider {
-
+    public static HistoryEntry[] history;
     @Override
-    public HistoryEntry[] getHistory(VCSFileProxy[] files, Date fromDate) {
-        return new HistoryEntry[0];
+    public HistoryEntry[] getHistory(File[] files, Date fromDate) {
+        return history;
     }
 
     @Override
-    public Action createShowHistoryAction(VCSFileProxy[] files) {
+    public Action createShowHistoryAction(File[] files) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -77,12 +77,5 @@ public class TestVCSHistoryProvider implements VCSHistoryProvider {
     @Override
     public void removeHistoryChangeListener(HistoryChangeListener l) {
         
-    }
-    
-    private class RevisionProviderImpl implements RevisionProvider {
-        @Override
-        public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
-            
-        }
     }
 }

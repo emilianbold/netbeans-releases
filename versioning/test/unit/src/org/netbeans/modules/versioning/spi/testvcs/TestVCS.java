@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 
 import java.io.File;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 
 /**
@@ -61,6 +62,7 @@ public class TestVCS extends VersioningSystem {
     private static TestVCS instance;
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
+    private VCSHistoryProvider historyProvider;
     private VCSVisibilityQuery vq;
 
     public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
@@ -73,6 +75,7 @@ public class TestVCS extends VersioningSystem {
         instance = this;
         interceptor = new TestVCSInterceptor();
         annotator = new TestVCSAnnotator();
+        historyProvider = new TestVCSHistoryProvider();
         vq = new TestVCSVisibilityQuery();
     }
 
@@ -97,6 +100,11 @@ public class TestVCS extends VersioningSystem {
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
         return vq;
+    }
+
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return historyProvider;
     }
 
 }
