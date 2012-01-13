@@ -88,7 +88,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
     }
     
     private static Children createChildren(HistoryEntry entry) {
-        if(entry.getFiles().length == 0) {
+        if(entry.getFiles().length == 1) {
             return Children.LEAF;
         } else {
             FileNode[] nodes = new FileNode[entry.getFiles().length];
