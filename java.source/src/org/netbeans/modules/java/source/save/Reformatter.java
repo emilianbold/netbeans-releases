@@ -3314,6 +3314,7 @@ public class Reformatter implements ReformatTask {
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
                         case TAG:
+                            toAdd = null;
                             String tokenText = javadocTokens.token().text().toString();
                             int newState;
                             if (JDOC_PARAM_TAG.equalsIgnoreCase(tokenText)) {
@@ -3608,12 +3609,10 @@ public class Reformatter implements ReformatTask {
                                     break;
                                 case 5:
                                     noFormat = true;
-                                    align = -1;
                                     break;
                                 case 6:
                                     lastWSPos = -1;
                                     preserveNewLines = true;
-                                    align = -1;
                                     break;
                             }
                             if (it.hasNext()) {
