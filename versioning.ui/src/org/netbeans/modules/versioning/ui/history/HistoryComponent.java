@@ -160,7 +160,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     
     public void init(VersioningSystem vs, boolean refresh, final File... files) {   
         this.versioningSystem = vs;
-        toolBar = new Toolbar(vs, files);
+        if(toolBar == null) {
+            toolBar = new Toolbar(vs, files);
+        } else {
+            toolBar.setup(vs);
+        }
         masterView = new HistoryFileView(files, vs, this);
         diffView = new HistoryDiffView(this); 
         
@@ -179,7 +183,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                             activatedNodesContent.add(n);
                         }
                     }
-                } 
+                }   
             }
         });
         
@@ -400,19 +404,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             refreshButton.addActionListener(this);
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); 
             settingsButton.addActionListener(this);
-            Filter[] filters;
-            if(vs != null && vs.getVCSHistoryProvider() != null) {
-                filters = new Filter[] {
-                    new AllFilter(), 
-                    new VCSFilter((String) vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)), 
-                    new LHFilter(),
-                    new ByUserFilter(),
-                    new ByMsgFilter()};
-                    filterCombo.setModel(new DefaultComboBoxModel(filters)); 
-            } else {
-                filterCombo.setVisible(false);
-                filterLabel.setVisible(false);
-            }
+            setup(vs);
             
             nextButton.setBorder(new EmptyBorder(0, 5, 0, 5));
             prevButton.setBorder(new EmptyBorder(0, 5, 0, 5));
@@ -431,26 +423,42 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             add(containsLabel, c); 
             add(containsField, c); 
             add(settingsButton);
-  
-            final Action openSearchHistoryAction = vs != null && vs.getVCSHistoryProvider() != null ? vs.getVCSHistoryProvider().createShowHistoryAction(files) : null;
-            if(openSearchHistoryAction != null) {
-                LinkButton searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)})); // NOI18N
-                searchHistoryButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(final ActionEvent e) {
-                        History.getInstance().getRequestProcessor().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                openSearchHistoryAction.actionPerformed(e);
-                            }
-                        }); 
-                    }
-                });
-            
-                c = new GridBagConstraints();
-                c.anchor = GridBagConstraints.EAST;
-                c.weightx = 1;
-                add(searchHistoryButton, c); 
+        }
+
+        void setup(VersioningSystem vs) {
+            boolean visible = vs != null && vs.getVCSHistoryProvider() != null;
+            filterCombo.setVisible(visible);
+            filterLabel.setVisible(visible);
+            if(visible) {
+                Filter[] filters;
+                filters = new Filter[] {
+                    new AllFilter(), 
+                    new VCSFilter((String) vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)), 
+                    new LHFilter(),
+                    new ByUserFilter(),
+                    new ByMsgFilter()};
+                filterCombo.setModel(new DefaultComboBoxModel(filters));                 
+                
+                final Action openSearchHistoryAction = vs != null && vs.getVCSHistoryProvider() != null ? vs.getVCSHistoryProvider().createShowHistoryAction(files) : null;
+                if(openSearchHistoryAction != null) {
+                    LinkButton searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)})); // NOI18N
+                    searchHistoryButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(final ActionEvent e) {
+                            History.getInstance().getRequestProcessor().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    openSearchHistoryAction.actionPerformed(e);
+                                }
+                            }); 
+                        }
+                    });
+
+                    GridBagConstraints c = new GridBagConstraints();
+                    c.anchor = GridBagConstraints.EAST;
+                    c.weightx = 1;
+                    add(searchHistoryButton, c); 
+                }                
             }
         }
             
