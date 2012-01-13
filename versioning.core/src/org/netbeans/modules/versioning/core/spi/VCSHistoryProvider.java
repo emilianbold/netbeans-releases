@@ -113,7 +113,7 @@ public interface VCSHistoryProvider {
         private String revisionShort;
         private String revision;
         private Action[] actions;
-        private RevisionProvider rp;
+        private RevisionProvider revisionProvider;
         private MessageEditProvider mep;
         
         /**
@@ -154,7 +154,7 @@ public interface VCSHistoryProvider {
             this.revision = revision;
             this.revisionShort = revisionShort;
             this.actions = actions;
-            this.rp = rp;
+            this.revisionProvider = rp;
         }
         
         /**
@@ -294,7 +294,9 @@ public interface VCSHistoryProvider {
          * @param revisionFile a File in the working copy  
          */        
         public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
-            rp.getRevisionFile(originalFile, revisionFile);
+            if(revisionProvider != null) {
+                revisionProvider.getRevisionFile(originalFile, revisionFile);
+            }
         }
     }
 
