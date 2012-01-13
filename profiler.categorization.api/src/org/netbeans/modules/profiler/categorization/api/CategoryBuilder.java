@@ -61,10 +61,7 @@ import org.openide.util.Lookup;
  * @author Jaroslav Bachorik
  * @author ads changed by ads
  */
-public class CategoryBuilder {
-    public static interface ProjectTypeIdProvider {
-        String getId();
-    }
+abstract public class CategoryBuilder {
     
     private static final Logger LOGGER = Logger.getLogger(CategoryBuilder.class.getName());
     private static final String CATEGORY_ATTRIB_CUSTOM = "custom"; // NOI18N
@@ -76,32 +73,19 @@ public class CategoryBuilder {
     private static final String CATEGORY_ATTRIB_TYPE = "type"; // NOI18N
     private static final String CATEGORY_ATTRIB_PACKAGE = "package"; // NOI18N
     private static final String SHADOW_SUFFIX = "shadow";// NOI18N
-    private ProjectTypeIdProvider pTypeIdProvider;
     private CategoryContainer rootCategory = null;
     private Lookup.Provider project;
-    
-    public CategoryBuilder(@NonNull Lookup.Provider proj, @NonNull final String projectTypeId) {
-        this(proj, new ProjectTypeIdProvider() {
-
-            @Override
-            public String getId() {
-                return projectTypeId;
-            }
-        });
-    }
-    
-    public CategoryBuilder(@NonNull Lookup.Provider proj, @NonNull ProjectTypeIdProvider ptProvider) {
+        
+    public CategoryBuilder(@NonNull Lookup.Provider proj) {
         assert proj != null;
-        assert ptProvider != null;
         project = proj;
-        pTypeIdProvider = ptProvider;
     }
 
     final public synchronized Category getRootCategory() {
         if (rootCategory == null) {
             rootCategory = new CategoryContainer("ROOT", Bundle.ROOT_CATEGORY_NAME(), Mark.DEFAULT); // NOI18N
 
-            FileObject aoi = FileUtil.getConfigFile("Projects/" + pTypeIdProvider.getId() + "/NBProfiler/Categories"); //NOI18N
+            FileObject aoi = FileUtil.getConfigFile("Projects/" + getProjectTypeId() + "/NBProfiler/Categories"); //NOI18N
             if (aoi != null) {
                 Enumeration<? extends FileObject> folders = aoi.getChildren(false);
                 while (folders.hasMoreElements()) {
@@ -116,6 +100,8 @@ public class CategoryBuilder {
     final protected Lookup.Provider getProject() {
         return project;
     }
+    
+    abstract protected String getProjectTypeId();
 
     private void processCategories(CategoryContainer container, FileObject node) {
         if (SHADOW_SUFFIX.equals(node.getExt())) {
