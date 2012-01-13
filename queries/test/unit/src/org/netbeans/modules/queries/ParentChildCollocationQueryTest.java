@@ -69,27 +69,27 @@ public class ParentChildCollocationQueryTest extends NbTestCase {
         proj2.mkdirs();
         
         ParentChildCollocationQuery query = new ParentChildCollocationQuery();
-        assertTrue("Must be collocated", query.areCollocated(proj1, proj3));
-        assertTrue("Must be collocated", query.areCollocated(proj3, proj1));
-        assertFalse("Cannot be collocated", query.areCollocated(proj1, proj2));
-        assertFalse("Cannot be collocated", query.areCollocated(proj2, proj1));
+        assertTrue("Must be collocated", query.areCollocated(proj1.toURI(), proj3.toURI()));
+        assertTrue("Must be collocated", query.areCollocated(proj3.toURI(), proj1.toURI()));
+        assertFalse("Cannot be collocated", query.areCollocated(proj1.toURI(), proj2.toURI()));
+        assertFalse("Cannot be collocated", query.areCollocated(proj2.toURI(), proj1.toURI()));
         
         // folder does not exist:
         File proj4 = new File(base, "proj");
-        assertFalse("Cannot be collocated", query.areCollocated(proj1, proj4));
-        assertFalse("Cannot be collocated", query.areCollocated(proj4, proj1));
+        assertFalse("Cannot be collocated", query.areCollocated(proj1.toURI(), proj4.toURI()));
+        assertFalse("Cannot be collocated", query.areCollocated(proj4.toURI(), proj1.toURI()));
         proj4.mkdirs();
-        assertFalse("Cannot be collocated", query.areCollocated(proj1, proj4));
-        assertFalse("Cannot be collocated", query.areCollocated(proj4, proj1));
+        assertFalse("Cannot be collocated", query.areCollocated(proj1.toURI(), proj4.toURI()));
+        assertFalse("Cannot be collocated", query.areCollocated(proj4.toURI(), proj1.toURI()));
         
         // files do not exist:
         File file1 = new File(base, "file1.txt");
         File file2 = new File(base, "file1");
-        assertFalse("Cannot be collocated", query.areCollocated(file1, file2));
-        assertFalse("Cannot be collocated", query.areCollocated(file2, file1));
+        assertFalse("Cannot be collocated", query.areCollocated(file1.toURI(), file2.toURI()));
+        assertFalse("Cannot be collocated", query.areCollocated(file2.toURI(), file1.toURI()));
         
         // passing the same parameter
-        assertTrue("A file must be collocated with itself", query.areCollocated(proj1, proj1));
+        assertTrue("A file must be collocated with itself", query.areCollocated(proj1.toURI(), proj1.toURI()));
     }
 
 }
