@@ -53,12 +53,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -71,8 +73,8 @@ import org.openide.util.Utilities;
  */
 public class FileObjectBasedFile extends File {
 
-    final ExecutionEnvironment env;
-    private final FileObject fo;
+    private final ExecutionEnvironment env;
+    private FileObject fo;
     /** to be used ONLY when fo is null !!! */
     private final String path;
     private File[] NO_CHILDREN = new File[0];
@@ -165,16 +167,13 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public boolean mkdirs() {
-        if (fo == null) {
-            Future<Integer> result = CommonTasksSupport.mkDir(env, getPath(), new StringWriter());
+        if (fo == null) {                        
             try {
-                return result.get() == 0;
-            } catch (InterruptedException ex) {
-                // don't log interrupted exception
-            } catch (ExecutionException ex) {
-                ex.printStackTrace();
+                fo = FileUtil.createFolder(FileSystemProvider.getFileSystem(env).getRoot(), path);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
             }
-            return false;
+            return true;
         }
         return false;
     }
@@ -202,12 +201,29 @@ public class FileObjectBasedFile extends File {
     @Override
     public File getParentFile() {
         if (fo == null) {
+            String p = getPath();
+            if (p != null) { // paranoia
+                String parentPath = PathUtilities.getDirName(p);
+                if (parentPath != null && parentPath.length() > 0) {
+                    final FileObject parentFO = FileSystemProvider.getFileObject(env, parentPath);
+                    if (parentFO == null) {
+                        return new FileObjectBasedFile(env, parentPath);
+                    } else {
+                        return new FileObjectBasedFile(env, fo);
+                    }
+                }
+            }
             return null;
         }
         FileObject parent = fo.getParent();
         return parent == null ? null : new FileObjectBasedFile(env, parent);
     }
 
+    @Override
+    public boolean createNewFile() throws IOException {
+        return super.createNewFile();
+    }
+    
     @Override
     public String getParent() {
 	int index = path.lastIndexOf('/');
