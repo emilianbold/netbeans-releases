@@ -179,6 +179,10 @@ public class DwarfReader extends ElfReader {
         if (sectionName.equals(SECTIONS.DEBUG_MACINFO)) {
             return new DwarfMacroInfoSection(this, sectionIdx);
         }
+
+        if (sectionName.equals(SECTIONS.DEBUG_MACRO)) {
+            return new DwarfMacroInfoSection(this, sectionIdx);
+        }
         
         if (sectionName.equals(SECTIONS.DEBUG_PUBNAMES)) {
             return new DwarfNameLookupTableSection(this, sectionIdx);
