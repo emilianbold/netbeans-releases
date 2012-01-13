@@ -239,16 +239,22 @@ public class HistoryRootNode extends AbstractNode {
             }
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
-                if(dateFrom != null) {
-                    return "Shoving " + vcsName + " revisions from " + dateFormat.format(dateFrom) + " (" + vcsCount + " entries)."; 
-                } else {
-                    return "Shoving all " + vcsName + " revisions."; 
-        }
+                return toString();
             }    
             @Override
             public PropertyEditor getPropertyEditor() {
                 return new PropertyEditorSupport();
-            }                             
+            }
+
+            @Override
+            public String toString() {
+                if(dateFrom != null) {
+                    return "Shoving " + vcsName + " revisions from " + dateFormat.format(dateFrom) + " (" + vcsCount + " entries)."; 
+                } else {
+                    return "Shoving all " + vcsName + " revisions."; 
+                }
+            }
+            
         }
     }
 
