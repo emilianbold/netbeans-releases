@@ -411,7 +411,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     new OffsetRange(ident.getStart(), ident.getFinish())));
         } else if (propertyNode.getKey() instanceof LiteralNode){
             LiteralNode lNode = (LiteralNode)propertyNode.getKey();
-            name.add(ModelElementFactory.create(lNode));
+            name.add(new IdentifierImpl(lNode.getString(),
+                    new OffsetRange(lNode.getStart(), lNode.getFinish())));
         }
         return name;
     }
