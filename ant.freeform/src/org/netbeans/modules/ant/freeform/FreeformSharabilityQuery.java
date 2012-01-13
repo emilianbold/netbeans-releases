@@ -45,15 +45,17 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.io.File;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
@@ -64,7 +66,7 @@ import org.w3c.dom.NodeList;
  * @author Jan Lahoda
  * @author Tomas Zezula
  */
-public class FreeformSharabilityQuery implements SharabilityQueryImplementation, AntProjectListener {
+public class FreeformSharabilityQuery implements SharabilityQueryImplementation2, AntProjectListener {
 
     private String nbproject;
     private String nbprojectPrivate;
@@ -80,25 +82,24 @@ public class FreeformSharabilityQuery implements SharabilityQueryImplementation,
 	nbprojectPrivate = helper.resolveFile("nbproject/private").getAbsolutePath();        
         helper.addAntProjectListener(this);
     }
-
-
-
-    public int getSharability(File file) {
+    
+    @Override public Sharability getSharability(URI uri) {
+        File file = new File(uri);
 	String absolutePath = file.getAbsolutePath();
 	
 	if (absolutePath.equals(nbproject)) {
-	    return SharabilityQuery.MIXED;
+	    return SharabilityQuery.Sharability.MIXED;
 	}
 	
 	if (absolutePath.startsWith(nbproject)) {
-	    return absolutePath.startsWith(nbprojectPrivate) ? SharabilityQuery.NOT_SHARABLE : SharabilityQuery.SHARABLE;
+	    return absolutePath.startsWith(nbprojectPrivate) ? SharabilityQuery.Sharability.NOT_SHARABLE : SharabilityQuery.Sharability.SHARABLE;
 	}
 
         if (isExported(file)) {
-            return SharabilityQuery.NOT_SHARABLE;
+            return SharabilityQuery.Sharability.NOT_SHARABLE;
         }
 	
-	return SharabilityQuery.UNKNOWN;
+	return SharabilityQuery.Sharability.UNKNOWN;
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
