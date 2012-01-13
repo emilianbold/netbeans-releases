@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -59,11 +59,21 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     final private List <? extends Identifier> parameters;
     private boolean isAnonymous;
     
-    public JsFunctionImpl(JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
-        super(parentObject instanceof JsFunctionImpl ? (JsFunctionImpl)parentObject : null, parentObject, name, offsetRange);
+    public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
+        super(scope, parentObject, name, offsetRange);
         this.parameters = parameters; 
         this.isAnonymous = false;
         setDeclared(true);
+    }
+    
+    public static JsFunctionImpl createGlobal(FileObject file) {
+        Identifier ident = new IdentifierImpl(file.getName(), new OffsetRange(0, (int)file.getSize()));
+        return new JsFunctionImpl(file, ident);
+    }
+    
+    private JsFunctionImpl(FileObject file, Identifier name) {
+        this(null, null, name, Collections.EMPTY_LIST, name.getOffsetRange());
+        this.setFileObject(file);
     }
     
     @Override
@@ -73,6 +83,10 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     @Override
     public Kind getJSKind() {
+        if (getParent() == null) {
+            // global function
+            return JsElement.Kind.FILE;
+        }
         for (JsObject property : getProperties().values()) {
             if (property instanceof JsFunctionImpl
                     || property.getJSKind() == JsElement.Kind.PROPERTY) {

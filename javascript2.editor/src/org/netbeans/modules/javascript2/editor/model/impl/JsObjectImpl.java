@@ -47,7 +47,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -62,7 +61,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     private boolean isDeclared;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        super(parent.getFileObject(), name.getName(), offsetRange, EnumSet.of(Modifier.PUBLIC));
+        super((parent != null ? parent.getFileObject() : null), name.getName(), offsetRange, EnumSet.of(Modifier.PUBLIC));
         this.properties = new HashMap<String, JsObject>();
         this.declarationName = name;
         this.parent = parent;
@@ -70,19 +69,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.occurrences = new ArrayList<Occurrence>();
     }
     
-    public static JsObjectImpl createGlobal(FileObject file) {
-        Identifier ident = new IdentifierImpl(file.getName(), OffsetRange.NONE);
-        return new JsObjectImpl(file, ident);
-    }
-    
-    private JsObjectImpl(FileObject file, Identifier name) {
-        super(file, name.getName(), name.getOffsetRange(), EnumSet.of(Modifier.PUBLIC));
-        this.properties = new HashMap<String, JsObject>();
-        this.declarationName = name;
-        this.parent = null;
-        this.isDeclared = false;
-        this.occurrences = Collections.EMPTY_LIST;
-    }
     @Override
     public Identifier getDeclarationName() {
         return declarationName;
@@ -103,8 +89,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         }
         return Kind.OBJECT;
     }
-
-    @Override
+    
+    @Override 
     public Map<String, ? extends JsObject> getProperties() {
         return properties;
     }

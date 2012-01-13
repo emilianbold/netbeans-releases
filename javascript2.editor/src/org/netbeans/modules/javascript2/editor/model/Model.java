@@ -42,8 +42,12 @@
 package org.netbeans.modules.javascript2.editor.model;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -86,6 +90,19 @@ public final class Model {
 
     public OccurrencesSupport getOccurrencesSupport() {
         return occurrencesSupport;
+    }
+    
+    public Collection<? extends JsObject> getVariables(int offset) {
+        List<JsObject> result = new ArrayList<JsObject>();
+        DeclarationScope scope = ModelUtils.getDeclarationScope(this, offset);
+        System.out.println("scope: " + ((JsObject)scope).getName());
+        while (scope != null) {
+            for (JsObject object : ((JsObject)scope).getProperties().values()) {
+                result.add(object);
+            }
+            scope = scope.getInScope();
+        }
+        return result;
     }
 
 }

@@ -39,58 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceImpl;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
  *
  * @author Petr Pisl
  */
-public class OccurrencesSupport {
-    private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
+public class CompletionContextFinder {
     
-    private final Model model;
+    public static enum CompletionContext {
+        NONE,       // There shouldn't be any code completion
+        GLOBAL
+    } 
     
-
-    public OccurrencesSupport(Model model) {
-        this.model = model;
-    }
-    
-    
-    public Occurrence getOccurrence(int offset) {
-        Occurrence result;
-        long start = System.currentTimeMillis();
-        JsObject object = model.getGlobalObject();
-        result = findOccurrence(object, offset);
-        long end = System.currentTimeMillis();
-        LOGGER.log(Level.FINE, "Computing getOccurences({0}) took {1}ms. Returns {2}", new Object[]{offset, end - start, result});
-        return result;
-    }
-    
-    private Occurrence findOccurrence(JsObject object, int offset) {
-        Occurrence result = null;
-        if (object.getDeclarationName().getOffsetRange().containsInclusive(offset)
-                && !ModelUtils.isGlobal(object)) {
-            result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
-        } else {
-            for(Occurrence occurrence: object.getOccurrences()) {
-                if (occurrence.getOffsetRange().containsInclusive(offset)) {
-                    result = occurrence;
-                    break;
-                }
-            }
-            for(JsObject property: object.getProperties().values()) {
-                result = findOccurrence(property, offset);
-                if (result != null) {
-                    break;
-                }
-            }
+    @NonNull
+    static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
+         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return CompletionContext.NONE;
+        }
+        TokenSequence<JsTokenId> ts = th == null ? null : th.tokenSequence(JsTokenId.language());
+        if (ts == null) {
+            return CompletionContext.NONE;
+        }
+        ts.move(caretOffset);
+        
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return CompletionContext.NONE;
         }
         
-        return result;
+        Token<JsTokenId> token = ts.token();
+        JsTokenId tokenId =token.id();
+        int tokenOffset = ts.offset();
+        
+        if(tokenId == JsTokenId.EOL) {
+            return CompletionContext.GLOBAL;
+        }
+        return CompletionContext.NONE;
     }
 }

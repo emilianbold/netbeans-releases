@@ -50,12 +50,14 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public final class ModelBuilder {
     
-    private final JsObjectImpl globalObject;
+    private final JsFunctionImpl globalObject;
     private Stack<JsObjectImpl> stack;
+    private Stack<DeclarationScopeImpl> functionStack;
     
-    ModelBuilder(JsObjectImpl globalObject) {
+    ModelBuilder(JsFunctionImpl globalObject) {
         this.globalObject = globalObject;
         this.stack = new Stack<JsObjectImpl>();
+        this.functionStack = new Stack<DeclarationScopeImpl>();
         setCurrentObject(globalObject);
     }
     
@@ -74,16 +76,28 @@ public final class ModelBuilder {
         return stack.isEmpty() ? null : stack.peek();
     }
     
+    DeclarationScopeImpl getCurrentDeclarationScope() {
+        return functionStack.isEmpty() ? null : functionStack.peek();
+    }
+    
     /**
      * @param currentScope the currentScope to set
      */
     void setCurrentObject(JsObjectImpl object) {
         this.stack.push(object);
+        if (object instanceof DeclarationScopeImpl) {
+            System.out.println("adding declaration scope: " + object.getName());
+            this.functionStack.push((DeclarationScopeImpl)object);
+        }
     }
     
     void reset() {
         if (!stack.empty()) {
-            stack.pop();
+            if (stack.pop() instanceof DeclarationScopeImpl && !functionStack.empty()) {
+                JsObject object = (JsObject)functionStack.pop();
+                System.out.println("removing declaration scope: " + object.getName());
+                
+            }
         }
     }
     

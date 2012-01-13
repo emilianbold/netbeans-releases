@@ -42,8 +42,11 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
 
 /**
  *
@@ -75,5 +78,35 @@ public class ModelUtils {
         }
         return (JsObjectImpl)result;        
     }
+
+    public static boolean isGlobal(JsObject object) {
+        return object.getJSKind() == JsElement.Kind.FILE;
+    }
     
+    public static DeclarationScope getDeclarationScope(Model model, int offset) {
+        DeclarationScope result = null;
+        JsObject global = model.getGlobalObject();
+        result = getDeclarationScope((DeclarationScope)global, offset);
+        if (result == null) {
+            result = (DeclarationScope)global;
+        }
+        return result;
+    }
+    
+    private static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
+        DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
+        DeclarationScope result = null;
+        DeclarationScope function = null;
+        if (dScope.getOffsetRange(null).containsInclusive(offset)) {
+            result = dScope;
+            for (DeclarationScope innerScope : dScope.getDeclarationsScope()) {
+                function = getDeclarationScope(innerScope, offset);
+                if (function != null) {
+                    result = function;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 }

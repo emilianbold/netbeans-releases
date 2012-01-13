@@ -70,7 +70,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     public ModelVisitor(JsParserResult parserResult) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
-        this.modelBuilder = new ModelBuilder(JsObjectImpl.createGlobal(fileObject));
+        this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject));
         this.functionStack = new ArrayList<List<FunctionNode>>();
     }
 
@@ -118,7 +118,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                         // a usage of field
                         String fieldName = aNode.getProperty().getName();
-                        if(parent.getParent() instanceof JsFunctionImpl) {
+                        if(!ModelUtils.isGlobal(parent.getParent()) && 
+                            parent.getParent() instanceof JsFunctionImpl) {
                             parent = (JsObjectImpl)parent.getParent();
                         }
                         if(parent.getProperty(fieldName) == null) {
@@ -245,7 +246,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
             // todo parameters;
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
-                JsObjectImpl scope = modelBuilder.getCurrentObject();
+                DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
                 JsFunctionImpl fncScope = ModelElementFactory.create(functionNode, name, modelBuilder);
                 fncScope.setAnonymous(getPath().get(pathSize - 2) instanceof ReferenceNode 
                         && getPath().get(pathSize - 3) instanceof CallNode);
@@ -254,6 +255,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //                    modifier.clear();
 //                    modifier.add(Modifier.PRIVATE);
                 }
+                scope.addDeclaredScope(fncScope);
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
             }
 

@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
@@ -52,16 +55,27 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationScope {
 
-    private DeclarationScope inScope;
+    final private DeclarationScope inScope;
+    final private List<DeclarationScope> declaredScopes;
     
     public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject, Identifier name, OffsetRange offsetRange) {
         super(inObject, name, offsetRange);
         this.inScope = inScope;
+        this.declaredScopes = new ArrayList<DeclarationScope>();
     }
     
     @Override
     public DeclarationScope getInScope() {
         return inScope;
+    }
+
+    @Override
+    public Collection<? extends DeclarationScope> getDeclarationsScope() {
+        return declaredScopes;
+    }
+    
+    protected void addDeclaredScope(DeclarationScope scope) {
+        declaredScopes.add(scope);
     }
 
 }

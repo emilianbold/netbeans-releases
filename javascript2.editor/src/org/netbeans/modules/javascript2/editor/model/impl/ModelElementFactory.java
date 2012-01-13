@@ -45,6 +45,7 @@ import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.parser.Token;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
@@ -61,6 +62,8 @@ class ModelElementFactory {
     static JsFunctionImpl create(FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder) {
         JsObjectImpl inObject = modelBuilder.getCurrentObject();
         JsObject parentObject = inObject;
+        int start = Token.descPosition(functionNode.getFirstToken());
+        int end = Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken());
         List<Identifier> parameters = new ArrayList(functionNode.getParameters().size());
         for(IdentNode node: functionNode.getParameters()) {
             parameters.add(create(node));
@@ -70,12 +73,14 @@ class ModelElementFactory {
             JsObject globalObject = modelBuilder.getGlobal();
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
             parentObject = ModelUtils.getJsObject(modelBuilder, objectName);
-            result = new JsFunctionImpl(parentObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(functionNode.getStart(), functionNode.getFinish()));
+            result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(), 
+                    parentObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(start, end));
             if (!"prototype".equals(parentObject.getName())) {
                 result.addModifier(Modifier.STATIC);
             } 
         } else {
-            result = new JsFunctionImpl(inObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(functionNode.getStart(), functionNode.getFinish()));
+            result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(),
+                    inObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(start, end));
         }
         parentObject.addProperty(result.getDeclarationName().getName(), result);
         return result;

@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import java.util.Collection;
+
 /**
  *
  * @author Petr Pisl
  */
 public interface DeclarationScope {
     DeclarationScope getInScope();
+    Collection<? extends DeclarationScope> getDeclarationsScope();
 }

@@ -111,6 +111,10 @@ public abstract class JsElementImpl implements JsElement {
     public FileObject getFileObject() {
         return fileObject;
     }
+    
+    protected void setFileObject(FileObject fileObject) {
+        this.fileObject = fileObject;
+    }
 
     @Override
     public String getMimeType() {

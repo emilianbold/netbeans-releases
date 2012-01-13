@@ -39,10 +39,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -119,5 +116,11 @@ public class JsLanguage extends DefaultLanguageConfig {
     public OccurrencesFinder getOccurrencesFinder() {
         return new OccurrencesFinderImpl();
     }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsCodeCompletion();
+    }
+    
     
 }
