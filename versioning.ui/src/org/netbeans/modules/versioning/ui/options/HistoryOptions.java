@@ -59,11 +59,11 @@ public final class HistoryOptions extends AdvancedOption {
     }
     
     public String getDisplayName () {
-        return NbBundle.getMessage (HistoryOptions.class, "LocalHistoryOptions.displayName");    // NOI18N
+        return NbBundle.getMessage (HistoryOptions.class, "HistoryOptions.displayName");    // NOI18N
     }
 
     public String getTooltip () {
-        return NbBundle.getMessage (HistoryOptions.class, "LocalHistoryOptions.toolTip");        // NOI18N
+        return NbBundle.getMessage (HistoryOptions.class, "HistoryOptions.toolTip");        // NOI18N
     }
 
     public OptionsPanelController create () {
