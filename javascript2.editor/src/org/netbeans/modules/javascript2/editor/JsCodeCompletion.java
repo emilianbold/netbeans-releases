@@ -105,8 +105,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         switch (context) {
             case GLOBAL:
                 for(JsObject object : request.result.getModel().getVariables(caretOffset)) {
-                    if ((object instanceof JsFunction && ((JsFunction)object).isAnonymous()))
-                    resultList.add(new JsCompletionItem(object, request));
+                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous()))
+                        resultList.add(new JsCompletionItem(object, request));
                 }
                 break;
             default:
