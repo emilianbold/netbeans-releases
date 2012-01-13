@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.localhistory.ui.actions.RevertDeletedAction;
+import org.netbeans.modules.localhistory.ui.view.ShowHistoryAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -81,12 +82,18 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
         Lookup context = ctx.getElements();
         List<Action> actions = new ArrayList<Action>();
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
+            actions.add(SystemAction.get(ShowHistoryAction.class));
             actions.add(SystemAction.get(RevertDeletedAction.class));
         } else {
+            actions.add(SystemActionBridge.createAction(
+                                            SystemAction.get(ShowHistoryAction.class), 
+                                            NbBundle.getMessage(ShowHistoryAction.class, "CTL_ShowHistory"), 
+                                            context));
             actions.add(SystemActionBridge.createAction(
                                             SystemAction.get(RevertDeletedAction.class), 
                                             NbBundle.getMessage(RevertDeletedAction.class, "CTL_ShowRevertDeleted"),  
                                             context));           
+            
         }
         return actions.toArray(new Action[actions.size()]);
     }    

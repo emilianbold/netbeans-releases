@@ -49,8 +49,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import javax.swing.*;
@@ -72,7 +70,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor.Task;
@@ -84,7 +81,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class HistoryDiffView implements PropertyChangeListener, VersioningListener {
            
-    private final HistoryTopComponent tc;
+    private final HistoryComponent tc;
     private DiffPanel panel;
     private Component diffComponent;
     private DiffController diffView;                
@@ -94,7 +91,7 @@ public class HistoryDiffView implements PropertyChangeListener, VersioningListen
     private PreparingDiffHandler preparingDiffPanel;
         
     /** Creates a new instance of LocalHistoryView */
-    public HistoryDiffView(HistoryTopComponent tc) {
+    public HistoryDiffView(HistoryComponent tc) {
         this.tc = tc;
         panel = new DiffPanel();                                                              
 //        History.getInstance().addVersioningListener(this); XXX

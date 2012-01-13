@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.ui.history;
+package org.netbeans.modules.localhistory.ui.view;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -60,6 +60,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.ui.history.History;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
@@ -168,11 +169,10 @@ public class ShowHistoryAction extends NodeAction {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final HistoryTopComponent tc = new HistoryTopComponent();
+                final HistoryTopComponent tc = new HistoryTopComponent(vs, files);
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName())); // NOI18N
                 tc.open();
                 tc.requestActive();                                
-                tc.init(vs, files);
             }
         });
     }
@@ -239,7 +239,7 @@ public class ShowHistoryAction extends NodeAction {
     
     @Override
     public String getName() {
-        return NbBundle.getMessage(this.getClass(), "CTL_ShowLocalHistory");    // NOI8N    
+        return NbBundle.getMessage(this.getClass(), "CTL_ShowHistory");    // NOI8N    
     }
     
     @Override

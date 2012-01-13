@@ -92,7 +92,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private File[] files;
 
     private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true);    
-    private final HistoryTopComponent tc; 
+    private final HistoryComponent tc; 
     private Filter filter;
     private Task refreshTask;
     private Task vcsTask;
@@ -102,7 +102,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private Date currentDateFrom; 
     private LoadNextAction loadNextAction;
     
-    public HistoryFileView(File[] files, VersioningSystem versioningSystem, HistoryTopComponent tc) {                       
+    public HistoryFileView(File[] files, VersioningSystem versioningSystem, HistoryComponent tc) {                       
         this.tc = tc;
         this.files = files;
         this.versioningSystem = versioningSystem;

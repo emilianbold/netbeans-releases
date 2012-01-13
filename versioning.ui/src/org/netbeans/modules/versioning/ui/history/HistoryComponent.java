@@ -52,7 +52,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -88,6 +87,10 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Top component which displays something.
@@ -98,31 +101,32 @@ import org.openide.util.Lookup;
         displayName="#CTL_SourceTabCaption",
         // no icon
         persistenceType=TopComponent.PERSISTENCE_NEVER,
-        preferredID="text.history", 
+        preferredID=HistoryComponent.PREFERRED_ID, 
         mimeType="",
         position=1000000 // lets leave some space in case somebody really wants to be the last
 )
-final public class HistoryTopComponent extends TopComponent implements MultiViewElement {
+final public class HistoryComponent extends JPanel implements MultiViewElement, HelpCtx.Provider {
 
-    private static HistoryTopComponent instance;
     private HistoryFileView masterView;
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
     private Toolbar toolBar;
-    private boolean isPartOfMultiview = false;
     private HistoryDiffView diffView;
+    private MultiViewElementCallback callback;
     
-    public HistoryTopComponent() {
+    private InstanceContent activatedNodesContent;
+    private ProxyLookup lookup;
+        
+    public HistoryComponent() {
         initComponents();
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
         }
-        setToolTipText(NbBundle.getMessage(HistoryTopComponent.class, "HINT_LocalHistoryTopComponent"));
+        activatedNodesContent = new InstanceContent();
     }
-
-    public HistoryTopComponent(Lookup context) {
+    
+    public HistoryComponent(Lookup context) {
         this();
-        isPartOfMultiview = true;
         DataObject dataObject = context.lookup(DataObject.class);
 
         List<File> filesList = new LinkedList<File>();
@@ -133,10 +137,13 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
             Collection<File> doFiles = toFileCollection(dataObject.files());
             filesList.addAll(doFiles);
         }
+        lookup = new ProxyLookup(new Lookup[] {
+            Lookups.fixed((Object[]) filesList.toArray(new File[filesList.size()])),
+            new AbstractLookup(activatedNodesContent)
+        });
         
         File[] files = filesList.toArray(new File[filesList.size()]);
         VersioningSystem vs = VersioningSupport.getOwner(files[0]);
-        toolBar = new Toolbar(vs, files);
         init(vs, files);    
     }
     
@@ -149,18 +156,30 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         return files;
     }        
 
-    public void init(VersioningSystem vs, final File... files) {   
+    private void init(VersioningSystem vs, final File... files) {   
+        init(vs, false, files);
+    }
+    
+    public void init(VersioningSystem vs, boolean refresh, final File... files) {   
+        toolBar = new Toolbar(vs, files);
         masterView = new HistoryFileView(files, vs, this);
         diffView = new HistoryDiffView(this); 
         
         masterView.getExplorerManager().addPropertyChangeListener(diffView); 
         masterView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+            private Node[] activatedNodes;
             public void propertyChange(PropertyChangeEvent evt) {
                 if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
-                    HistoryTopComponent.this.setActivatedNodes((Node[]) evt.getNewValue());  
-                } /*else if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
-                    System.out.println(" " + evt.getOldValue() +  " " + evt.getNewValue());
-                }*/
+                    if(activatedNodes != null) {
+                        for (Node n : activatedNodes) {
+                            activatedNodesContent.remove(n);
+                        }
+                        activatedNodes = (Node[]) evt.getNewValue();
+                        for (Node n : activatedNodes) {
+                            activatedNodesContent.add(n);
+                        }
+                    }
+                } 
             }
         });
         
@@ -194,48 +213,13 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
     final javax.swing.JSplitPane splitPane = new javax.swing.JSplitPane();
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public UndoRedo getUndoRedo() {
         return delegatingUndoRedo;
     }
     
     void setDiffView(JComponent currentDiffView) {
         delegatingUndoRedo.setDiffView(currentDiffView);
-    }
-
-    /**
-     * Gets default instance. Do not use directly: reserved for *.settings files only,
-     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link findInstance}.
-     */
-    public static synchronized HistoryTopComponent getDefault() {
-        if (instance == null) {
-            instance = new HistoryTopComponent();
-        }
-        return instance;
-    }
-
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
-    }
-
-    public void componentOpened() {
-        super.componentOpened();
-    }
-
-    public void componentClosed() {
-        if(masterView != null) {
-            masterView.close();
-        }
-        super.componentClosed();
-    }
-
-    /** replaces this in object stream */
-    public Object writeReplace() {
-        return new ResolvableHelper();
-    }
-
-    protected String preferredID() {
-        return PREFERRED_ID;
     }
 
     @Override
@@ -246,7 +230,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
     @Override
     public JComponent getToolbarRepresentation() {
         return getToolbar();
-            }
+    }
 
     private Toolbar getToolbar() {
         return toolBar;
@@ -254,7 +238,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
 
     @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
-
+        this.callback = callback;
     }
 
     @NbBundle.Messages({
@@ -300,43 +284,49 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         return getToolbar().containsField.isVisible() ? getToolbar().containsField.getText() : null;
     }
 
-    final static class ResolvableHelper implements Serializable {
-        private static final long serialVersionUID = 1L;
-        public Object readResolve() {
-            return HistoryTopComponent.getDefault();
+    @Override
+    public void componentClosed() {
+        if(masterView != null) {
+            masterView.close();
         }
     }
-
-    @Override
-    public void componentDeactivated() {
-        super.componentDeactivated();
-}
-
+    
     @Override
     public void componentActivated() {
-        super.componentActivated();
         if(masterView != null) {
             masterView.requestActive();
         }
     }
 
-    @Override
-    public void componentHidden() {
-        super.componentHidden();
-    }
-
-    @Override
-    public void componentShowing() {
-        super.componentShowing();
-    }  
-    
     private void onFilterChange() {
         Filter filter = getSelectedFilter();
         getToolbar().containsLabel.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         getToolbar().containsField.setVisible(filter instanceof ByUserFilter || filter instanceof ByMsgFilter);
         masterView.setFilter(getSelectedFilter());
         getToolbar().containsField.requestFocus();
-    }    
+    }
+
+    @Override
+    public Action[] getActions() {
+        return new Action[0]; // XXX
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public void componentOpened() {}
+
+    @Override
+    public void componentShowing() {}
+
+    @Override
+    public void componentHidden() {}
+
+    @Override
+    public void componentDeactivated() {}
         
     private class Toolbar extends JToolBar implements ActionListener {
         private JButton nextButton;
@@ -354,13 +344,13 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
             setBackground(Color.white);
             setLayout(new GridBagLayout());
             
-            containsLabel = new JLabel(NbBundle.getMessage(HistoryTopComponent.class, "LBL_Contains"));  // NOI18N
+            containsLabel = new JLabel(NbBundle.getMessage(HistoryComponent.class, "LBL_Contains"));  // NOI18N
             containsField = new JTextField();  
             containsField.setPreferredSize(new Dimension(150, containsField.getPreferredSize().height));
             containsField.getDocument().addDocumentListener(new ContainsListener());
             containsLabel.setVisible(false);
             containsField.setVisible(false);
-            filterLabel = new JLabel(NbBundle.getMessage(HistoryTopComponent.class, "LBL_Filter"));  // NOI18N
+            filterLabel = new JLabel(NbBundle.getMessage(HistoryComponent.class, "LBL_Filter"));  // NOI18N
             filterCombo = new JComboBox();
             filterCombo.setRenderer(new DefaultListCellRenderer() {
                 @Override
@@ -465,9 +455,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(isPartOfMultiview ? 
-                           "org.netbeans.modules.localhistory.ui.view.LHHistoryTab" :               // NO18N
-                           "org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent");   // NO18N
+        return new HelpCtx("org.netbeans.modules.localhistory.ui.view.LHHistoryTab");   // NO18N
     }
 
     private class AllFilter extends Filter {
@@ -477,7 +465,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_AllRevisionsFilter"); // NO18N   
+            return NbBundle.getMessage(HistoryComponent.class, "LBL_AllRevisionsFilter"); // NO18N   
         }
     }    
     private class VCSFilter extends Filter {
@@ -495,7 +483,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_VCSRevisionsFilter", new Object[] {vcsName}); // NO18N
+            return NbBundle.getMessage(HistoryComponent.class, "LBL_VCSRevisionsFilter", new Object[] {vcsName}); // NO18N
         }
     }    
     private class LHFilter extends Filter {
@@ -509,7 +497,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_LHRevisionsFilter"); // NO18N
+            return NbBundle.getMessage(HistoryComponent.class, "LBL_LHRevisionsFilter"); // NO18N
         }
     }       
     private class ByUserFilter extends Filter {
@@ -527,7 +515,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_ByUserFilter"); // NO18N
+            return NbBundle.getMessage(HistoryComponent.class, "LBL_ByUserFilter"); // NO18N
         }
         @Override
         public String getRendererValue(String value) {
@@ -549,7 +537,7 @@ final public class HistoryTopComponent extends TopComponent implements MultiView
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(HistoryTopComponent.class, "LBL_ByMsgFilter"); // NO18N
+            return NbBundle.getMessage(HistoryComponent.class, "LBL_ByMsgFilter"); // NO18N
         }
 
         @Override
