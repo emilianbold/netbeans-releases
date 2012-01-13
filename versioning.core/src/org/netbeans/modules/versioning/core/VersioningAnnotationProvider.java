@@ -264,7 +264,7 @@ public class VersioningAnnotationProvider {
             private boolean popupContructed;
 
             public VersioningSystemMenuItem() {
-                Mnemonics.setLocalizedText(this, system.getDisplayName());
+                Mnemonics.setLocalizedText(this, Utils.getSystemMenuName(system));
             }
 
             @Override

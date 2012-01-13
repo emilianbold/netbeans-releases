@@ -140,7 +140,11 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
     private JMenu createVersioningSystemMenu(final VersioningSystem system, final boolean isRegularVCS) {
         final JMenu menu = new JMenu();
-        Mnemonics.setLocalizedText(menu, system.getMenuLabel());
+        String menuText = 
+                VersioningManager.getInstance().isLocalHistory(system) ? 
+                NbBundle.getMessage(VersioningMainMenu.class, "CTL_LocalHistoryMenuNameLoc") : 
+                system.getMenuLabel();
+        Mnemonics.setLocalizedText(menu, menuText);
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {

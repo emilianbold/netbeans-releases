@@ -630,4 +630,8 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     public void removePropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
     }
+
+    boolean isLocalHistory(VersioningSystem system) {
+        return system == localHistory;
+    }
 }
