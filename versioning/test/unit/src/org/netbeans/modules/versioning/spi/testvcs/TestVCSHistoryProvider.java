@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,63 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.versioning.spi.testvcs;
 
-import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-
-import java.io.File;
-import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
+import java.awt.event.ActionEvent;
+import java.util.Date;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 
 /**
- * Test versioning system.
- * 
- * @author Maros Sandor
+ *
+ * @author tomas
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
-public class TestVCS extends VersioningSystem {
+public class TestVCSHistoryProvider implements VCSHistoryProvider {
 
-    private static TestVCS instance;
-    private VCSInterceptor interceptor;
-    private VCSAnnotator annotator;
-    private VCSVisibilityQuery vq;
-
-    public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
-
-    public static TestVCS getInstance() {
-        return instance;
-    }
-    
-    public TestVCS() {
-        instance = this;
-        interceptor = new TestVCSInterceptor();
-        annotator = new TestVCSAnnotator();
-        vq = new TestVCSVisibilityQuery();
-    }
-
-    public File getTopmostManagedAncestor(File file) {
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith(VERSIONED_FOLDER_SUFFIX)) {
-                topmost = file;
-            }
-        }
-        return topmost;
-    }
-
-    public VCSInterceptor getVCSInterceptor() {
-        return interceptor;
-    }
-
-    public VCSAnnotator getVCSAnnotator() {
-        return annotator;
+    @Override
+    public HistoryEntry[] getHistory(VCSFileProxy[] files, Date fromDate) {
+        return new HistoryEntry[0];
     }
 
     @Override
-    public VCSVisibilityQuery getVisibilityQuery() {
-        return vq;
+    public Action createShowHistoryAction(VCSFileProxy[] files) {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
     }
 
+    @Override
+    public void addHistoryChangeListener(HistoryChangeListener l) {
+        
+    }
+
+    @Override
+    public void removeHistoryChangeListener(HistoryChangeListener l) {
+        
+    }
+    
+    private class RevisionProviderImpl implements RevisionProvider {
+        @Override
+        public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
+            
+        }
+    }
 }
