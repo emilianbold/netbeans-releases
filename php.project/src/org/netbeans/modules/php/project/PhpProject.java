@@ -78,6 +78,7 @@ import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
+import org.netbeans.modules.php.project.internalserver.InternalWebServer;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -748,6 +749,7 @@ public final class PhpProject implements Project {
                 getHelper(),
                 getEvaluator(),
                 PhpSearchInfo.create(this),
+                new InternalWebServer(this),
                 new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });
@@ -903,6 +905,9 @@ public final class PhpProject implements Project {
                 for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
                     frameworkProvider.phpModuleClosed(phpModule);
                 }
+
+                // internal web server
+                lookup.lookup(InternalWebServer.class).stop();
             } finally {
                 // #187060 - exception in projectClosed => project IS closed (so do it in finally block)
                 getCopySupport().projectClosed();
