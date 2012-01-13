@@ -96,7 +96,7 @@ public class Constructor implements IConstructor{
 
                 for (int index = 0, count = types.length; index < count; index++) {
                     IType type = typeRepository.getType(types[index]);
-                    parameterTypes[index] = new JavaTypeDeclaration(typeRepository, type, genericTypes[index], types[index].isArray());
+                    parameterTypes[index] = new TypeDeclaration(typeRepository, type, genericTypes[index], types[index].isArray());
                 }
             }
         }
