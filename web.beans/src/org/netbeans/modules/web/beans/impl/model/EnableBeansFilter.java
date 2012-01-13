@@ -402,7 +402,13 @@ class EnableBeansFilter {
         List<ExecutableElement> methods = ElementFilter.methodsIn(
                 getHelper().getCompilationController().getElements().getAllMembers(
                         (TypeElement)beanElement)) ;
+        TypeElement objectElement = getHelper().getCompilationController().
+            getElements().getTypeElement(Object.class.getCanonicalName());
         for (ExecutableElement executableElement : methods) {
+            // Skip Object methods , Fix for BZ#201825 - suspicious messages for @Injection
+            if ( executableElement.getEnclosingElement().equals( objectElement ) ){
+                continue;
+            }
             if ( hasModifier(executableElement, Modifier.FINAL)){
                 types.remove(typeElement);
                 elements.remove( typeElement );
