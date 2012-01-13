@@ -19,6 +19,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -83,7 +84,7 @@ public class CommitDataTest extends JellyTestCase {
      }
     
     public void testCommitFile() throws Exception {
-        try {
+       // try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
@@ -113,7 +114,7 @@ public class CommitDataTest extends JellyTestCase {
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             
             rso.next();
@@ -203,15 +204,15 @@ public class CommitDataTest extends JellyTestCase {
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {        
+        //} catch (Exception e) {
+        //    throw new Exception("Test failed: " + e);
+        //} finally {        
             TestKit.closeProject(PROJECT_NAME);
-        }    
+        //}    
     }
     
     public void testCommitPackage() throws Exception {
-        try {
+//        try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -236,7 +237,7 @@ public class CommitDataTest extends JellyTestCase {
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             rso.next();
 
@@ -312,15 +313,15 @@ public class CommitDataTest extends JellyTestCase {
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+       // } catch (Exception e) {
+       //     throw new Exception("Test failed: " + e);
+       // } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }    
+        //}    
     }
     
     public void testRecognizeMimeType() throws Exception {
-        try {
+        //try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -346,7 +347,7 @@ public class CommitDataTest extends JellyTestCase {
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
             
             rso.next();
@@ -406,6 +407,7 @@ public class CommitDataTest extends JellyTestCase {
 
             nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             CommitOperator cmo = CommitOperator.invoke(nodeSrc);
+            new EventTool().waitNoEvent(5000);
             table = cmo.tabFiles();
             model = table.getModel();
             actual = new String[model.getRowCount()];
@@ -444,10 +446,10 @@ public class CommitDataTest extends JellyTestCase {
             assertNotNull("There shouldn't be any table in Versioning view", tee);
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        //} catch (Exception e) {
+          //  throw new Exception("Test failed: " + e);
+        //} finally {
             TestKit.closeProject(PROJECT_NAME);
-        }
+       // }
     }
 }
