@@ -50,9 +50,19 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.PersistentIndexTransaction;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
 
 /**
- *
+ * Represents a context of java indexing transaction.
+ * For {@link CustomIndexer} the transaction is started in {@link SourceIndexerFactory#scanStarted}  method.
+ * It propagates into {@link SourceIndexerFactory#filesDeleted} and {@link CustomIndexer#index} methods.
+ * The transaction is committed or rolled back in the {@link SourceIndexerFactory#scanFinished} method.
+ * For {@link BinaryIndexer} the transaction is started in {@link BinaryIndexerFactory#scanStarted}  method.
+ * It propagates into {@link BinaryIndexer#index} method.
+ * The transaction is committed or rolled back in the {@link BinaryIndexerFactory#scanFinished} method.
  * @author Tomas Zezula
  */
 public final class TransactionContext {
@@ -64,7 +74,14 @@ public final class TransactionContext {
         services = new LinkedHashMap<Class<? extends Service>, Service>();
     }
 
-    public final void commit() throws IOException {
+    /**
+     * Commits changes done in this transaction.
+     * The {@link TransactionContext#commit} calls {@link TransactionContext.Service#commit}
+     * on all registered {@link TransactionContext.Service}s in order they were registered.
+     * @throws IOException in case of error.
+     * @throws IllegalStateException when no scan transaction was started or it was already committed.
+     */
+    public final void commit() throws IOException, IllegalStateException {
         if (ctx.get() != this) {
             throw new IllegalStateException();
         }
@@ -78,7 +95,14 @@ public final class TransactionContext {
         }
     }
 
-    public final void rollBack() throws IOException {
+    /**
+     * Rolls back changes done in this transaction.
+     * The {@link TransactionContext#rollBack} calls {@link TransactionContext.Service#rollBack}
+     * on all registered {@link TransactionContext.Service}s in order they were registered.
+     * @throws IOException in case of error.
+     * @throws IllegalStateException when no scan transaction was started or it was already commited.
+     */
+    public final void rollBack() throws IOException, IllegalStateException {
         if (ctx.get() != this) {
             throw new IllegalStateException();
         }
@@ -92,22 +116,42 @@ public final class TransactionContext {
         }
     }
 
+    /**
+     * Registers transactional services into the transaction.
+     * @param type the type of the {@link TransactionContext.Service}
+     * @param service the service to be registered.
+     * @return the {@link TransactionContext}.
+     * @throws IllegalStateException when service of given type is already registered.
+     */
     public TransactionContext register(
         @NonNull final Class<? extends Service> type,
-        @NonNull final Service service) {
+        @NonNull final Service service) throws IllegalStateException {
         assert type != null;
         assert service != null;
+        if (services.containsKey(type)) {
+            throw new IllegalStateException("Service already registered.");  //NOI18N
+        }
         services.put(type,service);
         return this;
     }
 
+    /**
+     * Returns a service of given type registered in this transaction context.
+     * @param type the type of the service
+     * @return the service or null if no service of given type is registered
+     */
     @CheckForNull
     public <T extends Service> T get(@NonNull final Class<T> type) {
         return (T) services.get(type);
     }
 
+    /**
+     * Starts an empty scan transaction (with no service registered).
+     * @return the transaction.
+     * @throws IllegalStateException when scan transaction was already started.
+     */
     @NonNull
-    public static TransactionContext beginTrans() {
+    public static TransactionContext beginTrans() throws IllegalStateException {
         if (ctx.get() != null) {
             throw new IllegalStateException();
         }
@@ -116,6 +160,11 @@ public final class TransactionContext {
         return res;
     }
 
+    /**
+     * Returns the current scan transaction associated with current thread.
+     * @return the scan transaction.
+     * @throws IllegalStateException if no scan transaction was started.
+     */
     @NonNull
     public static TransactionContext get() throws IllegalStateException {
         final TransactionContext res = ctx.get();
@@ -123,14 +172,19 @@ public final class TransactionContext {
             throw new IllegalStateException();
         }
         return res;
-    }
-
-    public static abstract class Service {
-        protected abstract void commit() throws IOException;
-        protected abstract void rollBack() throws IOException;
     }    
     
-    public static TransactionContext beginStandardTransaction(boolean srcIndex, URL root) {
+    /**
+     * Starts a scan transaction with default services.
+     * The transaction contains {@link FileManagerTransaction},
+     * {@link PersistentIndexTransaction} and {@link ClassIndexEventsTransaction}
+     * services.
+     * @param srcIndex he source flag, should be true for source roots, false for binary roots.
+     * @param root the root.
+     * @return the transaction.
+     * @throws IllegalStateException when scan transaction was already started.
+     */
+    public static TransactionContext beginStandardTransaction(boolean srcIndex, URL root) throws IllegalStateException {
         boolean hasCache;
         if (srcIndex) {
             hasCache = JavaIndex.hasSourceCache(root, false);
@@ -150,5 +204,22 @@ public final class TransactionContext {
                 ClassIndexEventsTransaction.class,
                 ClassIndexEventsTransaction.create(srcIndex)
             );
+    }
+    
+    /**
+     * Transaction service which can be registered into the {@link TransactionContext}.
+     */
+    public static abstract class Service {
+        /**
+         * Called to commit changes done during the transaction.
+         * @throws IOException in case of IO error.
+         */
+        protected abstract void commit() throws IOException;
+        
+        /**
+         * Called to roll back changes done during the transaction.
+         * @throws IOException in case of IO error.
+         */
+        protected abstract void rollBack() throws IOException;
     }
 }

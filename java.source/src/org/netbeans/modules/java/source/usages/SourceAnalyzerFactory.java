@@ -84,7 +84,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
- *
+ * Factory for creating java source analyzer.
  * @author Tomas Zezula
  */
 public final class SourceAnalyzerFactory {
@@ -94,14 +94,30 @@ public final class SourceAnalyzerFactory {
     
     private SourceAnalyzerFactory() {}
     
+    /**
+     * Creates a {@link ClassIndexImpl.Writer} backed {@link StorableAnalyzer}.
+     * The created analyzer stores and deletes data from given {@link ClassIndexImpl.Writer}
+     * @param {@link ClassIndexImpl.Writer} the backing store
+     * @return the java source file analyzer
+     */
     public static StorableAnalyzer createStorableAnalyzer(@NonNull final ClassIndexImpl.Writer writer) {
         return new StorableAnalyzer(writer);
     }
     
+    /**
+     * Creates a {@link SimpleAnalyzer} which can be used to analyze single compilation unit.
+     * @return the java source file analyzer
+     */
     public static SimpleAnalyzer createSimpleAnalyzer() {
         return new SimpleAnalyzer();
     }
     
+    /**
+     * Java source file analyzer which operates on backing store.
+     * The returned analyzer can be used several times for delete
+     * and analyze. The changes are propagated into backing store
+     * by {@link StorableAnalyzer#store()} method.
+     */
     public static final class StorableAnalyzer extends BaseAnalyzer {
         private final ClassIndexImpl.Writer writer;
         
@@ -110,6 +126,16 @@ public final class SourceAnalyzerFactory {
             this.writer = writer;
         }
         
+        /**
+         * Analyzes given compilation units.
+         * @param data the java compilation units to be analyzed
+         * @param jt the {@link JavacTaskImpl} providing the context
+         * @param manager the {@link JavaFileManager} used to infer binary names
+         * @param tuple the {@link JavaCustomIndexer.CompileTuple} providing file info
+         * @param newTypes holder for new types
+         * @param mainMethod holder for main class flag, set to true if class has a main method
+         * @throws IOException in case of IO error
+         */
         public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
             final JavaCustomIndexer.CompileTuple tuple,
             Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
@@ -174,10 +200,19 @@ public final class SourceAnalyzerFactory {
             }
         }
         
+        /**
+         * Deletes given class from backing store.
+         * @param name the name of the class encoded by tuple {fqn, relative_source_path_or_null}
+         * @throws IOException in case of IO error
+         */
         public void delete (final Pair<String,String>name) throws IOException {
             this.toDelete.add(name);
         }
         
+        /**
+         * Propagates results of analyzes into backing store.
+         * @throws IOException in case of IO error.
+         */
         public void store () throws IOException {
             if (this.references.size() > 0 || this.toDelete.size() > 0) {
                 try {
@@ -190,8 +225,20 @@ public final class SourceAnalyzerFactory {
         }
     }
     
+    /**
+     * Java source file analyzer for analyzing single compilation unit.
+     */
     public static final class SimpleAnalyzer extends BaseAnalyzer {
         private boolean used;
+        
+        /**
+         * Analyzes given compilation unit and returns the result of analyzes.
+         * @param cu the java compilation unit to be analyzed
+         * @param jt the {@link JavacTaskImpl} providing the context
+         * @param manager the {@link JavaFileManager} used to infer binary names
+         * @return the result of analyzes encoded as list of tuples {{fqn,relative_source_path_or_null},usages_data}
+         * @throws IOException in case of IO error
+         */
         @CheckForNull
         public List<Pair<Pair<String, String>, Object[]>> analyseUnit (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
             if (used) {
@@ -677,9 +724,7 @@ public final class SourceAnalyzerFactory {
                 enclosingElement = ((JCTree.JCMethodDecl) node).sym;
                 if (enclosingElement != null && enclosingElement.getKind() == ElementKind.METHOD) {
                     mainMethod |= SourceUtils.isMainMethod((ExecutableElement) enclosingElement);
-                }
-                // do not add idents for constructors, they always match their class' name, which is added as an ident separately
-                if (!(enclosingElement != null && enclosingElement.getKind() == ElementKind.CONSTRUCTOR)) {
+                    // do not add idents for constructors, they always match their class' name, which is added as an ident separately
                     addIdent(activeClass.peek(), node.getName(), p, true);
                 }
                 return super.visitMethod(node, p);

@@ -41,23 +41,20 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
-import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Transaction service for {@link JavaFileManager} IO operations.
  * @author Tomas Zezula
+ * @author Svata Dedic
  */
 public abstract class FileManagerTransaction extends TransactionContext.Service {
     
@@ -67,19 +64,36 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         this.writeable = writeable;
     }
     
+    /**
+     * Returns true if the {@link FileManagerTransaction} supports write
+     * operations.
+     * @return true if the {@link FileManagerTransaction} is writable.
+     */
     public final boolean canWrite() {
         return writeable;
     }
 
+    /**
+     * Notifies the {@link FileManagerTransaction} about deletion of file.
+     * @param file the deleted file.
+     */
     public abstract void delete (@NonNull final File file);
 
+    /**
+     * Filters the result of underlaying {@link JavaFileManager#list} operation.
+     * The method removes all files which were notified as deleted in given package
+     * and adds all files created in given package.
+     * @param packageName the package which was listed.
+     * @param files the {@link JavaFileObject}s from underlaying {@link JavaFileManager#list} operation.
+     * @return the filtered files.
+     */
     @NonNull
     abstract Iterable<JavaFileObject> filter (
         @NonNull String packageName,
         @NonNull Iterable<JavaFileObject> files);
 
     /**
-     * Creates fileobject suitable for output. 
+     * Creates {@link JavaFileObject} suitable for output. 
      * @param file file to produce
      * @param root root directory for the package structure
      * @param filter output filter
@@ -101,14 +115,33 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         return null;
     }
     
+    /**
+     * Creates write back implementation of {@link FileManagerTransaction}.
+     * The write back implementation isolates modification from underlaying
+     * cache. The changes are made visible by commit.
+     * @param root for which the {@link FileManagerTransaction} should be created.
+     * @return the write back implementation of {@link FileManagerTransaction}.
+     */
     public static FileManagerTransaction writeBack(URL root) {
         return new WriteBackTransaction(root);
     }
 
+    /**
+     * Creates write through implementation of {@link FileManagerTransaction}.
+     * The write through implementation propagates write operations directly to caches,
+     * the changes are visible before commit.
+     * @return the write through implementation of {@link FileManagerTransaction}.
+     */
     public static FileManagerTransaction writeThrough() {
         return new WriteThrogh();
     }
 
+    /**
+     * Creates read only implementation of {@link FileManagerTransaction}.
+     * The read only implementation supports only read operations the write operations
+     * are throwing {@link UnsupportedOperationException}
+     * @return the read only implementation of {@link FileManagerTransaction}.
+     */
     public static FileManagerTransaction read() {
         return new Read();
     }

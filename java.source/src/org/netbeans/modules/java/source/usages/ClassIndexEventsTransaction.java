@@ -47,13 +47,16 @@ import java.net.URL;
 import java.util.*;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.openide.util.Parameters;
 
 /**
- *
+ * Transaction service for delivering {@link ClassIndex} events and updating
+ * {@link BuildArtifactMapperImpl}.
+ * The events are collected during indexing and firer when scan finished.
  * @author Tomas Zezula
  */
 //@NotThreadSafe
@@ -81,6 +84,11 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     }
 
 
+    /**
+     * Notifies the {@link ClassIndexEventsTransaction} that a root was added
+     * into {@link ClassIndexManager}.
+     * @param root the added root.
+     */
     public void rootAdded(@NonNull final URL root) {
         assert root != null;
         assert addedRoot == null;
@@ -88,11 +96,22 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         addedRoot = root;
     }
 
+    /**
+     * Notifies the {@link ClassIndexEventsTransaction} that a root was removed
+     * from {@link ClassIndexManager}.
+     * @param root the removed root.
+     */
     public void rootRemoved(@NonNull final URL root) {
         assert root != null;
         removedRoots.add(root);
     }
 
+    /**
+     * Notifies the {@link ClassIndexEventsTransaction} that types were added
+     * in the root.
+     * @param root the root in which the types were added.
+     * @param added the added types.
+     */
     public void addedTypes(
         @NonNull final URL root,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> added) {
@@ -104,6 +123,12 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         changesInRoot = root;
     }
 
+    /**
+     * Notifies the {@link ClassIndexEventsTransaction} that types were removed
+     * from the root.
+     * @param root the root from which the types were removed.
+     * @param removed the removed types.
+     */
     public void removedTypes(
         @NonNull final URL root,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> removed) {
@@ -115,6 +140,12 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         changesInRoot = root;
     }
 
+    /**
+     * Notifies the {@link ClassIndexEventsTransaction} that types were changed
+     * in the root.
+     * @param root the root in which the types were changed.
+     * @param changed the changed types.
+     */
     public void changedTypes(
         @NonNull final URL root,
         @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
@@ -126,9 +157,17 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         changesInRoot = root;
     }
     
+    /**
+     * Notifies the {@link ClassIndexEventsTransaction} that signature files were
+     * added in the transaction for given root.
+     * @param root the root for which the signature files were added.
+     * @param files the added files.
+     * @throws IllegalStateException if the {@link ClassIndexEventsTransaction} is
+     * created for binary root.
+     */
     public void addedCacheFiles(
         @NonNull final URL root,
-        @NonNull final Collection<? extends File> files) {
+        @NonNull final Collection<? extends File> files) throws IllegalStateException {
         Parameters.notNull("root", root); //NOI18N
         Parameters.notNull("files", files); //NOI18N
         if (!source) {
@@ -140,9 +179,17 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
         changesInRoot = root;
     }
     
+    /**
+     * Notifies the {@link ClassIndexEventsTransaction} that signature files were
+     * removed in the transaction for given root.
+     * @param root the root for which the signature files were removed.
+     * @param files the removed files.
+     * @throws IllegalStateException if the {@link ClassIndexEventsTransaction} is
+     * created for binary root.
+     */
     public void removedCacheFiles(
         @NonNull final URL root,
-        @NonNull final Collection<? extends File> files) {
+        @NonNull final Collection<? extends File> files) throws IllegalStateException {
         Parameters.notNull("root", root);   //NOI18N
         Parameters.notNull("files", files); //NOI18N
         if (!source) {
@@ -186,6 +233,11 @@ public final class ClassIndexEventsTransaction extends TransactionContext.Servic
     protected void rollBack() throws IOException {
     }
 
+    /**
+     * Creates a new instance of {@link ClassIndexEventsTransaction} service.
+     * @param source the source flag, true for source roots, false for binary roots.
+     * @return the {@link ClassIndexEventsTransaction}.
+     */
     @NonNull
     public static ClassIndexEventsTransaction create(final boolean source) {
         return new ClassIndexEventsTransaction(source);
