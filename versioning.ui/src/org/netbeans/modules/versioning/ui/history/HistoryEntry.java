@@ -107,5 +107,35 @@ public class HistoryEntry {
     public boolean isLocalHistory() {
         return local;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        sb.append("files=[");
+        File[] files = getFiles();
+        for (int i = 0; i < files.length; i++) {
+            sb.append(files[i]);
+            if(i < files.length -1) sb.append(",");
+        }
+        sb.append("],");
+        sb.append("timestamp=");
+        sb.append(getDateTime().getTime());
+        sb.append(",");
+        sb.append("revision=");
+        sb.append(getRevision());
+        sb.append(",");
+        sb.append("username=");
+        sb.append(getUsername());
+        sb.append(",");
+        sb.append("message=");
+        sb.append(getMessage());
+        sb.append(",");
+        sb.append("canEdit=");
+        sb.append(canEdit());
+        sb.append("]");
+        return sb.toString();
+    }
+
     
 }
