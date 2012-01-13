@@ -143,12 +143,12 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
     
     private Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
-        Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
+        Set<File> ret = new HashSet<File>(fileObjects.size());
         for (FileObject fo : fileObjects) {
-            files.add(FileUtil.toFile(fo));
+            ret.add(FileUtil.toFile(fo));
         }
-        files.remove(null);
-        return files;
+        ret.remove(null);
+        return ret;
     }        
 
     private void init(VersioningSystem vs, final File... files) {   
@@ -163,6 +163,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         masterView.getExplorerManager().addPropertyChangeListener(diffView); 
         masterView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
             private Node[] activatedNodes;
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
                     if(activatedNodes != null) {
@@ -241,7 +242,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     })
     @Override
     public CloseOperationState canCloseElement() {
-        File[] files = masterView.getFiles();
         if(files.length == 0) {
             return CloseOperationState.STATE_OK;
         }
