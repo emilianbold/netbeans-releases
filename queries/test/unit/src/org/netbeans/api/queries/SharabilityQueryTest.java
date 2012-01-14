@@ -57,6 +57,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Alexander Simon
  */
+@SuppressWarnings("deprecation")
 public class SharabilityQueryTest extends NbTestCase {
     
     public SharabilityQueryTest(String testMethod) {

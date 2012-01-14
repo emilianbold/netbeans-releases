@@ -59,6 +59,7 @@ public class CollocationQueryTest extends NbTestCase {
     public void setUp() throws IOException {
     }
     
+    @SuppressWarnings("deprecation")
     public void testAreCollocated() throws Exception {
         clearWorkDir();
         File base = getWorkDir();

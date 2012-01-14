@@ -42,69 +42,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.projectapi;
 
-import java.io.File;
 import java.net.URI;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * A CollocationQueryImplementation implementation that collocates files based on
  * projects they are in.
  * @author Milos Kleint
- * @since org.netbeans.modules.project.ant/1 1.18
- * 
- * TODO should this class move to project.api module? Som that the behaviour stays
- * even if ant based projects are disabled or missing
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation.class, position=500)
-public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation {
+@ServiceProvider(service=CollocationQueryImplementation2.class, position=500)
+public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation2 {
 
-
-    /** Creates a new instance of FileOwnerCollocationQueryImpl */
-    public FileOwnerCollocationQueryImpl() {
-    }
-
-    public File findRoot(File file) {
-        File f = file;
-        URI uri = f.toURI();
-        Project prj = FileOwnerQuery.getOwner(uri);
-        if (prj == null) {
+    @Override public URI findRoot(URI uri) {
+        if (FileOwnerQuery.getOwner(uri) == null) {
             return null;
         }
-        File parentF = f;
-        while (prj != null && parentF != null) {
-            f = parentF;
-            parentF = parentF.getParentFile();
-            if (parentF != null) {
-                prj = FileOwnerQuery.getOwner(parentF.toURI());
-            } else {
-                prj = null;
+        URI parent = uri;
+        while (true) {
+            uri = parent;
+            parent = parent.resolve(parent.toString().endsWith("/") ? ".." : ".");
+            if (FileOwnerQuery.getOwner(parent) == null) {
+                break;
+            }
+            if (parent.getPath().equals("/")) {
+                break;
             }
         }
-        return f;
+        return uri;
         
     }
 
-    public boolean areCollocated(File file1, File file2) {
-        File root = findRoot (file1);
+    @Override public boolean areCollocated(URI file1, URI file2) {
+        URI root = findRoot(file1);
         boolean first = true;
         if (root == null) {
-            root = findRoot (file2);
+            root = findRoot(file2);
             first = false;
         }
         if (root != null) {
-            String rootpath = root.getAbsolutePath() + File.separator;
-            String check = (first ? file2.getAbsolutePath() : file1.getAbsolutePath()) + File.separator;
-            return check.startsWith(rootpath);
+            String check = (first ? file2.toString() : file1.toString()) + '/';
+            return check.startsWith(root.toString());
         }
         return false;
     }
-
-
 
 }

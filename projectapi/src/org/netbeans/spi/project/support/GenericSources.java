@@ -45,7 +45,6 @@
 package org.netbeans.spi.project.support;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -169,14 +168,8 @@ public class GenericSources {
             if (FileOwnerQuery.getOwner(file) != p) {
                 return false;
             }
-            File f = FileUtil.toFile(file);
-            if (f != null) {
-                // MIXED, UNKNOWN, and SHARABLE -> include it
-                return SharabilityQuery.getSharability(f) != SharabilityQuery.NOT_SHARABLE;
-            } else {
-                // Not on disk, include it.
-                return true;
-            }
+            // MIXED, UNKNOWN, and SHARABLE -> include it
+            return SharabilityQuery.getSharability(file) != SharabilityQuery.Sharability.NOT_SHARABLE;
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
