@@ -69,7 +69,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
@@ -219,10 +218,9 @@ public final class SourcesHelper {
                     if (owner != null && owner != p) {
                         return false;
                     }
-                    File f = FileUtil.toFile(file);
-                    if (f != null && SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE) {
+                    if (SharabilityQuery.getSharability(file) == SharabilityQuery.Sharability.NOT_SHARABLE) {
                         return false;
-                    } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
+                    } // else MIXED, UNKNOWN, or SHARABLE
                 }
                 return true;
             }

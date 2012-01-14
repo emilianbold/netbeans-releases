@@ -95,7 +95,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         libraryProvider = new TestLibraryProvider();
-        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()), libraryProvider),
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI()), libraryProvider),
                 // Filter out standard CQIs since they are bogus.
                 Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
         projdir = TestUtil.makeScratchDir(this).createFolder("prj");
@@ -379,24 +379,24 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     }
 
     public void testSharability() throws Exception {
-        assertSharability(SharabilityQuery.UNKNOWN, "libs/index.properties");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "libs/index-private.properties");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/libs/index.properties");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "prj/libs/index-private.properties");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/libs/");
+        assertSharability(SharabilityQuery.Sharability.UNKNOWN, "libs/index.properties");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "libs/index-private.properties");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/libs/index.properties");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "prj/libs/index-private.properties");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/libs/");
         storeDefs(project, "libs/index.properties");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/libs/index.properties");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "prj/libs/index-private.properties");
-        assertSharability(SharabilityQuery.MIXED, "prj/libs/");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/libs/index.properties");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "prj/libs/index-private.properties");
+        assertSharability(SharabilityQuery.Sharability.MIXED, "prj/libs/");
     }
-    private void assertSharability(int mode, String path) throws Exception {
+    private void assertSharability(SharabilityQuery.Sharability mode, String path) throws Exception {
         File f = new File(getWorkDir(), path.replace('/', File.separatorChar));
         if (path.endsWith("/")) {
             FileUtil.createFolder(f);
         } else {
             FileUtil.createData(f);
         }
-        assertEquals(mode, SharabilityQuery.getSharability(f));
+        assertEquals(mode, SharabilityQuery.getSharability(f.toURI()));
     }
 
     private void writeProperties(String path, String... properties) throws IOException {
@@ -507,7 +507,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals("jar:"+(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").toURI())+"!/docs/api/", 
                 result.getContent("sources").get(0).toExternalForm());
         // enable test collocation query:
-        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()), libraryProvider),
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI()), libraryProvider),
                 // Filter out standard CQIs since they are bogus.
                 Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
         u = f4.toURI().toURL();

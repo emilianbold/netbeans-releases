@@ -63,6 +63,7 @@ public class CollocationQuery2Test extends NbTestCase {
         MockServices.setServices(CollocationQuery2Test.CollocationQueryImplementation2Impl.class);
     }
     
+    @SuppressWarnings("deprecation")
     public void testAreCollocated() throws Exception {
         clearWorkDir();
         File base = getWorkDir();
