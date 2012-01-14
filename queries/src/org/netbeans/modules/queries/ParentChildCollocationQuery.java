@@ -44,8 +44,9 @@
 
 package org.netbeans.modules.queries;
 
-import java.io.File;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import java.net.URI;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Tests whether files are in parent-child relationship. Such files are
@@ -53,28 +54,25 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
  *
  * @author David Konecny
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation.class, position=100)
-public class ParentChildCollocationQuery implements CollocationQueryImplementation {
+@ServiceProvider(service=CollocationQueryImplementation2.class, position=100)
+public class ParentChildCollocationQuery implements CollocationQueryImplementation2 {
 
-    /** Default constructor for lookup. */
-    public ParentChildCollocationQuery() {}
-
-    public boolean areCollocated(File file1, File file2) {
+    @Override public boolean areCollocated(URI file1, URI file2) {
         if (file1.equals(file2)) {
             return true;
         }
-        String f1 = file1.getAbsolutePath();
-        if ((file1.isDirectory() || !file1.exists()) && !f1.endsWith(File.separator)) {
-            f1 += File.separatorChar;
+        String f1 = file1.toString();
+        if (!f1.endsWith("/")) {
+            f1 += "/";
         }
-        String f2 = file2.getAbsolutePath();
-        if ((file2.isDirectory() || !file2.exists()) && !f2.endsWith(File.separator)) {
-            f2 += File.separatorChar;
+        String f2 = file2.toString();
+        if (!f2.endsWith("/")) {
+            f2 += "/";
         }
         return f1.startsWith(f2) || f2.startsWith(f1);
     }
     
-    public File findRoot(File file) {
+    @Override public URI findRoot(URI file) {
         return null;
     }
     
