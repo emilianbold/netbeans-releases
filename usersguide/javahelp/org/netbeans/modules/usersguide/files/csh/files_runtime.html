@@ -7,7 +7,7 @@
 <html>
     <head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Services Window</title>
-        <link rel="stylesheet" href="../ide.css" type="text/css"></head>
+        <link rel="stylesheet" href="../../ide.css" type="text/css"></head>
     <body>
         <h2>Services Window</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
@@ -17,7 +17,7 @@
             You can open the Services window by choosing Window &gt; Services
             (Ctrl-5).</p>
 
-        <h3>Runtime Resources</h3>
+        
         <p>The following table lists the runtime resources as they appear in the Services 
             window, with their icons and their descriptions.</p>
         <table border="1" cellpadding="5" cellspacing="0">
@@ -26,23 +26,25 @@
                 <th scope="col"><b>Description</b></th>
             </tr>
             <tr> 
-                <td><img src="../images/runtime-window-databases.png" alt="Databases icon"></td>
+                <td><img src="../../images/runtime-window-databases.png" alt="Databases icon"></td>
                 <td><b>Databases</b>
                     <br>Lists the database drivers that have been
                     <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/adddriver.html">added</a>
                     to the IDE.</td>
             </tr>
             <tr>
-                <td><img src="images/services-window-wsm.png" alt="Web Services icon"></td>
+                <td><img src="../images/services-window-wsm.png" alt="Web Services icon"></td>
                 <td><b>Web Services</b>
                     <br>Lists the web services that are registered with the IDE. You can drag
-                    and drop web service operations from this list into Java and PHP applications. 
-                    You can also use web services in this list in the <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_rest_java.html" >RESTful web service client
-                        wizard</a>. This section of the Services window is also called the Web Services Manager.         
+                    and drop web service operations from this list into PHP applications to create PHP RESTful web service clients. 
+                    You can also use web services in this list to create <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_rest_java.html" >Java Jersey RESTful web service clients</a>. This section of the Services window is also called the <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_rest.html">Web Services Manager</a>. 
+                    <ul class="note">
+                        <li>You can register a web service with the IDE if you have the URL of the service's WSDL or WADL file. Right-click the Web Services node and select Add Web Service.</li>
+                    </ul>
                 </td>
             </tr>
             <tr> 
-                <td><img src="../images/runtime-window-servers.png" alt="Servers icon"></td>
+                <td><img src="../../images/runtime-window-servers.png" alt="Servers icon"></td>
                 <td><b>Servers</b>
                     <br>Lists all servers currently registered with the IDE.
                     Any servers installed during the IDE installation process are automatically
@@ -52,7 +54,7 @@
             </tr>
 
             <tr>
-                <td><img src="../images/runtime-window-hudson.png" alt="Hudson icon"></td>
+                <td><img src="../../images/runtime-window-hudson.png" alt="Hudson icon"></td>
                 <td><b>Hudson Builders</b>
                     <br>Lists the Hudson instances that have been
                     <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_hudson.html">added</a>
@@ -60,7 +62,7 @@
             </tr>
 
             <tr>
-                <td><img src="../images/runtime-window-bugtracking.png" alt="Bug tracker icon"></td>
+                <td><img src="../../images/runtime-window-bugtracking.png" alt="Bug tracker icon"></td>
                 <td><b>Issue Trackers</b>
                     <br>Lists the issue trackers that have been
                     <a href="../collab/issues_external.html">added</a>
@@ -78,7 +80,7 @@
             <dd>    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_deploy.html">Deploying an Enterprise Application</a></dd>
         </dl>
         <hr>
-        <small><a href="../credits.html">Legal Notices</a></small>
+        <small><a href="../../credits.html">Legal Notices</a></small>
         <table border="0" cellpadding="50">
             <tr><td>&nbsp;</td></tr>
         </table></body>

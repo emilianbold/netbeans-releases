@@ -103,7 +103,7 @@ Other names may be trademarks of their respective owners.
         <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.STANDALONE" url="webservice/csh/wizards/RestPatternResourceSimple.html" />
        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CONTAINER" url="webservice/csh/wizards/RestPatternResourceContainer.html" />
         <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CLIENTCONTROLLED" url="webservice/csh/wizards/RestPatternResourceContainer.html" />
-        <mapID target="org.netbeans.modules.websvc.rest.wizard.ClientStubsSetupPanel" url="webservice/consume/wsc_stubs.html" />
+        
 <!--End of RESTful web service section -->
 
 <!--Start of web service CSH -->

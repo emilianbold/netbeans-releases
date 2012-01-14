@@ -29,11 +29,10 @@ Other names may be trademarks of their respective owners.
 <mapID target="files.search" url="files/files_search.html" />
 <mapID target="files.template" url="files/files_template.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
-<mapID target="files.runtime" url="files/files_runtime.html" />
 <mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
 <mapID target="files.tasklist" url="files/files_tasklist.html" />
-<mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="local-history/csh/about_hist_editor.html" />
+
 
 
 
@@ -162,8 +161,8 @@ Other names may be trademarks of their respective owners.
 <mapID target="ProjectTab_Files" url="project/csh/proj_files_window.html" />
 
 <!-- Services window -->
-<mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="files/files_runtime.html" />
-<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="files/AddWebServiceDlg.html" />
+<mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="files/csh/files_runtime.html" />
+<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="files/csh/AddWebServiceDlg.html" />
 
 <!-- Favorites window :-->
 <mapID target="org.netbeans.modules.favorites.Tab" url="project/csh/proj_fav_window.html" />
@@ -232,13 +231,16 @@ Other names may be trademarks of their respective owners.
 
 
 <!--CSH for plain text editor-->
-<mapID target="text.plain" url="editing/editor_quickref.html" />
+<mapID target="text.plain" url="editing/csh/plain_editor.html" />
 
 <!--CSH for css text editor-->
 <mapID target="text.x-css" url="xml/css/csh/about_source_editor.html" />
 
 <!-- CSH for HTML text editor -->
 <mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
+
+<!-- CSH for Local History tab -->
+<mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="local-history/csh/about_hist_editor.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
@@ -275,15 +277,12 @@ Other names may be trademarks of their respective owners.
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
 
-    <!--ID for Find dialog-->
-<mapID target="org.netbeans.modules.search.SearchPanel" url="files/files_search.html" />    
+    <!--ID for Find and Replace in Projects dialog. "search" module is in utilities package-->
+<mapID target="org.netbeans.modules.search.SearchPanel.false" url="files/csh/search_projects.html" />    
+<mapID target="org.netbeans.modules.search.SearchPanel.true" url="files/csh/replace_in_projects.html" /> 
 
-    <!--ID for Replace dialog-->
-<mapID target="editing.find" url="files/files_search.html" />    
+        
     
-<!--remove ID issue 54601:-->
-    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
-
     
   <!--Remove ID; issue 54895:-->
    <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
@@ -306,11 +305,9 @@ Other names may be trademarks of their respective owners.
 <!--root Options node + category nodes:-->
    <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
-   <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
+   <mapID target="org.netbeans.core.EnvironmentNode" url="files/csh/files_runtime.html" />
 
-<!--nodes in Options | System | Object Types:-->
-   <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
-   <mapID target="objects.object-types" url="files/files_unknown.html" /> 
+
      
    <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 <!--possibly remap the following target to configure_options.html :-->
@@ -319,13 +316,13 @@ Other names may be trademarks of their respective owners.
    <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/options_diffengine.html" />
    <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/options_versioning.html" />
    
-   <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNode" url="files/csh/files_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/csh/files_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/csh/files_runtime.html" /> 
    <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> 
 
 <!-- Database Explorer node; both general container and instance node for databases -->
-<mapID target="dbexpovew" url="files/files_runtime.html" />
+<mapID target="dbexpovew" url="files/csh/files_runtime.html" />
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:-->  
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
