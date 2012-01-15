@@ -922,7 +922,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static ClassDeclaration findEnclosingClass(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
         for(ASTNode node : nodes) {
-            if (node instanceof ClassDeclaration) {
+            if (node instanceof ClassDeclaration && node.getEndOffset() != offset) {
                 return (ClassDeclaration) node;
             }
         }

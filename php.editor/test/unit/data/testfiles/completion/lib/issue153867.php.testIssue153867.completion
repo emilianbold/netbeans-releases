@@ -168,6 +168,7 @@ CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      Test                            [PUBLIC]   issue142024.php
+CLASS      Test1                           [PUBLIC]   test207188.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php
 CLASS      Test144409                      [PUBLIC]   issue144409.php
@@ -278,6 +279,7 @@ METHOD     Recommendations()               [PUBLIC]   html.php
 METHOD     Signatures()                    [PUBLIC]   html.php
 METHOD     WorkAdjustment()                [PUBLIC]   html.php
 METHOD     WorkHistory()                   [PUBLIC]   html.php
+METHOD     aa()                            [PUBLIC]   test207188.php
 METHOD     arrayFunctionName()             [PUBLIC]   arrays.php
 METHOD     bar($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     bar($x = -5, $y = 3)            [PUBLIC]   issue200178.php
