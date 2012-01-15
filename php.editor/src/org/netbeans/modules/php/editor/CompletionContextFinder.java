@@ -990,8 +990,12 @@ class CompletionContextFinder {
             } else if (aSTNode instanceof MethodDeclaration) {
                 methDecl = true;
             } else if (aSTNode instanceof ClassDeclaration) {
-                clsDecl = true;
-                if (funcDecl) isClassInsideFunc = true;
+                if (aSTNode.getEndOffset() != caretOffset) {
+                    clsDecl = true;
+                    if (funcDecl) isClassInsideFunc = true;
+                } else {
+                    return false;
+                }
             }
         }
         if (funcDecl && !methDecl && !clsDecl) {

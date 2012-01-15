@@ -1274,13 +1274,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (modelElement instanceof VariableScope) {
                 VariableScope varScope = (VariableScope) modelElement;
                 final OffsetRange blockRange = varScope.getBlockRange();
-                if (blockRange != null && blockRange.containsInclusive(offset)) {
-                    if (retval == null ||
-                            retval.getBlockRange().overlaps(varScope.getBlockRange())) {
+                if (blockRange != null) {
+                    boolean possibleScope = true;
+                    if (modelElement instanceof FunctionScope || modelElement instanceof ClassScope) {
+                        if (blockRange.getEnd() == offset) {
+                            possibleScope = false;
+                        }
+                    }
+                    if (possibleScope && blockRange.containsInclusive(offset) 
+                            && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
                         retval = varScope;
                     }
                 }
             } else if (modelElement instanceof ClassScope) {
+                //TODO: remove this block of code
+                assert false : "This block of code should be never called (ClassScope extends VariableScope)";
                 ClassScope clsScope = (ClassScope) modelElement;
                 Collection<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
                 for (MethodScope methodScope : allMethods) {
