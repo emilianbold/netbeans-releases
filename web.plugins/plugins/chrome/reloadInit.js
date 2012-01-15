@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -11,7 +11,7 @@
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
+ * http://www.NetBeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
@@ -37,62 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-var pageWorkers = require("page-worker");
-var self = require("self");
-var tabs = require("tabs");
+// Initialization/cleanup
+NetBeans.cleanup();
 
-var tabId=0;
-var tabIdKey = 'netbeans-tab-id';
-assignIdIfNeeded = function(tab) {
-  if (tab[tabIdKey] === undefined) {
-    tab[tabIdKey] = tabId++;
-  }
+// Register reload-callback
+NetBeans.browserReloadCallback = function(tabId) {
+    chrome.tabs.reload(tabId, {bypassCache: true});
 }
 
-var page = pageWorkers.Page({
-  contentURL: self.data.url('main.html'),
-  contentScriptFile : [
-      self.data.url('reload.js'),
-      self.data.url('reloadInit.js')
-  ]
+// Register tab listeners
+chrome.tabs.onCreated.addListener(function(tab) {
+    NetBeans.tabCreated(tab.id);
+});
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+    NetBeans.tabUpdated(tab);
+});
+chrome.tabs.onRemoved.addListener(function(tabId) {
+    NetBeans.tabRemoved(tabId);
 });
 
-page.on('message', function (message) {
-    var type = message.type;
-    if (type === 'reload') {
-        for (i=0; i<tabs.length; i++) {
-            tab = tabs[i];
-            if (tab[tabIdKey] === message.tabId) {
-                tab.reload();
-            }
+// onCreated event is not delivered for the first tab;
+// As a workaround, we go through all existing tabs and consider them as new
+chrome.windows.getAll({populate: true}, function(windows) {
+    for (var i=0; i<windows.length; i++) {
+        var window = windows[i];
+        for (var j=0; j<window.tabs.length; j++) {
+            var tab = window.tabs[j];
+            NetBeans.tabCreated(tab.id);
         }
-    }
-});
-
-tabs.on('open', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'open',
-      tabId: tab[tabIdKey]
-  });
-});
-
-tabs.on('ready', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'ready',
-      tabId: tab[tabIdKey],
-      url: tab.url
-  });
-});
-
-tabs.on('close', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'close',
-      tabId: tab[tabIdKey]
-  });
+    }    
 });

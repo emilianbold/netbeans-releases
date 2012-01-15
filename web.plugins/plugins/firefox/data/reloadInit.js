@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-var pageWorkers = require("page-worker");
-var self = require("self");
-var tabs = require("tabs");
+// Initialization/cleanup
+NetBeans.cleanup();
 
-var tabId=0;
-var tabIdKey = 'netbeans-tab-id';
-assignIdIfNeeded = function(tab) {
-  if (tab[tabIdKey] === undefined) {
-    tab[tabIdKey] = tabId++;
-  }
+// Register reload-callback
+NetBeans.browserReloadCallback = function(tabId) {
+    self.postMessage({
+        type: 'reload',
+        tabId: tabId
+    });
 }
 
-var page = pageWorkers.Page({
-  contentURL: self.data.url('main.html'),
-  contentScriptFile : [
-      self.data.url('reload.js'),
-      self.data.url('reloadInit.js')
-  ]
-});
-
-page.on('message', function (message) {
+self.on('message', function (message) {
     var type = message.type;
-    if (type === 'reload') {
-        for (i=0; i<tabs.length; i++) {
-            tab = tabs[i];
-            if (tab[tabIdKey] === message.tabId) {
-                tab.reload();
-            }
-        }
+    if (type === 'open') {
+        NetBeans.tabCreated(message.tabId);
+    } else if (type === 'ready') {
+        NetBeans.tabUpdated({
+            id: message.tabId,
+            url: message.url
+        });
+    } else if (type === 'close') {
+        NetBeans.tabRemoved(message.tabId);
     }
-});
-
-tabs.on('open', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'open',
-      tabId: tab[tabIdKey]
-  });
-});
-
-tabs.on('ready', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'ready',
-      tabId: tab[tabIdKey],
-      url: tab.url
-  });
-});
-
-tabs.on('close', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'close',
-      tabId: tab[tabIdKey]
-  });
 });
