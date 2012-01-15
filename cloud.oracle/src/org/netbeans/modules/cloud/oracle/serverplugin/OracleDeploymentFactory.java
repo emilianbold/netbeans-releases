@@ -44,6 +44,7 @@ package org.netbeans.modules.cloud.oracle.serverplugin;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.NbBundle;
@@ -74,7 +75,8 @@ public class OracleDeploymentFactory implements DeploymentFactory {
                 OracleInstance.createApplicationManager(
                     props.getProperty(IP_ADMIN_URL), 
                     username,
-                    password),
+                    password,
+                    CloudSDKHelper.getSDKFolder()),
                 props.getProperty(IP_SERVICE_GROUP),
                 props.getProperty(IP_SERVICE_INSTANCE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),

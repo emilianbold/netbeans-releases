@@ -14,7 +14,7 @@
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -40,15 +40,22 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="instanceURLTextField" alignment="0" pref="229" max="32767" attributes="0"/>
                   <Component id="adminURLTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="sdkComboBox" alignment="0" pref="229" max="32767" attributes="0"/>
                   <Component id="passwordField" alignment="0" pref="229" max="32767" attributes="0"/>
                   <Component id="userNameTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="identityGroupTextField" alignment="0" pref="229" max="32767" attributes="0"/>
                   <Component id="serviceInstanceTextField" alignment="0" pref="229" max="32767" attributes="0"/>
                   <Component id="cloudURLTextField" alignment="0" pref="229" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="sdkTextField" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="configureButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -78,7 +85,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="sdkComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="configureButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sdkTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="sdkLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -142,17 +150,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="sdkComboBox">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="3">
-            <StringItem index="0" value="TBD"/>
-            <StringItem index="1" value="Version 1.0 [Bundled with IDE]"/>
-            <StringItem index="2" value="Add a new one ..."/>
-          </StringArray>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JTextField" name="serviceInstanceTextField">
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
@@ -199,6 +196,24 @@
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jLabel1MouseClicked"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="configureButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="OracleWizardComponent.configureButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="configureButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="sdkTextField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/cloud/oracle/ui/Bundle.properties" key="OracleWizardComponent.sdkTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

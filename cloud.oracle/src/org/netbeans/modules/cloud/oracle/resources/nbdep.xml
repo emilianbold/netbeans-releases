@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <!--
         URL for the disconnected deployment manager
     -->
-    <disconnected-string>amazon:000</disconnected-string>
+    <disconnected-string>oracle:000</disconnected-string>
 
     <!--
         Web module's context root xpath

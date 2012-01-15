@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.ui;
+package org.netbeans.libs.oracle.cloud.ext;
 
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Application;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.ApplicationState;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.util.NbBundle;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManagerConnectionFactory;
+import org.openide.util.Exceptions;
 
-/**
- *
- */
-public class StartApplicationAction extends AbstractApplicationNodeAction {
+public class ApplicationManagerConnectionFactoryImpl implements ApplicationManagerConnectionFactory {
 
-    @Override
-    protected Job performActionImpl(OracleJ2EEInstance inst, Application app) {
-        return inst.getOracleInstance().start(app);
-    }
+    private ClassLoader classLoader;
     
-    @Override
-    protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_NEW == app.getState() ||
-                ApplicationState.STATE_PREPARED == app.getState();
+    public ApplicationManagerConnectionFactoryImpl(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     @Override
-    public String getName() {
-        return NbBundle.getMessage(UndeployApplicationAction.class, "StartApplicationAction.name");
+    public ApplicationManager createServiceEndpoint(String url, String user, String password) {
+        URL u;
+        try {
+            u = new URL(url);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        oracle.cloud.paas.api.ApplicationManager am = null;
+        ClassLoader cl_ = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        try {
+            am = oracle.cloud.paas.api.ApplicationManagerConnectionFactory.createServiceEndpoint(u, user, password);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl_);
+        }
+//        CloudApplicationServiceProvider xx = new CloudApplicationServiceProvider();
+//        am = xx.createApplicationManagerConnection(u, user, password);
+        return new ApplicationManagerImpl(am);
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.ui;
+package org.netbeans.libs.oracle.cloud.sdkwrapper.api;
 
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Application;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.ApplicationState;
+import java.io.OutputStream;
+import java.util.List;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.util.NbBundle;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Log;
 
-/**
- *
- */
-public class StartApplicationAction extends AbstractApplicationNodeAction {
+public interface JobManager {
 
-    @Override
-    protected Job performActionImpl(OracleJ2EEInstance inst, Application app) {
-        return inst.getOracleInstance().start(app);
-    }
-    
-    @Override
-    protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_NEW == app.getState() ||
-                ApplicationState.STATE_PREPARED == app.getState();
-    }
+    public List<Job> listJobs();
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(UndeployApplicationAction.class, "StartApplicationAction.name");
-    }
+    public List<Job> listJobs(String s, String s1);
 
+    public Job describeJob(String s);
+
+    public List<Log> listJobLogs(String s);
+
+    public void fetchJobLog(String s, String s1, OutputStream outputstream);
 }

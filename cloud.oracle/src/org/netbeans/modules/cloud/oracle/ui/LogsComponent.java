@@ -59,9 +59,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import oracle.cloud.paas.api.ApplicationManager;
-import oracle.cloud.paas.model.Job;
-import oracle.cloud.paas.model.Log;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Log;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -169,7 +169,7 @@ public class LogsComponent extends TopComponent {
             logs.setText("");
             return;
         }
-        if (jt.getLogs().size() == 0) {
+        if (am.listJobLogs(jt.getJobId()).isEmpty()) {
             logs.setText(Bundle.MSG_NoLogs());
             return;
         }
@@ -180,7 +180,7 @@ public class LogsComponent extends TopComponent {
             @Override
             public Void call() throws Exception {
                 final StringBuffer sb = new StringBuffer();
-                List<Log> logs = jt.getLogs();
+                List<Log> logs = am.listJobLogs(jt.getJobId());
                 sb.append(""+logs.size()+ " log file(s) found:\n\n");
                 for (Log lt : logs) {
                     sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");

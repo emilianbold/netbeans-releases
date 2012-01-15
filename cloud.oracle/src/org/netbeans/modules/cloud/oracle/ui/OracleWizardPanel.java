@@ -43,6 +43,7 @@ package org.netbeans.modules.cloud.oracle.ui;
 
 import java.awt.Component;
 import java.beans.BeanInfo;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -50,7 +51,9 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import oracle.cloud.paas.exception.ManagerException;
+import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.ManagerException;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.SDKException;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.common.spi.support.ui.ServerResourceDescriptor;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
@@ -76,6 +79,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public static final String CLOUD_URL = "cloud-url"; // List<Node>
     public static final String SERVICE_GROUP = "service-group"; // List<Node>
     public static final String SERVICE_NAME = "service-name"; // List<Node>
+    public static final String SDK = "sdk"; // String
     
     private OracleWizardComponent component;
     private ChangeSupport listeners;
@@ -121,6 +125,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             settings.putProperty(CLOUD_URL, component.getCloudUrl());
             settings.putProperty(SERVICE_GROUP, component.getIdentityGroup());
             settings.putProperty(SERVICE_NAME, component.getServiceInstance());
+            settings.putProperty(SDK, component.getSDKFolder());
             settings.putProperty(CloudResourcesWizardPanel.PROP_SERVER_RESOURCES, servers);
         }
     }
@@ -151,6 +156,10 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingUserName");
         } else if (component.getPassword().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingPassword");
+        } else if (component.getSDKFolder().trim().length() == 0) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingSDK");
+        } else if (!CloudSDKHelper.isValidSDKFolder(new File(component.getSDKFolder()))) {
+            return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrongSDK");
         } else if (component.getAdminUrl().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingAdminUrl");
         } else if (component.getInstanceUrl().trim().length() == 0) {
@@ -197,9 +206,14 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             servers = new ArrayList<ServerResourceDescriptor>();
             OracleInstance ai = new OracleInstance("Oracle Cloud", component.getUserName(), 
                     component.getPassword(), component.getAdminUrl(), component.getInstanceUrl(),
-                    component.getCloudUrl(), component.getIdentityGroup(), component.getServiceInstance(), null);
+                    component.getCloudUrl(), component.getIdentityGroup(), component.getServiceInstance(), null, component.getSDKFolder());
             try {
                 ai.testConnection();
+            } catch (SDKException ex) {
+                LOG.log(Level.FINE, "cannot access SDK", ex);
+                asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.SDK");
+                throw new WizardValidationException((JComponent)getComponent(), 
+                        "connection failed", asynchError);
             } catch (ManagerException ex) {
                 LOG.log(Level.FINE, "cannot connect to oracle cloud", ex);
                 asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials");

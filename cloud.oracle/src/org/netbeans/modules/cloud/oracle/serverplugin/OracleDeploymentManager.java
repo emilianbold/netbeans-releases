@@ -58,7 +58,7 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.event.ChangeListener;
-import oracle.cloud.paas.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.TargetImpl;

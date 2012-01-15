@@ -41,11 +41,10 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import oracle.cloud.paas.exception.ResourceBusyException;
-import oracle.cloud.paas.exception.UnknownResourceException;
-import oracle.cloud.paas.model.Application;
-import oracle.cloud.paas.model.ApplicationState;
-import oracle.cloud.paas.model.Job;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.ResourceBusyException;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.UnknownResourceException;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Application;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.DialogDisplayer;

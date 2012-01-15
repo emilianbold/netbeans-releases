@@ -52,7 +52,7 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 
 /**
- * Representation of single amazon cloud account under "Cloud" node.
+ * Representation of single oracle cloud account under "Cloud" node.
  */
 public class OracleServerInstanceImplementation implements ServerInstanceImplementation {
 

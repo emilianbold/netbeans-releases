@@ -42,16 +42,24 @@
 
 package org.netbeans.modules.cloud.oracle.ui;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -61,15 +69,11 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
     private ChangeListener l;
     private static final String ADMIN_URL = "https://javaservices.cloud.oracle.com"; // NOI18N
     
-    static final boolean SHOW_CLOUD_URLS = true; // XXXXXX  //Boolean.getBoolean("oracle.cloud.dev");
+    static final boolean SHOW_CLOUD_URLS = Boolean.getBoolean("oracle.cloud.dev");
     
     /** Creates new form OracleWizardComponent */
     public OracleWizardComponent() {
         initComponents();
-        
-        // no SDK for now:
-        sdkLabel.setVisible(false);
-        sdkComboBox.setVisible(false);
         
         // not needed anymore as Application.getApplicationUrls returns full URL
         instanceLabel.setVisible(false);
@@ -83,13 +87,17 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         adminLabel.setVisible(SHOW_CLOUD_URLS);
         adminURLTextField.setVisible(SHOW_CLOUD_URLS);
         
+        String folder = CloudSDKHelper.getSDKFolder();
+        if (folder.length() != 0) {
+            sdkTextField.setText(folder);
+        }
         if (SHOW_CLOUD_URLS) {
-            identityGroupTextField.setText("oracle"); // NOI18N
-            serviceInstanceTextField.setText("localhost"); // NOI18N
-            userNameTextField.setText("system");
-            passwordField.setText("welcome1");
-            adminURLTextField.setText("http://10.242.22.43:7003/");
-            instanceURLTextField.setText("http://10.242.22.43:7013/");
+            identityGroupTextField.setText("s11group3"); // NOI18N
+            serviceInstanceTextField.setText("s11wls3"); // NOI18N
+            userNameTextField.setText("s11group3.jing.zhao@oracle.com");
+            passwordField.setText("Welcome1");
+            adminURLTextField.setText("http://slc00ggp.us.oracle.com:7003");
+            instanceURLTextField.setText("http://slc00ggp.us.oracle.com:7013");
         }
         
         setName(NbBundle.getBundle(OracleWizardComponent.class).getString("LBL_Name")); // NOI18N
@@ -105,6 +113,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         userNameTextField.getDocument().addDocumentListener(this);
         identityGroupTextField.getDocument().addDocumentListener(this);
         serviceInstanceTextField.getDocument().addDocumentListener(this);
+        sdkTextField.getDocument().addDocumentListener(this);
     }
 
     void disableModifications(boolean disable) {
@@ -112,7 +121,6 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudURLTextField.setEditable(!disable);
         instanceURLTextField.setEditable(!disable);
         passwordField.setEditable(!disable);
-        sdkComboBox.setEditable(!disable);
         identityGroupTextField.setEditable(!disable);
         serviceInstanceTextField.setEditable(!disable);
         userNameTextField.setEditable(!disable);
@@ -140,7 +148,6 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         passwordField = new javax.swing.JPasswordField();
         jLabel7 = new javax.swing.JLabel();
         sdkLabel = new javax.swing.JLabel();
-        sdkComboBox = new javax.swing.JComboBox();
         serviceInstanceTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         instanceURLTextField = new javax.swing.JTextField();
@@ -149,35 +156,45 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudLabel = new javax.swing.JLabel();
         cloudURLTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        configureButton = new javax.swing.JButton();
+        sdkTextField = new javax.swing.JTextField();
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel3.text")); // NOI18N
 
-        adminLabel.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.adminLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(adminLabel, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.adminLabel.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel2.text")); // NOI18N
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel4.text")); // NOI18N
 
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel5.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel5.text")); // NOI18N
 
-        sdkLabel.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.sdkLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sdkLabel, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.sdkLabel.text")); // NOI18N
 
-        sdkComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "TBD", "Version 1.0 [Bundled with IDE]", "Add a new one ..." }));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel7.text")); // NOI18N
 
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel7.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(instanceLabel, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.instanceLabel.text")); // NOI18N
 
-        instanceLabel.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.instanceLabel.text")); // NOI18N
-
-        cloudLabel.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.cloudLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cloudLabel, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.cloudLabel.text")); // NOI18N
 
         jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getSize()-2f));
         jLabel1.setForeground(java.awt.Color.blue);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.jLabel1.text")); // NOI18N
         jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel1MouseClicked(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(configureButton, org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.configureButton.text")); // NOI18N
+        configureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configureButtonActionPerformed(evt);
+            }
+        });
+
+        sdkTextField.setEditable(false);
+        sdkTextField.setText(org.openide.util.NbBundle.getMessage(OracleWizardComponent.class, "OracleWizardComponent.sdkTextField.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -197,14 +214,19 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(instanceURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(sdkComboBox, 0, 229, Short.MAX_VALUE)
                     .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(identityGroupTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE))
-                .addGap(16, 16, 16))
+                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(sdkTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(configureButton)))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -228,7 +250,8 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(sdkComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configureButton)
+                    .addComponent(sdkTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(sdkLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -253,11 +276,20 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         }
 }//GEN-LAST:event_jLabel1MouseClicked
 
+    private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
+        File f = CloudSDKHelper.showConfigureSDKDialog(this);
+        if (f != null) {
+            sdkTextField.setText(f.getAbsolutePath());
+        }
+    }//GEN-LAST:event_configureButtonActionPerformed
+
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel adminLabel;
     private javax.swing.JTextField adminURLTextField;
     private javax.swing.JLabel cloudLabel;
     private javax.swing.JTextField cloudURLTextField;
+    private javax.swing.JButton configureButton;
     private javax.swing.JTextField identityGroupTextField;
     private javax.swing.JLabel instanceLabel;
     private javax.swing.JTextField instanceURLTextField;
@@ -268,8 +300,8 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPasswordField passwordField;
-    private javax.swing.JComboBox sdkComboBox;
     private javax.swing.JLabel sdkLabel;
+    private javax.swing.JTextField sdkTextField;
     private javax.swing.JTextField serviceInstanceTextField;
     private javax.swing.JTextField userNameTextField;
     // End of variables declaration//GEN-END:variables
@@ -300,6 +332,10 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
 
     public String getServiceInstance() {
         return serviceInstanceTextField.getText();
+    }
+
+    public String getSDKFolder() {
+        return sdkTextField.getText();
     }
 
     @Override

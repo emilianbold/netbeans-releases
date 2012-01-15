@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.ui;
+package org.netbeans.libs.oracle.cloud.sdkwrapper.api;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Application;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.ApplicationState;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.ApplicationType;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.util.NbBundle;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Log;
 
-/**
- *
- */
-public class StartApplicationAction extends AbstractApplicationNodeAction {
+public interface ApplicationManager extends JobManager {
 
-    @Override
-    protected Job performActionImpl(OracleJ2EEInstance inst, Application app) {
-        return inst.getOracleInstance().start(app);
-    }
-    
-    @Override
-    protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_NEW == app.getState() ||
-                ApplicationState.STATE_PREPARED == app.getState();
-    }
+    public Job deployApplication(String s, String s1, String s2, ApplicationType applicationtype, InputStream inputstream);
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(UndeployApplicationAction.class, "StartApplicationAction.name");
-    }
+    public Job redeployApplication(String s, String s1, String s2, InputStream inputstream);
+
+    public Job undeployApplication(String s, String s1, String s2);
+
+    public List<Application> listApplications(String s, String s1);
+
+    public Application describeApplication(String s, String s1, String s2);
+
+    public Job startApplication(String s, String s1, String s2);
+
+    public Job stopApplication(String s, String s1, String s2);
+
+    public List<Log> listServiceInstanceLogs(String s, String s1);
+
+    public void fetchServiceInstanceLog(String s, String s1, String s2, OutputStream outputstream);
 
 }

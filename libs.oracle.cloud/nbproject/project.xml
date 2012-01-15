@@ -59,6 +59,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -111,6 +119,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.23</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -150,31 +166,22 @@ made subject to such option by the copyright holder.
                         <specification-version>8.10</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.7</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
-                <package>oracle.cloud.paas.api</package>
-                <package>oracle.cloud.paas.exception</package>
-                <package>oracle.cloud.paas.model</package>
                 <package>org.netbeans.libs.oracle.cloud.api</package>
+                <package>org.netbeans.libs.oracle.cloud.scanningwrapper</package>
+                <package>org.netbeans.libs.oracle.cloud.sdkwrapper.api</package>
+                <package>org.netbeans.libs.oracle.cloud.sdkwrapper.exception</package>
+                <package>org.netbeans.libs.oracle.cloud.sdkwrapper.model</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/oracle.cloud.paas.api.jar</runtime-relative-path>
-                <binary-origin>external/oracle.cloud.paas.api.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/whitelist.jar</runtime-relative-path>
-                <binary-origin>external/whitelist.jar</binary-origin>
-            </class-path-extension>
+            <extra-compilation-unit>
+                <package-root>extsrc</package-root>
+                <classpath>${module.classpath}:${cluster}/${module.jar}:${extsrc.cp.extra}</classpath>
+                <built-to>build/extclasses</built-to>
+                <built-to>build/external/libs.oracle.cloud-ext.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.ui;
+package org.netbeans.libs.oracle.cloud.sdkwrapper.model;
 
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Application;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.ApplicationState;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.util.NbBundle;
-
-/**
- *
- */
-public class StartApplicationAction extends AbstractApplicationNodeAction {
-
-    @Override
-    protected Job performActionImpl(OracleJ2EEInstance inst, Application app) {
-        return inst.getOracleInstance().start(app);
-    }
-    
-    @Override
-    protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_NEW == app.getState() ||
-                ApplicationState.STATE_PREPARED == app.getState();
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(UndeployApplicationAction.class, "StartApplicationAction.name");
-    }
-
+public enum ApplicationState {
+    STATE_ACTIVE,
+    STATE_ADMIN,
+    STATE_FAILED,
+    STATE_NEW,
+    STATE_PREPARED,
+    STATE_RETIRED,
+    STATE_UPDATE_PENDING
 }

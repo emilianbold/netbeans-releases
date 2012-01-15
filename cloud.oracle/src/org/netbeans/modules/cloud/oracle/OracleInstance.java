@@ -57,18 +57,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
-import oracle.cloud.paas.api.ApplicationManager;
-import oracle.cloud.paas.api.ApplicationManagerConnectionFactory;
-import oracle.cloud.paas.exception.ManagerException;
-import oracle.cloud.paas.model.Application;
-import oracle.cloud.paas.model.ApplicationType;
-import oracle.cloud.paas.model.Job;
-import oracle.cloud.paas.model.JobStatus;
-import oracle.cloud.paas.model.Log;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManagerConnectionFactory;
+import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.ManagerException;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.model.*;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleDeploymentFactory;
@@ -88,7 +85,7 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- * Describes single Amazon account.
+ * Describes single Oracle Cloud account.
  */
 public class OracleInstance {
 
@@ -105,6 +102,7 @@ public class OracleInstance {
     private String identityGroup;
     private String serviceInstance;
     private String onPremiseServerInstanceId;
+    private String sdkFolder;
     
     private ServerInstance serverInstance;
     
@@ -114,7 +112,9 @@ public class OracleInstance {
     private OracleJ2EEInstance j2eeInstance;
     
     public OracleInstance(String name, String tenantUserName, String tenantPassword, 
-          String adminURL, String instanceURL, String cloudURL, String identityGroup, String serviceInstance, String onPremiseServerInstanceId) {
+          String adminURL, String instanceURL, String cloudURL, String identityGroup, 
+          String serviceInstance, String onPremiseServerInstanceId,
+          String sdkFolder) {
         this.name = name;
         this.user = tenantUserName;
         this.password = tenantPassword;
@@ -124,6 +124,7 @@ public class OracleInstance {
         this.identityGroup = identityGroup;
         this.serviceInstance = serviceInstance;
         this.onPremiseServerInstanceId = onPremiseServerInstanceId;
+        this.sdkFolder = sdkFolder;
     }
 
     public String getCloudURL() {
@@ -179,6 +180,14 @@ public class OracleInstance {
         return identityGroup;
     }
 
+    public String getSDKFolder() {
+        return sdkFolder;
+    }
+    
+    public void setSDKFolder(String s) {
+        sdkFolder = s;
+    }
+    
     public void setPlatform(ApplicationManager platform) {
         this.platform = platform;
     }
@@ -245,23 +254,18 @@ public class OracleInstance {
     
     public synchronized ApplicationManager getApplicationManager() {
         if (platform == null) {
-            platform = createApplicationManager(adminURL, user, password);
+            platform = createApplicationManager(adminURL, user, password, sdkFolder);
         }
         return platform;
     }
     
-    public static ApplicationManager createApplicationManager(String adminUrl, String tenantUserName, String tenantPassword) {
-        try {
-            String url = adminUrl;
-            if (!url.endsWith("/")) {
-                url += "/";
-            }
-            url += "manager/rest"; // NOI18N
-            return ApplicationManagerConnectionFactory.createServiceEndpoint(new URL(url), tenantUserName, tenantPassword);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
+    public static ApplicationManager createApplicationManager(String adminUrl, String tenantUserName, String tenantPassword, String sdkFolder) {
+        String url = adminUrl;
+        if (!url.endsWith("/")) {
+            url += "/";
         }
+        url += "manager/rest"; // NOI18N
+        return CloudSDKHelper.createSDKFactory(sdkFolder).createServiceEndpoint(url, tenantUserName, tenantPassword);
     }
     
     public void testConnection() throws ManagerException {
@@ -451,7 +455,7 @@ public class OracleInstance {
     
     private static int dumpLog(ApplicationManager am, OutputWriter ow, OutputWriter owe, Job latestJob, int numberOfJobsToIgnore) {
         int i = 0;
-        for (Log lt : latestJob.getLogs()) {
+        for (Log lt : am.listJobLogs(latestJob.getJobId())) {
             i++;
             if (numberOfJobsToIgnore > 0) {
                 numberOfJobsToIgnore--;

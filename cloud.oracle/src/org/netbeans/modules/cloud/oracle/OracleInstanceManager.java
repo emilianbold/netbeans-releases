@@ -49,10 +49,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
+import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
 import org.openide.util.ChangeSupport;
 
 /**
- * Manager of all Amazon accounts registered in the IDE (usually just one).
+ * Manager of all Oracle Cloud accounts registered in the IDE (usually just one).
  */
 public class OracleInstanceManager {
 
@@ -185,7 +186,8 @@ public class OracleInstanceManager {
             String tenant = props.getString(SERVICE_GROUP, "undefined"); // NOI18N
             String service = props.getString(SERVICE_INSTANCE, "undefined"); // NOI18N
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
-            result.add(new OracleInstance(name, userName, password, adminURL, instanceURL, cloudURL, tenant, service, onPremise));
+            String sdkFolder = CloudSDKHelper.getSDKFolder();
+            result.add(new OracleInstance(name, userName, password, adminURL, instanceURL, cloudURL, tenant, service, onPremise, sdkFolder));
         }
         return result;
     }

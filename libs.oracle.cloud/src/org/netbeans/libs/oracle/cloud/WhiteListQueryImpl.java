@@ -44,19 +44,22 @@ package org.netbeans.libs.oracle.cloud;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
-import oracle.cloud.scanning.api.config.IClassConfiguration;
-import oracle.cloud.scanning.spi.config.factory.ConfigurationFactory;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.whitelist.WhiteListQuery.Operation;
 import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.api.whitelist.WhiteListQuery.RuleDescription;
+import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
+import org.netbeans.libs.oracle.cloud.scanningwrapper.IClassConfiguration;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -64,14 +67,22 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
     path="org-netbeans-api-java/whitelists/")
-public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
+public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable, PreferenceChangeListener {
 
     private IClassConfiguration icc;
     private static final String WHITELIST_ID = "oracle";
 
     public WhiteListQueryImpl() {
-        icc = ConfigurationFactory.getInstance().getDefaultClassConfiguration();
-        assert icc != null;
+        initialize();
+        CloudSDKHelper.getSDKFolderPreferences().addPreferenceChangeListener(this);
+    }
+    
+    private void initialize() {
+        String folder = CloudSDKHelper.getSDKFolder();
+        if (folder.length() > 0) {
+            icc = CloudSDKHelper.createScanningConfiguration(folder);
+            assert icc != null;
+        }
     }
     
     public WhiteListImplementation getWhiteList(FileObject file) {
@@ -87,6 +98,13 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
     public String getId() {
         return WHITELIST_ID;
     }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().equals(CloudSDKHelper.SDK_FOLDER)) {
+            initialize();
+        }
+    }
     
     private static class WhiteListImpl implements WhiteListImplementation {
 
@@ -99,7 +117,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
         @Override
         public Result check(ElementHandle<?> element, Operation operation) {
             final String[] vmSignatures = SourceUtils.getJVMSignature(element);
-            oracle.cloud.scanning.api.config.Result res;
+            org.netbeans.libs.oracle.cloud.scanningwrapper.Result res;
             final ElementKind kind = element.getKind();
             switch (kind) {
                 case CLASS:
@@ -109,7 +127,7 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
                 case ANNOTATION_TYPE:
                     res = icc.checkClassAllowed(vmSignatures[0]);
                     if (!res.isAllowed()) {
-                        return new Result(Collections.singletonList(new RuleDescription(NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage(), WHITELIST_ID)));
+                            return new Result(Collections.singletonList(new RuleDescription(NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage(), WHITELIST_ID)));
                     }
                     break;
                 case CONSTRUCTOR:

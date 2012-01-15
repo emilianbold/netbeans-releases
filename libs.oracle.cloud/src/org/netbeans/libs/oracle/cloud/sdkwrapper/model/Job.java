@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.oracle.ui;
+package org.netbeans.libs.oracle.cloud.sdkwrapper.model;
 
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Application;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.ApplicationState;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
-import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.openide.util.NbBundle;
+import java.util.Date;
 
-/**
- *
- */
-public class StartApplicationAction extends AbstractApplicationNodeAction {
+public class Job {
 
-    @Override
-    protected Job performActionImpl(OracleJ2EEInstance inst, Application app) {
-        return inst.getOracleInstance().start(app);
+    private String jobId;
+    private JobStatus status;
+    private Date startTime;
+    private Date endTime;
+    private String operation;
+
+    public Job() {
     }
     
-    @Override
-    protected boolean isAppInRightState(Application app) {
-        return ApplicationState.STATE_NEW == app.getState() ||
-                ApplicationState.STATE_PREPARED == app.getState();
+    public Job(String jobId, JobStatus status, Date startTime, Date endTime, String operation) {
+        this.jobId = jobId;
+        this.status = status;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.operation = operation;
+    }
+    
+    public String getJobId() {
+        return jobId;
     }
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(UndeployApplicationAction.class, "StartApplicationAction.name");
+    public JobStatus getStatus() {
+        return status;
     }
 
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
+    
 }
