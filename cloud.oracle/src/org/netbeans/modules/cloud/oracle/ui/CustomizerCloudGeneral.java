@@ -79,7 +79,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         adminUrlField.setText(instance.getAdminURL());
         instanceUrlField.setText(instance.getInstanceURL());
         cloudUrlField.setText(instance.getCloudURL());
-        usernameField.setText(instance.getUser());
+        usernameField.setText(OracleWizardComponent.getUnprefixedUserName(instance.getIdentityGroup(), instance.getUser()));
         passwordField.setText(instance.getPassword());
         sdkTextField.setText(instance.getSDKFolder());
         
@@ -130,7 +130,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         
         if (usernameField.getDocument().equals(e.getDocument())
                 && !usernameField.getText().equals(instance.getUser())) {
-            instance.setUser(usernameField.getText());
+            instance.setUser(OracleWizardComponent.getPrefixedUserName(identityGroupField.getText(), usernameField.getText()));
             OracleInstanceManager.getDefault().update(instance);
             return;
         }

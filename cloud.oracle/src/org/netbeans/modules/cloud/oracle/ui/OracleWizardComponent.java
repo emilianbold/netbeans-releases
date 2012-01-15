@@ -94,7 +94,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         if (SHOW_CLOUD_URLS) {
             identityGroupTextField.setText("s11group3"); // NOI18N
             serviceInstanceTextField.setText("s11wls3"); // NOI18N
-            userNameTextField.setText("s11group3.jing.zhao@oracle.com");
+            userNameTextField.setText("jing.zhao@oracle.com");
             passwordField.setText("Welcome1");
             adminURLTextField.setText("http://slc00ggp.us.oracle.com:7003");
             instanceURLTextField.setText("http://slc00ggp.us.oracle.com:7013");
@@ -320,6 +320,22 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     
     public String getUserName() {
         return userNameTextField.getText();
+    }
+    
+    public static String getPrefixedUserName(String prefix, String username) {
+        if (username.startsWith(prefix+".")) {
+            return username;
+        } else {
+            return prefix + "." + username;
+        }
+    }
+    
+    public static String getUnprefixedUserName(String prefix, String username) {
+        if (username.startsWith(prefix+".")) {
+            return username.substring(prefix.length()+1);
+        } else {
+            return username;
+        }
     }
     
     public String getPassword() {

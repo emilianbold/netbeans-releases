@@ -204,7 +204,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             }
             
             servers = new ArrayList<ServerResourceDescriptor>();
-            OracleInstance ai = new OracleInstance("Oracle Cloud", component.getUserName(), 
+            OracleInstance ai = new OracleInstance("Oracle Cloud", OracleWizardComponent.getPrefixedUserName(component.getIdentityGroup(), component.getUserName()), 
                     component.getPassword(), component.getAdminUrl(), component.getInstanceUrl(),
                     component.getCloudUrl(), component.getIdentityGroup(), component.getServiceInstance(), null, component.getSDKFolder());
             try {
