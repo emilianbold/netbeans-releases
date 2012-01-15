@@ -401,7 +401,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- XML Module CSH :-->
 <!--XML source editor -->
-<mapID target="org.netbeans.modules.xml.text.syntax.XMLKit" url="xml/xml_edit.html" />
+<mapID target="org.netbeans.modules.xml.text.syntax.XMLKit" url="xml/csh/about_source_editor.html" />
 
 <mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/xml_validate.html" />
 <mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/dtd/dtd_document.html" />
