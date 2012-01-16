@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -153,7 +154,7 @@ public abstract class PhpEnvironment {
      */
     public List<String> getAllPhpUnits() {
         // simple detection - just try to find phpunit it on user's PATH
-        return FileUtils.findFileOnUsersPath("phpunit"); // NOI18N
+        return FileUtils.findFileOnUsersPath(PhpUnit.SCRIPT_NAME, PhpUnit.SCRIPT_NAME_LONG);
     }
 
     /**

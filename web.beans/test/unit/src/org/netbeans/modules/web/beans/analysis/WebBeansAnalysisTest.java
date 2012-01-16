@@ -458,6 +458,107 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         
     }
     
+    /*
+     * ScopedBeanAnalyzer.checkPassivationCapable
+     */
+    public void testPassivation() throws IOException {
+        getUtilities().initEnterprise();
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Scope1.java",
+                "package foo; " +
+                " import javax.enterprise.context.NormalScope; " +
+                " import java.lang.annotation.Retention; "+
+                " import java.lang.annotation.RetentionPolicy; "+
+                " import java.lang.annotation.Target; " +
+                " import java.lang.annotation.ElementType; "+
+                " @Retention(RetentionPolicy.RUNTIME) "+
+                " @Target({ElementType.METHOD,ElementType.FIELD, ElementType.TYPE}) "+
+                " @NormalScope(passivating=true) "+
+                " public @interface Scope1 { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                " @Scope1 "+
+                " public class Clazz1 { "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " @SessionScoped "+
+                " public class Clazz2 { "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/SessionClazz.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " import javax.ejb.Singleton; "+
+                " @SessionScoped "+
+                " @Singleton "+
+                " public class SessionClazz { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " import java.io.Serializable; "+
+                " @SessionScoped "+
+                " public class Clazz3 implements Serializable { "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz4.java",
+                "package foo; " +
+                " import javax.enterprise.context.RequestScoped; "+
+                " @RequestScoped "+
+                " public class Clazz4{ "+
+                "}");
+        
+        FileObject goodFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/StatefulClazz.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " import java.io.Serializable; "+
+                " import javax.ejb.Stateful; "+
+                " @SessionScoped "+
+                " @Stateful "+
+                " public class StatefulClazz  { "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement( result, "foo.Clazz1");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result,"foo.Clazz2");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result,"foo.SessionClazz");
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR);
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR);
+        runAnalysis( goodFile2, NO_ERRORS_PROCESSOR);
+    }
+    
     //=======================================================================
     //
     //  ClassModelAnalyzer - SessionBeanAnalyzer
@@ -758,6 +859,63 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
         runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ScopedFieldAnalyzer.checkPassivationCapable
+     */
+    public void testPassivationProductionField() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/FinalClass.java",
+                "package foo; " +
+                " public final class FinalClass { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz1 { "+
+                " @Produces @SessionScoped FinalClass field; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz2  { "+
+                " @Produces @SessionScoped int field; "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                " import javax.enterprise.context.RequestScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz3  { "+
+                " @Produces @RequestScoped FinalClass field; "+
+                "}");
+        
+        FileObject goodFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz4.java",
+                "package foo; " +
+                " import java.io.Serializable; "+
+                " import javax.enterprise.context.SessionScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz4  { "+
+                " @Produces @SessionScoped Serializable field; "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz1", "field");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR);
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR);
+        runAnalysis( goodFile2, NO_ERRORS_PROCESSOR);
     }
     
     //=======================================================================
@@ -1151,6 +1309,63 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
         runAnalysis( goodFile1, NO_ERRORS_PROCESSOR );
+    }
+    
+    /*
+     * ScopedMethodAnalyzer.checkPassivationCapable
+     */
+    public void testPassivationProductionMethod() throws IOException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/FinalClass.java",
+                "package foo; " +
+                " public final class FinalClass { "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz1 { "+
+                " @Produces @SessionScoped FinalClass method(){ return null; } "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                " import javax.enterprise.context.SessionScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz2  { "+
+                " @Produces @SessionScoped int method(){ return 0; } "+
+                "}");
+        
+        FileObject goodFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                " import javax.enterprise.context.RequestScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz3  { "+
+                " @Produces @RequestScoped FinalClass method(){ return null; } "+
+                "}");
+        
+        FileObject goodFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz4.java",
+                "package foo; " +
+                " import java.io.Serializable; "+
+                " import javax.enterprise.context.SessionScoped; "+
+                " import javax.enterprise.inject.Produces; "+
+                " public class Clazz4  { "+
+                " @Produces @SessionScoped Serializable method(){ return null; } "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz1", "method");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR);
+        runAnalysis( goodFile1, NO_ERRORS_PROCESSOR);
+        runAnalysis( goodFile2, NO_ERRORS_PROCESSOR);
     }
     
     //=======================================================================

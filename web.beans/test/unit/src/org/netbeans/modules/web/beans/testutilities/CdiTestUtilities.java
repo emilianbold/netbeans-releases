@@ -132,6 +132,16 @@ public class CdiTestUtilities {
                 "@Target({ElementType.TYPE}) "+          
                 "public @interface Stateless  {}");
         
+        TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/Stateful.java",
+                "package javax.ejb; " +
+                "import static java.lang.annotation.ElementType; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ElementType.TYPE}) "+          
+                "public @interface Stateful  {}");
+        
         TestUtilities.copyStringToFileObject(mySourceRoot, "javax/ejb/PostActivate.java",
                 "package javax.ejb; " +
                 "import static java.lang.annotation.ElementType; "+
