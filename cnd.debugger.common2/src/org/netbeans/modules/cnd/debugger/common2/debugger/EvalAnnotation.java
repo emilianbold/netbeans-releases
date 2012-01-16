@@ -151,12 +151,7 @@ public final class EvalAnnotation extends Annotation {
                         TokenItem<TokenId> token = CndTokenUtilities.getToken(doc, offset, true);
                         if (token != null) {
                             String category = token.id().primaryCategory();
-                            if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
-                                    CppTokenId.COMMENT_CATEGORY.equals(category) ||
-                                    CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
-                                    CppTokenId.STRING_CATEGORY.equals(category) ||
-                                    CppTokenId.NUMBER_CATEGORY.equals(category) ||
-                                    CppTokenId.OPERATOR_CATEGORY.equals(category)) {
+                            if (!CppTokenId.IDENTIFIER_CATEGORY.equals(category)) {
                                 skip.set(true);
                             }
                         }
