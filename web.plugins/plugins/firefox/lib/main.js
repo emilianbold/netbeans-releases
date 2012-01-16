@@ -39,68 +39,105 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+
 var pageWorkers = require("page-worker");
-
-var script =
-  "var socket = new MozWebSocket('ws://127.0.0.1:1234');"+
-  "self.on('message', function (message) {"+
-  "  if (socket.readyState === socket.OPEN) {"+
-  "    socket.send(message);"+
-  "  }"+
-  "});"+
-  "socket.onopen=function () {"+
-  "  self.postMessage('init');"+
-  "};"+
-  "socket.onmessage=function (e) {"+
-  "  self.postMessage(e.data);"+
-  "};";
- 
-var page = pageWorkers.Page({
-  contentURL: 'http://www.google.com', // PENDING replace with url to some dummy page
-  contentScript: script,
-  contentScriptWhen: 'start',
-});
-
+var self = require("self");
 var tabs = require("tabs");
 
-page.on('message', function (message) {
-  var tab;
-  if (message === 'init') {
-    for (var i=0; i<tabs.length; i++) {
-      tab = tabs[i];
-      assignIdIfNeeded(tab);
-      page.postMessage('id '+tab[tabIdKey]+'\nurl '+tab.url+'\nstatus unknown\n');
-    }
-  } else {
-    // Reload request
-    for (var i=0; i<tabs.length; i++) {
-      tab = tabs[i];
-      if (tab[tabIdKey] == message) {
-        tab.reload();
-      }
-    }
-  }
-});
- 
-tabs.on('open', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage('id '+tab[tabIdKey]+'\nstatus loading\n');
-});
+var pendingMessages = [];
+var backgroundPageReady = false;
 
-tabs.on('ready', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage('id '+tab[tabIdKey]+'\nurl '+tab.url+'\nstatus complete\n');
-});
-
-tabs.on('close', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage('id '+tab[tabIdKey]+'\nclosed true\n');
-});
-
+// Tabs don't have IDs by default - we assign them our own IDs.
 var tabId=0;
 var tabIdKey = 'netbeans-tab-id';
-function assignIdIfNeeded(tab) {
+assignIdIfNeeded = function(tab) {
   if (tab[tabIdKey] === undefined) {
     tab[tabIdKey] = tabId++;
   }
+}
+
+sendMessage = function(message) {
+    // page.postMessage() doesn't work until the background page is loaded/ready
+    if (backgroundPageReady) {
+        page.postMessage(message);
+    } else {
+        pendingMessages.push(message);
+    }
+}
+
+sendOpenMessage = function(tabId) {
+    sendMessage({
+        type: 'open',
+        tabId: tabId
+    });
+}
+
+sendCloseMessage = function(tabId) {
+    sendMessage({
+        type: 'close',
+        tabId: tabId
+    });
+}
+
+sendReadyMessage = function(tabId, url) {
+    sendMessage({
+        type: 'ready',
+        tabId: tabId,
+        url: url
+    });
+}
+
+// WebSockets are not available to this script for some reason.
+// So, we create a background page where the WebSockets are available
+// and send information from privilege APIs (available to this script only)
+// to the background page.
+var page = pageWorkers.Page({
+  contentURL: self.data.url('main.html'),
+  contentScriptFile : [
+      self.data.url('reload.js'),
+      self.data.url('reloadInit.js')
+  ]
+});
+
+page.on('message', function (message) {
+    var type = message.type;
+    var i;
+    if (type === 'reload') {
+        // reload request from IDE
+        for (i=0; i<tabs.length; i++) {
+            tab = tabs[i];
+            if (tab[tabIdKey] === message.tabId) {
+                tab.reload();
+            }
+        }
+    } else if (type === 'backgroundPageReady') {
+        // background page is loaded
+        backgroundPageReady = true;
+        for (i=0; i<pendingMessages.length; i++) {
+            sendMessage(pendingMessages[i]);
+        }
+    }
+});
+
+// Register event listeners
+tabs.on('open', function (tab) {
+    assignIdIfNeeded(tab);
+    sendOpenMessage(tab[tabIdKey]);
+});
+
+tabs.on('ready', function (tab) {
+    assignIdIfNeeded(tab);
+    sendReadyMessage(tab[tabIdKey], tab.url);
+});
+
+tabs.on('close', function (tab) {
+    assignIdIfNeeded(tab);
+    sendCloseMessage(tab[tabIdKey]);
+});
+
+// 'open' event is not delivered for the first tab;
+// As a workaround, we go through all existing tabs and consider them as new
+for each (var tab in tabs) {
+    assignIdIfNeeded(tab);
+    sendOpenMessage(tab[tabIdKey]);
 }
