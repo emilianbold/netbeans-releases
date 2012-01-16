@@ -479,8 +479,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             startOffsetResult[0] = Utilities.getRowFirstNonWhite(doc, offset);
         }
 
+        // FIXME performance
         int braceBalance =
-            LexUtilities.getLineBalance(doc, offset, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+            LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, offset);
+            //LexUtilities.getLineBalance(doc, offset, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+
+        if (braceBalance <= 0) {
+            return false;
+        }
 
         int parenBalance =
             LexUtilities.getLineBalance(doc, offset, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
@@ -493,28 +499,29 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done
             boolean insertRBrace = braceBalance > 0;
-            int next = Utilities.getRowEnd(doc, offset) + 1;
+// XXX why was this identation based? is it some perf improvement?
+//            int next = Utilities.getRowEnd(doc, offset) + 1;
 
-            for (; next < length; next = Utilities.getRowEnd(doc, next) + 1) {
-                if (Utilities.isRowEmpty(doc, next) || Utilities.isRowWhite(doc, next) ||
-                        LexUtilities.isCommentOnlyLine(doc, next)) {
-                    continue;
-                }
-
-                int nextIndent = GsfUtilities.getLineIndent(doc, next);
-
-                if (nextIndent > indent) {
-                    insertRBrace = false;
-                } else if (nextIndent == indent) {
-                    if (insertRBrace &&
-                            (LexUtilities.getLineBalance(doc, next, JsTokenId.BRACKET_LEFT_CURLY,
-                                JsTokenId.BRACKET_RIGHT_CURLY) < 0)) {
-                        insertRBrace = false;
-                    }
-                }
-
-                break;
-            }
+//            for (; next < length; next = Utilities.getRowEnd(doc, next) + 1) {
+//                if (Utilities.isRowEmpty(doc, next) || Utilities.isRowWhite(doc, next) ||
+//                        LexUtilities.isCommentOnlyLine(doc, next)) {
+//                    continue;
+//                }
+//
+//                int nextIndent = GsfUtilities.getLineIndent(doc, next);
+//
+//                if (nextIndent > indent) {
+//                    insertRBrace = false;
+//                } else if (nextIndent == indent) {
+//                    if (insertRBrace &&
+//                            (LexUtilities.getLineBalance(doc, next, JsTokenId.BRACKET_LEFT_CURLY,
+//                                JsTokenId.BRACKET_RIGHT_CURLY) < 0)) {
+//                        insertRBrace = false;
+//                    }
+//                }
+//
+//                break;
+//            }
 
             if (insertRBraceResult != null) {
                 insertRBraceResult[0] = insertRBrace;
