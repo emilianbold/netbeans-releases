@@ -51,6 +51,7 @@ NetBeans.browserReloadCallback = function(tabId) {
     });
 }
 
+// Processing of the messages from the main script
 self.on('message', function (message) {
     var type = message.type;
     if (type === 'open') {
@@ -63,4 +64,9 @@ self.on('message', function (message) {
     } else if (type === 'close') {
         NetBeans.tabRemoved(message.tabId);
     }
+});
+
+// Notify the main script that the background page is ready
+self.postMessage({
+    type: 'backgroundPageReady'
 });

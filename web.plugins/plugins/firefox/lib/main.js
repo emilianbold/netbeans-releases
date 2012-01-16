@@ -44,6 +44,10 @@ var pageWorkers = require("page-worker");
 var self = require("self");
 var tabs = require("tabs");
 
+var pendingMessages = [];
+var backgroundPageReady = false;
+
+// Tabs don't have IDs by default - we assign them our own IDs.
 var tabId=0;
 var tabIdKey = 'netbeans-tab-id';
 assignIdIfNeeded = function(tab) {
@@ -52,6 +56,41 @@ assignIdIfNeeded = function(tab) {
   }
 }
 
+sendMessage = function(message) {
+    // page.postMessage() doesn't work until the background page is loaded/ready
+    if (backgroundPageReady) {
+        page.postMessage(message);
+    } else {
+        pendingMessages.push(message);
+    }
+}
+
+sendOpenMessage = function(tabId) {
+    sendMessage({
+        type: 'open',
+        tabId: tabId
+    });
+}
+
+sendCloseMessage = function(tabId) {
+    sendMessage({
+        type: 'close',
+        tabId: tabId
+    });
+}
+
+sendReadyMessage = function(tabId, url) {
+    sendMessage({
+        type: 'ready',
+        tabId: tabId,
+        url: url
+    });
+}
+
+// WebSockets are not available to this script for some reason.
+// So, we create a background page where the WebSockets are available
+// and send information from privilege APIs (available to this script only)
+// to the background page.
 var page = pageWorkers.Page({
   contentURL: self.data.url('main.html'),
   contentScriptFile : [
@@ -62,37 +101,43 @@ var page = pageWorkers.Page({
 
 page.on('message', function (message) {
     var type = message.type;
+    var i;
     if (type === 'reload') {
+        // reload request from IDE
         for (i=0; i<tabs.length; i++) {
             tab = tabs[i];
             if (tab[tabIdKey] === message.tabId) {
                 tab.reload();
             }
         }
+    } else if (type === 'backgroundPageReady') {
+        // background page is loaded
+        backgroundPageReady = true;
+        for (i=0; i<pendingMessages.length; i++) {
+            sendMessage(pendingMessages[i]);
+        }
     }
 });
 
+// Register event listeners
 tabs.on('open', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'open',
-      tabId: tab[tabIdKey]
-  });
+    assignIdIfNeeded(tab);
+    sendOpenMessage(tab[tabIdKey]);
 });
 
 tabs.on('ready', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'ready',
-      tabId: tab[tabIdKey],
-      url: tab.url
-  });
+    assignIdIfNeeded(tab);
+    sendReadyMessage(tab[tabIdKey], tab.url);
 });
 
 tabs.on('close', function (tab) {
-  assignIdIfNeeded(tab);
-  page.postMessage({
-      type: 'close',
-      tabId: tab[tabIdKey]
-  });
+    assignIdIfNeeded(tab);
+    sendCloseMessage(tab[tabIdKey]);
 });
+
+// 'open' event is not delivered for the first tab;
+// As a workaround, we go through all existing tabs and consider them as new
+for each (var tab in tabs) {
+    assignIdIfNeeded(tab);
+    sendOpenMessage(tab[tabIdKey]);
+}
