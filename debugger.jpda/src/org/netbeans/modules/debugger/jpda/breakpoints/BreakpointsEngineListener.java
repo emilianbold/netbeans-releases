@@ -92,7 +92,7 @@ import org.openide.util.Exceptions;
 public class BreakpointsEngineListener extends LazyActionsManagerListener 
 implements PropertyChangeListener, DebuggerManagerListener {
     
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
     private JPDADebuggerImpl        debugger;
     private SourcePath           engineContext;
@@ -113,6 +113,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         breakpointsReader = PersistenceManager.findBreakpointsReader();
     }
     
+    @Override
     protected void destroy () {
         debugger.removePropertyChangeListener (
             JPDADebugger.PROP_STATE,
@@ -125,10 +126,12 @@ implements PropertyChangeListener, DebuggerManagerListener {
         removeBreakpointImpls ();
     }
     
+    @Override
     public String[] getProperties () {
         return new String[] {"asd"};
     }
 
+    @Override
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
         if (debugger.getState () == JPDADebugger.STATE_RUNNING) {
             if (started) return;
@@ -149,11 +152,13 @@ implements PropertyChangeListener, DebuggerManagerListener {
         }
     }
     
+    @Override
     public void actionPerformed (Object action) {
 //        if (action == ActionsManager.ACTION_FIX)
 //            fixBreakpointImpls ();
     }
 
+    @Override
     public void breakpointAdded (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
         if (!EventQueue.isDispatchThread() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
@@ -165,6 +170,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
             return ;
         } // Otherwise:
         debugger.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 debugger.accessLock.readLock().lock();
                 try {
@@ -189,6 +195,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         }
     }    
 
+    @Override
     public void breakpointRemoved (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
         if (!EventQueue.isDispatchThread() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
@@ -200,6 +207,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
             return ;
         } // Otherwise:
         debugger.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 debugger.accessLock.readLock().lock();
                 try {
@@ -225,13 +233,21 @@ implements PropertyChangeListener, DebuggerManagerListener {
     }
     
 
+    @Override
     public Breakpoint[] initBreakpoints () {return new Breakpoint [0];}
+    @Override
     public void initWatches () {}
+    @Override
     public void sessionAdded (Session session) {}
+    @Override
     public void sessionRemoved (Session session) {}
+    @Override
     public void watchAdded (Watch watch) {}
+    @Override
     public void watchRemoved (Watch watch) {}
+    @Override
     public void engineAdded (DebuggerEngine engine) {}
+    @Override
     public void engineRemoved (DebuggerEngine engine) {}
 
 
