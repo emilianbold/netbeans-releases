@@ -64,6 +64,7 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
+import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
@@ -86,7 +87,8 @@ import org.openide.util.actions.NodeAction;
  * @author Tomas Mysik
  */
 public final class CreateTestsAction extends NodeAction {
-    private static final long serialVersionUID = 952382987542628824L;
+
+    private static final long serialVersionUID = -468532132435473111L;
 
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
@@ -117,8 +119,13 @@ public final class CreateTestsAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return;
         }
-        final PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
-        if (phpUnit == null) {
+
+        // programs available?
+        PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        if (skelGen == null && phpUnit == null) {
+            // prefer skelGen, show customizer
+            CommandUtils.getPhpUnitSkelGen(true);
             return;
         }
         // ensure that test sources directory exists
@@ -135,7 +142,7 @@ public final class CreateTestsAction extends NodeAction {
                 handle.start();
                 try {
                     LifecycleManager.getDefault().saveAll();
-                    generateTests(activatedNodes, phpUnit, phpProject);
+                    generateTests(activatedNodes, phpProject);
                 } finally {
                     handle.finish();
                 }
@@ -192,7 +199,7 @@ public final class CreateTestsAction extends NodeAction {
         return null;
     }
 
-    void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
+    void generateTests(final Node[] activatedNodes, final PhpProject phpProject) {
         assert phpProject != null;
 
         final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
@@ -207,10 +214,10 @@ public final class CreateTestsAction extends NodeAction {
                 try {
                     final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(phpProject);
                     for (FileObject fo : files) {
-                        generateTest(phpUnit, phpProject, phpVisibilityQuery, fo, proceeded, failed, toOpen);
+                        generateTest(phpProject, phpVisibilityQuery, fo, proceeded, failed, toOpen);
                         Enumeration<? extends FileObject> children = fo.getChildren(true);
                         while (children.hasMoreElements()) {
-                            generateTest(phpUnit, phpProject, phpVisibilityQuery, children.nextElement(), proceeded, failed, toOpen);
+                            generateTest(phpProject, phpVisibilityQuery, children.nextElement(), proceeded, failed, toOpen);
                         }
                     }
                 } catch (ExecutionException ex) {
@@ -251,7 +258,7 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private void generateTest(PhpUnit phpUnit, PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
+    private void generateTest(PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
             Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
                 || !FileUtils.isPhpFile(sourceFo)
@@ -263,9 +270,7 @@ public final class CreateTestsAction extends NodeAction {
         }
         proceeded.add(sourceFo);
 
-        final ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
-        final File parent = FileUtil.toFile(sourceFo.getParent());
-        final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
+        final TestGenerator testGenerator = getTestGenerator(phpProject, sourceFo);
 
         // find out the name of a class(es)
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
@@ -276,7 +281,7 @@ public final class CreateTestsAction extends NodeAction {
             return;
         }
         for (PhpClass phpClass : classes) {
-            File testFile = phpUnit.generateTest(phpProject, configFiles, phpClass, sourceFo, workingDirectory);
+            File testFile = testGenerator.generateTest(phpClass);
             if (testFile != null) {
                 toOpen.add(testFile);
             } else {
@@ -284,6 +289,72 @@ public final class CreateTestsAction extends NodeAction {
                 failed.add(sourceFo);
             }
         }
+    }
+
+    private TestGenerator getTestGenerator(PhpProject phpProject, FileObject source) {
+        PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
+        if (skelGen != null) {
+            // phpunit-skel-gen is preferred
+            LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
+            return new PhpUnitSkelGenTestGenerator(skelGen, phpProject, source);
+        }
+        LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
+        File parent = FileUtil.toFile(source.getParent());
+        File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
+        return new PhpUnitTestGenerator(phpUnit, phpProject, source, configFiles, workingDirectory);
+    }
+
+    //~ Inner classes
+
+    private interface TestGenerator {
+        File generateTest(PhpClass phpClass);
+    }
+
+    private static final class PhpUnitTestGenerator implements TestGenerator {
+
+        private final PhpUnit phpUnit;
+        private final PhpProject phpProject;
+        private final FileObject source;
+        private final ConfigFiles configFiles;
+        private final File workingDirectory;
+
+
+        public PhpUnitTestGenerator(PhpUnit phpUnit, PhpProject phpProject, FileObject source, ConfigFiles configFiles, File workingDirectory) {
+            this.phpUnit = phpUnit;
+            this.phpProject = phpProject;
+            this.source = source;
+            this.configFiles = configFiles;
+            this.workingDirectory = workingDirectory;
+        }
+
+        @Override
+        public File generateTest(PhpClass phpClass) {
+            return phpUnit.generateTest(phpProject, configFiles, phpClass, source, workingDirectory);
+        }
+
+    }
+
+    private static final class PhpUnitSkelGenTestGenerator implements TestGenerator {
+
+        private final PhpUnitSkelGen skelGen;
+        private final PhpProject phpProject;
+        private final FileObject source;
+
+
+        public PhpUnitSkelGenTestGenerator(PhpUnitSkelGen skelGen, PhpProject phpProject, FileObject source) {
+            this.skelGen = skelGen;
+            this.phpProject = phpProject;
+            this.source = source;
+        }
+
+        @Override
+        public File generateTest(PhpClass phpClass) {
+            return skelGen.generateTest(phpClass.getFullyQualifiedName(), FileUtil.toFile(source),
+                    phpClass.getFullyQualifiedName() + PhpUnit.TEST_CLASS_SUFFIX, PhpUnit.getTestFile(phpProject, source, phpClass.getName()));
+        }
+
     }
 
 }

@@ -87,6 +87,8 @@ public final class PhpUnit extends PhpProgram {
     @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     private static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
 
+    public static final String SCRIPT_NAME = "phpunit"; // NOI18N
+    public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
     // for keeping log files to able to evaluate and fix issues
     public static final boolean KEEP_LOGS = Boolean.getBoolean("nb.php.phpunit.keeplogs"); // NOI18N
     // options
@@ -323,7 +325,7 @@ public final class PhpUnit extends PhpProgram {
         return testFile;
     }
 
-    private File getTestFile(PhpProject project, FileObject source, String className) {
+    public static File getTestFile(PhpProject project, FileObject source, String className) {
         assert project != null;
         assert source != null;
 
@@ -336,7 +338,7 @@ public final class PhpUnit extends PhpProgram {
         return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
     }
 
-    private File getTestDirectory(PhpProject phpProject) {
+    private static File getTestDirectory(PhpProject phpProject) {
         FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
         assert testDirectory != null && testDirectory.isValid() : "Valid folder for tests must be found for " + phpProject;
         return FileUtil.toFile(testDirectory);
