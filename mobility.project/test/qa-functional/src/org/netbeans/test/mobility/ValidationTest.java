@@ -139,8 +139,9 @@ public class ValidationTest extends JellyTestCase {
             new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
             (new JButtonOperator(cdtsfp, "OK")).pushNoBlock();
             cdtsfp.waitClosed();
-            new DialogOperator("Searching for Java ME platforms").waitClosed(); //TODO I18N
         }
+        
+        new DialogOperator("Searching for Java ME platforms").waitClosed(); //TODO I18N
 
         (new JButtonOperator(ajpw, "Next")).pushNoBlock();
         ajpw.stepsWaitSelectedValue("Detected Platforms");
