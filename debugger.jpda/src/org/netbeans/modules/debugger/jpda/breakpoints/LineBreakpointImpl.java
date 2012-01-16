@@ -131,7 +131,7 @@ import org.openide.util.UserQuestionException;
 */
 public class LineBreakpointImpl extends ClassBasedBreakpoint {
     
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
     
     private int                 lineNumber;
     private int                 breakpointLineNumber;
@@ -209,6 +209,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         return true;
     }
     
+    @Override
     protected void setRequests () {
         LineBreakpoint breakpoint = getBreakpoint();
         updateLineNumber();
@@ -326,13 +327,15 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         final boolean[] found = new boolean[] { false };
         try {
             js.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement te = cc.getElements().getTypeElement(className);
                     if (te != null) { // found
                         found[0] = true;
                     }
                 }
-            }, false);
+            }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -471,6 +474,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
     
+    @Override
     protected EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         Location location = BreakpointRequestWrapper.location((BreakpointRequest) oldRequest);
         BreakpointRequest br = EventRequestManagerWrapper.createBreakpointRequest(getEventRequestManager(), location);
@@ -493,6 +497,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
 
+    @Override
     public boolean processCondition(Event event) {
         if (event instanceof BreakpointEvent) {
             try {
@@ -725,8 +730,10 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         final Future<Void> scanFinished;
         try {
             scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,

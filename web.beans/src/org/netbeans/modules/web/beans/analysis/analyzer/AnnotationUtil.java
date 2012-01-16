@@ -154,6 +154,8 @@ public final class AnnotationUtil {
     
     public static final String NON_BINDING = "javax.enterprise.util.Nonbinding";    // NOI18N
     
+    public static final String PASSIVATING = "passivating";                         // NOI18N
+    
     private AnnotationUtil(){
     }
     
@@ -193,7 +195,7 @@ public final class AnnotationUtil {
         return null;
     }
     
-    public static boolean isSessionBean(TypeElement element , 
+    public static boolean isSessionBean(Element element , 
             CompilationInfo compInfo )
     {
         return getAnnotationMirror(element, compInfo, STATEFUL, STATELESS, 

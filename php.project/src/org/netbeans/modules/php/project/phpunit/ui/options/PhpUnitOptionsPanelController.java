@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -74,6 +75,7 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
     @Override
     public void update() {
         phpUnitOptionsPanel.setPhpUnit(getPhpOptions().getPhpUnit());
+        phpUnitOptionsPanel.setPhpUnitSkelGen(getPhpOptions().getPhpUnitSkelGen());
 
         changed = false;
     }
@@ -81,6 +83,7 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
     @Override
     public void applyChanges() {
         getPhpOptions().setPhpUnit(phpUnitOptionsPanel.getPhpUnit());
+        getPhpOptions().setPhpUnitSkelGen(phpUnitOptionsPanel.getPhpUnitSkelGen());
 
         changed = false;
     }
@@ -91,10 +94,17 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isValid() {
+        // phpunit
         try {
             PhpUnit.getCustom(phpUnitOptionsPanel.getPhpUnit());
         } catch (InvalidPhpProgramException ex) {
             phpUnitOptionsPanel.setWarning(ex.getLocalizedMessage());
+            return true;
+        }
+        // skel-gen
+        String warning = PhpUnitSkelGen.validate(phpUnitOptionsPanel.getPhpUnitSkelGen());
+        if (warning != null) {
+            phpUnitOptionsPanel.setWarning(warning);
             return true;
         }
 

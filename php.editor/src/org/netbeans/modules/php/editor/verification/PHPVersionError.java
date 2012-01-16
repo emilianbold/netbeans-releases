@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.commands;
+package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.doctrine2.options.Doctrine2Options;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.Error.Badging;
+import org.netbeans.modules.csl.api.Severity;
+import org.openide.filesystems.FileObject;
 
 /**
- * Represents <a href="http://doctrine-project.org/">doctrine</a> command line tool.
+ * Class encapsulating errors caused by different PHP version used in files and PHP version set in Project properties.
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class Doctrine2Script extends PhpProgram {
+public abstract class PHPVersionError implements Badging {
 
-    public static final String SCRIPT_NAME = "doctrine"; // NOI18N
-    public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
-    public static final String LIST_COMMAND = "list"; // NOI18N
-    public static final String XML_PARAM = "--xml"; // NOI18N
+    private final FileObject fileObject;
+    private final int startOffset;
+    private final int endOffset;
 
-
-    private Doctrine2Script(String command) {
-        super(command);
+    public PHPVersionError(FileObject fileObject, int startOffset, int endOffset) {
+        this.fileObject = fileObject;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
-    /**
-     * Get the default, <b>valid only</b> Doctrine2 script.
-     * @return the default, <b>valid only</b> Doctrine2 script.
-     * @throws InvalidPhpProgramException if Doctrine2 script is not valid.
-     */
-    public static Doctrine2Script getDefault() throws InvalidPhpProgramException {
-        String script = Doctrine2Options.getInstance().getScript();
-        String error = validate(script);
-        if (error != null) {
-            throw new InvalidPhpProgramException(error);
-        }
-        return new Doctrine2Script(script);
-    }
-
-    public static String validate(String command) {
-        return new Doctrine2Script(command).validate();
-    }
-
-    @NbBundle.Messages("Doctrine2Script.prefix=Doctrine2 script: {0}")
     @Override
-    public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.Doctrine2Script_prefix(error);
+    public boolean showExplorerBadge() {
+        return true;
+    }
+
+    @Override
+    public FileObject getFile() {
+        return fileObject;
+    }
+
+    @Override
+    public int getStartPosition() {
+        return startOffset;
+    }
+
+    @Override
+    public int getEndPosition() {
+        return endOffset;
+    }
+
+    @Override
+    public boolean isLineError() {
+        return true;
+    }
+
+    @Override
+    public Severity getSeverity() {
+        return Severity.ERROR;
+    }
+
+    @Override
+    public Object[] getParameters() {
+        return new Object[]{};
     }
 
 }

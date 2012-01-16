@@ -43,8 +43,11 @@
 package org.netbeans.modules.php.project.phpunit;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import org.netbeans.modules.php.project.util.PhpTestCase;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Mysik
@@ -88,4 +91,67 @@ public class PhpUnitTest extends PhpTestCase {
         relPath = PhpUnit.getRelPath(testFile, sourceFile, abs, rel, suff, true);
         assertEquals(abs + sourceFile.getAbsolutePath() + suff, relPath);
     }
+
+    public void testRequireOnceUnix() throws Exception {
+        if (!Utilities.isUnix()) {
+            return;
+        }
+        List<Crate> crates = new LinkedList<Crate>();
+        crates.add(new Crate(
+                "/project1/src/MyClass.php",
+                "/project1/test/MyClassTest.php",
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
+        crates.add(new Crate(
+                "/project1/src/a/MyClass.php",
+                "/project1/test/a/MyClassTest.php",
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../../src/a/MyClass.php"));
+        crates.add(new Crate(
+                "/project1/src/a/b/c/MyClass.php",
+                "/project1/test/a/b/c/MyClassTest.php",
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../../../../src/a/b/c/MyClass.php"));
+
+        verifyCrates(crates);
+    }
+
+    public void testRequireOnceWindows() throws Exception {
+        if (!Utilities.isWindows()) {
+            return;
+        }
+        List<Crate> crates = new LinkedList<Crate>();
+        crates.add(new Crate(
+                "C:\\project1\\src\\MyClass.php",
+                "C:\\project1\\test\\MyClassTest.php",
+                PhpUnit.REQUIRE_ONCE_REL_PART + "../src/MyClass.php"));
+        crates.add(new Crate(
+                "C:\\project1\\src\\MyClass.php",
+                "D:\\project1\\test\\MyClassTest.php",
+                "C:/project1/src/MyClass.php"));
+
+        verifyCrates(crates);
+    }
+
+    private void verifyCrates(List<Crate> creates) {
+        for (Crate crate : creates) {
+            String requireOnce = PhpUnit.getRequireOnce(crate.testFile, crate.sourceFile);
+            assertNotNull(requireOnce);
+            assertEquals(crate.requireOnce, requireOnce);
+        }
+    }
+
+    // Inner classes
+
+    private static final class Crate {
+
+        public final File sourceFile;
+        public final File testFile;
+        public final String requireOnce;
+
+
+        public Crate(String sourceFile, String testFile, String requireOnce) {
+            this.sourceFile = new File(sourceFile);
+            this.testFile = new File(testFile);
+            this.requireOnce = requireOnce;
+        }
+    }
+
 }
