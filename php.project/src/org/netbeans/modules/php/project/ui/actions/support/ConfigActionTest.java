@@ -261,7 +261,7 @@ class ConfigActionTest extends ConfigAction {
         @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
-                    .optionsPath(UiUtils.OPTIONS_PATH + "/" + PhpUnit.OPTIONS_SUB_PATH) // NOI18N
+                    .optionsPath(PhpUnit.OPTIONS_PATH)
                     .frontWindow(false)
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                     .inputVisible(false)

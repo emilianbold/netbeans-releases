@@ -42,17 +42,22 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
@@ -107,6 +112,39 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
             return;
         }
         checkInterceptorDecorator( scopeElement , element , model , result);
+        if ( cancel.get() ){
+            return;
+        }
+        checkPassivationCapable( scopeElement , element , model , result );
+    }
+
+    private void checkPassivationCapable( TypeElement scopeElement,
+            Element element, WebBeansModel model, Result result )
+    {
+        if ( !isPassivatingScope(scopeElement, model) ){
+            return;
+        }
+        if ( AnnotationUtil.isSessionBean(element, model.getCompilationController())){
+            if ( AnnotationUtil.hasAnnotation(element,
+                    AnnotationUtil.STATEFUL,  model.getCompilationController()))
+            {
+                return;
+            }
+            else {
+                result.addError(element, model ,  
+                        NbBundle.getMessage(ScopedBeanAnalyzer.class,
+                            "ERR_NotPassivationSessionBean",        // NOI18N
+                            scopeElement.getQualifiedName().toString()));       
+                return;
+            }
+        }
+        if ( !isSerializable(element, model) ){
+            result.addError(element, model ,  
+                    NbBundle.getMessage(ScopedBeanAnalyzer.class,
+                        "ERR_NotPassivationManagedBean",        // NOI18N
+                        scopeElement.getQualifiedName().toString())); 
+        }
+        // TODO : all interceptors ans decorators of bean should be also passivation capable
     }
 
     private void checkInterceptorDecorator( TypeElement scopeElement,

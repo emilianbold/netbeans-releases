@@ -68,12 +68,16 @@ public abstract class PhpProgram {
     private static final ExecutionDescriptor DEFAULT_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true)
             .frontWindow(true)
+            // @since 1.62
+            .frontWindowOnError(true)
             .inputVisible(true)
             .showProgress(true);
 
     /**
      * The {@link InputProcessorFactory input processor factory} that strips any
      * <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape sequences</a>.
+     * <p>
+     * <b>In fact, it is not needed anymore since the Output window understands ANSI escape sequences.</b>
      * @see InputProcessors#ansiStripping(InputProcessor)
      * @since 1.10
      */
@@ -187,6 +191,7 @@ public abstract class PhpProgram {
      * <ul>
      *   <li>{@link ExecutionDescriptor#isControllable() controllable}</li>
      *   <li>{@link ExecutionDescriptor#isFrontWindow() displays the Output window}</li>
+     *   <li>{@link ExecutionDescriptor#isFrontWindowOnError()  displays the Output window on error (since 1.62)}</li>
      *   <li>{@link ExecutionDescriptor#isInputVisible() has visible user input}</li>
      *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
      * </ul>
