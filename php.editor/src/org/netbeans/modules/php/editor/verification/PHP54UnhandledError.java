@@ -66,7 +66,7 @@ import org.openide.util.NbBundle.Messages;
 public class PHP54UnhandledError extends DefaultVisitor {
 
     private FileObject fileObject;
-    private List<Badging> errors = new ArrayList<Badging>();
+    private List<PHPVersionError> errors = new ArrayList<PHPVersionError>();
 
     public PHP54UnhandledError(FileObject fobj) {
         this.fileObject = fobj;
@@ -83,7 +83,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
         return result;
     }
 
-    public Collection<Badging> getErrors(){
+    public Collection<PHPVersionError> getErrors() {
         return Collections.unmodifiableCollection(errors);
     }
 
@@ -115,7 +115,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
     }
 
     private  void createError(int startOffset, int endOffset){
-        PHP54VersionError error = new PHP54VersionError(startOffset, endOffset);
+        PHPVersionError error = new PHP54VersionError(fileObject, startOffset, endOffset);
         errors.add(error);
     }
 
@@ -124,20 +124,12 @@ public class PHP54UnhandledError extends DefaultVisitor {
         super.visit(node);
     }
 
-    private class PHP54VersionError implements Badging {
+    private class PHP54VersionError extends PHPVersionError {
 
         private static final String KEY = "Php.Version.54"; //NOI18N
-        private final int startOffset;
-        private final int endOffset;
 
-        private PHP54VersionError(int startOffset, int endOffset) {
-            this.startOffset = startOffset;
-            this.endOffset = endOffset;
-        }
-
-        @Override
-        public boolean showExplorerBadge() {
-            return true;
+        private PHP54VersionError(FileObject fileObject, int startOffset, int endOffset) {
+            super(fileObject, startOffset, endOffset);
         }
 
         @Override
@@ -155,36 +147,6 @@ public class PHP54UnhandledError extends DefaultVisitor {
         @Override
         public String getKey() {
             return KEY;
-        }
-
-        @Override
-        public FileObject getFile() {
-            return fileObject;
-        }
-
-        @Override
-        public int getStartPosition() {
-            return startOffset;
-        }
-
-        @Override
-        public int getEndPosition() {
-            return endOffset;
-        }
-
-        @Override
-        public boolean isLineError() {
-            return true;
-        }
-
-        @Override
-        public Severity getSeverity() {
-            return Severity.ERROR;
-        }
-
-        @Override
-        public Object[] getParameters() {
-            return new Object[]{};
         }
 
     }
