@@ -271,8 +271,15 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             FileObject jnlpImlpFO = project.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
             if (jnlpImlpFO != null) {
                 try {
-                    String crc = JWSCompositeCategoryProvider.computeCrc32(jnlpImlpFO.getInputStream());
-                    jnlpImplOldOrModified = !JWSCompositeCategoryProvider.isJnlpImplCurrentVer(crc);
+                    final InputStream in = jnlpImlpFO.getInputStream();
+                    if(in != null) {
+                        try {
+                            String crc = JWSProjectPropertiesUtils.computeCrc32( in );
+                            jnlpImplOldOrModified = !JWSProjectPropertiesUtils.isJnlpImplCurrentVer(crc);
+                        } finally {
+                            in.close();
+                        }
+                    }
                 } catch (IOException ex) {
                     // nothing to do really
                 }
