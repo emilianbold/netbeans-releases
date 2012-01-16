@@ -326,13 +326,15 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         final boolean[] found = new boolean[] { false };
         try {
             js.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement te = cc.getElements().getTypeElement(className);
                     if (te != null) { // found
                         found[0] = true;
                     }
                 }
-            }, false);
+            }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
