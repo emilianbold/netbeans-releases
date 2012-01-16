@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 
 /**
@@ -54,6 +56,7 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
  */
 public final class JavaMoveMembersProperties {
 
+    private final TreePathHandle[] preSelectedMembers;
     private Visibility visibility;
     private boolean delegate;
     private boolean addDeprecated;
@@ -62,7 +65,8 @@ public final class JavaMoveMembersProperties {
     /**
      * Constructs a new JavaMoveMembersProperties object.
      */
-    public JavaMoveMembersProperties() {
+    public JavaMoveMembersProperties(@NonNull TreePathHandle... preSelectedMembers) {
+        this.preSelectedMembers = preSelectedMembers;
         visibility = Visibility.ESCALATE;
         delegate = false;
         addDeprecated = false;
@@ -70,11 +74,19 @@ public final class JavaMoveMembersProperties {
     }
 
     /**
+     * The members that are selected by the user when starting the refactoring.
+     * @return TreePathHandle array with the size of 1 or more.
+     */
+    public @NonNull TreePathHandle[] getPreSelectedMembers() {
+        return preSelectedMembers;
+    }
+
+    /**
      * The new visibility of the members.
      *
      * @return visibility
      */
-    public Visibility getVisibility() {
+    public @NonNull Visibility getVisibility() {
         return visibility;
     }
 
@@ -83,7 +95,7 @@ public final class JavaMoveMembersProperties {
      *
      * @param visibility the visibility to use
      */
-    public void setVisibility(Visibility visibility) {
+    public void setVisibility(@NonNull Visibility visibility) {
         this.visibility = visibility;
     }
 
