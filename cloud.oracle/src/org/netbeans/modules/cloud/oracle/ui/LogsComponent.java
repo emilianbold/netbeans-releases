@@ -117,7 +117,7 @@ public class LogsComponent extends TopComponent {
                     if (showAlljCheckBox.isSelected()) {
                         jobs_ = am.listJobs();
                     } else {
-                        jobs_ = am.listJobs(oi.getIdentityGroup(), oi.getServiceInstance());
+                        jobs_ = am.listJobs(oi.getIdentityDomain(), oi.getServiceInstance());
                     }
                 } catch (Throwable t) {
                     LOG.log(Level.INFO, "cannot fetch jobs", t);
@@ -217,7 +217,7 @@ public class LogsComponent extends TopComponent {
             @Override
             public Void call() throws Exception {
                 final StringBuffer sb = new StringBuffer();
-                List<Log> logs = am.listServiceInstanceLogs(oi.getIdentityGroup(), oi.getServiceInstance());
+                List<Log> logs = am.listServiceInstanceLogs(oi.getIdentityDomain(), oi.getServiceInstance());
                 sb.append(""+logs.size()+ " log file(s) found:\n\n");
                 for (Log lt : logs) {
                     sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");
@@ -227,7 +227,7 @@ public class LogsComponent extends TopComponent {
                     }
                     ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
                     try {
-                        am.fetchServiceInstanceLog(oi.getIdentityGroup(), oi.getServiceInstance(), lt.getName(), os);
+                        am.fetchServiceInstanceLog(oi.getIdentityDomain(), oi.getServiceInstance(), lt.getName(), os);
                     } catch (Throwable t) {
                         sb.append("Exception occured while retrieving the log:\n"+t.toString());
                         continue;

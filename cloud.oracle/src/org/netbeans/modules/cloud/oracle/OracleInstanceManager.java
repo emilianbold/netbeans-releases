@@ -114,7 +114,7 @@ public class OracleInstanceManager {
         props.putString(ADMIN_URL, ai.getAdminURL());
         props.putString(INSTANCE_URL, ai.getInstanceURL());
         props.putString(CLOUD_URL, ai.getCloudURL());
-        props.putString(SERVICE_GROUP, ai.getIdentityGroup());
+        props.putString(SERVICE_GROUP, ai.getIdentityDomain());
         props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
         props.putString(NAME, ai.getName());
         if (ai.getOnPremiseServerInstanceId() != null) {
@@ -129,7 +129,7 @@ public class OracleInstanceManager {
                 props.putString(ADMIN_URL, ai.getAdminURL());
                 props.putString(INSTANCE_URL, ai.getInstanceURL());
                 props.putString(CLOUD_URL, ai.getCloudURL());
-                props.putString(SERVICE_GROUP, ai.getIdentityGroup());
+                props.putString(SERVICE_GROUP, ai.getIdentityDomain());
                 props.putString(SERVICE_INSTANCE, ai.getServiceInstance());
                 if (ai.getOnPremiseServerInstanceId() == null) {
                     props.removeKey(ON_PREMISE_SERVICE_INSTANCE_ID);
@@ -143,10 +143,10 @@ public class OracleInstanceManager {
         }
     }
     
-    public boolean exist(String adminURL, String identityGroup, String serviceInstance, String tenantUserName) {
+    public boolean exist(String adminURL, String identityDomain, String serviceInstance, String tenantUserName) {
         for (OracleInstance oi : getInstances()) {
             if (adminURL.equals(oi.getAdminURL()) &&
-                    identityGroup.equals(oi.getIdentityGroup()) &&
+                    identityDomain.equals(oi.getIdentityDomain()) &&
                     serviceInstance.equals(oi.getServiceInstance()) &&
                     tenantUserName.equals(oi.getUser())) {
                 return true;

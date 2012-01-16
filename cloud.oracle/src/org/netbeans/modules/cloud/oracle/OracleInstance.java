@@ -99,7 +99,7 @@ public class OracleInstance {
     private String adminURL;
     private String instanceURL;
     private String cloudURL;
-    private String identityGroup;
+    private String identityDomain;
     private String serviceInstance;
     private String onPremiseServerInstanceId;
     private String sdkFolder;
@@ -112,7 +112,7 @@ public class OracleInstance {
     private OracleJ2EEInstance j2eeInstance;
     
     public OracleInstance(String name, String tenantUserName, String tenantPassword, 
-          String adminURL, String instanceURL, String cloudURL, String identityGroup, 
+          String adminURL, String instanceURL, String cloudURL, String identityDomain, 
           String serviceInstance, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
@@ -121,7 +121,7 @@ public class OracleInstance {
         this.adminURL = adminURL;
         this.instanceURL = instanceURL;
         this.cloudURL = cloudURL;
-        this.identityGroup = identityGroup;
+        this.identityDomain = identityDomain;
         this.serviceInstance = serviceInstance;
         this.onPremiseServerInstanceId = onPremiseServerInstanceId;
         this.sdkFolder = sdkFolder;
@@ -176,8 +176,8 @@ public class OracleInstance {
         return serviceInstance;
     }
 
-    public String getIdentityGroup() {
-        return identityGroup;
+    public String getIdentityDomain() {
+        return identityDomain;
     }
 
     public String getSDKFolder() {
@@ -197,8 +197,8 @@ public class OracleInstance {
         resetCache();
     }
     
-    public void setIdentityGroup(String identityGroup) {
-        this.identityGroup = identityGroup;
+    public void setIdentityDomain(String identityDomain) {
+        this.identityDomain = identityDomain;
         resetCache();
     }
 
@@ -293,7 +293,7 @@ public class OracleInstance {
     }
     
     public static Future<DeploymentStatus> deployAsync(final String instanceUrl, final ApplicationManager pm, final File f, 
-                         final String identityGroup, 
+                         final String identityDomain, 
                          final String serviceName, 
                          final ProgressObjectImpl po,
                          final String cloudInstanceName,
@@ -302,7 +302,7 @@ public class OracleInstance {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(instanceUrl, pm, f, identityGroup, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
+                DeploymentStatus ds = deploy(instanceUrl, pm, f, identityDomain, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -310,7 +310,7 @@ public class OracleInstance {
         });
     }
     
-    public static DeploymentStatus deploy(String instanceURL, ApplicationManager am, File f, String identityGroup, String serviceName, 
+    public static DeploymentStatus deploy(String instanceURL, ApplicationManager am, File f, String identityDomain, String serviceName, 
                           ProgressObjectImpl po, String[] url, String cloudInstanceName, String onPremiseServiceInstanceId) {
         assert !SwingUtilities.isEventDispatchThread();
         OutputWriter ow = null;
@@ -347,7 +347,7 @@ public class OracleInstance {
             }
             String ctx = CommandBasedDeployer.readWebContext(fo);
             boolean redeploy = false;
-            List<Application> apps = am.listApplications(identityGroup, serviceName);
+            List<Application> apps = am.listApplications(identityDomain, serviceName);
             for (Application app : apps) {
                 if (app.getApplicationName() != null && getUsableName(app.getApplicationName()).equals(appId)) {
                     redeploy = true;
@@ -358,11 +358,11 @@ public class OracleInstance {
             Job jt;
             if (redeploy) {
                 LOG.log(Level.INFO, "redeploying: archive="+f); // NOI18N
-                jt = am.redeployApplication(identityGroup, serviceName, appId, is);
+                jt = am.redeployApplication(identityDomain, serviceName, appId, is);
                 LOG.log(Level.INFO, "redeployed as "+jt.getJobId()+" "+jt); // NOI18N
             } else {
                 LOG.log(Level.INFO, "deploying: archive="+f); // NOI18N
-                jt = am.deployApplication(identityGroup, serviceName, appId, at, is);
+                jt = am.deployApplication(identityDomain, serviceName, appId, at, is);
                 LOG.log(Level.INFO, "deployed as "+jt.getJobId()+" "+jt); // NOI18N
             }
             
@@ -385,7 +385,7 @@ public class OracleInstance {
                 JobStatus jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
                 if (JobStatus.COMPLETE.equals(jobStatus)) {
-                    Application app2 = am.describeApplication(identityGroup, serviceName, appId);
+                    Application app2 = am.describeApplication(identityDomain, serviceName, appId);
                     List<String> urls = app2.getApplicationUrls();
                     if (urls != null && !urls.isEmpty()) {
                         url[0] = app2.getApplicationUrls().get(0);
@@ -490,17 +490,17 @@ public class OracleInstance {
     
     public List<Application> getApplications() {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().listApplications(getIdentityGroup(), getServiceInstance());
+        return getApplicationManager().listApplications(getIdentityDomain(), getServiceInstance());
     }
 
     public Job undeploy(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().undeployApplication(getIdentityGroup(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().undeployApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
     }
     
     public Job start(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().startApplication(getIdentityGroup(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().startApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
     }
     
     public Application refreshApplication(Application app) {
@@ -510,7 +510,7 @@ public class OracleInstance {
     
     public Job stop(Application app) {
         assert !SwingUtilities.isEventDispatchThread();
-        return getApplicationManager().stopApplication(getIdentityGroup(), getServiceInstance(), app.getApplicationName());
+        return getApplicationManager().stopApplication(getIdentityDomain(), getServiceInstance(), app.getApplicationName());
     }
     
     public static File findWeblogicJar(String onPremiseServerInstanceId) {

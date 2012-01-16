@@ -99,11 +99,11 @@ public class OracleJ2EEInstance {
     }
     
     public String getId() {
-        return createURL(getOracleInstance().getName(), getOracleInstance().getIdentityGroup(), getOracleInstance().getServiceInstance());
+        return createURL(getOracleInstance().getName(), getOracleInstance().getIdentityDomain(), getOracleInstance().getServiceInstance());
     }
     
-    public static String createURL(String cloudInstance, String identityGroup, String serviceInstance) {
-        return OracleDeploymentFactory.ORACLE_URI+cloudInstance + "." + identityGroup + "." +serviceInstance;
+    public static String createURL(String cloudInstance, String identityDomain, String serviceInstance) {
+        return OracleDeploymentFactory.ORACLE_URI+cloudInstance + "." + identityDomain + "." +serviceInstance;
     }
 
     public void deregister() {

@@ -94,7 +94,7 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
 //                    // this field is part of URL (that is server unique key) of J2EE server
 //                    // corresponding to this cloud and therefore value cannot be modified
 //                }
-//                if (!panel.getIdentityGroup().equals(ai.getIdentityGroup())) {
+//                if (!panel.getIdentityDomain().equals(ai.getIdentityDomain())) {
 //                    // see previous comment
 //                }
 //                if (!panel.getPassword().equals(ai.getPassword())) {

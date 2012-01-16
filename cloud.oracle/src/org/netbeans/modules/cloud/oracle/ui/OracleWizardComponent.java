@@ -92,7 +92,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
             sdkTextField.setText(folder);
         }
         if (SHOW_CLOUD_URLS) {
-            identityGroupTextField.setText("s11group3"); // NOI18N
+            identityDomainTextField.setText("s11group3"); // NOI18N
             serviceInstanceTextField.setText("s11wls3"); // NOI18N
             userNameTextField.setText("jing.zhao@oracle.com");
             passwordField.setText("Welcome1");
@@ -111,7 +111,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudURLTextField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
         userNameTextField.getDocument().addDocumentListener(this);
-        identityGroupTextField.getDocument().addDocumentListener(this);
+        identityDomainTextField.getDocument().addDocumentListener(this);
         serviceInstanceTextField.getDocument().addDocumentListener(this);
         sdkTextField.getDocument().addDocumentListener(this);
     }
@@ -121,7 +121,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         cloudURLTextField.setEditable(!disable);
         instanceURLTextField.setEditable(!disable);
         passwordField.setEditable(!disable);
-        identityGroupTextField.setEditable(!disable);
+        identityDomainTextField.setEditable(!disable);
         serviceInstanceTextField.setEditable(!disable);
         userNameTextField.setEditable(!disable);
     }
@@ -152,7 +152,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         jLabel5 = new javax.swing.JLabel();
         instanceURLTextField = new javax.swing.JTextField();
         instanceLabel = new javax.swing.JLabel();
-        identityGroupTextField = new javax.swing.JTextField();
+        identityDomainTextField = new javax.swing.JTextField();
         cloudLabel = new javax.swing.JLabel();
         cloudURLTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -216,7 +216,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(identityGroupTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
@@ -232,7 +232,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(identityGroupTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
                 .addGap(0, 0, 0)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -290,7 +290,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     private javax.swing.JLabel cloudLabel;
     private javax.swing.JTextField cloudURLTextField;
     private javax.swing.JButton configureButton;
-    private javax.swing.JTextField identityGroupTextField;
+    private javax.swing.JTextField identityDomainTextField;
     private javax.swing.JLabel instanceLabel;
     private javax.swing.JTextField instanceURLTextField;
     private javax.swing.JLabel jLabel1;
@@ -342,8 +342,8 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         return new String(passwordField.getPassword());
     }
     
-    public String getIdentityGroup() {
-        return identityGroupTextField.getText();
+    public String getIdentityDomain() {
+        return identityDomainTextField.getText();
     }
 
     public String getServiceInstance() {
@@ -375,8 +375,8 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         }
         if (ADMIN_URL.equals(adminURLTextField.getText()) && 
                 (e.getDocument() == serviceInstanceTextField.getDocument() ||
-                 e.getDocument() == identityGroupTextField.getDocument())) {
-            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.java.cloud.oracle.com", getServiceInstance(), getIdentityGroup())); // NOI18N
+                 e.getDocument() == identityDomainTextField.getDocument())) {
+            instanceURLTextField.setText(MessageFormat.format("https://{0}.{1}.java.cloud.oracle.com", getServiceInstance(), getIdentityDomain())); // NOI18N
         }
     }
 }

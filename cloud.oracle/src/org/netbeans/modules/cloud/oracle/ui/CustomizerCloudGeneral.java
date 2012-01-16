@@ -75,11 +75,11 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         
         this.instance = instance;
         serviceInstanceField.setText(instance.getServiceInstance());
-        identityGroupField.setText(instance.getIdentityGroup());
+        identityDomainField.setText(instance.getIdentityDomain());
         adminUrlField.setText(instance.getAdminURL());
         instanceUrlField.setText(instance.getInstanceURL());
         cloudUrlField.setText(instance.getCloudURL());
-        usernameField.setText(OracleWizardComponent.getUnprefixedUserName(instance.getIdentityGroup(), instance.getUser()));
+        usernameField.setText(OracleWizardComponent.getUnprefixedUserName(instance.getIdentityDomain(), instance.getUser()));
         passwordField.setText(instance.getPassword());
         sdkTextField.setText(instance.getSDKFolder());
         
@@ -130,7 +130,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         
         if (usernameField.getDocument().equals(e.getDocument())
                 && !usernameField.getText().equals(instance.getUser())) {
-            instance.setUser(OracleWizardComponent.getPrefixedUserName(identityGroupField.getText(), usernameField.getText()));
+            instance.setUser(OracleWizardComponent.getPrefixedUserName(identityDomainField.getText(), usernameField.getText()));
             OracleInstanceManager.getDefault().update(instance);
             return;
         }
@@ -169,10 +169,10 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         usernameField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
-        identityGroupLabel = new javax.swing.JLabel();
+        identityDomainLabel = new javax.swing.JLabel();
         serviceInstanceField = new javax.swing.JTextField();
         serviceInstanceLabel = new javax.swing.JLabel();
-        identityGroupField = new javax.swing.JTextField();
+        identityDomainField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         sdkTextField = new javax.swing.JTextField();
         configureButton = new javax.swing.JButton();
@@ -192,15 +192,15 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.passwordLabel.text")); // NOI18N
 
-        identityGroupLabel.setLabelFor(identityGroupField);
-        org.openide.awt.Mnemonics.setLocalizedText(identityGroupLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.identityGroupLabel.text")); // NOI18N
+        identityDomainLabel.setLabelFor(identityDomainField);
+        org.openide.awt.Mnemonics.setLocalizedText(identityDomainLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.identityDomainLabel.text")); // NOI18N
 
         serviceInstanceField.setEditable(false);
 
         serviceInstanceLabel.setLabelFor(serviceInstanceField);
         org.openide.awt.Mnemonics.setLocalizedText(serviceInstanceLabel, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.serviceInstanceLabel.text")); // NOI18N
 
-        identityGroupField.setEditable(false);
+        identityDomainField.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerCloudGeneral.class, "CustomizerCloudGeneral.jLabel1.text")); // NOI18N
 
@@ -226,7 +226,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                     .addComponent(passwordLabel)
                     .addComponent(usernameLabel)
                     .addComponent(serviceInstanceLabel)
-                    .addComponent(identityGroupLabel)
+                    .addComponent(identityDomainLabel)
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -238,7 +238,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                     .addComponent(adminUrlField)
                     .addComponent(instanceUrlField)
                     .addComponent(serviceInstanceField)
-                    .addComponent(identityGroupField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                    .addComponent(identityDomainField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
@@ -251,8 +251,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(identityGroupLabel)
-                    .addComponent(identityGroupField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(identityDomainLabel)
+                    .addComponent(identityDomainField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serviceInstanceLabel)
@@ -299,8 +299,8 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
     private javax.swing.JTextField cloudUrlField;
     private javax.swing.JLabel cloudUrlLabel;
     private javax.swing.JButton configureButton;
-    private javax.swing.JTextField identityGroupField;
-    private javax.swing.JLabel identityGroupLabel;
+    private javax.swing.JTextField identityDomainField;
+    private javax.swing.JLabel identityDomainLabel;
     private javax.swing.JTextField instanceUrlField;
     private javax.swing.JLabel instanceUrlLabel;
     private javax.swing.JLabel jLabel1;
