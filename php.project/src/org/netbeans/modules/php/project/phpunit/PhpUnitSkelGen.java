@@ -106,9 +106,9 @@ public final class PhpUnitSkelGen extends PhpProgram {
         ExternalProcessBuilder processBuilder = getProcessBuilder()
                     .addArgument(TEST_PARAM)
                     .addArgument(SEPARATOR_PARAM)
-                    .addArgument(sourceClassName)
+                    .addArgument(sanitizeClassName(sourceClassName))
                     .addArgument(sourceClassFile.getAbsolutePath())
-                    .addArgument(testClassName)
+                    .addArgument(sanitizeClassName(testClassName))
                     .addArgument(testClassFile.getAbsolutePath());
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                 .inputVisible(false)
@@ -132,6 +132,14 @@ public final class PhpUnitSkelGen extends PhpProgram {
             Thread.currentThread().interrupt();
         }
         return null;
+    }
+
+    // https://github.com/sebastianbergmann/phpunit-skeleton-generator/issues/1
+    private String sanitizeClassName(String className) {
+        if (className.startsWith("\\")) { // NOI18N
+            className = className.substring(1);
+        }
+        return className;
     }
 
 }
