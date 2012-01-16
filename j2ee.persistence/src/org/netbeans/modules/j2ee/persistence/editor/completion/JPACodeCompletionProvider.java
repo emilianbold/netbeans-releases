@@ -179,12 +179,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         anchorOffset = -1;
                         Source source = Source.create(doc);
                         if (source != null) {
-                            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                            if (!f.isDone()) {
-                                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                                resultSet.setWaitText(NbBundle.getMessage(JPACodeCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                                f.get();
-                            }
+                            ParserManager.parse(Collections.singletonList(source), getTask());
                             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                                 if (results != null) {
                                     resultSet.addAllItems(results);

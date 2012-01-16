@@ -601,7 +601,6 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of EmptyParser class
 
-    @RandomlyFails // usually fails for jglick
     public void testClasspathDeps1() throws IOException, InterruptedException {
         FileUtil.setMIMEType("txt", "text/plain");
         final FileObject srcRoot1 = workDir.createFolder("src1");
@@ -659,10 +658,14 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Thread.sleep(2000);
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
+        //The srcRoot1, srcRoot2 and srcRoot3 should be indexed
+        //The srcRoot2 should be indexed before srcRoot1 because of dependency
+        //The srcRoot3 has no ordering to srcRoot1 and srcRoot2 as there is no dependency
         assertEquals("All roots should be indexed now", 3, indexer.indexedRoots.size());
-        assertEquals("Wrong first root", srcRoot2.getURL(), indexer.indexedRoots.get(0));
-        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(1));
-        assertEquals("Wrong third root", srcRoot3.getURL(), indexer.indexedRoots.get(2));
+        assertTrue(indexer.indexedRoots.contains(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot2.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot3.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot2.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
 
         indexer.indexedRoots.clear();
         mcpi2.addResource(srcRoot4);
@@ -670,10 +673,14 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Thread.sleep(2000);
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
+        //The srcRoot1, srcRoot2 and srcRoot4 should be indexed.
+        //The srcRoot2 and srcRoot4 should be indexed before srcRoot1 because of dependency
         assertEquals("Additional and dependent roots not indexed", 3, indexer.indexedRoots.size());
-        assertEquals("Wrong first root", srcRoot4.getURL(), indexer.indexedRoots.get(0));
-        assertEquals("Wrong second root", srcRoot2.getURL(), indexer.indexedRoots.get(1));
-        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(2));
+        assertTrue(indexer.indexedRoots.contains(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot2.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot4.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot2.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot4.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
 
     }
 
@@ -888,7 +895,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         public boolean workCancelled = false;
 
         public testShuttdown_TimedWork() {
-            super(false, false, false, true, null);
+            super(false, false, false, true, SuspendStatus.NOP, null);
         }
 
         protected @Override boolean getDone() {
