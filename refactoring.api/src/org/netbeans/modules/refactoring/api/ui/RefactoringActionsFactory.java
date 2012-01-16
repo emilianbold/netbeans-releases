@@ -69,6 +69,7 @@ public final class RefactoringActionsFactory {
      * defualt event for actionPerformed
      */
     public static final ActionEvent DEFAULT_EVENT = new ActionEvent(new Object(), 0, null) {
+        @Override
         public void setSource(Object newSource) {        
             throw new UnsupportedOperationException();
         }

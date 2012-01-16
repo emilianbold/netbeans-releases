@@ -48,11 +48,13 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
 
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
 import org.openide.filesystems.FileObject;
 
 
@@ -167,21 +169,28 @@ public class SeveralXmlModelTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "META-INF/faces-config.xml",
                 getFileContent("data/faces-config.xml"));
 
-        createJsfModel().runReadAction(new MetadataModelAction<JsfModel, Void>() {
+        MetadataModel<JsfModel> jsfModel = createJsfModel();
 
-            @Override
+        jsfModel.runReadAction(new MetadataModelAction<JsfModel, Void>() {
             public Void run(JsfModel model) throws Exception {
                 List<FacesManagedBean> elements = model.getElements(FacesManagedBean.class);
                 assertEquals(1 , elements.size());
+                return null;
+            }
+        });
 
+        // wait threshold for next possible XDM model update invokation
+        Thread.sleep(AbstractModelFactory.DELAY_DIRTY);
+        jsfModel.runReadAction(new MetadataModelAction<JsfModel, Void>() {
+            public Void run(JsfModel model) throws Exception {
+                // change content of the file and put there MDB without specified class
                 PropListener l = new PropListener();
-                model.addPropertyChangeListener(l);
+                model.getFacesConfigs().get(0).getModel().addPropertyChangeListener(l);
                 TestUtilities.copyStringToFileObject(srcFO, "META-INF/faces-config.xml",
                         getFileContent("data/three.faces-config.xml"));
                 l.waitForModelUpdate();
-
                 // ManagedBeans without specified class shouldn't be returned
-                elements = model.getElements(FacesManagedBean.class);
+                List<FacesManagedBean> elements = model.getElements(FacesManagedBean.class);
                 assertEquals(0 , elements.size());
                 return null;
             }

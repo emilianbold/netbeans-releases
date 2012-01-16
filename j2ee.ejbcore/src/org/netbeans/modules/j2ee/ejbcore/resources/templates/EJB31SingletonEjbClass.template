@@ -5,7 +5,11 @@
 
 <#if package?? && package != "">
 package ${package};
+</#if>
 
+<#if timerExist>
+import java.util.Date;
+import javax.ejb.Schedule;
 </#if>
 import javax.ejb.Singleton;
 <#if annotationLocalBean??>
@@ -21,8 +25,15 @@ import javax.ejb.LocalBean;
 @LocalBean
 </#if>
 public class ${name} <#if interfaces??>implements ${interfaces} </#if>{
-    
+<#if timerExist>
+    @Schedule(${timerString})
+    <#if exposeTimer>@Override</#if>
+    public void myTimer() {
+        System.out.println("Timer event: " + new Date());
+    }
+</#if>
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
- 
+
 }

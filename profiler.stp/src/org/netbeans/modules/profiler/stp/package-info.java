@@ -1,0 +1,40 @@
+@NbBundle.Messages({
+    "StpMonitorTooltip=If selected, threads running in profiled virtual machine are monitored.",
+    "StpSamplingTooltip=If selected, threads states are updated by periodically polling the profiled application.",
+    "StpOverrideTooltip=If selected, you can override settings used for running the application.",
+    "StpWorkDirTooltip=Runtime working directory of profiled application.",
+    "StpJPlatformTooltip=Java platform used for running the profiled application.",
+    "StpVmArgsTooltip=Extra arguments to pass to the application virtual machine, separated by spaces.",
+    "StpSampleAppTooltip=Lightweight application performance sampling. You can use the Filter to limit the number of profiled classes.",
+    "StpProfileAppTooltip=Profile entire application or define custom profiling roots. You can use the Filter to limit the number of profiled classes.",
+    "StpFilterTooltip=Instrumentation filter - enables you to limit the classes that are profiled.",
+    "StpShowFilterTooltip=Show details of selected instrumentation filter.",
+    "StpEditFilterTooltip=Edit selected instrumentation filter.",
+    "StpManageFilterSetsTooltip=Add, modify or delete the listed filter sets.",
+    "StpUsePpsTooltip=If selected, defined Profiling Points are activated for this profiling session.",
+    "StpShowPpsTooltip=View the Profiling Points that will be active for this profiling session.",
+    "StpExactTimingTooltip=When selected, instrumentation is used for both collecting call trees and method durations.",
+    "StpSampledTimingTooltip=When selected, instrumentation is used only for collecting call trees and sampling is used for measuring method durations.",
+    "StpSleepWaitTooltip=If selected, method durations for Thread.sleep() and Object.wait() methods are not tracked.",
+    "StpFrameworkTooltip=Profile all application's methods (typically starting from main(String[])).",
+    "StpSpawnedTooltip=If selected, classes invoked from new Threads or Runnables are automatically instrumented.",
+    "StpLimitThreadsTooltip=Threshold for number of profiled threads.",
+    "StpCpuTimerTooltip=Use special thread CPU timer for determining method durations (Solaris only).",
+    "StpInstrSchemeTooltip=Algorithm used for determining which classes are instrumented.",
+    "StpMethodInvokeTooltip=If selected, simple Method.invoke() calls are profiled.",
+    "StpGetterSetterTooltip=If selected, simple getter/setter calls are profiled.",
+    "StpEmptyMethodsTooltip=If selected, empty method calls are profiled.",
+    "StpAllocTooltip=Records only objects allocations.",
+    "StpLivenessTooltip=Records the full object lifecycle of allocated objects.",
+    "StpTrackEveryTooltip=Track only every n-th object to reduce profiling overhead. The total number of allocated objects is not affected.",
+    "StpStackTraceTooltip=Collect information on method calls allocating the objects.",
+    "StpFullDepthTooltip=Record full call stack.",
+    "StpLimitDepthTooltip=Limit the depth of the recorded call stack to lower profiling overhead.",
+    "StpRunGcTooltip=Invoke garbage collection when taking memory snapshot to collect only live objects.",
+    "StpSamplingFrequencyLabel=Sampling frequency:",
+    "StpSamplingFrequencyTooltip=Customize sampling frequency of the profiler."
+})
+package org.netbeans.modules.profiler.stp;
+
+import org.openide.util.NbBundle;
+

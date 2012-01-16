@@ -57,13 +57,13 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitTag;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClient;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -112,32 +112,13 @@ public class RepositoryInfo {
     private GitRepositoryState repositoryState;
     private final String name;
     
-    private static final GitBranch FAKE_BRANCH = new GitBranch() {
-        @Override
-        public String getName () {
-            return GitBranch.NO_BRANCH;
-        }
-        @Override
-        public boolean isRemote () {
-            return false;
-        }
-        @Override
-        public boolean isActive () {
-            return true;
-        }
-        @Override
-        public String getId () {
-            return ""; //NOI18N
-        }
-    };
-
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
         this.name = root.getName();
         this.branches = new HashMap<String, GitBranch>();
         this.tags = new HashMap<String, GitTag>();
         this.remotes = new HashMap<String, GitRemoteConfig>();
-        this.activeBranch = FAKE_BRANCH;
+        this.activeBranch = GitBranch.NO_BRANCH_INSTANCE;
         this.repositoryState = GitRepositoryState.SAFE;
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
@@ -177,12 +158,12 @@ public class RepositoryInfo {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
                 GitClient client = Git.getInstance().getClient(root);
                 // get all needed information at once before firing events. Thus we supress repeated annotations' refreshing
-                Map<String, GitBranch> newBranches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                Map<String, GitBranch> newBranches = client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR);
                 setBranches(newBranches);
-                Map<String, GitTag> newTags = client.getTags(ProgressMonitor.NULL_PROGRESS_MONITOR, false);
+                Map<String, GitTag> newTags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
                 setTags(newTags);
                 refreshRemotes(client);
-                GitRepositoryState newState = client.getRepositoryState(ProgressMonitor.NULL_PROGRESS_MONITOR);
+                GitRepositoryState newState = client.getRepositoryState(GitUtils.NULL_PROGRESS_MONITOR);
                 // now set new values and fire events when needed
                 setActiveBranch(newBranches);
                 setRepositoryState(newState);
@@ -293,6 +274,10 @@ public class RepositoryInfo {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * May be <code>null</code> if repository could not be initialized
+     * @return 
+     */
     public GitBranch getActiveBranch () {
         return activeBranch;
     }
@@ -392,7 +377,7 @@ public class RepositoryInfo {
     }
 
     private void refreshRemotes (GitClient client) throws GitException {
-        Map<String, GitRemoteConfig> newRemotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitRemoteConfig> newRemotes = client.getRemotes(GitUtils.NULL_PROGRESS_MONITOR);
         setRemotes(newRemotes);
     }
 

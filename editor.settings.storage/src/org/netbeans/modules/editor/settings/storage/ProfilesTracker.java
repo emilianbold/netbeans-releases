@@ -223,6 +223,9 @@ public final class ProfilesTracker {
     private final String LOCK = new String("ProfilesTracker.LOCK"); //NOI18N
     private Map<String, ProfileDescription> profiles = Collections.<String, ProfileDescription>emptyMap();
     private Map<String, ProfileDescription> profilesByDisplayName = Collections.<String, ProfileDescription>emptyMap();
+
+    //for tests only:
+    static boolean synchronous = false;
     
     private final RequestProcessor.Task task = MimeTypesTracker.RP.create(new Runnable() {
         public @Override void run() {
@@ -378,7 +381,8 @@ public final class ProfilesTracker {
         private void notifyRebuild(FileObject file) {
             String path = file.getPath();
             if (path.startsWith(mimeTypes.getBasePath())) {
-                task.schedule(100);
+                if (synchronous) rebuild();
+                else task.schedule(1000);
             }
         }
     } // End of Listener class

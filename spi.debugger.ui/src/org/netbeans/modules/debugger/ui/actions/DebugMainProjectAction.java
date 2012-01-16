@@ -73,10 +73,6 @@ import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -158,10 +154,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
             }
         });
         try {
-            FileObject fo = FileUtil.getConfigFile("Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance");
-            DataObject obj = DataObject.find(fo);
-            InstanceCookie ic = obj.getLookup().lookup(InstanceCookie.class);
-            ConnectAction ca = (ConnectAction) ic.instanceCreate();
+            Action ca = Actions.forID("Debug", "org.netbeans.modules.debugger.ui.actions.ConnectAction");
             JMenuItem item2 = new JMenuItem(Actions.cutAmpersand((String) ca.getValue(NAME)));
             Actions.connect(item2, ca);
             menu.add(item2);

@@ -71,9 +71,8 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testPurchaseOrder2"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter1"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter2"));
-        //issue #196598
-        //suite.addTest(new BasicCompletionTest("testEmptyTag1"));
-        //suite.addTest(new BasicCompletionTest("testEmptyTag2"));
+        suite.addTest(new BasicCompletionTest("testEmptyTag1"));
+        suite.addTest(new BasicCompletionTest("testEmptyTag2"));
         suite.addTest(new BasicCompletionTest("testEmptyTag3"));
         suite.addTest(new BasicCompletionTest("testEmptyTag4"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));

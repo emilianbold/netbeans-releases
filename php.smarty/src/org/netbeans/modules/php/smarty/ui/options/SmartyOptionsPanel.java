@@ -174,6 +174,42 @@ public class SmartyOptionsPanel extends JPanel {
         changeSupport.fireChange();
     }
 
+    protected void update() {
+        setSmartyVersion(getOptions().getSmartyVersion());
+        setOpenDelimiter(getOptions().getDefaultOpenDelimiter());
+        setCloseDelimiter(getOptions().getDefaultCloseDelimiter());
+        setDepthOfScanning(getOptions().getScanningDepth());
+    }
+
+    protected void applyChanges() {
+        getOptions().setSmartyVersion(getSmartyVersion());
+        getOptions().setDefaultOpenDelimiter(getOpenDelimiter());
+        getOptions().setDefaultCloseDelimiter(getCloseDelimiter());
+        getOptions().setScanningDepth(getDepthOfScanning());
+    }
+
+    protected boolean valid() {
+        // warnings
+        if (getOpenDelimiter().equals("") || getCloseDelimiter().equals("")) {  //NOI18N
+            setError(NbBundle.getMessage(SmartyOptionsPanel.class, "WRN_EmptyDelimiterFields")); //NOI18N
+            return false;
+        }
+
+        // too deep level for scanning
+        if (getDepthOfScanning() > 1) {
+            setWarning(NbBundle.getMessage(SmartyOptionsPanel.class, "WRN_TooDeepScanningLevel")); //NOI18N
+            return true;
+        }
+
+        // everything ok
+        setWarning(" "); // NOI18N
+        return true;
+    }
+
+    private SmartyOptions getOptions() {
+        return SmartyOptions.getInstance();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

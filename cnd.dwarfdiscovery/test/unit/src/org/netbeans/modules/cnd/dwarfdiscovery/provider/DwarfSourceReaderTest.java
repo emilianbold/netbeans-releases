@@ -762,7 +762,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
             if (units != null && units.hasNext()) {
                 while (units.hasNext()) {
                     CompilationUnit cu = units.next();
-                    BaseDwarfProvider.CompilerSettings settings = new BaseDwarfProvider.CompilerSettings(new ProjectProxy() {
+                    CompilerSettings settings = new CompilerSettings(new ProjectProxy() {
                         @Override
                         public boolean createSubProjects() { return false; }
                         @Override

@@ -440,7 +440,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             //faces servlet mapping
             String facesMapping =  panel == null ? DEFAULT_MAPPING : panel.getURLPattern();;//"/*";
 
-            boolean isJSF20 = false;
+            boolean isJSF20, isJSF21;
             Library jsfLibrary = null;
             if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
                 jsfLibrary = panel.getLibrary();
@@ -451,13 +451,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (jsfLibrary != null) {
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
                 isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+                isJSF21 = Util.containsClass(content, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS);
             } else {
                 if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER && panel.getServerLibrary() != null) {
                     isJSF20 = Version.fromJsr277NotationWithFallback("2.0").isBelowOrEqual(
                             panel.getServerLibrary().getSpecificationVersion());
+                    isJSF21 = Version.fromJsr277NotationWithFallback("2.1").isAboveOrEqual(
+                            panel.getServerLibrary().getSpecificationVersion());
                 } else {
                     ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
                     isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
+                    isJSF21 = classpath.findResource(JSFUtils.JSF_2_1__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
                 }
             }
 
@@ -492,7 +496,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                     boolean faceletsEnabled = panel.isEnableFacelets();
 
-                    if (isJSF20) {
+                    if (isJSF20 || isJSF21) {
                         InitParam contextParam = (InitParam) ddRoot.createBean("InitParam");    //NOI18N
                         contextParam.setParamName(JSFUtils.FACES_PROJECT_STAGE);
                         contextParam.setParamValue("Development"); //NOI18N
@@ -589,7 +593,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 if (ddRoot != null) {
                     Profile profile = webModule.getJ2eeProfile();
                     if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-                        if (isJSF20)
+                        if (isJSF21)
+                            facesConfigTemplate = "faces-config_2_1.xml"; //NOI18N
+                        else if (isJSF20)
                             facesConfigTemplate = "faces-config_2_0.xml"; //NOI18N
                         else
                             facesConfigTemplate = "faces-config_1_2.xml"; //NOI18N
@@ -646,7 +652,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 application.addViewHandler(viewHandler);
                             }
 //                            // A component library may require a render kit
-//                            if (isJSF20 && panel.getJsfComponentDescriptor() != null) {
+//                            if (isJSF20Plus && panel.getJsfComponentDescriptor() != null) {
 //                                String drki = panel.getJsfComponentDescriptor().getDefaultRenderKitId();
 //                                if (drki != null) {
 //                                    List<DefaultRenderKitId> drkits = application.getDefaultRenderKitIds();
@@ -689,7 +695,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
 
 //                if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){
-//                    if (isJSF20) {
+//                    if (isJSF20Plus) {
 //                        is= JSFFrameworkProvider.class.getClassLoader()
 //                            .getResourceAsStream(FL_RESOURCE_FOLDER + TEMPLATE_XHTML2);
 //                    } else {
@@ -704,13 +710,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     FileObject template = FileUtil.getConfigRoot().getFileObject(WELCOME_XHTML_TEMPLATE);
                     HashMap<String, Object> params = new HashMap<String, Object>();
-                    if (isJSF20) {
+                    if (isJSF20 || isJSF21) {
                         params.put("isJSF20", Boolean.TRUE);    //NOI18N
                     }
                     JSFPaletteUtilities.expandJSFTemplate(template, params, target);
                 }
 //                String defaultCSSFolder = CSS_FOLDER;
-//                if (isJSF20) {
+//                if (isJSF20Plus) {
 //                    defaultCSSFolder = CSS_FOLDER2;
 //                }
 //                if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+"/"+DEFAULT_CSS) == null){   //NOI18N

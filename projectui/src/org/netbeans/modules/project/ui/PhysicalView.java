@@ -59,12 +59,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,14 +85,11 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import static org.netbeans.modules.project.ui.Bundle.*;
 
 /**
  * Support for creating logical views.
@@ -102,6 +100,7 @@ public class PhysicalView {
     private PhysicalView() {}
 
     private static final Logger LOG = Logger.getLogger(PhysicalView.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(PhysicalView.class);
 
     private static final class GroupNodeInfo {
         public final boolean isProjectDir;
@@ -181,6 +180,7 @@ public class PhysicalView {
         private ProjectInformation pi;
         private SourceGroup group;
         private boolean isProjectDir;
+        private Boolean initialized;
 
         public GroupNode(Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(),
@@ -194,10 +194,31 @@ public class PhysicalView {
             group.addPropertyChangeListener( WeakListeners.propertyChange( this, group ) );
         }
 
+        private boolean initialized() {
+            synchronized (RP) {
+                if (initialized != null) {
+                    return initialized;
+                } else {
+                    initialized = false;
+                    RP.post(new Runnable() {
+                        @Override public void run() {
+                            pi.getDisplayName();
+                            synchronized (RP) {
+                                initialized = true;
+                            }
+                            fireNameChange(null, null);
+                            fireDisplayNameChange(null, null);
+                        }
+                    });
+                    return false;
+                }
+            }
+        }
+
         // XXX May need to change icons as well
         
         public @Override String getName() {
-            if ( isProjectDir ) {
+            if (isProjectDir && initialized()) {
                 return pi.getName();
             }
             else {
@@ -213,7 +234,7 @@ public class PhysicalView {
         @Messages({"# {0} - display name of the group", "# {1} - display name of the project", "# {2} - original name of the folder", "FMT_PhysicalView_GroupName={1} - {0}"})
         public @Override String getDisplayName() {
             if ( isProjectDir ) {
-                return pi.getDisplayName();
+                return initialized() ? pi.getDisplayName() : group.getDisplayName();
             }
             else {
                 return FMT_PhysicalView_GroupName(group.getDisplayName(), pi.getDisplayName(), getOriginal().getDisplayName());
@@ -229,6 +250,10 @@ public class PhysicalView {
 
         public @Override boolean canRename() {
             return false;
+        }
+
+        @Override public Node.PropertySet[] getPropertySets() {
+            return new Node.PropertySet[0];
         }
 
         public @Override boolean canCut() {

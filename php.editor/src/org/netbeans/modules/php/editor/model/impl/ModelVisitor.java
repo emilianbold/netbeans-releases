@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
+import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -125,8 +126,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -152,6 +157,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private final PHPParseResult info;
     private boolean  askForEditorExtensions = true;
     private List<PhpBaseElement> baseElements;
+    private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<Scope, Map<String, AssignmentImpl>>();
 
     private boolean lazyScan = true;
 
@@ -255,7 +261,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (expression instanceof ClassInstanceCreation) {
                 ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
                 ASTNodeInfo<ClassInstanceCreation> inf = ASTNodeInfo.create(instanceCreation);
-                typeName = inf.getQualifiedName().toString();
+                String pureTypeName = inf.getQualifiedName().toString();
+                typeName = VariousUtils.qualifyTypeNames(pureTypeName, node.getStartOffset(), currentScope);
             } else if (expression instanceof VariableBase) {
                 typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
                 if (typeName != null) {
@@ -264,11 +271,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     for (VariableName variable : allVariables) {
                         String name = variable.getName();
                         String type = resolveVariableType(name, functionScope, node);
-                        if (type == null) {
+                        String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
+                        if (qualifiedType == null) {
                             var2Type = Collections.emptyMap();
                             break;
                         }
-                        var2Type.put(name, type);
+                        var2Type.put(name, qualifiedType);
                     }
                     if (!var2Type.isEmpty()) {
                         typeName = VariousUtils.replaceVarNames(typeName, var2Type);
@@ -418,7 +426,33 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
+    public void visit(UseTraitStatementPart node) {
+        super.addToPath(node);
+    }
+
+    @Override
+    public void visit(TraitMethodAliasDeclaration node) {
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(TraitConflictResolutionDeclaration node) {
+        super.visit(node);
+    }
+
+    @Override
     public void visit(ClassDeclaration node) {
+        modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
+        try {
+            super.visit(node);
+        } finally {
+            modelBuilder.reset();
+        }
+    }
+
+    @Override
+    public void visit(TraitDeclaration node) {
         modelBuilder.build(node, occurencesBuilder);
         checkComments(node);
         try {
@@ -668,18 +702,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {
         Map<String, AssignmentImpl> allAssignments = new HashMap<String, AssignmentImpl>();
-        if (scope instanceof VariableScope) {
-            VariableScope variableScope = (VariableScope) scope;
-            Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
-            for (VariableName variableName : declaredVariables) {
-                if (variableName instanceof VariableNameImpl) {
-                    VariableNameImpl vni = (VariableNameImpl) variableName;
-                    AssignmentImpl ai = vni.findVarAssignment(leftHandSide.getStartOffset());
-                    if (ai != null) {
-                        allAssignments.put(vni.getName(), ai);
+        Map<String, AssignmentImpl> cachedMap = assignmentMapCache.get(scope);
+        if (cachedMap == null || cachedMap.isEmpty()) {
+            if (scope instanceof VariableScope) {
+                VariableScope variableScope = (VariableScope) scope;
+                Collection<? extends VariableName> declaredVariables = variableScope.getDeclaredVariables();
+                for (VariableName variableName : declaredVariables) {
+                    if (variableName instanceof VariableNameImpl) {
+                        VariableNameImpl vni = (VariableNameImpl) variableName;
+                        AssignmentImpl ai = vni.findVarAssignment(leftHandSide.getStartOffset());
+                        if (ai != null) {
+                            allAssignments.put(vni.getName(), ai);
+                        }
                     }
                 }
             }
+            assignmentMapCache.save(scope, allAssignments);
         }
         return allAssignments;
     }
@@ -783,6 +821,13 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Variable field = originalNode.getField();
             if (field instanceof ReflectionVariable) {
                 return;
+            }
+            if (field instanceof ArrayAccess) {
+                ArrayAccess arrayAccess = (ArrayAccess) field;
+                VariableBase name = arrayAccess.getName();
+                if (name instanceof ReflectionVariable) {
+                    return;
+                }
             }
         }
         if (showAssertFor185229) {

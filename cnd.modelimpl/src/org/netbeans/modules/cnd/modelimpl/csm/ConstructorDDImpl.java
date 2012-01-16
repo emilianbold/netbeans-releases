@@ -74,9 +74,8 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
     
-    public static ConstructorDDImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static ConstructorDDImpl createConstructor(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
-        CsmFile file = cls.getContainingFile();
         
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -128,7 +127,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         constructorDDImpl.setCompoundStatement(body);
         constructorDDImpl.initializers = AstRenderer.renderConstructorInitializersList(ast, constructorDDImpl, constructorDDImpl.getContainingFile());
         postObjectCreateRegistration(global, constructorDDImpl);
-        nameHolder.addReference(cls.getContainingFile(), constructorDDImpl);
+        nameHolder.addReference(file, constructorDDImpl);
         return constructorDDImpl;
     }
 

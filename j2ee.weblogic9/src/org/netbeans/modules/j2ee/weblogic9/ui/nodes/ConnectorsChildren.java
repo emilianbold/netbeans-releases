@@ -112,7 +112,7 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
         protected boolean createKeys( List<ResourceNode> children ) {
             WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
                 List<String> jndiNames = support
                         .executeAction(new WLConnectionSupport.
@@ -191,7 +191,7 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
         protected boolean createKeys( List<ResourceNode> children ) {
             WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
                 List<String> jndiNames = support
                         .executeAction(new WLConnectionSupport.
@@ -278,7 +278,7 @@ class ConnectorsChildren extends WLNodeChildren<ResourceNode> {
         protected boolean createKeys( List<ResourceNode> children ) {
             WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
                 List<String> jndiNames = support
                         .executeAction(new WLConnectionSupport.JMXRuntimeAction<List<String>>()

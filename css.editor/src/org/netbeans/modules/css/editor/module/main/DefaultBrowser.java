@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.net.URL;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 
 /**
@@ -55,8 +54,7 @@ public class DefaultBrowser extends Browser {
     
     private String iconBase;
     private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
-    private AtomicReference<URL> active = new AtomicReference<URL>();
-    private AtomicReference<URL> inactive = new AtomicReference<URL>();
+    private URL active, inactive;
 
     public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
         this.name = name;
@@ -77,19 +75,21 @@ public class DefaultBrowser extends Browser {
     }
 
     @Override
-    public URL getActiveIcon() {
-        active.compareAndSet(null, DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png")); //NOI18N
-
-        return active.get();
+    public synchronized URL getActiveIcon() {
+        if(active == null) {
+            active = DefaultBrowser.class.getResource(
+                DEFAULT_ICONS_LOCATION + iconBase + ".png"); //NOI18N
+        }
+        return active;
     }
 
     @Override
-    public URL getInactiveIcon() {
-        inactive.compareAndSet(null, DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png")); //NOI18N
-
-        return inactive.get();
+    public synchronized URL getInactiveIcon() {
+        if(inactive == null) {
+            inactive = DefaultBrowser.class.getResource(
+                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
+        }
+        return inactive;
     }
 
     @Override

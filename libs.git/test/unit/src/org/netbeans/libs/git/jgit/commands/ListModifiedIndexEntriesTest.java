@@ -74,16 +74,16 @@ public class ListModifiedIndexEntriesTest extends AbstractGitTestCase {
 
         write(f, "modification");
 
-        File[] modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals(0, modifications.length);
-        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertEquals(0, modifications.length);
 
         add(f);
-        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals(1, modifications.length);
         assertTrue(Arrays.equals(new File[] { f }, modifications));
-        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertEquals(1, modifications.length);
         assertTrue(Arrays.equals(new File[] { f }, modifications));
     }
@@ -99,21 +99,21 @@ public class ListModifiedIndexEntriesTest extends AbstractGitTestCase {
         write(f1, "modification");
         write(f2, "modification 2");
 
-        File[] modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f1, f2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f1, f2 }, NULL_PROGRESS_MONITOR);
         assertEquals(0, modifications.length);
-        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertEquals(0, modifications.length);
 
         add(f1, f2);
-        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f1 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f1 }, NULL_PROGRESS_MONITOR);
         assertEquals(1, modifications.length);
         assertTrue(Arrays.equals(new File[] { f1 }, modifications));
 
-        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { f2 }, NULL_PROGRESS_MONITOR);
         assertEquals(1, modifications.length);
         assertTrue(Arrays.equals(new File[] { f2 }, modifications));
 
-        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, NULL_PROGRESS_MONITOR);
         assertEquals(2, modifications.length);
         assertEquals(new HashSet<File>(Arrays.asList(new File[] { f1, f2 })), new HashSet<File>(Arrays.asList(modifications)));
     }

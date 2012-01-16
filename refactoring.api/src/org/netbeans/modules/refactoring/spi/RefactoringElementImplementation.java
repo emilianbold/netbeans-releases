@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
  * @author Martin Matula
  * @author Jan Becicka
  * @see RefactoringElement
- * @see SimpleRefactoringElementImpl
+ * @see SimpleRefactoringElementImplementation
  * @see RefactoringSession
  * @see RefactoringElementsBag
  */
@@ -97,7 +97,7 @@ public interface RefactoringElementImplementation {
      *  Implementation can be impty if the change is done using some high level
      *  transaction model
      * @see BackupFacility
-     * @see RefactoringElementsBag#registerFileChange
+     * @see RefactoringElementsBag#addFileChange
      * @see RefactoringElementsBag#registerTransaction
      * @see Transaction
      * @see RefactoringElementImplementation#performChange
@@ -110,7 +110,7 @@ public interface RefactoringElementImplementation {
      *  Implementation can be impty if the change is done using some high level
      *  transaction model
      * @see BackupFacility
-     * @see RefactoringElementsBag#registerFileChange
+     * @see RefactoringElementsBag#addFileChange
      * @see RefactoringElementsBag#registerTransaction
      * @see Transaction
      * @see RefactoringElementImplementation#performChange

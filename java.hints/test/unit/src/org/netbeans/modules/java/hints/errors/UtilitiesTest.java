@@ -43,7 +43,10 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import javax.lang.model.type.TypeMirror;
@@ -116,6 +119,11 @@ public class UtilitiesTest extends NbTestCase {
         performNameGuessTest("package test; public class Test {public void t() {t(this);}}", 54, "aThis");
     }
     
+    public void testShortName1() throws Exception {
+        //TODO: better display name:
+        performShortNameTest("package test; public class Test { public void t(Object... obj) { | }}", "((boolean[]) obj)[i]", "...(boolean)[]");
+    }
+
     public void testNameGuessKeywordNoShortName2() throws Exception {
         assertEquals("aDo", Utilities.adjustName("do"));
     }
@@ -201,6 +209,20 @@ public class UtilitiesTest extends NbTestCase {
         String name = Utilities.guessName(info, tp);
         
         assertEquals(desiredName, name);
+    }
+
+    private void performShortNameTest(String code, String expression, String expectedName) throws Exception {
+        int scopePos = code.indexOf('|');
+
+        prepareTest(code.replace("|", ""));
+
+        TreePath tp = info.getTreeUtilities().pathFor(scopePos);
+        Scope s = info.getTrees().getScope(tp);
+        ExpressionTree parsed = info.getTreeUtilities().parseExpression(expression, new SourcePositions[1]);
+
+        String name = Utilities.shortDisplayName(info, parsed);
+
+        assertEquals(expectedName, name);
     }
 
     private void performCapturedTypeTest(String code, String golden) throws Exception {

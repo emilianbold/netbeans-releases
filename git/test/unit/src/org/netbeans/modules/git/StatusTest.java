@@ -67,11 +67,11 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
@@ -106,7 +106,7 @@ public class StatusTest extends AbstractGitTestCase {
     public void testStatusOnNoRepository () throws Exception {
         File folder = createFolder(repositoryLocation.getParentFile(), "folder");
         GitClient client = getClient(folder);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { folder }, GitUtils.NULL_PROGRESS_MONITOR);
         assertTrue(statuses.isEmpty());
     }
 
@@ -538,7 +538,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         add(repositoryLocation);
         commit(repositoryLocation);
-        Map<File, GitStatus> statuses = getClient(repositoryLocation).getStatus(new File[] { repositoryLocation }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = getClient(repositoryLocation).getStatus(new File[] { repositoryLocation }, GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(statuses.get(file).isTracked());
         assertFalse(statuses.get(folder).isTracked());
         assertFalse(statuses.get(folder2).isTracked());
@@ -741,7 +741,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         // rename
         add(f);
-        String commitId = getClient(repositoryLocation).commit(files, "commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        String commitId = getClient(repositoryLocation).commit(files, "commit", null, null, GitUtils.NULL_PROGRESS_MONITOR).getRevision();
         delete(false, f);
         File f2 = new File(repositoryLocation, "copy");
         write(f2, "blabla");

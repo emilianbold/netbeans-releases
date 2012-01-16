@@ -45,7 +45,7 @@ package org.netbeans.modules.git.ui.fetch;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
@@ -91,6 +91,7 @@ public class FetchAction extends GetRemoteChangesAction {
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
         FetchWizard wiz = new FetchWizard(repository, remotes);
         if (wiz.show()) {
+            Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
             fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs());
         }
     }
@@ -101,7 +102,7 @@ public class FetchAction extends GetRemoteChangesAction {
             protected void perform () {
                 try {
                     GitClient client = getClient();
-                    Map<String, GitTransportUpdate> updates = client.fetch(remote, fetchRefSpecs, this);
+                    Map<String, GitTransportUpdate> updates = client.fetch(remote, fetchRefSpecs, getProgressMonitor());
                     log(updates, getLogger());
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);

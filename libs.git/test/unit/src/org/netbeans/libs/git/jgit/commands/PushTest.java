@@ -84,21 +84,15 @@ public class PushTest extends AbstractGitTestCase {
         workDir = getWorkingDirectory();
         repository = getRepository(getLocalGitRepository());
     }
-
-    public void testRemoteUpdateStatus () {
-        for (RemoteRefUpdate.Status status : RemoteRefUpdate.Status.values()) {
-            assertNotNull(GitRefUpdateResult.valueOf(status.name()));
-        }
-    }
     
     public void testPushNewBranch () throws Exception {
         String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();
-        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR).size());
         File f = new File(workDir, "f");
         add(f);
-        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
@@ -107,9 +101,9 @@ public class PushTest extends AbstractGitTestCase {
         // adding another branch
         write(f, "huhu");
         add(f);
-        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/anotherBranch" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/anotherBranch" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(2, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
         assertEquals(newid, remoteBranches.get("anotherBranch").getId());
@@ -118,12 +112,12 @@ public class PushTest extends AbstractGitTestCase {
     
     public void testPushDeleteBranch () throws Exception {
         String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();
-        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR).size());
         File f = new File(workDir, "f");
         add(f);
-        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "refs/heads/master:refs/heads/newbranch" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "refs/heads/master:refs/heads/newbranch" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(2, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
         assertEquals(2, updates.size());
@@ -131,8 +125,8 @@ public class PushTest extends AbstractGitTestCase {
         assertUpdate(updates.get("newbranch"), "master", "newbranch", id, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
 
         // deleting branch
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { ":refs/heads/newbranch" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { ":refs/heads/newbranch" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
         assertUpdate(updates.get("newbranch"), null, "newbranch", null, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
@@ -140,12 +134,12 @@ public class PushTest extends AbstractGitTestCase {
     
     public void testPushChange () throws Exception {
         String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();
-        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR).size());
         File f = new File(workDir, "f");
         add(f);
-        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
@@ -154,9 +148,9 @@ public class PushTest extends AbstractGitTestCase {
         // modification
         write(f, "huhu");
         add(f);
-        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
@@ -165,31 +159,31 @@ public class PushTest extends AbstractGitTestCase {
     
     public void testPushUpdateInRemotes () throws Exception {
         String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();
-        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR).size());
         File f = new File(workDir, "f");
         add(f);
-        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
         assertUpdate(updates.get("master"), "master", "master", id, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
         
-        getClient(workDir).pull(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/remotes/origin/master" }), "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).pull(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/remotes/origin/master" }), "master", NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = getClient(workDir).getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals(id, branches.get("origin/master").getId());
 
         // modification
         write(f, "huhu");
         add(f);
-        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        GitPushResult result = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        GitPushResult result = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR);
         updates = result.getRemoteRepositoryUpdates();
         Map<String, GitTransportUpdate> localUpdates = result.getLocalRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
+        branches = getClient(workDir).getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         // not yet updated, tracking branches has not been set
         assertEquals(0, localUpdates.size());
@@ -198,12 +192,12 @@ public class PushTest extends AbstractGitTestCase {
         // another modification
         write(f, "huhu2");
         add(f);
-        newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        result = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Arrays.asList(new String[] { "refs/heads/master:refs/remotes/origin/master" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        result = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Arrays.asList(new String[] { "refs/heads/master:refs/remotes/origin/master" }), NULL_PROGRESS_MONITOR);
         updates = result.getRemoteRepositoryUpdates();
         localUpdates = result.getLocalRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
+        branches = getClient(workDir).getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals(1, localUpdates.size());
         assertUpdate(localUpdates.get("master"), "origin/master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.FAST_FORWARD);
@@ -221,25 +215,25 @@ public class PushTest extends AbstractGitTestCase {
         write(f, "huhu3");
         add(f);
         id = newid;
-        newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        result = getClient(workDir).push("origin", Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        result = getClient(workDir).push("origin", Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR);
         updates = result.getRemoteRepositoryUpdates();
         localUpdates = result.getLocalRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
-        branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = getClient(workDir).getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(2, branches.size());
         assertEquals(1, localUpdates.size());
         assertUpdate(localUpdates.get("master"), "origin/master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.FAST_FORWARD);
         assertEquals(newid, branches.get("origin/master").getId());
         
         // and what about adding a new branch, does it show among remotes?
-        result = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/newbranch" }), Arrays.asList(new String[] { "refs/heads/newbranch:refs/remotes/origin/newbranch" }), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        result = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/newbranch" }), Arrays.asList(new String[] { "refs/heads/newbranch:refs/remotes/origin/newbranch" }), NULL_PROGRESS_MONITOR);
         updates = result.getRemoteRepositoryUpdates();
         localUpdates = result.getLocalRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(2, remoteBranches.size());
-        branches = getClient(workDir).getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        branches = getClient(workDir).getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(3, branches.size());
         assertEquals(1, localUpdates.size());
         assertUpdate(localUpdates.get("newbranch"), "origin/newbranch", "newbranch", newid, null, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.NEW);
@@ -248,12 +242,12 @@ public class PushTest extends AbstractGitTestCase {
     
     public void testPushRejectNonFastForward () throws Exception {
         String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();
-        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR).size());
         File f = new File(workDir, "f");
         add(f);
-        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        Map<String, GitBranch> remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(id, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
@@ -262,28 +256,28 @@ public class PushTest extends AbstractGitTestCase {
         // modification
         write(f, "huhu");
         add(f);
-        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
         assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);
         
-        getClient(workDir).createBranch("localbranch", id, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        getClient(workDir).checkoutRevision("localbranch", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).createBranch("localbranch", id, NULL_PROGRESS_MONITOR);
+        getClient(workDir).checkoutRevision("localbranch", true, NULL_PROGRESS_MONITOR);
         write(f, "huhu2");
         add(f);
-        id = getClient(workDir).commit(new File[] { f }, "some change before merge", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "+refs/heads/localbranch:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        id = getClient(workDir).commit(new File[] { f }, "some change before merge", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "+refs/heads/localbranch:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
         assertUpdate(updates.get("master"), "localbranch", "master", id, newid, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.REJECTED_NONFASTFORWARD);
         
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/localbranch:refs/heads/master" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/localbranch:refs/heads/master" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteBranches = getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteBranches.size());
         assertEquals(newid, remoteBranches.get("master").getId());
         assertEquals(1, updates.size());
@@ -292,13 +286,13 @@ public class PushTest extends AbstractGitTestCase {
 
     public void testPushTag () throws Exception {
         String remoteUri = getRemoteRepository().getWorkTree().toURI().toString();
-        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR).size());
+        assertEquals(0, getClient(workDir).listRemoteBranches(remoteUri, NULL_PROGRESS_MONITOR).size());
         File f = new File(workDir, "f");
         add(f);
-        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        GitTag tag = getClient(workDir).createTag("my-tag", id, "tag message", false, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        Map<String, String> remoteTags = getClient(workDir).listRemoteTags(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String id = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        GitTag tag = getClient(workDir).createTag("my-tag", id, "tag message", false, false, NULL_PROGRESS_MONITOR);
+        Map<String, GitTransportUpdate> updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        Map<String, String> remoteTags = getClient(workDir).listRemoteTags(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(1, remoteTags.size());
         assertEquals(tag.getTagId(), remoteTags.get("my-tag"));
         assertEquals(2, updates.size());
@@ -308,10 +302,10 @@ public class PushTest extends AbstractGitTestCase {
         // modification, updating tag fails
         write(f, "huhu");
         add(f);
-        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        GitTag newTag = getClient(workDir).createTag("my-tag", newid, "tag message", false, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "+refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), ProgressMonitor.NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
-        remoteTags = getClient(workDir).listRemoteTags(remoteUri, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String newid = getClient(workDir).commit(new File[] { f }, "bbb", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        GitTag newTag = getClient(workDir).createTag("my-tag", newid, "tag message", false, true, NULL_PROGRESS_MONITOR);
+        updates = getClient(workDir).push(remoteUri, Arrays.asList(new String[] { "refs/heads/master:refs/heads/master", "+refs/tags/my-tag:refs/tags/my-tag" }), Collections.<String>emptyList(), NULL_PROGRESS_MONITOR).getRemoteRepositoryUpdates();
+        remoteTags = getClient(workDir).listRemoteTags(remoteUri, NULL_PROGRESS_MONITOR);
         assertEquals(tag.getTagId(), remoteTags.get("my-tag"));
         assertEquals(2, updates.size());
         assertUpdate(updates.get("master"), "master", "master", newid, id, new URIish(remoteUri).toString(), Type.BRANCH, GitRefUpdateResult.OK);

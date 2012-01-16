@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -72,7 +72,7 @@ public class Installer extends ModuleInstall {
     private static final Logger LOG = Logger.getLogger (Installer.class.getName ());
     // XXX: copy from o.n.upgrader
     private static final List<String> VERSION_TO_CHECK =
-            Arrays.asList (".netbeans/7.0", ".netbeans/6.9"); //NOI18N
+            Arrays.asList (".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9"); //NOI18N
     private static final String IMPORTED = "imported"; // NOI18N
 
     @Override

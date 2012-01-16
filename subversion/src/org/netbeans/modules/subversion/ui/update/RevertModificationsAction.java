@@ -139,7 +139,7 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
             @Override
             public void perform() {
                 performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), !revertModifications.revertRecursively(), ctx, this);

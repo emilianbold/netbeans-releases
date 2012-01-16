@@ -72,8 +72,11 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.ejbcore.action.BusinessMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.TimerOptions;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -110,7 +113,6 @@ public final class SessionGenerator {
     private final boolean isSimplified;
 //    private final boolean hasBusinessInterface;
     private final boolean isXmlBased;
-    private final TimerOptions timerOptions;
 
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -125,15 +127,18 @@ public final class SessionGenerator {
     private final String packageName;
     private final String packageNameWithDot;
 
-    private final Map<String, String> templateParameters;
+    private final Map<String, Object> templateParameters;
 
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal,
-            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, TimerOptions timerOptions) {
-        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified, hasBusinessInterface, isXmlBased, timerOptions, false);
+            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased,
+            TimerOptions timerOptions, boolean exposeTimer) {
+        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, sessionType, isSimplified,
+                hasBusinessInterface, isXmlBased, timerOptions, exposeTimer, false);
     }
 
     protected SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal,
-            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased, TimerOptions timerOptions, boolean isTest) {
+            String sessionType, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased,
+            TimerOptions timerOptions, boolean exposeTimer, boolean isTest) {
         this.pkg = pkg;
         this.remotePkg = pkg;
         this.hasRemote = hasRemote;
@@ -152,13 +157,20 @@ public final class SessionGenerator {
         this.displayName = ejbNameOptions.getSessionDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getSessionDisplayNameSuffix();
         this.packageName = EjbGenerationUtil.getSelectedPackageName(pkg);
         this.packageNameWithDot = packageName + ".";
-        this.templateParameters = new HashMap<String, String>();
+        this.templateParameters = new HashMap<String, Object>();
         // fill all possible template parameters
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("localInterface", packageNameWithDot + localName);
         this.templateParameters.put("remoteInterface", packageNameWithDot + remoteName);
         // set timer options if available
-        this.timerOptions = timerOptions;
+        if (timerOptions != null) {
+            this.templateParameters.put("timerExist", true); //NOI18N
+            this.templateParameters.put("timerString", timerOptions.toString()); //NOI18N
+            this.templateParameters.put("exposeTimer", exposeTimer && (hasLocal || hasRemote)); //NOI18N
+        } else {
+            this.templateParameters.put("timerExist", false); //NOI18N
+            this.templateParameters.put("exposeTimer", false); //NOI18N
+        }
         if (isTest) {
             // set date, time and user to values used in goldenfiles
             this.templateParameters.put("date", "{date}");
@@ -271,11 +283,6 @@ public final class SessionGenerator {
             GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null, templateParameters);
         }
 
-        // fill up the session bean with the timer method if needed
-        if (timerOptions != null) {
-            generateTimerMethodForBean(ejbClassFO, "myTimer", timerOptions);
-        }
-
         return ejbClassFO;
     }
 
@@ -335,30 +342,39 @@ public final class SessionGenerator {
         throw new UnsupportedOperationException("Method not implemented yet.");
     }
 
-    private void generateTimerMethodForBean(FileObject bean, String methodName, TimerOptions timerOptions) {
-        MethodModel.Annotation annotation = MethodModel.Annotation.create(
-                "javax.ejb.Schedule", timerOptions.getTimerOptionsAsMap()); // NOI18N
-        final MethodModel method = MethodModel.create(
-                methodName,
-                "void", // NOI18N
-                "System.out.println(\"Timer event: \" + new java.util.Date());", // NOI18N
-                Collections.<MethodModel.Variable>emptyList(),
-                Collections.<String>emptyList(),
-                Collections.<Modifier>emptySet(),
-                Collections.singletonList(annotation)
-                );
-
-        final BusinessMethodGenerator generator = BusinessMethodGenerator.create(packageNameWithDot + ejbClassName, bean);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    generator.generate(method, hasLocal, hasRemote);
-                } catch (IOException ioe) {
-                    Logger.getLogger(SessionGenerator.class.getName()).log(Level.WARNING, null, ioe);
-                }
-            }
-        });
-    }
+//    TODO - could be rewrite as an insert action
+//    private void generateTimerMethodForBean(final FileObject bean, String methodName, TimerOptions timerOptions) {
+//        MethodModel.Annotation annotation = MethodModel.Annotation.create(
+//                "javax.ejb.Schedule", timerOptions.getTimerOptionsAsMap()); // NOI18N
+//        final MethodModel method = MethodModel.create(
+//                methodName,
+//                "void", // NOI18N
+//                "System.out.println(\"Timer event: \" + new java.util.Date());", // NOI18N
+//                Collections.<MethodModel.Variable>emptyList(),
+//                Collections.<String>emptyList(),
+//                Collections.<Modifier>emptySet(),
+//                Collections.singletonList(annotation)
+//                );
+//
+//        final BusinessMethodGenerator generator = BusinessMethodGenerator.create(packageNameWithDot + ejbClassName, bean);
+//        RequestProcessor.getDefault().post(new Runnable() {
+//            public void run() {
+//                try {
+//                    generator.generate(method, hasLocal, hasRemote);
+//
+//                    // save the document after adding timer method
+//                    EditorCookie cookie = DataObject.find(bean).getLookup().lookup(EditorCookie.class);
+//                    if (cookie != null) {
+//                        cookie.saveDocument();
+//                    }
+//                } catch (DataObjectNotFoundException ex) {
+//                   Logger.getLogger(SessionGenerator.class.getName()).log(Level.INFO, null, ex);
+//                } catch (IOException ioe) {
+//                    Logger.getLogger(SessionGenerator.class.getName()).log(Level.INFO, null, ioe);
+//                }
+//            }
+//        });
+//    }
 
       //TODO: RETOUCHE WS
 //    /**

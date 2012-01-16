@@ -1162,12 +1162,10 @@ public class ProjectHelper {
         String sample = "javax/xml/bind/JAXBElement.class"; // NOI18N
         ClassPath classPath = ClassPath.getClassPath(srcRoot, CLASSPATH_ENDORSED);
         if (classPath == null || classPath.findResource(sample) == null) {
-            Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAXB_ENDORSED);
-            if (jaxWsApiLib == null) {
-                jaxWsApiLib = createJaxbApiLibrary();
-            }
+            Library jaxbApiLib = LibraryManager.getDefault().getLibrary(JAXB_ENDORSED);
+            assert jaxbApiLib != null : "JAXB endorsed library must be present";
             try {
-                ProjectClassPathModifier.addLibraries(new Library[] {jaxWsApiLib}, srcRoot, CLASSPATH_ENDORSED);
+                ProjectClassPathModifier.addLibraries(new Library[] {jaxbApiLib}, srcRoot, CLASSPATH_ENDORSED);
             } catch (UnsupportedOperationException x) {
                 classPath = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
                 if (classPath == null || classPath.findResource(sample) == null) {

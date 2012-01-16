@@ -510,6 +510,9 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             MavenProject prj = iter.next();
             name = prj.getName();
             desc = prj.getDescription();
+            if (desc != null) {
+                desc = desc.replaceAll("\\s+", " ").trim();
+            }
             homeUrl = prj.getUrl();
             IssueManagement im = prj.getIssueManagement();
             if (im != null) {
@@ -605,6 +608,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             }
         } else {
             field.setText(value);
+            field.setCaretPosition(0);
         }
     }
 

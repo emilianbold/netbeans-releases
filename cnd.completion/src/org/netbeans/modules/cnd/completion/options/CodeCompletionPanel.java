@@ -72,6 +72,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     public static PreferencesCustomizer.Factory getCustomizerFactory() {
         return new PreferencesCustomizer.Factory() {
 
+            @Override
             public PreferencesCustomizer create(Preferences preferences) {
                 return new CodeCompletionPreferencesCusromizer(preferences);
             }
@@ -166,14 +167,17 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         update(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         update(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         update(e);
     }
@@ -194,18 +198,22 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
             preferences = p;
         }
 
+        @Override
         public String getId() {
             return "org.netbeans.modules.cnd.completion.options"; //NOI18N
         }
 
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanelName"); // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("netbeans.optionsDialog.editor.codeCompletion.cpp"); //NOI18N
         }
 
+        @Override
         public JComponent getComponent() {
             return new CodeCompletionPanel(preferences);
         }

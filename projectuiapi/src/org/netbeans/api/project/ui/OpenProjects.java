@@ -270,10 +270,9 @@ public final class OpenProjects {
      *
      * @param project project to set as main project (must be open), or
      *                <code>null</code> to set no project as main.
-     * @throws IllegalArgumentException if the project is not opened.
      * @since 1.11
      */
-    public void setMainProject(Project project) throws IllegalArgumentException {
+    public void setMainProject(Project project) {
         trampoline.setMainProject(project);
     }
     

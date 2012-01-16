@@ -68,6 +68,7 @@ public class ParentTreeElement implements TreeElement {
         this.text = CsmRefactoringUtils.getHtml(element);
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         CsmObject enclosing = getParent();
         if (enclosing != null) {
@@ -78,14 +79,17 @@ public class ParentTreeElement implements TreeElement {
         }
     }
 
+    @Override
     public Icon getIcon() {
         return icon;
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return text;
     }
 
+    @Override
     public Object getUserObject() {
         return element.getObject();
     }

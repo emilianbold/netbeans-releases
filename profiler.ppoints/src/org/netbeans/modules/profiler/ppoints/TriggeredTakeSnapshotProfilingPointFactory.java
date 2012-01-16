@@ -54,7 +54,7 @@ import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsIcons;
 import org.openide.util.Lookup;
 
 
@@ -62,26 +62,17 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TriggeredTakeSnapshotProfilingPointFactory_PpType=Triggered Take Snapshot",
+    "TriggeredTakeSnapshotProfilingPointFactory_PpDescr=Takes snapshot of currently collected profiling results similarly to Take Snapshot action in Profiler UI. This Profiling Point is defined globally for the profiling session and is invoked when defined condition is met during profiling.",
+    "TriggeredTakeSnapshotProfilingPointFactory_PpDefaultName={0} in {1}"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
-public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String PP_TYPE = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPointFactory.class,
-                                                              "TriggeredTakeSnapshotProfilingPointFactory_PpType"); // NOI18N
-    private static final String PP_DESCR = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPointFactory.class,
-                                                               "TriggeredTakeSnapshotProfilingPointFactory_PpDescr"); // NOI18N
-    private static final String PP_DEFAULT_NAME = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPointFactory.class,
-                                                                      "TriggeredTakeSnapshotProfilingPointFactory_PpDefaultName"); // NOI18N
-                                                                                                                                   // -----
-    public static final String TAKE_SNAPSHOT_PP_TYPE = PP_TYPE;
-    public static final String TAKE_SNAPSHOT_PP_DESCR = PP_DESCR;
-    
+public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory {    
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getDescription() {
-        return TAKE_SNAPSHOT_PP_DESCR;
+        return Bundle.TriggeredTakeSnapshotProfilingPointFactory_PpDescr();
     }
 
     public Icon getIcon() {
@@ -102,7 +93,7 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
     }
 
     public String getType() {
-        return TAKE_SNAPSHOT_PP_TYPE;
+        return Bundle.TriggeredTakeSnapshotProfilingPointFactory_PpType();
     }
 
     public TriggeredTakeSnapshotProfilingPoint create(Lookup.Provider project) {
@@ -111,10 +102,9 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
         }
 
         String name = Utils.getUniqueName(getType(),
-                                          MessageFormat.format(PP_DEFAULT_NAME,
-                                                               new Object[] {
-                                                                   "", ProjectUtilities.getDisplayName(project)
-                                                               }), project);
+                                          Bundle.TriggeredTakeSnapshotProfilingPointFactory_PpDefaultName(
+                                                "", ProjectUtilities.getDisplayName(project)), // NOI18N
+                                          project);
 
         return new TriggeredTakeSnapshotProfilingPoint(name, project, this);
     }

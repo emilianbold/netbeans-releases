@@ -60,6 +60,8 @@ import org.openide.windows.*;
  * @author ludo
  */
 public class LogViewerSupport implements Runnable {
+
+    private static final RequestProcessor RP = new RequestProcessor(LogViewerSupport.class);
     boolean shouldStop = false;
     FileInputStream  filestream=null;
     BufferedReader    ins;
@@ -68,7 +70,7 @@ public class LogViewerSupport implements Runnable {
     String ioName;
     int lines;
     Ring ring;
-    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+    private final RequestProcessor.Task task = RP.create(this);
     
     /** Connects a given process to the output window. Returns immediately, but threads are started that
      * copy streams of the process to/from the output window.
@@ -144,9 +146,12 @@ public class LogViewerSupport implements Runnable {
         io.select();
         filestream = new FileInputStream(fileName);
         ins = new BufferedReader(new InputStreamReader(filestream));
-        
-        init();
-        task.schedule(0);
+        RP.post(new Runnable() {
+            @Override public void run() {
+                init();
+                task.schedule(0);
+            }
+        });
     }
     
     /* stop to update  the log viewer dialog

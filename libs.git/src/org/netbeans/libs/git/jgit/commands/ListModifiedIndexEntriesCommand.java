@@ -59,6 +59,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -74,8 +75,8 @@ public class ListModifiedIndexEntriesCommand extends GitCommand {
     private final FileListener listener;
     private final Set<File> files;
 
-    public ListModifiedIndexEntriesCommand (Repository repository, File[] roots, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public ListModifiedIndexEntriesCommand (Repository repository, GitClassFactory gitFactory, File[] roots, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.monitor = monitor;
         this.listener = listener;

@@ -185,11 +185,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         txtGroupId.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                if (txtGroupId.getText().trim().length() > 0) {
+                final String groupId = txtGroupId.getText().trim();
+                if (groupId.length() > 0) {
                     artifactCompleter.setLoading(true);
                     RP.post(new Runnable() {
                         public void run() {
-                            populateArtifact();
+                            populateArtifact(groupId);
                         }
                     });
                 }
@@ -199,12 +200,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         txtArtifactId.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                if (txtGroupId.getText().trim().length() > 0 &&
-                    txtArtifactId.getText().trim().length() > 0) {
+                final String groupId = txtGroupId.getText().trim();
+                final String artifactId = txtArtifactId.getText().trim();
+                if (groupId.length() > 0 && artifactId.length() > 0) {
                     versionCompleter.setLoading(true);
                     RP.post(new Runnable() {
                         public void run() {
-                            populateVersion();
+                            populateVersion(groupId, artifactId);
                         }
                     });
                 }
@@ -712,10 +714,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     }
 
-    private void populateArtifact() {
+    private void populateArtifact(String groupId) {
         assert !SwingUtilities.isEventDispatchThread();
 
-        final List<String> lst = new ArrayList<String>(RepositoryQueries.getArtifacts(txtGroupId.getText().trim(), RepositoryPreferences.getInstance().getRepositoryInfos()));
+        final List<String> lst = new ArrayList<String>(RepositoryQueries.getArtifacts(groupId, RepositoryPreferences.getInstance().getRepositoryInfos()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 artifactCompleter.setValueList(lst);
@@ -724,10 +726,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     }
 
-    private void populateVersion() {
+    private void populateVersion(String groupId, String artifactId) {
         assert !SwingUtilities.isEventDispatchThread();
 
-        List<NBVersionInfo> lst = RepositoryQueries.getVersions(txtGroupId.getText().trim(), txtArtifactId.getText().trim(), RepositoryPreferences.getInstance().getRepositoryInfos());
+        List<NBVersionInfo> lst = RepositoryQueries.getVersions(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
         final List<String> vers = new ArrayList<String>();
         for (NBVersionInfo rec : lst) {
             if (!vers.contains(rec.getVersion())) {
@@ -976,7 +978,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
-            btv.setUseSubstringInQuickSearch(true);
             manager = new ExplorerManager();
             setLayout(new BorderLayout());
             add(btv, BorderLayout.CENTER);
@@ -1271,7 +1272,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
-            btv.setUseSubstringInQuickSearch(true);
             //lv.setDefaultProcessor(this);
             manager = new ExplorerManager();
             manager.addPropertyChangeListener(this);
@@ -1376,7 +1376,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
-            btv.setUseSubstringInQuickSearch(true);
             manager = new ExplorerManager();
             manager.addPropertyChangeListener(this);
             setLayout(new BorderLayout());
@@ -1422,7 +1421,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     }
 
-    private class DefAction extends AbstractAction implements ContextAwareAction, Runnable {
+    private class DefAction extends AbstractAction implements ContextAwareAction {
         private final boolean close;
         private final Lookup lookup;
 
@@ -1456,7 +1455,14 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     //reset completion.
                     AddDependencyPanel.this.artifactCompleter.setLoading(true);
                     AddDependencyPanel.this.versionCompleter.setLoading(true);
-                    RP.post(this);
+                    final String groupId = txtGroupId.getText().trim();
+                    final String artifactId = txtArtifactId.getText().trim();
+                    RP.post(new Runnable() {
+                        @Override public void run() {
+                            populateArtifact(groupId);
+                            populateVersion(groupId, artifactId);
+                        }
+                    });
                 }
             } else {
                 AddDependencyPanel.this.setFields("", "", "", "", ""); //NOI18N
@@ -1468,12 +1474,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         public Action createContextAwareInstance(Lookup actionContext) {
             return new DefAction(close, actionContext);
-        }
-
-        @Override
-        public void run() {
-            AddDependencyPanel.this.populateArtifact();
-            AddDependencyPanel.this.populateVersion();
         }
 
     }

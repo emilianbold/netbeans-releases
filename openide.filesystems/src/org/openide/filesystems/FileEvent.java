@@ -74,52 +74,72 @@ public class FileEvent extends EventObject {
 
     /** Creates new <code>FileEvent</code>. The <code>FileObject</code> where the action occurred
     * is assumed to be the same as the source object.
+    * Delegates to {@link #FileEvent(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, boolean, long) 
+    * FileEvent(src, src, false, -1)}.
     * @param src source file which sent this event
     */
     public FileEvent(FileObject src) {
-        this(src, src);
+        this(src, src, false, -1);
     }
 
     /** Creates new <code>FileEvent</code>, specifying the action object.
-    * <p>
-    * Note that the two arguments of this method need not be identical
-    * in cases where it is reasonable that a different file object from
-    * the one affected would be listened to by other components. E.g.,
-    * in the case of a file creation event, the event source (which
-    * listeners are attached to) would be the containing folder, while
-    * the action object would be the newly created file object.
+    * Delegates to {@link #FileEvent(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, boolean, long) 
+    * FileEvent(src, file, false, -1)}.
+    * 
     * @param src source file which sent this event
     * @param file <code>FileObject</code> where the action occurred */
     public FileEvent(FileObject src, FileObject file) {
-        super(src);
-        this.file = file;
-        this.time = System.currentTimeMillis();
-        MIMESupport.freeCaches();
+        this(src, file, false, -1);
     }
 
-    /** Creates new <code>FileEvent</code>. The <code>FileObject</code> where the action occurred
-    * is assumed to be the same as the source object. Important if FileEvent is created according to
-    * existing FileEvent but with another source and file but with the same time.
+    /** Creates new <code>FileEvent</code>. 
+    * Delegates to {@link #FileEvent(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, boolean, long) 
+    * FileEvent(src, file, false, time)}.
     */
     FileEvent(FileObject src, FileObject file, long time) {
-        this(src, file);
-        this.time = time;
+        this(src, file, false, time);
     }
 
     /** Creates new <code>FileEvent</code>, specifying the action object.
-    * <p>
-    * Note that the two arguments of this method need not be identical
-    * in cases where it is reasonable that a different file object from
-    * the one affected would be listened to by other components. E.g.,
-    * in the case of a file creation event, the event source (which
-    * listeners are attached to) would be the containing folder, while
-    * the action object would be the newly created file object.
+    * Delegates to {@link #FileEvent(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, boolean, long) 
+    * FileEvent(src, file, expected, -1)}.
+    * 
     * @param src source file which sent this event
     * @param file <code>FileObject</code> where the action occurred
     * @param expected sets flag whether the value was expected*/
     public FileEvent(FileObject src, FileObject file, boolean expected) {
-        this(src, file);
+        this(src, file, expected, -1);
+    }
+    
+    
+    /** Creates new <code>FileEvent</code>, specifying all its details.
+     * <p>
+     * Note that the two arguments of this method need not be identical
+     * in cases where it is reasonable that a different file object from
+     * the one affected would be listened to by other components. E.g.,
+     * in the case of a file creation event, the event source (which
+     * listeners are attached to) would be the containing folder, while
+     * the action object would be the newly created file object.
+     * <p>
+     * The time is usually {@link System#currentTimeMillis()} (which is the one
+     * used if the parameter value is lower or equal to zero), but it may
+     * be any other suitable time. For example when a file was changed, it 
+     * may be reasonable to use the timestamp of the file after its stream
+     * has been closed.
+     * 
+     * @param src source file which sends this event
+     * @param file {@link FileObject} where the action occured
+     * @param expected whether the change has been expected or not
+     * @param time the time when the change happened
+     * @since  7.54
+     */
+    public FileEvent(FileObject src, FileObject file, boolean expected, long time) {
+        super(src);
+        this.file = file;
+        this.time = time <= 0L ? System.currentTimeMillis() : time;
         this.expected = expected;
+        this.time = time;
+        MIMESupport.freeCaches();
     }
 
     /** @return the original file where action occurred

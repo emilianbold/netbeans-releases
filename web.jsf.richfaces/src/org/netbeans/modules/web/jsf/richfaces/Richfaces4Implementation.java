@@ -47,6 +47,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,8 +195,8 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
     }
 
     @Override
-    public JSFVersion getJsfVersion() {
-        return JSFVersion.JSF_2_0;
+    public Set<JSFVersion> getJsfVersion() {
+        return EnumSet.of(JSFVersion.JSF_2_0, JSFVersion.JSF_2_1);
     }
 
     @Override

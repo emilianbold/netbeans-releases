@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.ApisupportAntUtils;
 import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -213,7 +214,8 @@ public class SingleModulePropertiesTest extends TestBase {
             }
         }
     }
-    
+
+    @RandomlyFails // NB-Core-Build #7732: display name was refreshed in ProjectInformation expected:<[Miscellaneous]> but was:<[Testing Module]>
     public void testThatPropertiesListen() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);

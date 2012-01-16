@@ -75,6 +75,8 @@ public abstract class OptionImpl implements Cloneable {
     public static final Logger LOG = Logger.getLogger(OptionImpl.class.getName());
     
     public static final Object NO_DEFAULT = new Object();
+    public static final String NO_BUNDLE = new String();
+    
     static final String[] NO_VALUE = new String[0];
     
     /** the root option */

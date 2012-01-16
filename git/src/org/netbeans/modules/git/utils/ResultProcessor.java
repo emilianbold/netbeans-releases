@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
@@ -144,7 +144,7 @@ public class ResultProcessor {
         new GitProgressSupport() {
             @Override
             protected void perform () {
-                GitUtils.openInVersioningView(files, repository, this);
+                GitUtils.openInVersioningView(files, repository, getProgressMonitor());
             }
         }.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
     }

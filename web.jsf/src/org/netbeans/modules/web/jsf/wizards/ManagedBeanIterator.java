@@ -83,18 +83,18 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 /** A template wizard iterator for new struts action
  *
  * @author Petr Pisl, Alexey BUtenko
- * 
+ *
  */
 
 public class ManagedBeanIterator implements TemplateWizard.Iterator {
-    
+
     private int index;
     private ManagedBeanPanel managedBeanPanel;
 
     private transient WizardDescriptor.Panel[] panels;
-    
+
     private transient boolean debug = false;
-    
+
     public void initialize (TemplateWizard wizard) {
         if (debug) log ("initialize");
         index = 0;
@@ -106,14 +106,14 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         } catch (IOException ex) {
             targetFolder = DataFolder.findFolder(project.getProjectDirectory());
         }
-        
+
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (debug) {
             log ("\tproject: " + project);
             log ("\ttargetFolder: " + targetFolder);
             log ("\tsourceGroups.length: " + sourceGroups.length);
         }
-        
+
         managedBeanPanel = new ManagedBeanPanel(project, wizard);
 
         WizardDescriptor.Panel javaPanel;
@@ -122,7 +122,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             javaPanel = managedBeanPanel;
         } else {
             javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, managedBeanPanel);
-            
+
             javaPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     managedBeanPanel.updateManagedBeanName((WizardDescriptor.Panel) e.getSource());
@@ -132,7 +132,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
 
 
         panels = new WizardDescriptor.Panel[] { javaPanel };
-        
+
         // Creating steps.
         Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
@@ -140,32 +140,32 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             beforeSteps = (String[])prop;
         }
         String[] steps = createSteps (beforeSteps, panels);
-        
-        for (int i = 0; i < panels.length; i++) { 
+
+        for (int i = 0; i < panels.length; i++) {
             JComponent jc = (JComponent)panels[i].getComponent ();
             if (steps[i] == null) {
                 steps[i] = jc.getName ();
             }
-	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N 
+	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
 	    jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
 	}
     }
-    
+
     public void uninitialize (TemplateWizard wizard) {
         panels = null;
     }
-    
+
     public Set instantiate(TemplateWizard wizard) throws IOException {
 //how to get dynamic form bean properties
 //String formBeanClassName = (String) wizard.getProperty(WizardProperties.FORMBEAN_CLASS); //NOI18N
-        
+
         if (debug)
             log("instantiate"); //NOI18N
 
         FileObject dir = Templates.getTargetFolder( wizard );
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wizard );
-        
+
         DataObject dTemplate = DataObject.find( template );
 
         String configFile = (String) wizard.getProperty(WizardProperties.CONFIG_FILE);
@@ -182,7 +182,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         boolean isAnnotate = !managedBeanPanel.isAddBeanToConfig();
         DataObject dobj = null;
 
-        if (isAnnotate && (Utilities.isJavaEE6(wizard) || (JSFUtils.isJSF20(wm) && JSFUtils.isJavaEE5(wizard)))) {
+        if (isAnnotate && (Utilities.isJavaEE6(wizard) || (JSFUtils.isJSF20Plus(wm) && JSFUtils.isJavaEE5(wizard)))) {
             HashMap<String, String> templateProperties = new HashMap<String, String>();
             String targetName =  Templates.getTargetName( wizard );
             if (JSFUtils.isCDIEnabled(wm)) {
@@ -234,7 +234,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
 
             bean.setManagedBeanName(beanName);
             bean.setManagedBeanClass(className);
-            
+
             //#172446: Make sure that scope is not null
             if (scope == null) {
                 scope = Scope.REQUEST;
@@ -255,42 +255,42 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         }
         return Collections.singleton(dobj);
     }
-    
+
     public void previousPanel () {
         if (! hasPrevious ()) throw new NoSuchElementException ();
         index--;
     }
-    
+
     public void nextPanel () {
         if (! hasNext ()) throw new NoSuchElementException ();
         index++;
     }
-    
+
     public boolean hasPrevious () {
         return index > 0;
     }
-    
+
     public boolean hasNext () {
         return index < panels.length - 1;
     }
-    
+
     public String name () {
         return NbBundle.getMessage (ManagedBeanIterator.class, "TITLE_x_of_y",
             new Integer (index + 1), new Integer (panels.length));
     }
-    
+
     public WizardDescriptor.Panel current () {
         return panels[index];
     }
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener (ChangeListener l) {}
     public final void removeChangeListener (ChangeListener l) {}
-    
-    
+
+
     private void log (String message){
         System.out.println("ActionIterator:: \t" + message);
     }
-    
+
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
         int diff = 0;
         if (before == null) {
@@ -308,7 +308,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         }
         return res;
     }
-    
+
     private void replaceInDocument(javax.swing.text.Document document, String replaceFrom, String replaceTo) {
         javax.swing.text.AbstractDocument doc = (javax.swing.text.AbstractDocument)document;
         int len = replaceFrom.length();

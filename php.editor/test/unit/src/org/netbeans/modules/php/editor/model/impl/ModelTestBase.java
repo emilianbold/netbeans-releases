@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  */
 public class ModelTestBase extends TestBase {
     public ModelTestBase(String testName) {
-        super(testName);        
+        super(testName);
     }
 
     public Model getModel(String code) throws Exception {
@@ -70,23 +70,27 @@ public class ModelTestBase extends TestBase {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-                Model model = parameter.getModel();
-                globals[0] = model;
+                if (parameter != null) {
+                    Model model = parameter.getModel();
+                    globals[0] = model;
+                }
             }
         });
         return globals[0];
     }
-    
+
     public Occurence underCaret(final Model model,String code, final int offset) throws Exception {
         final List<Occurence> occurences = new ArrayList<Occurence>();
         super.performTest(new String[] {code}, new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-                Model mod = model != null ? model : parameter.getModel();
-                OccurencesSupport occurencesSupport = mod.getOccurencesSupport(offset);
-                Occurence underCaret = occurencesSupport.getOccurence();
-                occurences.add(underCaret);
+                if (parameter != null) {
+                    Model mod = model != null ? model : parameter.getModel();
+                    OccurencesSupport occurencesSupport = mod.getOccurencesSupport(offset);
+                    Occurence underCaret = occurencesSupport.getOccurence();
+                    occurences.add(underCaret);
+                }
             }
         });
         return occurences.get(0);

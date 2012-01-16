@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.refactoring.java.callhierarchy;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -55,37 +50,16 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ElementVisitor;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.api.java.source.*;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.openide.cookies.EditorCookie;
@@ -174,6 +148,7 @@ final class CallHierarchyTasks {
             this.isCallerGraph = isCallerGraph;
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             TreePath tpath = null;
             Element method = null;
@@ -224,6 +199,7 @@ final class CallHierarchyTasks {
             this.searchAll = searchAll;
         }
         
+        @Override
         public void run() {
             try {
                 notifyRunning(true);
@@ -231,14 +207,15 @@ final class CallHierarchyTasks {
                 TreePathHandle sourceToQuery = elmDesc.getSourceToQuery();
                 
                 // validate source
-                if (RetoucheUtils.getElementHandle(sourceToQuery) == null) {
-                    elmDesc.setBroken();
-                } else {
+                // TODO: what is this?
+                //if (RefactoringUtils.getElementHandle(sourceToQuery) == null) {
+                //    elmDesc.setBroken();
+                //} else {
                     ClasspathInfo cpInfo;
                     if (searchAll) {
-                        cpInfo = RetoucheUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
+                        cpInfo = RefactoringUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
                     } else {
-                        cpInfo = RetoucheUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
+                        cpInfo = RefactoringUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
                     }
 
                     Set<FileObject> relevantFiles = null;
@@ -254,7 +231,7 @@ final class CallHierarchyTasks {
                         Exceptions.printStackTrace(ex);
                     }
                     elmDesc.setCanceled(isCanceled());
-                }
+                //}
                 elmDesc.setReferences(result);
                 resultHandler.run();
             } finally {
@@ -272,6 +249,7 @@ final class CallHierarchyTasks {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         CallHierarchyTopComponent.findInstance().setRunningState(isRunning);
                     }
@@ -283,9 +261,10 @@ final class CallHierarchyTasks {
             }
         }
         
+        @Override
         public void cancel() {
             isCanceled.set(true);
-            RetoucheUtils.cancel = true;
+            RefactoringUtils.cancel = true;
         }
         
         private boolean isCanceled() {
@@ -295,6 +274,7 @@ final class CallHierarchyTasks {
             return isCanceled.get();
         }
         
+        @Override
         public void run(WorkingCopy javac) throws Exception {
             if (javac.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
                 return;
@@ -434,6 +414,7 @@ final class CallHierarchyTasks {
             this.resultHandler = resultHandler;
         }
         
+        @Override
         public void run() {
             try {
                 JavaSource js = JavaSource.forFileObject(elmDesc.getSourceToQuery().getFileObject());
@@ -446,6 +427,7 @@ final class CallHierarchyTasks {
             }
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             javac.toPhase(JavaSource.Phase.RESOLVED);
             TreePath resolved = elmDesc.getSourceToQuery().resolve(javac);
@@ -534,6 +516,7 @@ final class CallHierarchyTasks {
             this.selection = selection;
         }
 
+        @Override
         public int compareTo(OccurrencesDesc o) {
             return order - o.order;
         }
@@ -563,38 +546,47 @@ final class CallHierarchyTasks {
             this.enclosing = enclosing;
         }
         
+        @Override
         public TypeMirror asType() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public ElementKind getKind() {
             return isStatic ? ElementKind.STATIC_INIT : ElementKind.INSTANCE_INIT;
         }
 
+        @Override
         public List<? extends AnnotationMirror> getAnnotationMirrors() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return isStatic ? STATICM : Collections.<Modifier>emptySet();
         }
 
+        @Override
         public Name getSimpleName() {
             return null;
         }
 
+        @Override
         public Element getEnclosingElement() {
             return enclosing;
         }
 
+        @Override
         public List<? extends Element> getEnclosedElements() {
             return Collections.emptyList();
         }
 
+        @Override
         public <R, P> R accept(ElementVisitor<R, P> v, P p) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }

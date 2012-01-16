@@ -1411,7 +1411,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     JPanel realPanel = (JPanel)formDesigner.getComponent(radPanel);
                     Component parentBean = (Component)parent.getBeanInstance();
                     Component realParent = (Component)formDesigner.getComponent(parent);
-                    if (realParent.getSize().equals(realPanel.getSize()) && realPanel.getLocation().equals(new Point(0,0))) {
+                    if ((realPanel != null) && (realParent != null)
+                            && realParent.getSize().equals(realPanel.getSize())
+                            && realPanel.getLocation().equals(new Point(0,0))) {
                         if (parentBean instanceof JPanel) {
                             return shouldHighlightPanel((JPanel)parentBean, parent);
                         } else {

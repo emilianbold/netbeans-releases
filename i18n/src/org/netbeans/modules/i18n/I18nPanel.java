@@ -48,7 +48,6 @@ package org.netbeans.modules.i18n;
 
 import javax.swing.GroupLayout;
 import java.awt.CardLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -66,8 +65,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Enumerations;
@@ -490,8 +487,7 @@ public class I18nPanel extends JPanel {
       if ("true".equals(sysprop) || "full".equals(sysprop)) { // NOI18N
           System.err.println ("I18n module: Help button showing: " + help); // NOI18N, please do not comment out
       }
-      Help helpSystem = Lookup.getDefault().lookup(Help.class);
-      helpSystem.showHelp(help);
+      help.display();
   }
 
     private void enableButtons(long buttonMask) {

@@ -46,54 +46,49 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import junit.framework.TestCase;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
- *
  * @author Dafe Simonek
  */
-public class PublicPackagesPanelTest extends TestCase {
+public class PublicPackagesPanelTest extends NbTestCase {
 
     public PublicPackagesPanelTest(String testName) {
         super(testName);
     }
 
-    /**
-     * Test of getPublicPackagesForPlugin method, of class PublicPackagesPanel.
-     */
     @Test
     public void testGetPublicPackagesForPlugin() {
-        System.out.println("testing getPublicPackagesForPlugin...");
         SortedMap<String, Boolean> selItems = new TreeMap<String, Boolean>();
-        selItems.put("a.b.c", Boolean.TRUE);
-        selItems.put("a.b.d", Boolean.TRUE);
-        selItems.put("a", Boolean.TRUE);
-        selItems.put("a.b.e", Boolean.TRUE);
-        selItems.put("something.different", Boolean.TRUE);
-        selItems.put("a.b", Boolean.TRUE);
-        selItems.put("just.another", Boolean.FALSE);
+        selItems.put("a.b.c", true);
+        selItems.put("a.b.d", true);
+        selItems.put("a", true);
+        selItems.put("a.b.e", true);
+        selItems.put("something.different", true);
+        selItems.put("a.b", true);
+        selItems.put("just.another", false);
 
-        SortedSet expResult = new TreeSet<String>();
+        SortedSet<String> expResult = new TreeSet<String>();
         expResult.add("a.*");
         expResult.add("something.different");
 
-        SortedSet result = PublicPackagesPanel.getPublicPackagesForPlugin(selItems);
+        SortedSet<String> result = PublicPackagesPanel.getPublicPackagesForPlugin(selItems);
 
         assertEquals(expResult, result);
 
         SortedMap<String, Boolean> unchanged = new TreeMap<String, Boolean>();
-        unchanged.put("a.b.c", Boolean.TRUE);
-        unchanged.put("a.b.d", Boolean.TRUE);
-        unchanged.put("a", Boolean.TRUE);
+        unchanged.put("a.b.c", true);
+        unchanged.put("a.b.d", true);
+        unchanged.put("a", true);
 
-        SortedSet expResult2 = new TreeSet<String>();
+        SortedSet<String> expResult2 = new TreeSet<String>();
         expResult2.add("a");
         expResult2.add("a.b.c");
         expResult2.add("a.b.d");
 
-        SortedSet result2 = PublicPackagesPanel.getPublicPackagesForPlugin(unchanged);
+        SortedSet<String> result2 = PublicPackagesPanel.getPublicPackagesForPlugin(unchanged);
 
         assertEquals(expResult2, result2);
     }

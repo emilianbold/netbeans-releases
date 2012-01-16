@@ -451,11 +451,6 @@ public final class CompletionLayout {
             } // otherwise leave present doc displayed
         }
         
-        @Override
-        protected boolean isFocusable() {
-            return true; // lets have documentation popup focusable, for copying
-        }
-        
         public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
                 Object actionMapKey = getDocumentationScrollPane().getInputMap().get(

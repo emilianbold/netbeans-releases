@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
@@ -108,12 +109,15 @@ public class WSCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
-            return new AsyncCompletionTask(new WsCompletionQuery(component.getSelectionStart()), component);
+            return new AsyncCompletionTask(new WsCompletionQuery(component.
+                    getSelectionStart()), component);
         }
         return null;
     }
     
-    static final class WsCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
+    static final class WsCompletionQuery extends AsyncCompletionQuery implements 
+        CancellableTask<CompilationController> 
+    {
         private int caretOffset;
         private int anchorOffset;
         private List<CompletionItem> results;
@@ -205,11 +209,14 @@ public class WSCompletionProvider implements CompletionProvider {
             if (fo!=null) jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
         }
         
-        private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
+        private Env getCompletionEnvironment(CompilationController controller, 
+                boolean upToOffset) throws IOException 
+        {
             int offset = caretOffset;
             String prefix = "";
             if (upToOffset && offset > 0) {
-                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().
+                    tokenSequence(JavaTokenId.language());
                 boolean successfullyMoved = false;
                 if (ts.move(offset) == 0) // When right at the token end
                     successfullyMoved = ts.movePrevious(); // Move to previous token
@@ -256,22 +263,35 @@ public class WSCompletionProvider implements CompletionProvider {
                             ExpressionTree var = ((AssignmentTree)parent).getVariable();
                             if (var.getKind() == Kind.IDENTIFIER) {
                                 Name name = ((IdentifierTree)var).getName();
-                                if (name.contentEquals("wsdlLocation") && jaxWsSupport!=null) { //NOI18N
+                                if (name.contentEquals("wsdlLocation") &&   //NOI18N 
+                                        jaxWsSupport!=null) { 
                                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                                    TypeElement webMethodEl = controller.getElements().
+                                        getTypeElement("javax.jws.WebService"); //NOI18N
                                     if (webMethodEl!=null) {
-                                        TypeMirror el = controller.getTrees().getTypeMirror(parentPath.getParentPath());
-                                        if (el!=null) {
-                                            if ( webMethodEl!=null && controller.getTypes().isSameType(el,webMethodEl.asType())) {
-                                                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+                                        TypeMirror el = controller.getTrees().
+                                            getTypeMirror(parentPath.getParentPath());
+                                        if (el!=null && el.getKind()!= TypeKind.ERROR) {
+                                            if ( webMethodEl!=null && 
+                                                    controller.getTypes().
+                                                    isSameType(el,webMethodEl.asType())) 
+                                            {
+                                                FileObject wsdlFolder = 
+                                                    jaxWsSupport.getWsdlFolder(false);
                                                 if (wsdlFolder!=null) {                                                
-                                                    Enumeration<? extends FileObject> en = wsdlFolder.getChildren(true);
+                                                    Enumeration<? extends FileObject> en = 
+                                                        wsdlFolder.getChildren(true);
                                                     while (en.hasMoreElements()) {
                                                         FileObject fo = en.nextElement();
-                                                        if (fo.isData() && "wsdl".equalsIgnoreCase(fo.getExt())) {
-                                                            String wsdlPath = FileUtil.getRelativePath(wsdlFolder.getParent().getParent(), fo);
+                                                        if (fo.isData() && 
+                                                                "wsdl".equalsIgnoreCase(fo.getExt())) {
+                                                            String wsdlPath = 
+                                                                FileUtil.getRelativePath(
+                                                                        wsdlFolder.getParent().getParent(), fo);
                                                             // Temporary fix for wsdl files in EJB project
-                                                            if (wsdlPath.startsWith("conf/")) wsdlPath = "META-INF/"+wsdlPath.substring(5); //NOI18
+                                                            if (wsdlPath.startsWith("conf/")) {
+                                                                wsdlPath = "META-INF/"+wsdlPath.substring(5); //NOI18
+                                                            }
                                                             if (wsdlPath.startsWith(env.getPrefix())) {
                                                                 results.add(WSCompletionItem.createWsdlFileItem(wsdlFolder, fo, env.getOffset()));
                                                             }
@@ -289,26 +309,34 @@ public class WSCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void createAssignmentResults(CompilationController controller, Env env) 
-            throws IOException {
+        private void createAssignmentResults(CompilationController controller, 
+                Env env) throws IOException 
+        {
             TreePath elementPath = env.getPath();
             TreePath parentPath = elementPath.getParentPath();
             Tree parent = parentPath.getLeaf();
             switch (parent.getKind()) {                
                 case ANNOTATION : {
-                    ExpressionTree var = ((AssignmentTree)elementPath.getLeaf()).getVariable();
-                    if (var.getKind() == Kind.IDENTIFIER) {
+                    ExpressionTree var = ((AssignmentTree)elementPath.getLeaf()).
+                        getVariable();
+                    if (var!= null && var.getKind() == Kind.IDENTIFIER) {
                         Name name = ((IdentifierTree)var).getName();
                         if (name.contentEquals("value"))  {//NOI18N
                             controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                            TypeElement webParamEl = controller.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+                            TypeElement webParamEl = controller.getElements().
+                                getTypeElement("javax.xml.ws.BindingType"); //NOI18N
                             if (webParamEl!=null) {
-                                TypeMirror el = controller.getTrees().getTypeMirror(parentPath);
-                                if (el!=null) {
-                                    if ( webParamEl!=null && controller.getTypes().isSameType(el,webParamEl.asType())) {
+                                TypeMirror el = controller.getTrees().
+                                    getTypeMirror(parentPath);
+                                if (el!=null && el.getKind() != TypeKind.ERROR) {
+                                    if ( webParamEl!=null && controller.getTypes().
+                                            isSameType(el,webParamEl.asType())) 
+                                    {
                                         for (String mode : BINDING_TYPES) {
                                             if (mode.startsWith(env.getPrefix())) 
-                                                results.add(WSCompletionItem.createEnumItem(mode, "String", env.getOffset())); //NOI18N
+                                                results.add(WSCompletionItem.
+                                                        createEnumItem(mode, 
+                                                                "String", env.getOffset())); //NOI18N
                                         }
                                     }
                                 }

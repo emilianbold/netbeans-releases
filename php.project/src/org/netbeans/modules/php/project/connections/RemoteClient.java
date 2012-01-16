@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.connections;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,6 +64,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
@@ -97,18 +97,18 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     private static final OperationMonitor DEV_NULL_OPERATION_MONITOR = new DevNullOperationMonitor();
     private static final Set<String> IGNORED_DIRS = new HashSet<String>(Arrays.asList(".", "..", "nbproject")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
-    private static final String LOCAL_TMP_NEW_SUFFIX = ".new~"; // NOI18N
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
+    private static final int MAX_FILE_SIZE_FOR_MEMORY = 500 * 1024; // 500 kB
 
     public static enum Operation { UPLOAD, DOWNLOAD, DELETE, LIST };
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
-    private final String baseRemoteDirectory;
     // @GuardedBy(this) to avoid over-complicated code, can be improved
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
 
+    private volatile String baseRemoteDirectory;
     private volatile boolean cancelled = false;
     private volatile OperationMonitor operationMonitor;
 
@@ -196,6 +196,12 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 disconnect();
             }
             throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", baseRemoteDirectory), remoteClient.getReplyString());
+        }
+        // #204680 - symlinks on remote server
+        String pwd = getWorkingDirectory();
+        if (!pwd.equals(baseRemoteDirectory)) {
+            LOGGER.log(Level.FINE, "Changing base remote directory (symlink?): {0} -> {1}", new Object[] {baseRemoteDirectory, pwd});
+            baseRemoteDirectory = pwd;
         }
     }
 
@@ -377,11 +383,12 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     }
 
     private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        if (file.isLink()) {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
-        } else if (isParentLink(file)) {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ParentSymlink", file.getRemotePath()));
-        } else if (file.isDirectory()) {
+        // xxx upload cannot check symlinks because project files of /path/<symlink>/my/project would not be uploaded at all!
+//        if (file.isLink()) {
+//            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
+//        } else if (isParentLink(file)) {
+//            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ParentSymlink", file.getRemotePath()));
+        if (file.isDirectory()) {
             // folder => just ensure that it exists
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Uploading directory: {0}", file);
@@ -421,7 +428,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
             if (LOGGER.isLoggable(Level.FINE)) {
                 synchronized (this) {
-                    LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + tmpFileName});
+                    LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, getWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + tmpFileName});
                 }
             }
             // XXX lock the file?
@@ -733,9 +740,15 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
             assert parent.isDirectory() : "Parent file of " + localFile + " must be a directory";
 
-            File tmpLocalFile = new File(localFile.getAbsolutePath() + LOCAL_TMP_NEW_SUFFIX);
+            TmpLocalFile tmpLocalFile = createTmpLocalFile(file);
+            if (tmpLocalFile == null) {
+                // definitely should not happen
+                LOGGER.log(Level.INFO, "Local temporary file could not be created for {0}", file.getRemotePath());
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateTmpLocalFile", file.getRemotePath()));
+                return;
+            }
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Downloading {0} => {1}", new Object[] {file.getRemotePath(), tmpLocalFile.getAbsolutePath()});
+                LOGGER.log(Level.FINE, "Downloading {0} => {1}", new Object[] {file.getRemotePath(), tmpLocalFile.isInMemory() ? "memory" : "tmp local file on disk"});
             }
 
             if (!cdBaseRemoteDirectory(file.getParentRemotePath(), false)) {
@@ -744,9 +757,13 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 return;
             }
 
-            // XXX lock the file?
-            OutputStream os = new FileOutputStream(tmpLocalFile);
             boolean success = false;
+            OutputStream os = tmpLocalFile.getOutputStream();
+            if (os == null) {
+                // definitely should not happen
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotOpenTmpLocalFile", tmpLocalFile));
+                return;
+            }
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
                     boolean fileRetrieved;
@@ -765,31 +782,22 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 }
             } finally {
                 os.close();
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
-                if (fo != null) {
-                    fo.refresh();
-                }
-                if (success) {
-                    // move the file
-                    success = moveLocalFile(tmpLocalFile, localFile);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
+                try {
+                    if (success) {
+                        // move the file
+                        success = copyTmpLocalFile(tmpLocalFile, localFile);
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("File %s copied to %s: %s", tmpLocalFile, localFile, success));
+                        }
                     }
+                } finally {
+                    LOGGER.fine("Tmp local file cleanup");
+                    tmpLocalFile.cleanup();
                 }
                 if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
-                    try {
-                        FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile)).delete();
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: TRUE", tmpLocalFile));
-                        }
-                    } catch (IOException e) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Unsuccessfully downloaded file %s deleted: FALSE", tmpLocalFile));
-                        }
-                    }
                 }
             }
         } else {
@@ -797,39 +805,39 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         }
     }
 
-    private boolean moveLocalFile(final File source, final File target) {
+    private TmpLocalFile createTmpLocalFile(TransferFile file) {
+        final long size = file.getSize();
+        if (size <= MAX_FILE_SIZE_FOR_MEMORY) {
+            return TmpLocalFile.inMemory((int) size);
+        }
+        return TmpLocalFile.onDisk();
+    }
+
+    private boolean copyTmpLocalFile(final TmpLocalFile source, final File target) {
         final AtomicBoolean moved = new AtomicBoolean();
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
-                FileObject foSource = FileUtil.toFileObject(FileUtil.normalizeFile(source));
-                FileObject foTarget = FileUtil.toFileObject(FileUtil.normalizeFile(target));
-                String tmpLocalFileName = source.getName();
-                String localFileName = target.getName();
-
-                if (!target.exists()) {
-                    try {
-                        // both files are in the same directory...
-                        foTarget = foSource.getParent().createData(target.getName());
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "Error while creating local file '" + target + "'", ex);
-                        moved.getAndSet(false);
-                        return;
-                    }
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Data file %s created.", localFileName));
-                    }
+                FileObject foTarget = ensureTargetExists(FileUtil.normalizeFile(target));
+                if (foTarget == null) {
+                    moved.getAndSet(false);
+                    return;
                 }
 
-                //replace content of the target file with the source file
-                FileLock lock = null;
-                InputStream in = null;
-                OutputStream out = null;
+                // replace content of the target file with the source file
+                FileLock lock;
+                InputStream in;
+                OutputStream out;
                 try {
                     // lock the target file
                     lock = foTarget.lock();
                     try {
-                        in = foSource.getInputStream();
+                        in = source.getInputStream();
+                        if (in == null) {
+                            // definitely should not happen
+                            moved.getAndSet(false);
+                            return;
+                        }
                         try {
                             // TODO the doewnload action shoudln't save all file before
                             // executing, then the ide will ask, whether user wants
@@ -850,22 +858,50 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Error while moving local file", ex);
                     moved.getAndSet(false);
-                } finally {
-                    try {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Deleting source file %s", tmpLocalFileName));
-                        }
-                        foSource.delete();
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "Cannot delete file '" + foSource + "'", ex);
-                    }
                 }
+            }
 
+            private FileObject ensureTargetExists(File target) {
+                if (target.exists()) {
+                    // exists
+                    FileObject targetFo = FileUtil.toFileObject(target);
+                    if (targetFo == null) {
+                        LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", target);
+                        return null;
+                    }
+                    return targetFo;
+                }
+                // does not exist -> create it
+                LOGGER.log(Level.FINE, "Local file {0} does not exists so it will be created", target.getName());
+
+                File parent = target.getParentFile();
+                boolean parentExists = parent.isDirectory();
+                if (!parentExists) {
+                    parentExists = parent.mkdirs();
+                }
+                if (!parentExists) {
+                    LOGGER.log(Level.INFO, "Cannot create parent directory {0}", parent);
+                    return null;
+                }
+                FileObject parentFo = FileUtil.toFileObject(parent);
+                if (parentFo == null) {
+                    LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", parent);
+                    return null;
+                }
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("Content of %s copied into %s: %s", tmpLocalFileName, localFileName, moved.get()));
+                    LOGGER.fine(String.format("Data file %s created.", target.getName()));
+                }
+                try {
+                    return parentFo.createData(target.getName());
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Error while creating local file '" + target + "'", ex);
+                    return null;
                 }
             }
         });
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Content of tmp local file copied into %s: %s", target.getName(), moved.get()));
+        }
         return moved.get();
     }
 
@@ -889,13 +925,16 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     }
 
     /**
-     * Check whether any of parent file is not a symlink.
+     * Check whether any of parent file (but not {@link TransferFile#isProjectRoot() project root}) is a symlink.
      * @param file file to check
-     * @return {@code true} if any of parent file is a symlink, {@code false} otherwise
+     * @return {@code true} if any of parent file (but not {@link TransferFile#isProjectRoot() project root}) is a symlink, {@code false} otherwise
      */
     private boolean isParentLink(TransferFile file) {
         while (file.hasParent()) {
             TransferFile parent = file.getParent();
+            if (parent.isProjectRoot()) {
+                return false;
+            }
             if (parent.isLink()) {
                 return true;
             }
@@ -1089,11 +1128,13 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     }
 
     private boolean cdBaseRemoteDirectory(String subdirectory, boolean create) throws RemoteException {
-        assert subdirectory == null || !subdirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]" ;
+        assert subdirectory == null || !subdirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR) : "Subdirectory must be null or relative [" + subdirectory + "]";
 
         String path = baseRemoteDirectory;
         if (subdirectory != null && !subdirectory.equals(TransferFile.REMOTE_PROJECT_ROOT)) {
-            path = baseRemoteDirectory + TransferFile.REMOTE_PATH_SEPARATOR + subdirectory;
+            path = baseRemoteDirectory
+                    + (baseRemoteDirectory.equals(TransferFile.REMOTE_PATH_SEPARATOR) ? "" : TransferFile.REMOTE_PATH_SEPARATOR) // upload directly to root directory "/"? // NOI18N
+                    + subdirectory;
         }
         return cdRemoteDirectory(path, create);
     }
@@ -1128,19 +1169,19 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 if (!remoteClient.makeDirectory(dir)) {
                     // XXX check 52x codes
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Cannot create directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
+                        LOGGER.log(Level.FINE, "Cannot create directory: {0}", getWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
                     }
                     throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDirectory", dir), remoteClient.getReplyString());
                 } else if (!remoteClient.changeWorkingDirectory(dir)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Cannot enter directory: {0}", remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
+                        LOGGER.log(Level.FINE, "Cannot enter directory: {0}", getWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + dir);
                     }
                     return false;
                     // XXX
                     //throw new RemoteException("Cannot change directory '" + dir + "' [" + remoteClient.getReplyString() + "]");
                 }
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Directory '{0}' created and entered", remoteClient.printWorkingDirectory());
+                    LOGGER.log(Level.FINE, "Directory '{0}' created and entered", getWorkingDirectory());
                 }
             }
         }
@@ -1274,6 +1315,13 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         }
         return dirs;
     }
+
+    // #204874 - some servers return ending '/' for directories => remove it
+    private synchronized String getWorkingDirectory() throws RemoteException {
+        return RemoteUtils.sanitizeDirectoryPath(remoteClient.printWorkingDirectory());
+    }
+
+    //~ Inner classes
 
     public static interface OperationMonitor {
         /**

@@ -83,7 +83,7 @@ public class Utils {
     
     public static String getProjectName(Lookup.Provider project) {
         if (project == null) {
-            return SelectProfilingTask.EXTERNAL_APPLICATION_STRING;
+            return Bundle.SelectProfilingTask_ExternalApplicationString();
         }
 
         return ProjectUtilities.getDisplayName(project);

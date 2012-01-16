@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.modules.git.Git;
@@ -95,7 +95,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                         if (checkout.isCreateBranchSelected()) {
                             revision = checkout.getBranchName();
                             LOG.log(Level.FINE, "Creating branch: {0}:{1}", new Object[] { revision, checkout.getRevision() }); //NOI18N
-                            GitBranch branch = client.createBranch(revision, checkout.getRevision(), this);
+                            GitBranch branch = client.createBranch(revision, checkout.getRevision(), getProgressMonitor());
                             log(checkout.getRevision(), branch);
                             
                         }
@@ -123,7 +123,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                         client.addNotificationListener(new DefaultFileListener(new File[] { repository }));
                         LOG.log(Level.FINE, "Checking out commit: {0}", revision); //NOI18N
                         try {
-                            client.checkoutRevision(revision, true, this);
+                            client.checkoutRevision(revision, true, getProgressMonitor());
                         } catch (GitException.CheckoutConflictException ex) {
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
@@ -166,15 +166,15 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                     } else if (o == revert) {
                         GitClient client = getClient();
                         LOG.log(Level.FINE, "Checking out paths from HEAD"); //NOI18N
-                        client.checkout(conflicts, GitUtils.HEAD, true, this);
+                        client.checkout(conflicts, GitUtils.HEAD, true, getProgressMonitor());
                         LOG.log(Level.FINE, "Cleanup new files"); //NOI18N
-                        client.clean(conflicts, this);
+                        client.clean(conflicts, getProgressMonitor());
                         LOG.log(Level.FINE, "Checking out branch: {0}, second shot", revision); //NOI18N
-                        client.checkoutRevision(revision, true, this);
+                        client.checkoutRevision(revision, true, getProgressMonitor());
                         notifiedFiles.addAll(Arrays.asList(conflicts));
                     } else if (o == review) {
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                        GitUtils.openInVersioningView(Arrays.asList(conflicts), repository, this);
+                        GitUtils.openInVersioningView(Arrays.asList(conflicts), repository, getProgressMonitor());
                     }
                 }
 

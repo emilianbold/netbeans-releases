@@ -172,7 +172,7 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
             task.cancel();
         }
         Mercurial.getInstance().clearRequestProcessor(repositoryRoot);
-        getProgressHandle().finish();
+        finnishProgress();
         canceled = true;
         return true;
     }

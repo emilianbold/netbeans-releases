@@ -193,6 +193,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_SEMICOLON = {
         "return" // NOI18N
     };
+    
+    private static final String[] PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS = {
+        "callable" //NOI18N
+    };
 
     final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
 
@@ -658,6 +662,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 } else if (element instanceof InterfaceElement) {
                     completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, kind, endWithDoubleColon));
                 }
+            }
+        }
+        for (String construct : PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS) {
+            if (startsWith(construct, request.prefix)) {
+                completionResult.add(new PHPCompletionItem.LanguageConstructForTypeHint(construct, request));
             }
         }
     }

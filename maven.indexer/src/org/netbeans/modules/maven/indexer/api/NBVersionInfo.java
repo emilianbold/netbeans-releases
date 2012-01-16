@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.indexer.api;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.util.Utilities;
 
 /**
@@ -132,11 +133,11 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         return packaging;
     }
 
-    public String getProjectName() {
+    public @CheckForNull String getProjectName() {
         return projectName;
     }
 
-    public String getProjectDescription() {
+    public @CheckForNull String getProjectDescription() {
         return projectDescription;
     }
 

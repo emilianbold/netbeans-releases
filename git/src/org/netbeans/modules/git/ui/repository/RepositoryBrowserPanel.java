@@ -76,7 +76,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
@@ -92,6 +92,7 @@ import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -656,7 +657,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        final java.util.Map<String, GitBranch> branches = client.getBranches(true, this);
+                        final java.util.Map<String, GitBranch> branches = client.getBranches(true, getProgressMonitor());
                         if (!isCanceled()) {
                             refreshBranches(branches);
                         }
@@ -695,6 +696,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (RepositoryInfo.PROPERTY_BRANCHES.equals(evt.getPropertyName())) {
                 RP.post(new Runnable() {
                     @Override
+                    @SuppressWarnings("unchecked")
                     public void run () {
                         refreshBranches((java.util.Map<String, GitBranch>) evt.getNewValue());
                     }
@@ -990,7 +992,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        final java.util.Map<String, GitTag> tags = client.getTags(NULL_PROGRESS_MONITOR, false);
+                        final java.util.Map<String, GitTag> tags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
                         if (!isCanceled()) {
                             refreshTags(tags);
                         }
@@ -1025,6 +1027,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (RepositoryInfo.PROPERTY_TAGS.equals(evt.getPropertyName())) {
                 RP.post(new Runnable() {
                     @Override
+                    @SuppressWarnings("unchecked")
                     public void run () {
                         refreshTags((java.util.Map<String, GitTag>) evt.getNewValue());
                     }
@@ -1238,6 +1241,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (!refreshing && RepositoryInfo.PROPERTY_REMOTES.equals(evt.getPropertyName())) {
                 RP.post(new Runnable() {
                     @Override
+                    @SuppressWarnings("unchecked")
                     public void run () {
                         refreshRemotes((java.util.Map<String, GitRemoteConfig>) evt.getNewValue());
                     }

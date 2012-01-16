@@ -41,24 +41,106 @@
  */
 package org.netbeans.libs.git;
 
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.revwalk.RevObject;
+import org.eclipse.jgit.revwalk.RevTag;
+
 /**
  *
  * @author ondra
  */
-public interface GitTag {
-    
-    public String getTagId ();
+public final class GitTag {
+    private final String id;
+    private final String name;
+    private final String message;
+    private final String taggedObject;
+    private final GitUser tagger;
+    private final GitObjectType type;
+    private boolean lightWeight;
 
-    public String getTagName ();
+    GitTag (RevTag revTag) {
+        this.id = ObjectId.toString(revTag.getId());
+        this.name = revTag.getTagName();
+        this.message = revTag.getFullMessage();
+        this.taggedObject = ObjectId.toString(revTag.getObject().getId());
+        PersonIdent personIdent = revTag.getTaggerIdent();
+        if (personIdent == null) {
+            personIdent = new PersonIdent("", ""); //NOI18N
+        }
+        this.tagger = new GitUser(personIdent.getName(), personIdent.getEmailAddress());
+        this.type = getType(revTag.getObject());
+        this.lightWeight = false;
+    }
+
+    GitTag (String tagName, RevObject revObject) {
+        this.id = ObjectId.toString(revObject.getId());
+        this.name = tagName;
+        this.message = null;
+        this.taggedObject = id;
+        this.tagger = null;
+        this.type = getType(revObject);
+        this.lightWeight = true;
+    }
+
+    GitTag (String tagName, GitRevisionInfo revCommit) {
+        this.id = revCommit.getRevision();
+        this.name = tagName;
+        this.message = revCommit.getFullMessage();
+        this.taggedObject = id;
+        this.tagger = revCommit.getAuthor() == null ? revCommit.getCommitter() : revCommit.getAuthor();
+        this.type = GitObjectType.COMMIT;
+        this.lightWeight = true;
+    }
+
+    public String getTagId () {
+        return id;
+    }
+
+    public String getTagName () {
+        return name;
+    }
     
-    public String getTaggedObjectId ();
-    
-    public String getMessage ();
-    
-    public GitUser getTagger ();
-    
-    public GitObjectType getTaggedObjectType ();
-    
-    public boolean isLightWeight ();
+    public String getTaggedObjectId () {
+        return taggedObject;
+    }
+
+    public String getMessage () {
+        return message;
+    }
+
+    public GitUser getTagger () {
+        return tagger;
+    }
+
+    public GitObjectType getTaggedObjectType () {
+        return type;
+    }
+
+    public boolean isLightWeight () {
+        return lightWeight;
+    }
+
+    private GitObjectType getType (RevObject object) {
+        GitObjectType objType = GitObjectType.UNKNOWN;
+        if (object != null) {
+            switch (object.getType()) {
+                case Constants.OBJ_COMMIT:
+                    objType = GitObjectType.COMMIT;
+                    break;
+                case Constants.OBJ_BLOB:
+                    objType = GitObjectType.BLOB;
+                    break;
+                case Constants.OBJ_TAG:
+                    objType = GitObjectType.TAG;
+                    break;
+                case Constants.OBJ_TREE:
+                    objType = GitObjectType.TREE;
+                    break;
+            }
+        }
+        return objType;
+    }
     
 }

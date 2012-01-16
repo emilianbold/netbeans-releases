@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.29
+#Version 3.32
 
 CLSS public abstract interface java.io.Serializable
 
@@ -129,6 +129,7 @@ innr public final static Registry
 meth protected abstract void doSearch()
 meth protected void add(org.openidex.search.SearchType)
 meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void onStopSearch()
 meth protected void prepareSearch()
 meth protected void processSearchObject(java.lang.Object)
 meth public abstract org.openide.nodes.Node getNodeForFoundObject(java.lang.Object)

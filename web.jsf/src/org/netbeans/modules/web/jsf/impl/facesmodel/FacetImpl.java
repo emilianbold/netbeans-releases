@@ -65,12 +65,13 @@ class FacetImpl extends IdentifiableDescriptionGroupImpl implements Facet {
         this(model, createElementNS(model, JSFConfigQNames.FACET));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.Facet#getFacetName()
+    /**
+     * Gets facet-name of the faces-config-facetType.
+     * @return trimmed facet-name if any, {@code null} otherwise
      */
     public String getFacetName() {
-        return getChildElementText(
-                JSFConfigQNames.FACET_NAME.getQName(getNamespaceURI()));
+        String facetName = getChildElementText(JSFConfigQNames.FACET_NAME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickJavaIdentifierType(facetName);
     }
 
     /* (non-Javadoc)

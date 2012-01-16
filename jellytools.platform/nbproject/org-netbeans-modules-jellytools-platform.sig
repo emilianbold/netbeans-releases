@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.9
+#Version 3.11
 
 CLSS public java.lang.Object
 cons public init()
@@ -309,6 +309,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,int)
 cons public init(javax.swing.JComponent)
 innr protected final static OutputTabSubchooser
+meth public final void makeComponentVisible()
 meth public int findLine(java.lang.String)
 meth public int getLength()
 meth public int getLineCount()
@@ -318,13 +319,13 @@ meth public java.lang.String getText(int,int)
 meth public org.netbeans.jemmy.operators.ComponentOperator outputPaneOperator()
 meth public org.netbeans.jemmy.operators.JButtonOperator btnAntSettings()
 meth public org.netbeans.jemmy.operators.JButtonOperator btnReRun()
+meth public org.netbeans.jemmy.operators.JButtonOperator btnReRunWithDifferentParameters()
 meth public org.netbeans.jemmy.operators.JButtonOperator btnStop()
 meth public void clear()
 meth public void close()
 meth public void copy()
 meth public void find()
 meth public void findNext()
-meth public void makeComponentVisible()
 meth public void nextError()
 meth public void previousError()
 meth public void saveAs()
@@ -333,7 +334,7 @@ meth public void verify()
 meth public void waitText(java.lang.String)
 meth public void wrapText()
 supr org.netbeans.jemmy.operators.JComponentOperator
-hfds btnAntSettings,btnReRun,btnStop,clearAction,closeAction,copyAction,findAction,findNextAction,nextErrorAction,outputPaneOperator,previousErrorAction,saveAsAction,selectAllAction,wrapTextAction
+hfds btnAntSettings,btnReRun,btnReRunWithDifferentParameters,btnStop,clearAction,closeAction,copyAction,findAction,findNextAction,nextErrorAction,outputPaneOperator,previousErrorAction,saveAsAction,wrapTextAction
 
 CLSS protected final static org.netbeans.jellytools.OutputTabOperator$OutputTabSubchooser
  outer org.netbeans.jellytools.OutputTabOperator
@@ -381,16 +382,6 @@ meth public void update()
 meth public void waitTabEnabled(java.lang.String)
 supr org.netbeans.jellytools.NbDialogOperator
 hfds AVAILABLE_PLUGINS_LABEL,INSTALLED_LABEL,PLUGINS_ITEM,TITLE,TOOLS_ITEM,_tabbedPane
-
-CLSS public org.netbeans.jellytools.PopupSwitcherOperator
-cons public init()
-cons public init(javax.swing.JTable)
-meth public static javax.swing.JTable waitPopupSwitcher()
-meth public void selectItem(int)
-meth public void selectItem(int,int)
-meth public void selectItem(java.lang.String)
-supr org.netbeans.jemmy.operators.JTableOperator
-hcls PopupChooser
 
 CLSS public org.netbeans.jellytools.QuestionDialogOperator
 cons public init()
@@ -451,7 +442,6 @@ meth public void maximize()
 meth public void pushMenuOnTab(java.lang.String)
 meth public void restore()
 meth public void save()
-meth public void saveDocument()
 meth public void setUnmodified()
 meth public void waitClosed()
 supr org.netbeans.jemmy.operators.JComponentOperator
@@ -528,6 +518,7 @@ fld protected final static long AFTER_ACTION_WAIT_TIME = 0
 fld protected final static long SELECTION_WAIT_TIME = 300
 fld protected final static long WAIT_AFTER_SHORTCUT_TIMEOUT = 0
 fld protected java.lang.Class systemActionClass
+fld protected java.lang.String layerInstancePath
 fld protected java.lang.String menuPath
 fld protected java.lang.String popupPath
 fld protected javax.swing.KeyStroke[] keystrokes
@@ -638,7 +629,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds menuPath,popupPath,windowItem
+hfds configureWindowItem,menuPath,popupPath,windowItem
 
 CLSS public org.netbeans.jellytools.actions.CloseAction
 cons public init()
@@ -696,7 +687,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds menuPath,popupPath,windowItem
+hfds configureWindowItem,menuPath,popupPath,windowItem
 
 CLSS public org.netbeans.jellytools.actions.DocumentsAction
 cons public init()
@@ -746,7 +737,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds popupPath,windowItem,windowMaximizePath
+hfds configureWindowItem,popupPathMaximize,windowItem,windowMaximizePath
 
 CLSS public org.netbeans.jellytools.actions.OpenAction
 cons public init()
@@ -788,7 +779,7 @@ hfds renamePopup
 
 CLSS public org.netbeans.jellytools.actions.ReplaceAction
 cons public init()
-supr org.netbeans.jellytools.actions.ActionNoBlock
+supr org.netbeans.jellytools.actions.Action
 hfds keystroke,replaceMenu
 
 CLSS public org.netbeans.jellytools.actions.RestoreWindowAction
@@ -801,7 +792,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds popupPath,windowItem,windowRestorePath
+hfds configureWindowItem,popupPathMaximize,windowItem,windowMaximizePath
 
 CLSS public org.netbeans.jellytools.actions.SaveAction
 cons public init()
@@ -847,7 +838,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds menuPath,popupPath,windowItem
+hfds configureWindowItem,floatMenuPath,floatPopupPath,windowItem
 
 CLSS public org.netbeans.jellytools.actions.ViewAction
 cons public init()
@@ -869,7 +860,7 @@ meth public void saveAsTemplate()
 meth public void verifyPopup()
 meth public void view()
 supr org.netbeans.jellytools.nodes.Node
-hfds copyAction,cutAction,deleteAction,openAction,pasteAction,propertiesAction,renameAction,saveAsTemplateAction,viewAction
+hfds copyAction,cutAction,deleteAction,openAction,pasteAction,propertiesAction,saveAsTemplateAction,viewAction
 
 CLSS public org.netbeans.jellytools.nodes.Node
 cons public init(org.netbeans.jellytools.nodes.Node,int)
@@ -877,6 +868,7 @@ cons public init(org.netbeans.jellytools.nodes.Node,java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JTreeOperator,java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JTreeOperator,java.lang.String,java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JTreeOperator,javax.swing.tree.TreePath)
+fld protected java.lang.String stringPath
 fld protected javax.swing.tree.TreePath treePath
 fld protected org.netbeans.jemmy.operators.JTreeOperator treeOperator
 meth public boolean isChildPresent(java.lang.String)
@@ -1056,6 +1048,7 @@ meth public org.netbeans.jemmy.operators.JEditorPaneOperator txtDescription()
 meth public org.netbeans.jemmy.operators.JLabelOperator lblDescriptionHeader()
 meth public org.netbeans.jemmy.operators.JTableOperator tblSheet()
 meth public static org.netbeans.jellytools.properties.PropertySheetOperator invoke()
+meth public void clickForPopup()
 meth public void close()
 meth public void help()
 meth public void showDescriptionArea()
@@ -1181,23 +1174,26 @@ hfds _lstFontName,_lstFontSize,_lstFontStyle,_txtFontName,_txtFontSize,_txtFontS
 CLSS public org.netbeans.jellytools.properties.editors.IconCustomEditorOperator
 cons public init(java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JDialogOperator)
-meth public java.lang.String getName()
-meth public org.netbeans.jemmy.operators.JButtonOperator btSelectFile()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbClasspath()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbFile()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbNoPicture()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbURL()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtName()
-meth public void classpath()
-meth public void file()
-meth public void noPicture()
-meth public void selectFile()
-meth public void setName(java.lang.String)
-meth public void typeName(java.lang.String)
-meth public void uRL()
-meth public void verify()
+meth public java.lang.String getFileOrURL()
+meth public org.netbeans.jellytools.NbDialogOperator browseClasspath()
+meth public org.netbeans.jellytools.NbDialogOperator browseLocalDisk()
+meth public org.netbeans.jellytools.WizardOperator importToProject()
+meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseClasspath()
+meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseLocalDisk()
+meth public org.netbeans.jemmy.operators.JButtonOperator btImportToProject()
+meth public org.netbeans.jemmy.operators.JComboBoxOperator cbFile()
+meth public org.netbeans.jemmy.operators.JComboBoxOperator cbPackage()
+meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbExternalImage()
+meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbImageWithinProject()
+meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbNoImage()
+meth public org.netbeans.jemmy.operators.JTextFieldOperator txtFileOrURL()
+meth public void externalImage()
+meth public void imageWithinProject()
+meth public void noImage()
+meth public void setFileOrURL(java.lang.String)
+meth public void typeFileOrURL(java.lang.String)
 supr org.netbeans.jellytools.NbDialogOperator
-hfds _btSelectFile,_rbClasspath,_rbFile,_rbNoPicture,_rbURL,_txtName
+hfds _btBrowseClasspath,_btBrowseLocalDisk,_btImportToProject,_cbFile,_cbPackage,_rbExternalImage,_rbImageWithinProject,_rbNoImage,_txtFileOrURL
 
 CLSS public org.netbeans.jellytools.properties.editors.PointCustomEditorOperator
 cons public init(java.lang.String)

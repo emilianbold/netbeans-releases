@@ -47,26 +47,36 @@ import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.eclipse.persistence.jpa.jpql.spi.IMappingType;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeDeclaration;
+import org.netbeans.modules.j2ee.persistence.spi.jpql.support.JPAAttribute;
 
 /**
  *
  * @author sp153251
  */
 public class Mapping implements IMapping {
+    
     private final ManagedType parent;
+    private IMappingType mappingType;
+    private IType type;
+    private JPAAttribute attribute;
 
-    public Mapping(ManagedType parent){
+
+    public Mapping(ManagedType parent, JPAAttribute attrib){
         this.parent = parent;
+        this.attribute = attrib;
     }
     
     @Override
     public IMappingType getMappingType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(mappingType == null){
+            mappingType = attribute.getMappingType();
+        }
+        return mappingType;
     }
 
     @Override
     public String getName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return attribute.getName();
     }
 
     @Override
@@ -76,12 +86,19 @@ public class Mapping implements IMapping {
 
     @Override
     public IType getType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(type == null){
+            if(attribute.getType() != null) {
+                type = new Type(parent.getProvider().getTypeRepository(), attribute.getType());
+            } else {
+                type = new Type(parent.getProvider().getTypeRepository(), attribute.getTypeName());
+            }
+        }
+        return type;
     }
 
     @Override
     public ITypeDeclaration getTypeDeclaration() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getType().getTypeDeclaration();
     }
 
     @Override

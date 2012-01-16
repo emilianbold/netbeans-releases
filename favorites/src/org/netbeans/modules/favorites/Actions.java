@@ -93,7 +93,7 @@ public final class Actions extends Object {
     }
     
     @ActionID(id = "org.netbeans.modules.favorites.Add", category = "Window")
-    @ActionRegistration(displayName = "#ACT_Add")
+    @ActionRegistration(displayName = "#ACT_Add", lazy=false)
     @ActionReference(position = 300, path = "UI/ToolActions/Files")
     public static ContextAwareAction add() { return Add.getDefault(); }
 
@@ -104,7 +104,7 @@ public final class Actions extends Object {
     public static Action remove () { return Remove.getDefault(); }
 
     @ActionID(id = "org.netbeans.modules.favorites.Select", category = "Window/SelectDocumentNode")
-    @ActionRegistration(displayName = "#ACT_Select_Main_Menu")
+    @ActionRegistration(displayName = "#ACT_Select_Main_Menu", lazy=false)
     @ActionReference(position = 2800, name = "org-netbeans-modules-favorites-SelectInFavorites", path = "Menu/GoTo")
     public static ContextAwareAction select () { return Select.getDefault(); }
     

@@ -161,7 +161,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         if (getDataObject().getClass() == XMLDataObject.class &&
             !mimeType.equals(XMLDataObject.MIME_PLAIN_XML) &&
             !hasMultiTextEditor()) {
-            return super.createCloneableEditor();
+            return createCloneableEditor();
         }
         return (CloneableEditorSupport.Pane)MultiViews.createCloneableMultiView(mimeType, 
                 getDataObject());

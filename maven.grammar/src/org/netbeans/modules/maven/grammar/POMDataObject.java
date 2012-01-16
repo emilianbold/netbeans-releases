@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.cookies.CloseCookie;
@@ -80,7 +81,6 @@ import org.xml.sax.SAXException;
 @Messages("CTL_SourceTabCaption=&Source")
 public class POMDataObject extends MultiDataObject {
 
-    public static final String MIME_TYPE = "text/x-maven-pom+xml";
     public static final String SETTINGS_MIME_TYPE = "text/x-maven-settings+xml";
 
     private static final Logger LOG = Logger.getLogger(POMDataObject.class.getName());
@@ -94,10 +94,10 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="maven.pom",
-        mimeType=MIME_TYPE,
+        mimeType=Constants.POM_MIME_TYPE,
         position=1
     )
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
@@ -106,7 +106,7 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text",
         mimeType=SETTINGS_MIME_TYPE,
@@ -143,7 +143,7 @@ public class POMDataObject extends MultiDataObject {
         }
 
         @Override protected Pane createPane() {
-            return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(MIME_TYPE, getDataObject());
+            return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(Constants.POM_MIME_TYPE, getDataObject());
         }
 
         protected @Override boolean notifyModified() {

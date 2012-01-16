@@ -51,7 +51,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -65,7 +64,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author ondra
  */
-public abstract class GitProgressSupport implements Runnable, Cancellable, ProgressMonitor {
+public abstract class GitProgressSupport implements Runnable, Cancellable {
     private volatile boolean canceled;
 
     private static final Logger LOG = Logger.getLogger(GitProgressSupport.class.getName());
@@ -77,6 +76,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
     private RequestProcessor.Task task;
     private GitClient gitClient;
     private OutputLogger logger;
+    private final ProgressMonitorImpl progressMonitor = new ProgressMonitorImpl();
 
     public RequestProcessor.Task start (RequestProcessor rp, File repositoryRoot, String displayName) {
         this.originalDisplayName = displayName;
@@ -109,7 +109,6 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
 
     protected abstract void perform ();
 
-    @Override
     public synchronized boolean isCanceled () {
         return canceled;
     }
@@ -211,35 +210,6 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         }
     }
 
-    @Override
-    public void started (String command) {
-        LOG.log(Level.FINE, "command started: {0}", command); //NOI18N
-        getLogger().output(command);
-    }
-
-    @Override
-    public void finished() {
-        LOG.log(Level.FINE, "command finished"); //NOI18N
-    }
-
-    @Override
-    public void preparationsFailed (String message) {
-        LOG.log(Level.FINE, "command could not start: {0}", message); //NOI18N
-        getLogger().output("command could not start: " + message);
-    }
-
-    @Override
-    public void notifyError(String message) {
-        LOG.log(Level.FINE, "error: {0}", message); //NOI18N
-        getLogger().output("error: " + message);
-    }
-
-    @Override
-    public void notifyWarning(String message) {
-        LOG.log(Level.FINE, "warning: {0}", message); //NOI18N
-        getLogger().output("warning: " + message);
-    }
-
     public void outputInRed(String message) {
         LOG.log(Level.FINE, message); //NOI18N
         getLogger().outputInRed(message);
@@ -260,6 +230,47 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
             logger = OutputLogger.getLogger(repositoryRoot);
         }
         return logger;
+    }
+
+    public final ProgressMonitor getProgressMonitor () {
+        return progressMonitor;
+    }
+    
+    private final class ProgressMonitorImpl extends ProgressMonitor {
+
+        @Override
+        public boolean isCanceled () {
+            return GitProgressSupport.this.isCanceled();
+        }
+        
+        @Override
+        public void started (String command) {
+            LOG.log(Level.FINE, "command started: {0}", command); //NOI18N
+            getLogger().output(command);
+        }
+
+        @Override
+        public void finished() {
+            LOG.log(Level.FINE, "command finished"); //NOI18N
+        }
+
+        @Override
+        public void preparationsFailed (String message) {
+            LOG.log(Level.FINE, "command could not start: {0}", message); //NOI18N
+            getLogger().output("command could not start: " + message);
+        }
+
+        @Override
+        public void notifyError(String message) {
+            LOG.log(Level.FINE, "error: {0}", message); //NOI18N
+            getLogger().output("error: " + message);
+        }
+
+        @Override
+        public void notifyWarning(String message) {
+            LOG.log(Level.FINE, "warning: {0}", message); //NOI18N
+            getLogger().output("warning: " + message);
+        }
     }
 
     public class DefaultFileListener implements FileListener {

@@ -60,7 +60,7 @@ import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
@@ -126,6 +126,7 @@ public class FindUsagesTest extends NbTestCase {
         }, false).get();
         setParameters(wuq, true, true, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/package1");
             }
@@ -179,6 +180,7 @@ public class FindUsagesTest extends NbTestCase {
 
         setParameters(wuq, true, true, false, false, false, false);
         final NonRecursiveFolder package1 = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/package1");
             }
@@ -227,7 +229,7 @@ public class FindUsagesTest extends NbTestCase {
                 Element field = klass.getEnclosedElements().get(4);
                 TreePathHandle element = TreePathHandle.create(field, controller);
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
-                wuq[0].getContext().add(RetoucheUtils.getClasspathInfoFor(element));
+                wuq[0].getContext().add(RefactoringUtils.getClasspathInfoFor(element));
             }
         }, false).get();
         setParameters(wuq, true, true, false, false, false, false);
@@ -279,6 +281,7 @@ public class FindUsagesTest extends NbTestCase {
         setParameters(wuq, true, false, false, false, false, true);
         
         final NonRecursiveFolder simplej2seapp = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/simplej2seapp");
             }
@@ -324,6 +327,7 @@ public class FindUsagesTest extends NbTestCase {
         doRefactoring("test204305", wuq, 1);
         
         final NonRecursiveFolder simplej2seapp = new NonRecursiveFolder() {
+            @Override
             public FileObject getFolder() {
                 return projectDir.getFileObject("/src/simplej2seapp");
             }
@@ -345,7 +349,7 @@ public class FindUsagesTest extends NbTestCase {
         doRefactoring("test204519", wuq, 0);
     }
 
-    public void test202412() throws IOException, InterruptedException, ExecutionException { // #202412 NullPointerException at org.netbeans.modules.refactoring.java.RetoucheUtils.getFileObject
+    public void test202412() throws IOException, InterruptedException, ExecutionException { // #202412 NullPointerException at org.netbeans.modules.refactoring.java.RefactoringUtils.getFileObject
         Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
         SourceUtils.waitScanFinished();
         FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/I.java");

@@ -46,7 +46,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
@@ -94,7 +94,7 @@ public class ExportCommitAction extends SingleRepositoryAction {
                                         out = new BufferedOutputStream(new FileOutputStream(toFile));
                                         client.addNotificationListener(new DefaultFileListener(new File[0]));
                                         setProgress(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportCommitAction.preparingDiff")); //NOI18N
-                                        client.exportCommit(revStr, out, this);
+                                        client.exportCommit(revStr, out, getProgressMonitor());
                                         if (!isCanceled()) {
                                             success = true;
                                         }

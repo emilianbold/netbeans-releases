@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
@@ -57,6 +56,8 @@ import org.netbeans.modules.kenai.api.KenaiLicense;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiService;
+import static org.netbeans.modules.kenai.maven.Bundle.*;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Contributor;
 import org.netbeans.modules.maven.model.pom.Developer;
@@ -69,12 +70,15 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Scm;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.TaskListener;
@@ -85,15 +89,20 @@ import org.openide.util.TaskListener;
  *
  * @author dafe
  */
+@ActionID(id="org.netbeans.modules.kenai.maven.KenaiUpdateAction", category="XML")
+@ActionRegistration(lazy=false, displayName="#CTL_KenaiUpdateAction")
+@ActionReference(path="Editors/" + Constants.POM_MIME_TYPE + "/Popup", position=163)
+@Messages("CTL_KenaiUpdateAction=Update from Kenai")
 public final class KenaiUpdateAction extends AbstractAction implements ContextAwareAction, TaskListener {
 
     private Lookup context;
     private String uri;
     private Task updateTask;
 
+    @Messages("TIP_KenaiUpdateAction=Updates POM with information taken from enclosing Kenai project")
     public KenaiUpdateAction() {
-        putValue(Action.NAME, NbBundle.getMessage(KenaiUpdateAction.class, "CTL_KenaiUpdateAction"));
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(KenaiUpdateAction.class, "TIP_KenaiUpdateAction"));
+        putValue(Action.NAME, CTL_KenaiUpdateAction());
+        putValue(Action.SHORT_DESCRIPTION, TIP_KenaiUpdateAction());
     }
 
     public KenaiUpdateAction(Lookup context) {
@@ -136,9 +145,15 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
         updateTask.addTaskListener(this);
     }
 
+    @Messages({
+        "LBL_UpdateProgress=Updating POM from Kenai project info...",
+        "MSG_NotEditable=Update failed, as POM is not editable.",
+        "MSG_NoProject=Update failed, cannot access Kenai project.",
+        "MSG_UpdateFail=Error while processing, update failed.",
+        "MSG_SaveFail=Error while saving changes to POM file."
+    })
     private void doPerformAction () {
-        ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(KenaiUpdateAction.class, "LBL_UpdateProgress"));
+        ProgressHandle handle = ProgressHandleFactory.createHandle(LBL_UpdateProgress());
 
         try {
             handle.start(4);
@@ -150,8 +165,7 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
             if (ms.isEditable()) {
                 model = POMModelFactory.getDefault().getModel(ms);
             } else {
-                StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NotEditable"));
+                StatusDisplayer.getDefault().setStatusText(MSG_NotEditable());
             }
 
             handle.progress(1);
@@ -160,10 +174,8 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
             try {
                 project = KenaiProject.forRepository(uri);
             } catch (KenaiException ex) {
-                String msgNoProject = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_NoProject");
-                StatusDisplayer.getDefault().setStatusText(msgNoProject);
-                Logger.getLogger(KenaiUpdateAction.class.getName()).log(
-                        Level.WARNING, msgNoProject, ex);
+                StatusDisplayer.getDefault().setStatusText(MSG_NoProject());
+                Logger.getLogger(KenaiUpdateAction.class.getName()).log(Level.WARNING, MSG_NoProject(), ex);
             }
 
             handle.progress(2);
@@ -172,10 +184,8 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
                 try {
                     performUpdate(model, project);
                 } catch (KenaiException ex) {
-                    String msgFail = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_UpdateFail");
-                    StatusDisplayer.getDefault().setStatusText(msgFail);
-                    Logger.getLogger(KenaiUpdateAction.class.getName()).log(
-                            Level.WARNING, msgFail, ex);
+                    StatusDisplayer.getDefault().setStatusText(MSG_UpdateFail());
+                    Logger.getLogger(KenaiUpdateAction.class.getName()).log(Level.WARNING, MSG_UpdateFail(), ex);
                 }
             }
 
@@ -184,10 +194,8 @@ public final class KenaiUpdateAction extends AbstractAction implements ContextAw
             try {
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
-                String msgFail = NbBundle.getMessage(KenaiUpdateAction.class, "MSG_SaveFail");
-                StatusDisplayer.getDefault().setStatusText(msgFail);
-                Logger.getLogger(KenaiUpdateAction.class.getName()).log(
-                        Level.WARNING, msgFail, ex);
+                StatusDisplayer.getDefault().setStatusText(MSG_SaveFail());
+                Logger.getLogger(KenaiUpdateAction.class.getName()).log(Level.WARNING, MSG_SaveFail(), ex);
             }
 
         } finally {

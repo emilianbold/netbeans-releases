@@ -58,6 +58,7 @@ import java.io.File;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
@@ -66,7 +67,7 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
  *
  * @author Maros Sandor
  */
-class SearchExecutor implements Runnable {
+class SearchExecutor extends SvnProgressSupport {
 
     public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
 
@@ -87,10 +88,18 @@ class SearchExecutor implements Runnable {
     private int                         completedSearches;
     private boolean                     searchCanceled;
     private List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
+    static final int DEFAULT_LIMIT = 10;
+    private final SVNRevision fromRevision;
+    private final SVNRevision toRevision;
+    private final int limit;
+    private SvnProgressSupport currentSearch;
 
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
         criteria = master.getCriteria();
+        fromRevision = criteria.getFrom();
+        toRevision = criteria.getTo();
+        limit = searchingUrl() || master.getRoots().length == 1 ? DEFAULT_LIMIT : -1;
     }
 
     private void populatePathToRoot() {
@@ -114,7 +123,6 @@ class SearchExecutor implements Runnable {
             }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
         }
     }
 
@@ -158,11 +166,8 @@ class SearchExecutor implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void perform () {
         populatePathToRoot();
-
-        final SVNRevision fromRevision = criteria.getFrom();
-        final SVNRevision toRevision = criteria.getTo();
 
         if (fromRevision == null || toRevision == null) {
             // guess a sync problem, search criteria changed while populatePathToRoot was running
@@ -172,30 +177,36 @@ class SearchExecutor implements Runnable {
         completedSearches = 0;
         if (searchingUrl()) {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());
-            SvnProgressSupport support = new SvnProgressSupport() {
+            currentSearch = new SvnProgressSupport() {
                 @Override
                 public void perform() {
-                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
+                    search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, false, limit);
+                    checkFinished();
                 }
             };
-            support.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
+            currentSearch.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")).waitFinished(); // NOI18N
         } else {
             for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
                 final SVNUrl rootUrl = (SVNUrl) i.next();
                 final Set<File> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
-                SvnProgressSupport support = new SvnProgressSupport() {
+                currentSearch = new SvnProgressSupport() {
                     @Override
                     public void perform() {
-                        search(rootUrl, files, fromRevision, toRevision, this, master.fileInfoCheckBox.isSelected());
+                        search(rootUrl, files, fromRevision, toRevision, this, false, limit);
+                        checkFinished();
                     }
                 };
-                support.start(rp, rootUrl, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
+                currentSearch.start(rp, rootUrl, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")).waitFinished(); // NOI18N
+                if (isCanceled() || currentSearch.isCanceled()) {
+                    cancel();
+                    break;
+                }
             }
         }
     }
 
-    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths) {
+    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths, int limit) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(rootUrl, progressSupport);
@@ -209,7 +220,7 @@ class SearchExecutor implements Runnable {
         }
         if (searchingUrl()) {
             try {
-                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, fetchDetailsPaths, 0);
+                ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, toRevision, fromRevision, false, fetchDetailsPaths, limit);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
@@ -227,7 +238,7 @@ class SearchExecutor implements Runnable {
                     }
                     paths[idx++] = p;
                 }
-                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, fromRevision, toRevision, false, fetchDetailsPaths);
+                ISVNLogMessage [] messages = SvnUtils.getLogMessages(client, rootUrl, paths, toRevision, fromRevision, false, fetchDetailsPaths, limit);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
                 try {
@@ -236,7 +247,7 @@ class SearchExecutor implements Runnable {
                     // listed in paths[]. This causes problems when the given user has restricted access only to a specific folder.
                     if(SvnClientExceptionHandler.isHTTP403(e.getMessage())) { // 403 forbidden
                         for(String path : paths) {
-                            ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, fetchDetailsPaths, 0);
+                            ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, toRevision, fromRevision, false, fetchDetailsPaths, limit);
                             appendResults(rootUrl, messages);
                         }
                         return;
@@ -262,56 +273,17 @@ class SearchExecutor implements Runnable {
      * @param logMessages events in chronological order
      */
     private synchronized void appendResults(SVNUrl rootUrl, ISVNLogMessage[] logMessages) {
-        // /tags/tag-JavaAppX => /branches/brenc2-JavaAppX
-        Map<String, String> historyPaths = new HashMap<String, String>();
-
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             ISVNLogMessage logMessage = logMessages[i];
             if(logMessage == null) continue;
-            String username = criteria.getUsername();
-            String msg = criteria.getCommitMessage();
-            String logMsg = logMessage.getMessage();
-            if (username != null && !username.equals(logMessage.getAuthor())) continue;
-            if (msg != null && logMsg != null && logMsg.indexOf(msg) == -1) continue;
-            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl);
-            for (RepositoryRevision.Event event : rev.getEvents()) {
-                if (event.getChangedPath().getAction() == 'A' && event.getChangedPath().getCopySrcPath() != null) {
-                    // this indicates that in this revision, the file/folder was copied to a new location
-                    String existingMapping = historyPaths.get(event.getChangedPath().getPath());
-                    if (existingMapping == null) {
-                        existingMapping = event.getChangedPath().getPath();
-                    }
-                    historyPaths.put(event.getChangedPath().getCopySrcPath(), existingMapping);
-                }
-                String originalFilePath = event.getChangedPath().getPath();
-                for (String srcPath : historyPaths.keySet()) {
-                    if ( originalFilePath.startsWith(srcPath) &&
-                         (originalFilePath.length() == srcPath.length() || originalFilePath.charAt(srcPath.length()) == '/') )
-                    {
-                        originalFilePath = historyPaths.get(srcPath) + originalFilePath.substring(srcPath.length());
-                        break;
-                    }
-                }
-                File file = computeFile(originalFilePath);
-                event.setFile(file);
-            }
+            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl, master.getRoots(), pathToRoot);
             results.add(rev);
         }
-        checkFinished();
     }
 
     private boolean searchingUrl() {
         return master.getRepositoryUrl() != null;
-    }
-
-    private File computeFile(String path) {
-        for (String s : pathToRoot.keySet()) {
-            if (path.startsWith(s)) {
-                return new File(pathToRoot.get(s), path.substring(s.length()));
-            }
-        }
-        return null;
     }
 
     private void checkFinished() {
@@ -320,11 +292,43 @@ class SearchExecutor implements Runnable {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    master.setResults(results);
+                    master.setResults(results, SearchHistoryPanel.createKenaiUsersMap(results), limit);
                 }
             });
         }
     }
 
+    void start() {
+        start(Subversion.getInstance().getParallelRequestProcessor(), null, null);
+    }
 
+    @Override
+    public synchronized boolean cancel() {
+        if (currentSearch != null) {
+            currentSearch.cancel();
+        }
+        return super.cancel();
+    }
+
+    @Override
+    protected void finnishProgress () {
+
+    }
+
+    @Override
+    protected void startProgress () {
+
+    }
+
+    @Override
+    protected ProgressHandle getProgressHandle () {
+        return null;
+    }
+
+    List<RepositoryRevision> search(SVNUrl repositoryUrl, int count, SvnProgressSupport supp) {
+        results.clear();
+        search(repositoryUrl, searchingUrl() ? null : new HashSet<File>(Arrays.asList(master.getRoots())),
+                fromRevision, toRevision, supp, false, count);
+        return new ArrayList<RepositoryRevision>(results);
+    }
 }

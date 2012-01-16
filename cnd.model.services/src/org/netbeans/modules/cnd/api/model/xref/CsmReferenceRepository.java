@@ -131,6 +131,7 @@ public abstract class CsmReferenceRepository {
         Empty() {
         }
 
+        @Override
         public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }
@@ -139,10 +140,12 @@ public abstract class CsmReferenceRepository {
             return Collections.<CsmObject, Collection<CsmReference>>emptyMap();
         }
 
+        @Override
         public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }
 
+        @Override
         public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.16
+#Version 1.19
 
 CLSS public abstract interface java.io.Serializable
 
@@ -213,6 +213,21 @@ meth public boolean isCheckInComments()
 meth public void setCheckInComments(boolean)
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds checkInComments
+
+CLSS public final org.netbeans.modules.refactoring.api.Scope
+meth public java.util.Set<org.netbeans.api.fileinfo.NonRecursiveFolder> getFolders()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.Set<org.openide.filesystems.FileObject> getFiles()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.Set<org.openide.filesystems.FileObject> getSourceRoots()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.modules.refactoring.api.Scope create(java.util.Collection<org.openide.filesystems.FileObject>,java.util.Collection<org.netbeans.api.fileinfo.NonRecursiveFolder>,java.util.Collection<org.openide.filesystems.FileObject>)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+supr java.lang.Object
+hfds files,folders,sourceRoots
 
 CLSS public final org.netbeans.modules.refactoring.api.SingleCopyRefactoring
 cons public init(org.openide.util.Lookup)

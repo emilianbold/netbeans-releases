@@ -57,9 +57,6 @@ import javax.accessibility.AccessibleContext;
 
 import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
-import org.netbeans.api.javahelp.Help;
 
 
 /**
@@ -331,9 +328,10 @@ public class MasterDetailView extends TopComponent {
     }
 
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {
-	Help help = Lookup.getDefault().lookup(Help.class);
-	help.showHelp(getHelpCtx());
-
+        HelpCtx help = getHelpCtx();
+        if (help != null) {
+            help.display();
+        }
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {

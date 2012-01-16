@@ -119,17 +119,16 @@ public abstract class VCSFileNode<I extends VCSFileInformation> {
     
     public String getRelativePath() {        
         if(shortPath == null) {
-            shortPath = file.getAbsolutePath();
-
+            String path = file.getAbsolutePath();
             String rootPath = root.getAbsolutePath();
-            if(shortPath.startsWith(rootPath)) {
-                if (shortPath.length() == rootPath.length()) {
-                    return "."; //NOI18N
+            if (path.startsWith(rootPath)) {
+                if (path.length() == rootPath.length()) {
+                    shortPath = "."; //NOI18N
                 } else {
-                    return shortPath.substring(rootPath.length() + 1);
+                    shortPath = path.substring(rootPath.length() + 1);
                 }
             } else {
-                return NbBundle.getMessage(VCSFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
+                shortPath = NbBundle.getMessage(VCSFileNode.class, "LBL_Location_NotInRepository"); //NOI18N
             }
         }
         return shortPath;

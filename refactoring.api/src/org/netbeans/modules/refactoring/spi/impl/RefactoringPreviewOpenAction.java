@@ -72,6 +72,7 @@ public class RefactoringPreviewOpenAction extends AbstractAction {
      *
      * @param  e  event that caused this action to be called
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         RefactoringPanelContainer resultView = RefactoringPanelContainer.getRefactoringComponent();
         resultView.open();

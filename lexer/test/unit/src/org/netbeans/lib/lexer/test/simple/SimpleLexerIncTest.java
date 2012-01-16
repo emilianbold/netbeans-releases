@@ -46,10 +46,13 @@ package org.netbeans.lib.lexer.test.simple;
 
 import java.io.PrintStream;
 import java.util.logging.Level;
+import junit.framework.TestCase;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.lib.lexer.lang.TestTokenId;
 import java.util.ConcurrentModificationException;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import junit.framework.Assert;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -346,4 +349,108 @@ public class SimpleLexerIncTest extends NbTestCase {
         LexerTestUtilities.incCheck(doc, false);
     }
 
+
+    public void testTokenToString() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        doc.putProperty(Language.class,TestTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        assertNotNull("Null token hierarchy for document", hi);
+        CharSequence tokenText;
+
+        // Check insertion of text that produces token with LA=0
+        String id1 = "abcdefghij";
+        String id2 = "abcdefghijklmnopqrstuvwxyz0123456789";
+        assert (id2.length() > 30); // DefaultToken.INPUT_SOURCE_SUBSEQUENCE_THRESHOLD
+        doc.insertString(0, "+" + id1 + "+" + id2 + "+", null);
+//        LexerTestUtilities.incCheck(doc, false);
+        
+        TokenSequence<?> ts = hi.tokenSequence();
+        int offset = 0;
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+        offset++;
+        assertTrue(ts.moveNext());
+//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, offset);
+//        checkTokenText(ts.token(), id1);
+        tokenText = ts.token().text();
+        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+        checkText(tokenText, id1, false);
+        offset += id1.length();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+        offset++;
+        assertTrue(ts.moveNext());
+//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id2, offset);
+        checkTokenText(ts.token(), id2);
+//        tokenText = ts.token().text();
+//        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+//        checkText(tokenText, id2, false);
+        offset += id2.length();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+        offset++;
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", offset);
+        offset++;
+        assertFalse(ts.moveNext());
+        
+
+        doc.insertString(0, id1, null); // Insert extra chars
+
+        ts = hi.tokenSequence();
+        offset = 0;
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, 0);
+        offset += id1.length();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+        offset++;
+        assertTrue(ts.moveNext());
+//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, offset);
+        checkTokenText(ts.token(), id1);
+//        tokenText = ts.token().text();
+//        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+//        checkText(tokenText, id1, false);
+        offset += id1.length();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+        offset++;
+        assertTrue(ts.moveNext());
+//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id2, offset);
+        checkTokenText(ts.token(), id2);
+//        tokenText = ts.token().text();
+//        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+//        checkText(tokenText, id2, false);
+        offset += id2.length();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+        offset++;
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", offset);
+        offset++;
+        assertFalse(ts.moveNext());
+    }
+    
+    private static void checkTokenText(Token token, String expectedText) {
+        for (int i = 0; i < 10; i++) { // Reach token text caching
+            CharSequence tokenText = token.text();
+            checkText(tokenText, expectedText, true);
+//            tokenText = token.text(); // Debug current state of text()
+            checkText(tokenText.toString(), expectedText, false); // Check tokenText.toString()
+        }
+    }
+
+    private static void checkText(CharSequence tokenText, String expectedText, boolean checkSub) {
+        int len = tokenText.length();
+        TestCase.assertEquals("Token text length", expectedText.length(), len);
+        for (int j = 0; j < len; j++) {
+            TestCase.assertEquals("tokenText.charAt(" + j + ")", expectedText.charAt(j), tokenText.charAt(j));
+            if (checkSub) {
+                checkText(tokenText.subSequence(0, j), expectedText.substring(0, j), false);
+                checkText(tokenText.subSequence(j, len), expectedText.substring(j, len), false);
+            }
+        }
+    }
+    
 }

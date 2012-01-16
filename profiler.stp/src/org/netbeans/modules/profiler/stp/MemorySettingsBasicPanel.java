@@ -72,34 +72,18 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "MemorySettingsBasicPanel_AllocRadioText=&Record object creation only",
+    "MemorySettingsBasicPanel_LivenessRadioText=Record &both object creation and garbage collection",
+    "MemorySettingsBasicPanel_TrackEveryLabelText=&Track every",
+//# Used as Track every [JSpinner] object allocations
+    "MemorySettingsBasicPanel_AllocLabelText=object allocations",
+    "MemorySettingsBasicPanel_RecordTracesCheckboxText=R&ecord stack trace for allocations",
+    "MemorySettingsBasicPanel_UsePpsCheckboxText=&Use defined Profiling Points",
+    "MemorySettingsBasicPanel_ShowPpsString=Show active Profiling Points"
+})
 public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ALLOC_RADIO_TEXT = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                       "MemorySettingsBasicPanel_AllocRadioText"); // NOI18N
-    private static final String LIVENESS_RADIO_TEXT = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                          "MemorySettingsBasicPanel_LivenessRadioText"); // NOI18N
-    private static final String TRACK_EVERY_LABEL_TEXT = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                             "MemorySettingsBasicPanel_TrackEveryLabelText"); // NOI18N
-    private static final String ALLOC_LABEL_TEXT = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                       "MemorySettingsBasicPanel_AllocLabelText"); // NOI18N
-    private static final String RECORD_TRACES_CHECKBOX_TEXT = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                                  "MemorySettingsBasicPanel_RecordTracesCheckboxText"); // NOI18N
-    private static final String USE_PPS_CHECKBOX_TEXT = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                            "MemorySettingsBasicPanel_UsePpsCheckboxText"); // NOI18N
-    private static final String SHOW_PPS_STRING = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                      "MemorySettingsBasicPanel_ShowPpsString"); // NOI18N
-    private static final String STP_USEPPS_TOOLTIP = NbBundle.getMessage(MemorySettingsBasicPanel.class, "StpUsePpsTooltip"); // NOI18N
-    private static final String STP_SHOWPPS_TOOLTIP = NbBundle.getMessage(MemorySettingsBasicPanel.class, "StpShowPpsTooltip"); // NOI18N
-    private static final String STP_ALLOC_TOOLTIP = NbBundle.getMessage(MemorySettingsBasicPanel.class, "StpAllocTooltip"); // NOI18N
-    private static final String STP_LIVENESS_TOOLTIP = NbBundle.getMessage(MemorySettingsBasicPanel.class, "StpLivenessTooltip"); // NOI18N
-    private static final String STP_TRACKEVERY_TOOLTIP = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                             "StpTrackEveryTooltip"); // NOI18N
-    private static final String STP_STACKTRACE_TOOLTIP = NbBundle.getMessage(MemorySettingsBasicPanel.class,
-                                                                             "StpStackTraceTooltip"); // NOI18N
-                                                                                                      // -----
 
     // --- Instance variables declaration ----------------------------------------
     private static final String HELP_CTX_KEY = "MemorySettings.Basic.HelpCtx"; // NOI18N
@@ -213,8 +197,8 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
 
         // allocationsRadio
         allocationsRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(allocationsRadio, ALLOC_RADIO_TEXT);
-        allocationsRadio.setToolTipText(STP_ALLOC_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(allocationsRadio, Bundle.MemorySettingsBasicPanel_AllocRadioText());
+        allocationsRadio.setToolTipText(Bundle.StpAllocTooltip());
         allocationsRadio.setOpaque(false);
         allocationsRadio.setSelected(true);
         memoryModeRadios.add(allocationsRadio);
@@ -234,8 +218,8 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
 
         // livenessRadio
         livenessRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(livenessRadio, LIVENESS_RADIO_TEXT);
-        livenessRadio.setToolTipText(STP_LIVENESS_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(livenessRadio, Bundle.MemorySettingsBasicPanel_LivenessRadioText());
+        livenessRadio.setToolTipText(Bundle.StpLivenessTooltip());
         livenessRadio.setOpaque(false);
         livenessRadio.setSelected(true);
         memoryModeRadios.add(livenessRadio);
@@ -258,8 +242,8 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
 
         // trackEveryLabel1
         trackEveryLabel1 = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(trackEveryLabel1, TRACK_EVERY_LABEL_TEXT);
-        trackEveryLabel1.setToolTipText(STP_TRACKEVERY_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(trackEveryLabel1, Bundle.MemorySettingsBasicPanel_TrackEveryLabelText());
+        trackEveryLabel1.setToolTipText(Bundle.StpTrackEveryTooltip());
         trackEveryLabel1.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -281,7 +265,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
                 }
             };
         trackEveryLabel1.setLabelFor(trackEverySpinner);
-        trackEverySpinner.setToolTipText(STP_TRACKEVERY_TOOLTIP);
+        trackEverySpinner.setToolTipText(Bundle.StpTrackEveryTooltip());
         trackEverySpinner.addChangeListener(getSettingsChangeListener());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -293,8 +277,8 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         trackEveryContainer.add(trackEverySpinner, constraints);
 
         // trackEveryLabel2
-        trackEveryLabel2 = new JLabel(ALLOC_LABEL_TEXT);
-        trackEveryLabel2.setToolTipText(STP_TRACKEVERY_TOOLTIP);
+        trackEveryLabel2 = new JLabel(Bundle.MemorySettingsBasicPanel_AllocLabelText());
+        trackEveryLabel2.setToolTipText(Bundle.StpTrackEveryTooltip());
         trackEveryLabel2.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -319,8 +303,8 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
 
         // recordStackTraceCheckbox
         recordStackTraceCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(recordStackTraceCheckbox, RECORD_TRACES_CHECKBOX_TEXT);
-        recordStackTraceCheckbox.setToolTipText(STP_STACKTRACE_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(recordStackTraceCheckbox, Bundle.MemorySettingsBasicPanel_RecordTracesCheckboxText());
+        recordStackTraceCheckbox.setToolTipText(Bundle.StpStackTraceTooltip());
         recordStackTraceCheckbox.addActionListener(getSettingsChangeListener());
         recordStackTraceCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
@@ -349,8 +333,8 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
 
         // profilingPointsCheckbox
         profilingPointsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(profilingPointsCheckbox, USE_PPS_CHECKBOX_TEXT);
-        profilingPointsCheckbox.setToolTipText(STP_USEPPS_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(profilingPointsCheckbox, Bundle.MemorySettingsBasicPanel_UsePpsCheckboxText());
+        profilingPointsCheckbox.setToolTipText(Bundle.StpUsePpsTooltip());
         profilingPointsCheckbox.setOpaque(false);
         profilingPointsCheckbox.setSelected(true);
         profilingPointsCheckbox.addChangeListener(new ChangeListener() {
@@ -371,15 +355,15 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         // profilingPointsLink
         Color linkColor = Color.RED;
         String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
-        profilingPointsLink = new HyperlinkLabel("<nobr><a href='#'>" + SHOW_PPS_STRING + "</a></nobr>", //NOI18N
-                                                 "<nobr><a href='#' color=\"" + colorText + "\">" + SHOW_PPS_STRING
+        profilingPointsLink = new HyperlinkLabel("<nobr><a href='#'>" + Bundle.MemorySettingsBasicPanel_ShowPpsString() + "</a></nobr>", //NOI18N
+                                                 "<nobr><a href='#' color=\"" + colorText + "\">" + Bundle.MemorySettingsBasicPanel_ShowPpsString()
                                                  + "</a></nobr>", //NOI18N
                                                  new Runnable() {
                 public void run() {
                     performShowProfilingPointsAction();
                 }
             });
-        profilingPointsLink.setToolTipText(STP_SHOWPPS_TOOLTIP);
+        profilingPointsLink.setToolTipText(Bundle.StpShowPpsTooltip());
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 0;

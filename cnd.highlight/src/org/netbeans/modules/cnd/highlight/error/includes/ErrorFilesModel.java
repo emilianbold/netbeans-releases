@@ -75,10 +75,12 @@ public class ErrorFilesModel implements ListModel{
             failedPreproDirectiveList.add(entry.getValue());
         }
     }
+    @Override
     public int getSize() {
         return names.size();
     }
 
+    @Override
     public Object getElementAt(int index) {
         return names.get(index);
     }
@@ -87,9 +89,11 @@ public class ErrorFilesModel implements ListModel{
         return failedPreproDirectiveList.get(index);
     }
 
+    @Override
     public void addListDataListener(ListDataListener l) {
     }
 
+    @Override
     public void removeListDataListener(ListDataListener l) {
     }
 }

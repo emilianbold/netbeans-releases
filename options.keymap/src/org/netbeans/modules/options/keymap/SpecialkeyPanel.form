@@ -28,13 +28,21 @@
                   <Component id="upButton" linkSize="4" min="-2" pref="50" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="enterButton" linkSize="4" min="-2" pref="53" max="-2" attributes="0"/>
-                  <Component id="rightButton" linkSize="4" alignment="0" min="-2" pref="53" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="rightButton" linkSize="4" min="-2" pref="53" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="wheelDownButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="enterButton" linkSize="4" min="-2" pref="53" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="wheelUpButton" max="32767" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
-          <Component id="tabButton" alignment="0" pref="228" max="32767" attributes="1"/>
+          <Component id="tabButton" alignment="0" max="32767" attributes="1"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -42,18 +50,18 @@
           <Group type="102" attributes="0">
               <Component id="tabButton" min="-2" pref="30" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="upButton" linkSize="5" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
-                      <Component id="enterButton" linkSize="5" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="escButton" linkSize="5" min="-2" pref="30" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="upButton" linkSize="5" alignment="1" min="-2" pref="30" max="-2" attributes="0"/>
+                  <Component id="enterButton" linkSize="5" alignment="1" max="32767" attributes="0"/>
+                  <Component id="escButton" linkSize="5" max="32767" attributes="0"/>
+                  <Component id="wheelUpButton" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="rightButton" linkSize="5" min="-2" pref="29" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="rightButton" linkSize="5" max="32767" attributes="0"/>
                   <Component id="downButton" linkSize="5" min="-2" pref="30" max="-2" attributes="0"/>
-                  <Component id="leftButton" linkSize="5" min="-2" pref="29" max="-2" attributes="0"/>
+                  <Component id="leftButton" linkSize="5" max="32767" attributes="0"/>
+                  <Component id="wheelDownButton" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -120,6 +128,20 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/options/keymap/Bundle.properties" key="SpecialkeyPanel.rightButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="wheelUpButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/keymap/Bundle.properties" key="SpecialkeyPanel.wheelUpButton.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="wheelDownButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/keymap/Bundle.properties" key="SpecialkeyPanel.wheelDownButton.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

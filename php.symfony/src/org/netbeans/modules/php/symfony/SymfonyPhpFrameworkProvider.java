@@ -194,7 +194,10 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
-        return new SymfonyPhpModuleCustomizerExtender(phpModule);
+        if (isInPhpModule(phpModule)) {
+            return new SymfonyPhpModuleCustomizerExtender(phpModule);
+        }
+        return null;
     }
 
     @Override

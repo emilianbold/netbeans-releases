@@ -50,8 +50,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.modules.server.ui.manager.ServerManagerPanel;
+import org.netbeans.modules.server.ui.wizard.AddServerInstanceWizard;
 
 /**
  * Class providing access to UI dialogs managing instances.
@@ -112,5 +114,20 @@ public final class CommonServerUIs {
         } finally {
             dlg.dispose();
         }
+    }
+
+    /**
+     * Displays the modal wizard for creating new server instance. This method must be
+     * called from the AWT event dispatch thread.
+     *
+     * @return created instance or {@code null} if user canceled the operation
+     * @since 1.18
+     */
+    @CheckForNull
+    public static ServerInstance showAddServerInstanceWizard() {
+        assert SwingUtilities.isEventDispatchThread() : "Invocation of the UI dialog outside of the EDT"; //NOI18N
+
+        final ServerInstance instance = AddServerInstanceWizard.showAddServerInstanceWizard();
+        return instance;
     }
 }

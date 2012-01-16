@@ -1313,19 +1313,8 @@ abstract public class CsmCompletionQuery {
                             } else {
                                 res = finder.findNestedNamespaces(lastNamespace, "", false, false); // find all nested namespaces
 
-                                String text = null;
-                                try {
-                                    int firstTokenIdx = exp.getTokenOffset(0);
-                                    int cmdStartIdx = sup.getLastCommandSeparator(firstTokenIdx);
-                                    if (cmdStartIdx >= 0) {
-                                        text = sup.getDocument().getText(cmdStartIdx, firstTokenIdx - cmdStartIdx);
-                                    }
-                                } catch (BadLocationException e) {
-                                    // ignore and provide full list of items
-                                }
-
-                                // if not "using namespace" or "namespace A = " then add elements
-                                if (text != null && -1 == text.indexOf("namespace")) { //NOI18N
+                                // if not "using namespace A::" or "namespace A = B::" then add elements
+                                if (!isInNamespaceOnlyUsage(exp.getTokenOffset(0))) {
                                     res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
                                 }
                             }
@@ -1423,7 +1412,6 @@ abstract public class CsmCompletionQuery {
                             int varPos = item.getTokenOffset(0) + item.getTokenLength(0);
                             if (first) { // try to find variable for the first item
                                 if (last && !findType) { // both first and last item
-                                    CompletionResolver.Result res = null;
                                     if (isConstructor) {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES |
                                                 CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
@@ -1436,9 +1424,23 @@ abstract public class CsmCompletionQuery {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                     }
                                     if (resolve(varPos, var, openingSource)) {
-                                        res = compResolver.getResult();
+                                        if (isConstructor && !var.isEmpty() && !openingSource) {
+                                            // completion after new should propose constructors as well to see signatures
+                                            // #204910 - Auto complete misses c++ constructors
+                                            Collection<? extends CsmObject> candidates = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
+                                            Collection<CsmObject> res = new ArrayList<CsmObject>(candidates);
+                                            for (CsmObject object : candidates) {
+                                                if (CsmKindUtilities.isClass(object)) {
+                                                    res.addAll(getConstructors((CsmClass) object));
+                                                }
+                                            }                                  
+                                            result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                        } else {
+                                            result = new CsmCompletionResult(component, getBaseDocument(), compResolver.getResult(), var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
+                                        }
+                                    } else {
+                                        result = new CsmCompletionResult(component, getBaseDocument(), (CompletionResolver.Result)null, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                     }
-                                    result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, item.getTokenOffset(0), item.getTokenLength(0), 0, isProjectBeeingParsed(), contextElement, instantiateTypes);  //NOI18N
                                 } else { // not last item or finding type
                                     // find type of variable
                                     if (nextKind != ExprKind.SCOPE) {
@@ -2465,6 +2467,48 @@ abstract public class CsmCompletionQuery {
                 }
             }
             return typeList;
+        }
+
+        private boolean isInNamespaceOnlyUsage(final int tokenOffset) {    
+            // check for "using namespace " or "namespace A = "
+            final AtomicBoolean out = new AtomicBoolean(false);
+            final Document document = sup.getDocument();
+            document.render(new Runnable() {
+                @Override
+                public void run() {
+                    TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(document, tokenOffset, true, true);
+                    if (ts != null) {
+                        // check back for using directive or namespace aliasing
+                        // stop overwise
+                        ts.move(tokenOffset);
+                        OUTER:
+                        while (ts.movePrevious()) {
+                            Token<TokenId> token = ts.token();
+                            final TokenId id = token.id();
+                            if (CppTokenId.WHITESPACE_CATEGORY.equals(id.primaryCategory())) {
+                                continue;
+                            }
+                            if (id instanceof CppTokenId) {
+                                switch ((CppTokenId)id) {
+                                    case IDENTIFIER:
+                                    case SCOPE:
+                                    case EQ:
+                                        // valid
+                                        break;
+                                    case NAMESPACE:
+                                        out.set(true);
+                                        break OUTER;
+                                    default:
+                                        break OUTER;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+            return out.get();
         }
     }
 

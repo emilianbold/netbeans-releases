@@ -480,7 +480,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         public IncludeInfoImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
             assert path != null;
             this.path = path;
-            assert directiveLine >= 0;
+            // in case of -include file we have negative line/offset
+            assert directiveLine >= 0 || (directiveLine < 0 && directiveOffset < 0);
             this.directiveLine = directiveLine;
             this.directiveOffset = directiveOffset;
             this.resolvedDirIndex = resolvedDirIndex;

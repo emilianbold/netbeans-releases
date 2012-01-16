@@ -64,6 +64,7 @@ public class ChangeParametersAction extends CsmRefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         CsmActionsImplementationFactory.doChangeParameters(context);
     }
@@ -78,6 +79,7 @@ public class ChangeParametersAction extends CsmRefactoringGlobalAction {
         return false;
     }
 
+    @Override
     protected boolean applicable(Lookup context) {
         return CsmActionsImplementationFactory.canChangeParameters(context);
     }

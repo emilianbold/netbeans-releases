@@ -116,13 +116,15 @@ public class ManagedBeanImpl extends IdentifiableDescriptionGroupImpl implements
     public ManagedBeanImpl(JSFConfigModelImpl model) {
         this(model, createElementNS(model, JSFConfigQNames.MANAGED_BEAN));
     }
-    
+
+    /**
+     * Gets managed-bean-name of the faces-config-managed-beanType.
+     * @return trimmed managed-bean-name if any, {@code null} otherwise
+     */
     public String getManagedBeanName() {
         if (beanName == null) {
             beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI()));
-            if (beanName != null) {
-                beanName = beanName.trim();
-            }
+            beanName = ElementTypeHelper.pickJavaIdentifierType(beanName);
         }
         return beanName;
     }
@@ -130,13 +132,15 @@ public class ManagedBeanImpl extends IdentifiableDescriptionGroupImpl implements
     public void setManagedBeanName(String name) {
         setChildElementText(MANAGED_BEAN_NAME, name, JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI()));
     }
-    
+
+    /**
+     * Gets managed-bean-class of the faces-config-managed-beanType.
+     * @return trimmed managed-bean-class if any, {@code null} otherwise
+     */
     public String getManagedBeanClass() {
         if (beanClass ==  null) {
             beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getNamespaceURI()));
-            if (beanClass != null) {
-                beanClass = beanClass.trim();
-            }
+            beanClass = ElementTypeHelper.pickFullyQualifiedClassType(beanClass);
         }
         return beanClass;
     }

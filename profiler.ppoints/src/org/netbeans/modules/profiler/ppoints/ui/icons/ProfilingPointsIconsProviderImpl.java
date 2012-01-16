@@ -43,12 +43,13 @@ package org.netbeans.modules.profiler.ppoints.ui.icons;
 
 import java.util.Map;
 import org.netbeans.modules.profiler.spi.IconsProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jiri Sedlacek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.IconsProvider.class)
+@ServiceProvider(service=IconsProvider.class)
 public final class ProfilingPointsIconsProviderImpl extends IconsProvider.Basic {
     
     @Override

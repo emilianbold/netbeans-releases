@@ -43,59 +43,26 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
+import java.util.*;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.spi.DiffElement;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.modules.refactoring.java.spi.DiffElement;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -131,6 +98,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         this.refactoring = refactoring;
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
@@ -301,19 +269,20 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
     }
 
+    @Override
     public Problem prepare(RefactoringElementsBag bag) {
         FileObject primFile = refactoring.getSourceType().getFileObject();
         try {
             bag.add(refactoring, new CreateSuperclassElement(refactoring, primFile.getParent(), classHandle));
             UpdateClassTask.create(bag, primFile, refactoring, classHandle);
         } catch (IOException ex) {
-            throw (RuntimeException) new RuntimeException().initCause(ex);
+            throw new RuntimeException(ex);
         }
         return null;
     }
     
     private static List<TypeMirror> findUsedGenericTypes(CompilationInfo javac, TypeElement javaClass,ExtractSuperclassRefactoring refactoring) {
-        List<TypeMirror> typeArgs = RetoucheUtils.resolveTypeParamsAsTypes(javaClass.getTypeParameters());
+        List<TypeMirror> typeArgs = JavaRefactoringUtils.elementsToTypes(javaClass.getTypeParameters());
         if (typeArgs.isEmpty())
             return typeArgs;
         
@@ -322,7 +291,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
         // check super class
         TypeMirror superClass = javaClass.getSuperclass();
-        RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, superClass);
+        RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, superClass);
         
         MemberInfo[] members = refactoring.getMembers();
         for (int i = 0; i < members.length && !typeArgs.isEmpty(); i++) {
@@ -332,11 +301,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
                 ExecutableElement elm = handle.resolve(javac);
             
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
+                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, elm.getReturnType());
 
                 for (Iterator<? extends VariableElement> paramIter = elm.getParameters().iterator(); paramIter.hasNext() && !typeArgs.isEmpty();) {
                     VariableElement param = paramIter.next();
-                    RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
+                    RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, param.asType());
                 }
             } else if (members[i].getGroup() == MemberInfo.Group.FIELD) {
                 if (members[i].getModifiers().contains(Modifier.STATIC)) {
@@ -347,17 +316,17 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) members[i].getElementHandle();
                 VariableElement elm = handle.resolve(javac);
                 TypeMirror asType = elm.asType();
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, asType);
+                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, asType);
             } else if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
                 // check implements
                 TypeMirrorHandle handle = (TypeMirrorHandle) members[i].getElementHandle();
                 TypeMirror implemetz = handle.resolve(javac);
-                RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
+                RefactoringUtils.findUsedGenericTypes(typeUtils, typeArgs, used, implemetz);
             }
             // do not check fields since static fields cannot use type parameter of the enclosing class
         }
         
-        return RetoucheUtils.filterTypes(typeArgs, used);
+        return RefactoringUtils.filterTypes(typeArgs, used);
     }
     
     // --- REFACTORING ELEMENTS ------------------------------------------------
@@ -378,6 +347,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
 
         // --- SimpleRefactoringElementImpl methods ----------------------------------
         
+        @Override
         public void performChange() {
             try {
                 FileObject folderFO = URLMapper.findFileObject(folderURL);
@@ -420,22 +390,27 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             }
         }
         
+        @Override
         public String getText() {
             return NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "TXT_ExtractSC_CreateSC", superClassName); // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return getText();
         }
 
+        @Override
         public FileObject getParentFile() {
             return URLMapper.findFileObject(folderURL);
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
     
+        @Override
         public Lookup getLookup() {
             FileObject fo = superClassURL == null? null: URLMapper.findFileObject(superClassURL);
             return fo != null? Lookups.singleton(fo): Lookup.EMPTY;
@@ -443,10 +418,12 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
         // --- CancellableTask methods ----------------------------------
         
+        @Override
         public void cancel() {
             
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             ClassTree classTree = findClass(wc, superClassName);
@@ -498,7 +475,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     MethodTree methodTree = wc.getTrees().getTree(elm);
                     if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
                         methodTree = make.Method(
-                                RetoucheUtils.makeAbstract(make, methodTree.getModifiers()),
+                                RefactoringUtils.makeAbstract(make, methodTree.getModifiers()),
                                 methodTree.getName(),
                                 methodTree.getReturnType(),
                                 methodTree.getTypeParameters(),
@@ -507,7 +484,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                                 (BlockTree) null,
                                 null);
                         methodTree = genUtils.importFQNs(methodTree);
-                        RetoucheUtils.copyJavadoc(elm, methodTree, wc);
+                        RefactoringUtils.copyJavadoc(elm, methodTree, wc);
                     } else {
                         methodTree = genUtils.importComments(methodTree, wc.getTrees().getPath(elm).getCompilationUnit());
                         methodTree = genUtils.importFQNs(methodTree);
@@ -530,7 +507,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             makeAbstract |= ((DeclaredType) sourceTypeElm.getSuperclass()).asElement().getModifiers().contains(Modifier.ABSTRACT);
             
             ModifiersTree classModifiersTree = makeAbstract
-                    ? RetoucheUtils.makeAbstract(make, classTree.getModifiers())
+                    ? RefactoringUtils.makeAbstract(make, classTree.getModifiers())
                     : classTree.getModifiers();
             classModifiersTree = genUtils.importFQNs(classModifiersTree);
             
@@ -552,9 +529,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         private static ClassTree findClass(CompilationInfo javac, String name) {
             for (Tree tree : javac.getCompilationUnit().getTypeDecls()) {
                 if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())
-                        && !javac.getTreeUtilities().isInterface((ClassTree) tree)
-                        && !javac.getTreeUtilities().isAnnotation((ClassTree) tree)
-                        && !javac.getTreeUtilities().isEnum((ClassTree) tree)
+                        && tree.getKind() != Tree.Kind.INTERFACE
+                        && tree.getKind() != Tree.Kind.ANNOTATION
+                        && tree.getKind() != Tree.Kind.ENUM
                         && name.contentEquals(((ClassTree) tree).getSimpleName())) {
                     return (ClassTree) tree;
                 }
@@ -672,9 +649,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             bag.registerTransaction(createTransaction(Collections.singletonList(modification)));
         }
         
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement clazz = this.sourceType.resolve(wc);

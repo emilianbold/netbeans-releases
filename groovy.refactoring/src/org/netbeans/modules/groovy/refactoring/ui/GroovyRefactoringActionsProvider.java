@@ -48,7 +48,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -69,19 +68,21 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author martin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=100)
+@ServiceProvider(service = ActionsImplementationProvider.class, position=100)
 public class GroovyRefactoringActionsProvider extends ActionsImplementationProvider {
 
     private static boolean isFindUsages;
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
+        /*
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         if (nodes.size() != 1) {
             return false;
@@ -102,6 +103,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
         if ((dob!=null) && Utils.isGroovyOrGspFile(fo)) { //NOI18N
             return true;
         }
+        */
         return false;
     }
 

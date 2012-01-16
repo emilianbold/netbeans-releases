@@ -49,7 +49,6 @@ import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  * A {@linkplain SelectionTreeBuilder} implementation for "select root methods from class" view
@@ -57,8 +56,7 @@ import org.openide.util.NbBundle;
  */
 public class SingleFileSelectionTreeBuilder extends SelectionTreeBuilder {
     public SingleFileSelectionTreeBuilder() {
-        super(new Type("single-file", NbBundle.getMessage(SingleFileSelectionTreeBuilder.class, // NOI18N
-                "PackageSelectionTreeViewBuilder_PackageView")), false); // NOI18N
+        super(new Type("single-file", Bundle.PackageSelectionTreeViewBuilder_PackageView()), false); // NOI18N
     }
 
     @Override

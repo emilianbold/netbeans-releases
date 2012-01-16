@@ -253,6 +253,13 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      */
     public static final String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"; //NOI18N
 
+    /**
+     * Name of TopComponent's Boolean client property which disables 'copy' drag and drop action 
+     * of this TopComponent when set to Boolean.TRUE.
+     * @since 6.48
+     */
+    public static final String PROP_DND_COPY_DISABLED = "netbeans.winsys.tc.draganddrop_copy_disabled"; //NOI18N
+
     private transient String modeName;
 
     /** Create a top component.

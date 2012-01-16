@@ -43,11 +43,10 @@ package org.netbeans.modules.php.symfony2.commands;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -61,6 +60,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramExcept
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
@@ -112,12 +112,13 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
         if (processBuilder == null) {
             return null;
         }
-        Symfony2Script symfony2Script = null;
+
+        Symfony2Script symfony2Script;
         try {
             symfony2Script = Symfony2Script.forPhpModule(phpModule, warnUser);
         } catch (InvalidPhpProgramException ex) {
             if (warnUser) {
-                UiUtils.invalidScriptProvided(ex.getMessage());
+                UiUtils.invalidScriptProvided(ex.getMessage(), Symfony2OptionsPanelController.OPTIONS_SUBPATH);
             }
             return null;
         }
@@ -134,23 +135,25 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
-        File output = redirectScriptOutput("list", "--xml"); // NOI18N
+        // validate
+        if (getProcessBuilder(true) == null) {
+            return null;
+        }
+        InputStream output = redirectScriptOutput("list", "--xml"); // NOI18N
         if (output == null) {
             return null;
         }
-        Reader reader;
-        try {
-            // use utf-8 always
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(output), "UTF-8")); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return null;
-        } catch (FileNotFoundException ex) {
-            assert false;
-            return null;
-        }
         List<Symfony2CommandVO> commandsVO = new ArrayList<Symfony2CommandVO>();
-        Symfony2CommandsXmlParser.parse(reader, commandsVO);
+        try {
+            Reader reader = new BufferedReader(new InputStreamReader(output));
+            Symfony2CommandsXmlParser.parse(reader, commandsVO);
+        } finally {
+            try {
+                output.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
         if (commandsVO.isEmpty()) {
             // ??? try to read them from output
             LOGGER.info("Symfony commands from XML should be parsed");

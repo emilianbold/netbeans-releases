@@ -46,6 +46,7 @@ package org.openide.nodes;
 import java.awt.EventQueue;
 import java.beans.*;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import junit.framework.TestCase;
 import org.openide.nodes.ChildFactory.Detachable;
 import org.openide.util.NbBundle;
@@ -70,10 +71,12 @@ public class ChildFactoryTest extends TestCase {
     protected @Override void setUp() throws Exception {
         factory = new ProviderImpl();
         kids = new AsynchChildren<String>(factory);
+        factory.setObserver(kids);
         node = new AbstractNode(kids);
         
         factory2 = new BatchProviderImpl();
         kids2 = new AsynchChildren<String>(factory2);
+        factory2.setObserver(kids2);
         node2 = new AbstractNode(kids2);
     }
     
@@ -269,6 +272,41 @@ public class ChildFactoryTest extends TestCase {
         BatchProviderImpl b = new BatchProviderImpl();
         ch = Children.create(b, true);
         assertEquals(4, ch.getNodesCount(true));
+    }
+
+    public void testIncrementalDisplay() throws Exception { // #206556
+        final Semaphore s1 = new Semaphore(0);
+        final Semaphore s2 = new Semaphore(0);
+        Children c = Children.create(new ChildFactory<Integer>() {
+            @Override protected boolean createKeys(List<Integer> keys) {
+                try {
+                    for (int i = 1; i <= 5; i++) {
+                        s1.acquire();
+                        keys.add(i);
+                        s2.release();
+                    }
+                    s1.acquire();
+                } catch (InterruptedException x) {
+                    assert false : x;
+                }
+                s2.release();
+                return true;
+            }
+            @Override protected Node createNodeForKey(Integer key) {
+                Node n = new AbstractNode(Children.LEAF);
+                n.setName(key.toString());
+                return n;
+            }
+        }, true);
+        assertEquals(1, c.getNodesCount(false));
+        for (int i = 1; i <= 5; i++) {
+            s1.release();
+            s2.acquire();
+            assertEquals(i + /* wait node */1, c.getNodesCount(false));
+        }
+        s1.release();
+        s2.acquire();
+        assertEquals(5, c.getNodesCount(true));
     }
 
     static final class ProviderImpl extends ChildFactory <String> {

@@ -52,6 +52,7 @@ import org.apache.tools.ant.module.bridge.AntBridge;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Lookup;
 
 // XXX testSubElements
 // XXX testSpecials
@@ -73,6 +74,10 @@ public class IntrospectedInfoTest extends NbTestCase {
         AntBridge.NO_MODULE_SYSTEM = true;
         MockServices.setServices(IFL.class);
         ii = IntrospectedInfo.getDefaults();
+        
+        InstalledFileLocator ilf = Lookup.getDefault().lookup(InstalledFileLocator.class);
+        assertNotNull("Locator found", ilf);
+        assertEquals("right class: " + ilf, IFL.class, ilf.getClass());
     }
     
     public void testBasicDefinitions() throws Exception {

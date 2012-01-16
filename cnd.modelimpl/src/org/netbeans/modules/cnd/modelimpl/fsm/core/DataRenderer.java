@@ -85,7 +85,12 @@ public class DataRenderer {
     public CsmOffsetableDeclaration render(Object object, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if (object instanceof FortranParserEx.ProgramData) {
             FortranParserEx.ProgramData data = (FortranParserEx.ProgramData) object;
-            return ProgramImpl.create(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
+            final ProgramImpl<Object> program = ProgramImpl.create(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
+            for (Object obj : data.members) {
+                CsmOffsetableDeclaration decl = render(obj, currentNamespace, file);
+                program.addDeclaration(decl);
+            }
+            return program;
         }
         if (object instanceof FortranParserEx.SubroutineData) {
             FortranParserEx.SubroutineData data = (FortranParserEx.SubroutineData) object;

@@ -73,6 +73,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
+import org.openide.windows.TopComponent;
 
 /** The MainWindow of IDE. Holds toolbars, main menu and also entire desktop
  * if in MDI user interface. Singleton.
@@ -265,10 +266,11 @@ public final class MainWindow {
                            frame.getRootPane().putClientProperty ("Window.documentModified", //NOI18N
                                    modified ? Boolean.TRUE : Boolean.FALSE);
                        } else if (ev.getSource() == dobResult) {
-                           int count = dobResult.allItems().size();
+                           Collection<? extends Lookup.Item<DataObject>> allItems = dobResult.allItems();
+                           int count = allItems.size();
                            switch (count) {
                                case 1 :
-                                   DataObject dob = dobResult.allInstances().iterator().next();
+                                   DataObject dob = allItems.iterator().next().getInstance();
                                    FileObject file = dob.getPrimaryFile();
                                    File f = FileUtil.toFile(file);
                                    if (f != null) {
@@ -319,21 +321,33 @@ public final class MainWindow {
        if (c == null || c.isEmpty ()) {
            return null;
        }
-       Iterator<? extends StatusLineElementProvider> it = c.iterator ();
-       JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
+       final Iterator<? extends StatusLineElementProvider> it = c.iterator ();
+       final JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
        if( isShowCustomBackground() )
            icons.setOpaque( false );
        icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 2));
-       boolean some = false;
-       while (it.hasNext ()) {
-           StatusLineElementProvider o = it.next ();
-           Component comp = o.getStatusLineElement ();
-           if (comp != null) {
-               some = true;
-               icons.add (comp);
-           }
+       final boolean[] some = new boolean[1];
+       some[0] = false;
+       Runnable r = new Runnable() {
+            @Override
+            public void run() {
+               while (it.hasNext ()) {
+                   StatusLineElementProvider o = it.next ();
+                   Component comp = o.getStatusLineElement ();
+                   if (comp != null) {
+                       some[0] = true;
+                       icons.add (comp);
+                   }
+               }
+            }
+       };
+       if( !SwingUtilities.isEventDispatchThread() ) {
+           SwingUtilities.invokeLater( r );
+           return icons;
+       } else {
+           r.run();
        }
-       return some ? icons : null;
+       return some[0] ? icons : null;
    }
 
    protected void initRootPane() {
@@ -645,6 +659,8 @@ public final class MainWindow {
            isUndecorated = frame.isUndecorated();
            windowDecorationStyle = frame.getRootPane().getWindowDecorationStyle();
        }
+       
+       final TopComponent activeTc = TopComponent.getRegistry().getActivated();
 
        GraphicsDevice device = null;
        GraphicsConfiguration conf = frame.getGraphicsConfiguration();
@@ -710,6 +726,8 @@ public final class MainWindow {
                    }
                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                    isSwitchingFullScreenMode = false;
+                   if( null != activeTc )
+                       activeTc.requestFocusInWindow();
                }
            });
        } else {
@@ -722,6 +740,8 @@ public final class MainWindow {
                    frame.repaint();
                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                    isSwitchingFullScreenMode = false;
+                   if( null != activeTc )
+                       activeTc.requestFocusInWindow();
                }
            });
        }

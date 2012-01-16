@@ -46,9 +46,9 @@ package org.netbeans.updater;
 
 import java.io.*;
 import java.util.*;
-import java.util.jar.*;
-
-//import org.openide.util.NbBundle;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
@@ -328,7 +328,7 @@ public final class ModuleUpdater extends Thread {
                 
                 context.unpackingIsRunning ();
                 
-                ModuleUpdate mu = null;
+                ModuleUpdate mu;
                 try {
                     mu = new ModuleUpdate (nbm);
                 } catch (RuntimeException re) {
@@ -574,7 +574,7 @@ public final class ModuleUpdater extends Thread {
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new InputStreamReader(jarFile.getInputStream(executableFilesEntry), "UTF-8"));
-                String s = null;
+                String s;
                 while ((s = reader.readLine()) != null) {
                     list.add(s);
                 }

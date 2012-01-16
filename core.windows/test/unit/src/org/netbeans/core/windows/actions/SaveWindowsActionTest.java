@@ -42,10 +42,8 @@
 
 package org.netbeans.core.windows.actions;
 
-import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.Actions;
 
 public class SaveWindowsActionTest extends NbTestCase {
     
@@ -54,17 +52,11 @@ public class SaveWindowsActionTest extends NbTestCase {
     }
 
     public void testSaveActionIsThere() {
-        FileObject fo = FileUtil.getConfigFile("Actions/Window/org-netbeans-core-windows-actions-SaveWindowsAction.instance");
-        assertNotNull("Action is found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertTrue("It is an action", obj instanceof Action);
+        assertNotNull(Actions.forID("Window", "org.netbeans.core.windows.actions.SaveWindowsAction"));
     }
 
     public void testReloadActionIsThere() {
-        FileObject fo = FileUtil.getConfigFile("Actions/Window/org-netbeans-core-windows-actions-ReloadWindowsAction.instance");
-        assertNotNull("Action is found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertTrue("It is an action", obj instanceof Action);
+        assertNotNull(Actions.forID("Window", "org.netbeans.core.windows.actions.ReloadWindowsAction"));
     }
     
 }

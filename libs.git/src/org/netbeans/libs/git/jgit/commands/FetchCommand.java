@@ -42,7 +42,6 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
-import org.netbeans.libs.git.jgit.JGitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -61,6 +60,7 @@ import org.eclipse.jgit.transport.TrackingRefUpdate;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -75,12 +75,12 @@ public class FetchCommand extends TransportCommand {
     private Map<String, GitTransportUpdate> updates;
     private FetchResult result;
     
-    public FetchCommand (Repository repository, String remoteName, ProgressMonitor monitor) {
-        this(repository, remoteName, Collections.<String>emptyList(), monitor);
+    public FetchCommand (Repository repository, GitClassFactory gitFactory, String remoteName, ProgressMonitor monitor) {
+        this(repository, gitFactory, remoteName, Collections.<String>emptyList(), monitor);
     }
 
-    public FetchCommand (Repository repository, String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
-        super(repository, remote, monitor);
+    public FetchCommand (Repository repository, GitClassFactory gitFactory, String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
+        super(repository, gitFactory, remote, monitor);
         this.monitor = monitor;
         this.remote = remote;
         this.refSpecs = fetchRefSpecifications;
@@ -109,7 +109,7 @@ public class FetchCommand extends TransportCommand {
             }
             updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
             for (TrackingRefUpdate update : result.getTrackingRefUpdates()) {
-                GitTransportUpdate upd = new JGitTransportUpdate(transport.getURI(), update);
+                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);
                 updates.put(upd.getLocalName(), upd);
             }
         } catch (NotSupportedException e) {

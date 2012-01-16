@@ -145,12 +145,13 @@ public class AnnotateAction extends GitAction {
                 }
                 GitBlameResult result = null;
                 try {
-                    result = getClient().blame(file, revision, this);
+                    result = getClient().blame(file, revision, getProgressMonitor());
                     if (isCanceled()) {
                         ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationFailed")); // NOI18N;
                         return;
                     }
                     AnnotateLine [] lines = toAnnotateLines(result);
+                    ab.setAnnotatedRevision(revision);
                     ab.annotationLines(file, Arrays.asList(lines));
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);

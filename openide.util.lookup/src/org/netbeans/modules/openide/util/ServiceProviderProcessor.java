@@ -81,10 +81,16 @@ public class ServiceProviderProcessor extends AbstractServiceProviderProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element el : roundEnv.getElementsAnnotatedWith(ServiceProvider.class)) {
             ServiceProvider sp = el.getAnnotation(ServiceProvider.class);
+            if (sp == null) {
+                continue;
+            }
             register(el, ServiceProvider.class, sp);
         }
         for (Element el : roundEnv.getElementsAnnotatedWith(ServiceProviders.class)) {
             ServiceProviders spp = el.getAnnotation(ServiceProviders.class);
+            if (spp == null) {
+                continue;
+            }
             for (ServiceProvider sp : spp.value()) {
                 register(el, ServiceProviders.class, sp);
             }

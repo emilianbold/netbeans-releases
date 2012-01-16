@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
             <packaging>nbm-application</packaging>
         </packagings>
         <goals>
-            <goal>install</goal>
+            <goal>nbm:cluster-app</goal>
             <goal>nbm:run-platform</goal>
         </goals>
     </action>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
             <packaging>nbm-application</packaging>
         </packagings>
         <goals>
-            <goal>install</goal>
+            <goal>nbm:cluster-app</goal>
             <goal>nbm:run-platform</goal>
         </goals>
         <properties>

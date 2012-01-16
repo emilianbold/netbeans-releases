@@ -42,27 +42,37 @@
 
 package org.netbeans.modules.php.api.annotations;
 
+import java.util.Set;
 import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.php.api.doc.PhpDocs;
 import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Tomas Mysik
  */
+@SupportedAnnotationTypes("org.netbeans.modules.php.spi.doc.PhpDocProvider.Registration")
 @ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpDocRegistrationProcessor extends BaseRegistrationProcessor<PhpDocProvider, PhpDocProvider.Registration> {
+public class PhpDocRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override
-    protected String getPath() {
-        return PhpDocs.DOCS_PATH;
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocProvider.Registration.class)) {
+            layer(element)
+                    .instanceFile(PhpDocs.DOCS_PATH, null, PhpDocProvider.class)
+                    .intvalue("position", element.getAnnotation(PhpDocProvider.Registration.class).position()) // NOI18N
+                    .write();
+        }
+        return true;
     }
 
-    @Override
-    protected int getPosition(PhpDocProvider.Registration registration) {
-        return registration.position();
-    }
 }

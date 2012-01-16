@@ -37,9 +37,6 @@
                         </Variable>
                     </VariableNames>
                     <InitialValues>
-                        <Variable start='126' end='131' isDollared='true'>
-                            <Identifier start='127' end='131' name='test'/>
-                        </Variable>
                     </InitialValues>
                 </FieldsDeclaration>
                 <MethodDeclaration start='136' end='284' modifiers='public'>

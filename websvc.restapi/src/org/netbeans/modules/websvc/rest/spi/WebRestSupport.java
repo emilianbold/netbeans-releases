@@ -65,7 +65,6 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -241,24 +240,7 @@ public abstract class WebRestSupport extends RestSupport {
     }
     
     public JaxRsStackSupport getJaxRsStackSupport(){
-        J2eeModuleProvider moduleProvider = project.getLookup().lookup(
-                J2eeModuleProvider.class);
-        if ( moduleProvider != null ){
-            try {
-                String id = moduleProvider.getServerInstanceID();
-                if ( id == null ){
-                    return null;
-                }
-                J2eePlatform j2eePlatform = Deployment.getDefault().
-                    getServerInstance(id).getJ2eePlatform();
-                return JaxRsStackSupport.getInstance(j2eePlatform);
-            } catch (InstanceRemovedException ex) {
-                return null;
-            }
-        }
-        else{
-            return null;
-        }
+        return JaxRsStackSupport.getInstance(project);
     }
 
     protected Servlet getRestServletAdaptor(WebApp webApp) {

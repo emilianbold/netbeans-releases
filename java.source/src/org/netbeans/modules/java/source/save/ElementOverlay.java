@@ -379,7 +379,6 @@ public class ElementOverlay {
                 }
             }
         } else {
-            result.add(current);
             result.addAll(getAllMembers(ast, elements, current));
         }
 

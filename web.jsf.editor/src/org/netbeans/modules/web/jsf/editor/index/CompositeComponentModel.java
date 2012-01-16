@@ -182,7 +182,7 @@ public class CompositeComponentModel extends JsfPageModel {
         return FileUtil.getRelativePath(resources, sourceFileFolder);
     }
 
-    private static boolean isCompositeLibraryMember(FileObject file) {
+    static boolean isCompositeLibraryMember(FileObject file) {
         FileObject resourcesFolder = getResourcesDirectory(file);
         if (resourcesFolder != null) {
                 //test if the file is an indirect ancestor of the resources folder.

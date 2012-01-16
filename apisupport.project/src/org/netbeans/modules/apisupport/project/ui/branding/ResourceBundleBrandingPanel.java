@@ -164,8 +164,6 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
             }
         });
 
-        view.setUseSubstringInQuickSearch(true);
-
         searchLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         searchLabel.setLabelFor(searchField);
         org.openide.awt.Mnemonics.setLocalizedText(searchLabel, org.openide.util.NbBundle.getMessage(ResourceBundleBrandingPanel.class, "ResourceBundleBrandingPanel.searchLabel.text")); // NOI18N
@@ -250,6 +248,10 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
                         try {
                             URL url = new URL("jar:" + juri + "!/" + entry.getName()); // NOI18N
                             FileObject fo = URLMapper.findFileObject(url);
+                            if (fo == null) {
+                                LOG.log(Level.WARNING, "#207183: no bundle file found: {0}", url);
+                                continue;
+                            }
                             DataObject dobj = DataObject.find(fo);
                             Node dobjnode = dobj.getNodeDelegate();
                             BundleNode filternode = new BundleNode(dobjnode, fo.getPath(), codeNameBase);

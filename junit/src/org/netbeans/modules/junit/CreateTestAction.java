@@ -116,7 +116,22 @@ public final class CreateTestAction extends TestAction {
         if (nodes.length == 0) {
             return false;
         }
+        for (Node node : nodes) {
+            FileObject f = node.getLookup().lookup(FileObject.class);
+            if (f == null || !f.isValid()) {
+                return false;
+            }
+            if (f.isData() && !TestUtil.isJavaFile(f)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    private boolean trulyEnabled(Node[] nodes) {
+        if (nodes.length == 0) {
+            return false;
+        }
         /*
          * In most cases, there is just one node selected - that is why
          * this case is handled in a special, more effective way
@@ -277,12 +292,15 @@ public final class CreateTestAction extends TestAction {
     protected void performAction(Node[] nodes) {
         String problem;
         if ((problem = checkNodesValidity(nodes)) != null) {
-            // TODO report problem
             NotifyDescriptor msg = new NotifyDescriptor.Message(
                                 problem, NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
             return;
         } 
+        if (!trulyEnabled(nodes)) {
+            // XXX report reason (fold into checkNodesValidity)
+            return;
+        }
 
         final FileObject[] filesToTest = getFileObjectsFromNodes(nodes);
         if (filesToTest == null) {

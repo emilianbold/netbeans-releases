@@ -61,19 +61,23 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
 
     private static final String JSF_ID_1_0 = "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN"; // NOI18N
     private static final String JSF_ID_1_1 = "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"; // NOI18N
-    
+
     private static final String URL_JSF_1_0 ="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_0.dtd"; // NOI18N
     private static final String URL_JSF_1_1 ="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_1.dtd"; // NOI18N
-    
+
     public static final String JAVAEE_NS = "http://java.sun.com/xml/ns/javaee";  // NOI18N
     private static final String JSF_1_2_XSD="web-facesconfig_1_2.xsd"; // NOI18N
     private static final String JSF_2_0_XSD="web-facesconfig_2_0.xsd"; // NOI18N
+    private static final String JSF_2_1_XSD="web-facesconfig_2_1.xsd"; // NOI18N
     private static final String JSF_1_2=JAVAEE_NS+"/"+JSF_1_2_XSD; // NOI18N
     private static final String JSF_2_0=JAVAEE_NS+"/"+JSF_2_0_XSD; // NOI18N
+    private static final String JSF_2_1=JAVAEE_NS+"/"+JSF_2_1_XSD; // NOI18N
     public static final String JSF_ID_1_2="SCHEMA:"+JSF_1_2; // NOI18N
     public static final String JSF_ID_2_0="SCHEMA:"+JSF_2_0; // NOI18N
+    public static final String JSF_ID_2_1="SCHEMA:"+JSF_2_1; // NOI18N
     private static final String URL_JSF_1_2="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_2.xsd"; // NOI18N
     private static final String URL_JSF_2_0="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_2_0.xsd"; // NOI18N
+    private static final String URL_JSF_2_1="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_2_1.xsd"; // NOI18N
 
     //facelets
     private static final String FILE_FACELETS_TAGLIB_SCHAMA_20="web-facelettaglibrary_2_0.xsd"; //NOI18N
@@ -90,7 +94,7 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     /** Creates a new instance of StrutsCatalog */
     public JSFCatalog() {
     }
-    
+
     /**
      * Get String iterator representing all public IDs registered in catalog.
      * @return null if cannot proceed, try later.
@@ -101,11 +105,12 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
         list.add(JSF_ID_1_1);
         list.add(JSF_ID_1_2);
         list.add(JSF_ID_2_0);
+        list.add(JSF_ID_2_1);
         list.add(ID_FACELETS_TAGLIB_DTD_10);
         list.add(ID_FACELETS_TAGLIB_SCHEMA_20);
         return list.listIterator();
     }
-    
+
     /**
      * Get registered systemid for given public Id or null if not registered.
      * @return null if not registered
@@ -119,48 +124,50 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return URL_JSF_1_2;
         else if (JSF_ID_2_0.equals(publicId))
             return URL_JSF_2_0;
+        else if (JSF_ID_2_1.equals(publicId))
+            return URL_JSF_2_1;
         else if (ID_FACELETS_TAGLIB_DTD_10.equals(publicId))
             return RESOURCE_URL_FACELETS_TAGLIB_DTD_10;
         else if(ID_FACELETS_TAGLIB_SCHEMA_20.equals(publicId))
             return RESOURCE_URL_FACELETS_TAGLIB_SCHEMA_20;
         else return null;
     }
-    
+
     /**
      * Refresh content according to content of mounted catalog.
      */
     public void refresh() {
     }
-    
+
     /**
      * Optional operation allowing to listen at catalog for changes.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
     public void addCatalogListener(CatalogListener l) {
     }
-    
+
     /**
      * Optional operation couled with addCatalogListener.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
     public void removeCatalogListener(CatalogListener l) {
     }
-    
+
     /** Registers new listener.  */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
     }
-    
+
      /** Unregister the listener.  */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
     }
-    
+
     /**
      * @return I18N display name
      */
     public String getDisplayName() {
         return NbBundle.getMessage (JSFCatalog.class, "LBL_JSFCatalog");
     }
-    
+
     /**
      * Return visuaized state of given catalog.
      * @param type of icon defined by JavaBeans specs
@@ -169,20 +176,20 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     public java.awt.Image getIcon(int type) {
         return ImageUtilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFCatalog.png"); // NOI18N
     }
-    
+
     /**
      * @return I18N short description
      */
     public String getShortDescription() {
         return NbBundle.getMessage (JSFCatalog.class, "DESC_JSFCatalog");
     }
-    
+
    /**
-     * Resolves schema definition file for taglib descriptor (spec.1_1, 1_2, 2_0)
+     * Resolves schema definition file for taglib descriptor (spec.1_1, 1_2, 2_0, 2_1)
      * @param publicId publicId for resolved entity (null in our case)
      * @param systemId systemId for resolved entity
-     * @return InputSource for publisId, 
-     */    
+     * @return InputSource for publisId,
+     */
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
        if (JSF_ID_1_0.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_JSF_1_0);
@@ -194,19 +201,23 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return new org.xml.sax.InputSource(URL_JSF_1_2);
         } else if (JSF_2_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_JSF_2_0);
+        } else if (JSF_2_1.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_JSF_2_1);
         } else if (URL_FACELETS_TAGLIB_SCHEMA_20.equals(systemId)) {
             return new org.xml.sax.InputSource(RESOURCE_URL_FACELETS_TAGLIB_SCHEMA_20);
         } else if (systemId!=null && systemId.endsWith(JSF_1_2_XSD)) {
-            return new org.xml.sax.InputSource(URL_JSF_1_2);    
+            return new org.xml.sax.InputSource(URL_JSF_1_2);
         } else if (systemId!=null && systemId.endsWith(JSF_2_0_XSD)) {
             return new org.xml.sax.InputSource(URL_JSF_2_0);
+        } else if (systemId!=null && systemId.endsWith(JSF_2_1_XSD)) {
+            return new org.xml.sax.InputSource(URL_JSF_2_1);
         } else if (systemId!=null && systemId.endsWith(FILE_FACELETS_TAGLIB_SCHAMA_20)) {
             return new org.xml.sax.InputSource(RESOURCE_URL_FACELETS_TAGLIB_SCHEMA_20);
         } else {
             return null;
         }
     }
-    
+
     /**
      * Get registered URI for the given name or null if not registered.
      * @return null if not registered
@@ -217,11 +228,11 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     /**
      * Get registered URI for the given publicId or null if not registered.
      * @return null if not registered
-     */ 
+     */
     public String resolvePublic(String publicId) {
         return null;
     }
-    
+
     public static JSFVersion extractVersion(Document document) {
         // first check the doc type to see if there is one
         DocumentType dt = document.getDoctype();
@@ -240,9 +251,12 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             if (JSF_ID_2_0.equals(dt.getPublicId())) {
                 value = JSFVersion.JSF_2_0;
             }
+            if (JSF_ID_2_1.equals(dt.getPublicId())) {
+                value = JSFVersion.JSF_2_1;
+            }
         }
         return value;
 
     }
-    
+
 }

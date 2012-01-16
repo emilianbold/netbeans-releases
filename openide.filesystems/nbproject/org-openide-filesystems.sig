@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.47
+#Version 7.53
 
 CLSS public java.io.IOException
 cons public init()
@@ -335,6 +335,7 @@ meth protected void fireFileDataCreatedEvent(java.util.Enumeration<org.openide.f
 meth protected void fireFileDeletedEvent(java.util.Enumeration<org.openide.filesystems.FileChangeListener>,org.openide.filesystems.FileEvent)
 meth protected void fireFileFolderCreatedEvent(java.util.Enumeration<org.openide.filesystems.FileChangeListener>,org.openide.filesystems.FileEvent)
 meth protected void fireFileRenamedEvent(java.util.Enumeration<org.openide.filesystems.FileChangeListener>,org.openide.filesystems.FileRenameEvent)
+meth public !varargs java.lang.String getMIMEType(java.lang.String[])
 meth public abstract boolean isData()
 meth public abstract boolean isFolder()
 meth public abstract boolean isReadOnly()
@@ -576,6 +577,7 @@ meth public !varargs static java.lang.String getMIMEType(org.openide.filesystems
 meth public !varargs static void refreshFor(java.io.File[])
 meth public final static void runAtomicAction(java.lang.Runnable)
 meth public final static void runAtomicAction(org.openide.filesystems.FileSystem$AtomicAction) throws java.io.IOException
+meth public static <%0 extends java.lang.Object> {%%0} getConfigObject(java.lang.String,java.lang.Class<{%%0}>)
 meth public static boolean affectsOrder(org.openide.filesystems.FileAttributeEvent)
 meth public static boolean isArchiveFile(java.net.URL)
 meth public static boolean isArchiveFile(org.openide.filesystems.FileObject)
@@ -783,7 +785,7 @@ supr java.lang.Object
 
 CLSS public org.openide.filesystems.MultiFileSystem
 cons protected init()
-cons public init(org.openide.filesystems.FileSystem[])
+cons public !varargs init(org.openide.filesystems.FileSystem[])
 meth protected !varargs final void setDelegates(org.openide.filesystems.FileSystem[])
 meth protected final org.openide.filesystems.FileSystem findSystem(org.openide.filesystems.FileObject)
 meth protected final org.openide.filesystems.FileSystem[] getDelegates()
@@ -954,11 +956,15 @@ hfds fs,serialVersionUID
 
 CLSS public final org.openide.filesystems.annotations.LayerBuilder
 innr public final File
+meth public javax.tools.FileObject validateResource(java.lang.String,javax.lang.model.element.Element,java.lang.annotation.Annotation,java.lang.String,boolean) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File file(java.lang.String)
 meth public org.openide.filesystems.annotations.LayerBuilder$File folder(java.lang.String)
 meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.Class) throws org.openide.filesystems.annotations.LayerGenerationException
+meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.Class<?>) throws org.openide.filesystems.annotations.LayerGenerationException
+meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.Class<?>,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
+meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File shadowFile(java.lang.String,java.lang.String,java.lang.String)
+meth public static java.lang.String absolutizeResource(javax.lang.model.element.Element,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
 supr java.lang.Object
 hfds doc,originatingElement,processingEnv,unwrittenFiles
 
@@ -969,12 +975,14 @@ meth public org.openide.filesystems.annotations.LayerBuilder write()
 meth public org.openide.filesystems.annotations.LayerBuilder$File boolvalue(java.lang.String,boolean)
 meth public org.openide.filesystems.annotations.LayerBuilder$File bundlevalue(java.lang.String,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File bundlevalue(java.lang.String,java.lang.String,java.lang.String)
+meth public org.openide.filesystems.annotations.LayerBuilder$File bundlevalue(java.lang.String,java.lang.String,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File bytevalue(java.lang.String,byte)
 meth public org.openide.filesystems.annotations.LayerBuilder$File charvalue(java.lang.String,char)
 meth public org.openide.filesystems.annotations.LayerBuilder$File contents(java.lang.String)
 meth public org.openide.filesystems.annotations.LayerBuilder$File doublevalue(java.lang.String,double)
 meth public org.openide.filesystems.annotations.LayerBuilder$File floatvalue(java.lang.String,float)
-meth public org.openide.filesystems.annotations.LayerBuilder$File instanceAttribute(java.lang.String,java.lang.Class) throws org.openide.filesystems.annotations.LayerGenerationException
+meth public org.openide.filesystems.annotations.LayerBuilder$File instanceAttribute(java.lang.String,java.lang.Class<?>) throws org.openide.filesystems.annotations.LayerGenerationException
+meth public org.openide.filesystems.annotations.LayerBuilder$File instanceAttribute(java.lang.String,java.lang.Class<?>,java.lang.annotation.Annotation,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File intvalue(java.lang.String,int)
 meth public org.openide.filesystems.annotations.LayerBuilder$File longvalue(java.lang.String,long)
 meth public org.openide.filesystems.annotations.LayerBuilder$File methodvalue(java.lang.String,java.lang.String,java.lang.String)
@@ -1000,6 +1008,8 @@ hfds ENTITY_RESOLVER,ERROR_HANDLER,GENERATED_LAYER,LOCAL_DTD_RESOURCE,NETWORK_DT
 CLSS public org.openide.filesystems.annotations.LayerGenerationException
 cons public init(java.lang.String)
 cons public init(java.lang.String,javax.lang.model.element.Element)
+cons public init(java.lang.String,javax.lang.model.element.Element,javax.annotation.processing.ProcessingEnvironment,java.lang.annotation.Annotation)
+cons public init(java.lang.String,javax.lang.model.element.Element,javax.annotation.processing.ProcessingEnvironment,java.lang.annotation.Annotation,java.lang.String)
 cons public init(java.lang.String,javax.lang.model.element.Element,javax.lang.model.element.AnnotationMirror)
 cons public init(java.lang.String,javax.lang.model.element.Element,javax.lang.model.element.AnnotationMirror,javax.lang.model.element.AnnotationValue)
 supr java.lang.Exception

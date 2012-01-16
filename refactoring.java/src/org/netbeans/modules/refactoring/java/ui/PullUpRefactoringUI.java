@@ -50,7 +50,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -107,10 +106,12 @@ public class PullUpRefactoringUI implements RefactoringUI {
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             panel = new PullUpPanel(refactoring, initialMembers, parent);
@@ -118,32 +119,39 @@ public class PullUpRefactoringUI implements RefactoringUI {
         return panel;
     }
 
+    @Override
     public Problem setParameters() {
         captureParameters();
         return refactoring.checkParameters();
     }
     
+    @Override
     public Problem checkParameters() {
         captureParameters();
         return refactoring.fastCheckParameters();
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(PullUpAction.class, "DSC_PullUp", description); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(PullUpAction.class, "LBL_PullUp"); // NOI18N
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PullUpRefactoringUI.class.getName());
     }

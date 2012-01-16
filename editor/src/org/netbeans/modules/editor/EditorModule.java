@@ -78,10 +78,10 @@ import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
-import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OperationEvent;
@@ -324,8 +324,7 @@ public class EditorModule extends ModuleInstall {
             @Override public void operationRename(Rename ev) {}
             @Override public void operationCreateShadow(Copy ev) {}
             @Override public void operationCreateFromTemplate(Copy ev) {
-                Object removeWritables = ev.getOriginalDataObject().getPrimaryFile().getAttribute("removeWritables");
-                if (removeWritables == null) {
+                if (!ev.getOriginalDataObject().getPrimaryFile().canRevert()) {
                     // Reformat only files created from original templates.
                     reformat(ev.getObject());
                 }
@@ -639,6 +638,10 @@ public class EditorModule extends ModuleInstall {
             
             final StyledDocument doc = ec.openDocument();
             final Reformat reformat = Reformat.get(doc);
+            String defaultLineSeparator = (String) file.getPrimaryFile().getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+            if (defaultLineSeparator != null) {
+                doc.putProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR, defaultLineSeparator);
+            }
             
             reformat.lock();
             
@@ -660,7 +663,12 @@ public class EditorModule extends ModuleInstall {
                 
             } finally {
                 reformat.unlock();
-                doc.putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
+                defaultLineSeparator = (String) doc.getProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+                if (defaultLineSeparator != null) {
+                    doc.putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, defaultLineSeparator);
+                } else {
+                    doc.putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
+                }
                 ec.saveDocument();
             }
             

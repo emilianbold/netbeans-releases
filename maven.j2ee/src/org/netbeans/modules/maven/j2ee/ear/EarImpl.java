@@ -88,6 +88,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
+import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -103,22 +104,22 @@ import org.xml.sax.SAXException;
  * implementation of ear related netbeans functionality
  * @author Milos Kleint 
  */
-class EarImpl implements EarImplementation, EarImplementation2,
+public class EarImpl implements EarImplementation, EarImplementation2,
         J2eeApplicationImplementation2,
         ModuleChangeReporter,
         AdditionalDebuggedProjects {
 
     private Project project;
-    private EarModuleProviderImpl provider;
+    private J2eeModuleProvider provider;
     private MetadataModel<ApplicationMetadata> metadataModel;
-    private final NbMavenProject mavenproject;
 
-    /** Creates a new instance of EarImpl */
-    EarImpl(Project proj, EarModuleProviderImpl prov) {
-        project = proj;
-        mavenproject = project.getLookup().lookup(NbMavenProject.class);
+    public EarImpl(Project project, J2eeModuleProvider provider) {
+        this.project = project;
+        this.provider = provider;
+    }
 
-        provider = prov;
+    private NbMavenProject mavenproject() {
+        return project.getLookup().lookup(NbMavenProject.class);
     }
 
     public Profile getJ2eeProfile() {
@@ -205,7 +206,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
             String generatedLoc = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_EAR, "generatedDescriptorLocation", "generate-application-xml");//NOI18N
             if (generatedLoc == null) {
-                generatedLoc = mavenproject.getMavenProject().getBuild().getDirectory();
+                generatedLoc = mavenproject().getMavenProject().getBuild().getDirectory();
             }
             FileObject fo = FileUtilities.convertURItoFileObject(FileUtilities.getDirURI(project.getProjectDirectory(), generatedLoc));
             if (fo != null) {
@@ -275,7 +276,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
      * Returns the location of the module within the application archive.
      */
     public String getUrl() {
-        String toRet =  "/" + mavenproject.getMavenProject().getBuild().getFinalName(); //NOI18N
+        String toRet =  "/" + mavenproject().getMavenProject().getBuild().getFinalName(); //NOI18N
         return toRet;
     }
 
@@ -286,7 +287,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
      */
     public FileObject getArchive() throws IOException {
         //TODO get the correct values for the plugin properties..
-        MavenProject proj = mavenproject.getMavenProject();
+        MavenProject proj = mavenproject().getMavenProject();
         String finalName = proj.getBuild().getFinalName();
         String loc = proj.getBuild().getDirectory();
         File fil = FileUtil.normalizeFile(new File(loc, finalName + ".ear"));//NOI18N
@@ -321,7 +322,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
      * @return FileObject for the content directory
      */
     public FileObject getContentDirectory() throws IOException {
-        MavenProject proj = mavenproject.getMavenProject();
+        MavenProject proj = mavenproject().getMavenProject();
         String finalName = proj.getBuild().getFinalName();
         String loc = proj.getBuild().getDirectory();
         File fil = FileUtil.normalizeFile(new File(loc, finalName));
@@ -357,7 +358,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
                     StringInputStream str = new StringInputStream(
                             "<application xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd\" version=\"1.4\">" +//NOI18N
                             "<description>description</description>" +//NOI18N
-                            "<display-name>" + mavenproject.getMavenProject().getArtifactId() + "</display-name></application>");//NOI18N
+                            "<display-name>" + mavenproject().getMavenProject().getArtifactId() + "</display-name></application>");//NOI18N
                     try {
                         return DDProvider.getDefault().getDDRoot(new InputSource(str));
                     } catch (SAXException ex) {
@@ -377,7 +378,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     }
 
     public J2eeModule[] getModules() {
-        MavenProject mp = mavenproject.getMavenProject();
+        MavenProject mp = mavenproject().getMavenProject();
         @SuppressWarnings("unchecked")
         Set<Artifact> artifactSet = mp.getArtifacts();
         @SuppressWarnings("unchecked")
@@ -420,7 +421,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
                         if (!found) {
                             // FIXME obviously J2EE platform version is wrong and won't really work
                             // if this j2ee module will be used (it has to be module version such as 2.4, 2.5 for web)
-                            J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(a, getJ2eePlatformVersion(), provider));
+                            J2eeModule mod = J2eeModuleFactory.createJ2eeModule(new NonProjectJ2eeModule(a, getJ2eePlatformVersion()));
                             EarImpl.MavenModule m = findMavenModule(a, mm);
                             J2eeModule module = J2eeModuleFactory.createJ2eeModule(new ProxyJ2eeModule(mod, m, fileNameMapping));
                             //#162173 respect order in pom configuration.. shall we?
@@ -439,7 +440,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     }
 
     public List<Project> getProjects() {
-        MavenProject mp = mavenproject.getMavenProject();
+        MavenProject mp = mavenproject().getMavenProject();
         @SuppressWarnings("unchecked")
         Set<Artifact> artifactSet = mp.getArtifacts();
         @SuppressWarnings("unchecked")
@@ -478,7 +479,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     File getDDFile(String path) {
 //        System.out.println("getDD file=" + path);
         //TODO what is the actual path.. sometimes don't have any sources for deployment descriptors..
-        URI dir = mavenproject.getEarAppDirectory();
+        URI dir = mavenproject().getEarAppDirectory();
         File fil = new File(new File(dir), path);
         if (!fil.getParentFile().exists()) {
             fil.getParentFile().mkdirs();
@@ -495,7 +496,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     }
 
     public EjbChangeDescriptor getEjbChanges(long timestamp) {
-        return new EjbChange();
+        return new EjbChangeDescriptorImpl();
     }
 
     public boolean isManifestChanged(long timestamp) {
@@ -558,17 +559,6 @@ class EarImpl implements EarImplementation, EarImplementation2,
 
         public String getRelativePath() {
             return FileUtil.getRelativePath(root, f);
-        }
-    }
-
-    //TODO
-    private class EjbChange implements EjbChangeDescriptor {
-        public boolean ejbsChanged() {
-            return false;
-        }
-
-        public String[] getChangedEjbs() {
-            return new String[0];
         }
     }
 
@@ -666,7 +656,7 @@ class EarImpl implements EarImplementation, EarImplementation2,
     }
 
     private EarImpl.MavenModule[] readPomModules() {
-        MavenProject prj = mavenproject.getMavenProject();
+        MavenProject prj = mavenproject().getMavenProject();
         MavenModule[] toRet = new MavenModule[0];
         if (prj.getBuildPlugins() == null) {
             return toRet;

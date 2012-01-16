@@ -44,6 +44,7 @@
 package org.netbeans.modules.mercurial.util;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -55,7 +56,7 @@ import org.netbeans.modules.mercurial.config.HgConfigFiles;
  * @author John Rice
  */
 public class HgRepositoryContextCache {
-    private Map<File, DefaultPaths> rootToDefaultPaths;
+    private Map<File, Map<String, String>> rootToDefaultPaths;
 
     private static HgRepositoryContextCache instance;
 
@@ -76,44 +77,58 @@ public class HgRepositoryContextCache {
     public synchronized String getPullDefault(File file) {
         File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
         if(repoRoot == null) return null;
-        DefaultPaths paths = getDefaultPaths(repoRoot);
-        return paths.pull;
+        Map<String, String> paths = getPaths(repoRoot);
+        return paths.get(HgConfigFiles.HG_DEFAULT_PULL_VALUE);
     }
 
     public synchronized String getPushDefault(File file) {
         File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
         if(repoRoot == null) return null;
-        DefaultPaths paths = getDefaultPaths(repoRoot);
-        return paths.push;
+        Map<String, String> paths = getPaths(repoRoot);
+        return paths.get(HgConfigFiles.HG_DEFAULT_PUSH);
     }
 
-    private DefaultPaths getDefaultPaths(File repoRoot) {
-        Map<File, DefaultPaths> map = getRootToDefaultPaths();
-        DefaultPaths paths = map.get(repoRoot);
+    public String getPathValue (File root, String path) {
+        File repoRoot = Mercurial.getInstance().getRepositoryRoot(root);
+        if(repoRoot == null) return null;
+        Map<String, String> paths = getPaths(repoRoot);
+        return paths.get(path);
+    }
+
+    public Map<String, String> getPathValues (File root) {
+        File repoRoot = Mercurial.getInstance().getRepositoryRoot(root);
+        if (repoRoot == null) return Collections.<String, String>emptyMap();
+        Map<String, String> paths = getPaths(repoRoot);
+        return new HashMap<String, String>(paths);
+    }
+
+    private Map<String, String> getPaths(File repoRoot) {
+        Map<File, Map<String, String>> map = getRootToDefaultPaths();
+        Map<String, String> paths = map.get(repoRoot);
         if (paths == null) {
             HgConfigFiles config = new HgConfigFiles(repoRoot);
             String pull = config.getDefaultPull(true);
             String push = config.getDefaultPush(true);
-            paths = new DefaultPaths(pull, push);
+            paths = new HashMap<String, String>();
+            paths.put(HgConfigFiles.HG_DEFAULT_PULL_VALUE, pull);
+            paths.put(HgConfigFiles.HG_DEFAULT_PUSH, push);
+            for (Map.Entry<Object, Object> e : config.getProperties(HgConfigFiles.HG_PATHS_SECTION).entrySet()) {
+                String key = (String) e.getKey();
+                String value = (String) e.getValue();
+                if (key != null && value != null && !key.isEmpty() && !value.isEmpty()) {
+                    paths.put(key.trim(), value.trim());
+                }
+            }
             map.put(repoRoot, paths);
         }
         return paths;
     }
 
-    private Map<File, DefaultPaths> getRootToDefaultPaths() {
+    private Map<File, Map<String, String>> getRootToDefaultPaths() {
         if(rootToDefaultPaths == null) {
-            rootToDefaultPaths = new HashMap<File, DefaultPaths>();
+            rootToDefaultPaths = new HashMap<File, Map<String, String>>();
         }
         return rootToDefaultPaths;
-    }
-
-    private static class DefaultPaths {
-        public DefaultPaths(String pull, String push) {
-            this.pull = pull;
-            this.push = push;
-        }
-        String pull;
-        String push;
     }
 }
 

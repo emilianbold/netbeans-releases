@@ -98,9 +98,9 @@ public final class CommandUtils {
     }
 
     /**
-     * Get a {@link PhpUnit} instance (path from IDE options used).
-     * @param showCustomizer if <code>true</code>, IDE options dialog is shown if the path of PHP Unit is not valid.
-     * @return a {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid.
+     * Get valid {@link PhpUnit} instance (path from IDE options used) or {@code null}.
+     * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PHPUnit is not valid
+     * @return valid {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid
      */
     public static PhpUnit getPhpUnit(boolean showCustomizer) {
         try {

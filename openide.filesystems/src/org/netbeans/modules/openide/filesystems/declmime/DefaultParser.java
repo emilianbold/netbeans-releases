@@ -92,7 +92,7 @@ abstract class DefaultParser  extends DefaultHandler {
      * Check if the given exception is one thrown from the handler
      * for stopping the parser.
      */
-    protected boolean isStopException(Exception e) {
+    protected boolean isStopException(Throwable e) {
         return false;
     }
 
@@ -150,6 +150,11 @@ abstract class DefaultParser  extends DefaultHandler {
             if (!isStopException(sex)) {
                 Exceptions.attachMessage(sex, "While parsing: " + fo); // NOI18N
                 Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, sex);
+                state = ERROR;
+            }
+        } catch (InternalError ie) {
+            // Sometimes thrown on not really valid sources
+            if(!isStopException(ie)) {
                 state = ERROR;
             }
         } catch (NullPointerException npe) {

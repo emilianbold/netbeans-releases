@@ -209,6 +209,10 @@ public final class AquaLFCustoms extends LFCustoms {
             "NbSlideBar.GroupSeparator.Gap.Before", 1,
             "NbSlideBar.GroupSeparator.Gap.After", 1,
             "NbSlideBar.RestoreButton.Gap", 3,
+            
+            "Nb.MainWindow.Toolbar.Border", BorderFactory.createEmptyBorder(0, 0, 0, 3),
+            
+            "Nb.MenuBar.VerticalAlign", Boolean.TRUE,
         }; //NOI18N
         return result;
     }

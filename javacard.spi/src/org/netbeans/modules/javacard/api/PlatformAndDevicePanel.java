@@ -85,10 +85,10 @@ import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.impl.TempPlatformAndDeviceProvider;
+import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
-import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationGroupProvider;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.HtmlRenderer.Renderer;
 import org.openide.filesystems.FileAttributeEvent;
@@ -120,7 +120,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
     private final JButton managePlatformsButton = new JButton(NbBundle.getMessage(PlatformAndDevicePanel.class,
             "LBL_MANAGE_PLATFORMS")); //NOI18N
     private final R r = new R();
-    private final ValidationGroup grp = ValidationGroup.create();
+    private final SwingValidationGroup grp = SwingValidationGroup.create();
     private PlatformAndDeviceProvider props;
     private final InstanceContent content = new InstanceContent();
     private final AbstractLookup lkp = new AbstractLookup(content);
@@ -237,7 +237,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         DataObject dob = Utils.findPlatformDataObjectNamed(props.getPlatformName());
         DeviceManagerDialogProvider prov = dob == null ? null : dob.getLookup().lookup(DeviceManagerDialogProvider.class);
         manageCardsButton.setEnabled(pform != null && pform.isValid() && prov != null);
-        grp.validateAll();
+        grp.performValidation();
         updateLookup();
     }
 
@@ -254,7 +254,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
     @Override
     public void addNotify() {
         super.addNotify();
-        grp.validateAll();
+        grp.performValidation();
         updateLookup();
     }
 
@@ -275,7 +275,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         if (card != null) {
             props.setActiveDevice(card.getSystemId());
         }
-        grp.validateAll();
+        grp.performValidation();
         updateLookup();
     }
 
@@ -293,7 +293,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         updateCardsModel();
     }
 
-    public ValidationGroup getValidationGroup() {
+    @Override public SwingValidationGroup getValidationGroup() {
         return grp;
     }
 
@@ -314,12 +314,14 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         updateLookup();
     }
 
-    private class PlatformValidator implements Validator<ComboBoxModel> {
-
-        public boolean validate(Problems prblms, String string, ComboBoxModel t) {
+    private class PlatformValidator extends AbstractValidator<ComboBoxModel> {
+        PlatformValidator() {
+            super(ComboBoxModel.class);
+        }
+        @Override public void validate(Problems prblms, String string, ComboBoxModel t) {
             if (t.getSelectedItem() == null || !(t.getSelectedItem() instanceof JavacardPlatform)) {
                 prblms.add(NbBundle.getMessage(PlatformValidator.class, "LBL_NO_PLATFORM_SELECTED")); //NOI18N
-                return false;
+                return;
             }
             if (t.getSelectedItem() instanceof JavacardPlatform) {
                 JavacardPlatform p = (JavacardPlatform) t.getSelectedItem();
@@ -327,36 +329,34 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
                     String nm = p.getDisplayName();
                     prblms.add(NbBundle.getMessage(PlatformValidator.class, "MSG_BAD_PLATFORM", //NOI18N
                             nm));
-                    return false;
+                    return;
                 }
                 if (kind != null) {
                     if (!p.supportedProjectKinds().contains(kind)) {
                         prblms.add(NbBundle.getMessage(PlatformAndDevicePanel.class,
                                 "MSG_UNSUPPORTED_PROJECT_TYPE", p.getDisplayName(), //NOI18N
                                 kind.getDisplayName()));
-                        return false;
                     }
                 }
             }
-            return true;
         }
     }
 
-    private static class CardValidator implements Validator<ComboBoxModel> {
-
-        public boolean validate(Problems prblms, String string, ComboBoxModel t) {
+    private static class CardValidator extends AbstractValidator<ComboBoxModel> {
+        CardValidator() {
+            super(ComboBoxModel.class);
+        }
+        @Override public void validate(Problems prblms, String string, ComboBoxModel t) {
             if (t.getSelectedItem() == null || !(t.getSelectedItem() instanceof Card)) {
                 prblms.add(NbBundle.getMessage(PlatformValidator.class, "LBL_NO_CARD_SELECTED")); //NOI18N
-                return false;
+                return;
             }
             if (t.getSelectedItem() instanceof Card) {
                 Card c = (Card) t.getSelectedItem();
                 if (!c.isValid()) {
                     prblms.add(NbBundle.getMessage(PlatformValidator.class, "MSG_BAD_CARD")); //NOI18N
-                    return false;
                 }
             }
-            return true;
         }
 
     }
@@ -594,7 +594,7 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
             refresh();
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    grp.validateAll();
+                    grp.performValidation();
                 }
             });
             

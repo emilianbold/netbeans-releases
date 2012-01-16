@@ -71,9 +71,9 @@ public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
         this(project, true);
     }
 
+    @NbBundle.Messages("EJBSelectionTreeBuilder_DisplayName=EJB Logical View")
     public EJBSelectionTreeBuilder(Lookup.Provider project, boolean isPreferred) {
-        super(new Type("ejb-application", NbBundle.getMessage(EJBSelectionTreeBuilder.class, // NOI18N
-                "EJBSelectionTreeBuilder_DisplayName")), isPreferred, project); // NOI18N
+        super(new Type("ejb-application", Bundle.EJBSelectionTreeBuilder_DisplayName()), isPreferred, project); // NOI18N
     }
 
     @Override

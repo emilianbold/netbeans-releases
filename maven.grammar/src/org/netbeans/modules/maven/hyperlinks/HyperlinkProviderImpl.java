@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
@@ -65,7 +66,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author mkleint
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType=POMDataObject.MIME_TYPE, service=HyperlinkProvider.class),
+    @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=HyperlinkProvider.class),
     @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=HyperlinkProvider.class)
 })
 public class HyperlinkProviderImpl implements HyperlinkProvider {

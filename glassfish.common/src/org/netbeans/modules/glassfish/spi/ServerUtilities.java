@@ -201,6 +201,7 @@ public final class ServerUtilities {
             ServerDetails.GLASSFISH_SERVER_3, 
         },
                 new ServerDetails[] { 
+            ServerDetails.GLASSFISH_SERVER_3_1_2,
             ServerDetails.GLASSFISH_SERVER_3_1_1,
             ServerDetails.GLASSFISH_SERVER_3_0_1, 
         });

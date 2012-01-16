@@ -135,6 +135,13 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
+    private static boolean assertNormalized(File path) {
+        if (path != null) {
+            assert path.equals(FileUtil.normalizeFileCached(path)) : "Need to normalize " + path + "!";  //NOI18N
+        }
+        return true;
+    }
+
     private static FileSystem getDiskFileSystemFor(File... files) {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {
@@ -271,7 +278,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void addFileChangeListener(FileChangeListener listener, File path) {
-        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        assert assertNormalized(path);
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
             if (f2H == null) {
@@ -983,6 +990,7 @@ public final class FileUtil extends Object {
                 retVal = normalizeFile(retVal);
             }
         }
+        assert assertNormalized(retVal);
         return retVal;
     }
 
@@ -995,7 +1003,13 @@ public final class FileUtil extends Object {
      * For example, to make this method work in unit tests in an Ant-based module project,
      * right-click Unit Test Libraries, Add Unit Test Dependency, check Show Non-API Modules, select Master Filesystem.
      * (Also right-click the new Master Filesystem node, Edit, uncheck Include in Compile Classpath.)
+     * To ensure masterfs (or some other module that can handle the conversion)
+     * is present put following line into your module manifest:
      * </p>
+     * <pre>
+     * OpenIDE-Module-Needs: org.openide.filesystems.FileUtil.toFileObject
+     * </pre>
+     * 
      * @param file a disk file (may or may not exist). This file
      * must be {@linkplain #normalizeFile normalized}.
      * @return a corresponding file object, or null if the file does not exist
@@ -1723,6 +1737,12 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static File normalizeFile(final File file) {
+        File ret = normalizeFileCached(file);
+        assert assertNormalized(ret);
+        return ret;
+    }
+    
+    private static File normalizeFileCached(final File file) {
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
         String unnormalized = file.getPath();
         String normalized = normalizedPaths.get(unnormalized);

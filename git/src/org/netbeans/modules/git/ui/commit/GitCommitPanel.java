@@ -232,7 +232,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
                     });
                     // Ensure that cache is uptodate
                     FileStatusCache cache = Git.getInstance().getFileStatusCache();
-                    cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Arrays.asList(roots)), this);
+                    cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Arrays.asList(roots)), getProgressMonitor());
                     // the realy time consuming part is over;
                     // no need to show the progress component,
                     // which only makes the dialog flicker
@@ -269,12 +269,15 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
 
                     ArrayList<GitFileNode> nodesList = new ArrayList<GitFileNode>(fileList.size());
 
+                    Git git = Git.getInstance();
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
                         File file = it.next();
-                        GitFileNode node = new GitFileNode(repository, file);
-                        nodesList.add(node);
+                        if (repository.equals(git.getRepositoryRoot(file))) {
+                            GitFileNode node = new GitFileNode(repository, file);
+                            nodesList.add(node);
+                        }
                     }
-                    final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[fileList.size()]);
+                    final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[nodesList.size()]);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -447,7 +450,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
                     // get list of modifications
                     File[] files;
                     try {
-                        files = getClient().listModifiedIndexEntries(new File[] { repository }, this);
+                        files = getClient().listModifiedIndexEntries(new File[] { repository }, getProgressMonitor());
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                         return;
@@ -456,7 +459,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
                     if (isCanceled()) {
                         return;
                     }
-                    cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Arrays.asList(files)), this);
+                    cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Arrays.asList(files)), getProgressMonitor());
                     if (isCanceled()) {
                         return;
                     }

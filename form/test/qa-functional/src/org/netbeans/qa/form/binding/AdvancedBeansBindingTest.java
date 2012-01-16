@@ -68,9 +68,9 @@ import org.netbeans.qa.form.BindDialogOperator;
  * Beans Binding advanced tests
  *
  * @author Jiri Vagner
- * 
+ *
  * <b>Adam Senk</b>
- * 20 April 2011 NOT WORKS NOW
+ *
  */
 public class AdvancedBeansBindingTest extends ExtJellyTestCase {
 
@@ -82,7 +82,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
     private String jLabelNameGlobal = "";
     private String selectedConvertor = "";
 
-    /** Constructor required by JUnit */
+    /**
+     * Constructor required by JUnit
+     */
     public AdvancedBeansBindingTest(String testName) {
         super(testName);
     }
@@ -99,7 +101,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
 
     }
 
-    /** Form component classes compilation */
+    /**
+     * Form component classes compilation
+     */
     public void testCompileComponents() {
         Node beanNode = openFile(CONVERTOR_NAME);
         CompileJavaAction action = new CompileJavaAction();
@@ -110,7 +114,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         action.perform(beanNode);
     }
 
-    /** Tests different update modes */
+    /**
+     * Tests different update modes
+     */
     public void testUpdateMode() {
         // open frame
         openFile(FILENAME);
@@ -151,7 +157,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         // NOI18N
     }
 
-    /** Tests alternate values */
+    /**
+     * Tests alternate values
+     */
     public void testAlternateValues() {
 
         String nullLabelPath = "[JFrame]|jLabel7 [JLabel]"; // NOI18N
@@ -170,7 +178,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
                 String nullLabelPath = "[JFrame]|jLabel7 [JLabel]";
                 ComponentInspectorOperator inspector = new ComponentInspectorOperator();
                 Node actNode = new Node(inspector.treeComponents(), nullLabelPath);
-                runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                actNode.select();
+                actNode = new Node(inspector.treeComponents(), nullLabelPath);
+                actNode.performPopupActionNoBlock(ACTION_PATH);
             }
         });
         // invoke bind dialog
@@ -207,8 +217,10 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         // test generated code
         findInCode("binding.setSourceNullValue(\"" + nullMsg + "\");", designer); // NOI18N
         findInCode("binding.setSourceUnreadableValue(\"" + incompleteMsg + "\");", designer); // NOI18N
+        openFile(FILENAME);
         designer.source();
         designer.design();
+        openFile(FILENAME);
         // invoke bind dialog again and check values
 
         inspector = new ComponentInspectorOperator();
@@ -219,7 +231,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
                 String nullLabelPath = "[JFrame]|jLabel7 [JLabel]";
                 ComponentInspectorOperator inspector = new ComponentInspectorOperator();
                 Node actNode = new Node(inspector.treeComponents(), nullLabelPath);
-                runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                //actNode.select();
+                actNode.performPopupActionNoBlock(ACTION_PATH);
             }
         });
 
@@ -248,7 +261,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         assertEquals(nullValue, nullMsg);
     }
 
-    /** Tests validation */
+    /**
+     * Tests validation
+     */
     public void testValidation() throws InterruptedException {
 
         // open frame
@@ -256,22 +271,23 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         ProjectsTabOperator pto;
 
 
-        pto = new ProjectsTabOperator();
-        prn = pto.getProjectRootNode("SampleProject");
-        prn.select();
-        Node formnode = new Node(prn, "Source Packages|" + "data" + "|" + FILENAME);
-        OpenAction openAction = new OpenAction();
-        formnode.select();
-        formnode.performPopupAction("Open");
+        openFile(FILENAME);
         FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
+        designer.source();
+        designer.design();
+        openFile(FILENAME);
+
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         inspector.freezeNavigatorAndRun(new Runnable() {
 
             @Override
             public void run() {
                 ComponentInspectorOperator inspector = new ComponentInspectorOperator();
-                Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]"); // NOI18N
-                runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                Node actNode = new Node(inspector.treeComponents(), "[JFrame]"); // NOI18N
+                actNode.expand();
+                inspector = new ComponentInspectorOperator();
+                actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]");
+                actNode.performPopupActionNoBlock(ACTION_PATH);
             }
         });
 
@@ -288,11 +304,13 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         //jtfOp.setText(VALIDATOR_NAME);
         //new JButtonOperator(valOp, "OK").push();  // NOI18N
         //new JButtonOperator(bindOp, "OK").push();  // NOI18N
-        openAction = new OpenAction();
-        openAction.perform(formnode);
-        // find code in source file
+        openFile(FILENAME);
         designer = new FormDesignerOperator(FILENAME);
         findInCode("binding.setValidator(" + VALIDATOR_NAME + ");", designer);  // NOI18N
+        designer.source();
+        designer.design();
+        openFile(FILENAME);
+        designer = new FormDesignerOperator(FILENAME);
         designer.source();
         designer.design();
         openFile(FILENAME);
@@ -305,7 +323,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
             public void run() {
                 ComponentInspectorOperator inspector = new ComponentInspectorOperator();
                 Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]"); // NOI18N
-                runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                // actNode.select();
+                actNode.performPopupActionNoBlock(ACTION_PATH);
+                //runNoBlockPopupOverNode(ACTION_PATH, actNode);
             }
         });
 
@@ -318,7 +338,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         assertEquals(selected, VALIDATOR_NAME);
     }
 
-    /** Tests conversion */
+    /**
+     * Tests conversion
+     */
     public void testConversion() {
         // open frame
         openFile(FILENAME);
@@ -349,7 +371,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
                         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
                         String jLabelPath = "[JFrame]|jLabel9 [JLabel]";
                         Node actNode = new Node(inspector.treeComponents(), jLabelPath);
-                        runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                        actNode.select();
+                        actNode.performPopupActionNoBlock(ACTION_PATH);
 
                     }
                 });
@@ -374,7 +397,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
                         String jLabelPath = "[JFrame]|jLabel9 [JLabel]";
                         // test value after using convertor
                         Node actNode = new Node(inspector.treeComponents(), jLabelPath);
-                        runNoBlockPopupOverNode("Properties", actNode);
+                        actNode.select();
+                        actNode.performPopupActionNoBlock("Properties");
+                        //runNoBlockPopupOverNode("Properties", actNode);
                         NbDialogOperator dialogOp = new NbDialogOperator("[JLabel]");  // NOI18N
                         Property prop = new Property(new PropertySheetOperator(dialogOp), "text");  // NOI18N
                         String result = prop.getValue();
@@ -399,7 +424,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
 
 
                         Node actNode = new Node(inspector.treeComponents(), jLabelPath);
-                        runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                        actNode.select();
+                        actNode.performPopupActionNoBlock(ACTION_PATH);
 
                     }
                 });
@@ -423,7 +449,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
                         // test convertor name
 
                         Node actNode = new Node(inspector.treeComponents(), jLabelPath);
-                        runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                        actNode.select();
+                        actNode.performPopupActionNoBlock(ACTION_PATH);
                     }
                 });
                 bindOp = new BindDialogOperator();
@@ -459,7 +486,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
                         String jLabelPath = "[JFrame]|jLabel9 [JLabel]";
 
                         Node actNode = new Node(inspector.treeComponents(), jLabelPath);
-                        runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                        actNode.select();
+                        actNode.performPopupActionNoBlock(ACTION_PATH);
                     }
                 });
                 bindOp = new BindDialogOperator();
@@ -481,7 +509,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         });
     }
 
-    /** Select update mode for  jlabel */
+    /**
+     * Select update mode for jlabel
+     */
     private void selectUpdateModeForJLabel(ComponentInspectorOperator inspector, String jLabelName, String mode) {
         // invoke bind dialog
 
@@ -493,7 +523,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
             public void run() {
                 ComponentInspectorOperator inspector = new ComponentInspectorOperator();
                 Node actNode = new Node(inspector.treeComponents(), "[JFrame]|" + jLabelNameGlobal + " [JLabel]"); // NOI18N
-                runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                actNode.select();
+                actNode.performPopupActionNoBlock(ACTION_PATH);
 
             }
         });
@@ -506,7 +537,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         bindOp.ok();
     }
 
-    /* Get selected update mode text caption for jlabel */
+    /*
+     * Get selected update mode text caption for jlabel
+     */
     private String getSelectedUpdateModeForJLabel(ComponentInspectorOperator inspector, String jLabelName) {
         // invoke bind dialog
 
@@ -518,7 +551,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
             public void run() {
                 ComponentInspectorOperator inspector = new ComponentInspectorOperator();
                 Node actNode = new Node(inspector.treeComponents(), "[JFrame]|" + jLabelNameGlobal + " [JLabel]"); // NOI18N
-                runNoBlockPopupOverNode(ACTION_PATH, actNode);
+                actNode.select();
+                actNode.performPopupActionNoBlock(ACTION_PATH);
             }
         });
 

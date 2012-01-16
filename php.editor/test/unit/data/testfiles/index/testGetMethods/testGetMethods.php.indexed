@@ -14,7 +14,7 @@ Not Searchable Keys:
 
 Document 2
 Searchable Keys:
-  clz : testmethoddeclaration;testMethodDeclaration;12;;;;1;
+  clz : testmethoddeclaration;testMethodDeclaration;12;;;;1;;
   method : testmethoddeclaration;testMethodDeclaration;56;;;1;
   top : testmethoddeclaration
 

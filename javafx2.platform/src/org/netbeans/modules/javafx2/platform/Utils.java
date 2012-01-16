@@ -43,13 +43,12 @@ package org.netbeans.modules.javafx2.platform;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -84,7 +83,7 @@ public final class Utils {
     private static final String JAVAFX_SOURCES_PREFIX = "javafx.src"; // NOI18N
     private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
+//    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private Utils() {
     }
@@ -172,10 +171,13 @@ public final class Utils {
      * @param javadocPath JavaFX javadoc location
      * @param srcPath JavaFX sources location
      * @return instance of created Java Platform, or null if creation was not successful
+     * @throws IOException if the platform was invalid or its definition could not be stored
+     * @throws IllegalArgumentException if a platform of given display name already exists
      */
     @CheckForNull
     public static JavaPlatform createJavaFXPlatform(@NonNull String platformName, @NonNull String sdkPath,
-            @NonNull String runtimePath, @NullAllowed String javadocPath, @NullAllowed String srcPath) {
+            @NonNull String runtimePath, @NullAllowed String javadocPath, @NullAllowed String srcPath)
+            throws IOException, IllegalArgumentException {
 
         Parameters.notNull("platformName", platformName); // NOI18N
         Parameters.notNull("sdkPath", sdkPath); // NOI18N
@@ -188,12 +190,7 @@ public final class Utils {
         }
         
         FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
-        JavaPlatform platform = null;
-        try {
-            platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
-        }
+        JavaPlatform platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
 
         if (platform != null) {
             Map<String, String> map = new HashMap<String, String>(2);

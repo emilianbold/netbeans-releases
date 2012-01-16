@@ -71,8 +71,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.platform.InstallerRegistry;
 import org.netbeans.modules.java.platform.wizard.PlatformInstallIterator;
+import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
@@ -319,7 +322,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private void removePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePlatform
         Node[] nodes = getExplorerManager().getSelectedNodes();
         if (nodes.length!=1) {
-            assert false : "Illegal number of selected nodes";      //NOI18N
             return;
         }
         DataObject dobj = nodes[0].getLookup().lookup(DataObject.class);
@@ -337,6 +339,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     }//GEN-LAST:event_removePlatform
 
     private void addNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewPlatform
+        final List<? extends GeneralPlatformInstall> installs = InstallerRegistry.getDefault().getAllInstallers();
+        if (installs.isEmpty()) {
+            DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(
+                    NbBundle.getMessage(PlatformsCustomizer.class, "ERR_NoPlatformImpl"),
+                    NotifyDescriptor.INFORMATION_MESSAGE));
+            return;
+        }
         try {
             WizardDescriptor wiz = new WizardDescriptor (PlatformInstallIterator.create());
             DataObject template = DataObject.find (FileUtil.getConfigFile(TEMPLATE));

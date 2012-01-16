@@ -60,7 +60,6 @@ public class DefaultOutputProcessorFactory implements ContextOutputProcessorFact
         Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
         if (project != null) {
             toReturn.add(new JavaOutputListenerProvider());
-            toReturn.add(new ScalaOutputListenerProvider());
             toReturn.add(new TestOutputListenerProvider());
             toReturn.add(new JavadocOutputProcessor());
             toReturn.add(new SiteOutputProcessor(project));

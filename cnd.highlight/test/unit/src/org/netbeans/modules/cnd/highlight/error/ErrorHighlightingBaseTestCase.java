@@ -80,19 +80,23 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         final List<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
         CsmErrorProvider.Request request = new HighlightProvider.RequestImpl(csmFile, doc, 
                 new Interrupter(){
+            @Override
             public boolean cancelled() {
                 return false;
             }
         });
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
+            @Override
             public void addError(CsmErrorInfo info) {
                 result.add(info);
             }
+            @Override
             public void done() {
             }
         };
         CsmErrorProvider.getDefault().getErrors(request, response);
         Collections.sort(result, new Comparator<CsmErrorInfo>() {
+            @Override
             public int compare(CsmErrorInfo o1, CsmErrorInfo o2) {
                 if (o1.getStartOffset() == o2.getStartOffset()) {
                     return o1.getMessage().compareTo(o2.getMessage());
@@ -210,14 +214,17 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
             document.addDocumentListener(this);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             events.add(e);
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             events.add(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             events.add(e);
         }

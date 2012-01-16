@@ -48,7 +48,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.modules.web.el.spi.ELPlugin;
+import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
@@ -115,6 +117,11 @@ public class JspJsfELPlugin implements ELPlugin {
 //        implicitObjects.addAll(getScopeObjects());
         implicitObjects.add(new ViewObject());
         implicitObjects.add(new FacesContextObject());
+    }
+
+    @Override
+    public List<Function> getFunctions(FileObject file) {
+        return Collections.emptyList();
     }
 
 //    /**

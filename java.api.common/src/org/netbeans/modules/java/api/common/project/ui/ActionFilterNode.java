@@ -360,16 +360,16 @@ final class ActionFilterNode extends FilterNode {
         @Override
         protected Node[] createNodes(Node n) {
             if (mode.isFolder()) {
-                final DataObject dobj = n.getCookie(DataObject.class);
-                if (dobj == null) {
-                    assert false : "DataNode without DataObject in Lookup";  //NOI18N
+                final FileObject fobj = n.getLookup().lookup(FileObject.class);
+                if (fobj == null) {
+                    assert false : "DataNode without FileObject in Lookup";  //NOI18N
                     return new Node[0];
                 }
-                else if (dobj.getPrimaryFile().isFolder()) {
-                    return new Node[] {new ActionFilterNode (n, Mode.PACKAGE,cpRoot,dobj.getPrimaryFile())};
+                else if (fobj.isFolder()) {
+                    return new Node[] {new ActionFilterNode (n, Mode.PACKAGE, cpRoot, fobj)};
                 }
                 else {
-                    return new Node[] {new ActionFilterNode (n, Mode.FILE,cpRoot,dobj.getPrimaryFile())};
+                    return new Node[] {new ActionFilterNode (n, Mode.FILE, cpRoot, fobj)};
                 }
             } else {
                 return new Node[] {new ActionFilterNode (n, Mode.FILE_CONTENT)};

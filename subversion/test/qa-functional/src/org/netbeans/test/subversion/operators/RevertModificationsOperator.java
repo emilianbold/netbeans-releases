@@ -88,7 +88,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtStartRevision() {
         if (_txtStartRevision==null) {
-            _txtStartRevision = new JTextFieldOperator(this, 1);
+            _txtStartRevision = new JTextFieldOperator(this, 2);
         }
         return _txtStartRevision;
     }
@@ -98,7 +98,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtEndRevision() {
         if (_txtEndRevision==null) {
-            _txtEndRevision = new JTextFieldOperator(this);
+            _txtEndRevision = new JTextFieldOperator(this,1);
         }
         return _txtEndRevision;
     }
@@ -108,7 +108,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtRevision() {
         if (_txtRevision==null) {
-            _txtRevision = new JTextFieldOperator(this, 2);
+            _txtRevision = new JTextFieldOperator(this, 0);
         }
         return _txtRevision;
     }
@@ -334,7 +334,7 @@ public class RevertModificationsOperator extends NbDialogOperator {
         lblEndWithRevision();
         txtStartRevision();
         txtEndRevision();
-        lblEmptyMeansRepositoryHEAD();
+       // lblEmptyMeansRepositoryHEAD();
         btSearch();
         btSearch2();
         rbPreviousCommits();
