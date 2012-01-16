@@ -42,10 +42,16 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -104,6 +110,48 @@ public abstract class AbstractScopedAnalyzer  {
             return hasTypeVarParameter(((ArrayType)type).getComponentType());
         }
         return false;
+    }
+    
+    protected boolean isPassivatingScope( TypeElement scope, WebBeansModel model ) {
+        AnnotationMirror normalScope = AnnotationUtil.getAnnotationMirror(
+                scope, model.getCompilationController(), AnnotationUtil.NORMAL_SCOPE_FQN);
+        if ( normalScope==null){
+            return false;
+        }
+        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = 
+            normalScope.getElementValues();
+        boolean isPassivating = false;
+        for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: 
+            elementValues.entrySet()) 
+        {
+            ExecutableElement key = entry.getKey();
+            if ( key.getSimpleName().contentEquals(AnnotationUtil.PASSIVATING)){
+                isPassivating = Boolean.TRUE.toString().equals(entry.getValue().toString());
+            }
+        }
+        return isPassivating;
+    }
+    
+    protected boolean isSerializable( Element element, WebBeansModel model ) {
+        TypeMirror elementType = element.asType();
+        if ( elementType == null || elementType.getKind() == TypeKind.ERROR){
+            return true;
+        }
+        return isSerializable(elementType, model);
+    }
+    
+    protected boolean isSerializable( TypeMirror type, WebBeansModel model ) {
+        TypeElement serializable = model.getCompilationController().getElements().
+            getTypeElement(Serializable.class.getCanonicalName());
+        if ( serializable == null ){
+            return true;
+        }
+        TypeMirror serializableType = serializable.asType();
+        if ( serializableType == null || serializableType.getKind() == TypeKind.ERROR){
+            return true;
+        }
+        return model.getCompilationController().getTypes().isSubtype(type, 
+                serializableType);
     }
 
     private void informCdiException(CdiException exception , Element element, 
