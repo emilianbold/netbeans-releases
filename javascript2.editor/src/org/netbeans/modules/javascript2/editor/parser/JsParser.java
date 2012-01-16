@@ -75,7 +75,7 @@ public class JsParser extends Parser {
             lastResult = new JsParserResult(snapshot, null);
         }
         long endTime = System.currentTimeMillis();        
-        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject().getNameExt()}); //NOI18N
+        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
     }
     
     private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
