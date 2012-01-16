@@ -62,9 +62,9 @@ public final class Doctrine2Script extends PhpProgram {
     }
 
     /**
-     * Get the default, <b>valid only</b> ApiGen script.
-     * @return the default, <b>valid only</b> ApiGen script.
-     * @throws InvalidPhpProgramException if ApiGen script is not valid.
+     * Get the default, <b>valid only</b> Doctrine2 script.
+     * @return the default, <b>valid only</b> Doctrine2 script.
+     * @throws InvalidPhpProgramException if Doctrine2 script is not valid.
      */
     public static Doctrine2Script getDefault() throws InvalidPhpProgramException {
         String script = Doctrine2Options.getInstance().getScript();
