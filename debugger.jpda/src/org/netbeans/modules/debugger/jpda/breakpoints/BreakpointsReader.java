@@ -70,7 +70,6 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -91,6 +90,7 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
     private Map<JPDABreakpoint, String> cachedSourceRoots = new WeakHashMap<JPDABreakpoint, String>();
     
     
+    @Override
     public String [] getSupportedClassNames () {
         return new String[] {
             JPDABreakpoint.class.getName (), 
@@ -124,6 +124,7 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         PersistenceManager.storeBreakpoints();
     }
     
+    @Override
     public Object read (String typeID, Properties properties) {
         JPDABreakpoint b = null;
         // Read both LineBreakpoint and LineBreakpoint$LineBreakpointImpl
@@ -373,6 +374,7 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         properties.setString(base + BP_TYPE_GROUP, type);
     }
     
+    @Override
     public void write (Object object, Properties properties) {
         JPDABreakpoint b = (JPDABreakpoint) object;
         properties.setString (
@@ -513,6 +515,7 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         return;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (LineBreakpoint.PROP_URL.equals(evt.getPropertyName())) {
             LineBreakpoint lb = (LineBreakpoint) evt.getSource();

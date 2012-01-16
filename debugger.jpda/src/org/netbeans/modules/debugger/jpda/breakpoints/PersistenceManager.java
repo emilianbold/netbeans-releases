@@ -55,7 +55,6 @@ import java.util.Iterator;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Properties.Reader;
@@ -89,6 +88,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         instanceRef = new WeakReference<PersistenceManager>(this);
     }
     
+    @Override
     public synchronized Breakpoint[] initBreakpoints () {
         Properties p = Properties.getDefault ().getProperties ("debugger").
             getProperties (DebuggerManager.PROP_BREAKPOINTS);
@@ -137,9 +137,11 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         return unloaded.toArray(new Breakpoint[0]);
     }
     
+    @Override
     public void initWatches () {
     }
     
+    @Override
     public String[] getProperties () {
         return new String [] {
             DebuggerManager.PROP_BREAKPOINTS_INIT,
@@ -147,6 +149,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         };
     }
     
+    @Override
     public void breakpointAdded (Breakpoint breakpoint) {
         if (breakpoint instanceof JPDABreakpoint &&
                 !((JPDABreakpoint) breakpoint).isHidden ()) {
@@ -165,6 +168,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         }
     }
 
+    @Override
     public void breakpointRemoved (Breakpoint breakpoint) {
         if (breakpoint instanceof JPDABreakpoint &&
                 !((JPDABreakpoint) breakpoint).isHidden ()) {
@@ -191,12 +195,15 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             breakpoint.removePropertyChangeListener(this);
         }
     }
+    @Override
     public void watchAdded (Watch watch) {
     }
     
+    @Override
     public void watchRemoved (Watch watch) {
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getSource() instanceof JPDABreakpoint) {
             if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
@@ -241,9 +248,13 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         saveTask.schedule(100);
     }
     
+    @Override
     public void sessionAdded (Session session) {}
+    @Override
     public void sessionRemoved (Session session) {}
+    @Override
     public void engineAdded (DebuggerEngine engine) {}
+    @Override
     public void engineRemoved (DebuggerEngine engine) {}
     
     
