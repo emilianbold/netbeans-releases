@@ -366,7 +366,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         private JComboBox filterCombo;
         private JLabel containsLabel;
         private JTextField containsField;
-    
+        private ShowHistoryAction showHistoryAction;
+        private final LinkButton searchHistoryButton;
+        
         private Toolbar(VersioningSystem vs, final File... files) {
             setBorder(new EmptyBorder(0, 0, 0, 0));
             setOpaque(false);
@@ -404,6 +406,10 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             refreshButton.addActionListener(this);
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); 
             settingsButton.addActionListener(this);
+            showHistoryAction = new ShowHistoryAction();
+            searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)})); // NOI18N
+            searchHistoryButton.addActionListener(showHistoryAction);
+            
             setup(vs);
             
             nextButton.setBorder(new EmptyBorder(0, 5, 0, 5));
@@ -423,12 +429,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             add(containsLabel, c); 
             add(containsField, c); 
             add(settingsButton);
+            c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.EAST;
+            c.weightx = 1;
+            add(searchHistoryButton, c);             
+            
         }
 
         void setup(VersioningSystem vs) {
             boolean visible = vs != null && vs.getVCSHistoryProvider() != null;
             filterCombo.setVisible(visible);
             filterLabel.setVisible(visible);
+            searchHistoryButton.setVisible(visible);
+            
             if(visible) {
                 Filter[] filters;
                 filters = new Filter[] {
@@ -438,30 +451,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                     new ByUserFilter(),
                     new ByMsgFilter()};
                 filterCombo.setModel(new DefaultComboBoxModel(filters));                 
-                
-                final Action openSearchHistoryAction = vs != null && vs.getVCSHistoryProvider() != null ? vs.getVCSHistoryProvider().createShowHistoryAction(files) : null;
-                if(openSearchHistoryAction != null) {
-                    LinkButton searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)})); // NOI18N
-                    searchHistoryButton.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(final ActionEvent e) {
-                            History.getInstance().getRequestProcessor().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    openSearchHistoryAction.actionPerformed(e);
-                                }
-                            }); 
-                        }
-                    });
-
-                    GridBagConstraints c = new GridBagConstraints();
-                    c.anchor = GridBagConstraints.EAST;
-                    c.weightx = 1;
-                    add(searchHistoryButton, c); 
-                }                
             }
         }
-            
+        
         @Override
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == getToolbar().nextButton) {
@@ -472,6 +464,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 masterView.refresh();
             } else if(e.getSource() == getToolbar().settingsButton) {
                 OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/Versioning/" + HistoryOptions.OPTIONS_SUBPATH);
+            }
+        }
+        
+        private class ShowHistoryAction implements ActionListener {
+            private Action delegate;
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                History.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        delegate.actionPerformed(e);
+                    }
+                }); 
             }
         }
     }
