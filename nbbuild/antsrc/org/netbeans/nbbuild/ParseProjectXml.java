@@ -1088,6 +1088,13 @@ public final class ParseProjectXml extends Task {
     private File computeClasspathModuleLocation(ModuleListParser modules, String cnb,
             Set<File> clusterPath, Set<String> excludedModules, boolean runtime) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
+        if (module == null && cnb.contains("-")) {
+            final String alternativeCnb = cnb.replace('-', '_');
+            module = modules.findByCodeNameBase(alternativeCnb);
+            if (module != null) {
+                cnb = alternativeCnb;
+            }
+        }
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
         }
