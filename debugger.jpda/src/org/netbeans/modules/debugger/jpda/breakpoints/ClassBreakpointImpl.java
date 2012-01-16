@@ -85,6 +85,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
         set ();
     }
     
+    @Override
     protected void setRequests () {
         setClassRequests (
             breakpoint.getClassFilters (), 
@@ -94,6 +95,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
         );
     }
     
+    @Override
     protected EventRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         if (oldRequest instanceof ClassPrepareRequest) {
             ClassPrepareRequest cpr = EventRequestManagerWrapper.
@@ -128,6 +130,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
         return null;
     }
 
+    @Override
     public boolean exec (Event event) {
         if (event instanceof ClassPrepareEvent) {
             try {
@@ -166,6 +169,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
             );
     }
 
+    @Override
     public boolean processCondition(Event event) {
         return true; // Empty condition, always satisfied.
     }

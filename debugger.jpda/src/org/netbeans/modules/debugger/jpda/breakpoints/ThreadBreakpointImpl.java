@@ -46,7 +46,6 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ThreadDeathEvent;
@@ -94,17 +93,18 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
        
     // Event impl ..............................................................
 
+    @Override
     protected void setRequests () {
         try {
             if ( (breakpoint.getBreakpointType () & 
-                  breakpoint.TYPE_THREAD_STARTED ) != 0
+                  ThreadBreakpoint.TYPE_THREAD_STARTED ) != 0
             ) {
                 ThreadStartRequest tsr = EventRequestManagerWrapper.
                     createThreadStartRequest(getEventRequestManager());
                 addEventRequest (tsr);
             }
             if ( (breakpoint.getBreakpointType () & 
-                  breakpoint.TYPE_THREAD_DEATH) != 0
+                  ThreadBreakpoint.TYPE_THREAD_DEATH) != 0
             ) {
                 VirtualMachine vm = getVirtualMachine();
                 if (vm != null) {
@@ -121,6 +121,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
         }
     }
     
+    @Override
     protected EventRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         if (oldRequest instanceof ThreadStartRequest) {
             return EventRequestManagerWrapper.createThreadStartRequest(getEventRequestManager());
@@ -131,10 +132,12 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
         return null;
     }
 
+    @Override
     public boolean processCondition(Event event) {
         return true; // Empty condition, always satisfied.
     }
 
+    @Override
     public boolean exec (Event event) {
         ThreadReference thread = null;
         try {
@@ -158,6 +161,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
         );
     }
 
+    @Override
     public void removed(EventRequest eventRequest) {
     }
 }
