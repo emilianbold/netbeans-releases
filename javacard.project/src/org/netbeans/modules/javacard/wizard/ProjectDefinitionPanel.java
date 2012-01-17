@@ -605,7 +605,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             d.putProperty("activeplatform", platform.getSystemName()); //NOI18N //XXX constant?
 
             // #200688
-            boolean usePreprocessor = JCUtil.useCompilationPreprocessor(platform.getJavacardVersion());
+            boolean usePreprocessor = Utils.useCompilationPreprocessor(platform.getJavacardVersion());
             d.putProperty(ProjectPropertyNames.PROJECT_PROP_USE_PREPROCESSOR, String.valueOf(usePreprocessor));
         } else {
             invalidPlatform = true;
