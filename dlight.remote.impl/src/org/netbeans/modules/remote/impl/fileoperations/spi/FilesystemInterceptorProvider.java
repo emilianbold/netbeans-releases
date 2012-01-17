@@ -235,7 +235,7 @@ abstract public class FilesystemInterceptorProvider {
             } else {
                 while(iterator.hasNext()) {
                     FilesystemInterceptorProvider next = iterator.next();
-                    if (next.getClass().getName().indexOf("Mockup") >= 0) {
+                    if (next.getClass().getName().indexOf("Mockup") >= 0) { //NOI18N
                         defaultProvider = next;
                     }
                 }
