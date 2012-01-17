@@ -408,8 +408,8 @@ public final class ServerRegistry implements java.io.Serializable {
     private synchronized void clearInstanceStorage(final String url) {
         FileObject instanceFO = getInstanceFileObject(url);
         if (instanceFO != null) {
-        try {
-            instanceFO.delete();
+            try {
+                instanceFO.delete();
             } catch (IOException ioe) {
                 LOGGER.log(Level.INFO, null, ioe);
             }
@@ -463,7 +463,7 @@ public final class ServerRegistry implements java.io.Serializable {
                         instancesMap().put(url, tmp);
 
                         if (!nonPersistent) {
-                        writeInstanceToFile(url, username, password, server.getDisplayName());
+                            writeInstanceToFile(url, username, password, server.getDisplayName());
                         } else {
                             tmp.getInstanceProperties().setProperty(
                                     InstanceProperties.URL_ATTR, url);
