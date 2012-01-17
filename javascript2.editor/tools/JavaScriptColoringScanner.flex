@@ -238,7 +238,7 @@ RegexpFirstCharacter  = [^\r\n/\\\[\*] | \\{InputCharacter} | \[{SimpleRegexpCha
   /* null literal */
   "null"                         { return JsTokenId.KEYWORD_NULL; }
 
-  "/"[\*/]                       { return JsTokenId.UNKNOWN; }
+  "/"[\*]                        { return JsTokenId.UNKNOWN; }
   "/"
                                  {
                                      if (canFollowLiteral) {
