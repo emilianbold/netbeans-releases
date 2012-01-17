@@ -128,6 +128,9 @@ public class BrowserReload {
             }
             String message = new String( data , Charset.forName( WebSocketServer.UTF_8));
             String url = getUrl(message);
+            if ( url == null ){
+                return;
+            }
             FileObject localFile = url2File.remove( url );
             if ( localFile == null ){
                 try {
