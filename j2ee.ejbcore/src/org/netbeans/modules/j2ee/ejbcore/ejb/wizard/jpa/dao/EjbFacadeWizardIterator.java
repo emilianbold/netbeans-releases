@@ -281,21 +281,21 @@ import org.openide.util.NbBundle;
 
                     String genericsTypeName = "T";      //NOI18N
                     List<GenerationOptions> methodOptions = getAbstractFacadeMethodOptions(genericsTypeName, "entity"); //NOI18N
-                    List<Tree> members = new ArrayList();
+                    List<Tree> members = new ArrayList<Tree>();
                     String entityClassVar = "entityClass";                                              //NOI18N
                     Tree classObjectTree = genUtils.createType("java.lang.Class<" + genericsTypeName + ">", classElement);     //NOI18N
                     members.add(maker.Variable(genUtils.createModifiers(Modifier.PRIVATE),entityClassVar,classObjectTree,null));
                     members.add(maker.Constructor(
                             genUtils.createModifiers(Modifier.PUBLIC),
-                            Collections.EMPTY_LIST,
+                            Collections.<TypeParameterTree>emptyList(),
                             Arrays.asList(new VariableTree[]{genUtils.createVariable(entityClassVar,classObjectTree)}),
-                            Collections.EMPTY_LIST,
+                            Collections.<ExpressionTree>emptyList(),
                             "{this." + entityClassVar + " = " + entityClassVar + ";}"));    //NOI18N
                     for(GenerationOptions option: methodOptions){
                         Tree returnType = (option.getReturnType() == null || option.getReturnType().equals("void"))?  //NOI18N
                                                 maker.PrimitiveType(TypeKind.VOID):
                                                 genUtils.createType(option.getReturnType(), classElement);
-                        List<VariableTree> vars = option.getParameterName() == null ? Collections.EMPTY_LIST :
+                        List<VariableTree> vars = option.getParameterName() == null ? Collections.<VariableTree>emptyList() :
                             Arrays.asList(new VariableTree[]{
                             genUtils.createVariable(
                                     option.getParameterName(),
@@ -308,9 +308,9 @@ import org.openide.util.NbBundle;
                                     maker.Modifiers(option.getModifiers()),
                                     option.getMethodName(),
                                     returnType,
-                                    Collections.EMPTY_LIST,
+                                    Collections.<TypeParameterTree>emptyList(),
                                     vars,
-                                    (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                    Collections.<ExpressionTree>emptyList(),
                                     (BlockTree)null,
                                  null));
                         } else {
@@ -318,9 +318,9 @@ import org.openide.util.NbBundle;
                                     maker.Modifiers(option.getModifiers()),
                                     option.getMethodName(),
                                     returnType,
-                                    (List<TypeParameterTree>)Collections.EMPTY_LIST,
+                                    Collections.<TypeParameterTree>emptyList(),
                                     vars,
-                                    (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                    Collections.<ExpressionTree>emptyList(),
                                     "{" + option.getCallLines("getEntityManager()", entityClassVar, project!=null ? PersistenceUtils.getJPAVersion(project) : Persistence.VERSION_1_0) + "}", //NOI18N
                                     null));
                     }
@@ -329,9 +329,9 @@ import org.openide.util.NbBundle;
                     ClassTree newClassTree = maker.Class(
                             maker.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT)),
                             classTree.getSimpleName(),
-                            Arrays.asList(maker.TypeParameter(genericsTypeName, Collections.EMPTY_LIST)),
+                            Arrays.asList(maker.TypeParameter(genericsTypeName, Collections.<ExpressionTree>emptyList())),
                             null,
-                            Collections.EMPTY_LIST,
+                            Collections.<Tree>emptyList(),
                             members);
 
                     workingCopy.rewrite(classTree, newClassTree);
@@ -414,7 +414,7 @@ import org.openide.util.NbBundle;
                 GenerationUtils genUtils = GenerationUtils.newInstance(wc);
                 TreeMaker maker = wc.getTreeMaker();
 
-                List<Tree> implementsClause = new ArrayList(classTree.getImplementsClause());
+                List<Tree> implementsClause = new ArrayList<Tree>(classTree.getImplementsClause());
                 if (hasLocal)
                     implementsClause.add(genUtils.createType(localInterfaceFQN, classElement));
                 if (hasRemote)
@@ -423,9 +423,9 @@ import org.openide.util.NbBundle;
                 List<Tree> members = new ArrayList<Tree>(classTree.getMembers());
                 MethodTree constructor = maker.Constructor(
                         genUtils.createModifiers(Modifier.PUBLIC),
-                        Collections.EMPTY_LIST,
-                        Collections.EMPTY_LIST,
-                        Collections.EMPTY_LIST,
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
                         "{super(" + entitySimpleName + ".class);}");            //NOI18N
                 members.add(constructor);
 
