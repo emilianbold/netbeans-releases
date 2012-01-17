@@ -463,10 +463,10 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 setShortDescription(NbBundle.getMessage(ServerManagerPanel.class, "Cloud_Registry_Node_Short_Description"));
                 setIconBaseWithExtension(SERVERS_ICON);
             } else {
-            setDisplayName(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Name"));
-            setShortDescription(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Short_Description"));
-            setIconBaseWithExtension(SERVERS_ICON);
-        }
+                setDisplayName(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Name"));
+                setShortDescription(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Short_Description"));
+                setIconBaseWithExtension(SERVERS_ICON);
+            }
         }
 
 
