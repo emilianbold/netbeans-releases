@@ -644,17 +644,6 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     private final Map<Watch, NativeWatch> watchMap = new HashMap<Watch, NativeWatch>();
 
     /**
-     * Map a Watch to it's corresponding NativeWatch.
-     */
-    public NativeWatch mapWatch(Watch watch) {
-        NativeWatch nativeWatch = watchMap.get(watch);
-        if (nativeWatch != null) {
-            assert nativeWatch.watch() == watch;
-        }
-        return nativeWatch;
-    }
-
-    /**
      * Add a NativeWatch to the watch map.
      */
     public void watchMap(NativeWatch nativeWatch) {
@@ -1280,6 +1269,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public WatchBag watchBag() {
         if (watchBag == null) {
             watchBag = new WatchBag();
+            // on creation read all existing watches from debuggercore Watches
+            // see IZ 203606
+            Watch[] existingWatches = getWatches();
+            for (Watch watch : existingWatches) {
+                watchAdded(watch);
+            }
         }
         return watchBag;
     }
