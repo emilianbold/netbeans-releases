@@ -104,14 +104,13 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = '^'", '"', "x = '\"^'");
     }
 
-// BROKEN !
-//    public void testSingleQuotes1() throws Exception {
-//        insertChar("x = ^", '\'', "x = '^'");
-//    }
-//
-//    public void testSingleQuotes2() throws Exception {
-//        insertChar("x = '^'", '\'', "x = ''^");
-//    }
+    public void testSingleQuotes1() throws Exception {
+        insertChar("x = ^", '\'', "x = '^'");
+    }
+
+    public void testSingleQuotes2() throws Exception {
+        insertChar("x = '^'", '\'', "x = ''^");
+    }
 
     public void testSingleQuotes3() throws Exception {
         insertChar("x = '^'", 'a', "x = 'a^'");
@@ -141,14 +140,13 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
                 "System.out.prinlnt(\"pavel\"^");
     }
 
-// BROKEN !
-//    public void testDoubleQuotes1() throws Exception {
-//        insertChar("x = ^", '"', "x = \"^\"");
-//    }
-//
-//    public void testDoubleQuotes2() throws Exception {
-//        insertChar("x = \"^\"", '"', "x = \"\"^");
-//    }
+    public void testDoubleQuotes1() throws Exception {
+        insertChar("x = ^", '"', "x = \"^\"");
+    }
+
+    public void testDoubleQuotes2() throws Exception {
+        insertChar("x = \"^\"", '"', "x = \"\"^");
+    }
 
     public void testDoubleQuotes3() throws Exception {
         insertChar("x = \"^\"", 'a', "x = \"a^\"");
@@ -264,22 +262,21 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = 10 ^", '/', "x = 10 /^");
     }
 
-// BROKEN !
-//    public void testRegexpToComment1() throws Exception {
-//        insertChar("/^/", '*', "/*^");
-//    }
-//
-//    public void testRegexpToComment2() throws Exception {
-//        insertChar("/^/\n", '*', "/*^\n");
-//    }
-//
-//    public void testRegexpToComment3() throws Exception {
-//        insertChar("x = /^/", '*', "x = /*^");
-//    }
-//
-//    public void testRegexpToComment4() throws Exception {
-//        insertChar("x = /^/\n", '*', "x = /*^\n");
-//    }
+    public void testRegexpToComment1() throws Exception {
+        insertChar("/^/", '*', "/*^");
+    }
+
+    public void testRegexpToComment2() throws Exception {
+        insertChar("/^/\n", '*', "/*^\n");
+    }
+
+    public void testRegexpToComment3() throws Exception {
+        insertChar("x = /^/", '*', "x = /*^");
+    }
+
+    public void testRegexpToComment4() throws Exception {
+        insertChar("x = /^/\n", '*', "x = /*^\n");
+    }
 
     public void testNotRegexp2() throws Exception {
         insertChar("x = 3.14 ^", '/', "x = 3.14 /^");
@@ -301,10 +298,9 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = foo^", 'y', "x = y^", "foo");
     }
 
-// BROKEN !
-//    public void testReplaceSelection2() throws Exception {
-//        insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
-//    }
+    public void testReplaceSelection2() throws Exception {
+        insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
+    }
 
     public void testReplaceSelection4() throws Exception {
         insertChar("x = 'foo^bar'", '#', "x = '#^bar'", "foo");
@@ -318,19 +314,18 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
     }
 
-// BROKEN !
-//    public void testReplaceSelectionChangeType1() throws Exception {
-//        insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
-//    }
-//
-//    public void testReplaceSelectionChangeType2() throws Exception {
-//        insertChar("x = \"foo\"^", '{', "x = {foo}^", "\"foo\"");
-//    }
-//
-//    public void testReplaceSelectionNotInTemplateMode1() throws Exception {
-//        insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
-//    }
-//
+    public void testReplaceSelectionChangeType1() throws Exception {
+        insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
+    }
+
+    public void testReplaceSelectionChangeType2() throws Exception {
+        insertChar("x = \"foo\"^", '{', "x = {foo}^", "\"foo\"");
+    }
+
+    public void testReplaceSelectionNotInTemplateMode1() throws Exception {
+        insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
+    }
+
 //    public void testIssue150103() throws Exception {
 //        //    1. Create a new JS file
 //        //    2. type "/*" (without ") and press enter
