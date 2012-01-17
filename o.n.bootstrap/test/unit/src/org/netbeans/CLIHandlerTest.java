@@ -531,7 +531,8 @@ public class CLIHandlerTest extends NbTestCase {
         }
         
     }
-    
+
+    @RandomlyFails // timeout in NB-Core-Build #7754
     public void testServerIsNotBlockedByLongRequests() throws Exception {
         class H extends CLIHandler {
             private int cnt = -1;
