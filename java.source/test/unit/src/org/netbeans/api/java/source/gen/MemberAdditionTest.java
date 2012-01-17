@@ -83,6 +83,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.TestUtil;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,7 +104,8 @@ public class MemberAdditionTest extends NbTestCase {
         performTest("SynteticDefaultConstructor");
         
         source.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy copy) {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(Phase.RESOLVED);
                 ClassTree topLevel = findTopLevelClass(copy);                
                 SourceUtilsTestUtil2.run(copy, new AddSimpleField(), topLevel);
             }
@@ -129,7 +131,8 @@ public class MemberAdditionTest extends NbTestCase {
         performTest("EmptyClass");
 
         source.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy copy) {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(Phase.RESOLVED);
                 ClassTree topLevel = findTopLevelClass(copy);
                 SourceUtilsTestUtil2.run(copy, new AddSimpleField(), topLevel);
             }
@@ -155,7 +158,8 @@ public class MemberAdditionTest extends NbTestCase {
         performTest("ClassImplementingList");
 
         source.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy copy) {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(Phase.RESOLVED);
                 ClassTree topLevel = findTopLevelClass(copy);
                 SourceUtilsTestUtil2.run(copy, new AddSimpleField(), topLevel);
             }
@@ -182,7 +186,8 @@ public class MemberAdditionTest extends NbTestCase {
         performTest("ClassWithInnerClass");
 
         source.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy copy) {
+            public void run(WorkingCopy copy) throws IOException {
+                copy.toPhase(Phase.RESOLVED);
                 ClassTree topLevel = findTopLevelClass(copy);
                 
                 FindVariableDeclaration d = new FindVariableDeclaration();
@@ -340,11 +345,9 @@ public class MemberAdditionTest extends NbTestCase {
         testSource.getParentFile().mkdirs();
         
         File dataFolder = new File(getDataDir(), "org/netbeans/test/codegen/");
-        
-        for (File f : dataFolder.listFiles()) {
-            copyToWorkDir(f, new File(wd, "test/" + f.getName()));
-        }
-        
+        File targetFolder = new File(wd, "test");
+        TestUtil.copyContents(dataFolder, targetFolder);
+
         testSourceFO = FileUtil.toFileObject(testSource);
         
         assertNotNull(testSourceFO);

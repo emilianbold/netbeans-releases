@@ -56,8 +56,6 @@ import java.util.Enumeration;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -133,14 +131,7 @@ public class WSCompletionProvider implements CompletionProvider {
                 NbEditorUtilities.getFileObject(doc);
                 JavaSource js = JavaSource.forDocument(doc);
                 if (js!=null) {
-                    Future<Void> f = js.runWhenScanFinished(this, true);
-                    if (f != null && !f.isDone()) {
-                        setCompletionHack(false);
-                        resultSet.setWaitText(NbBundle.
-                                getMessage(WSCompletionProvider.class, 
-                                        "scanning-in-progress"));       // NOI18N
-                        f.get();
-                    }
+                    js.runUserActionTask(this, true);
                     if (isTaskCancelled()) {
                         return;
                     }
@@ -157,12 +148,6 @@ public class WSCompletionProvider implements CompletionProvider {
             }
             catch (IOException ex) {
                 LOG.log( Level.WARNING , null , ex );
-            }
-            catch ( InterruptedException e ){
-                LOG.log( Level.INFO , null , e );
-            }
-            catch( ExecutionException e ){
-                LOG.log( Level.WARNING , null , e );
             }
             finally 
             {

@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
@@ -99,10 +100,15 @@ public class Utilities {
     /**
      * Temporary may be replaced by scheduler, hepefully.
      */
-    public static void scheduleSpecialTask (final SchedulerTask task) {
-        TaskProcessor.scheduleSpecialTask(task);
+    public static void scheduleSpecialTask (final Runnable runnable, int priority) {
+        TaskProcessor.scheduleSpecialTask(runnable, priority);
     }
-
+    
+    public static void runAsScanWork(@NonNull Runnable work) {
+        Parameters.notNull("work", work);   //NOI18N
+        RepositoryUpdater.getDefault().runAsWork(work);
+    }
+    
     /**
      * Sets the {@link IndexingStatus}
      * @param st an {@link IndexingStatus}
@@ -163,6 +169,7 @@ public class Utilities {
         Parameters.notNull ("source", source);
         TaskProcessor.rescheduleTasks (Collections.<SchedulerTask>singleton (task), source, null);
     }
+    
 
     //Internal API among TaskProcessor and RepositoryUpdater
     //If SchedulerTask will need the information about cancel

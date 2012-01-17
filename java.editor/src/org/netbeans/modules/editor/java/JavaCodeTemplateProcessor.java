@@ -886,7 +886,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {
-                    Future<Void> initTask = js.runWhenScanFinished(new Task<CompilationController>() {
+                    js.runUserActionTask(new Task<CompilationController>() {
 
                         public void run(final CompilationController c) throws IOException {
                             if (cInfo != null)
@@ -945,8 +945,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             }
                         }
                     },true);
-                    if (!initTask.isDone())
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
                 } catch(IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
