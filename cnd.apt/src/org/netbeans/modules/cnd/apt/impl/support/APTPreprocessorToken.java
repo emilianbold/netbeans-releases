@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fileoperations.spi;
+package org.netbeans.modules.cnd.apt.impl.support;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 
 /**
- *
- * @author Alexander Simon
+ * wrapper for APT nodes corresponding to preprocessor directives
+ * @author Vladimir Voskresensky
  */
-public class FileOperationsTest extends NativeExecutionBaseTestSuite {
-    @SuppressWarnings("unchecked")
-    public FileOperationsTest() {
-        this("FileOperations API", getTestClasses());
+public final class APTPreprocessorToken extends APTTokenAbstact {
+    private final APT ppNode;
+    private final APTToken ppNodeToken;
+
+    public APTPreprocessorToken(APT ppNode) {
+        assert ppNode != null;
+        this.ppNode = ppNode;
+        this.ppNodeToken = ppNode.getToken();
     }
 
-    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-            FileOperationsTestCase.class
-        };
+    @Override
+    public int getType() {
+        return ppNodeToken.getType();
+    }
+
+    @Override
+    public int getLine() {
+        return ppNodeToken.getLine();
+    }
+
+    @Override
+    public String getFilename() {
+        return ppNodeToken.getFilename();
+    }
+
+    @Override
+    public int getColumn() {
+        return ppNodeToken.getColumn();
+    }
+
+    @Override
+    public int getOffset() {
+        return ppNodeToken.getOffset();
+    }
+
+    @Override
+    public int getEndOffset() {
+        return ppNode.getEndOffset();
+    }
+
+    @Override
+    public CharSequence getTextID() {
+        return ppNodeToken.getTextID();
     }
     
-    @SuppressWarnings("unchecked")
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new FileOperationsTest(testClass.getName(), testClass);
-    }
-
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
-        Class[] classes = new Class[timesToRepeat];
-        for (int i = 0; i < classes.length; i++) {
-            classes[i] = testClass;            
-        }
-        return new FileOperationsTest(testClass.getName(), classes);
-    }
-    
-    public FileOperationsTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
-    }
-
-    public static Test suite() {
-        return new FileOperationsTest();
+    public final APT getAPT() {
+        return ppNode;
     }
 }
