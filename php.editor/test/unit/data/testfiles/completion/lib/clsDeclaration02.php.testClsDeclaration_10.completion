@@ -18,6 +18,7 @@ PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
+PACKAGE    ShowMe                          [PUBLIC]   null
 PACKAGE    TC                              [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
@@ -35,6 +36,7 @@ PACKAGE    Test204925_07_C                 [PUBLIC]   null
 PACKAGE    Test204925_07_P                 [PUBLIC]   null
 PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
+PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
 CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
@@ -45,6 +47,7 @@ PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
+PACKAGE    Ns                              [PUBLIC]   Testing
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    User                            [PUBLIC]   Package2
 PACKAGE    a                               [PUBLIC]   Test204925_06_P
@@ -81,10 +84,12 @@ CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
+CLASS      Blah                            [PUBLIC]   Testing\Ns
 CLASS      Book                            [PUBLIC]   issue153707.php
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
+CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
