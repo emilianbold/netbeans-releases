@@ -74,7 +74,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -134,8 +133,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private static final String PROP_LOCKER_THREADS = "lockerThreads"; // NOI18N
     private static final String PROP_STEP_SUSPENDED_BY_BREAKPOINT = "stepSuspendedByBreakpoint"; // NOI18N
 
-    private static Logger logger = Logger.getLogger(JPDAThreadImpl.class.getName()); // NOI18N
-    private static Logger loggerS = Logger.getLogger(JPDAThreadImpl.class.getName()+".suspend"); // NOI18N
+    private static final Logger logger = Logger.getLogger(JPDAThreadImpl.class.getName()); // NOI18N
+    private static final Logger loggerS = Logger.getLogger(JPDAThreadImpl.class.getName()+".suspend"); // NOI18N
     
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
@@ -210,6 +209,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
 
+    @Override
     public Lock getReadAccessLock() {
         return accessLock.readLock();
     }
@@ -219,6 +219,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @return name of thread.
      */
+    @Override
     public String getName () {
         return threadName;
     }
@@ -228,6 +229,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     *
     * @return parent thread group.
     */
+    @Override
     public JPDAThreadGroup getParentThreadGroup () {
         try {
             ThreadGroupReference tgr = ThreadReferenceWrapper.threadGroup (threadReference);
@@ -253,6 +255,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *          represent a native method invocation; <CODE>-1</CODE> otherwise
      * @see  CallStackFrame
     */
+    @Override
     public int getLineNumber (String stratum) {
         accessLock.readLock().lock();
         try {
@@ -305,6 +308,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return null;
     }
 
+    @Override
     public synchronized Operation getCurrentOperation() {
         return currentOperation;
     }
@@ -313,6 +317,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         this.currentOperation = operation;
     }
 
+    @Override
     public synchronized List<Operation> getLastOperations() {
         return lastOperations;
     }
@@ -338,6 +343,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         doKeepLastOperations = doHold;
     }
 
+    @Override
     public synchronized JPDABreakpoint getCurrentBreakpoint() {
         return currentBreakpoint;
     }
@@ -357,6 +363,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @return current state of this thread
      */
+    @Override
     public int getState () {
         try {
             return ThreadReferenceWrapper.status (threadReference);
@@ -374,6 +381,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @return true if this thread is suspended by debugger
      */
+    @Override
     public boolean isSuspended () {
         return suspended;
     }
@@ -409,6 +417,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     *
     * @return class name where this thread is stopped.
     */
+    @Override
     public String getClassName () {
         accessLock.readLock().lock();
         try {
@@ -440,6 +449,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     *
     * @return method name where this thread is stopped.
     */
+    @Override
     public String getMethodName () {
         accessLock.readLock().lock();
         try {
@@ -471,6 +481,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     *
     * @return Returns name of file of this frame.
     */
+    @Override
     public String getSourceName (String stratum) throws AbsentInformationException {
         accessLock.readLock().lock();
         try {
@@ -501,6 +512,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     *
     * @return Returns name of file of this frame.
     */
+    @Override
     public String getSourcePath (String stratum) 
     throws AbsentInformationException {
         accessLock.readLock().lock();
@@ -538,6 +550,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *         ObjectCollectedException as a cause.
      * @return call stack
      */
+    @Override
     public CallStackFrame[] getCallStack () throws AbsentInformationException {
         accessLock.readLock().lock();
         try {
@@ -560,6 +573,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *         ObjectCollectedException as a cause.
      * @return call stack
      */
+    @Override
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
         accessLock.readLock().lock();
@@ -709,6 +723,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @return length of current call stack
      */
+    @Override
     public int getStackDepth () {
         accessLock.readLock().lock();
         try {
@@ -763,6 +778,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     /**
      * Suspends thread.
      */
+    @Override
     public void suspend () {
         logger.fine("JPDAThreadImpl.suspend() called.");
         Boolean suspendedToFire = null;
@@ -807,6 +823,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     /**
      * Unsuspends thread.
      */
+    @Override
     public void resume () {
         boolean can = cleanBeforeResume();
         if (can) {
@@ -1081,8 +1098,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public void updateSuspendCount(int suspendCount) {
         accessLock.writeLock().lock();
-        this.suspendCount = suspendCount;
-        accessLock.writeLock().unlock();
+        try {
+            this.suspendCount = suspendCount;
+        } finally {
+            accessLock.writeLock().unlock();
+        }
     }
     
     public void notifySuspended() {
@@ -1415,6 +1435,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         return inStep;
     }
 
+    @Override
     public void interrupt() {
         try {
             if (isSuspended ()) return;
@@ -1432,9 +1453,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @see JPDADebugger#getCurrentThread
      */
+    @Override
     public void makeCurrent () {
         if (SwingUtilities.isEventDispatchThread()) {
             debugger.getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     doMakeCurrent();
                 }
@@ -1458,6 +1481,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @return monitor this thread is waiting on
      */
+    @Override
     public ObjectVariable getContendedMonitor () {
         if (!VirtualMachineWrapper.canGetCurrentContendedMonitor0(vm)) {
             return null;
@@ -1497,6 +1521,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
     
+    @Override
     public MonitorInfo getContendedMonitorAndOwner() {
         ObjectVariable monitor = getContendedMonitor();
         if (monitor == null) return null;
@@ -1535,6 +1560,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      *
      * @return monitors owned by this thread
      */
+    @Override
     public ObjectVariable[] getOwnedMonitors () {
         if (!VirtualMachineWrapper.canGetOwnedMonitorInfo0(vm)) {
             return new ObjectVariable[0];
@@ -1596,10 +1622,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         this.returnVariable = returnVariable;
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pch.addPropertyChangeListener(l);
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pch.removePropertyChangeListener(l);
     }
@@ -1609,10 +1637,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 Boolean.valueOf(!suspended), Boolean.valueOf(suspended));
     }
 
+    @Override
     public void setObject(Object bean) {
         throw new UnsupportedOperationException("Not supported, do not call. Implementing Customizer interface just because of add/remove PropertyChangeListener.");
     }
 
+    @Override
     public List<MonitorInfo> getOwnedMonitorsAndFrames() {
         if (VirtualMachineWrapper.canGetMonitorFrameInfo0(vm)) {
             accessLock.readLock().lock();
@@ -1813,6 +1843,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         EventRequestWrapper.putProperty(monitorEnteredRequest, Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
         debugger.getOperator().register(monitorEnteredRequest, new Executor() {
 
+            @Override
             public boolean exec(Event event) {
                 try {
                     try {
@@ -1861,6 +1892,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     // When invoking a method, EventSet.resume() will not resume the invocation thread
                     // We have to do it explicitely a suspend the thread right after the invocation, 'resumedToFinishMethodInvocation' flag is used for that.
                     debugger.getRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
                             accessLock.writeLock().lock();
                             try {
@@ -1883,6 +1915,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 return true;
             }
 
+            @Override
             public void removed(EventRequest eventRequest) {
             }
         });
