@@ -160,7 +160,7 @@ public class WritingQueue {
                 }
             }
             synchronized (monitor) {
-                monitor.wait();
+                monitor.wait(100);
             }
         }
         return failedFiles.isEmpty();
@@ -177,7 +177,7 @@ public class WritingQueue {
                 }
             }
             synchronized (monitor) {
-                monitor.wait();
+                monitor.wait(100);
             }
         }
         return failedFiles.isEmpty();
