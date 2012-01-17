@@ -149,7 +149,11 @@ public class CPPParserEx extends CPPParser {
     }
 
     protected final void init2(CsmFile file, Map<Integer, CsmObject> objects) {
-        action = new CppParserActionImpl(file, objects);        
+        if(objects == null || file == null) {
+            action = new CppParserActionImpl(file, objects);        
+        } else {
+            action = new CppParserEmptyActionImpl();
+        }
     }
 
     private static int strcmp(String s1, String s2) {

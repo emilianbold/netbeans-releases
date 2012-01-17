@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import junit.framework.Test;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
@@ -81,6 +82,7 @@ public class InterceptorTestCase extends RemoteFileTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockServices.setServices(MockupFilesystemInterceptorProvider.class);
         if (execEnv != null) {
             remoteDir = mkTempAndRefreshParent(true);
             ProcessUtils.execute(execEnv, "umask", "0002");

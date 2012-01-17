@@ -95,7 +95,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private AST ast;
         private ConstructionKind kind;
         
-        private Map<Integer, CsmObject> objects = new HashMap<Integer, CsmObject>();
+        private Map<Integer, CsmObject> objects = null;
         
         Antlr2CppParser(FileImpl file) {
             this.file = file;
@@ -112,6 +112,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
             assert object != null;
             assert ts != null;
             parserContainer = object;
+            if(TraceFlags.CPP_PARSER_ACTION) {
+                objects = new HashMap<Integer, CsmObject>();
+            }
             parser = CPPParserEx.getInstance(file, ts, flags, objects);
         }
 

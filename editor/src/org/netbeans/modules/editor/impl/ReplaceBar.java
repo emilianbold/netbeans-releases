@@ -221,6 +221,7 @@ public final class ReplaceBar extends JPanel {
         backwardsCheckBox = searchBar.createCheckBox("CTL_BackwardsReplace", EditorFindSupport.FIND_BACKWARD_SEARCH); // NOI18N
         add(backwardsCheckBox);
         preserveCaseCheckBox = searchBar.createCheckBox("CTL_PreserveCase", EditorFindSupport.FIND_PRESERVE_CASE); // NOI18N
+        preserveCaseCheckBox.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_PreserveCase")); // NOI18N
         add(preserveCaseCheckBox);
 
         backwardsCheckBox.setSelected(searchBar.getFindSupportValue(EditorFindSupport.FIND_BACKWARD_SEARCH));
@@ -448,12 +449,12 @@ public final class ReplaceBar extends JPanel {
         focusList.clear();
         focusList.add(searchBar.getIncSearchTextField());
         focusList.add(replaceTextField);
-        focusList.add(replaceButton);
-        focusList.add(replaceAllButton);
-        focusList.add(expandButton);
-        focusList.add(searchBar.getFindPreviousButton());
-        focusList.add(searchBar.getFindNextButton());
-        focusList.add(searchBar.getExpandButton());
+//        focusList.add(replaceButton);
+//        focusList.add(replaceAllButton);
+//        focusList.add(expandButton);
+//        focusList.add(searchBar.getFindPreviousButton());
+//        focusList.add(searchBar.getFindNextButton());
+//        focusList.add(searchBar.getExpandButton());
         
     }
 
@@ -657,12 +658,7 @@ public final class ReplaceBar extends JPanel {
             setVisible(true);
         }
         searchBar.gainFocus();
-        
-        if (searchBar.getIncSearchTextField().getText().isEmpty()) {
-            searchBar.getIncSearchTextField().requestFocusInWindow();
-        } else {
-            replaceTextField.requestFocusInWindow();
-        }
+        searchBar.getIncSearchTextField().requestFocusInWindow();
     }
 
     boolean hadFocusOnTextField() {

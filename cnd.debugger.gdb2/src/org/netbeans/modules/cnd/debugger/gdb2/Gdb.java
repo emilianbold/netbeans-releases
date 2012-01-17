@@ -920,7 +920,7 @@ public class Gdb {
             }
         }
 
-        public void setMiProxy(MIProxy miProxy) {
+        private void setMiProxy(MIProxy miProxy) {
             this.miProxy = miProxy;
         }
 
