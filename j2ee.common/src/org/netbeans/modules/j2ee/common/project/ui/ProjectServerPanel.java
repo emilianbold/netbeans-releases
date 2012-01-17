@@ -285,16 +285,15 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     .addComponent(mainClassLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTextFieldEjbModuleName, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addComponent(jTextFieldWebAppName, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addComponent(jTextFieldCarName, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addComponent(mainClassTextFieldWithinEar, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
+                    .addComponent(jTextFieldEjbModuleName)
+                    .addComponent(jTextFieldWebAppName)
+                    .addComponent(jTextFieldCarName)
+                    .addComponent(mainClassTextFieldWithinEar))
                 .addGap(74, 74, 74))
-            .addComponent(warningPlaceHolderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabelEnterprise)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBoxEnterprise, 0, 374, Short.MAX_VALUE))
+                .addComponent(jComboBoxEnterprise, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabelContextPath)
@@ -302,23 +301,26 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     .addComponent(j2eeSpecLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(warningPlaceHolderPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(cdiCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+                        .addComponent(cdiCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(mainClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+                        .addComponent(mainClassTextField)
                         .addGap(74, 74, 74))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextFieldContextPath, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+                        .addComponent(jTextFieldContextPath)
                         .addGap(74, 74, 74))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(serverInstanceComboBox, 0, 398, Short.MAX_VALUE)
+                        .addComponent(serverInstanceComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(addServerButton))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(serverLibraryCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+                        .addComponent(serverLibraryCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
                         .addGap(74, 74, 74))
-                    .addComponent(j2eeSpecComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(j2eeSpecComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -599,11 +601,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     }
     
     private String getSourceLevel(WizardDescriptor d, String serverInstanceId, Profile j2ee) {
-        // #119052
-        String sourceLevel = "1.5"; // NOI18N
-        if (j2ee != null && (Profile.JAVA_EE_6_FULL.equals(j2ee) || Profile.JAVA_EE_6_WEB.equals(j2ee))) {
-            sourceLevel = "1.6"; // NOI18N
-        }
+        String sourceLevel = "1.6"; // NOI18N
         
         // serverInstanceId is null, when there is no installed server
         if (serverInstanceId != null) {
@@ -612,7 +610,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 Set jdks = j2eePlatform.getSupportedJavaPlatformVersions();
                 // make sure that chosen source level is suported by server:
                 if (!jdks.contains(sourceLevel)) {
-                    if ("1.5".equals(sourceLevel) && jdks.contains("1.6")) {
+                    if ("1.6".equals(sourceLevel) && jdks.contains("1.7")) {
                         sourceLevel = "1.6";
                     } else if ("1.6".equals(sourceLevel) && jdks.contains("1.5")) {
                         sourceLevel = "1.5";
@@ -636,7 +634,12 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 UserProjectSettings fls = UserProjectSettings.getDefault();
                 if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14()) {
                     sourceLevel = "1.4"; //NOI18N
+                } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15()) {
+                    sourceLevel = "1.5"; //NOI18N
+                } else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_6)) {
+                    sourceLevel = "1.6"; //NOI18N
                 }
+
             }
         }
         
@@ -842,10 +845,15 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             warningPanel = new J2eeVersionWarningPanel(warningType);
             warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
             warningPanel.setWarningType(warningType);
+            warningPlaceHolderPanel.setVisible(true);
         } else {
-            warningPanel.setWarningType(warningType);
+            if (warningType == null) {
+                warningPlaceHolderPanel.setVisible(false);
+            } else {
+                warningPanel.setWarningType(warningType);
+                warningPlaceHolderPanel.setVisible(true);
+            }
         }
-        warningPlaceHolderPanel.setVisible(true);
         this.revalidate();
     }
 
