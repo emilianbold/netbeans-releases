@@ -90,8 +90,7 @@ public abstract class APTAbstractWalker extends APTWalker {
                 int index = 0 - extractIncludeFileEntries.size();
                 for (IncludeDirEntry includeDirEntry : extractIncludeFileEntries) {
                     APT fake = new APTIncludeFake(includeDirEntry.getAsSharedCharSequence().toString(), index++);
-                    onInclude(fake);
-                    fillTokensIfNeeded(fake);
+                    onAPT(fake, false);
                 }
             }
         }

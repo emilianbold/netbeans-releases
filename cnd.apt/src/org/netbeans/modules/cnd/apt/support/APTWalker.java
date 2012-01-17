@@ -364,7 +364,7 @@ public abstract class APTWalker {
         }
     }
     
-    protected final void fillTokensIfNeeded(APT node) {
+    private void fillTokensIfNeeded(APT node) {
         if (walkerUsedForTokenStreamGeneration == Boolean.TRUE) {
             // only token stream nodes contain tokens as TokenStream
             if (node != null) {
