@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.Collection;
 import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.filesystems.AttributesTestHidden;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystemFactoryHid;
-import org.openide.filesystems.FileSystemTestHid;
 
 /**
  *
- * @author vv159170
+ * @author Alexander Simon
  */
-public class RemoteFSTestCase extends FileSystemFactoryHid {
+public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
     
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
             
-    public RemoteFSTestCase(Test test) {
+    public RemoteFSTCKTestCase(Test test) {
         super(test);
-    }
-
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(FileSystemTestHid.class);
-        suite.addTestSuite(FileObjectTestHid.class);
-        suite.addTestSuite(AttributesTestHidden.class);
-        return new RemoteFSTestCase(suite);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("nativeexecution.mode.unittest", "true");
+        
         String userdir = System.getProperty("netbeans.user");
         if (userdir == null) {
             System.setProperty("netbeans.user", System.getProperty("nbjunit.workdir"));
         }
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-        String mspec = rcFile.get("remote.fstest", "platform");
+        String mspec = null;
+        for(String section : rcFile.getSections()) {
+            if (section.equals("remote.platforms")) {
+                Collection<String> keys = rcFile.getKeys(section);
+                for(String key : keys) {
+                    if (key.equals("intel-S2")) {
+                        String get = rcFile.get(section, key, null);
+                        if (get == null) {
+                            mspec = key;
+                        }
+                    }
+                }
+            }
+        }
+        
         execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
         ConnectionManager.getInstance().connectTo(execEnv);
         tmpDir = mkTemp(execEnv, true);
@@ -97,7 +102,7 @@ public class RemoteFSTestCase extends FileSystemFactoryHid {
     
     private String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
         String[] mkTempArgs;
-        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
+        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.MACOSX) {
             mkTempArgs = directory ? new String[] { "-t", "/tmp", "-d" } : new String[] { "-t", "/tmp" };
         } else {
             mkTempArgs = directory ? new String[] { "-d" } : new String[0];
@@ -151,6 +156,19 @@ public class RemoteFSTestCase extends FileSystemFactoryHid {
             }
             //FileObject tmpDirFO = FileSystemProvider.getFileObject(execEnv, tmpDir);
             tmpDirParentFO.refresh();
+            
+            tmpDirParentFO = FileSystemProvider.getFileObject(execEnv, tmpDir);
+            if (tmpDirParentFO == null) {
+                throw new IOException("Null file object for " + tmpDir);
+            }
+            tmpDirParentFO.refresh();
+
+            tmpDirParentFO = FileSystemProvider.getFileObject(execEnv, base);
+            if (tmpDirParentFO == null) {
+                throw new IOException("Null file object for " + base);
+            }
+            tmpDirParentFO.refresh();
+            
         } catch (Throwable thr) {
             throw new IOException(thr.getMessage(), thr);
         }
