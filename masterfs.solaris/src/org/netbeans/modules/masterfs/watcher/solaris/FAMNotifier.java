@@ -82,7 +82,7 @@ public final class FAMNotifier extends Notifier<Integer> {
     private static final Logger LOG = Logger.getLogger(FAMNotifier.class.getName());
 
     public FAMNotifier() {
-        if (Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.FAM")) {
+        if (!Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.FAM")) {
             conn = null;
             lib = null;
             eventReader = null;

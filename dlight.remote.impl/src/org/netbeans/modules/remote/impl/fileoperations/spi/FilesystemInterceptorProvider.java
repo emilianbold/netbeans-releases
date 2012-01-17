@@ -42,6 +42,8 @@
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -223,9 +225,17 @@ abstract public class FilesystemInterceptorProvider {
         if (defaultProvider != null) {
             return defaultProvider;
         }
-        defaultProvider = Lookup.getDefault().lookup(FilesystemInterceptorProvider.class);
-        if (defaultProvider == null) {
+        Collection<? extends FilesystemInterceptorProvider> lookupAll = Lookup.getDefault().lookupAll(FilesystemInterceptorProvider.class);
+        if (lookupAll == null || lookupAll.isEmpty()) {
             defaultProvider = NullProvider;
+        } else {
+            final Iterator<? extends FilesystemInterceptorProvider> iterator = lookupAll.iterator();
+            if (lookupAll.size() == 1) {
+                defaultProvider = iterator.next();
+            } else {
+                iterator.next();
+                defaultProvider = iterator.next();
+            }
         }
         return defaultProvider;
     }

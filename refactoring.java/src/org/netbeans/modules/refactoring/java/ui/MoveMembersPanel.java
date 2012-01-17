@@ -943,6 +943,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
         public void run(CompilationController info) throws Exception {
             canceled.set(false); // Task shared for one file needs reset first
+            info.toPhase(JavaSource.Phase.RESOLVED);
 
             Description rootDescription = null;
 

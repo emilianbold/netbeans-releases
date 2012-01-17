@@ -92,8 +92,9 @@ public abstract class MIProxy {
 	parser = new MIParser(encoding);
         
         // Log NB version and gdb log file name
-        cmdManager.echo("This log is saved to: " + gdbLogger.getFilename() + "\n\r"); // NOI18N
-        cmdManager.echo("NB build: " + System.getProperty("netbeans.buildnumber") + "\n\r"); // NOI18N
+        // Find better place for this, see IZ 207277
+//        cmdManager.echo("This log is saved to: " + gdbLogger.getFilename() + "\n\r"); // NOI18N
+//        cmdManager.echo("NB build: " + System.getProperty("netbeans.buildnumber") + "\n\r"); // NOI18N
     }
 
 

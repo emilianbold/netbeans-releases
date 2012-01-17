@@ -89,7 +89,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
     public MoveMembersTransformer(MoveRefactoring refactoring) {
         allElements = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
         JavaMoveMembersProperties properties = refactoring.getContext().lookup(JavaMoveMembersProperties.class);
-        properties = properties == null ? new JavaMoveMembersProperties() : properties;
+        properties = properties == null ? new JavaMoveMembersProperties(allElements.toArray(new TreePathHandle[allElements.size()])) : properties;
         visibility = properties.getVisibility();
         usageOutsideOfPackage = new HashMap<TreePathHandle, Boolean>();
         for (TreePathHandle treePathHandle : allElements) {
