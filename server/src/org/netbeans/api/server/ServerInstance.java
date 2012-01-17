@@ -46,6 +46,7 @@ import javax.swing.JComponent;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * The API representation of the single server instance. Class describes
@@ -56,7 +57,7 @@ import org.openide.nodes.Node;
  * 
  * @author Petr Hejl
  */
-public final class ServerInstance {
+public final class ServerInstance implements Lookup.Provider {
 
     static {
         ServerInstanceFactory.Accessor.DEFAULT = new ServerInstanceFactory.Accessor() {
@@ -142,5 +143,17 @@ public final class ServerInstance {
     public boolean isRemovable() {
         return delegate.isRemovable();
     }
-    
+
+    /**
+     * Returns the lookup associated with this instance.
+     *
+     * @return the lookup associated with this instance
+     * @since 1.19
+     */
+    public Lookup getLookup() {
+        if (delegate instanceof Lookup.Provider) {
+            return ((Lookup.Provider) delegate).getLookup();
+        }
+        return Lookup.EMPTY;
+    }
 }

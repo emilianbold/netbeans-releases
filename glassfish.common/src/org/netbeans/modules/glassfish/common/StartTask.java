@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.extexecution.startup.StartupArguments;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
@@ -696,7 +697,24 @@ public class StartTask extends BasicTask<OperationState> {
             throw new ProcessCreationException(ioe,
                     "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
         }
+
+        for (StartupArguments args : StartupArguments.getStartupArguments(
+                support.getInstanceProvider().getInstance(ip.get("url")).getLookup(), getMode(ip.get(GlassfishModule.JVM_MODE)))) {
+            for (String singleArg : args.getArguments()) {
+                argumentBuf.append(' ').append(singleArg);
+            }
+        }
         return argumentBuf;
+    }
+
+    private static StartupArguments.StartMode getMode(String gfMode) {
+        if (GlassfishModule.PROFILE_MODE.equals(gfMode)) {
+            return StartupArguments.StartMode.PROFILE;
+        } else if (GlassfishModule.DEBUG_MODE.equals(gfMode)) {
+            return StartupArguments.StartMode.DEBUG;
+        } else {
+            return StartupArguments.StartMode.NORMAL;
+        }
     }
 
     private String selectDebugPort() throws IOException {

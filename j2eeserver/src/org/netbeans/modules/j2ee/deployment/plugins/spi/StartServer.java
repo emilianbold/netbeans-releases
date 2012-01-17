@@ -48,7 +48,6 @@ package org.netbeans.modules.j2ee.deployment.plugins.spi;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 
 /**
  * Server lifecycle services from the IDE.  J2eeserver will use these
@@ -247,13 +246,12 @@ public abstract class StartServer {
      *
      * @param target          the target server in question, null target implies 
      *                        the admin server.
-     * @param settings        profiler server settings.
      *
      * @return ServerProgress object to monitor progress on start operation.
      *
      * @since 1.9
      */
-    public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
+    public ProgressObject startProfiling(Target target) {
         throw new UnsupportedOperationException("Starting in profile mode is not supported by this server."); // NIO18N
     }
     

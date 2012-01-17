@@ -1,8 +1,7 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -35,29 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-//</editor-fold>
+package org.netbeans.modules.j2ee.deployment.plugins.api;
 
-package org.netbeans.modules.glassfish.spi;
+import java.util.Collections;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author vkraemer
+ * @author Petr Hejl
  */
-public interface ProfilerCookie {
-    /**
-     * This is a conduit for data that the we need to get from the profiler that
-     * is buried in org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler
-     * as org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings
-     * 
-     * @return a two element array. Object[0] is a FileObject that is the root
-     * directory of the JDK to use for running the app server. Object[0] is a
-     * String[] of extra arguments that need to be used to start the JVM in
-     * profiled mode.
-     */
-    public Object[] getData();
+public class CommonServerBridgeTest extends ServerRegistryTestBase {
+
+    private static final String TEST_URL_PREFIX = "fooservice:";
+
+    public CommonServerBridgeTest(String name) {
+        super(name);
+    }
+
+    public void testCommonInstance() throws InstanceCreationException {
+        String url = TEST_URL_PREFIX + "testCommonInstance";
+        InstanceProperties.createInstanceProperties(url, "test", "test", "TestCommon");
+
+        ServerInstance common = CommonServerBridge.getCommonInstance(url);
+        assertNotNull(common);
+
+        Lookup lookup = common.getLookup();
+        assertNotNull(lookup.lookup(J2eePlatform.class));
+        assertNotNull(lookup.lookup(InstanceProperties.class));
+    }
+
+    public void testNoCommonInstance() throws InstanceCreationException {
+        String url = TEST_URL_PREFIX + "testNoCommonInstance";
+        InstanceProperties.createInstancePropertiesWithoutUI(url, "test", "test", "TestNoCommon", Collections.<String, String>emptyMap());
+
+        try {
+            CommonServerBridge.getCommonInstance(url);
+            fail("Common instance found for EE instance registered without UI");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
 }

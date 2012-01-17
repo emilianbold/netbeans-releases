@@ -62,9 +62,10 @@ import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
@@ -120,13 +121,11 @@ class JBStartRunnable implements Runnable {
     private JBDeploymentManager dm;
     private String instanceName;
     private JBStartServer startServer;
-    private ProfilerServerSettings profilerSettings;
 
-    JBStartRunnable(ProfilerServerSettings profilerSettings, JBDeploymentManager dm, JBStartServer startServer) {
+    JBStartRunnable(JBDeploymentManager dm, JBStartServer startServer) {
         this.dm = dm;
         this.instanceName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         this.startServer = startServer;
-        this.profilerSettings = profilerSettings;
     }
 
     public void run() {
@@ -205,7 +204,7 @@ class JBStartRunnable implements Runnable {
         }
 
         // get Java platform that will run the server
-        JavaPlatform platform = (startServer.getMode() != JBStartServer.MODE.PROFILE ? properties.getJavaPlatform() : profilerSettings.getJavaPlatform());
+        JavaPlatform platform = properties.getJavaPlatform();
 
         if (startServer.getMode() == JBStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
             // if in debug mode and the debug options not specified manually
@@ -217,15 +216,16 @@ class JBStartRunnable implements Runnable {
                             append(",server=y,suspend=n"); // NOI18N
 
         } else if (startServer.getMode() == JBStartServer.MODE.PROFILE) {
-
-            // get JVM arguments used for starting the server
-            String[] profJvmArgs = profilerSettings.getJvmArgs();
-            for (int i = 0; i < profJvmArgs.length; i++) {
-                javaOptsBuilder.append(" ").append(profJvmArgs[i]); // NOI18N
-            }
             if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
                 javaOptsBuilder.append(" ").append("-Djboss.platform.mbeanserver")
                         .append(" ").append("-Djavax.management.builder.initial=org.jboss.system.server.jmx.MBeanServerBuilderImpl");
+            }
+        }
+
+        for (StartupArguments args : StartupArguments.getStartupArguments(
+                CommonServerBridge.getCommonInstance(ip.getProperty("url")).getLookup(), getMode(startServer.getMode()))) {
+            for (String singleArg : args.getArguments()) {
+                javaOptsBuilder.append(' ').append(singleArg);
             }
         }
 
@@ -241,7 +241,17 @@ class JBStartRunnable implements Runnable {
         };
         return envp;
     }
-    
+
+    private static StartupArguments.StartMode getMode(JBStartServer.MODE jbMode) {
+        if (JBStartServer.MODE.PROFILE.equals(jbMode)) {
+            return StartupArguments.StartMode.PROFILE;
+        } else if (JBStartServer.MODE.DEBUG.equals(jbMode)) {
+            return StartupArguments.StartMode.DEBUG;
+        } else {
+            return StartupArguments.StartMode.NORMAL;
+        }
+    }
+
     private boolean checkPorts(final InstanceProperties ip) {
 
         try {

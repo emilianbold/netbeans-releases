@@ -75,6 +75,14 @@ Microsystems, Inc. All Rights Reserved.
    There is also SPI allowing to register support for destroying the process tree
    <api group="java" name="ExternalExecutionDestroySPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/destroy/package-summary.html"/>.
   </p>
+  <p>
+   There is also API to provide additional startup arguments to interested
+   clients such as projects and servers
+   <api group="java" name="ExternalExecutionStartupAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/startup/package-summary.html"/>.
+   Th corresponding SPI for plugins which need to provide such additional arguments
+   is also available as
+   <api group="java" name="ExternalExecutionStartupSPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/startup/package-summary.html"/>.
+  </p>
  </answer>
 
 
@@ -236,6 +244,23 @@ Microsystems, Inc. All Rights Reserved.
       <a href="@TOP@org/netbeans/spi/extexecution/destroy/ProcessDestroyPerformer.html">ProcessDestroyPerformer</a>
       registered in default lookup to do so.
     </p>
+  </usecase>
+  <usecase id="startup-arguments" name="Providing additional VM arguments">
+   <p>
+    The third party plugin may want to be able provide additional arguments
+    for the VM startup in a standardized way. In order to do so it will register
+    a implementation of
+    <a href="@TOP@org/netbeans/spi/extexecution/startup/StartupArgumentsProvider.html">StartupArgumentsProvider</a>
+    to the layer folder VMArgumentProviders. The annotation
+    <a href="@TOP@org/netbeans/spi/extexecution/startup/StartupArgumentsProvider.Registration.html">StartupArgumentsProvider.Registration</a>
+    can be used for that.
+   </p>
+   <p>
+    The clients (for exmaple project or server) may query the providers via the
+    API class
+    <a href="@TOP@org/netbeans/api/extexecution/startup/StartupArguments.html">StartupArguments</a>
+    and use the additional arguments for the server.
+   </p>
   </usecase>
  </answer>
 
