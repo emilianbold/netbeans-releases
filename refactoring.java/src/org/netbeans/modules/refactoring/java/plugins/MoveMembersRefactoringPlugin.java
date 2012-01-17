@@ -61,12 +61,14 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,18 +88,25 @@ import org.openide.util.NbBundle;
 public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
 
     private final MoveRefactoring refactoring;
+    private final JavaMoveMembersProperties properties;
 
     public MoveMembersRefactoringPlugin(MoveRefactoring moveRefactoring) {
         this.refactoring = moveRefactoring;
+        this.properties = moveRefactoring.getContext().lookup(JavaMoveMembersProperties.class);
     }
 
     @Override
     protected JavaSource getJavaSource(Phase p) {
-        TreePathHandle source = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        TreePathHandle source;
+        if(p == Phase.PRECHECK) {
+            source = properties.getPreSelectedMembers()[0];
+        } else {
+            source = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        }
         if(source != null && source.getFileObject() != null) {
             switch(p) {
                 case CHECKPARAMETERS:
-                case FASTCHECKPARAMETERS:    
+                case FASTCHECKPARAMETERS:
                 case PRECHECK:
                 case PREPARE:
                     ClasspathInfo cpInfo = getClasspathInfo(refactoring);
@@ -110,24 +119,32 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
         List<TreePathHandle> handles = new ArrayList<TreePathHandle>(refactoring.getRefactoringSource().lookupAll(TreePathHandle.class));
-        TreePathHandle target = this.refactoring.getTarget().lookup(TreePathHandle.class);
-        if(target != null) {
-            handles.add(target);
+        Lookup targetLookup = this.refactoring.getTarget();
+        if(targetLookup != null) {
+            TreePathHandle target = targetLookup.lookup(TreePathHandle.class);
+            if(target != null) {
+                handles.add(target);
+            }
         }
         ClasspathInfo cpInfo;
         if (!handles.isEmpty()) {
             cpInfo = RefactoringUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
         } else {
-            cpInfo = JavaRefactoringUtils.getClasspathInfoFor((FileObject)null);
+            cpInfo = JavaRefactoringUtils.getClasspathInfoFor((FileObject)properties.getPreSelectedMembers()[0].getFileObject());
         }
         refactoring.getContext().add(cpInfo);
         return cpInfo;
     }
 
     @Override
-    public Problem preCheck() {
-        // Nothing to precheck, target and source are not known yet.
-        return null;
+    protected Problem preCheck(CompilationController info) throws IOException {
+        info.toPhase(JavaSource.Phase.RESOLVED);
+        Problem preCheckProblem = isElementAvail(properties.getPreSelectedMembers()[0], info);
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
+        
+        return preCheckProblem;
     }
 
     @Override

@@ -523,8 +523,15 @@ public class VariousUtils {
     }
 
     private static QualifiedName createQuery(String semiTypeName, final Scope scope) {
+        QualifiedName result = null;
         final QualifiedName query = QualifiedName.create(semiTypeName);
-        return query.toNamespaceName(query.getKind().isFullyQualified()).append(translateSpecialClassName(scope, query.getName()));
+        final String translatedName = translateSpecialClassName(scope, query.getName());
+        if (translatedName != null && translatedName.startsWith("\\")) { //NOI18N
+            result = QualifiedName.create(translatedName);
+        } else {
+            result = query.toNamespaceName(query.getKind().isFullyQualified()).append(translatedName);
+        }
+        return result;
     }
 
     public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
@@ -1041,9 +1048,14 @@ public class VariousUtils {
             if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
                 clsName = classScope.getName();
             } else if ("parent".equals(clsName)) {
-                ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
-                if (clzScope != null) {
-                    clsName = clzScope.getName();
+                QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
+                if (fullyQualifiedName != null) {
+                    clsName = fullyQualifiedName.toString();
+                } else {
+                    ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
+                    if (clzScope != null) {
+                        clsName = clzScope.getName();
+                    }
                 }
             }
         }
