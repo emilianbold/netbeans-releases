@@ -109,28 +109,6 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("^/*\n*/\n", "\n^/*\n*/\n");
     }
 
-// These tests no longer apply -- I'm doing the string-literal insertion differently now
-//    public void testSplitStrings() throws Exception {
-//        insertBreak("  x = 'te^st'", "  x = 'te' +\n  '^st'");
-//    }
-//
-//    public void testSplitStrings2() throws Exception {
-//        insertBreak("  x = 'test^'", "  x = 'test' +\n  '^'");
-//    }
-//
-//    public void testSplitStrings3() throws Exception {
-//        insertBreak("  x = \"te^st\"", "  x = \"te\" +\n  \"^st\"");
-//    }
-//
-//    public void testSplitRegexps1() throws Exception {
-//        insertBreak("  x = /te^st/", "  x = /te/ +\n  /^st/");
-//    }
-//
-//    public void testSplitRegexps2() throws Exception {
-//        insertBreak("  x = /test^/", "  x = /test/ +\n  /^/");
-//    }
-//
-
     public void testSplitStrings1() throws Exception {
         insertBreak("  x = 'te^st'", "  x = 'te\\n\\\n^st'");
     }
