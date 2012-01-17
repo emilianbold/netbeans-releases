@@ -52,7 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.api.util.Pair;
@@ -206,26 +206,26 @@ public final class ProjectPropertiesSupport {
     }
 
     public static boolean areShortTagsEnabled(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, PhpLanguageOptions.SHORT_TAGS_ENABLED);
+        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, PhpLanguageProperties.SHORT_TAGS_ENABLED);
     }
 
     public static boolean areAspTagsEnabled(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
+        return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageProperties.ASP_TAGS_ENABLED);
     }
 
-    public static PhpLanguageOptions.PhpVersion getPhpVersion(PhpProject project) {
+    public static PhpLanguageProperties.PhpVersion getPhpVersion(PhpProject project) {
         return getPhpVersion(project.getEvaluator().getProperty(PhpProjectProperties.PHP_VERSION));
     }
 
-    public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {
+    public static PhpLanguageProperties.PhpVersion getPhpVersion(String value) {
         if (value != null) {
             try {
-                return PhpLanguageOptions.PhpVersion.valueOf(value);
+                return PhpLanguageProperties.PhpVersion.valueOf(value);
             } catch (IllegalArgumentException iae) {
                 // ignored
             }
         }
-        return PhpLanguageOptions.PhpVersion.getDefault();
+        return PhpLanguageProperties.PhpVersion.getDefault();
     }
 
     /**

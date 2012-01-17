@@ -42,31 +42,32 @@
 
 package org.netbeans.modules.php.project;
 
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.util.Exceptions;
 
 /**
- * @author Tomas Mysik
+ * Accessor for {@link PhpLanguageProperties}.
  */
-public abstract class PhpLanguageOptionsAccessor {
+public abstract class PhpLanguagePropertiesAccessor {
 
-    private static volatile PhpLanguageOptionsAccessor accessor;
+    private static volatile PhpLanguagePropertiesAccessor accessor;
 
-    public static void setDefault(PhpLanguageOptionsAccessor accessor) {
-        if (PhpLanguageOptionsAccessor.accessor != null) {
+
+    public static void setDefault(PhpLanguagePropertiesAccessor accessor) {
+        if (PhpLanguagePropertiesAccessor.accessor != null) {
             throw new IllegalStateException("Already initialized accessor");
         }
-        PhpLanguageOptionsAccessor.accessor = accessor;
+        PhpLanguagePropertiesAccessor.accessor = accessor;
     }
 
-    public static synchronized PhpLanguageOptionsAccessor getDefault() {
+    public static synchronized PhpLanguagePropertiesAccessor getDefault() {
         if (accessor != null) {
             return accessor;
         }
 
-        Class<?> c = PhpLanguageOptions.class;
+        Class<?> c = PhpLanguageProperties.class;
         try {
-            Class.forName(c.getName(), true, PhpLanguageOptionsAccessor.class.getClassLoader());
+            Class.forName(c.getName(), true, PhpLanguagePropertiesAccessor.class.getClassLoader());
         } catch (ClassNotFoundException cnf) {
             Exceptions.printStackTrace(cnf);
         }
@@ -74,5 +75,6 @@ public abstract class PhpLanguageOptionsAccessor {
         return accessor;
     }
 
-    public abstract void firePropertyChange(String propertyName, Object oldValue, Object newValue);
+    public abstract PhpLanguageProperties createForProject(PhpProject project);
+
 }
