@@ -544,15 +544,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         if (webRoot != null) {
             projectProperties.setProperty(WEB_ROOT, webRoot);
         }
-        String oldPhpVersion = projectProperties.getProperty(PHP_VERSION);
         if (phpVersion != null) {
             projectProperties.setProperty(PHP_VERSION, phpVersion);
         }
-        String oldShortTags = projectProperties.getProperty(SHORT_TAGS);
         if (shortTags != null) {
             projectProperties.setProperty(SHORT_TAGS, shortTags);
         }
-        String oldAspTags = projectProperties.getProperty(ASP_TAGS);
         if (aspTags != null) {
             projectProperties.setProperty(ASP_TAGS, aspTags);
         }
