@@ -543,4 +543,15 @@ public class DefaultVisitor implements Visitor {
         scan(node.getName());
     }
 
+    @Override
+    public void visit(DereferencedArrayAccess node) {
+        scan(node.getDispatcher());
+        scan(node.getIndex());
+    }
+
+    @Override
+    public void visit(ArrayIndex node) {
+        scan(node.getIndex());
+    }
+
 }

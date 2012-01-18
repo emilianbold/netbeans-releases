@@ -39,28 +39,28 @@
         </Comments>
         <Statements>
             <ExpressionStatement start='7' end='31'>
-                <ArrayAccess start='7' end='30' type='DEREFERENCED_ARRAY' isDollared='false'>
+                <DereferencedArrayAccess start='7' end='30'>
                     <Index>
+                        <ArrayIndex start='28' end='30'>
+                        </ArrayIndex>
                     </Index>
-                    <Name>
-                        <ArrayAccess start='7' end='28' type='DEREFERENCED_ARRAY' isDollared='false'>
-                            <Index>
+                    <DereferencedArrayAccess start='7' end='28'>
+                        <Index>
+                            <ArrayIndex start='20' end='28'>
                                 <Scalar start='21' end='27' type='STRING' value='"test"'/>
-                            </Index>
-                            <Name>
-                                <FunctionInvocation start='7' end='20'>
-                                    <FucntionName start='7' end='18'>
-                                        <NamespaceName start='7' end='18' isCurrent='false' isGlobal='false'>
-                                            <Identifier start='7' end='18' name='giveMeArray'/>
-                                        </NamespaceName>
-                                    </FucntionName>
-                                    <Parameters>
-                                    </Parameters>
-                                </FunctionInvocation>
-                            </Name>
-                        </ArrayAccess>
-                    </Name>
-                </ArrayAccess>
+                            </ArrayIndex>
+                        </Index>
+                        <FunctionInvocation start='7' end='20'>
+                            <FucntionName start='7' end='18'>
+                                <NamespaceName start='7' end='18' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='7' end='18' name='giveMeArray'/>
+                                </NamespaceName>
+                            </FucntionName>
+                            <Parameters>
+                            </Parameters>
+                        </FunctionInvocation>
+                    </DereferencedArrayAccess>
+                </DereferencedArrayAccess>
             </ExpressionStatement>
             <EmptyStatement start='33' end='35'/>
         </Statements>

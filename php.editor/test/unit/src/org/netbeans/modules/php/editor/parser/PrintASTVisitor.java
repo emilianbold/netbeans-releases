@@ -889,4 +889,19 @@ public class PrintASTVisitor implements Visitor {
         printNode.addChild(node.getName());
         printNode.print(this);
     }
+
+    @Override
+    public void visit(DereferencedArrayAccess node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "DereferencedArrayAccess");
+        printNode.addChildrenGroup("Index", new ASTNode[]{node.getIndex()});
+        printNode.addChild(node.getDispatcher());
+        printNode.print(this);
+    }
+
+    @Override
+    public void visit(ArrayIndex node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ArrayIndex");
+        printNode.addChild(node.getIndex());
+        printNode.print(this);
+    }
 }

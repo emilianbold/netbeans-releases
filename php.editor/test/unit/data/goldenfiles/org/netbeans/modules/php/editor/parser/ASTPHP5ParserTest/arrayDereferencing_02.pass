@@ -40,22 +40,22 @@
         <Statements>
             <ExpressionStatement start='7' end='27'>
                 <Assignment start='7' end='26' operator='EQUAL'>
-                    <ArrayAccess start='7' end='20' type='DEREFERENCED_ARRAY' isDollared='false'>
+                    <DereferencedArrayAccess start='7' end='20'>
                         <Index>
-                            <Scalar start='18' end='19' type='INT' value='2'/>
+                            <ArrayIndex start='17' end='20'>
+                                <Scalar start='18' end='19' type='INT' value='2'/>
+                            </ArrayIndex>
                         </Index>
-                        <Name>
-                            <FunctionInvocation start='7' end='17'>
-                                <FucntionName start='7' end='15'>
-                                    <NamespaceName start='7' end='15' isCurrent='false' isGlobal='false'>
-                                        <Identifier start='7' end='15' name='get_data'/>
-                                    </NamespaceName>
-                                </FucntionName>
-                                <Parameters>
-                                </Parameters>
-                            </FunctionInvocation>
-                        </Name>
-                    </ArrayAccess>
+                        <FunctionInvocation start='7' end='17'>
+                            <FucntionName start='7' end='15'>
+                                <NamespaceName start='7' end='15' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='7' end='15' name='get_data'/>
+                                </NamespaceName>
+                            </FucntionName>
+                            <Parameters>
+                            </Parameters>
+                        </FunctionInvocation>
+                    </DereferencedArrayAccess>
                     <Scalar start='23' end='26' type='STRING' value='&apos;I&apos;'/>
                 </Assignment>
             </ExpressionStatement>

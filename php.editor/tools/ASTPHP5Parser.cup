@@ -32,16 +32,36 @@ parser code {:
 		this.ast = ast;
 	}*/
 
-	public Dispatch createDispatch(VariableBase dispatcher, VariableBase property) {
+	public Dispatch createDispatch(VariableBase dispatcher, VariableBase property, List indexes) {
 		Dispatch dispatch = null;
-		if (property instanceof Variable) {
+        if (property instanceof DereferencedArrayAccess) {
+            DereferencedArrayAccess arrayAccess = (DereferencedArrayAccess) property;
+            indexes = new LinkedList();
+            indexes.add(arrayAccess.getIndex());
+            while (arrayAccess.getDispatcher() instanceof DereferencedArrayAccess) {
+                arrayAccess = (DereferencedArrayAccess) arrayAccess.getDispatcher();
+                ((LinkedList) indexes).addFirst(arrayAccess.getIndex());
+            }
+            property = arrayAccess.getDispatcher();
+        }
+        if (property instanceof Variable) {
 			dispatch = new FieldAccess(dispatcher.getStartOffset(), property.getEndOffset(), /*ast,*/ dispatcher, (Variable)property);
 		} else if (property instanceof FunctionInvocation) {
 			dispatch = new MethodInvocation(dispatcher.getStartOffset(), property.getEndOffset(), /*ast,*/ dispatcher, (FunctionInvocation)property);
 		} else {
 			throw new IllegalArgumentException();
 		}
+        if (indexes != null) {
+            for (Object i : indexes) {
+                ArrayIndex index = (ArrayIndex) i;
+                dispatch = new DereferencedArrayAccess(dispatch.getStartOffset(), index.getEndOffset(), dispatch, index);
+            }
+        }
 		return dispatch;
+	}
+
+    public Dispatch createDispatch(VariableBase dispatcher, VariableBase property) {
+		return createDispatch(dispatcher, property, new LinkedList());
 	}
 
     interface ErrorStrategy {
@@ -291,6 +311,7 @@ non terminal Variable reference_variable;
 non terminal Variable variable_class_name;
 non terminal Variable compound_variable;
 non terminal Expression dim_offset;
+non terminal List array_access_or_not;
 non terminal VariableBase object_property;
 non terminal VariableBase object_dim_list;
 non terminal VariableBase variable_name;
@@ -321,7 +342,6 @@ non terminal UseTraitStatementPart use_trait;
 non terminal Quote heredoc;
 non terminal VariableBase field_or_method_access;
 non terminal VariableBase function_call_with_array;
-non terminal VariableBase field_or_method_access_with_array;
 
 non terminal VariableBase w_variable;
 non terminal Expression class_name;
@@ -2912,7 +2932,7 @@ variable:var
 ;
 
 field_or_method_access ::=
-base_variable_with_function_calls:var T_OBJECT_OPERATOR object_property:memberProperty method_or_not:paramsList variable_properties:propertyList
+base_variable_with_function_calls:var T_OBJECT_OPERATOR object_property:memberProperty method_or_not:paramsList array_access_or_not:aa variable_properties:propertyList
 {:
 	// get the last property
 	VariableBase firstVarProperty = null;
@@ -2930,11 +2950,13 @@ base_variable_with_function_calls:var T_OBJECT_OPERATOR object_property:memberPr
 	// now create the dispatch(es) nodes
 	Dispatch dispatch = null;
 	VariableBase dispatcher = var;
+    List arrayIndexes = aa;
 	Iterator listIt = list.iterator();
 	while (listIt.hasNext()) {
 		VariableBase property = (VariableBase)listIt.next();
-		dispatch = parser.createDispatch(dispatcher, property);
+		dispatch = parser.createDispatch(dispatcher, property, arrayIndexes);
 		dispatcher = dispatch;
+        arrayIndexes = new LinkedList();
 	}
 	RESULT = dispatch;
 :}
@@ -2946,26 +2968,9 @@ field_or_method_access:acc
 	RESULT = acc;
 :}
 
-| field_or_method_access_with_array:foa
-{:
-    RESULT = foa;
-:}
-
 | base_variable_with_function_calls:var
 {:
 	RESULT = var;
-:}
-;
-
-field_or_method_access_with_array ::=
-field_or_method_access:acc T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
-{:
-    RESULT = new ArrayAccess(accleft, endright, acc, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
-:}
-
-| field_or_method_access_with_array:acc T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
-{:
-    RESULT = new ArrayAccess(accleft, endright, acc, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
 :}
 ;
 
@@ -2983,7 +2988,7 @@ variable_properties:variables variable_property:variableProperty
 ;
 
 variable_property ::=
-T_OBJECT_OPERATOR object_property:memberProperty method_or_not:paramsList
+T_OBJECT_OPERATOR object_property:memberProperty method_or_not:paramsList array_access_or_not:aa
 {:
 	VariableBase result = null;
 	if (paramsList == null) {
@@ -2992,6 +2997,10 @@ T_OBJECT_OPERATOR object_property:memberProperty method_or_not:paramsList
 		FunctionName functionName = new FunctionName(memberPropertyleft, memberPropertyright, /*parser.ast,*/ memberProperty);
 		result = new FunctionInvocation(memberPropertyleft, paramsListright, /*parser.ast,*/ functionName, paramsList);
 	}
+    for (Object i : aa) {
+        ArrayIndex index = (ArrayIndex) i;
+        result = new DereferencedArrayAccess(result.getStartOffset(), index.getEndOffset(), result, index);
+    }
 	RESULT = result;
 :}
 ;
@@ -3005,6 +3014,26 @@ T_OPEN_PARENTHESE function_call_parameter_list:paramsList T_CLOSE_PARENTHESE
 | /* empty */
 {:
 	RESULT = null;
+:}
+;
+
+array_access_or_not ::=
+T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    List list = new LinkedList();
+    list.add(new ArrayIndex(oleft, endright, index));
+    RESULT = list;
+:}
+
+| array_access_or_not:list T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    list.add(new ArrayIndex(oleft, endright, index));
+    RESULT = list;
+:}
+
+| /* empty */
+{:
+    RESULT = new LinkedList();
 :}
 ;
 
@@ -3062,12 +3091,12 @@ base_variable:var
 function_call_with_array ::=
 function_call:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
-    RESULT = new ArrayAccess(varleft, endright, var, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
+    RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayIndex(oleft, endright, index));
 :}
 
 | function_call_with_array:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
-    RESULT = new ArrayAccess(varleft, endright, var, index, ArrayAccess.Type.DEREFERENCED_ARRAY);
+    RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayIndex(oleft, endright, index));
 :}
 ;
 

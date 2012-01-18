@@ -45,33 +45,33 @@
         </Comments>
         <Statements>
             <ExpressionStatement start='7' end='40'>
-                <ArrayAccess start='7' end='39' type='DEREFERENCED_ARRAY' isDollared='false'>
+                <DereferencedArrayAccess start='7' end='39'>
                     <Index>
+                        <ArrayIndex start='37' end='39'>
+                        </ArrayIndex>
                     </Index>
-                    <Name>
-                        <ArrayAccess start='7' end='37' type='DEREFERENCED_ARRAY' isDollared='false'>
-                            <Index>
+                    <DereferencedArrayAccess start='7' end='37'>
+                        <Index>
+                            <ArrayIndex start='29' end='37'>
                                 <Scalar start='30' end='36' type='STRING' value='"test"'/>
-                            </Index>
-                            <Name>
-                                <MethodInvocation start='7' end='29'>
-                                    <Variable start='7' end='14' isDollared='true'>
-                                        <Identifier start='8' end='14' name='object'/>
+                            </ArrayIndex>
+                        </Index>
+                        <MethodInvocation start='7' end='29'>
+                            <Variable start='7' end='14' isDollared='true'>
+                                <Identifier start='8' end='14' name='object'/>
+                            </Variable>
+                            <FunctionInvocation start='16' end='29'>
+                                <FucntionName start='16' end='27'>
+                                    <Variable start='16' end='27' isDollared='false'>
+                                        <Identifier start='16' end='27' name='giveMeArray'/>
                                     </Variable>
-                                    <FunctionInvocation start='16' end='29'>
-                                        <FucntionName start='16' end='27'>
-                                            <Variable start='16' end='27' isDollared='false'>
-                                                <Identifier start='16' end='27' name='giveMeArray'/>
-                                            </Variable>
-                                        </FucntionName>
-                                        <Parameters>
-                                        </Parameters>
-                                    </FunctionInvocation>
-                                </MethodInvocation>
-                            </Name>
-                        </ArrayAccess>
-                    </Name>
-                </ArrayAccess>
+                                </FucntionName>
+                                <Parameters>
+                                </Parameters>
+                            </FunctionInvocation>
+                        </MethodInvocation>
+                    </DereferencedArrayAccess>
+                </DereferencedArrayAccess>
             </ExpressionStatement>
             <EmptyStatement start='42' end='44'/>
         </Statements>
