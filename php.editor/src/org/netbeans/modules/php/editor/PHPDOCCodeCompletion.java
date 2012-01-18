@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
@@ -75,9 +75,9 @@ import org.openide.util.NbBundle;
  * @author tomslot
  */
 public class PHPDOCCodeCompletion {
-    
+
     private static final Logger LOGGER = Logger.getLogger(PHPDOCCodeCompletion.class.getName());
-    
+
     private static final String TAG_PREFIX = "@";
     private static final String TAGS[] = new String[]{
         "abstract", "access", "author", "category", "copyright", "deprecated", "example", "final",
@@ -114,7 +114,7 @@ public class PHPDOCCodeCompletion {
             docURLBase = null;
         }
     }
-    
+
     static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request){
         //TODO: get rid of the document
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
@@ -154,14 +154,14 @@ public class PHPDOCCodeCompletion {
                 }
             }
         }
-        
+
         return false;
     }
 
     public static void complete(final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request) {
-        
-        
+
+
         if (!request.prefix.startsWith("@")){
             return;
         }
@@ -215,11 +215,11 @@ public class PHPDOCCodeCompletion {
                 // the documentation file was found, probably installed during this session
                 return getDoc(tag);
             } else {
-                // the documentation is not available. 
+                // the documentation is not available.
                 return NbBundle.getMessage(PHPDOCCodeCompletion.class, "MSG_DOWNLOAD_PHPDOC_DOCUMENTATION");
             }
         }
-        
+
     }
 
     public static class PHPDOCCodeCompletionItem implements CompletionProposal {
@@ -246,7 +246,7 @@ public class PHPDOCCodeCompletion {
         }
 
         public String getInsertPrefix() {
-            return getName(); 
+            return getName();
         }
 
         public String getSortText() {

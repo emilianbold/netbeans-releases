@@ -49,7 +49,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class PHPDocTypeNode extends PHPDocNode {
 
     private final boolean array;
-    
+
     public PHPDocTypeNode(int start, int end, String value, boolean isArray) {
         super(start, end, value);
         this.array = isArray;
@@ -58,7 +58,7 @@ public class PHPDocTypeNode extends PHPDocNode {
     public boolean isArray() {
         return array;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
             visitor.visit(this);
