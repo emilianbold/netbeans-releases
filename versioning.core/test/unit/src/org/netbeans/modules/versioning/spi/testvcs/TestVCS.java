@@ -44,29 +44,51 @@
 package org.netbeans.modules.versioning.spi.testvcs;
 
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 
 /**
  * Test versioning system.
  * 
  * @author Maros Sandor
  */
-@VersioningSystem.Registration(actionsCategory="testvcs", displayName="TestVCS", menuLabel="TestVCS", metadataFolderNames="")
+@VersioningSystem.Registration(
+        actionsCategory="TestVCS", 
+        displayName="TestVCSDisplay", 
+        menuLabel="TestVCSMenu", 
+        metadataFolderNames={
+                TestVCS.TEST_VCS_METADATA, 
+                "set:getenv:PATH:notnull", 
+                "notset:getenv:SOMENOTSETVARIABLE:notnull", 
+                "null:getenv:whatever:null"}
+)
 public class TestVCS extends VersioningSystem {
 
     private static TestVCS instance;
+
+    
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
     private VCSVisibilityQuery vq;
 
+    public static final String TEST_VCS_METADATA = ".testvcs";
     public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
 
     public static TestVCS getInstance() {
         return instance;
+    }
+    
+    public static void resetInstance() {
+        instance = null;
     }
     
     public TestVCS() {
@@ -97,6 +119,26 @@ public class TestVCS extends VersioningSystem {
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
         return vq;
-}
+    }
 
+    public void fire() {
+        VCSFileProxy file = null;
+        super.fireStatusChanged(file);
+    }
+    
+    @ActionID(id = "vcs.delegatetest.init", category = "TestVCS")
+    @ActionRegistration(displayName = "InitAction", popupText="InitActionPopup", menuText="InitActionMenu")
+    @ActionReferences({@ActionReference(path="Versioning/TestVCS/Actions/Unversioned")})
+    public static class InitAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) { }
+    }
+    
+    @ActionID(id = "vcs.delegatetest.global", category = "TestVCS")
+    @ActionRegistration(displayName = "GobalAction", popupText="GlobalActionPopup", menuText="GlobalActionMenu")
+    @ActionReferences({@ActionReference(path="Versioning/TestVCS/Actions/Global")})
+    public static class GlobalAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) { }
+    }    
 }
