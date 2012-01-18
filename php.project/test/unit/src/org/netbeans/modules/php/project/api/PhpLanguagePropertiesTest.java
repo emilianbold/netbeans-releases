@@ -83,8 +83,11 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
 
         attachListenerAndChangeProperty(defaultProps, listener);
 
-        assertFalse(listener.latch.await(100, TimeUnit.MILLISECONDS));
+        assertFalse(listener.latch.await(500, TimeUnit.MILLISECONDS));
         assertTrue(listener.events.isEmpty());
+        assertEquals(PhpLanguageProperties.SHORT_TAGS_ENABLED, defaultProps.areShortTagsEnabled());
+        assertEquals(PhpLanguageProperties.ASP_TAGS_ENABLED, defaultProps.areAspTagsEnabled());
+        assertEquals(PhpLanguageProperties.PhpVersion.getDefault(), defaultProps.getPhpVersion());
     }
 
     public void testProjectPropertyChanges() throws Exception {
@@ -95,22 +98,42 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
         attachListenerAndChangeProperty(project, projectProps, listener);
 
         assertTrue(listener.latch.await(500, TimeUnit.MILLISECONDS));
-        assertEquals(1, listener.events.size());
-        assertEquals(PhpLanguageProperties.PROP_PHP_VERSION, listener.events.get(0));
+        assertEquals(3, listener.events.size());
+        assertTrue(listener.events.contains(PhpLanguageProperties.PROP_SHORT_TAGS));
+        assertTrue(listener.events.contains(PhpLanguageProperties.PROP_ASP_TAGS));
+        assertTrue(listener.events.contains(PhpLanguageProperties.PROP_PHP_VERSION));
+
+        assertEquals(true, projectProps.areShortTagsEnabled());
+        assertEquals(true, projectProps.areAspTagsEnabled());
+        assertEquals(PhpLanguageProperties.PhpVersion.PHP_54, projectProps.getPhpVersion());
     }
 
     private void attachListenerAndChangeProperty(PhpLanguageProperties properties, PropertyChangeListenerImpl listener) throws Exception {
         attachListenerAndChangeProperty(TestUtils.createPhpProject(getWorkDir()), properties, listener);
     }
 
+    /**
+     * Set properties:
+     * - short tags to FALSE,
+     * - ASP tags to FALSE,
+     * - PhpVersion to PHP_5.
+     * Attach listener and change:
+     * - short tags to TRUE,
+     * - ASP tags to TRUE,
+     * - PhpVersion to PHP_54.
+     */
     private void attachListenerAndChangeProperty(PhpProject project, PhpLanguageProperties properties, PropertyChangeListenerImpl listener) throws Exception {
         PhpProjectProperties phpProjectProperties = new PhpProjectProperties(project);
+        phpProjectProperties.setShortTags(Boolean.FALSE.toString());
+        phpProjectProperties.setAspTags(Boolean.FALSE.toString());
         phpProjectProperties.setPhpVersion(PhpLanguageProperties.PhpVersion.PHP_5.name());
         phpProjectProperties.save();
 
         properties.addPropertyChangeListener(listener);
         assertTrue(listener.events.isEmpty());
 
+        phpProjectProperties.setShortTags(Boolean.TRUE.toString());
+        phpProjectProperties.setAspTags(Boolean.TRUE.toString());
         phpProjectProperties.setPhpVersion(PhpLanguageProperties.PhpVersion.PHP_54.name());
         phpProjectProperties.save();
     }
@@ -120,7 +143,7 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
     private static final class PropertyChangeListenerImpl implements PropertyChangeListener {
 
         final List<String> events = new CopyOnWriteArrayList<String>();
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(3);
 
 
         @Override
