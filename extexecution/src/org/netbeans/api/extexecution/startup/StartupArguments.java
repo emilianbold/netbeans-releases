@@ -56,7 +56,7 @@ import org.openide.util.lookup.Lookups;
  * to query additional groups of arguments it may pass to VM.
  *
  * @author Petr Hejl
- * @since 1.19
+ * @since 1.30
  * @see StartupArgumentsProvider
  */
 public final class StartupArguments {

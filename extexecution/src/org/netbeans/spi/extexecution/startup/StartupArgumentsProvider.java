@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
  * arguments and there is no way to force it.
  *
  * @author Petr Hejl
- * @since 1.19
+ * @since 1.30
  * @see StartupArguments
  */
 public interface StartupArgumentsProvider {
