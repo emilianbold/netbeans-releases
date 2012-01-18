@@ -75,7 +75,12 @@ abstract public class CategoryBuilder {
     private static final String SHADOW_SUFFIX = "shadow";// NOI18N
     private CategoryContainer rootCategory = null;
     private Lookup.Provider project;
-        
+
+    public CategoryBuilder(@NonNull Lookup.Provider proj, @NonNull final String projectTypeId) {
+        // temporary transitional code for the JDev build to pass
+        assert false;
+    }
+
     public CategoryBuilder(@NonNull Lookup.Provider proj) {
         assert proj != null;
         project = proj;
@@ -101,7 +106,10 @@ abstract public class CategoryBuilder {
         return project;
     }
     
-    abstract protected String getProjectTypeId();
+    protected String getProjectTypeId() {
+        assert false;
+        return "";
+    }
 
     private void processCategories(CategoryContainer container, FileObject node) {
         if (SHADOW_SUFFIX.equals(node.getExt())) {
