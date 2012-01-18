@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,61 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.api.java.source;
+package org.netbeans.modules.parsing.spi;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.util.Parameters;
 
 /**
- * Java specific version of the {@link IndexingAwareParserResultTask}. In addition to the
- * {@link IndexingAwareParserResultTask} it adds a support for javac phases.
- * @see JavaSource
- * @since 0.42
+ *
  * @author Tomas Zezula
+ * @since 1.51
  */
-public abstract class JavaParserResultTask<T extends Parser.Result> extends IndexingAwareParserResultTask<T> {
-
-    private final JavaSource.Phase phase;
-
-    /**
-     * Creates a new JavaParserResultTask
-     * @param phase needed by the task.
-     */
-    protected JavaParserResultTask (final @NonNull JavaSource.Phase phase) {
-        this (phase, TaskIndexingMode.DISALLOWED_DURING_SCAN);
+public abstract class IndexingAwareParserResultTask<T extends Parser.Result>  extends ParserResultTask<T> {
+    private final TaskIndexingMode scanMode;
+    
+    protected IndexingAwareParserResultTask(@NonNull final TaskIndexingMode scanMode) {
+        Parameters.notNull("scanMode", scanMode);   //NOI18N
+        this.scanMode = scanMode;
     }
     
-    /**
-     * Creates a new JavaParserResultTask
-     * @param phase needed by the task.
-     * @param taskIndexingMode the awareness of indexing. For tasks which can run
-     * during indexing use {@link TaskIndexingMode#ALLOWED_DURING_SCAN} for tasks
-     * which cannot run during indexing use {@link TaskIndexingMode#DISALLOWED_DURING_SCAN}.
-     * @since 0.94
-     */
-    protected JavaParserResultTask (
-        @NonNull final JavaSource.Phase phase,
-        @NonNull final TaskIndexingMode taskIndexingMode) {
-        super(taskIndexingMode);
-        Parameters.notNull("phase", phase); //NOI18
-        this.phase = phase;
+    public final TaskIndexingMode getIndexingMode() {
+        return scanMode;
     }
-
-    /**
-     * Returns the phase needed by task.
-     * @return the pahse
-     */
-    public final @NonNull JavaSource.Phase getPhase () {
-        return this.phase;
-    }
-
 }

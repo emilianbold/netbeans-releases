@@ -76,10 +76,10 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 
 /**
@@ -147,7 +147,8 @@ public abstract class JavaSourceAccessor {
     public void addPhaseCompletionTask (final JavaSource js,
             final CancellableTask<CompilationInfo> task,
             final JavaSource.Phase phase,
-            final JavaSource.Priority priority) {
+            final JavaSource.Priority priority,
+            final TaskIndexingMode taskIndexingMode) {
         
         final Collection<Source> sources = getSources(js);
         assert sources.size() == 1;
@@ -155,7 +156,7 @@ public abstract class JavaSourceAccessor {
         if (tasks.keySet().contains(task)) {
             throw new IllegalArgumentException(String.format("Task: %s is already scheduled", task.toString()));   //NOI18N
         }
-        final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp, phase, js);
+        final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp, phase, js, taskIndexingMode);
         tasks.put(task, hanz);
         Utilities.addParserResultTask(hanz, sources.iterator().next());
     }
@@ -254,10 +255,13 @@ public abstract class JavaSourceAccessor {
         private final int priority;
         private final CancellableTask<CompilationInfo> task;
         
-        public CancelableTaskWrapper (final CancellableTask<CompilationInfo> task,
-                final int priority, final Phase phase,
-                final JavaSource javaSource) {
-            super (phase);
+        public CancelableTaskWrapper (
+                @NonNull final CancellableTask<CompilationInfo> task,
+                final int priority,
+                @NonNull final Phase phase,
+                @NonNull final JavaSource javaSource,
+                @NonNull final TaskIndexingMode taskIndexingMode) {
+            super (phase, taskIndexingMode);
             assert phase != null;
             assert javaSource != null;
             this.task = task;

@@ -81,6 +81,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -112,7 +113,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class TaskProcessorTest extends NbTestCase {
+public class TaskProcessorTest extends IndexingAwareTestCase {
     
     public TaskProcessorTest(String testName) {
         super(testName);

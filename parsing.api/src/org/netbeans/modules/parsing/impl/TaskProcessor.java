@@ -78,17 +78,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
-import org.netbeans.modules.parsing.spi.EmbeddingProvider;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
@@ -100,6 +94,7 @@ import org.openide.util.RequestProcessor;
  */
 public class TaskProcessor {
     
+    private static final String COMPAT_MODE = "org.netbeans.modules.parsing.impl.TaskProcessor.compatMode"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(TaskProcessor.class.getName());
     
     /**Limit for task to be marked as a slow one, in ms*/
@@ -718,7 +713,12 @@ public class TaskProcessor {
                                                             final Parser.Result currentResult = sourceCache.getResult (r.task);
                                                             if (currentResult != null) {
                                                                 try {
-                                                                    boolean shouldCall = !SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
+                                                                    final boolean sourceInvalid = SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
+                                                                    final boolean scanInProgress = IndexingManager.getDefault().isIndexing();
+                                                                    final boolean canRunDuringScan = (r.task instanceof IndexingAwareParserResultTask) &&
+                                                                            ((IndexingAwareParserResultTask)r.task).getIndexingMode() == TaskIndexingMode.ALLOWED_DURING_SCAN;
+                                                                    final boolean compatMode = "true".equals(System.getProperty(COMPAT_MODE));  //NOI18N
+                                                                    final boolean shouldCall = !sourceInvalid && (!scanInProgress || canRunDuringScan || compatMode);
                                                                     if (shouldCall) {
                                                                         try {
                                                                             final long startTime = System.currentTimeMillis();

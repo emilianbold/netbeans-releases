@@ -121,6 +121,7 @@ import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
@@ -165,7 +166,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
 //    }
 //    
     SemanticHighlighter(FileObject file/*, SemanticHighlighterFactory fact*/) {
-        super(Phase.RESOLVED);
+        super(Phase.RESOLVED, TaskIndexingMode.ALLOWED_DURING_SCAN);
         this.file = file;
 //        this.fact = fact;
     }

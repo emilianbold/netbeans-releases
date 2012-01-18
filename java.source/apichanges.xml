@@ -108,6 +108,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Indexing-aware-JavaSourceTaskFactories">
+             <api name="general"/>
+             <summary>Added <code>TaskIndexingMode</code> into <code>JavaSourceTaskFactory</code>s</summary>
+             <version major="0" minor="94"/>
+             <date day="31" month="1" year="2012"/>
+             <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 The <code>CancellableTask</code>s created by the <code>JavaSourceTaskFactory</code>s are not executed during the scan to keep the semantic backward compatibility.
+                 Constructors with the <code>TaskIndexingMode</code> were added into these factories to allow tasks to run during the scan.
+             </description>
+             <class package="org.netbeans.api.java.source" name="JavaParserResultTask"/>
+             <class package="org.netbeans.api.java.source" name="JavaSourceTaskFactory"/>
+             <class package="org.netbeans.api.java.source.support" name="SelectionAwareJavaSourceTaskFactory"/>
+             <class package="org.netbeans.api.java.source.support" name="LookupBasedJavaSourceTaskFactory"/>
+             <class package="org.netbeans.api.java.source.support" name="EditorAwareJavaSourceTaskFactory"/>
+             <class package="org.netbeans.api.java.source.support" name="CaretAwareJavaSourceTaskFactory"/>
+             <issue number="207459"/>
+        </change>
         <change id="TreePathHandle-getElementHandle">
              <api name="general"/>
              <summary>Added <code>TreePathHandle.getElementHandle</code>.</summary>
