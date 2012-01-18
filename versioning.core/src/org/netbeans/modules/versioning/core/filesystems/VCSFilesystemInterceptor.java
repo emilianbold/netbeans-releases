@@ -502,7 +502,7 @@ public final class VCSFilesystemInterceptor {
 
         @Override
         public boolean isMutable(VCSFileProxy file) {
-            return true;
+            return false;
         }
 
         @Override
