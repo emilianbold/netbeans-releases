@@ -757,7 +757,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         synchronized (classpathLock) {
             if (processorPath == null) {
                 procCp = new ProcessorClasspathImpl(this);
-                processorPath = ClassPathFactory.createClassPath(procCp);
+                processorPath = ClassPathSupport.createProxyClassPath(ClassPathFactory.createClassPath(procCp), getBootClassPath());
             }
             return processorPath;
         }
