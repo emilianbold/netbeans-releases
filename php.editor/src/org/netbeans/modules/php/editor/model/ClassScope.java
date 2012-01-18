@@ -51,7 +51,7 @@ public interface ClassScope extends TypeScope, VariableScope, ClassElement {
     Collection<? extends ClassScope> getSuperClasses();
     Collection<? extends String> getSuperClassNames();
     Collection<? extends MethodScope> getDeclaredConstructors();
-    Collection<? extends FieldElement> getDeclaredFields();    
+    Collection<? extends FieldElement> getDeclaredFields();
     /**
      * @return inherited fields only
      */

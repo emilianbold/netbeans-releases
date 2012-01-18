@@ -193,7 +193,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_SEMICOLON = {
         "return" // NOI18N
     };
-    
+
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS = {
         "callable" //NOI18N
     };

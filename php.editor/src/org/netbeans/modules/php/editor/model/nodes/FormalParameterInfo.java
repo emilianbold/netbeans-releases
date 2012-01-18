@@ -75,7 +75,7 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         if (types == null) {
             types = Collections.emptyList();
         }
-        this.parameter = new ParameterElementImpl(name, defVal, getRange().getStart(), 
+        this.parameter = new ParameterElementImpl(name, defVal, getRange().getStart(),
                 TypeResolverImpl.forNames(types), formalParameter.getDefaultValue() == null, isRawType, isReference);
     }
 

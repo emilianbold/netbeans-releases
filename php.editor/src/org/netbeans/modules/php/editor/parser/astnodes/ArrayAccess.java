@@ -52,27 +52,26 @@ public class ArrayAccess extends Variable {
 
     public enum Type {
         VARIABLE_ARRAY,
-        VARIABLE_HASHTABLE,
-        DEREFERENCED_ARRAY
+        VARIABLE_HASHTABLE
     }
 
     /**
      * In case of array / hashtable variable, the index expression is added
      */
-    private Expression index;
+    private ArrayDimension dimension;
     private ArrayAccess.Type arrayType;
 
-    public ArrayAccess(int start, int end, VariableBase variableName, Expression index, ArrayAccess.Type arrayType) {
+    public ArrayAccess(int start, int end, VariableBase variableName, ArrayDimension dimension, ArrayAccess.Type arrayType) {
         super(start, end, variableName);
 
         //if (variableName != null) variableName.setParent(this);
         //if (index != null) index.setParent(index);
-        this.index = index;
+        this.dimension = dimension;
         this.arrayType = arrayType;
     }
 
-    public Expression getIndex() {
-        return index;
+    public ArrayDimension getDimension() {
+        return dimension;
     }
 
     public ArrayAccess.Type getArrayType() {

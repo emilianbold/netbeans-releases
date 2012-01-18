@@ -285,4 +285,8 @@ public interface Visitor {
     ////public void endVisit(ASTNode node);
 
     public void visit(AnonymousObjectVariable node);
+
+    public void visit(DereferencedArrayAccess node);
+
+    public void visit(ArrayDimension node);
 }

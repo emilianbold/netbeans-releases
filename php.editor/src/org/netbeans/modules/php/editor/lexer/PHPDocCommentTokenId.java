@@ -104,11 +104,11 @@ public enum PHPDocCommentTokenId implements TokenId {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
-    
+
     public String primaryCategory() {
         return primaryCategory;
     }
-    
+
     public String fixedText() {
         return fixedText;
     }

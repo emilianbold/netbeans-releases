@@ -37,40 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+package org.netbeans.modules.php.project;
+
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
+import org.openide.util.Exceptions;
 
 /**
- *
- * @author Sergey Grinev
+ * Accessor for {@link PhpLanguageProperties}.
  */
-public class ListenableIntNodeProp extends IntNodeProp {
+public abstract class PhpLanguagePropertiesAccessor {
 
-    private final PropertyChangeSupport pcs;
+    private static volatile PhpLanguagePropertiesAccessor accessor;
 
-    public ListenableIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String txt1, String txt2, String txt3) {
-        super(intConfiguration, canWrite, txt1, txt2, txt3);
-        pcs = new PropertyChangeSupport(this);
+
+    public static void setDefault(PhpLanguagePropertiesAccessor accessor) {
+        if (PhpLanguagePropertiesAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor");
+        }
+        PhpLanguagePropertiesAccessor.accessor = accessor;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
+    public static synchronized PhpLanguagePropertiesAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
+        }
+
+        Class<?> c = PhpLanguageProperties.class;
+        try {
+            Class.forName(c.getName(), true, PhpLanguagePropertiesAccessor.class.getClassLoader());
+        } catch (ClassNotFoundException cnf) {
+            Exceptions.printStackTrace(cnf);
+        }
+        assert accessor != null;
+        return accessor;
     }
 
-    public void remotePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
-    }
+    public abstract PhpLanguageProperties createForProject(PhpProject project);
 
-    @Override
-    public void setValue(Object v) {
-        Object oldV = getValue();
-        super.setValue(v);
-        pcs.firePropertyChange(getName(), oldV, v);
-    }
 }

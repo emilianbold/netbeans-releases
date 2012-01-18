@@ -142,5 +142,5 @@ public class PHPSQLCompletion implements CompletionProvider {
         }
     }
 
-    
+
 }

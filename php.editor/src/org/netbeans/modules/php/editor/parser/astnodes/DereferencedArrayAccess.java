@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.configurations.ui;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BuildPlatformConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
  *
- * @author thp
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class BuildPlatformNodeProp extends IntNodeProp implements PropertyChangeListener {
-    private BuildPlatformConfiguration intConfiguration;
-    private MakeCustomizer makeCustomizer = null;
-    
-    public BuildPlatformNodeProp(BuildPlatformConfiguration intConfiguration, DevelopmentHostConfiguration developmentHost, MakeCustomizer makeCustomizer, boolean canWrite, String unused, String name, String description) {
-        super(intConfiguration, canWrite, unused, name, description);
-        this.intConfiguration = intConfiguration;
-        this.makeCustomizer = makeCustomizer;
-        developmentHost.addPropertyChangeListener(this);
+public class DereferencedArrayAccess extends Dispatch {
+    private final ArrayDimension dimension;
+
+    public DereferencedArrayAccess(int start, int end, VariableBase dispatcher, ArrayDimension dimension) {
+        super(start, end, dispatcher);
+        this.dimension = dimension;
     }
 
-    public void propertyChange(final PropertyChangeEvent evt) {
-        final boolean isLocalHost = ((DevelopmentHostConfiguration) evt.getNewValue()).isLocalhost();
-        intConfiguration.setDefault(intConfiguration.getValue());
-        setCanWrite(isLocalHost);
-        makeCustomizer.validate();
-        makeCustomizer.repaint();
+    @Override
+    public VariableBase getMember() {
+        return getDispatcher();
     }
+
+    public ArrayDimension getDimension() {
+        return dimension;
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
 }

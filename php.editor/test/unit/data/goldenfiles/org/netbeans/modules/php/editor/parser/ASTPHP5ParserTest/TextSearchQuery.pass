@@ -14169,9 +14169,11 @@
                                                                     </Variable>
                                                                 </FieldAccess>
                                                                 <ArrayAccess start='3950' end='3955' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                    <Index>
-                                                                        <Scalar start='3953' end='3954' type='INT' value='1'/>
-                                                                    </Index>
+                                                                    <ArrayDimension start='3952' end='3955'>
+                                                                        <Index>
+                                                                            <Scalar start='3953' end='3954' type='INT' value='1'/>
+                                                                        </Index>
+                                                                    </ArrayDimension>
                                                                     <Name>
                                                                         <Variable start='3950' end='3952' isDollared='true'>
                                                                             <Identifier start='3951' end='3952' name='m'/>
@@ -14191,9 +14193,11 @@
                                                                     </Variable>
                                                                 </FieldAccess>
                                                                 <ArrayAccess start='3988' end='3993' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                    <Index>
-                                                                        <Scalar start='3991' end='3992' type='INT' value='2'/>
-                                                                    </Index>
+                                                                    <ArrayDimension start='3990' end='3993'>
+                                                                        <Index>
+                                                                            <Scalar start='3991' end='3992' type='INT' value='2'/>
+                                                                        </Index>
+                                                                    </ArrayDimension>
                                                                     <Name>
                                                                         <Variable start='3988' end='3990' isDollared='true'>
                                                                             <Identifier start='3989' end='3990' name='m'/>
@@ -14593,11 +14597,13 @@
                                                                 <ExpressionStatement start='5526' end='5564'>
                                                                     <Assignment start='5526' end='5563' operator='EQUAL'>
                                                                         <ArrayAccess start='5526' end='5538' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                            <Index>
-                                                                                <Variable start='5533' end='5537' isDollared='true'>
-                                                                                    <Identifier start='5534' end='5537' name='key'/>
-                                                                                </Variable>
-                                                                            </Index>
+                                                                            <ArrayDimension start='5532' end='5538'>
+                                                                                <Index>
+                                                                                    <Variable start='5533' end='5537' isDollared='true'>
+                                                                                        <Identifier start='5534' end='5537' name='key'/>
+                                                                                    </Variable>
+                                                                                </Index>
+                                                                            </ArrayDimension>
                                                                             <Name>
                                                                                 <Variable start='5526' end='5532' isDollared='true'>
                                                                                     <Identifier start='5527' end='5532' name='words'/>
@@ -14767,8 +14773,10 @@
                                                     <ExpressionStatement start='7481' end='7535'>
                                                         <Assignment start='7481' end='7534' operator='EQUAL'>
                                                             <ArrayAccess start='7481' end='7494' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='7492' end='7494'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='7481' end='7492' isDollared='true'>
                                                                         <Identifier start='7482' end='7492' name='subclauses'/>
@@ -14935,8 +14943,10 @@
                                                     <ExpressionStatement start='8279' end='8337'>
                                                         <Assignment start='8279' end='8336' operator='EQUAL'>
                                                             <ArrayAccess start='8279' end='8292' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='8290' end='8292'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='8279' end='8290' isDollared='true'>
                                                                         <Identifier start='8280' end='8290' name='subclauses'/>
@@ -15084,8 +15094,10 @@
                                                     <ExpressionStatement start='9133' end='9187'>
                                                         <Assignment start='9133' end='9186' operator='EQUAL'>
                                                             <ArrayAccess start='9133' end='9146' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='9144' end='9146'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='9133' end='9144' isDollared='true'>
                                                                         <Identifier start='9134' end='9144' name='subclauses'/>
@@ -15147,8 +15159,10 @@
                                                     <ExpressionStatement start='9346' end='9400'>
                                                         <Assignment start='9346' end='9399' operator='EQUAL'>
                                                             <ArrayAccess start='9346' end='9359' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='9357' end='9359'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='9346' end='9357' isDollared='true'>
                                                                         <Identifier start='9347' end='9357' name='subclauses'/>
@@ -15318,8 +15332,10 @@
                                                     <ExpressionStatement start='10353' end='10398'>
                                                         <Assignment start='10353' end='10397' operator='EQUAL'>
                                                             <ArrayAccess start='10353' end='10361' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='10359' end='10361'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='10353' end='10359' isDollared='true'>
                                                                         <Identifier start='10354' end='10359' name='lines'/>
@@ -15602,11 +15618,13 @@
                                                         <Identifier start='13396' end='13400' name='this'/>
                                                     </Variable>
                                                     <ArrayAccess start='13402' end='13419' type='VARIABLE_ARRAY' isDollared='false'>
-                                                        <Index>
-                                                            <Variable start='13416' end='13418' isDollared='true'>
-                                                                <Identifier start='13417' end='13418' name='f'/>
-                                                            </Variable>
-                                                        </Index>
+                                                        <ArrayDimension start='13415' end='13419'>
+                                                            <Index>
+                                                                <Variable start='13416' end='13418' isDollared='true'>
+                                                                    <Identifier start='13417' end='13418' name='f'/>
+                                                                </Variable>
+                                                            </Index>
+                                                        </ArrayDimension>
                                                         <Name>
                                                             <Variable start='13402' end='13415' isDollared='false'>
                                                                 <Identifier start='13402' end='13415' name='_parser_check'/>
@@ -15645,11 +15663,13 @@
                                                         <Identifier start='13474' end='13478' name='this'/>
                                                     </Variable>
                                                     <ArrayAccess start='13480' end='13497' type='VARIABLE_ARRAY' isDollared='false'>
-                                                        <Index>
-                                                            <Variable start='13494' end='13496' isDollared='true'>
-                                                                <Identifier start='13495' end='13496' name='f'/>
-                                                            </Variable>
-                                                        </Index>
+                                                        <ArrayDimension start='13493' end='13497'>
+                                                            <Index>
+                                                                <Variable start='13494' end='13496' isDollared='true'>
+                                                                    <Identifier start='13495' end='13496' name='f'/>
+                                                                </Variable>
+                                                            </Index>
+                                                        </ArrayDimension>
                                                         <Name>
                                                             <Variable start='13480' end='13493' isDollared='false'>
                                                                 <Identifier start='13480' end='13493' name='_parser_check'/>
@@ -15699,11 +15719,13 @@
                                                                 <Identifier start='13571' end='13575' name='this'/>
                                                             </Variable>
                                                             <ArrayAccess start='13577' end='13594' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                    <Variable start='13591' end='13593' isDollared='true'>
-                                                                        <Identifier start='13592' end='13593' name='f'/>
-                                                                    </Variable>
-                                                                </Index>
+                                                                <ArrayDimension start='13590' end='13594'>
+                                                                    <Index>
+                                                                        <Variable start='13591' end='13593' isDollared='true'>
+                                                                            <Identifier start='13592' end='13593' name='f'/>
+                                                                        </Variable>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='13577' end='13590' isDollared='false'>
                                                                         <Identifier start='13577' end='13590' name='_parser_check'/>
@@ -15730,11 +15752,13 @@
                                                         <Identifier start='13607' end='13611' name='this'/>
                                                     </Variable>
                                                     <ArrayAccess start='13613' end='13641' type='VARIABLE_ARRAY' isDollared='false'>
-                                                        <Index>
-                                                            <Variable start='13627' end='13640' isDollared='true'>
-                                                                <Identifier start='13628' end='13640' name='placeholders'/>
-                                                            </Variable>
-                                                        </Index>
+                                                        <ArrayDimension start='13626' end='13641'>
+                                                            <Index>
+                                                                <Variable start='13627' end='13640' isDollared='true'>
+                                                                    <Identifier start='13628' end='13640' name='placeholders'/>
+                                                                </Variable>
+                                                            </Index>
+                                                        </ArrayDimension>
                                                         <Name>
                                                             <Variable start='13613' end='13626' isDollared='false'>
                                                                 <Identifier start='13613' end='13626' name='_parser_check'/>
@@ -15883,9 +15907,11 @@
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <ArrayAccess start='14547' end='14552' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                    <Index>
-                                                                        <Scalar start='14550' end='14551' type='INT' value='1'/>
-                                                                    </Index>
+                                                                    <ArrayDimension start='14549' end='14552'>
+                                                                        <Index>
+                                                                            <Scalar start='14550' end='14551' type='INT' value='1'/>
+                                                                        </Index>
+                                                                    </ArrayDimension>
                                                                     <Name>
                                                                         <Variable start='14547' end='14549' isDollared='true'>
                                                                             <Identifier start='14548' end='14549' name='m'/>
@@ -15912,9 +15938,11 @@
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <ArrayAccess start='14597' end='14602' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                    <Index>
-                                                                        <Scalar start='14600' end='14601' type='INT' value='1'/>
-                                                                    </Index>
+                                                                    <ArrayDimension start='14599' end='14602'>
+                                                                        <Index>
+                                                                            <Scalar start='14600' end='14601' type='INT' value='1'/>
+                                                                        </Index>
+                                                                    </ArrayDimension>
                                                                     <Name>
                                                                         <Variable start='14597' end='14599' isDollared='true'>
                                                                             <Identifier start='14598' end='14599' name='m'/>
@@ -15947,9 +15975,11 @@
                                                                 <InfixExpression start='14655' end='14690' operator='CONCAT'>
                                                                     <Scalar start='14655' end='14684' type='STRING' value='"Illegal function in query: "'/>
                                                                     <ArrayAccess start='14685' end='14690' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                        <Index>
-                                                                            <Scalar start='14688' end='14689' type='INT' value='1'/>
-                                                                        </Index>
+                                                                        <ArrayDimension start='14687' end='14690'>
+                                                                            <Index>
+                                                                                <Scalar start='14688' end='14689' type='INT' value='1'/>
+                                                                            </Index>
+                                                                        </ArrayDimension>
                                                                         <Name>
                                                                             <Variable start='14685' end='14687' isDollared='true'>
                                                                                 <Identifier start='14686' end='14687' name='m'/>
@@ -15972,9 +16002,11 @@
                                                     <Identifier start='14735' end='14738' name='tmp'/>
                                                 </Variable>
                                                 <ArrayAccess start='14741' end='14746' type='VARIABLE_ARRAY' isDollared='false'>
-                                                    <Index>
-                                                        <Scalar start='14744' end='14745' type='INT' value='2'/>
-                                                    </Index>
+                                                    <ArrayDimension start='14743' end='14746'>
+                                                        <Index>
+                                                            <Scalar start='14744' end='14745' type='INT' value='2'/>
+                                                        </Index>
+                                                    </ArrayDimension>
                                                     <Name>
                                                         <Variable start='14741' end='14743' isDollared='true'>
                                                             <Identifier start='14742' end='14743' name='m'/>
@@ -16061,11 +16093,13 @@
                                                                                         <Identifier start='15013' end='15017' name='this'/>
                                                                                     </Variable>
                                                                                     <ArrayAccess start='15019' end='15036' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                        <Index>
-                                                                                            <Variable start='15033' end='15035' isDollared='true'>
-                                                                                                <Identifier start='15034' end='15035' name='x'/>
-                                                                                            </Variable>
-                                                                                        </Index>
+                                                                                        <ArrayDimension start='15032' end='15036'>
+                                                                                            <Index>
+                                                                                                <Variable start='15033' end='15035' isDollared='true'>
+                                                                                                    <Identifier start='15034' end='15035' name='x'/>
+                                                                                                </Variable>
+                                                                                            </Index>
+                                                                                        </ArrayDimension>
                                                                                         <Name>
                                                                                             <Variable start='15019' end='15032' isDollared='false'>
                                                                                                 <Identifier start='15019' end='15032' name='_parser_check'/>
@@ -16142,9 +16176,11 @@
                                                                                         </FucntionName>
                                                                                         <Parameters>
                                                                                             <ArrayAccess start='15235' end='15240' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                <Index>
-                                                                                                    <Scalar start='15238' end='15239' type='INT' value='0'/>
-                                                                                                </Index>
+                                                                                                <ArrayDimension start='15237' end='15240'>
+                                                                                                    <Index>
+                                                                                                        <Scalar start='15238' end='15239' type='INT' value='0'/>
+                                                                                                    </Index>
+                                                                                                </ArrayDimension>
                                                                                                 <Name>
                                                                                                     <Variable start='15235' end='15237' isDollared='true'>
                                                                                                         <Identifier start='15236' end='15237' name='x'/>
@@ -16234,9 +16270,11 @@
                                                                                                         <Expressions>
                                                                                                             <Scalar start='15489' end='15518' type='STRING' value='Illegal variable in query: \"'/>
                                                                                                             <ArrayAccess start='15518' end='15523' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                <Index>
-                                                                                                                    <Scalar start='15521' end='15522' type='REAL' value='1'/>
-                                                                                                                </Index>
+                                                                                                                <ArrayDimension start='15520' end='15523'>
+                                                                                                                    <Index>
+                                                                                                                        <Scalar start='15521' end='15522' type='REAL' value='1'/>
+                                                                                                                    </Index>
+                                                                                                                </ArrayDimension>
                                                                                                                 <Name>
                                                                                                                     <Variable start='15518' end='15520' isDollared='true'>
                                                                                                                         <Identifier start='15519' end='15520' name='x'/>
@@ -16274,9 +16312,11 @@
                                                                                             </FucntionName>
                                                                                             <Parameters>
                                                                                                 <ArrayAccess start='15593' end='15598' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                    <Index>
-                                                                                                        <Scalar start='15596' end='15597' type='INT' value='1'/>
-                                                                                                    </Index>
+                                                                                                    <ArrayDimension start='15595' end='15598'>
+                                                                                                        <Index>
+                                                                                                            <Scalar start='15596' end='15597' type='INT' value='1'/>
+                                                                                                        </Index>
+                                                                                                    </ArrayDimension>
                                                                                                     <Name>
                                                                                                         <Variable start='15593' end='15595' isDollared='true'>
                                                                                                             <Identifier start='15594' end='15595' name='x'/>
@@ -16296,18 +16336,22 @@
                                                                                                             <Identifier start='15612' end='15616' name='this'/>
                                                                                                         </Variable>
                                                                                                         <ArrayAccess start='15618' end='15638' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                            <Index>
-                                                                                                                <ArrayAccess start='15632' end='15637' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                    <Index>
-                                                                                                                        <Scalar start='15635' end='15636' type='INT' value='1'/>
-                                                                                                                    </Index>
-                                                                                                                    <Name>
-                                                                                                                        <Variable start='15632' end='15634' isDollared='true'>
-                                                                                                                            <Identifier start='15633' end='15634' name='x'/>
-                                                                                                                        </Variable>
-                                                                                                                    </Name>
-                                                                                                                </ArrayAccess>
-                                                                                                            </Index>
+                                                                                                            <ArrayDimension start='15631' end='15638'>
+                                                                                                                <Index>
+                                                                                                                    <ArrayAccess start='15632' end='15637' type='VARIABLE_ARRAY' isDollared='false'>
+                                                                                                                        <ArrayDimension start='15634' end='15637'>
+                                                                                                                            <Index>
+                                                                                                                                <Scalar start='15635' end='15636' type='INT' value='1'/>
+                                                                                                                            </Index>
+                                                                                                                        </ArrayDimension>
+                                                                                                                        <Name>
+                                                                                                                            <Variable start='15632' end='15634' isDollared='true'>
+                                                                                                                                <Identifier start='15633' end='15634' name='x'/>
+                                                                                                                            </Variable>
+                                                                                                                        </Name>
+                                                                                                                    </ArrayAccess>
+                                                                                                                </Index>
+                                                                                                            </ArrayDimension>
                                                                                                             <Name>
                                                                                                                 <Variable start='15618' end='15631' isDollared='false'>
                                                                                                                     <Identifier start='15618' end='15631' name='_parser_check'/>
@@ -16338,9 +16382,11 @@
                                                                                                             </Variable>
                                                                                                             <Scalar start='15704' end='15717' type='STRING' value=' in query: \"'/>
                                                                                                             <ArrayAccess start='15717' end='15722' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                <Index>
-                                                                                                                    <Scalar start='15720' end='15721' type='REAL' value='1'/>
-                                                                                                                </Index>
+                                                                                                                <ArrayDimension start='15719' end='15722'>
+                                                                                                                    <Index>
+                                                                                                                        <Scalar start='15720' end='15721' type='REAL' value='1'/>
+                                                                                                                    </Index>
+                                                                                                                </ArrayDimension>
                                                                                                                 <Name>
                                                                                                                     <Variable start='15717' end='15719' isDollared='true'>
                                                                                                                         <Identifier start='15718' end='15719' name='x'/>
@@ -16461,9 +16507,11 @@
                                                                     <InfixExpression start='16509' end='16545' operator='CONCAT'>
                                                                         <Scalar start='16509' end='16539' type='STRING' value='"Illegal character in query: "'/>
                                                                         <ArrayAccess start='16540' end='16545' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                            <Index>
-                                                                                <Scalar start='16543' end='16544' type='INT' value='1'/>
-                                                                            </Index>
+                                                                            <ArrayDimension start='16542' end='16545'>
+                                                                                <Index>
+                                                                                    <Scalar start='16543' end='16544' type='INT' value='1'/>
+                                                                                </Index>
+                                                                            </ArrayDimension>
                                                                             <Name>
                                                                                 <Variable start='16540' end='16542' isDollared='true'>
                                                                                     <Identifier start='16541' end='16542' name='m'/>
@@ -16564,8 +16612,10 @@
                                                 <Identifier start='17656' end='17660' name='this'/>
                                             </Variable>
                                             <ArrayAccess start='17662' end='17670' type='VARIABLE_ARRAY' isDollared='false'>
-                                                <Index>
-                                                </Index>
+                                                <ArrayDimension start='17668' end='17670'>
+                                                    <Index>
+                                                    </Index>
+                                                </ArrayDimension>
                                                 <Name>
                                                     <Variable start='17662' end='17668' isDollared='false'>
                                                         <Identifier start='17662' end='17668' name='_bound'/>
@@ -16806,11 +16856,13 @@
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <ArrayAccess start='19005' end='19019' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                    <Index>
-                                                                        <Variable start='19016' end='19018' isDollared='true'>
-                                                                            <Identifier start='19017' end='19018' name='p'/>
-                                                                        </Variable>
-                                                                    </Index>
+                                                                    <ArrayDimension start='19015' end='19019'>
+                                                                        <Index>
+                                                                            <Variable start='19016' end='19018' isDollared='true'>
+                                                                                <Identifier start='19017' end='19018' name='p'/>
+                                                                            </Variable>
+                                                                        </Index>
+                                                                    </ArrayDimension>
                                                                     <Name>
                                                                         <Variable start='19005' end='19015' isDollared='true'>
                                                                             <Identifier start='19006' end='19015' name='variables'/>
@@ -16849,11 +16901,13 @@
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <ArrayAccess start='19085' end='19099' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                <Index>
-                                                                                    <Variable start='19096' end='19098' isDollared='true'>
-                                                                                        <Identifier start='19097' end='19098' name='x'/>
-                                                                                    </Variable>
-                                                                                </Index>
+                                                                                <ArrayDimension start='19095' end='19099'>
+                                                                                    <Index>
+                                                                                        <Variable start='19096' end='19098' isDollared='true'>
+                                                                                            <Identifier start='19097' end='19098' name='x'/>
+                                                                                        </Variable>
+                                                                                    </Index>
+                                                                                </ArrayDimension>
                                                                                 <Name>
                                                                                     <Variable start='19085' end='19095' isDollared='true'>
                                                                                         <Identifier start='19086' end='19095' name='variables'/>
@@ -16984,11 +17038,13 @@
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <ArrayAccess start='19728' end='19741' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                <Index>
-                                                                                    <Variable start='19738' end='19740' isDollared='true'>
-                                                                                        <Identifier start='19739' end='19740' name='p'/>
-                                                                                    </Variable>
-                                                                                </Index>
+                                                                                <ArrayDimension start='19737' end='19741'>
+                                                                                    <Index>
+                                                                                        <Variable start='19738' end='19740' isDollared='true'>
+                                                                                            <Identifier start='19739' end='19740' name='p'/>
+                                                                                        </Variable>
+                                                                                    </Index>
+                                                                                </ArrayDimension>
                                                                                 <Name>
                                                                                     <Variable start='19728' end='19737' isDollared='true'>
                                                                                         <Identifier start='19729' end='19737' name='variable'/>
@@ -17038,11 +17094,13 @@
                                                                     </FucntionName>
                                                                     <Parameters>
                                                                         <ArrayAccess start='19857' end='19870' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                            <Index>
-                                                                                <Variable start='19867' end='19869' isDollared='true'>
-                                                                                    <Identifier start='19868' end='19869' name='p'/>
-                                                                                </Variable>
-                                                                            </Index>
+                                                                            <ArrayDimension start='19866' end='19870'>
+                                                                                <Index>
+                                                                                    <Variable start='19867' end='19869' isDollared='true'>
+                                                                                        <Identifier start='19868' end='19869' name='p'/>
+                                                                                    </Variable>
+                                                                                </Index>
+                                                                            </ArrayDimension>
                                                                             <Name>
                                                                                 <Variable start='19857' end='19866' isDollared='true'>
                                                                                     <Identifier start='19858' end='19866' name='variable'/>
@@ -17108,11 +17166,13 @@
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <ArrayAccess start='19978' end='19991' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                <Index>
-                                                                                    <Variable start='19988' end='19990' isDollared='true'>
-                                                                                        <Identifier start='19989' end='19990' name='x'/>
-                                                                                    </Variable>
-                                                                                </Index>
+                                                                                <ArrayDimension start='19987' end='19991'>
+                                                                                    <Index>
+                                                                                        <Variable start='19988' end='19990' isDollared='true'>
+                                                                                            <Identifier start='19989' end='19990' name='x'/>
+                                                                                        </Variable>
+                                                                                    </Index>
+                                                                                </ArrayDimension>
                                                                                 <Name>
                                                                                     <Variable start='19978' end='19987' isDollared='true'>
                                                                                         <Identifier start='19979' end='19987' name='variable'/>
@@ -17162,11 +17222,13 @@
                                                                     </FucntionName>
                                                                     <Parameters>
                                                                         <ArrayAccess start='20107' end='20120' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                            <Index>
-                                                                                <Variable start='20117' end='20119' isDollared='true'>
-                                                                                    <Identifier start='20118' end='20119' name='x'/>
-                                                                                </Variable>
-                                                                            </Index>
+                                                                            <ArrayDimension start='20116' end='20120'>
+                                                                                <Index>
+                                                                                    <Variable start='20117' end='20119' isDollared='true'>
+                                                                                        <Identifier start='20118' end='20119' name='x'/>
+                                                                                    </Variable>
+                                                                                </Index>
+                                                                            </ArrayDimension>
                                                                             <Name>
                                                                                 <Variable start='20107' end='20116' isDollared='true'>
                                                                                     <Identifier start='20108' end='20116' name='variable'/>
@@ -17890,9 +17952,11 @@
                                                     <Identifier start='24266' end='24270' name='this'/>
                                                 </Variable>
                                                 <ArrayAccess start='24272' end='24281' type='VARIABLE_ARRAY' isDollared='false'>
-                                                    <Index>
-                                                        <Scalar start='24279' end='24280' type='INT' value='0'/>
-                                                    </Index>
+                                                    <ArrayDimension start='24278' end='24281'>
+                                                        <Index>
+                                                            <Scalar start='24279' end='24280' type='INT' value='0'/>
+                                                        </Index>
+                                                    </ArrayDimension>
                                                     <Name>
                                                         <Variable start='24272' end='24278' isDollared='false'>
                                                             <Identifier start='24272' end='24278' name='leaves'/>
@@ -17963,9 +18027,11 @@
                                                     <Identifier start='24488' end='24492' name='this'/>
                                                 </Variable>
                                                 <ArrayAccess start='24494' end='24503' type='VARIABLE_ARRAY' isDollared='false'>
-                                                    <Index>
-                                                        <Scalar start='24501' end='24502' type='INT' value='0'/>
-                                                    </Index>
+                                                    <ArrayDimension start='24500' end='24503'>
+                                                        <Index>
+                                                            <Scalar start='24501' end='24502' type='INT' value='0'/>
+                                                        </Index>
+                                                    </ArrayDimension>
                                                     <Name>
                                                         <Variable start='24494' end='24500' isDollared='false'>
                                                             <Identifier start='24494' end='24500' name='leaves'/>
@@ -18154,8 +18220,10 @@
                                                     <ExpressionStatement start='25255' end='25271'>
                                                         <Assignment start='25255' end='25270' operator='EQUAL'>
                                                             <ArrayAccess start='25255' end='25262' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='25260' end='25262'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='25255' end='25260' isDollared='true'>
                                                                         <Identifier start='25256' end='25260' name='flat'/>
@@ -18452,8 +18520,10 @@
                                                         <ExpressionStatement start='26337' end='26364'>
                                                             <Assignment start='26337' end='26363' operator='EQUAL'>
                                                                 <ArrayAccess start='26337' end='26344' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                    <Index>
-                                                                    </Index>
+                                                                    <ArrayDimension start='26342' end='26344'>
+                                                                        <Index>
+                                                                        </Index>
+                                                                    </ArrayDimension>
                                                                     <Name>
                                                                         <Variable start='26337' end='26342' isDollared='true'>
                                                                             <Identifier start='26338' end='26342' name='nots'/>
@@ -18465,9 +18535,11 @@
                                                                         <Identifier start='26348' end='26352' name='leaf'/>
                                                                     </Variable>
                                                                     <ArrayAccess start='26354' end='26363' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                        <Index>
-                                                                            <Scalar start='26361' end='26362' type='INT' value='0'/>
-                                                                        </Index>
+                                                                        <ArrayDimension start='26360' end='26363'>
+                                                                            <Index>
+                                                                                <Scalar start='26361' end='26362' type='INT' value='0'/>
+                                                                            </Index>
+                                                                        </ArrayDimension>
                                                                         <Name>
                                                                             <Variable start='26354' end='26360' isDollared='false'>
                                                                                 <Identifier start='26354' end='26360' name='leaves'/>
@@ -18488,11 +18560,13 @@
                                                                             <Identifier start='26388' end='26392' name='this'/>
                                                                         </Variable>
                                                                         <ArrayAccess start='26394' end='26406' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                            <Index>
-                                                                                <Variable start='26401' end='26405' isDollared='true'>
-                                                                                    <Identifier start='26402' end='26405' name='key'/>
-                                                                                </Variable>
-                                                                            </Index>
+                                                                            <ArrayDimension start='26400' end='26406'>
+                                                                                <Index>
+                                                                                    <Variable start='26401' end='26405' isDollared='true'>
+                                                                                        <Identifier start='26402' end='26405' name='key'/>
+                                                                                    </Variable>
+                                                                                </Index>
+                                                                            </ArrayDimension>
                                                                             <Name>
                                                                                 <Variable start='26394' end='26400' isDollared='false'>
                                                                                     <Identifier start='26394' end='26400' name='leaves'/>
@@ -18791,8 +18865,10 @@
                                                     <ExpressionStatement start='27697' end='27737'>
                                                         <Assignment start='27697' end='27736' operator='EQUAL'>
                                                             <ArrayAccess start='27697' end='27705' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='27703' end='27705'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='27697' end='27703' isDollared='true'>
                                                                         <Identifier start='27698' end='27703' name='words'/>
@@ -18824,8 +18900,10 @@
                                                     <ExpressionStatement start='27771' end='27800'>
                                                         <Assignment start='27771' end='27799' operator='EQUAL'>
                                                             <ArrayAccess start='27771' end='27781' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                <Index>
-                                                                </Index>
+                                                                <ArrayDimension start='27779' end='27781'>
+                                                                    <Index>
+                                                                    </Index>
+                                                                </ArrayDimension>
                                                                 <Name>
                                                                     <Variable start='27771' end='27779' isDollared='true'>
                                                                         <Identifier start='27772' end='27779' name='regexps'/>
@@ -19459,8 +19537,10 @@
                                         <ExpressionStatement start='30493' end='30509'>
                                             <Assignment start='30493' end='30508' operator='EQUAL'>
                                                 <ArrayAccess start='30493' end='30500' type='VARIABLE_ARRAY' isDollared='false'>
-                                                    <Index>
-                                                    </Index>
+                                                    <ArrayDimension start='30498' end='30500'>
+                                                        <Index>
+                                                        </Index>
+                                                    </ArrayDimension>
                                                     <Name>
                                                         <Variable start='30493' end='30498' isDollared='true'>
                                                             <Identifier start='30494' end='30498' name='list'/>
@@ -20513,9 +20593,11 @@
                                                                 </FucntionName>
                                                                 <Parameters>
                                                                     <ArrayAccess start='33321' end='33326' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                        <Index>
-                                                                            <Scalar start='33324' end='33325' type='INT' value='1'/>
-                                                                        </Index>
+                                                                        <ArrayDimension start='33323' end='33326'>
+                                                                            <Index>
+                                                                                <Scalar start='33324' end='33325' type='INT' value='1'/>
+                                                                            </Index>
+                                                                        </ArrayDimension>
                                                                         <Name>
                                                                             <Variable start='33321' end='33323' isDollared='true'>
                                                                                 <Identifier start='33322' end='33323' name='m'/>
@@ -20571,9 +20653,11 @@
                                                                         </FucntionName>
                                                                         <Parameters>
                                                                             <ArrayAccess start='33480' end='33485' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                <Index>
-                                                                                    <Scalar start='33483' end='33484' type='INT' value='1'/>
-                                                                                </Index>
+                                                                                <ArrayDimension start='33482' end='33485'>
+                                                                                    <Index>
+                                                                                        <Scalar start='33483' end='33484' type='INT' value='1'/>
+                                                                                    </Index>
+                                                                                </ArrayDimension>
                                                                                 <Name>
                                                                                     <Variable start='33480' end='33482' isDollared='true'>
                                                                                         <Identifier start='33481' end='33482' name='m'/>
@@ -20622,9 +20706,11 @@
                                                                                 <Identifier start='33616' end='33619' name='val'/>
                                                                             </Variable>
                                                                             <ArrayAccess start='33622' end='33627' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                <Index>
-                                                                                    <Scalar start='33625' end='33626' type='INT' value='1'/>
-                                                                                </Index>
+                                                                                <ArrayDimension start='33624' end='33627'>
+                                                                                    <Index>
+                                                                                        <Scalar start='33625' end='33626' type='INT' value='1'/>
+                                                                                    </Index>
+                                                                                </ArrayDimension>
                                                                                 <Name>
                                                                                     <Variable start='33622' end='33624' isDollared='true'>
                                                                                         <Identifier start='33623' end='33624' name='m'/>
@@ -20642,9 +20728,11 @@
                                                                                 <Condition>
                                                                                     <InfixExpression start='33653' end='33665' operator='IS_EQUAL'>
                                                                                         <ArrayAccess start='33653' end='33658' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                            <Index>
-                                                                                                <Scalar start='33656' end='33657' type='INT' value='1'/>
-                                                                                            </Index>
+                                                                                            <ArrayDimension start='33655' end='33658'>
+                                                                                                <Index>
+                                                                                                    <Scalar start='33656' end='33657' type='INT' value='1'/>
+                                                                                                </Index>
+                                                                                            </ArrayDimension>
                                                                                             <Name>
                                                                                                 <Variable start='33653' end='33655' isDollared='true'>
                                                                                                     <Identifier start='33654' end='33655' name='m'/>
@@ -20865,9 +20953,11 @@
                                                                                                                 <Identifier start='34592' end='34595' name='val'/>
                                                                                                             </Variable>
                                                                                                             <ArrayAccess start='34598' end='34603' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                <Index>
-                                                                                                                    <Scalar start='34601' end='34602' type='INT' value='1'/>
-                                                                                                                </Index>
+                                                                                                                <ArrayDimension start='34600' end='34603'>
+                                                                                                                    <Index>
+                                                                                                                        <Scalar start='34601' end='34602' type='INT' value='1'/>
+                                                                                                                    </Index>
+                                                                                                                </ArrayDimension>
                                                                                                                 <Name>
                                                                                                                     <Variable start='34598' end='34600' isDollared='true'>
                                                                                                                         <Identifier start='34599' end='34600' name='m'/>
@@ -20930,9 +21020,11 @@
                                                                                                                         <Identifier start='34855' end='34858' name='val'/>
                                                                                                                     </Variable>
                                                                                                                     <ArrayAccess start='34861' end='34866' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                        <Index>
-                                                                                                                            <Scalar start='34864' end='34865' type='INT' value='1'/>
-                                                                                                                        </Index>
+                                                                                                                        <ArrayDimension start='34863' end='34866'>
+                                                                                                                            <Index>
+                                                                                                                                <Scalar start='34864' end='34865' type='INT' value='1'/>
+                                                                                                                            </Index>
+                                                                                                                        </ArrayDimension>
                                                                                                                         <Name>
                                                                                                                             <Variable start='34861' end='34863' isDollared='true'>
                                                                                                                                 <Identifier start='34862' end='34863' name='m'/>
@@ -20995,9 +21087,11 @@
                                                                                                                                 <Identifier start='35118' end='35121' name='val'/>
                                                                                                                             </Variable>
                                                                                                                             <ArrayAccess start='35124' end='35129' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                                <Index>
-                                                                                                                                    <Scalar start='35127' end='35128' type='INT' value='1'/>
-                                                                                                                                </Index>
+                                                                                                                                <ArrayDimension start='35126' end='35129'>
+                                                                                                                                    <Index>
+                                                                                                                                        <Scalar start='35127' end='35128' type='INT' value='1'/>
+                                                                                                                                    </Index>
+                                                                                                                                </ArrayDimension>
                                                                                                                                 <Name>
                                                                                                                                     <Variable start='35124' end='35126' isDollared='true'>
                                                                                                                                         <Identifier start='35125' end='35126' name='m'/>
@@ -21060,9 +21154,11 @@
                                                                                                                                         <Identifier start='35379' end='35382' name='val'/>
                                                                                                                                     </Variable>
                                                                                                                                     <ArrayAccess start='35385' end='35390' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                                        <Index>
-                                                                                                                                            <Scalar start='35388' end='35389' type='INT' value='1'/>
-                                                                                                                                        </Index>
+                                                                                                                                        <ArrayDimension start='35387' end='35390'>
+                                                                                                                                            <Index>
+                                                                                                                                                <Scalar start='35388' end='35389' type='INT' value='1'/>
+                                                                                                                                            </Index>
+                                                                                                                                        </ArrayDimension>
                                                                                                                                         <Name>
                                                                                                                                             <Variable start='35385' end='35387' isDollared='true'>
                                                                                                                                                 <Identifier start='35386' end='35387' name='m'/>
@@ -21125,9 +21221,11 @@
                                                                                                                                                 <Identifier start='35643' end='35646' name='val'/>
                                                                                                                                             </Variable>
                                                                                                                                             <ArrayAccess start='35649' end='35654' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                                                <Index>
-                                                                                                                                                    <Scalar start='35652' end='35653' type='INT' value='1'/>
-                                                                                                                                                </Index>
+                                                                                                                                                <ArrayDimension start='35651' end='35654'>
+                                                                                                                                                    <Index>
+                                                                                                                                                        <Scalar start='35652' end='35653' type='INT' value='1'/>
+                                                                                                                                                    </Index>
+                                                                                                                                                </ArrayDimension>
                                                                                                                                                 <Name>
                                                                                                                                                     <Variable start='35649' end='35651' isDollared='true'>
                                                                                                                                                         <Identifier start='35650' end='35651' name='m'/>
@@ -21183,9 +21281,11 @@
                                                                                                                                                             <Scalar start='35863' end='35867' type='STRING' value='&apos;""&apos;'/>
                                                                                                                                                             <Scalar start='35869' end='35872' type='STRING' value='&apos;"&apos;'/>
                                                                                                                                                             <ArrayAccess start='35874' end='35879' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                                                                <Index>
-                                                                                                                                                                    <Scalar start='35877' end='35878' type='INT' value='1'/>
-                                                                                                                                                                </Index>
+                                                                                                                                                                <ArrayDimension start='35876' end='35879'>
+                                                                                                                                                                    <Index>
+                                                                                                                                                                        <Scalar start='35877' end='35878' type='INT' value='1'/>
+                                                                                                                                                                    </Index>
+                                                                                                                                                                </ArrayDimension>
                                                                                                                                                                 <Name>
                                                                                                                                                                     <Variable start='35874' end='35876' isDollared='true'>
                                                                                                                                                                         <Identifier start='35875' end='35876' name='m'/>
@@ -21243,9 +21343,11 @@
                                                                                                                                                                     <Scalar start='36071' end='36075' type='STRING' value='"&apos;&apos;"'/>
                                                                                                                                                                     <Scalar start='36077' end='36080' type='STRING' value='"&apos;"'/>
                                                                                                                                                                     <ArrayAccess start='36082' end='36087' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                                                                        <Index>
-                                                                                                                                                                            <Scalar start='36085' end='36086' type='INT' value='1'/>
-                                                                                                                                                                        </Index>
+                                                                                                                                                                        <ArrayDimension start='36084' end='36087'>
+                                                                                                                                                                            <Index>
+                                                                                                                                                                                <Scalar start='36085' end='36086' type='INT' value='1'/>
+                                                                                                                                                                            </Index>
+                                                                                                                                                                        </ArrayDimension>
                                                                                                                                                                         <Name>
                                                                                                                                                                             <Variable start='36082' end='36084' isDollared='true'>
                                                                                                                                                                                 <Identifier start='36083' end='36084' name='m'/>
@@ -21294,9 +21396,11 @@
                                                                                                                                                                         <Identifier start='36249' end='36252' name='val'/>
                                                                                                                                                                     </Variable>
                                                                                                                                                                     <ArrayAccess start='36255' end='36260' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                                                                                                                        <Index>
-                                                                                                                                                                            <Scalar start='36258' end='36259' type='INT' value='1'/>
-                                                                                                                                                                        </Index>
+                                                                                                                                                                        <ArrayDimension start='36257' end='36260'>
+                                                                                                                                                                            <Index>
+                                                                                                                                                                                <Scalar start='36258' end='36259' type='INT' value='1'/>
+                                                                                                                                                                            </Index>
+                                                                                                                                                                        </ArrayDimension>
                                                                                                                                                                         <Name>
                                                                                                                                                                             <Variable start='36255' end='36257' isDollared='true'>
                                                                                                                                                                                 <Identifier start='36256' end='36257' name='m'/>
@@ -21392,9 +21496,11 @@
                                                             </FucntionName>
                                                             <Parameters>
                                                                 <ArrayAccess start='36446' end='36451' type='VARIABLE_ARRAY' isDollared='false'>
-                                                                    <Index>
-                                                                        <Scalar start='36449' end='36450' type='INT' value='0'/>
-                                                                    </Index>
+                                                                    <ArrayDimension start='36448' end='36451'>
+                                                                        <Index>
+                                                                            <Scalar start='36449' end='36450' type='INT' value='0'/>
+                                                                        </Index>
+                                                                    </ArrayDimension>
                                                                     <Name>
                                                                         <Variable start='36446' end='36448' isDollared='true'>
                                                                             <Identifier start='36447' end='36448' name='m'/>
@@ -21410,8 +21516,10 @@
                                         <ExpressionStatement start='36895' end='36926'>
                                             <Assignment start='36895' end='36925' operator='EQUAL'>
                                                 <ArrayAccess start='36895' end='36904' type='VARIABLE_ARRAY' isDollared='false'>
-                                                    <Index>
-                                                    </Index>
+                                                    <ArrayDimension start='36902' end='36904'>
+                                                        <Index>
+                                                        </Index>
+                                                    </ArrayDimension>
                                                     <Name>
                                                         <Variable start='36895' end='36902' isDollared='true'>
                                                             <Identifier start='36896' end='36902' name='tokens'/>
@@ -21512,16 +21620,18 @@
                                                 <Identifier start='37113' end='37117' name='this'/>
                                             </Variable>
                                             <ArrayAccess start='37119' end='37137' type='VARIABLE_ARRAY' isDollared='false'>
-                                                <Index>
-                                                    <FieldAccess start='37126' end='37136'>
-                                                        <Variable start='37126' end='37131' isDollared='true'>
-                                                            <Identifier start='37127' end='37131' name='this'/>
-                                                        </Variable>
-                                                        <Variable start='37133' end='37136' isDollared='false'>
-                                                            <Identifier start='37133' end='37136' name='pos'/>
-                                                        </Variable>
-                                                    </FieldAccess>
-                                                </Index>
+                                                <ArrayDimension start='37125' end='37137'>
+                                                    <Index>
+                                                        <FieldAccess start='37126' end='37136'>
+                                                            <Variable start='37126' end='37131' isDollared='true'>
+                                                                <Identifier start='37127' end='37131' name='this'/>
+                                                            </Variable>
+                                                            <Variable start='37133' end='37136' isDollared='false'>
+                                                                <Identifier start='37133' end='37136' name='pos'/>
+                                                            </Variable>
+                                                        </FieldAccess>
+                                                    </Index>
+                                                </ArrayDimension>
                                                 <Name>
                                                     <Variable start='37119' end='37125' isDollared='false'>
                                                         <Identifier start='37119' end='37125' name='tokens'/>

@@ -269,7 +269,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             }
             return OffsetRange.NONE;
         }
-        
+
         private void logRecursion(TokenSequence<PHPTokenId> ts) {
             CharSequence tokenText = null;
             if (ts != null) {

@@ -680,11 +680,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //super.visit(node);
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
-            scan(access.getIndex());
+            scan(access.getDimension());
             VariableBase name = access.getName();
             while (name instanceof ArrayAccess) {
                 ArrayAccess access1 = (ArrayAccess) name;
-                scan(access1.getIndex());
+                scan(access1.getDimension());
                 name = access1.getName();
             }
         }
@@ -1032,11 +1032,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
-            scan(access.getIndex());
+            scan(access.getDimension());
             VariableBase name = access.getName();
             while (name instanceof ArrayAccess) {
                 ArrayAccess access1 = (ArrayAccess) name;
-                scan(access1.getIndex());
+                scan(access1.getDimension());
                 name = access1.getName();
             }
         }
@@ -1281,7 +1281,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             possibleScope = false;
                         }
                     }
-                    if (possibleScope && blockRange.containsInclusive(offset) 
+                    if (possibleScope && blockRange.containsInclusive(offset)
                             && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
                         retval = varScope;
                     }
