@@ -71,6 +71,7 @@ public final class APTIncludeNextNode extends APTIncludeBaseNode
         super(token);
     } 
     
+    @Override
     public final int getType() {
         return APT.Type.INCLUDE_NEXT;
     }    
