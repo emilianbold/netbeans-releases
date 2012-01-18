@@ -430,7 +430,9 @@ public final class Watcher extends AnnotationProvider {
                     LOG.log(Level.INFO, null, ioe);
                 }
             }
-            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
+                Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.FAM")) {
+                // disabled by default, see IZ 206670
                 try {
                     return new FAMNotifier();
                 } catch (Exception e) {
