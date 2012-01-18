@@ -147,6 +147,16 @@ class SummaryCellRenderer implements ListCellRenderer {
              Math.max((int)(c.getBlue() * factor), 0));
     }
 
+    private static Color lessInteresting (Color c, Color bg) {
+        int r = c.getRed();
+        int g = c.getGreen();
+        int b = c.getBlue();
+        r += (bg.getRed() - r) / 5;
+        g += (bg.getGreen() - g) / 5;
+        b += (bg.getBlue() - b) / 5;
+        return new Color(r, g, b);
+    }
+
     private static String getColorString(Color c) {
         return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
     }
@@ -603,7 +613,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         private final JLabel actionLabel;
         private final JButton actionButton;
         private String id;
-        private final String PATH_COLOR = getColorString(UIManager.getColor("TextField.inactiveForeground")); //NOI18N
+        private final String PATH_COLOR = getColorString(lessInteresting(UIManager.getColor("List.foreground"), UIManager.getColor("List.background"))); //NOI18N
 
         public EventRenderer () {
             pathLabel = new JLabel();
