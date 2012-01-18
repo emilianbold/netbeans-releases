@@ -59,6 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
@@ -74,17 +75,18 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     private final Project project;
     private Map<String, IManagedType> managedTypes;
     private ITypeRepository typeRepository;
-    private EntityMappingsMetadata metaData;
-
-    public ManagedTypeProvider(Project project) {
-        this.project = project;
-    }
+    private final EntityMappings mappings;
 
     public ManagedTypeProvider(Project project, EntityMappingsMetadata metaData) {
         this.project = project;
-        this.metaData = metaData;
+        this.mappings = metaData.getRoot();
     }
-
+    
+    public ManagedTypeProvider(Project project, EntityMappings mappings) {
+        this.project = project;
+        this.mappings = mappings;
+    }
+    
     @Override
     public Iterable<IEntity> abstractSchemaTypes() {
         initializeManagedTypes();
@@ -130,7 +132,8 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public IJPAVersion getVersion() {
         String version = PersistenceUtils.getJPAVersion(project);
-        return IJPAVersion.value(version);
+        if(version == null || version.startsWith("1"))return IJPAVersion.VERSION_2_0;
+        else return IJPAVersion.VERSION_1_0;
     }
 
     @Override
@@ -160,7 +163,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
 //            }
 
             //TODO: not only entities but mapped superclasses and embeddable?
-            for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : metaData.getRoot().getEntity()) {
+            for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity persistentType : mappings.getEntity()) {
 
                 if (persistentType != null) {
                     String name = persistentType.getName();
