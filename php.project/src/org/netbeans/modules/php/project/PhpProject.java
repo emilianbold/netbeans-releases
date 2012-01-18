@@ -73,6 +73,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -733,6 +734,7 @@ public final class PhpProject implements Project {
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
                 new PhpModuleImpl(this),
+                PhpLanguagePropertiesAccessor.getDefault().createForProject(this),
                 new PhpEditorExtender(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
