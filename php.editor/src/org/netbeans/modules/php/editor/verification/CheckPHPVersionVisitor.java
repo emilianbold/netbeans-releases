@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -58,8 +59,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -76,15 +75,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     }
 
     public static  boolean appliesTo(FileObject fobj) {
-        if (fobj != null){
-            Properties props = PhpLanguageOptions.getDefault().getProperties(fobj);
-
-            if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_5) {
-                return true;
-            }
-        }
-
-        return false;
+        return CodeUtils.isPhp_52(fobj);
     }
 
     @Override
