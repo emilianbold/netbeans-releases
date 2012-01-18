@@ -71,6 +71,7 @@ public final class APTIfndefNode extends APTIfdefConditionBaseNode
         super(token);
     }
     
+    @Override
     public final int getType() {
         return APT.Type.IFNDEF;
     }    

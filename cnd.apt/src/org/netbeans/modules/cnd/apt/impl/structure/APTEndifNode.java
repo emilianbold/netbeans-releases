@@ -75,15 +75,18 @@ public final class APTEndifNode extends APTTokenBasedNode
         super(token);
     }    
     
+    @Override
     public final int getType() {
         return APT.Type.ENDIF;
     }
     
+    @Override
     public APT getFirstChild() {
         // #endif doesn't have subtree
         return null;
     }
 
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         assert (token != null);
         int ttype = token.getType();
@@ -100,6 +103,7 @@ public final class APTEndifNode extends APTTokenBasedNode
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
       
+    @Override
     public void setFirstChild(APT child) {
         // do nothing
         assert (false) : "endif doesn't support children"; // NOI18N
