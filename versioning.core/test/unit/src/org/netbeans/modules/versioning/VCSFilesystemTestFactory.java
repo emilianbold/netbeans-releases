@@ -41,7 +41,6 @@ package org.netbeans.modules.versioning;
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -52,7 +51,6 @@ import java.util.NoSuchElementException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSetup;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -66,20 +64,20 @@ public abstract class VCSFilesystemTestFactory extends NbTestSetup {
         registerMap (test);
     }
 
-//    public VCSFileProxy toVCSFileProxy(File file) throws IOException {
-//        return createVCSFileProxy(file.getAbsolutePath());
-//    };
+    protected abstract FileObject createFile(String path) throws IOException;
     
-    protected abstract FileObject createFileObject(String path) throws IOException;
-
-    public final static  VCSFilesystemTestFactory getInstance (Test test) {
+    protected abstract FileObject createFolder(String path) throws IOException;
+    
+    protected abstract void setReadOnly(FileObject fo) throws IOException;
+    
+    public static VCSFilesystemTestFactory getInstance (Test test) {
         VCSFilesystemTestFactory factory = getFromMap (test);
         return factory;
     }
 
     private static Map<Test, List<VCSFilesystemTestFactory>> map = new HashMap<Test, List<VCSFilesystemTestFactory>> ();
 
-    private void registerMap (Test test) {
+    private synchronized void registerMap (Test test) {
         if (test instanceof TestSuite) {
             Enumeration en = ((TestSuite)test).tests ();
             while (en.hasMoreElements()) {
@@ -95,7 +93,7 @@ public abstract class VCSFilesystemTestFactory extends NbTestSetup {
         }
     }
 
-    private void addToMap (Test test) {
+    private synchronized void addToMap (Test test) {
         List<VCSFilesystemTestFactory> s = map.get (test);
         if (s == null) {
             s = new LinkedList<VCSFilesystemTestFactory>();
@@ -104,7 +102,7 @@ public abstract class VCSFilesystemTestFactory extends NbTestSetup {
         map.put(test ,s );
     }
 
-    private static VCSFilesystemTestFactory getFromMap (Test test) {
+    private synchronized static VCSFilesystemTestFactory getFromMap (Test test) {
         LinkedList s = (LinkedList) map.get (test);
         VCSFilesystemTestFactory  retVal;
         try {
@@ -115,4 +113,5 @@ public abstract class VCSFilesystemTestFactory extends NbTestSetup {
         }
         return retVal;
     }
+
 }

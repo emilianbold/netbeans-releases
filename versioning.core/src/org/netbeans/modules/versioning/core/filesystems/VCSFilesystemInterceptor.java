@@ -47,6 +47,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -283,7 +284,7 @@ public final class VCSFilesystemInterceptor {
     public static void beforeCreate(VCSFileProxy parent, String name, boolean isFolder) {
         LOG.log(Level.FINE, "beforeCreate {0}, {1}, {2} ", new Object[] {parent, name, isFolder});
         if (parent == null) return;
-        VCSFileProxy file = VCSFileProxy.createFileProxy(parent, name);
+        VCSFileProxy file = APIAccessor.IMPL.createFileProxy(parent, name, isFolder);
         DelegatingInterceptor dic = getInterceptor(file, isFolder, "beforeCreate"); // NOI18N
         if (dic.beforeCreate()) {
             filesBeingCreated.put(new FileEx(parent, name, isFolder), dic);
