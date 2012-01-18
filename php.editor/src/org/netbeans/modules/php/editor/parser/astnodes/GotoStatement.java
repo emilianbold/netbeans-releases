@@ -42,8 +42,8 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Holds a goto statement. 
- * <pre>e.g.<pre> 
+ * Holds a goto statement.
+ * <pre>e.g.<pre>
  *goto START;
  */
 public class GotoStatement extends Statement {

@@ -45,19 +45,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.csl.api.Error.Badging;
-import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -74,14 +65,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
     }
 
     public static  boolean appliesTo(FileObject fobj) {
-        boolean result = false;
-        if (fobj != null){
-            Properties props = PhpLanguageOptions.getDefault().getProperties(fobj);
-            if (props.getPhpVersion() != PhpLanguageOptions.PhpVersion.PHP_54) {
-                result = true;
-            }
-        }
-        return result;
+        return !CodeUtils.isPhp_54(fobj);
     }
 
     public Collection<PHPVersionError> getErrors() {
