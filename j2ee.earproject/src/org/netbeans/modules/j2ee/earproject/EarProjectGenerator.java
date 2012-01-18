@@ -135,7 +135,6 @@ public final class EarProjectGenerator {
         this.name = name;
         this.j2eeProfile = j2eeProfile;
         this.serverInstanceID = serverInstanceID;
-        // #89131: these levels are not actually distinct from 1.5.
         // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
         if (sourceLevel != null && (sourceLevel.equals("1.7")))
             sourceLevel = "1.6";
