@@ -54,7 +54,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.modules.web.common.reload.Message.MessageType;
 import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
@@ -88,6 +87,7 @@ public class BrowserReload {
             
             file2Id = new ConcurrentHashMap<FileObject, String>();
             url2File = new ConcurrentHashMap<String, FileObject>();
+            file2Socket = new ConcurrentHashMap<FileObject, SelectionKey>();
         }
         catch (IOException e) {
             LOG.log( Level.WARNING , null , e);
@@ -103,14 +103,16 @@ public class BrowserReload {
     }
     
     public void reload( FileObject fileObject ){
-        if ( connection == null ){
-            return;
-        }
         String tabId = file2Id.get( fileObject );
         if ( tabId == null ){
             return;
         }
-        server.sendMessage(connection, createReloadMessage(tabId) );
+        SelectionKey selectionKey = file2Socket.get( fileObject );
+        if ( selectionKey == null ){
+            return;
+        }
+            
+        server.sendMessage(selectionKey, createReloadMessage(tabId) );
     }
     
     public static BrowserReload getInstance(){
@@ -132,9 +134,6 @@ public class BrowserReload {
          */
         @Override
         public void read( SelectionKey key, byte[] data, Integer dataType ) {
-            if ( connection == null ){
-                connection = key;
-            }
             if ( dataType != null && dataType != 1 ){
                 return;
             }
@@ -146,10 +145,10 @@ public class BrowserReload {
             MessageType type = msg.getType();
             switch (type) {
                 case INIT:
-                    handleInit(msg);
+                    handleInit(msg, key );
                     break;
                 case CLOSE:
-                    handleClose( msg );
+                    handleClose( msg , key );
                     break;
                 default:
                     assert false;
@@ -157,7 +156,7 @@ public class BrowserReload {
             
         }
         
-        private void handleInit( Message message ){
+        private void handleInit( Message message , SelectionKey key ){
             String url = message.getValue(URL);
             String tabId = message.getValue(Message.TAB_ID);
             if ( url == null || tabId == null ){
@@ -169,30 +168,43 @@ public class BrowserReload {
                 map.put( Message.TAB_ID, tabId );
                 map.put("status","notaccepted");       // NOI18N
                 Message msg = new Message( MessageType.INIT , map );
-                server.sendMessage(connection, msg.toString());
+                server.sendMessage(key, msg.toString());
             }
             else  {
+                file2Socket.put( localFile , key );
                 file2Id.put( localFile , tabId );
                 Map<String,String> map = new HashMap<String, String>();
                 map.put( Message.TAB_ID, tabId );
                 map.put("status","accepted");       // NOI18N
                 Message msg = new Message( MessageType.INIT , map );
-                server.sendMessage(connection, msg.toString());
+                server.sendMessage(key, msg.toString());
             }
         }
         
-        private void handleClose( Message message ){
+        private void handleClose( Message message, SelectionKey key  ){
             String tabId = message.getValue( Message.TAB_ID );
             if ( tabId == null ){
                 return;
             }
+            FileObject fileObject = null;
             for (Iterator<Entry<FileObject,String>> iterator = file2Id.entrySet().iterator(); 
                 iterator.hasNext() ; ) 
             {
-                String id = iterator.next().getValue();
+                Entry<FileObject, String> entry = iterator.next();
+                String id = entry.getValue();
                 if ( tabId.equals( id )){
+                    fileObject = entry.getKey();
                     iterator.remove();
                     break;
+                }
+            }
+            if ( fileObject != null ){
+                file2Socket.remove( fileObject );
+                try {
+                    server.close(key);
+                }
+                catch(IOException e){
+                    LOG.log( Level.INFO, null , e );
                 }
             }
         }
@@ -203,5 +215,5 @@ public class BrowserReload {
     private static final BrowserReload INSTANCE = new BrowserReload();
     private Map<String, FileObject> url2File;
     private Map<FileObject,String> file2Id;
-    private volatile SelectionKey connection;
+    private Map<FileObject,SelectionKey> file2Socket;
 }
