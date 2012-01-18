@@ -93,7 +93,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
      * @param allTargets all other targets in the main project
      */
     public AntTargetNode(AntProjectCookie project, TargetLister.Target target) {
-        super(Children.LEAF, Lookups.fixed(project, target, new TargetOpenCookie(target)));
+        super(Children.LEAF, Lookups.fixed(target, new TargetOpenCookie(target)));
         this.project = project;
         assert !target.isOverridden() : "Cannot include overridden targets";
         this.target = target;

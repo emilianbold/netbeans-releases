@@ -61,19 +61,22 @@ public class RunFileActionProvider implements ActionProvider {
     }
 
     @Override public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return context.lookup(AntProjectCookie.class) != null;
+        return context.lookup(AntProjectCookie.class) != null || context.lookup(TargetLister.Target.class) != null;
     }
 
     @Override public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        AntProjectCookie apc;
         String[] targets;
         TargetLister.Target target = context.lookup(TargetLister.Target.class);
         if (target != null) {
+            apc = target.getOriginatingScript();
             targets = new String[] {target.getName()};
         } else {
+            apc = context.lookup(AntProjectCookie.class);
             targets = null;
         }
         try {
-            new TargetExecutor(context.lookup(AntProjectCookie.class), targets).execute();
+            new TargetExecutor(apc, targets).execute();
         } catch (IOException ioe) {
             AntModule.err.notify(ioe);
         }
