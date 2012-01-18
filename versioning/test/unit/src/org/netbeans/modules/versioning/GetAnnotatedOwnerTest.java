@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
 import org.openide.util.test.MockLookup;
 
@@ -89,6 +90,32 @@ public class GetAnnotatedOwnerTest extends GetOwnerTest {
         assertNull(owner);
         
         assertNull(TestAnnotatedVCS.INSTANCE);
+    }
+    
+    public void testNoOwnerIfManagedByOtherSPI() throws IOException {
+        File f = new File(dataRootDir, OtherSPIVCS.MANAGED_FOLDER_PREFIX);
+        f.mkdirs();
+        f = new File(f, "file.txt");
+        assertNull(VersioningSupport.getOwner(f));
+        
+        f = new File(getVersionedFolder(), "file.txt");
+        assertNull(org.netbeans.modules.versioning.core.api.VersioningSupport.getOwner(VCSFileProxy.createFileProxy(f)));
+    }
+    
+    @org.netbeans.modules.versioning.core.spi.VersioningSystem.Registration(
+            actionsCategory="fileproxyvcs",
+            displayName="fileproxyvcs",
+            menuLabel="fileproxyvcs",
+            metadataFolderNames="")
+    public static class OtherSPIVCS extends org.netbeans.modules.versioning.core.spi.VersioningSystem {
+        static String MANAGED_FOLDER_PREFIX = "fileproxyspi";
+        @Override
+        public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
+            if(file.getParentFile() != null && file.getParentFile().getName().startsWith(MANAGED_FOLDER_PREFIX)) {
+                return file.getParentFile();
+            }
+            return null;
+        }
     }
     
 }
