@@ -117,7 +117,7 @@ public final class CmFieldGenerator extends AbstractMethodGenerator {
             final boolean remoteGetter, final boolean remoteSetter) throws IOException {
 
         // ejb class task creation
-        Task ejbClassTask = new Task<WorkingCopy>() {
+        Task<WorkingCopy> ejbClassTask = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(ejbClass);

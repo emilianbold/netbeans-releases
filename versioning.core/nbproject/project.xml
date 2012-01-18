@@ -90,7 +90,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -207,10 +207,11 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ade</friend>
+                <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <friend>org.netbeans.modules.versioning</friend>
                 <friend>org.netbeans.modules.versioning.masterfs</friend>
                 <friend>org.netbeans.modules.versioning.ui</friend>
-                <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <package>org.netbeans.modules.versioning.core.api</package>
                 <package>org.netbeans.modules.versioning.core.filesystems</package>
                 <package>org.netbeans.modules.versioning.core.spi</package>

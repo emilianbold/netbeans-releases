@@ -49,6 +49,8 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -60,6 +62,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -147,7 +150,12 @@ public class CallEjbCodeGenerator implements CodeGenerator {
             if (serverInstanceId == null) {
                 return true;
             }
-            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+            J2eePlatform platform = null;
+            try {
+                platform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+            } catch (InstanceRemovedException ex) {
+                Logger.getLogger(CallEjbCodeGenerator.class.getName()).log(Level.FINE, null, ex);
+            }
             if (platform == null) {
                 return true;
             }

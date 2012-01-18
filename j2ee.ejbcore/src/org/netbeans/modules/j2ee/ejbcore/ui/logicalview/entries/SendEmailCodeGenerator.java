@@ -58,6 +58,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -79,6 +81,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -88,6 +91,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -355,7 +359,12 @@ public class SendEmailCodeGenerator implements CodeGenerator {
         if (serverInstanceId == null) {
             return true;
         }
-        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+        J2eePlatform platform = null;
+        try {
+            platform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+            Logger.getLogger(SendEmailCodeGenerator.class.getName()).log(Level.FINE, null, ex);
+        }
         if (platform == null) {
             return true;
         }

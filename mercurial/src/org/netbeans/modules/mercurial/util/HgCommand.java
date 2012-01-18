@@ -977,6 +977,10 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doFetch(File repository, HgURL from, OutputLogger logger) throws HgException {
+        return doFetch(repository, from, true, logger);
+    }
+
+    public static List<String> doFetch(File repository, HgURL from, boolean enableFetchExtension, OutputLogger logger) throws HgException {
         if (repository == null || from == null) return null;
 
         InterRepositoryCommand command = new InterRepositoryCommand();
@@ -987,8 +991,10 @@ public class HgCommand {
         command.remoteUrl = from;
         command.repository = repository;
         command.additionalOptions.add(HG_VERBOSE_CMD);
-        command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
-        command.additionalOptions.add(HG_FETCH_EXT_CMD);
+        if (enableFetchExtension) {
+            command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
+            command.additionalOptions.add(HG_FETCH_EXT_CMD);
+        }
         if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
             command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
             command.additionalOptions.add(HG_MERGE_SIMPLE_TOOL);
