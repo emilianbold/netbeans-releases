@@ -166,8 +166,8 @@ public class GeneratingBracketCompleter {
                                         if (variable.isDollared()
                                                 && variable.getName() instanceof Identifier
                                                 && "GLOBALS".equals(((Identifier)variable.getName()).getName())
-                                                && arrayAccess.getIndex() instanceof Scalar) {
-                                            String index = ((Scalar)arrayAccess.getIndex()).getStringValue().trim();
+                                                && arrayAccess.getDimension().getIndex() instanceof Scalar) {
+                                            String index = ((Scalar)arrayAccess.getDimension().getIndex()).getStringValue().trim();
                                             if(index.length() > 0
                                                     && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
                                                 index = index.substring(1, index.length() - 1);

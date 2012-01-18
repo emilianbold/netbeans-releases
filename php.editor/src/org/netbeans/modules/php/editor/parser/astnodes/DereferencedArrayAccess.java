@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Holds a variable and an index that point to array or hashtable
- * <pre>e.g.<pre> $a[],
- * $a[1],
- * $a[$b],
- * $a{'name'}
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ArrayAccess extends Variable {
+public class DereferencedArrayAccess extends Dispatch {
+    private final ArrayDimension dimension;
 
-    public enum Type {
-        VARIABLE_ARRAY,
-        VARIABLE_HASHTABLE
+    public DereferencedArrayAccess(int start, int end, VariableBase dispatcher, ArrayDimension dimension) {
+        super(start, end, dispatcher);
+        this.dimension = dimension;
     }
 
-    /**
-     * In case of array / hashtable variable, the index expression is added
-     */
-    private ArrayDimension dimension;
-    private ArrayAccess.Type arrayType;
-
-    public ArrayAccess(int start, int end, VariableBase variableName, ArrayDimension dimension, ArrayAccess.Type arrayType) {
-        super(start, end, variableName);
-
-        //if (variableName != null) variableName.setParent(this);
-        //if (index != null) index.setParent(index);
-        this.dimension = dimension;
-        this.arrayType = arrayType;
+    @Override
+    public VariableBase getMember() {
+        return getDispatcher();
     }
 
     public ArrayDimension getDimension() {
         return dimension;
     }
 
-    public ArrayAccess.Type getArrayType() {
-        return arrayType;
-    }
-
-    /**
-     * Returns the name (expression) of this variable
-     *
-     * @return the expression name node
-     */
-    @Override
-    public VariableBase getName() {
-        return (VariableBase) super.getName();
-    }
-
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
 }

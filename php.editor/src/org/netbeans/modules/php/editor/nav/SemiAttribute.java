@@ -254,7 +254,7 @@ public class SemiAttribute extends DefaultVisitor {
             if (var != null && name != null) {
                 node2Element.put(var,
                         scopes.peek().enterWrite(name, Kind.VARIABLE, var));
-            }            
+            }
         }
         super.visit(node);
     }
@@ -276,10 +276,10 @@ public class SemiAttribute extends DefaultVisitor {
         Variable var = node.getVariable();
         final String name = extractVariableName(var);
 
-        if (var != null && name != null) {       
+        if (var != null && name != null) {
             node2Element.put(var,
                     scopes.peek().enterWrite(name, Kind.VARIABLE, var));
-        } 
+        }
 
         super.visit(node);
     }
@@ -303,7 +303,7 @@ public class SemiAttribute extends DefaultVisitor {
                 scopes.peek().enterWrite(name, Kind.VARIABLE, var);
             }
         }
-        Identifier parameterType = (node.getParameterType() != null) ? 
+        Identifier parameterType = (node.getParameterType() != null) ?
             CodeUtils.extractUnqualifiedIdentifier(node.getParameterType()) : null;
 
         if (parameterType != null){
@@ -317,7 +317,7 @@ public class SemiAttribute extends DefaultVisitor {
                 }
             }
         }
-        
+
         super.visit(node);
     }
 
@@ -632,11 +632,11 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(ArrayAccess node) {
-        if (node.getName() instanceof Variable && node.getIndex() instanceof Scalar) {
+        if (node.getName() instanceof Variable && node.getDimension().getIndex() instanceof Scalar) {
             String variableName = extractVariableName((Variable) node.getName());
 
             if (variableName != null && "GLOBALS".equals(variableName)) {
-                Scalar v = (Scalar) node.getIndex();
+                Scalar v = (Scalar) node.getDimension().getIndex();
 
                 if (v.getScalarType() == Type.STRING) {
                     String value = v.getStringValue();
@@ -685,7 +685,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         switch (k) {
             case FUNC:
-            case IFACE:    
+            case IFACE:
             case CLASS:
                 e = global.lookup(name, k);
                 break;
@@ -1177,7 +1177,7 @@ public class SemiAttribute extends DefaultVisitor {
             int attrs = PhpModifiers.ALL_FLAGS;
             switch(k) {
                 case CONST:
-                    
+
                 for (TypeConstantElement classMember : index.getAllTypeConstants(NameKind.exact(getName()), NameKind.prefix(name))) {
                     String idxName = classMember.getName();
                     idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
@@ -1408,7 +1408,7 @@ public class SemiAttribute extends DefaultVisitor {
             return el;
         }
 
-        public AttributedElement lookup(String name, Kind k) {            
+        public AttributedElement lookup(String name, Kind k) {
             AttributedElement el = null;
             Map<String, AttributedElement> name2El = name2Writes.get(k);
             if (name2El != null) {
