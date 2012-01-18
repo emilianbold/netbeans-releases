@@ -45,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.modules.profiler.categorization.api.definitions.CustomCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.PackageCategoryDefinition;
@@ -60,8 +61,8 @@ import org.openide.util.Lookup;
  * @author Jaroslav Bachorik
  * @author ads changed by ads
  */
-public class CategoryBuilder {
-
+abstract public class CategoryBuilder {
+    
     private static final Logger LOGGER = Logger.getLogger(CategoryBuilder.class.getName());
     private static final String CATEGORY_ATTRIB_CUSTOM = "custom"; // NOI18N
     private static final String CATEGORY_ATTRIB_EXCLUDES = "excludes"; // NOI18N
@@ -72,20 +73,19 @@ public class CategoryBuilder {
     private static final String CATEGORY_ATTRIB_TYPE = "type"; // NOI18N
     private static final String CATEGORY_ATTRIB_PACKAGE = "package"; // NOI18N
     private static final String SHADOW_SUFFIX = "shadow";// NOI18N
-    private String projectType;
     private CategoryContainer rootCategory = null;
     private Lookup.Provider project;
-    
-    public CategoryBuilder(Lookup.Provider proj, String projectTypeId) {
+        
+    public CategoryBuilder(@NonNull Lookup.Provider proj) {
+        assert proj != null;
         project = proj;
-        projectType = projectTypeId;
     }
 
     final public synchronized Category getRootCategory() {
         if (rootCategory == null) {
             rootCategory = new CategoryContainer("ROOT", Bundle.ROOT_CATEGORY_NAME(), Mark.DEFAULT); // NOI18N
 
-            FileObject aoi = FileUtil.getConfigFile("Projects/" + projectType + "/NBProfiler/Categories"); //NOI18N
+            FileObject aoi = FileUtil.getConfigFile("Projects/" + getProjectTypeId() + "/NBProfiler/Categories"); //NOI18N
             if (aoi != null) {
                 Enumeration<? extends FileObject> folders = aoi.getChildren(false);
                 while (folders.hasMoreElements()) {
@@ -100,6 +100,8 @@ public class CategoryBuilder {
     final protected Lookup.Provider getProject() {
         return project;
     }
+    
+    abstract protected String getProjectTypeId();
 
     private void processCategories(CategoryContainer container, FileObject node) {
         if (SHADOW_SUFFIX.equals(node.getExt())) {

@@ -58,6 +58,11 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 public class WebCategoryBuilder extends CategoryBuilder {
 
     public WebCategoryBuilder(Project proj) {
-        super(proj, "org-netbeans-modules-web-project");
+        super(proj);
+    }
+
+    @Override
+    protected String getProjectTypeId() {
+        return "org-netbeans-modules-web-project"; // NOI18N
     }
 }

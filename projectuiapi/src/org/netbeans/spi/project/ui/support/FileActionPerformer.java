@@ -42,60 +42,31 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.project.uiapi;
+package org.netbeans.spi.project.ui.support;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-import org.netbeans.spi.project.ui.support.FileActionPerformer;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.util.ContextAwareAction;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
- * Factory to be implemented by the ui implementation
- * @author Petr Hrebejk
+ * Callback interface for file-sensitive actions.
+ * @author Jaroslav Bachorik
+ * @since 1.56.0
  */
-public interface ActionsFactory {
+public interface FileActionPerformer {
 
-    // Actions releated directly to project UI
-
-    public Action setAsMainProjectAction();
-
-    public Action customizeProjectAction();
-
-    public Action openSubprojectsAction();
-
-    public Action closeProjectAction();
-
-    public Action newFileAction();
-    
-    public Action deleteProjectAction();
-    
-    public Action copyProjectAction();
-    
-    public Action moveProjectAction();
-    
-    public Action newProjectAction();
-            
-    // Actions sensitive to project selection
-    
-    public ContextAwareAction projectCommandAction( String command, String namePattern, Icon icon );
-    
-    public Action projectSensitiveAction( ProjectActionPerformer performer, String name, Icon icon );
-    
-    // Actions selection to main project selection
-    
-    public Action mainProjectCommandAction( String command, String name, Icon icon  );
+    /**
+     * Called when the context of the action changes and the action should
+     * be enabled or disabled within the new context, according to the newly
+     * selected file.
+     * @param file the currently selected file, or null if no file is selected
+     * @return true to enable the action, false to disable it
+     */
+    boolean enable(FileObject file);
         
-    public Action mainProjectSensitiveAction( ProjectActionPerformer performer, String name, Icon icon );
-    
-    // Actions sensitive to file
-    
-    public Action fileCommandAction( String command, String name, Icon icon );
-    
-    public Action fileSensitiveAction( FileActionPerformer performer, String name, Icon icon);
-
-    public Action renameProjectAction();
-
-    Action setProjectConfigurationAction();
+    /**
+     * Called when the user invokes the action.
+     * @param file the file this action was invoked for
+     */
+    void perform(@NonNull FileObject file);
     
 }
