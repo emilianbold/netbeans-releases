@@ -60,5 +60,5 @@ public class AliasedConstant extends AliasedElement implements ConstantElement {
     @Override
     public String getValue() {
         return getRealConstant().getValue();
-    }    
+    }
 }

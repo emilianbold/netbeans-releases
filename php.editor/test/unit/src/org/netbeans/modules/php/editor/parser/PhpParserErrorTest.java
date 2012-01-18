@@ -179,4 +179,12 @@ public class PhpParserErrorTest extends CslTestBase {
     public void testArrayDereferencing_07() throws Exception {
         checkErrors("testfiles/parser/arrayDereferencing_07.php");
     }
+
+    public void testArrayDereferencing_08() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_08.php");
+    }
+
+    public void testArrayDereferencing_09() throws Exception {
+        checkErrors("testfiles/parser/arrayDereferencing_09.php");
+    }
 }

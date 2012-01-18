@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.project;
-
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * @author Tomas Mysik
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class PhpLanguageOptionsAccessor {
+public class ArrayDimension extends Expression {
+    private final Expression index;
 
-    private static volatile PhpLanguageOptionsAccessor accessor;
-
-    public static void setDefault(PhpLanguageOptionsAccessor accessor) {
-        if (PhpLanguageOptionsAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
-        }
-        PhpLanguageOptionsAccessor.accessor = accessor;
+    public ArrayDimension(int start, int end, Expression index) {
+        super(start, end);
+        this.index = index;
     }
 
-    public static synchronized PhpLanguageOptionsAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-
-        Class<?> c = PhpLanguageOptions.class;
-        try {
-            Class.forName(c.getName(), true, PhpLanguageOptionsAccessor.class.getClassLoader());
-        } catch (ClassNotFoundException cnf) {
-            Exceptions.printStackTrace(cnf);
-        }
-        assert accessor != null;
-        return accessor;
+    public Expression getIndex() {
+        return index;
     }
 
-    public abstract void firePropertyChange(String propertyName, Object oldValue, Object newValue);
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
+    }
+
 }

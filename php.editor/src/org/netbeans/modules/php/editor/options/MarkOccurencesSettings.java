@@ -51,7 +51,7 @@ import org.openide.util.NbPreferences;
  * @author Jan Lahoda
  */
 public class MarkOccurencesSettings {
-    
+
     private static final String MARK_OCCURENCES = "MarkOccurences"; // NOI18N
 
     public static String ON_OFF = "OnOff"; // NOI18N
@@ -63,9 +63,9 @@ public class MarkOccurencesSettings {
         Preferences preferences = NbPreferences.forModule(MarkOccurencesOptionsPanelController.class);
         return preferences.node(MARK_OCCURENCES).node(getCurrentProfileId());
     }
-    
+
     private static String getCurrentProfileId() {
         return "default"; // NOI18N
     }
-    
+
 }

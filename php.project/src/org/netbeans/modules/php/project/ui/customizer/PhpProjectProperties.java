@@ -63,11 +63,9 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.PhpLanguageOptionsAccessor;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
@@ -546,15 +544,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         if (webRoot != null) {
             projectProperties.setProperty(WEB_ROOT, webRoot);
         }
-        String oldPhpVersion = projectProperties.getProperty(PHP_VERSION);
         if (phpVersion != null) {
             projectProperties.setProperty(PHP_VERSION, phpVersion);
         }
-        String oldShortTags = projectProperties.getProperty(SHORT_TAGS);
         if (shortTags != null) {
             projectProperties.setProperty(SHORT_TAGS, shortTags);
         }
-        String oldAspTags = projectProperties.getProperty(ASP_TAGS);
         if (aspTags != null) {
             projectProperties.setProperty(ASP_TAGS, aspTags);
         }
@@ -624,20 +619,6 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         // UI log
         logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),
                 getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
-
-        if (shortTags != null && !shortTags.equals(oldShortTags)) {
-            PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_SHORT_TAGS,
-                    getBoolean(oldShortTags), getBoolean(shortTags));
-        }
-        if (aspTags != null && !aspTags.equals(oldAspTags)) {
-            PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_ASP_TAGS,
-                    getBoolean(oldAspTags), getBoolean(aspTags));
-        }
-        if (phpVersion != null && !phpVersion.equals(oldPhpVersion)) {
-            // actual file needs to be reparsed (because of php 5.3 hint)
-            PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_PHP_VERSION,
-                    ProjectPropertiesSupport.getPhpVersion(oldPhpVersion), ProjectPropertiesSupport.getPhpVersion(phpVersion));
-        }
     }
 
     void saveCustomizerExtenders() {

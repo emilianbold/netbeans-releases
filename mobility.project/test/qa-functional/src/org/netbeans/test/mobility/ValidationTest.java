@@ -141,13 +141,17 @@ public class ValidationTest extends JellyTestCase {
             cdtsfp.waitClosed();
         }
         
-        new DialogOperator("Searching for Java ME platforms").waitClosed(); //TODO I18N
+        DialogOperator sfjmep = new DialogOperator("Searching for Java ME platforms"); //TODO I18N
+        sfjmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        sfjmep.waitClosed();
 
         (new JButtonOperator(ajpw, "Next")).pushNoBlock();
         ajpw.stepsWaitSelectedValue("Detected Platforms");
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
 
-        new DialogOperator("Detecting Java ME platforms").waitClosed(); //TODO I18N
+        DialogOperator djmep = new DialogOperator("Detecting Java ME platforms"); //TODO I18N
+        djmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        djmep.waitClosed();
         
         (new JButtonOperator(ajpw, "Finish")).pushNoBlock();
         

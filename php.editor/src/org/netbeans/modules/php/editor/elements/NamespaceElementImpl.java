@@ -73,7 +73,7 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
     public static Set<NamespaceElement> fromSignature(final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         return fromSignature(NameKind.empty(), indexQuery, indexResult);
     }
-    
+
     public static Set<NamespaceElement> fromSignature(final NameKind query, final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<NamespaceElement> retval = new HashSet<NamespaceElement>();
@@ -109,7 +109,7 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
     private static boolean matchesQuery(final NameKind query, NamespaceSignatureParser signParser) {
         Parameters.notNull("NameKind query: can't be null", query);
         final QualifiedName qualifiedName = signParser.getQualifiedName();
-        return (query instanceof NameKind.Empty) || 
+        return (query instanceof NameKind.Empty) ||
                 (!qualifiedName.isDefaultNamespace() && query.matchesName(NamespaceElement.KIND, qualifiedName));
     }
 
@@ -185,5 +185,5 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
     }
 
 
-    
+
 }
