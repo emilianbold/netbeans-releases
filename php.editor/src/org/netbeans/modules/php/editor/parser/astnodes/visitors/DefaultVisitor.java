@@ -66,7 +66,7 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(ArrayAccess node) {
         scan(node.getName());
-        scan(node.getIndex());
+        scan(node.getDimension());
     }
 
     @Override
@@ -546,11 +546,11 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(DereferencedArrayAccess node) {
         scan(node.getDispatcher());
-        scan(node.getIndex());
+        scan(node.getDimension());
     }
 
     @Override
-    public void visit(ArrayIndex node) {
+    public void visit(ArrayDimension node) {
         scan(node.getIndex());
     }
 

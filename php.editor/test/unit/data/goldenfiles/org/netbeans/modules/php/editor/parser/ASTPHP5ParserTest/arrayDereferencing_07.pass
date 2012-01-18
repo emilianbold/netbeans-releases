@@ -65,17 +65,17 @@
                     </FucntionName>
                     <Parameters>
                         <DereferencedArrayAccess start='29' end='58'>
-                            <Index>
-                                <ArrayIndex start='55' end='58'>
-                                    <Scalar start='56' end='57' type='INT' value='1'/>
-                                </ArrayIndex>
-                            </Index>
-                            <DereferencedArrayAccess start='29' end='55'>
+                            <ArrayDimension start='55' end='58'>
                                 <Index>
-                                    <ArrayIndex start='52' end='55'>
-                                        <Scalar start='53' end='54' type='INT' value='0'/>
-                                    </ArrayIndex>
+                                    <Scalar start='56' end='57' type='INT' value='1'/>
                                 </Index>
+                            </ArrayDimension>
+                            <DereferencedArrayAccess start='29' end='55'>
+                                <ArrayDimension start='52' end='55'>
+                                    <Index>
+                                        <Scalar start='53' end='54' type='INT' value='0'/>
+                                    </Index>
+                                </ArrayDimension>
                                 <MethodInvocation start='29' end='52'>
                                     <Variable start='29' end='37' isDollared='true'>
                                         <Identifier start='30' end='37' name='myClass'/>

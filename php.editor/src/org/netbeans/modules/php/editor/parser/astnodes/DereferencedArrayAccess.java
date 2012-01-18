@@ -46,11 +46,11 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class DereferencedArrayAccess extends Dispatch {
-    private final ArrayIndex index;
+    private final ArrayDimension dimension;
 
-    public DereferencedArrayAccess(int start, int end, VariableBase dispatcher, ArrayIndex index) {
+    public DereferencedArrayAccess(int start, int end, VariableBase dispatcher, ArrayDimension dimension) {
         super(start, end, dispatcher);
-        this.index = index;
+        this.dimension = dimension;
     }
 
     @Override
@@ -58,8 +58,8 @@ public class DereferencedArrayAccess extends Dispatch {
         return getDispatcher();
     }
 
-    public ArrayIndex getIndex() {
-        return index;
+    public ArrayDimension getDimension() {
+        return dimension;
     }
 
     @Override

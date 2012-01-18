@@ -46,16 +46,16 @@
         <Statements>
             <ExpressionStatement start='7' end='40'>
                 <DereferencedArrayAccess start='7' end='39'>
-                    <Index>
-                        <ArrayIndex start='37' end='39'>
-                        </ArrayIndex>
-                    </Index>
-                    <DereferencedArrayAccess start='7' end='37'>
+                    <ArrayDimension start='37' end='39'>
                         <Index>
-                            <ArrayIndex start='29' end='37'>
-                                <Scalar start='30' end='36' type='STRING' value='"test"'/>
-                            </ArrayIndex>
                         </Index>
+                    </ArrayDimension>
+                    <DereferencedArrayAccess start='7' end='37'>
+                        <ArrayDimension start='29' end='37'>
+                            <Index>
+                                <Scalar start='30' end='36' type='STRING' value='"test"'/>
+                            </Index>
+                        </ArrayDimension>
                         <MethodInvocation start='7' end='29'>
                             <Variable start='7' end='14' isDollared='true'>
                                 <Identifier start='8' end='14' name='object'/>

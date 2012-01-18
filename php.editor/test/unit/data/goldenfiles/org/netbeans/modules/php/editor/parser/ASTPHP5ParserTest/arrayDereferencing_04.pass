@@ -37,11 +37,11 @@
         <Statements>
             <EchoStatement start='7' end='23'>
                 <DereferencedArrayAccess start='12' end='22'>
-                    <Index>
-                        <ArrayIndex start='19' end='22'>
+                    <ArrayDimension start='19' end='22'>
+                        <Index>
                             <Scalar start='20' end='21' type='INT' value='0'/>
-                        </ArrayIndex>
-                    </Index>
+                        </Index>
+                    </ArrayDimension>
                     <FunctionInvocation start='12' end='19'>
                         <FucntionName start='12' end='17'>
                             <Variable start='12' end='17' isDollared='true'>

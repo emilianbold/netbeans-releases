@@ -53,7 +53,7 @@ parser code {:
 		}
         if (indexes != null) {
             for (Object i : indexes) {
-                ArrayIndex index = (ArrayIndex) i;
+                ArrayDimension index = (ArrayDimension) i;
                 dispatch = new DereferencedArrayAccess(dispatch.getStartOffset(), index.getEndOffset(), dispatch, index);
             }
         }
@@ -2950,13 +2950,13 @@ base_variable_with_function_calls:var T_OBJECT_OPERATOR object_property:memberPr
 	// now create the dispatch(es) nodes
 	Dispatch dispatch = null;
 	VariableBase dispatcher = var;
-    List arrayIndexes = aa;
+    List ArrayDimensiones = aa;
 	Iterator listIt = list.iterator();
 	while (listIt.hasNext()) {
 		VariableBase property = (VariableBase)listIt.next();
-		dispatch = parser.createDispatch(dispatcher, property, arrayIndexes);
+		dispatch = parser.createDispatch(dispatcher, property, ArrayDimensiones);
 		dispatcher = dispatch;
-        arrayIndexes = new LinkedList();
+        ArrayDimensiones = new LinkedList();
 	}
 	RESULT = dispatch;
 :}
@@ -2998,7 +2998,7 @@ T_OBJECT_OPERATOR object_property:memberProperty method_or_not:paramsList array_
 		result = new FunctionInvocation(memberPropertyleft, paramsListright, /*parser.ast,*/ functionName, paramsList);
 	}
     for (Object i : aa) {
-        ArrayIndex index = (ArrayIndex) i;
+        ArrayDimension index = (ArrayDimension) i;
         result = new DereferencedArrayAccess(result.getStartOffset(), index.getEndOffset(), result, index);
     }
 	RESULT = result;
@@ -3021,13 +3021,13 @@ array_access_or_not ::=
 T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
     List list = new LinkedList();
-    list.add(new ArrayIndex(oleft, endright, index));
+    list.add(new ArrayDimension(oleft, endright, index));
     RESULT = list;
 :}
 
 | array_access_or_not:list T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
-    list.add(new ArrayIndex(oleft, endright, index));
+    list.add(new ArrayDimension(oleft, endright, index));
     RESULT = list;
 :}
 
@@ -3091,12 +3091,12 @@ base_variable:var
 function_call_with_array ::=
 function_call:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
-    RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayIndex(oleft, endright, index));
+    RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayDimension(oleft, endright, index));
 :}
 
 | function_call_with_array:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
-    RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayIndex(oleft, endright, index));
+    RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayDimension(oleft, endright, index));
 :}
 ;
 
@@ -3130,15 +3130,15 @@ reference_variable:var
 ;
 
 reference_variable ::=
-reference_variable:varName T_OPEN_RECT dim_offset:index T_CLOSE_RECT:end
+reference_variable:varName T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
-	Variable var = new ArrayAccess(varNameleft, endright, /*parser.ast,*/ varName, index, ArrayAccess.Type.VARIABLE_ARRAY);
+	Variable var = new ArrayAccess(varNameleft, endright, /*parser.ast,*/ varName, new ArrayDimension(oleft, endright, index), ArrayAccess.Type.VARIABLE_ARRAY);
 	RESULT = var;
 :}
 
-| reference_variable:varName T_CURLY_OPEN expr:index T_CURLY_CLOSE:end
+| reference_variable:varName T_CURLY_OPEN:o expr:index T_CURLY_CLOSE:end
 {:
-	Variable var = new ArrayAccess(varNameleft, endright, /*parser.ast,*/ varName, index, ArrayAccess.Type.VARIABLE_HASHTABLE);
+	Variable var = new ArrayAccess(varNameleft, endright, /*parser.ast,*/ varName, new ArrayDimension(oleft, endright, index), ArrayAccess.Type.VARIABLE_HASHTABLE);
 	RESULT = var;
 :}
 
@@ -3182,15 +3182,15 @@ object_dim_list:var
 ;
 
 object_dim_list ::=
-object_dim_list:var T_OPEN_RECT dim_offset:index T_CLOSE_RECT:end
+object_dim_list:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
-	Variable varArray = new ArrayAccess(varleft, endright, /*parser.ast,*/ var, index, ArrayAccess.Type.VARIABLE_ARRAY);
+	Variable varArray = new ArrayAccess(varleft, endright, /*parser.ast,*/ var, new ArrayDimension(oleft, endright, index), ArrayAccess.Type.VARIABLE_ARRAY);
 	RESULT = varArray;
 :}
 
-| object_dim_list:var T_CURLY_OPEN expr:index T_CURLY_CLOSE:end
+| object_dim_list:var T_CURLY_OPEN:o expr:index T_CURLY_CLOSE:end
 {:
-	Variable varArray = new ArrayAccess(varleft, endright, /*parser.ast,*/ var, index, ArrayAccess.Type.VARIABLE_HASHTABLE);
+	Variable varArray = new ArrayAccess(varleft, endright, /*parser.ast,*/ var, new ArrayDimension(oleft, endright, index), ArrayAccess.Type.VARIABLE_HASHTABLE);
 	RESULT = varArray;
 :}
 
@@ -3365,9 +3365,9 @@ tracked_variable:var
 	RESULT = var;
 :}
 
-| tracked_variable:varName T_OPEN_RECT encaps_var_offset:index T_CLOSE_RECT:end
+| tracked_variable:varName T_OPEN_RECT:o encaps_var_offset:index T_CLOSE_RECT:end
 {:
-	Variable var = new ArrayAccess(varNameleft, endright, /*parser.ast,*/ varName, index, ArrayAccess.Type.VARIABLE_ARRAY);
+	Variable var = new ArrayAccess(varNameleft, endright, /*parser.ast,*/ varName, new ArrayDimension(oleft, endright, index), ArrayAccess.Type.VARIABLE_ARRAY);
 	RESULT = var;
 :}
 
@@ -3384,10 +3384,10 @@ tracked_variable:var
 	RESULT = var;
 :}
 
-| T_DOLLAR_OPEN_CURLY_BRACES:start T_STRING_VARNAME:varName T_OPEN_RECT expr:index T_CLOSE_RECT T_CURLY_CLOSE:end
+| T_DOLLAR_OPEN_CURLY_BRACES:start T_STRING_VARNAME:varName T_OPEN_RECT:o expr:index T_CLOSE_RECT:c T_CURLY_CLOSE:end
 {:
 	Variable var = new Variable(varNameleft, varNameright, /*parser.ast,*/ varName);
-	Variable indexedVar = new ArrayAccess(startleft, endright, /*parser.ast,*/ var, index, ArrayAccess.Type.VARIABLE_ARRAY);
+	Variable indexedVar = new ArrayAccess(startleft, endright, /*parser.ast,*/ var, new ArrayDimension(oleft, cright, index), ArrayAccess.Type.VARIABLE_ARRAY);
 	RESULT = indexedVar;
 :}
 

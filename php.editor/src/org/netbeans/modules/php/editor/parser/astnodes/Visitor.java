@@ -288,5 +288,5 @@ public interface Visitor {
 
     public void visit(DereferencedArrayAccess node);
 
-    public void visit(ArrayIndex node);
+    public void visit(ArrayDimension node);
 }

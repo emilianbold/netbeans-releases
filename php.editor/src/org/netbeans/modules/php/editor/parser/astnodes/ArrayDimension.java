@@ -45,10 +45,10 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ArrayIndex extends Expression {
+public class ArrayDimension extends Expression {
     private final Expression index;
 
-    public ArrayIndex(int start, int end, Expression index) {
+    public ArrayDimension(int start, int end, Expression index) {
         super(start, end);
         this.index = index;
     }

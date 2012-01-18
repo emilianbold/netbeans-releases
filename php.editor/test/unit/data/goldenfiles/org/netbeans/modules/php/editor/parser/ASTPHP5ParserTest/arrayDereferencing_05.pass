@@ -40,16 +40,16 @@
         <Statements>
             <ExpressionStatement start='7' end='31'>
                 <DereferencedArrayAccess start='7' end='30'>
-                    <Index>
-                        <ArrayIndex start='28' end='30'>
-                        </ArrayIndex>
-                    </Index>
-                    <DereferencedArrayAccess start='7' end='28'>
+                    <ArrayDimension start='28' end='30'>
                         <Index>
-                            <ArrayIndex start='20' end='28'>
-                                <Scalar start='21' end='27' type='STRING' value='"test"'/>
-                            </ArrayIndex>
                         </Index>
+                    </ArrayDimension>
+                    <DereferencedArrayAccess start='7' end='28'>
+                        <ArrayDimension start='20' end='28'>
+                            <Index>
+                                <Scalar start='21' end='27' type='STRING' value='"test"'/>
+                            </Index>
+                        </ArrayDimension>
                         <FunctionInvocation start='7' end='20'>
                             <FucntionName start='7' end='18'>
                                 <NamespaceName start='7' end='18' isCurrent='false' isGlobal='false'>
