@@ -43,44 +43,31 @@
 package org.apache.tools.ant.module.run;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(category="Build", id="org.apache.tools.ant.module.run.RunTargetAction")
-@ActionRegistration(displayName="#LBL_execute_target", lazy=false)
+@ActionRegistration(displayName="#LBL_execute_target")
 @ActionReference(path="org-apache-tools-ant-module/target-actions", position=300)
 @Messages("LBL_execute_target=Run Target")
-public final class RunTargetAction extends AbstractAction implements ContextAwareAction {
+public final class RunTargetAction implements ActionListener {
 
-    private final Lookup context;
+    private final TargetLister.Target target;
 
-    public RunTargetAction() {
-        this(null);
-    }
-
-    @Override public Action createContextAwareInstance(Lookup context) {
-        return new RunTargetAction(context);
-    }
-
-    private RunTargetAction(Lookup context) {
-        super(Bundle.LBL_execute_target());
-        this.context = context;
+    public RunTargetAction(TargetLister.Target target) {
+        this.target = target;
     }
 
     @Override public void actionPerformed(ActionEvent e) {
         // XXX warn if is target.isInternal()? used to hide it
         try {
-            new TargetExecutor(context.lookup(AntProjectCookie.class), new String[] {context.lookup(TargetLister.Target.class).getName()}).execute();
+            new TargetExecutor(target.getOriginatingScript(), new String[] {target.getName()}).execute();
         } catch (IOException ioe) {
             AntModule.err.notify(ioe);
         }
