@@ -346,8 +346,8 @@ public class PackagingConfiguration {
     }
     
     private class PackagerIntNodeProp extends IntNodeProp {
-        public PackagerIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
-            super(intConfiguration, canWrite, unused, name, description);
+        public PackagerIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String name, String displayName, String description) {
+            super(intConfiguration, canWrite, name, displayName, description);
         }
         
         
