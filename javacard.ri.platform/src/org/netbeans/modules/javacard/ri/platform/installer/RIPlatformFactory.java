@@ -212,9 +212,22 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         //not present
         //XXX check if is RI? or if not wrapper?
         addMissingPropertiesJC302();
+        
+        // XXX hack for 3.0.5 string annotation support
+        // Java Card team can not change platform properties inside theit SDK
+        // so they asked me to hardcode lib/api_classic_annotations.jar to classic_bootclasspath
+        // and I do it with a heart full of sorrow and regret...
+        final SpecificationVersion platformVersion = new SpecificationVersion(platformProps.getProperty(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION));
+        if (Utils.useCompilationPreprocessor(platformVersion)) {
+            String hackedClassicBootClasspath = platformProps.get(JavacardPlatformKeyNames.PLATFORM_CLASSIC_BOOT_CLASSPATH)
+                    + ':' + Utils.STRING_ANNOTATION_PREPROCESSOR_JAR_PATH; // NOI18N
+            platformProps.put(JavacardPlatformKeyNames.PLATFORM_CLASSIC_BOOT_CLASSPATH, hackedClassicBootClasspath);
+        }
+        
         //Translate UNIX-style relative paths into platform-specific absolute
         //paths usable by Ant
         translatePaths(FileUtil.toFile(baseDir), platformProps);
+        
         hackAntTasksJarFor302();
         //Get the file name.  The first one installed is always called
         //javacard_default

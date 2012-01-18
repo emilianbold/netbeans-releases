@@ -58,7 +58,6 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -67,14 +66,9 @@ import org.openide.util.Parameters;
  * @author Tim Boudreau
  */
 public final class JCUtil {
-    private static final SpecificationVersion VERSION_PREPROCESSOR_SUPPORTS_FROM = new SpecificationVersion("3.0.4"); // NOI18N
 
     private JCUtil(){}
     
-    public static boolean useCompilationPreprocessor(SpecificationVersion javacardVersion) {
-        return javacardVersion.compareTo(VERSION_PREPROCESSOR_SUPPORTS_FROM) >= 0;
-    }
-
     public static DataObject createFakeJavacardPlatform(String name) {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         MultiFileSystem mfs;
