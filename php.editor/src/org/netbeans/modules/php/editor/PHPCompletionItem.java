@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -110,11 +113,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -128,7 +131,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     private final ElementHandle element;
     protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    private static final Cache<FileObject, Properties> PROPERTIES_CACHE = new Cache<FileObject, Properties>(new WeakHashMap<FileObject, Properties>());
+    private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE = new Cache<FileObject, PhpLanguageProperties>(new WeakHashMap<FileObject, PhpLanguageProperties>());
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
@@ -228,12 +231,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             FullyQualifiedElement ifq = (FullyQualifiedElement) elem;
             final QualifiedName qn = QualifiedName.create(request.prefix);
             final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-            Properties props = PROPERTIES_CACHE.get(fileObject);
+            PhpLanguageProperties props = PROPERTIES_CACHE.get(fileObject);
             if (props == null) {
-                props = PhpLanguageOptions.getDefault().getProperties(fileObject);
+                props = PhpLanguageProperties.forFileObject(fileObject);
+                PropertyChangeListener propertyChangeListener = WeakListeners.propertyChange(new PhpVersionChangeListener(fileObject), props);
+                props.addPropertyChangeListener(propertyChangeListener);
                 PROPERTIES_CACHE.save(fileObject, props);
             }
-            if (props.getPhpVersion() != PhpLanguageOptions.PhpVersion.PHP_5) {
+            if (props.getPhpVersion() != PhpLanguageProperties.PhpVersion.PHP_5) {
                 if (generateAs == null) {
                     CodeCompletionType codeCompletionType = OptionsUtils.codeCompletionType();
                     switch (codeCompletionType) {
@@ -1489,7 +1494,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
     }
-    
+
     static class LanguageConstructForTypeHint extends LanguageConstructItem {
         public LanguageConstructForTypeHint(String fncName, CompletionRequest request) {
             super(fncName, request);
@@ -1544,5 +1549,24 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 }
             }, 750, TimeUnit.MILLISECONDS);
         }
+    }
+
+    private class PhpVersionChangeListener implements PropertyChangeListener {
+        private final WeakReference<FileObject> fileObjectReference;
+
+        public PhpVersionChangeListener(FileObject fileObject) {
+            this.fileObjectReference = new WeakReference<FileObject>(fileObject);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpLanguageProperties.PROP_PHP_VERSION.equals(evt.getPropertyName())) {
+                FileObject fileObject = fileObjectReference.get();
+                if (fileObject != null) {
+                    PROPERTIES_CACHE.save(fileObject, PhpLanguageProperties.forFileObject(fileObject));
+                }
+            }
+        }
+
     }
 }

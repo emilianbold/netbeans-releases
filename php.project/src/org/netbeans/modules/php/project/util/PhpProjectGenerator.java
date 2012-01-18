@@ -54,8 +54,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProjectType;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -237,8 +237,8 @@ public final class PhpProjectGenerator {
     }
 
     private static void configureTags(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
-        sharedProperties.setProperty(PhpProjectProperties.SHORT_TAGS, String.valueOf(PhpLanguageOptions.SHORT_TAGS_ENABLED));
-        sharedProperties.setProperty(PhpProjectProperties.ASP_TAGS, String.valueOf(PhpLanguageOptions.ASP_TAGS_ENABLED));
+        sharedProperties.setProperty(PhpProjectProperties.SHORT_TAGS, String.valueOf(PhpLanguageProperties.SHORT_TAGS_ENABLED));
+        sharedProperties.setProperty(PhpProjectProperties.ASP_TAGS, String.valueOf(PhpLanguageProperties.ASP_TAGS_ENABLED));
     }
 
     private static void configureIncludePath(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
