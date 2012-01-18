@@ -125,7 +125,7 @@ public final class VersioningSupport {
     public static boolean isExcluded (VCSFileProxy folder) {
         // forbid scanning for UNC paths \\ or \\computerName
         if (folder.getPath().startsWith("\\\\")) { //NOI18N
-            return folder.getParentFile() == null || folder.getParentFile().equals("\\\\"); //NOI18N
+            return folder.getParentFile() == null || folder.getParentFile().getPath().equals("\\\\"); //NOI18N
         }
         for (VCSFileProxy unversionedFolder : Utils.getUnversionedFolders()) {
             if (Utils.isAncestorOrEqual(unversionedFolder, folder, true)) {
