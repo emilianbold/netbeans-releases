@@ -70,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -88,6 +89,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     private final ChangeSupport cs;
     private final ArrayList<RemoteServerRecord> unlisted;
     private final ArrayList<RemoteServerRecord> items = new ArrayList<RemoteServerRecord>();
+    private static final RequestProcessor RP = new RequestProcessor("Remote setup", 1); // NOI18N
 
     public RemoteServerList() {
         defaultIndex = getPreferences().getInt(DEFAULT_INDEX, 0);
@@ -117,7 +119,16 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     }
 
     @Override
-    public void connected(ExecutionEnvironment env) {
+    public void connected(final ExecutionEnvironment env) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                checkSetup(env);
+            }
+        });  
+    }
+
+    private void checkSetup(ExecutionEnvironment env) {
         Collection<RemoteServerRecord> recordsToNotify = new ArrayList<RemoteServerRecord>();
         synchronized (this) {
             for (RemoteServerRecord rec : items) {
@@ -139,7 +150,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             for (RemoteServerRecord rec : recordsToNotify) {
                 rec.checkHostInfo();
             }
-        }
+        }        
     }
 
     @Override
