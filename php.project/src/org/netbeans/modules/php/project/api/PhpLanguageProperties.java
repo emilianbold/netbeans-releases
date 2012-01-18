@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 /**
  * Helper class to get PHP language properties like ASP tags supported etc.
  * @author Tomas Mysik
- * @since 2.18
+ * @since 2.44
  */
 public final class PhpLanguageProperties {
     /**
@@ -88,9 +88,6 @@ public final class PhpLanguageProperties {
         // order is important! from oldest to newest, see #getDefault()
         PHP_5(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_5")), // NOI18N
         PHP_53(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_53")), // NOI18N
-        /**
-         * @since 2.43
-         */
         PHP_54(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_54")); // NOI18N
 
         private final String displayName;
@@ -161,7 +158,6 @@ public final class PhpLanguageProperties {
      * file object does not belong to any project.
      * @param fileObject file object to get {@link PhpLanguageProperties} for, can be {@code null}
      * @return the instance of {@link PhpLanguageProperties} class for the given file object.
-     * @since 2.44
      */
     public static PhpLanguageProperties forFileObject(FileObject fileObject) {
         if (fileObject != null) {
@@ -197,7 +193,6 @@ public final class PhpLanguageProperties {
         * Get the {@link PhpVersion PHP version} of the project.
         * If not specified, {@link PhpVersion#getDefault() default PHP version} is returned.
         * @return the {@link PhpVersion PHP version} of the project, or {@link PhpVersion#getDefault() default PHP version} if not known
-        * @since 2.16
         */
     public PhpVersion getPhpVersion() {
         return impl.getPhpVersion();
@@ -207,7 +202,6 @@ public final class PhpLanguageProperties {
     * Add listener that is notified when any "important" PHP language property changes.
     * @param listener a listener to add
     * @see #removePropertyChangeListener(PropertyChangeListener)
-    * @since 2.44
     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         impl.addPropertyChangeListener(listener);
@@ -217,7 +211,6 @@ public final class PhpLanguageProperties {
     * Remove listener.
     * @param listener a listener to remove
     * @see #addPropertyChangeListener(PropertyChangeListener)
-    * @since 2.44
     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
