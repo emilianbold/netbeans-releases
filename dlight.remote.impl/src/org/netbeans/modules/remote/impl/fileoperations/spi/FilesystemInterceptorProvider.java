@@ -233,8 +233,15 @@ abstract public class FilesystemInterceptorProvider {
             if (lookupAll.size() == 1) {
                 defaultProvider = iterator.next();
             } else {
-                iterator.next();
-                defaultProvider = iterator.next();
+                while(iterator.hasNext()) {
+                    FilesystemInterceptorProvider next = iterator.next();
+                    if (next.getClass().getName().indexOf("Mockup") >= 0) { //NOI18N
+                        defaultProvider = next;
+                    }
+                }
+                if (defaultProvider == null) {
+                    defaultProvider = lookupAll.iterator().next();
+                }
             }
         }
         return defaultProvider;

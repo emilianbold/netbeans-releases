@@ -87,7 +87,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.j2ee.ejbcore.action.Bundle.*;
 
 /**
  *
@@ -129,7 +128,7 @@ public final class UseDatabaseGenerator {
             try {
                 if (findProjectDatasource(j2eeModuleProvider, datasource.getJndiName()) != null) {
                     NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                            server_resource_exists_message(datasource.getJndiName()));
+                            Bundle.server_resource_exists_message(datasource.getJndiName()));
                     DialogDisplayer.getDefault().notify(descriptor);
                 } else {
                     j2eeModuleProvider.getConfigSupport().createDatasource(

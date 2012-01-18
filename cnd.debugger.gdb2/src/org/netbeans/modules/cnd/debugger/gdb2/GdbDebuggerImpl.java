@@ -1894,8 +1894,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else {
             visited = true;
         }
-	visitedLocation = MILocation.make(l, visited);
-        setVisitedLocation(visitedLocation);
+        setVisitedLocation(MILocation.make(l, visited));
         
         state().isUpAllowed = !l.bottomframe();
         state().isDownAllowed = !l.topframe();
@@ -2996,10 +2995,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     frameValue = ((MIResult)stack.asList().get(0)).value();
 		    MITList frameTuple = frameValue.asTuple();
 		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size(), breakpoint);
-		}
-
-		visitedLocation = MILocation.make(homeLoc, false);
-		setVisitedLocation(visitedLocation);
+                }
+                
+                MITList frameTuple = null;
+                boolean visited = false;
+                // find the first frame with source info if dis was not requested
+                for (MITListItem stf : stack.asList()) {
+                    frameTuple = ((MIResult)stf).value().asTuple();
+                    if (disRequested || frameTuple.valueOf("file") != null) { //NOI18N
+                        break;
+                    }
+                    visited = true;
+                }
+		setVisitedLocation(MILocation.make(this, frameTuple, null, visited, stack.size(), breakpoint));
                 
                 state().isUpAllowed = !homeLoc.bottomframe();
                 state().isDownAllowed = !homeLoc.topframe();
