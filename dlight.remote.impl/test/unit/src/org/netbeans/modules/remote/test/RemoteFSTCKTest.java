@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.remote.test;
 
-import java.util.Date;
-import java.util.GregorianCalendar;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
@@ -64,13 +62,11 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        if(new GregorianCalendar(2012, 0, 20).getTime().before(new Date())) {
-            suite.addTestSuite(FileSystemTestHid.class);
-            suite.addTestSuite(FileObjectTestHid.class);
-            suite.addTestSuite(AttributesTestHidden.class);
-            suite.addTestSuite(URLMapperTestHidden.class);
-            suite.addTestSuite(FileUtilTestHidden.class);
-        }
+        suite.addTestSuite(FileSystemTestHid.class);
+        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(AttributesTestHidden.class);
+        suite.addTestSuite(URLMapperTestHidden.class);
+        suite.addTestSuite(FileUtilTestHidden.class);
         return new RemoteFSTCKTest(suite);
     }
 

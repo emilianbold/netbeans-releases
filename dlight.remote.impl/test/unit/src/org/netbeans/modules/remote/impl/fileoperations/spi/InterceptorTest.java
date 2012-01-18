@@ -49,36 +49,36 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
  *
  * @author Alexander Simon
  */
-public class FileOperationsTest extends NativeExecutionBaseTestSuite {
+public class InterceptorTest extends NativeExecutionBaseTestSuite {
     @SuppressWarnings("unchecked")
-    public FileOperationsTest() {
+    public InterceptorTest() {
         this("FileOperations API", getTestClasses());
     }
 
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
-            FileOperationsTestCase.class
+            InterceptorTestCase.class
         };
     }
     
     @SuppressWarnings("unchecked")
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new FileOperationsTest(testClass.getName(), testClass);
+    public static InterceptorTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
+        return new InterceptorTest(testClass.getName(), testClass);
     }
 
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
+    public static InterceptorTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
         Class[] classes = new Class[timesToRepeat];
         for (int i = 0; i < classes.length; i++) {
             classes[i] = testClass;            
         }
-        return new FileOperationsTest(testClass.getName(), classes);
+        return new InterceptorTest(testClass.getName(), classes);
     }
     
-    public FileOperationsTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+    public InterceptorTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
         super(name, "remote.platforms", testClasses);
     }
 
     public static Test suite() {
-        return new FileOperationsTest();
+        return new InterceptorTest();
     }
 }

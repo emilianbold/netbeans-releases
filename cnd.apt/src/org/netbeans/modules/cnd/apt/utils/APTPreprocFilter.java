@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.impl.fileoperations.spi;
+package org.netbeans.modules.cnd.apt.utils;
 
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
- *
- * @author Alexander Simon
+ * filter out preprocessor tokens from original token stream
+ * @author Vladimir Voskresensky
  */
-public class FileOperationsTest extends NativeExecutionBaseTestSuite {
-    @SuppressWarnings("unchecked")
-    public FileOperationsTest() {
-        this("FileOperations API", getTestClasses());
+public class APTPreprocFilter implements TokenStream, APTTokenStream {
+
+    private final TokenStream orig;
+
+    /**
+     * Creates a new instance of APTCommentsFilter
+     */
+    public APTPreprocFilter(TokenStream orig) {
+        this.orig = orig;
     }
 
-    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-            FileOperationsTestCase.class
-        };
-    }
-    
-    @SuppressWarnings("unchecked")
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new FileOperationsTest(testClass.getName(), testClass);
-    }
-
-    public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
-        Class[] classes = new Class[timesToRepeat];
-        for (int i = 0; i < classes.length; i++) {
-            classes[i] = testClass;            
+    @Override
+    public APTToken nextToken() {
+        try {
+            APTToken next = (APTToken) orig.nextToken();
+            while (APTUtils.isPreprocessorToken(next)) {
+                next = (APTToken) orig.nextToken();
+            }
+            return next;
+        } catch (TokenStreamException ex) {
+            // IZ#163088 : unexpected char
+            APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
+            return APTUtils.EOF_TOKEN;
         }
-        return new FileOperationsTest(testClass.getName(), classes);
-    }
-    
-    public FileOperationsTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
     }
 
-    public static Test suite() {
-        return new FileOperationsTest();
+    @Override
+    public String toString() {
+        String retValue;
+
+        retValue = orig.toString();
+        return retValue;
     }
+    
 }

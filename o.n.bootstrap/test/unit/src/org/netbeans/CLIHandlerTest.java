@@ -531,7 +531,7 @@ public class CLIHandlerTest extends NbTestCase {
         }
         
     }
-    
+
     public void testServerIsNotBlockedByLongRequests() throws Exception {
         class H extends CLIHandler {
             private int cnt = -1;
