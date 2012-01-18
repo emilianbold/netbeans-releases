@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Holds a variable. 
- * note that the variable name can be expression, 
+ * Holds a variable.
+ * note that the variable name can be expression,
  * <pre>e.g.<pre> $a
  *
  * Subclasses: {@link ArrayAccess}, {@link ReflectionVariable}, {@link StaticFieldAccess}
@@ -89,7 +89,7 @@ public class Variable extends VariableBase {
 
     /**
      * Returns the name (expression) of this variable
-     * 
+     *
      * @return the expression name node
      */
     public Expression getName() {
@@ -98,13 +98,13 @@ public class Variable extends VariableBase {
 
     /**
      * True this variable node is dollared
-     * 
+     *
      * @return True if this variable node is dollared
      */
     public boolean isDollared() {
         return isDollared;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

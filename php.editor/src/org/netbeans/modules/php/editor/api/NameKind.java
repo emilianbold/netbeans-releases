@@ -90,7 +90,7 @@ public class NameKind {
         switch(queryKind) {
             case PREFIX:
                 return new Prefix(query);
-            case EXACT:                
+            case EXACT:
                 return new Exact(query);
         }
         if (query == null || query.isEmpty()) {
@@ -154,7 +154,7 @@ public class NameKind {
                         matchesName(element.getPhpElementKind(), ((AliasedElement)fqe).getFullyQualifiedName(Trait.ALIAS));
             }
             return matchesName(element.getPhpElementKind(), fqe.getFullyQualifiedName());
-        } 
+        }
         return matchesName(element.getPhpElementKind(), element.getName());
     }
 

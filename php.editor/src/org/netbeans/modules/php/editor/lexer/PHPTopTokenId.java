@@ -74,15 +74,15 @@ public enum PHPTopTokenId implements TokenId {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
-    
+
     public String fixedText() {
         return fixedText;
     }
-    
+
     public String primaryCategory() {
         return primaryCategory;
     }
-    
+
     private static final Language<PHPTopTokenId> language =
             new LanguageHierarchy<PHPTopTokenId>() {
 
@@ -106,14 +106,14 @@ public enum PHPTopTokenId implements TokenId {
                 protected String mimeType() {
                     return "text/PHP";
                 }
-                
+
                 @Override
                 protected LanguageEmbedding<?> embedding(Token<PHPTopTokenId> token,
                     LanguagePath languagePath, InputAttributes inputAttributes) {
                     PHPTopTokenId id = token.id();
                     /*if (id == T_INLINE_HTML) {
                         return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
-                    } 
+                    }
                     else if (id == T_PHP) {
                         return LanguageEmbedding.create(PHPTokenId.languageInPHP(), 0, 0, true);
                     }
@@ -123,7 +123,7 @@ public enum PHPTopTokenId implements TokenId {
 
                     return null; // No embedding
                 }
-                
+
             }.language();
 
     public static Language<PHPTopTokenId> language() {

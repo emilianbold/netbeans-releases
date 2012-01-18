@@ -68,7 +68,7 @@ public class NamespaceDeclarationInfo extends ASTNodeInfo<NamespaceDeclaration> 
     public boolean isDefaultNamespace() {
         return DEFAULT_NAMESPACE_NAME.equals(getName());
     }
-    
+
     @Override
     public Kind getKind() {
         return Kind.NAMESPACE_DECLARATION;

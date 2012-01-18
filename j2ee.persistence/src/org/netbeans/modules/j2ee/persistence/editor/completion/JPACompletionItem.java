@@ -351,6 +351,36 @@ public abstract class JPACompletionItem implements CompletionItem {
         
     }
     
+    public static final class JPQLElementItem extends DBElementItem {
+        
+        protected static CCPaintComponent.EntityPropertyElementPaintComponent paintComponent = null;
+
+        public JPQLElementItem(String name, boolean quote, int substituteOffset) {
+            super(name, quote, substituteOffset);
+        }
+        
+        @Override
+        public String getTypeName() {
+            return "JPQL";
+        }
+        
+        @Override
+        public int getSortPriority() {
+            return 100;
+        }
+        
+        @Override
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null) {
+                paintComponent = new CCPaintComponent.EntityPropertyElementPaintComponent();
+            }
+            paintComponent.setContent(getName());
+            paintComponent.setSelected(isSelected);
+            return paintComponent;
+        }
+        
+    }
+    
     public static final class CatalogElementItem extends DBElementItem {
         
         public CatalogElementItem(String name, boolean quote, int substituteOffset) {

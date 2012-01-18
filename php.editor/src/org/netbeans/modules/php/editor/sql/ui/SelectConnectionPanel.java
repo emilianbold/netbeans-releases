@@ -105,7 +105,7 @@ public class SelectConnectionPanel extends javax.swing.JPanel {
             return;
         }
         dbconn = (DatabaseConnection) selected;
-        
+
         DatabaseURL url = DatabaseURL.detect(dbconn.getDatabaseURL());
         String errorMessage = null;
         if (mySQLOnly && (url == null || url.getServer() != Server.MYSQL)) {

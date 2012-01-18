@@ -123,9 +123,9 @@ public class PHPFormatter implements Formatter {
 //        astReformat(context, indentLevels);
 
 	long start = System.currentTimeMillis();
-	
+
 	(new TokenFormatter()).reformat(context, info);
-	
+
 	if (LOG.isLoggable(Level.FINE)) {
 	    long end = System.currentTimeMillis();
             LOG.log(Level.FINE, "Reformat took: {0} ms", (end - start)); //NOI18N
@@ -285,7 +285,7 @@ public class PHPFormatter implements Formatter {
 				}
 			    }
 
-			    
+
 			    replacementToApply = replacement;
 			}
 			else {
@@ -316,7 +316,7 @@ public class PHPFormatter implements Formatter {
             }
         });
     }
- 
+
     private static String getMimeTypeAtOffset(Document doc, int offset){
         TokenHierarchy th = TokenHierarchy.get(doc);
         List<TokenSequence<?>> tsl = th.embeddedTokenSequences(offset, false);
@@ -339,7 +339,7 @@ public class PHPFormatter implements Formatter {
             final Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
             final int startOffset = Utilities.getRowStart(doc, context.startOffset());
             final int firstLine = Utilities.getLineOffset(doc, startOffset);
-            
+
             doc.runAtomic(new Runnable() {
 
                 @Override
@@ -400,7 +400,7 @@ public class PHPFormatter implements Formatter {
                                     indentBias = currentIndent - GsfUtilities.getLineIndent(doc, lineStart) - htmlSuggestion + initIndentSize;
                                     indentBiasCalculated = true;
                                 }
-                                
+
 //                                System.err.println("lineDelta[" + i + "]=" + lineDelta);
 //                                System.err.println("htmlSuggestion[" + i + "]=" + htmlSuggestion);
                                 //TODO:

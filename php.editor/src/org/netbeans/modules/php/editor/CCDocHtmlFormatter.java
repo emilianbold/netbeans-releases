@@ -106,7 +106,7 @@ public class CCDocHtmlFormatter extends HtmlFormatter {
             default:
                 sb.append(c);
             }
-            
+
             textLength++;
         }
     }
