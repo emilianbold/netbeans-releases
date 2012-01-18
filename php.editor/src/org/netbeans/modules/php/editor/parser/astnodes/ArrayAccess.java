@@ -52,8 +52,7 @@ public class ArrayAccess extends Variable {
 
     public enum Type {
         VARIABLE_ARRAY,
-        VARIABLE_HASHTABLE,
-        DEREFERENCED_ARRAY
+        VARIABLE_HASHTABLE
     }
 
     /**

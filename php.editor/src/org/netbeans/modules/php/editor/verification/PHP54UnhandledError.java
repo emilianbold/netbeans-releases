@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
@@ -108,10 +109,8 @@ public class PHP54UnhandledError extends DefaultVisitor {
     }
 
     @Override
-    public void visit(ArrayAccess node) {
-        if (node.getArrayType().equals(ArrayAccess.Type.DEREFERENCED_ARRAY)) {
-            createError(node);
-        }
+    public void visit(DereferencedArrayAccess node) {
+        createError(node);
     }
 
     private  void createError(int startOffset, int endOffset){
