@@ -128,6 +128,7 @@ public final class ReplaceBar extends JPanel {
             public void focusGained(FocusEvent e) {
                 hadFocusOnReplaceTextField = true;
                 getSearchBar().lostFocusOnTextField();
+                replaceTextField.selectAll();
             }
         });
         addEnterKeystrokeReplaceTo(replaceTextField);

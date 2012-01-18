@@ -359,7 +359,7 @@ public final class SearchBar extends JPanel {
     }
 
     private JTextField createIncSearchTextField(final JComboBox incSearchComboBox) {
-        JTextField incrementalSearchTextField = (JTextField) incSearchComboBox.getEditor().getEditorComponent();
+        final JTextField incrementalSearchTextField = (JTextField) incSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
         // flatten the action map for the text field to allow removal
         ActionMap origActionMap = incrementalSearchTextField.getActionMap();
@@ -373,6 +373,7 @@ public final class SearchBar extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 hadFocusOnIncSearchTextField = true;
+                incrementalSearchTextField.selectAll();
             }
         });
         return incrementalSearchTextField;
