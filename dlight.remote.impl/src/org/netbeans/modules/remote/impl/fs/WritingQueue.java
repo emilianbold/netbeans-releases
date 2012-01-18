@@ -170,9 +170,7 @@ public class WritingQueue {
         }
         while (true) {
             if (entriesEmpty(filesToWait, failedFiles)) {
-                if (entries.isEmpty()) {
-                    break;
-                }
+                break;
             }
             synchronized (monitor) {
                 monitor.wait(100);
