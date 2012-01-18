@@ -62,6 +62,7 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
     public APTFortranEOSFilter() {
     }
 
+    @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
         return new FilterStream(origStream);
     }
@@ -75,6 +76,7 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
             this.orig = orig;
         }
 
+        @Override
         public Token nextToken() throws TokenStreamException {
             if(newLine) {
                 newLine = false;
@@ -116,82 +118,102 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
             fileName = token.getFilename();
         }
 
+        @Override
         public int getOffset() {
             return offset;
         }
 
+        @Override
         public void setOffset(int o) {
             offset = o;
         }
 
+        @Override
         public int getEndOffset() {
             return endOffset;
         }
 
+        @Override
         public void setEndOffset(int o) {
             endOffset = o;
         }
 
+        @Override
         public int getEndColumn() {
             return endColumn;
         }
 
+        @Override
         public void setEndColumn(int c) {
             endColumn = c;
         }
 
+        @Override
         public int getEndLine() {
             return endLine;
         }
 
+        @Override
         public void setEndLine(int l) {
             endLine = l;
         }
 
+        @Override
         public String getText() {
             return "<EOS>"; // NOI18N
         }
 
+        @Override
         public CharSequence getTextID() {
             return "<EOS>"; // NOI18N
         }
 
+        @Override
         public void setTextID(CharSequence id) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public int getColumn() {
             return column;
         }
 
+        @Override
         public void setColumn(int c) {
             column = c;
         }
 
+        @Override
         public int getLine() {
             return line;
         }
 
+        @Override
         public void setLine(int l) {
             line = l;
         }
 
+        @Override
         public String getFilename() {
             return fileName;
         }
 
+        @Override
         public void setFilename(String name) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public void setText(String t) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public int getType() {
             return APTTokenTypes.T_EOS;
         }
 
+        @Override
         public void setType(int t) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
@@ -216,82 +238,102 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
             return origToken;
         }
 
+        @Override
         public int getOffset() {
             return origToken.getOffset();
         }
 
+        @Override
         public void setOffset(int o) {
             origToken.setOffset(o);
         }
 
+        @Override
         public int getEndColumn() {
             return origToken.getEndColumn();
         }
 
+        @Override
         public void setEndColumn(int c) {
             origToken.setEndColumn(c);
         }
 
+        @Override
         public int getEndLine() {
             return origToken.getEndLine();
         }
 
+        @Override
         public void setEndLine(int l) {
             origToken.setEndLine(l);
         }
 
+        @Override
         public int getEndOffset() {
             return origToken.getEndOffset();
         }
 
+        @Override
         public void setEndOffset(int o) {
             origToken.setEndOffset(o);
         }
 
+        @Override
         public CharSequence getTextID() {
             return origToken.getTextID();
         }
 
+        @Override
         public void setTextID(CharSequence id) {
             origToken.setTextID(id);
         }
 
+        @Override
         public int getColumn() {
             return origToken.getColumn();
         }
 
+        @Override
         public void setColumn(int c) {
             origToken.setColumn(c);
         }
 
+        @Override
         public int getLine() {
             return origToken.getLine();
         }
 
+        @Override
         public void setLine(int l) {
             origToken.setLine(l);
         }
 
+        @Override
         public String getFilename() {
             return origToken.getFilename();
         }
 
+        @Override
         public void setFilename(String name) {
             origToken.setFilename(name);
         }
 
+        @Override
         public String getText() {
             return origToken.getText();
         }
 
+        @Override
         public void setText(String t) {
             origToken.setText(t);
         }
 
+        @Override
         public int getType() {
             return type;
         }
 
+        @Override
         public void setType(int t) {
             this.type = t;
         }
