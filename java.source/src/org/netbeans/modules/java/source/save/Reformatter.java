@@ -3545,6 +3545,7 @@ public class Reformatter implements ReformatTask {
                             }
                             preserveNewLines = true;
                             lastNewLinePos = i;
+                            align = -1;
                         } else {
                             lastNewLinePos = currWSPos >= 0 ? currWSPos : i;                            
                         }
@@ -3583,29 +3584,33 @@ public class Reformatter implements ReformatTask {
                                     align = -1;
                                     break;
                                 case 2:
-                                    int num = maxParamNameLength + lastNWSPos + 1 - i;
-                                    if (num > 0) {
-                                        addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
-                                    } else if (num < 0) {
-                                        addDiff(new Diff(offset + i + num, offset + i, null));
-                                    }
                                     col += (maxParamNameLength + lastNWSPos- currWSPos);
                                     align = col;
                                     currWSPos = -1;
+                                    if (lastNewLinePos < 0) {
+                                        int num = maxParamNameLength + lastNWSPos + 1 - i;
+                                        if (num > 0) {
+                                            addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
+                                        } else if (num < 0) {
+                                            addDiff(new Diff(offset + i + num, offset + i, null));
+                                        }
+                                    }
                                     break;
                                 case 3:
                                     align = col;
                                     break;
                                 case 4:
-                                    num = maxExcNameLength + lastNWSPos + 1 - i;
-                                    if (num > 0) {
-                                        addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
-                                    } else if (num < 0) {
-                                        addDiff(new Diff(offset + i + num, offset + i, null));
-                                    }
                                     col += (maxExcNameLength + lastNWSPos- currWSPos);
                                     align = col;
                                     currWSPos = -1;
+                                    if (lastNewLinePos < 0) {
+                                        int num = maxExcNameLength + lastNWSPos + 1 - i;
+                                        if (num > 0) {
+                                            addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
+                                        } else if (num < 0) {
+                                            addDiff(new Diff(offset + i + num, offset + i, null));
+                                        }
+                                    }
                                     break;
                                 case 5:
                                     noFormat = true;
@@ -3642,6 +3647,7 @@ public class Reformatter implements ReformatTask {
                                         pendingDiff.text = NEWLINE + blankLineString;
                                         preserveNewLines = true;
                                         lastNewLinePos = i;
+                                        align = -1;
                                         break;
                                     } else if (!Character.isWhitespace(c)) {
                                         break;
@@ -3698,6 +3704,7 @@ public class Reformatter implements ReformatTask {
                                             }
                                             currWSPos = -1;
                                             lastNewLinePos = i;
+                                            align = -1;
                                             break;
                                         } else if (Character.isWhitespace(c)) {
                                             if (currWSPos < 0) {
@@ -3731,7 +3738,7 @@ public class Reformatter implements ReformatTask {
                                                     col++;
                                                 }
                                                 String subs = text.substring(currWSPos, i);
-                                                String s = getSpaces(align < 0 ? 1 : i - currWSPos);
+                                                String s = getSpaces(align < 0 ? 1 : align - lineStartString.length() + 1);
                                                 if (!noFormat && !s.equals(subs)) {
                                                     if (pendingDiff != null) {
                                                         String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
