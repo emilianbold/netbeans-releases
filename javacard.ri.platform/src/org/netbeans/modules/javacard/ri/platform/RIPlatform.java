@@ -62,6 +62,7 @@ import org.netbeans.modules.propdos.ObservableProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.*;
@@ -333,12 +334,16 @@ public class RIPlatform extends JavacardPlatform {
         synchronized (cpLock) {
             ClassPath result = processorCps.get(kind.isClassic());
             if (result == null) {
-                result = createClasspathFromProperty(kind.isClassic() ?
-                    JavacardPlatformKeyNames.PLATFORM_PROCESSOR_CLASSIC_CLASSPATH :
-                    JavacardPlatformKeyNames.PLATFORM_PROCESSOR_EXT_CLASSPATH, props);
+                if (kind.isClassic()) {
+                    result = ClassPathSupport.createProxyClassPath(
+                            createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_PROCESSOR_CLASSIC_CLASSPATH, props),
+                            createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_TOOLS_CLASSPATH, props));
+                } else {
+                    result = createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_PROCESSOR_EXT_CLASSPATH, props);
+                }
                 processorCps.put(kind.isClassic(), result);
             }
-        return result;
+            return result;
         }
     }
 
