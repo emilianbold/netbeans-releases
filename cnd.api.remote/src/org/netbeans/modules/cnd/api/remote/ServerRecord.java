@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -118,4 +119,10 @@ public interface ServerRecord {
     public RemoteSyncFactory getSyncFactory();
 
     public boolean getX11Forwarding();
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener);
+
+    public void removePropertyChangeListener(PropertyChangeListener listener);    
+    
+    public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N    
 }
