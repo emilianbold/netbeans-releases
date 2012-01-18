@@ -46,16 +46,19 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.netbeans.modules.web.common.reload.Message.MessageType;
 import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -83,7 +86,7 @@ public class BrowserReload {
             };
             Runtime.getRuntime().addShutdownHook( shutdown);
             
-            file2Connection = new ConcurrentHashMap<FileObject, SelectionKey>();
+            file2Id = new ConcurrentHashMap<FileObject, String>();
             url2File = new ConcurrentHashMap<String, FileObject>();
         }
         catch (IOException e) {
@@ -100,60 +103,105 @@ public class BrowserReload {
     }
     
     public void reload( FileObject fileObject ){
-        SelectionKey key = file2Connection.get( fileObject );
-        if ( key == null ){
+        if ( connection == null ){
             return;
         }
-        server.sendMessage(key, createReloadMessage() );
+        String tabId = file2Id.get( fileObject );
+        if ( tabId == null ){
+            return;
+        }
+        server.sendMessage(connection, createReloadMessage(tabId) );
     }
     
     public static BrowserReload getInstance(){
         return INSTANCE;
     }
     
-    private String createReloadMessage() {
-        // TODO Auto-generated method stub
-        return null;
+    private String createReloadMessage(String tabId) {
+        Message msg = new Message( MessageType.RELOAD, 
+                Collections.singletonMap( Message.TAB_ID, tabId ));
+        return msg.toString();
     }
     
     public class BrowserPluginHandler implements WebSocketReadHandler {
+
+        private static final String URL = "url";        // NOI18N
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.common.websocket.WebSocketReadHandler#read(java.nio.channels.SelectionKey, byte[], java.lang.Integer)
          */
         @Override
         public void read( SelectionKey key, byte[] data, Integer dataType ) {
+            if ( connection == null ){
+                connection = key;
+            }
             if ( dataType != null && dataType != 1 ){
                 return;
             }
             String message = new String( data , Charset.forName( WebSocketServer.UTF_8));
-            String url = getUrl(message);
-            if ( url == null ){
+            Message msg = Message.parse(message);
+            if ( msg == null ){
+                return;
+            }
+            MessageType type = msg.getType();
+            switch (type) {
+                case INIT:
+                    handleInit(msg);
+                    break;
+                case CLOSE:
+                    handleClose( msg );
+                    break;
+                default:
+                    assert false;
+            }
+            
+        }
+        
+        private void handleInit( Message message ){
+            String url = message.getValue(URL);
+            String tabId = message.getValue(Message.TAB_ID);
+            if ( url == null || tabId == null ){
                 return;
             }
             FileObject localFile = url2File.remove( url );
             if ( localFile == null ){
-                try {
-                    server.close(key);
-                }
-                catch( IOException e ){
-                    LOG.log(Level.INFO, null , e);
-                }
-                return;
+                Map<String,String> map = new HashMap<String, String>();
+                map.put( Message.TAB_ID, tabId );
+                map.put("status","notaccepted");       // NOI18N
+                Message msg = new Message( MessageType.INIT , map );
+                server.sendMessage(connection, msg.toString());
             }
-            file2Connection.put( localFile, key );
+            else  {
+                file2Id.put( localFile , tabId );
+                Map<String,String> map = new HashMap<String, String>();
+                map.put( Message.TAB_ID, tabId );
+                map.put("status","accepted");       // NOI18N
+                Message msg = new Message( MessageType.INIT , map );
+                server.sendMessage(connection, msg.toString());
+            }
         }
         
-        private String getUrl( String message ){
-            // TODO parse message and find url sent to browser plugin
-            String url = null;
-            return url;
+        private void handleClose( Message message ){
+            String tabId = message.getValue( Message.TAB_ID );
+            if ( tabId == null ){
+                return;
+            }
+            for (Iterator<Entry<FileObject,String>> iterator = file2Id.entrySet().iterator(); 
+                iterator.hasNext() ; ) 
+            {
+                String id = iterator.next().getValue();
+                if ( tabId.equals( id )){
+                    iterator.remove();
+                    break;
+                }
+            }
         }
-
+        
     }
 
     private WebSocketServer server;
     private static final BrowserReload INSTANCE = new BrowserReload();
     private Map<String, FileObject> url2File;
-    private Map<FileObject,SelectionKey> file2Connection;
+    private Map<FileObject,String> file2Id;
+    private volatile SelectionKey connection;
 }
