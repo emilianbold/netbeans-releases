@@ -77,6 +77,7 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplement
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -111,9 +112,17 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             modified = urls.size() > 0;
             assert model != null;
             for (URL url : urls) {
-                File jar = FileUtil.archiveOrDirForURL(url);
-                if (jar == null) {
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo == null) {
                     throw new IOException("Could find no file corresponding to " + url);
+                }
+                FileObject jarFO = FileUtil.getArchiveFile(fo);
+                if (jarFO == null || FileUtil.getArchiveRoot(jarFO) != fo) {
+                    throw new IOException("Cannot add non-root of JAR: " + url);
+                }
+                File jar = FileUtil.toFile(jarFO);
+                if (jar == null) {
+                    throw new IOException("no disk file found corresponding to " + jarFO);
                 }
                 if (jar.isDirectory()) {
                     throw new IOException("Cannot add folders to Maven projects as dependencies: " + url); //NOI18N
