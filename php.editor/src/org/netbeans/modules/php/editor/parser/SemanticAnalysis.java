@@ -370,7 +370,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             @Override
             public void visit(ArrayAccess node) {
                 scan(node.getName());
-                // don't scan(scan(node.getIndex()); issue #194535
+                // don't scan(scan(node.getDimension()); issue #194535
             }
 
             @Override

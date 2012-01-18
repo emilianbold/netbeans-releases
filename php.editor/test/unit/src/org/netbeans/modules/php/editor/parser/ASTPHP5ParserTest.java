@@ -302,6 +302,14 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("arrayDereferencing_07");
     }
 
+    public void testArrayDereferencing_08() throws Exception {
+        performTest("arrayDereferencing_08");
+    }
+
+    public void testArrayDereferencing_09() throws Exception {
+        performTest("arrayDereferencing_09");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

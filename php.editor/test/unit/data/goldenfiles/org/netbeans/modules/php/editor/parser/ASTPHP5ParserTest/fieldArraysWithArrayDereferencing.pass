@@ -48,12 +48,16 @@
                             <Identifier start='8' end='14' name='object'/>
                         </Variable>
                         <ArrayAccess start='16' end='42' type='VARIABLE_ARRAY' isDollared='false'>
-                            <Index>
-                            </Index>
+                            <ArrayDimension start='40' end='42'>
+                                <Index>
+                                </Index>
+                            </ArrayDimension>
                             <Name>
                                 <ArrayAccess start='16' end='40' type='VARIABLE_ARRAY' isDollared='false'>
-                                    <Index>
-                                    </Index>
+                                    <ArrayDimension start='38' end='40'>
+                                        <Index>
+                                        </Index>
+                                    </ArrayDimension>
                                     <Name>
                                         <Variable start='16' end='38' isDollared='false'>
                                             <Identifier start='16' end='38' name='thisIsCommonFieldArray'/>
