@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import junit.framework.Test;
@@ -54,12 +55,10 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.modules.versioning.VCSAnnotationProviderTestCase;
 import org.netbeans.modules.versioning.VCSFilesystemTestFactory;
-import org.netbeans.modules.versioning.VCSInterceptorTestCase;
-import org.netbeans.modules.versioning.VCSOwnerTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -85,6 +84,13 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         FileObject dirFO = FileSystemProvider.getFileObject(execEnv, dir);
         fo = dirFO.createData(PathUtilities.getBaseName(path));
         return fo;
+    }
+
+    @Override
+    protected void setReadOnly(FileObject fo) throws IOException {
+        File f = FileUtil.toFile(fo);
+        assertNotNull(f);
+        f.setReadOnly();
     }
 
     public static void main(String args[]) {
@@ -156,6 +162,19 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     @Override
     protected void tearDown() throws Exception {     
+        if(!workDirPath.isEmpty()) {
+            File f = new File(workDirPath);
+            deleteRecursively(f);
+        }
     }
 
+    private static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File [] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteRecursively(files[i]);
+            }
+        }
+        file.delete();
+    }    
 }
