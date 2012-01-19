@@ -973,8 +973,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         for(int i = 0; i < nodePath.length; i++) {
                             DirectoryNode nodeToDelete = (DirectoryNode)nodePath[i].getLastPathComponent();
                             try {
-                                FileObject fo = FileUtil.toFileObject(nodeToDelete.getFile());
-                                fo.delete();
+                                delete(nodeToDelete.getFile());
                                 nodes2Remove.add(nodeToDelete);
                             } catch (IOException ignore) {
                                 cannotDelete++;
@@ -1014,6 +1013,22 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             });
         }
     }
+    
+    private void delete(File file) throws IOException {
+        FileObject fo = FileUtil.toFileObject(file);
+        // Fixing #207116 - NPE when deleting a directory in remote browser.
+        // This might be a pseudo-file based on another FileSystem' object (for example, remote file);
+        // FileUtil.toFileObject will return correspondent *local* file if local file with such path exists.
+        // That's why apart from null check, we check file.equals(FileUtil.toFile(fo),
+        // which means that file object really corresponds to the given file.
+        if (fo != null && file.equals(FileUtil.toFile(fo))) {
+            fo.delete();
+        } else {
+            if (!file.delete()) {
+                throw new IOException();
+            }
+        }
+    }    
 
     private File lastDir;
     private File[] lastChildren;
