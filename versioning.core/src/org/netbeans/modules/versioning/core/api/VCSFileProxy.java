@@ -110,6 +110,12 @@ public final class VCSFileProxy {
         return new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy);   // NOI18N
     }
     
+    static VCSFileProxy createFileProxy(VCSFileProxy parent, String child, boolean isDirectory) {
+        VCSFileProxy file = new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy); // NOI18N
+        file.isDirectory = isDirectory;
+        return file;
+    }
+    
     /**
      * Creates a VCSFileProxy based on the given {@link FileObject}. In case there is a 
      * corresponding java.io.File to the FileObject the the io.File will be used as in 
