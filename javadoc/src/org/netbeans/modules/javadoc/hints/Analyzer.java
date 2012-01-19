@@ -500,7 +500,7 @@ final class Analyzer {
             if (throwClassDoc != null) {
                 Element throwEl = javac.getElementUtilities().elementFor(throwClassDoc);
                 if (throwEl != null && (javac.getTypes().isSubtype(throwEl.asType(), rtException) || javac.getTypes().isSubtype(throwEl.asType(), error))) {
-                    // ignore RuntimeExceptions
+                    // ignore RuntimeExceptions and Errors
                     continue;
                 }
             }
