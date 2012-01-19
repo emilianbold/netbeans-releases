@@ -42,17 +42,29 @@
 package org.netbeans.modules.parsing.api;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 
 /**
- *
+ * {@link NbTestCase} allowing to set if {@link ParserResultTask}s
+ * should wait until scan finished.
  * @author Tomas Zezula
  */
 public class IndexingAwareTestCase extends NbTestCase {
     
+    /**
+     * Creates {@link NbTestCase} in backward compatible mode,
+     * the {@link ParserResultTask}s do not wait for scan.
+     * @param name the name of test case
+     */
     public IndexingAwareTestCase(final String name) {
         this(name, true);    //Backward compatible
     }
     
+    /**
+     * Creates {@link NbTestCase}.
+     * @param name the name of test case
+     * @param performTasksWithoutScan if true {@link ParserResultTask}s do not wait for scan.
+     */
     public IndexingAwareTestCase(final String name, final boolean performTasksWithoutScan) {
         super (name);
         if (performTasksWithoutScan) {
