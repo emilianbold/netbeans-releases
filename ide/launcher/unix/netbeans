@@ -82,10 +82,12 @@ fi
 #     . /etc/netbeans.conf
 # fi
 
+export DEFAULT_USERDIR_ROOT
 
 # #68373: look for userdir, but do not modify "$@"
 userdir="${netbeans_default_userdir}"
 cachedir="${netbeans_default_cachedir}"
+
 founduserdir=""
 for opt in "$@"; do
     if [ "${founduserdir}" = "yes" ]; then

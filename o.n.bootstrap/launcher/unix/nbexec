@@ -480,6 +480,11 @@ if [ ! -z "$socks_proxy_tmp" ] ; then
 	jargs="-Dnetbeans.system_socks_proxy=\"$socks_proxy_tmp\" $jargs"
 fi
 
+if [ ! -z "${DEFAULT_USERDIR_ROOT}" ] ; then
+	jargs="-Dnetbeans.default_userdir_root=\"${DEFAULT_USERDIR_ROOT}\" $jargs"
+        unset DEFAULT_USERDIR_ROOT
+fi
+
 # http://java.sun.com/j2se/1.5.0/docs/guide/2d/flags.html#pixmaps
 J2D_PIXMAPS=shared
 export J2D_PIXMAPS
