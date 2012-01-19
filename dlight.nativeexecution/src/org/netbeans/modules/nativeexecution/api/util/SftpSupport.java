@@ -514,6 +514,9 @@ class SftpSupport {
         private final String path;
 
         public StatLoader(String path) {
+            if (path.isEmpty()) { // This make sence when clients ask path for root FileObject
+                path = "/"; //NOI18N
+            }
             assert path.startsWith("/"); //NOI18N
             this.path = path;
         }
