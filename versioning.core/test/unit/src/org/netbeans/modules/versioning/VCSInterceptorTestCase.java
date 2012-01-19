@@ -81,6 +81,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     private static final String fileChangedFormat = "fileChanged {0}";
     private static final String beforeCreateFormat = "beforeCreate {0}, {1}, {2}";
     private static final String createdFormat = "createSuccess {0}";
+    private static final String createdExternalyFormat = "createdExternally {0}";
     private static final String beforeDeleteFormat = "getDeleteHandler {0}";
     private static final String deleteHandleFormat = "delete handle {0}";
     private static final String deletedExternalyFormat = "deletedExternally {0}";
@@ -97,7 +98,8 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         deleteSuccessFormat,
         beforeCreateFormat,
         createdFormat,
-        canWriteFormat
+        canWriteFormat,
+        createdExternalyFormat
     };
     
     public VCSInterceptorTestCase(String testName) {
