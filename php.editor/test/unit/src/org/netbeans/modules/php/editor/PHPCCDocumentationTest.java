@@ -43,7 +43,8 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -83,8 +84,7 @@ public class PHPCCDocumentationTest extends PHPTestBase {
         return documentation;
     }
 
-
-
+    @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,
