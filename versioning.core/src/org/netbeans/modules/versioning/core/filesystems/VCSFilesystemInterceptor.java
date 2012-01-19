@@ -298,6 +298,15 @@ public final class VCSFilesystemInterceptor {
 
     public static void createSuccess(VCSFileProxy file) {
         LOG.log(Level.FINE, "createSuccess {0}", new Object[] {file});
+        createSuccessImpl(file);
+    }
+
+    public static void createdExternally(VCSFileProxy file) {
+        LOG.log(Level.FINE, "createdExternally {0}", new Object[] {file});
+        createSuccessImpl(file);
+    }
+
+    private static void createSuccessImpl (VCSFileProxy file) {
         FileEx fileEx = new FileEx(file.getParentFile(), file.getName(), file.isDirectory());
         DelegatingInterceptor interceptor = filesBeingCreated.remove(fileEx);
         if (interceptor != null) {
@@ -313,12 +322,7 @@ public final class VCSFilesystemInterceptor {
         }
         interceptor.afterCreate();
     }
-
-    public static void createdExternally(VCSFileProxy file) {
-        LOG.log(Level.FINE, "createdExternally {0}", new Object[] {file});
-        createSuccess(file);
-    }
-
+    
     // ==================================================================================================
     // MOVE
     // ==================================================================================================
