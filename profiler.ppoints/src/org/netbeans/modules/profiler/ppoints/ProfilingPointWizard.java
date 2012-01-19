@@ -58,8 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.openide.util.Lookup;
 
 
@@ -349,8 +348,8 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
         ValidityAwarePanel showingCustomizer = ProfilingPointsManager.getDefault().getShowingCustomizer();
 
         if (showingCustomizer != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    Bundle.ProfilingPointWizard_AnotherPpEditedMsg(), NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ProfilingPointWizard_AnotherPpEditedMsg());
             SwingUtilities.getWindowAncestor(showingCustomizer).requestFocus();
             showingCustomizer.requestFocusInWindow();
 
@@ -369,8 +368,8 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
 
                 return wizardDescriptor;
             } else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    Bundle.ProfilingPointWizard_NoPpsFoundMsg(), NotifyDescriptor.ERROR_MESSAGE));
+                ProfilerDialogs.displayError(
+                        Bundle.ProfilingPointWizard_NoPpsFoundMsg());
 
                 return null;
             }

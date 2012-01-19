@@ -61,7 +61,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,17 +79,12 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.profiler.api.EditorContext;
-import org.netbeans.modules.profiler.api.EditorSupport;
+import org.netbeans.modules.profiler.api.*;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.api.GoToSource;
-import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -689,9 +683,8 @@ public class Utils {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 if (!isValidLocation(ppoint.getLocation()))
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()),
-                                            NotifyDescriptor.WARNING_MESSAGE));
+                    ProfilerDialogs.displayWarning(
+                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()));
             }
         });
     }
@@ -700,13 +693,11 @@ public class Utils {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 if (!isValidLocation(ppoint.getStartLocation()))
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()),
-                                            NotifyDescriptor.WARNING_MESSAGE));
+                    ProfilerDialogs.displayWarning(
+                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()));
                 else if (ppoint.usesEndLocation() && !isValidLocation(ppoint.getEndLocation()))
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()),
-                                            NotifyDescriptor.WARNING_MESSAGE));
+                    ProfilerDialogs.displayWarning(
+                            Bundle.Utils_InvalidPPLocationMsg(ppoint.getName()));
             }
         });
     }
@@ -884,9 +875,7 @@ public class Utils {
         final int documentOffset = getDocumentOffset(location);
 
         if (documentOffset == -1) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.Utils_CannotOpenSourceMsg(),
-                                    NotifyDescriptor.ERROR_MESSAGE));
+            ProfilerDialogs.displayError(Bundle.Utils_CannotOpenSourceMsg());
             return;
         }
 
