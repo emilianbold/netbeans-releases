@@ -116,7 +116,7 @@ public class CreateSubclass {
         if (startPos < 0 || caret < 0 || caret < startPos) {
             return null;
         }
-        
+
         String headerText = context.getInfo().getText().substring(startPos, caret);
         int idx = headerText.indexOf('{'); //NOI18N
         if (idx >= 0) {
@@ -124,6 +124,9 @@ public class CreateSubclass {
         }
 
         TypeElement typeElement = (TypeElement) info.getTrees().getElement(tp);
+
+        if (typeElement.getModifiers().contains(Modifier.FINAL)) return null;
+        
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());
         if (root == null) { //File not part of any project
