@@ -66,6 +66,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.beancontext.BeanContext;
+import java.beans.beancontext.BeanContextChild;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,10 +131,19 @@ import org.openide.util.NbBundle;
 /**
  * The implementation of JPDAThread.
  */
-public final class JPDAThreadImpl implements JPDAThread, Customizer {
+public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContextChild {
 
     private static final String PROP_LOCKER_THREADS = "lockerThreads"; // NOI18N
     private static final String PROP_STEP_SUSPENDED_BY_BREAKPOINT = "stepSuspendedByBreakpoint"; // NOI18N
+    /**
+     * Name of a property change event, that is fired when the current operation
+     * or last operations change. It's intentionally fired to dedicated property
+     * change listeners only, when added for this property specifically.
+     * It's intentionally fired synchronously with the operation change, under
+     * the thread lock.
+     */
+    public static final String PROP_OPERATIONS_SET = "operationsSet"; // NOI18N
+    public static final String PROP_OPERATIONS_UPDATE = "operationsUpdate"; // NOI18N
 
     private static final Logger logger = Logger.getLogger(JPDAThreadImpl.class.getName()); // NOI18N
     private static final Logger loggerS = Logger.getLogger(JPDAThreadImpl.class.getName()+".suspend"); // NOI18N
@@ -154,6 +166,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private boolean             doKeepLastOperations;
     private ReturnVariableImpl  returnVariable;
     private PropertyChangeSupport pch = new PropertyChangeSupport(this);
+    private PropertyChangeSupport operationsPch = new PropertyChangeSupport(this);
     // There's a caching mechanism in ThreadReferenceImpl in JDK 7
     // However, the stack depth query is not synchronized, therefore we cache it
     // for efficiency here.
@@ -315,6 +328,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public synchronized void setCurrentOperation(Operation operation) { // Set the current operation for the default stratum.
         this.currentOperation = operation;
+        fireOperationsChanged(PROP_OPERATIONS_SET);
     }
 
     @Override
@@ -327,6 +341,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             lastOperations = new ArrayList<Operation>();
         }
         lastOperations.add(operation);
+        fireOperationsChanged(PROP_OPERATIONS_SET);
+    }
+    
+    public synchronized void updateLastOperation(Operation operation) {
+        this.currentOperation = operation;
+        if (lastOperations == null) {
+            lastOperations = new ArrayList<Operation>();
+        }
+        fireOperationsChanged(PROP_OPERATIONS_UPDATE);
     }
     
     public synchronized void clearLastOperations() {
@@ -337,6 +360,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
         }
         lastOperations = null;
+        fireOperationsChanged(PROP_OPERATIONS_SET);
     }
     
     public synchronized void holdLastOperations(boolean doHold) {
@@ -1632,14 +1656,56 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         pch.removePropertyChangeListener(l);
     }
     
+    @Override
+    public void addPropertyChangeListener(String name, PropertyChangeListener pcl) {
+        if (PROP_OPERATIONS_SET.equals(name) || PROP_OPERATIONS_UPDATE.equals(name)) {
+            operationsPch.addPropertyChangeListener(name, pcl);
+        } else {
+            pch.addPropertyChangeListener(name, pcl);
+        }
+    }
+
+    @Override
+    public void removePropertyChangeListener(String name, PropertyChangeListener pcl) {
+        if (PROP_OPERATIONS_SET.equals(name) || PROP_OPERATIONS_UPDATE.equals(name)) {
+            operationsPch.removePropertyChangeListener(name, pcl);
+        } else {
+            pch.removePropertyChangeListener(name, pcl);
+        }
+    }
+
     private void fireSuspended(boolean suspended) {
         pch.firePropertyChange(PROP_SUSPENDED,
                 Boolean.valueOf(!suspended), Boolean.valueOf(suspended));
+    }
+    
+    private void fireOperationsChanged(String name) {
+        operationsPch.firePropertyChange(name, null, null);
     }
 
     @Override
     public void setObject(Object bean) {
         throw new UnsupportedOperationException("Not supported, do not call. Implementing Customizer interface just because of add/remove PropertyChangeListener.");
+    }
+
+    @Override
+    public void setBeanContext(BeanContext bc) throws PropertyVetoException {
+        throw new UnsupportedOperationException("Not supported, do not call. Implementing BeanContextChild interface just because of add/remove PropertyChangeListener.");
+    }
+
+    @Override
+    public BeanContext getBeanContext() {
+        throw new UnsupportedOperationException("Not supported, do not call. Implementing BeanContextChild interface just because of add/remove PropertyChangeListener.");
+    }
+
+    @Override
+    public void addVetoableChangeListener(String name, VetoableChangeListener vcl) {
+        throw new UnsupportedOperationException("Not supported, do not call. Implementing BeanContextChild interface just because of add/remove PropertyChangeListener.");
+    }
+
+    @Override
+    public void removeVetoableChangeListener(String name, VetoableChangeListener vcl) {
+        throw new UnsupportedOperationException("Not supported, do not call. Implementing BeanContextChild interface just because of add/remove PropertyChangeListener.");
     }
 
     @Override
