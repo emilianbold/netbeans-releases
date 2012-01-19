@@ -47,12 +47,13 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.clientside.project.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.common.reload.BrowserReload;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -124,6 +125,7 @@ public class ClientSideProject implements Project {
                 new ClientSideProjectLogicalView(this),
                 new RecommendedAndPrivilegedTemplatesImpl(),
                 new ClientSideProjectActionProvider(),
+                new OpenHookImpl(this),
         });
     }
 
@@ -182,5 +184,72 @@ public class ClientSideProject implements Project {
             };
         }
     
+    }
+    
+    private static class OpenHookImpl extends ProjectOpenedHook {
+
+        private final ClientSideProject p;
+        private FileChangeListener projectFileChangesListener;
+
+        public OpenHookImpl(ClientSideProject p) {
+            this.p = p;
+        }
+        
+        @Override
+        protected void projectOpened() {
+            projectFileChangesListener = new ProjectFilesListener();
+            FileUtil.addRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
+        }
+
+        @Override
+        protected void projectClosed() {
+            FileUtil.removeRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
+        }
+        
+    }
+    
+    private static class ProjectFilesListener implements FileChangeListener {
+
+        private final BrowserReload br;
+
+        ProjectFilesListener() {
+            br = BrowserReload.getInstance();
+        }
+        
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            refreshInBrowser(fe.getFile());
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            FileObject fo = fe.getFile();
+            if (br.canReload(fo)) {
+                // XXX: close browser's tab ???
+            }
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            // XXX: notify BrowserReload about filename change
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+        private void refreshInBrowser(FileObject fo) {
+            if (br.canReload(fo)) {
+                br.reload(fo);
+            }
+        }
     }
 }
