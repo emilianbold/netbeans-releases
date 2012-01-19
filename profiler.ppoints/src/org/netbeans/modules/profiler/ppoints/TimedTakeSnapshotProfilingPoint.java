@@ -67,7 +67,6 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -77,11 +76,10 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 
 
@@ -279,8 +277,8 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
                                 ResultsManager.getDefault().openSnapshot(snapshotFile);
                             }
                         } else {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.TimedTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg(), NotifyDescriptor.WARNING_MESSAGE));
+                            ProfilerDialogs.displayWarning(
+                                    Bundle.TimedTakeSnapshotProfilingPoint_SnapshotNotAvailableMsg());
                         }
                     }
                 };

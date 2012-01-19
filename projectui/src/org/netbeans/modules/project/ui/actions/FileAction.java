@@ -1,0 +1,212 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+
+package org.netbeans.modules.project.ui.actions;
+
+import java.util.Arrays;
+import java.util.Collection;
+import javax.swing.Action;
+import javax.swing.Icon;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileActionPerformer;
+import org.openide.awt.Actions;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+
+/** An action sensitive to selected node. Used for 1-off actions
+ */
+public final class FileAction extends LookupSensitiveAction implements ContextAwareAction {
+    private String command;
+    private FileActionPerformer performer;
+    private final String namePattern;
+    
+    public FileAction(String command, String namePattern, Icon icon, Lookup lookup) {
+        this( command, null, namePattern, icon, lookup );
+    }
+    
+    public FileAction( String command, String namePattern, String iconResource, Lookup lookup ) {
+        this( command, namePattern, ImageUtilities.loadImageIcon(iconResource, false), lookup );
+    }
+    
+    public FileAction( FileActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
+        this( null, performer, namePattern, icon, lookup );
+    }
+    
+    @SuppressWarnings("LeakingThisInConstructor")
+    private FileAction(String command, FileActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
+        super(icon, lookup, new Class<?>[] {Project.class, DataObject.class});
+        
+        assert (command != null || performer != null) && !(command != null && performer != null); // exactly one of the arguments must be provided
+        
+        this.command = command;
+        if ( command != null ) {
+            ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
+        }
+        this.performer = performer;
+        this.namePattern = namePattern;
+
+        String presenterName = ActionsUtil.formatName( namePattern, 0, "" );
+        setDisplayName( presenterName );
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
+    }
+    
+    public final @Override void putValue( String key, Object value ) {
+        super.putValue( key, value );
+        
+        if (Action.ACCELERATOR_KEY.equals(key)) {
+            ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
+        }   
+    }
+    
+    @Override
+    protected void refresh(final Lookup context, final boolean immediate) {
+        final Runnable[] r = new Runnable[1];
+        final boolean[] enable = new boolean[1];
+        final String[] presenterName = new String[1];
+        if (command != null) {
+            r[0] = new Runnable() {
+                @Override public void run() {
+                    Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+                    if ( projects.length != 1 ) {
+                        if (projects.length == 0 && globalProvider(context) != null) {
+                            enable[0] = true;
+                            Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+                            presenterName[0] = ActionsUtil.formatName(namePattern, files.size(),
+                                    files.isEmpty() ? "" : files.iterator().next().getPrimaryFile().getNameExt()); // NOI18N
+                        } else {
+                            enable[0] = false; // Zero or more than one projects found or command not supported
+                            presenterName[0] = ActionsUtil.formatName(namePattern, 0, "");
+                        }
+                    }
+                    else {
+                        FileObject[] files = ActionsUtil.getFilesFromLookup( context, projects[0] );
+                        enable[0] = true;
+                        presenterName[0] = ActionsUtil.formatName( namePattern, files.length, files.length > 0 ? files[0].getNameExt() : "" ); // NOI18N
+                    }
+                }
+            };
+        } else if (performer != null) {
+            r[0] = new Runnable() {
+                @Override public void run() {
+                    Collection<? extends DataObject> dobjs = context.lookupAll(DataObject.class);
+                    if (dobjs.size() == 1) {
+                        FileObject f = dobjs.iterator().next().getPrimaryFile();
+
+                        enable[0] = performer.enable(f);
+                        presenterName[0] = ActionsUtil.formatName(namePattern, 1, f);
+                    } else {
+                        enable[0] = false;
+                        presenterName[0] = ActionsUtil.formatName(namePattern, 0, ""); // NOI18N
+                    }
+                    
+                }
+            };
+        }
+
+        if (r != null) {
+            Runnable delegate = new Runnable() {
+
+                @Override
+                public void run() {
+                    r[0].run();
+                    Mutex.EVENT.writeAccess(new Runnable() {
+                        @Override public void run() {
+                            putValue("menuText", presenterName[0]);
+                            putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName[0]));
+                            setEnabled(enable[0]);
+                        }
+                    });
+                }
+            };
+            if (immediate) {
+                delegate.run();
+            } else {
+                RP.post(delegate);
+            }
+        }
+    }
+    
+    @Override
+    protected void actionPerformed( Lookup context ) {
+        if (command != null) {
+            Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
+
+            if ( projects.length == 1 ) {            
+                ActionProvider ap = projects[0].getLookup().lookup(ActionProvider.class);
+                ap.invokeAction( command, context );
+                return;
+            }
+
+            ActionProvider provider = globalProvider(context);
+            if (provider != null) {
+                provider.invokeAction(command, context);
+            }
+        } else if (performer != null) {
+            Collection<? extends DataObject> dobjs = context.lookupAll(DataObject.class);
+            if (dobjs.size() == 1) {
+                performer.perform(dobjs.iterator().next().getPrimaryFile());
+            }
+        }
+    }
+
+    @Override
+    public Action createContextAwareInstance( Lookup actionContext ) {
+        return new FileAction( command, performer, namePattern, (Icon)getValue( SMALL_ICON ), actionContext );
+    }
+
+    private ActionProvider globalProvider(Lookup context) {
+        for (ActionProvider ap : Lookup.getDefault().lookupAll(ActionProvider.class)) {
+            if (Arrays.asList(ap.getSupportedActions()).contains(command) && ap.isActionEnabled(command, context)) {
+                return ap;
+            }
+        }
+        return null;
+    }
+
+}

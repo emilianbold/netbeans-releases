@@ -51,14 +51,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
 import javax.swing.Icon;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.ui.actions.ProjectActionTest.ActionCreator;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileActionPerformer;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -67,9 +65,9 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
-public class FileCommandActionTest extends NbTestCase {
+public class FileActionTest extends NbTestCase {
     
-    public FileCommandActionTest(String name) {
+    public FileActionTest(String name) {
         super( name );
     }
 
@@ -118,7 +116,7 @@ public class FileCommandActionTest extends NbTestCase {
     
     public void testCommandEnablement() throws Exception {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
-        FileCommandAction action = new FileCommandAction( "COMMAND", "TestFileCommandAction", (Icon)null, lookup );
+        FileAction action = new FileAction( "COMMAND", "TestFileCommandAction", (Icon)null, lookup );
         
         assertFalse( "Action should NOT be enabled", action.isEnabled() );        
         
@@ -133,10 +131,45 @@ public class FileCommandActionTest extends NbTestCase {
         
     }
     
+    public void testProviderEnablement() throws Exception {
+        TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
+        TestActionPerformer tap = new TestActionPerformer();
+        FileAction action = new FileAction( tap, "TestFileAction", null,lookup );
+     
+        assertFalse( "Action should NOT be enabled", action.isEnabled() );                
+        assertEquals( "enable() should NOT be called: ", 0, tap.enableCount );
+        
+        tap.clear();
+        tap.on( true );
+        assertFalse( "Action should NOT be enabled", action.isEnabled() );
+        assertEquals( "enable() should NOT be called: ", 0, tap.enableCount );
+        
+        tap.clear();
+        tap.on( false );
+        lookup.change(d1_1);
+        assertFalse( "Action should NOT be enabled", action.isEnabled() );
+        assertEquals( "enable() should be called once: ", 1, tap.enableCount );
+        assertEquals( "enable() should be called on right file: ", f1_1.toString(), tap.fObj.toString() );
+        
+        tap.clear();
+        tap.on( true );
+        lookup.change(d1_2);
+        assertTrue( "Action should be enabled", action.isEnabled() );        
+        assertEquals( "enable() should be called once: ", 1, tap.enableCount );
+        assertEquals( "enable() should be called on right file: ", f1_2.toString(), tap.fObj.toString() );
+                
+        tap.clear();
+        tap.on( false );
+        lookup.change(d1_1, d2_1);
+        assertFalse( "Action should NOT be enabled", action.isEnabled() );
+        assertEquals( "enable() should NOT be called: ", 0, tap.enableCount );
+        
+    }
+    
     public void testAcceleratorsPropagated() {
-        ProjectActionTest.doTestAcceleratorsPropagated(new ActionCreator() {
-            public ProjectAction create(Lookup l) {
-                return new FileCommandAction("command", "TestProjectAction", (Icon) null, l);
+        TestSupport.doTestAcceleratorsPropagated(new TestSupport.ActionCreator() {
+            public LookupSensitiveAction create(Lookup l) {
+                return new FileAction("command", "TestProjectAction", (Icon) null, l);
             }
         }, true);
     }
@@ -213,20 +246,20 @@ public class FileCommandActionTest extends NbTestCase {
         
     }
     
-    private static class TestActionPerformer implements ProjectActionPerformer {
+    private static class TestActionPerformer implements FileActionPerformer {
         
         private int enableCount;
-        private Project project;
+        private FileObject fObj;
         private boolean on;
         
-        public boolean enable( Project project ) {
+        public boolean enable( FileObject fo ) {
             enableCount ++;
-            this.project = project;
+            this.fObj = fo;
             return on;
         }
 
-        public void perform( Project project ) {
-            this.project = project;
+        public void perform( FileObject fo ) {
+            this.fObj = fo;
         }
         
         public void on( boolean on ) {
@@ -234,7 +267,7 @@ public class FileCommandActionTest extends NbTestCase {
         }
         
         public void clear() {
-            this.project = null;
+            this.fObj = null;
             enableCount = 0;
         }
         
