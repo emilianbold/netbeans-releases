@@ -101,6 +101,18 @@ public class BrowserReload {
         url2File.put( browserUrl, localFileObject );
     }
     
+    public boolean canReload( FileObject fileObject ){
+        String tabId = file2Id.get( fileObject );
+        if ( tabId == null ){
+            return false;
+        }
+        SelectionKey selectionKey = file2Socket.get( fileObject );
+        if ( selectionKey == null ){
+            return false;
+        }
+        return true;
+    }
+    
     public void reload( FileObject fileObject ){
         Pair pair = communicationMap.get( fileObject );
         if ( pair == null || pair.getId() == null ){

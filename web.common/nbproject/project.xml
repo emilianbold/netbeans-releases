@@ -152,6 +152,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.clientside.project</friend>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.css.lib</friend>
