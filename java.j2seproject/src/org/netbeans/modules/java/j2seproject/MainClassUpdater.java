@@ -49,7 +49,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
@@ -272,11 +274,13 @@ public final class MainClassUpdater extends FileChangeAdapter implements Propert
                         compileCp = ClassPathSupport.createClassPath(new URL[0]);
                     }
                     final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
-                    JavaSource js = JavaSource.create(cpInfo);
-                    js.runWhenScanFinished(new Task<CompilationController>() {
+                    final JavaSource js = JavaSource.create(cpInfo);
+                    
+                    // execute immediately, or delay if cannot find main class
+                    SourceUtils.postUserActionTask(js, new Task<CompilationController>() {
                         @Override
                         public void run(CompilationController c) throws Exception {
-                            TypeElement te = c.getElements().getTypeElement(mainClassName);
+                            TypeElement te = SourceUtils.findTypeElement(js, c.getElements(), mainClassName);
                              if (te != null) {
                                 final FileObject fo = SourceUtils.getFile(te, cpInfo);
                                 synchronized (MainClassUpdater.this) {
