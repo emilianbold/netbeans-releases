@@ -246,7 +246,7 @@ public final class NbMavenProject {
         return project.getOriginalMavenProject();
     }
 
-    public MavenProject loadAlternateMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
+    public @NonNull MavenProject loadAlternateMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
         return project.loadMavenProject(embedder, activeProfiles, properties);
     }
 

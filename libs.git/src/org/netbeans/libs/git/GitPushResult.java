@@ -47,7 +47,7 @@ import java.util.Map;
  *
  * @author ondra
  */
-public class GitPushResult {
+public final class GitPushResult {
 
     private final Map<String, GitTransportUpdate> remoteRepositoryUpdates;
     private final Map<String, GitTransportUpdate> localRepositoryUpdates;

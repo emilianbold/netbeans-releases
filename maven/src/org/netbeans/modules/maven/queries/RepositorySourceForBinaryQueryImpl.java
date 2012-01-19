@@ -73,6 +73,10 @@ public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryI
     }
 
     public SourceForBinaryQuery.Result findSourceRoots(URL url) {
+        File stored = SourceJavadocByHash.find(url, false);
+        if (stored != null) {
+            return new SrcResult(stored);
+        }
         URL binRoot = url;
         if ("jar".equals(url.getProtocol())) { //NOI18N
             binRoot = FileUtil.getArchiveFile(url);

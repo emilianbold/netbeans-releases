@@ -97,7 +97,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -107,64 +106,37 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ProfilingPointsWindowUI_AllProjectsString=All Projects",
+    "ProfilingPointsWindowUI_ProjectLabelText=Pr&oject:",
+    "ProfilingPointsWindowUI_InclSubprojCheckboxText=in&clude open subprojects",
+    "ProfilingPointsWindowUI_AddButtonToolTip=Add Profiling Point",
+    "ProfilingPointsWindowUI_RemoveButtonToolTip=Delete Profiling Point(s)",
+    "ProfilingPointsWindowUI_EditButtonToolTip=Edit Profiling Point",
+    "ProfilingPointsWindowUI_DisableButtonToolTip=Enable/Disable Profiling Point(s)",
+    "ProfilingPointsWindowUI_ShowSourceItemText=Show in Source",
+    "ProfilingPointsWindowUI_ShowStartItemText=Show Start in Source",
+    "ProfilingPointsWindowUI_ShowEndItemText=Show End in Source",
+    "ProfilingPointsWindowUI_ShowReportItemText=Show Report",
+    "ProfilingPointsWindowUI_EnableItemText=Enable",
+    "ProfilingPointsWindowUI_DisableItemText=Disable",
+    "ProfilingPointsWindowUI_EnableDisableItemText=Enable/Disable",
+    "ProfilingPointsWindowUI_EditItemText=Edit",
+    "ProfilingPointsWindowUI_RemoveItemText=Delete",
+    "ProfilingPointsWindowUI_ScopeColumnName=Scope",
+    "ProfilingPointsWindowUI_ProjectColumnName=Project",
+    "ProfilingPointsWindowUI_PpColumnName=Profiling Point",
+    "ProfilingPointsWindowUI_ResultsColumnName=Results",
+    "ProfilingPointsWindowUI_ScopeColumnToolTip=Profiling Point scope",
+    "ProfilingPointsWindowUI_ProjectColumnToolTip=Project for which the Profiling Point is defined",
+    "ProfilingPointsWindowUI_PpColumnToolTip=Profiling Point",
+    "ProfilingPointsWindowUI_ResultsColumnToolTip=Data or current state of the Profiling Point",
+    "ProfilingPointsWindowUI_NoStartDefinedMsg=No start point defined for this Profiling Point",
+    "ProfilingPointsWindowUI_NoEndDefinedMsg=No end point defined for this Profiling Point"
+})
 public class ProfilingPointsWindowUI extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener,
                                                                MouseListener, MouseMotionListener, KeyListener {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ALL_PROJECTS_STRING = ProfilingPointsUIHelper.get().getAllProjectsString();
-    private static final String PROJECT_LABEL_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                         "ProfilingPointsWindowUI_ProjectLabelText"); // NOI18N
-    private static final String INCL_SUBPROJ_CHECKBOX_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                                 "ProfilingPointsWindowUI_InclSubprojCheckboxText"); // NOI18N
-    private static final String ADD_BUTTON_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                         "ProfilingPointsWindowUI_AddButtonToolTip"); // NOI18N
-    private static final String REMOVE_BUTTON_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                            "ProfilingPointsWindowUI_RemoveButtonToolTip"); // NOI18N
-    private static final String EDIT_BUTTON_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                          "ProfilingPointsWindowUI_EditButtonToolTip"); // NOI18N
-    private static final String DISABLE_BUTTON_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                             "ProfilingPointsWindowUI_DisableButtonToolTip"); // NOI18N
-    private static final String SHOW_SOURCE_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                            "ProfilingPointsWindowUI_ShowSourceItemText"); // NOI18N
-    private static final String SHOW_START_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                           "ProfilingPointsWindowUI_ShowStartItemText"); // NOI18N
-    private static final String SHOW_END_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                         "ProfilingPointsWindowUI_ShowEndItemText"); // NOI18N
-    private static final String SHOW_REPORT_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                            "ProfilingPointsWindowUI_ShowReportItemText"); // NOI18N
-    private static final String ENABLE_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                       "ProfilingPointsWindowUI_EnableItemText"); // NOI18N
-    private static final String DISABLE_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                        "ProfilingPointsWindowUI_DisableItemText"); // NOI18N
-    private static final String ENABLE_DISABLE_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                               "ProfilingPointsWindowUI_EnableDisableItemText"); // NOI18N
-    private static final String EDIT_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                     "ProfilingPointsWindowUI_EditItemText"); // NOI18N
-    private static final String REMOVE_ITEM_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                       "ProfilingPointsWindowUI_RemoveItemText"); // NOI18N
-    private static final String SCOPE_COLUMN_NAME = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                        "ProfilingPointsWindowUI_ScopeColumnName"); // NOI18N
-    private static final String PROJECT_COLUMN_NAME = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                          "ProfilingPointsWindowUI_ProjectColumnName"); // NOI18N
-    private static final String PP_COLUMN_NAME = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                     "ProfilingPointsWindowUI_PpColumnName"); // NOI18N
-    private static final String RESULTS_COLUMN_NAME = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                          "ProfilingPointsWindowUI_ResultsColumnName"); // NOI18N
-    private static final String SCOPE_COLUMN_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                           "ProfilingPointsWindowUI_ScopeColumnToolTip"); // NOI18N
-    private static final String PROJECT_COLUMN_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                             "ProfilingPointsWindowUI_ProjectColumnToolTip"); // NOI18N
-    private static final String PP_COLUMN_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                        "ProfilingPointsWindowUI_PpColumnToolTip"); // NOI18N
-    private static final String RESULTS_COLUMN_TOOLTIP = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                             "ProfilingPointsWindowUI_ResultsColumnToolTip"); // NOI18N
-    private static final String NO_START_DEFINED_MSG = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                           "ProfilingPointsWindowUI_NoStartDefinedMsg"); // NOI18N
-    private static final String NO_END_DEFINED_MSG = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                         "ProfilingPointsWindowUI_NoEndDefinedMsg"); // NOI18N
-                                                                                                                     // -----
     private static final Icon PPOINT_ADD_ICON = Icons.getIcon(ProfilingPointsIcons.ADD);
     private static final Icon PPOINT_REMOVE_ICON = Icons.getIcon(ProfilingPointsIcons.REMOVE);
     private static final Icon PPOINT_EDIT_ICON = Icons.getIcon(ProfilingPointsIcons.EDIT);
@@ -275,7 +247,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
             if (location == null) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    NO_START_DEFINED_MSG,
+                                    Bundle.ProfilingPointsWindowUI_NoStartDefinedMsg(),
                                     NotifyDescriptor.WARNING_MESSAGE));
             } else {
                 Utils.openLocation(location);
@@ -287,7 +259,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
             if (location == null) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    NO_END_DEFINED_MSG,
+                                    Bundle.ProfilingPointsWindowUI_NoEndDefinedMsg(),
                                     NotifyDescriptor.WARNING_MESSAGE));
             } else {
                 Utils.openLocation(location);
@@ -467,8 +439,18 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         EnhancedTableCellRenderer projectRenderer = Utils.getProjectRenderer();
         EnhancedTableCellRenderer profilingPointRenderer = Utils.getPresenterRenderer();
 
-        columnNames = new String[] { SCOPE_COLUMN_NAME, PROJECT_COLUMN_NAME, PP_COLUMN_NAME, RESULTS_COLUMN_NAME };
-        columnToolTips = new String[] { SCOPE_COLUMN_TOOLTIP, PROJECT_COLUMN_TOOLTIP, PP_COLUMN_TOOLTIP, RESULTS_COLUMN_TOOLTIP };
+        columnNames = new String[] { 
+            Bundle.ProfilingPointsWindowUI_ScopeColumnName(), 
+            Bundle.ProfilingPointsWindowUI_ProjectColumnName(), 
+            Bundle.ProfilingPointsWindowUI_PpColumnName(), 
+            Bundle.ProfilingPointsWindowUI_ResultsColumnName() 
+        };
+        columnToolTips = new String[] { 
+            Bundle.ProfilingPointsWindowUI_ScopeColumnToolTip(), 
+            Bundle.ProfilingPointsWindowUI_ProjectColumnToolTip(), 
+            Bundle.ProfilingPointsWindowUI_PpColumnToolTip(), 
+            Bundle.ProfilingPointsWindowUI_ResultsColumnToolTip()
+        };
         columnTypes = new Class[] { Integer.class, Lookup.Provider.class, ProfilingPoint.class, ProfilingPoint.ResultsRenderer.class };
         columnRenderers = new TableCellRenderer[] { scopeRenderer, projectRenderer, profilingPointRenderer, null // dynamic
                           };
@@ -667,10 +649,10 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         toolbar.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
 
         projectLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, PROJECT_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, Bundle.ProfilingPointsWindowUI_ProjectLabelText());
         projectLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
-        projectsCombo = new JComboBox(new Object[] { ALL_PROJECTS_STRING }) {
+        projectsCombo = new JComboBox(new Object[] { Bundle.ProfilingPointsWindowUI_AllProjectsString() }) {
                 public Dimension getMaximumSize() {
                     return getPreferredSize();
                 }
@@ -692,7 +674,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
         if (ProfilingPointsUIHelper.get().displaySubprojectsOption()) {
             dependenciesCheckbox = new JCheckBox();
-            org.openide.awt.Mnemonics.setLocalizedText(dependenciesCheckbox, INCL_SUBPROJ_CHECKBOX_TEXT);
+            org.openide.awt.Mnemonics.setLocalizedText(dependenciesCheckbox, Bundle.ProfilingPointsWindowUI_InclSubprojCheckboxText());
             dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
             toolbar.add(dependenciesCheckbox);
             dependenciesCheckbox.addActionListener(new ActionListener() {
@@ -706,24 +688,24 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         toolbar.add(new JToolBar.Separator());
 
         addButton = new JButton(PPOINT_ADD_ICON);
-        addButton.setToolTipText(ADD_BUTTON_TOOLTIP);
+        addButton.setToolTipText(Bundle.ProfilingPointsWindowUI_AddButtonToolTip());
         addButton.addActionListener(this);
         toolbar.add(addButton);
 
         removeButton = new JButton(PPOINT_REMOVE_ICON);
-        removeButton.setToolTipText(REMOVE_BUTTON_TOOLTIP);
+        removeButton.setToolTipText(Bundle.ProfilingPointsWindowUI_RemoveButtonToolTip());
         removeButton.addActionListener(this);
         toolbar.add(removeButton);
 
         toolbar.add(new JToolBar.Separator());
 
         editButton = new JButton(PPOINT_EDIT_ICON);
-        editButton.setToolTipText(EDIT_BUTTON_TOOLTIP);
+        editButton.setToolTipText(Bundle.ProfilingPointsWindowUI_EditButtonToolTip());
         editButton.addActionListener(this);
         toolbar.add(editButton);
 
         disableButton = new JButton(PPOINT_ENABLE_DISABLE_ICON);
-        disableButton.setToolTipText(DISABLE_BUTTON_TOOLTIP);
+        disableButton.setToolTipText(Bundle.ProfilingPointsWindowUI_DisableButtonToolTip());
         disableButton.addActionListener(this);
         toolbar.add(disableButton);
 
@@ -747,25 +729,25 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         panel.add(separator, BorderLayout.NORTH);
         panel.add(tablePanel, BorderLayout.CENTER);
 
-        showInSourceItem = new JMenuItem(SHOW_SOURCE_ITEM_TEXT);
+        showInSourceItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_ShowSourceItemText());
         showInSourceItem.setFont(showInSourceItem.getFont().deriveFont(Font.BOLD));
         showInSourceItem.addActionListener(this);
-        showStartInSourceItem = new JMenuItem(SHOW_START_ITEM_TEXT);
+        showStartInSourceItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_ShowStartItemText());
         showStartInSourceItem.setFont(showInSourceItem.getFont().deriveFont(Font.BOLD));
         showStartInSourceItem.addActionListener(this);
-        showEndInSourceItem = new JMenuItem(SHOW_END_ITEM_TEXT);
+        showEndInSourceItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_ShowEndItemText());
         showEndInSourceItem.addActionListener(this);
-        showReportItem = new JMenuItem(SHOW_REPORT_ITEM_TEXT);
+        showReportItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_ShowReportItemText());
         showReportItem.addActionListener(this);
-        enableItem = new JMenuItem(ENABLE_ITEM_TEXT);
+        enableItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_EnableItemText());
         enableItem.addActionListener(this);
-        disableItem = new JMenuItem(DISABLE_ITEM_TEXT);
+        disableItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_DisableItemText());
         disableItem.addActionListener(this);
-        enableDisableItem = new JMenuItem(ENABLE_DISABLE_ITEM_TEXT);
+        enableDisableItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_EnableDisableItemText());
         enableDisableItem.addActionListener(this);
-        editItem = new JMenuItem(EDIT_ITEM_TEXT);
+        editItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_EditItemText());
         editItem.addActionListener(this);
-        removeItem = new JMenuItem(REMOVE_ITEM_TEXT);
+        removeItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_RemoveItemText());
         removeItem.addActionListener(this);
 
         profilingPointsPopup = new JPopupMenu();
@@ -865,7 +847,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         List items = new ArrayList(projects.length + 1);
         items.addAll(Arrays.asList(projects));
 
-        items.add(0, ALL_PROJECTS_STRING);
+        items.add(0, Bundle.ProfilingPointsWindowUI_AllProjectsString());
 
         DefaultComboBoxModel comboModel = (DefaultComboBoxModel) projectsCombo.getModel();
         Object selectedItem = projectsCombo.getSelectedItem();
@@ -881,7 +863,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         if ((selectedItem != null) && (comboModel.getIndexOf(selectedItem) != -1)) {
             projectsCombo.setSelectedItem(selectedItem);
         } else {
-            projectsCombo.setSelectedItem(ALL_PROJECTS_STRING);
+            projectsCombo.setSelectedItem(Bundle.ProfilingPointsWindowUI_AllProjectsString());
         }
 
         internalComboChange = false;

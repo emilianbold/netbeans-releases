@@ -68,6 +68,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectIconAnnotator;
@@ -117,14 +118,15 @@ public class ProjectsRootNode extends AbstractNode {
     static final int PHYSICAL_VIEW = 0;
     static final int LOGICAL_VIEW = 1;
         
-    private static final String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode.gif"; //NOI18N
-    private static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
+    private static final @StaticResource String ICON_BASE = "org/netbeans/modules/project/ui/resources/projectsRootNode.gif"; //NOI18N
+    public static final String ACTIONS_FOLDER = "ProjectsTabActions"; // NOI18N
+    public static final String ACTIONS_FOLDER_PHYSICAL = "FilesTabActions";
 
     private ResourceBundle bundle;
     private final int type;
     
     public ProjectsRootNode( int type ) {
-        super( new ProjectChildren( type ) ); 
+        super(new ProjectChildren(type), /* for CollapseAll */Lookups.singleton(type == LOGICAL_VIEW ? ProjectTab.ID_LOGICAL : ProjectTab.ID_PHYSICAL));
         setIconBaseWithExtension( ICON_BASE );
         this.type = type;
         synchronized(all){
@@ -157,10 +159,10 @@ public class ProjectsRootNode extends AbstractNode {
     
     @Override
     public Action[] getActions( boolean context ) {
-        if (context || type == PHYSICAL_VIEW) {
+        if (context) { // XXX why?
             return new Action[0];
         } else {
-            List<? extends Action> actions = Utilities.actionsForPath(ACTIONS_FOLDER);
+            List<? extends Action> actions = Utilities.actionsForPath(type == PHYSICAL_VIEW ? ACTIONS_FOLDER_PHYSICAL : ACTIONS_FOLDER);
             return actions.toArray(new Action[actions.size()]);
         }
     }

@@ -582,6 +582,14 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean extendsJerseyProjectClasspath( Project project ) {
+            if ( hasJee6Profile() ){
+                /*
+                 *  Do not extend project classpath with Jersey impl libraries
+                 *  Fix for BZ#206527 - Do not extend JEE6 project 
+                 *  classpath with Jersey libraries
+                 */
+                return true;
+            }
             List<URL> urls = getJerseyLibraryURLs();
             if ( urls.size() >0 ){
                 return addJars( project , urls );
@@ -615,6 +623,16 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                     }
                 }     
             }
+        }
+        
+        @Override
+        public void configureCustomJersey( Project project ){
+        }
+        
+        private boolean hasJee6Profile(){
+            Set<Profile> profiles = getSupportedProfiles();
+            return profiles.contains(Profile.JAVA_EE_6_FULL) || 
+                profiles.contains(Profile.JAVA_EE_6_WEB) ;
         }
         
         private List<URL> getJerseyLibraryURLs() {

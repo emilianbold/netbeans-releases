@@ -443,7 +443,7 @@ public abstract class AbstractRefactoring {
                         dob = DataObject.find(f);
                         for (Iterator j = dob.files().iterator(); j.hasNext();) {
                             FileObject file = (FileObject) j.next();
-                            if (SharabilityQuery.getSharability(FileUtil.toFile(file)) == SharabilityQuery.SHARABLE) {
+                            if (SharabilityQuery.getSharability(file) == SharabilityQuery.Sharability.SHARABLE) {
                                 allFiles.add(file);
                             }
                         }

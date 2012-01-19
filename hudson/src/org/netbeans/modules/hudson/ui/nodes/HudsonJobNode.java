@@ -46,7 +46,6 @@ package org.netbeans.modules.hudson.ui.nodes;
 
 import java.io.CharConversionException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -58,6 +57,7 @@ import org.netbeans.modules.hudson.ui.actions.LogInAction;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
 import org.netbeans.modules.hudson.ui.actions.ProjectAssociationAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
+import org.netbeans.modules.hudson.ui.actions.ViewConfigAction;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import static org.netbeans.modules.hudson.ui.nodes.Bundle.*;
 import org.openide.actions.PropertiesAction;
@@ -93,24 +93,15 @@ public class HudsonJobNode extends AbstractNode {
         }
         return Children.create(new ChildFactory<Object>() {
             final Object WORKSPACE = new Object();
-            LinkedList<HudsonJobBuild> builds;
             protected @Override boolean createKeys(List<Object> toPopulate) {
-                if (Thread.interrupted()) {
-                    return true;
-                } else if (builds == null) {
-                    // XXX would be nicer to avoid adding this in case there is no remote workspace...
-                    toPopulate.add(WORKSPACE);
-                    builds = new LinkedList<HudsonJobBuild>(job.getBuilds());
-                    return false;
-                } else if (builds.isEmpty()) {
-                    return true;
-                } else {
+                // XXX would be nicer to avoid adding this in case there is no remote workspace...
+                toPopulate.add(WORKSPACE);
+                for (HudsonJobBuild b : job.getBuilds()) {
                     // Processing one build at a time, make sure its result is known (blocking call).
-                    HudsonJobBuild b = builds.removeFirst();
                     b.getResult();
                     toPopulate.add(b);
-                    return false;
                 }
+                return true;
             }
             protected @Override Node createNodeForKey(Object key) {
                 if (key == WORKSPACE) {
@@ -139,6 +130,7 @@ public class HudsonJobNode extends AbstractNode {
         if (job instanceof OpenableInBrowser) {
             actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) job));
         }
+        actions.add(new ViewConfigAction(job));
         actions.add(SystemAction.get(PropertiesAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
@@ -177,17 +169,11 @@ public class HudsonJobNode extends AbstractNode {
         if (!job.isSalient()) {
             // XXX visually mark this somehow?
         }
-        switch (color) {
-        case red_anime:
-        case yellow_anime:
-        case blue_anime:
-        case grey_anime:
-        case aborted_anime:
+        if (color.isRunning()) {
             htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_running() + "</font>";
-            break;
-        case secured:
+        }
+        if (color == Color.secured) {
             htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_secured() + "</font>";
-            break;
         }
         if (job.isInQueue()) {
             htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_in_queue() + "</font>";

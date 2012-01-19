@@ -44,7 +44,6 @@ made subject to such option by the copyright holder.
 -->
 
 <!DOCTYPE someant [
-  <!ENTITY links SYSTEM "links.xml">
   <!ENTITY properties SYSTEM "properties.xml">
   <!ENTITY replaces SYSTEM "replaces.xml">
   <!ENTITY disallowed-links SYSTEM "disallowed-links.xml">

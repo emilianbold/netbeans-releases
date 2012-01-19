@@ -73,7 +73,7 @@ public class HgCommandTest extends AbstractHgTestCase {
         // create tag
         HgCommand.createTag(getWorkTreeDir(), tagName, "tag message", null, true, NULL_LOGGER);
         HgLogMessage[] logs = HgCommand.getLogMessages(getWorkTreeDir(), null, tagName, tagName, 
-                true, false, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
+                true, false, true, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
         // hg log should return the tagged revision info
         assertEquals(1, logs.length);
         
@@ -83,7 +83,7 @@ public class HgCommandTest extends AbstractHgTestCase {
         // create tag
         HgCommand.createTag(getWorkTreeDir(), tagName, "tag message", null, true, NULL_LOGGER);
         logs = HgCommand.getLogMessages(getWorkTreeDir(), null, tagName, tagName, 
-                true, false, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
+                true, false, true, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
         // hg log should return the tagged revision info
         assertEquals(1, logs.length);
     }
@@ -93,7 +93,7 @@ public class HgCommandTest extends AbstractHgTestCase {
         String last = HgCommand.getLastRevision(getWorkTreeDir(), null);
         String to = Integer.toString(Integer.parseInt(last) + 100);
         HgLogMessage[] logs = HgCommand.getLogMessages(getWorkTreeDir(), null, last, to, 
-                true, false, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
+                true, false, true, 1, Collections.<String>emptyList(), NULL_LOGGER, true);
         // hg log should return the tagged revision info
         assertEquals(1, logs.length);
     }

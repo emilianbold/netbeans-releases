@@ -80,10 +80,12 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
         this.modification = modification;
     }
 
+    @Override
     public String getDisplayText() {
         return displayText;
     }
 
+    @Override
     public Lookup getLookup() {
         Object composite = null;
         if (bounds!=null) {
@@ -102,17 +104,21 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
         super.setEnabled(enabled);
     }
 
+    @Override
     public PositionBounds getPosition() {
         return bounds;
     }
 
+    @Override
     public String getText() {
         return displayText;
     }
 
+    @Override
     public void performChange() {
     }
 
+    @Override
     public FileObject getParentFile() {
         if (diff.getKind() == Difference.Kind.CREATE) {
             return parentFile.getParent();

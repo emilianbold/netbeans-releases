@@ -43,33 +43,21 @@
  */
 package org.netbeans.modules.refactoring.java.spi;
 
-import java.util.Collections;
-import org.netbeans.api.java.source.ModificationResult.Difference;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindVisitor;
+import org.netbeans.modules.refactoring.java.plugins.JavaPluginUtils;
 import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -120,15 +108,18 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
 
     protected abstract JavaSource getJavaSource(Phase p);
 
+    @Override
     public Problem preCheck() {
         cancelRequest = false;
         return workingTask.run(Phase.PRECHECK);
     }
 
+    @Override
     public Problem checkParameters() {
         return workingTask.run(Phase.CHECKPARAMETERS);
     }
 
+    @Override
     public Problem fastCheckParameters() {
         return workingTask.run(Phase.FASTCHECKPARAMETERS);
     }
@@ -153,12 +144,13 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
 //        return problem;
 //    }
     
+    @Override
     public void cancelRequest() {
         cancelRequest = true;
         if (currentTask!=null) {
             currentTask.cancel();
         }
-        RetoucheUtils.cancel = true;
+        RefactoringUtils.cancel = true;
     }
 
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
@@ -166,33 +158,18 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         if (cpInfo==null) {
             Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
             if (!handles.isEmpty()) {
-                cpInfo = RetoucheUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
+                cpInfo = RefactoringUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
             } else {
-                cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
+                cpInfo = JavaRefactoringUtils.getClasspathInfoFor((FileObject)null);
             }
             refactoring.getContext().add(cpInfo);
         }
         return cpInfo;
     }
     
-    protected static final Problem createProblem(Problem result, boolean isFatal, String message) {
+    protected static Problem createProblem(Problem result, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
-        if (result == null) {
-            return problem;
-        } else if (isFatal) {
-            problem.setNext(result);
-            return problem;
-        } else {
-            //problem.setNext(result.getNext());
-            //result.setNext(problem);
-            
-            // [TODO] performance
-            Problem p = result;
-            while (p.getNext() != null)
-                p = p.getNext();
-            p.setNext(problem);
-            return result;
-        }
+        return JavaPluginUtils.chainProblems(result, problem);
     }
 
     /**
@@ -333,6 +310,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             return problem;
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             switch(whatRun) {
             case PRECHECK:
@@ -360,9 +338,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             this.treePathHandle = searchedItem;
         }
         
+        @Override
         public void cancel() {
         }
         
+        @Override
         public void run(WorkingCopy compiler) throws IOException {
             try {
                 try {

@@ -216,7 +216,7 @@ public class WebProjectRestSupport extends WebRestSupport {
                     added = support.extendsJerseyProjectClasspath(project);
                 }
             }
-            if ( !added ){
+            if ( !added && restConfig.isJerseyLibSelected()){
                 JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
             }
         }

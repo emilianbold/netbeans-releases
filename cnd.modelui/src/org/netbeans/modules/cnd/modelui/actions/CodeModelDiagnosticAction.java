@@ -193,7 +193,9 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     if (dob != null) {
                         modified = dob.isModified();
                     }
-                    pw.printf("document version=%d timestamp=%s. Is modified? %s\n", DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc), modified);// NOI18N 
+                    pw.printf("document version=%d timestamp=%s caret=[%d-%d]. Is modified? %s\n", // NOI18N 
+                            DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc), 
+                            lastFocusedComponent.getSelectionStart(), lastFocusedComponent.getSelectionEnd(), modified);
                 }
                 for (ProviderAction enabledProvider : providerActions) {
                     if (enabledProvider.isSelected()) {

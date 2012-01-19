@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.modules.git.Git;
@@ -104,11 +104,11 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
                         if (c == 1) {
                             // recursive
                             LOG.log(Level.FINE, "Checking out paths recursively, revision: {0}", revision); //NOI18N
-                            client.checkout(splitRoots, revision, true, this);
+                            client.checkout(splitRoots, revision, true, getProgressMonitor());
                         } else {
                             // not recursive, list only direct descendants
                             LOG.log(Level.FINE, "Checking out paths non-recursively, revision: {0}", revision); //NOI18N
-                            client.checkout(splitRoots, revision, false, this);
+                            client.checkout(splitRoots, revision, false, getProgressMonitor());
                         }
                     }
                 } catch (GitException ex) {

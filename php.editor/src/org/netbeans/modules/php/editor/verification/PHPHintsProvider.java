@@ -150,14 +150,17 @@ public class PHPHintsProvider implements HintsProvider {
         }
 
         FileObject fobj = NbEditorUtilities.getFileObject(context.doc);
-
-        if (fobj != null && CheckPHPVersionVisitor.appliesTo(fobj)) {
-            PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
-            if (phpParseResult.getProgram() != null) {
-
+        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+        if (phpParseResult.getProgram() != null && fobj != null) {
+            if (CheckPHPVersionVisitor.appliesTo(fobj)) {
                 CheckPHPVersionVisitor visitor = new CheckPHPVersionVisitor(fobj);
                 phpParseResult.getProgram().accept(visitor);
                 unhandled.addAll(visitor.getErrors());
+            }
+            if (PHP54UnhandledError.appliesTo(fobj)) {
+                PHP54UnhandledError php54Visitor = new PHP54UnhandledError(fobj);
+                phpParseResult.getProgram().accept(php54Visitor);
+                unhandled.addAll(php54Visitor.getErrors());
             }
         }
     }

@@ -65,6 +65,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -197,13 +198,18 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             LOG.log(Level.INFO, ex.getMessage(), ex);
         }
     }
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings(
+    value="DMI_COLLECTION_OF_URLS"
+    /*,justification="URLs have never host part"*/)
     public synchronized void updateInError(Set<URL> urls)  {
         Set<FileObject> toRefresh = new HashSet<FileObject>();
         for (Iterator<FileObject> it = knownFiles2Error.keySet().iterator(); it.hasNext(); ) {
             FileObject f = it.next();
             try {
-                if (urls.contains(f.getURL())) {
+                final URL furl = f.getURL();
+                assert PathRegistry.noHostPart(furl) : furl;
+                if (urls.contains(furl)) {
                     toRefresh.add(f);
                     Integer i = knownFiles2Error.get(f);
                     
@@ -397,9 +403,13 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         }
 
         private void update(final URL root) {
+            assert PathRegistry.noHostPart(root) : root;
             WORKER_THREAD.post(new Runnable() {
 
                 @Override
+                @org.netbeans.api.annotations.common.SuppressWarnings(
+                value="DMI_COLLECTION_OF_URLS"
+                /*,justification="URLs have never host part"*/)
                 public void run() {
                     try {
                         Set<URL> toRefresh = new HashSet<URL>();

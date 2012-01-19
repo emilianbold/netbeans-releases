@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="CopyRefactoring">
+        <api name="refactoring"/>
+        <summary>Added CopyRefactoring to support Copy of multiple files.</summary>
+        <version major="1" minor="21"/>
+        <date day="21" month="12" year="2011"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added support to copy multiple files at once.
+            </p>    
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="CopyRefactoring"/>
+        <issue number="206623"/>
+    </change>
     <change id="Scope">
         <api name="refactoring"/>
         <summary>Scope added to allow to specify a limited scope for WhereUsedQuery</summary>

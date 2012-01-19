@@ -163,7 +163,7 @@ public class LayerIndex extends Task {
                                 ZipResource res = new LayerResource(jar, generatedLayer.getName(), cnb + "-generated.xml");
                                 resources.add(res);
                             } else {
-                                parse(jf.getInputStream(generatedLayer), files, labels, positions, cnb, jf);
+                                parse(jf.getInputStream(generatedLayer), files, labels, positions, cnb + "@", jf);
                             }
                         }
                         if (serviceOutput != null) {
@@ -223,7 +223,14 @@ public class LayerIndex extends Task {
                 if (!files.containsKey(path)) {
                     files.put(path, cnb);
                 } else if (!cnb.equals(files.get(path))) {
-                    files.put(path, null); // >1 owner
+                    // Possibly >1 owner, but consider layer.xml vs. generated-layer.xml.
+                    if (cnb.equals(files.get(path) + "@")) {
+                        // leave alone
+                    } else if ((cnb + "@").equals(files.get(path))) { // mark as defined in layer.xml
+                        files.put(path, cnb);
+                    } else { // different modules
+                        files.put(path, null);
+                    }
                 }
             }
             @Override

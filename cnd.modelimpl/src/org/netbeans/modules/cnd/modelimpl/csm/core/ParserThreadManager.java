@@ -83,6 +83,7 @@ public final class ParserThreadManager {
             return this.delegate.isStoped();
         }
 
+        @Override
         public void run() {
             try {
                 thread = Thread.currentThread();

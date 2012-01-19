@@ -103,4 +103,5 @@ public interface RemoteFile {
      * @return the timestamp (in <b>seconds</b>) of the remote file last modification or <code>-1</code> if not known.
      */
     long getTimestamp();
+
 }

@@ -93,6 +93,7 @@ public class ModifyingRefactoring extends RefactoringTestCase {
         List<FileObject> l = new LinkedList<FileObject>(modifiedFiles);
         Collections.sort(l, new Comparator<FileObject>() {
 
+            @Override
             public int compare(FileObject o1, FileObject o2) {
                 return o1.getName().compareTo(o2.getName());
             }
@@ -132,12 +133,14 @@ public class ModifyingRefactoring extends RefactoringTestCase {
 
     protected void dumpRefactoringResults() {
         RefactoringResultOperator result = RefactoringResultOperator.getPreview();
-        JButtonOperator jbo = new JButtonOperator(result.getDoRefactor());
+        new EventTool().waitNoEvent(1000);
+        JButtonOperator jbo = new JButtonOperator(result.getWindowContainerOperator(),"Do Refactoring");
+        new EventTool().waitNoEvent(1000);
         Set<FileObject> involvedFiles = (Set<FileObject>) result.getInvolvedFiles();
         List<String> origfiles = getFiles(new File(getDataDir(), "projects/RefactoringTest"));
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(8000);
         jbo.push();
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(8000);
         refModifiedFiles(involvedFiles);
         refFileChange(origfiles, getFiles(new File(getDataDir(), "projects/RefactoringTest")));
     }

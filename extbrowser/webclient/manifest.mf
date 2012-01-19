@@ -1,7 +1,0 @@
-OpenIDE-Module: org.netbeans.modules.webclient/1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/webclient/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/webclient/layer.xml
-OpenIDE-Module-Specification-Version: 0.6
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.httpserver/1
-OpenIDE-Module-Package-Dependencies: [org.mozilla.webclient.BrowserControlFactory]

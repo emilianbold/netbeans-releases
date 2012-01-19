@@ -326,14 +326,7 @@ plus a special "system" class loader.
         </question>
 -->
 <answer id="exec-component">
-<api category="devel" group="property" name="RevertFSModifications" type="export">
-    <code>FileObject</code>s created on XML layer now support a new 
-    attribute <code>removeWritables</code> returning an instance of
-    <code>Callable</code> which removes the local writable version of the
-    given <code>FileObject</code> thus reverting the folder or file to
-    its initial state as defined in XML layers. Please note that is <em>not</em>
-    possible to reset <code>FileObject</code>'s attributes.
-</api>
+    No.
 </answer>
 
 

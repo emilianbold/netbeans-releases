@@ -100,7 +100,7 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         excludeMessage.setLabelFor(jTextFieldExcludes);
         org.openide.awt.Mnemonics.setLocalizedText(excludeMessage, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_ExcludeMessage_JLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(includeJarsCheckBox, "&Package required JARs in EJB jar");
+        org.openide.awt.Mnemonics.setLocalizedText(includeJarsCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_Package_Required")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

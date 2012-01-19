@@ -62,7 +62,6 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -75,7 +74,6 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -424,9 +422,7 @@ public final class IndexSearch
     // </editor-fold>//GEN-END:initComponents
 
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-        Help help = Lookup.getDefault().lookup(Help.class);
-        
-        help.showHelp(getHelpCtx());
+        getHelpCtx().display();
     }//GEN-LAST:event_helpButtonActionPerformed
 
     private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showSource

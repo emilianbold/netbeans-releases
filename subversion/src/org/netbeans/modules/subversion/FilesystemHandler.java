@@ -110,7 +110,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
         // calling cache results in SOE, we must check manually
-        return hasMetadata(file.getParentFile());
+        return isVersioned(file.getParentFile());
     }
 
     /**
@@ -130,7 +130,7 @@ class FilesystemHandler extends VCSInterceptor {
                  * 'Delete new files' deletes the folder and invokes this method.
                  * But client.remove cannot be called since the folder is unversioned and we do not want to propagate an exception
                  */
-                if (hasMetadata(file.getParentFile())) {
+                if (isVersioned(file.getParentFile())) {
                     client.remove(new File [] { file }, true); // delete all files recursively
                 }
                 // with the cache refresh we rely on afterDelete
@@ -396,7 +396,7 @@ class FilesystemHandler extends VCSInterceptor {
                 parentManaged = SvnUtils.isManaged(parent);
                 // a direct cache call could, because of the synchrone svnMove/CopyImplementation handling,
                 // trigger an reentrant call on FS => we have to check manually
-                if (parentManaged && !hasMetadata(parent)) {
+                if (parentManaged && !isVersioned(parent)) {
                     parentIgnored = !addDirectories(parent);
                 }
             }
@@ -423,7 +423,7 @@ class FilesystemHandler extends VCSInterceptor {
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                             // check if the file wasn't just deleted in this session
-                            revertDeleted(client, toStatus, to, false);
+                            revertDeleted(client, toStatus, to, true);
 
                             if(!copyFile(from, to)) {
                                 Subversion.LOG.log(Level.INFO, "Cannot copy file {0} to {1}", new Object[] {from, to});
@@ -693,7 +693,15 @@ class FilesystemHandler extends VCSInterceptor {
 
     private boolean isVersioned(File file) {
         if (SvnUtils.isPartOfSubversionMetadata(file)) return false;
-        return  ( !file.isFile() && hasMetadata(file) ) || ( file.isFile() && hasMetadata(file.getParentFile()) );
+        if  (( !file.isFile() && hasMetadata(file) ) || ( file.isFile() && hasMetadata(file.getParentFile()) )) {
+            return true;
+        }
+        try {
+            SVNStatusKind statusKind = Subversion.getInstance().getClient(false).getSingleStatus(file).getTextStatus();
+            return statusKind != SVNStatusKind.UNVERSIONED && statusKind != SVNStatusKind.IGNORED;
+        } catch (SVNClientException ex) {
+            return false;
+        }
     }
 
     /**
@@ -733,10 +741,13 @@ class FilesystemHandler extends VCSInterceptor {
                 if(checkParents) {
                     // we have a file scheduled for deletion but it's going to be created again,
                     // => it's parent folder can't stay deleted either
-                    List<File> deletedParents = getDeletedParents(file, client);
+                    final List<File> deletedParents = getDeletedParents(file, client);
                     // XXX JAVAHL client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);
                     for (File parent : deletedParents) {
                         client.revert(parent, false);
+                    }
+                    if (!deletedParents.isEmpty()) {
+                        Subversion.getInstance().getStatusCache().refreshAsync(deletedParents.toArray(new File[deletedParents.size()]));
                     }
                 }
 
@@ -774,7 +785,7 @@ class FilesystemHandler extends VCSInterceptor {
                 assert SvnUtils.isManaged(parent) : "Cannot move " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ", " + parent.getAbsolutePath() + " is not managed";  // NOI18N see implsMove above
                 // a direct cache call could, because of the synchrone svnMoveImplementation handling,
                 // trigger an reentrant call on FS => we have to check manually
-                if (!hasMetadata(parent)) {
+                if (!isVersioned(parent)) {
                     parentIgnored = !addDirectories(parent);
                 }
             }
@@ -803,14 +814,14 @@ class FilesystemHandler extends VCSInterceptor {
                             // otherwise svn move should be invoked
 
                             // check if the file wasn't just deleted in this session
-                            revertDeleted(client, toStatus, to, false);
+                            revertDeleted(client, toStatus, to, true);
 
                             client.revert(from, true);
                             moved = from.renameTo(to);
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn
                             // check if the file wasn't just deleted in this session
-                            revertDeleted(client, toStatus, to, false);
+                            revertDeleted(client, toStatus, to, true);
 
                             moved = from.renameTo(to);
                         } else if (parentIgnored) {
@@ -909,7 +920,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
         File parent = dir.getParentFile();
         if (parent != null) {
-            if (SvnUtils.isManaged(parent) && !hasMetadata(parent)) {
+            if (SvnUtils.isManaged(parent) && !isVersioned(parent)) {
                 if(!addDirectories(parent)) {  // RECURSION
                     return false;
                 }

@@ -71,6 +71,7 @@ public class MacroExpansionAction extends CallableSystemAction {
         return MacroExpansionTopComponent.ICON_PATH;
     }
 
+    @Override
     public void performAction() {
         MacroExpansionTopComponent win = MacroExpansionTopComponent.findInstance();
 //        Preferences ps = NbPreferences.forModule(MacroExpansionTopComponent.class);
@@ -78,10 +79,12 @@ public class MacroExpansionAction extends CallableSystemAction {
         win.requestActive();
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(MacroExpansionAction.class, "CTL_MacroExpansionAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
     }

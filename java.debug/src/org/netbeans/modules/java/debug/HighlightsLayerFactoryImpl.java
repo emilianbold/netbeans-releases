@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.java.debug;
 
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -39,6 +40,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
+@MimeRegistration(mimeType="text/x-java", service=HighlightsLayerFactory.class)
 public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
 
     private static final boolean DEBUG_MODE;

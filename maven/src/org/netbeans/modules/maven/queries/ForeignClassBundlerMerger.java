@@ -50,16 +50,26 @@ public class ForeignClassBundlerMerger implements LookupMerger<ForeignClassBundl
     }
 
     @Override public ForeignClassBundler merge(final Lookup lookup) {
-        return new ForeignClassBundler() {
-            @Override public boolean preferSources() {
-                for (ForeignClassBundler fcb : lookup.lookupAll(ForeignClassBundler.class)) {
-                    if (!fcb.preferSources()) {
-                        return false;
-                    }
+        return new MergedForeignClassBundler(lookup);
+    }
+    
+    private static class MergedForeignClassBundler implements ForeignClassBundler {
+        
+        private final Lookup lookup;
+        
+        MergedForeignClassBundler(Lookup lookup) {
+            this.lookup = lookup;
+        }
+
+        @Override public boolean preferSources() {
+            for (ForeignClassBundler fcb : lookup.lookupAll(ForeignClassBundler.class)) {
+                if (!fcb.preferSources()) {
+                    return false;
                 }
-                return true;
             }
-        };
+            return true;
+        }
+
     }
 
 }

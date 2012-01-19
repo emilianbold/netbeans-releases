@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
@@ -70,11 +71,6 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
 
     public void testPropertyHelp() {
         assertPropertyHelp("animation");
-    }
-    
-    //Bug 202493 - java.io.FileNotFoundException: JAR entry www.w3.org/TR/css3-lists//index.html not found in /home/tester/netbeans-7.1beta/ide/docs/css3-spec.zip
-    public void testProperty_Fallback() {
-        assertPropertyHelp("fallback");
     }
     
     public void testProperty_direction() {
@@ -120,8 +116,10 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
     
     private String assertPropertyHelp(String propertyName) {
         StandardPropertiesHelpResolver instance = new StandardPropertiesHelpResolver();
-        Property property = CssModuleSupport.getProperty(propertyName);
-        assertNotNull(property);
+        Collection<Property> properties = CssModuleSupport.getProperties(propertyName);
+        assertNotNull(properties);
+        assertFalse(properties.isEmpty());
+        Property property = properties.iterator().next();
         String helpContent = instance.getHelp(property);
 //        System.out.println(helpContent);
         

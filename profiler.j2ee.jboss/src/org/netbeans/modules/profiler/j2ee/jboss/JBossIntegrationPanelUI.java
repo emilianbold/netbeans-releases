@@ -48,11 +48,19 @@ import javax.swing.UIManager;
 import org.netbeans.modules.profiler.attach.panels.components.DirectorySelector;
 import org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent;
 import org.netbeans.modules.profiler.attach.providers.TargetPlatform;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "JBossIntegrationProvider_JbossInstallLabelText=JBoss &Installation",
+    "InformationIntegrationLabel=Provide information required for automatic integration",
+    "JBossIntegrationPanelUI.border.platformSelector.title=Select JVM Platform",
+    "JBossIntegrationPanelUI.directoryJboss.hint=",
+    "JBossIntegrationPanelUI.directoryJboss.path="
+})
 public class JBossIntegrationPanelUI extends javax.swing.JPanel {
   private JBossIntegrationPanel.Model model;
 
@@ -80,7 +88,7 @@ public class JBossIntegrationPanelUI extends javax.swing.JPanel {
         setMinimumSize(new java.awt.Dimension(400, 300));
         setPreferredSize(new java.awt.Dimension(500, 300));
 
-        platformSelector.setBorder(javax.swing.BorderFactory.createTitledBorder(null, org.openide.util.NbBundle.getMessage(JBossIntegrationPanelUI.class, "JBossIntegrationPanelUI.border.platformSelector.title"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIManager.getFont("TitledBorder.font").deriveFont(Font.BOLD))); // NOI18N
+        platformSelector.setBorder(javax.swing.BorderFactory.createTitledBorder(null, Bundle.JBossIntegrationPanelUI_border_platformSelector_title(), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIManager.getFont("TitledBorder.font").deriveFont(Font.BOLD))); // NOI18N
         platformSelector.setPlatformFilter(this.model.getPlatformFilter());
         platformSelector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -88,15 +96,14 @@ public class JBossIntegrationPanelUI extends javax.swing.JPanel {
             }
         });
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(JBossIntegrationPanelUI.class, "InformationIntegrationLabel"))); // NOI18N
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.InformationIntegrationLabel())); // NOI18N
 
         jLabel1.setLabelFor(directoryJboss);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/profiler/j2ee/jboss/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("JBossIntegrationProvider_JbossInstallLabelText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, Bundle.JBossIntegrationProvider_JbossInstallLabelText()); // NOI18N
 
-        directoryJboss.setHint(org.openide.util.NbBundle.getMessage(JBossIntegrationPanelUI.class, "JBossIntegrationPanelUI.directoryJboss.hint")); // NOI18N
+        directoryJboss.setHint(Bundle.JBossIntegrationPanelUI_directoryJboss_hint()); // NOI18N
         directoryJboss.setHintForeground(new java.awt.Color(89, 79, 191));
-        directoryJboss.setPath(org.openide.util.NbBundle.getMessage(JBossIntegrationPanelUI.class, "JBossIntegrationPanelUI.directoryJboss.path")); // NOI18N
+        directoryJboss.setPath(Bundle.JBossIntegrationPanelUI_directoryJboss_path()); // NOI18N
         directoryJboss.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 directoryJbossPropertyChange(evt);
@@ -132,7 +139,7 @@ public class JBossIntegrationPanelUI extends javax.swing.JPanel {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1, Short.MAX_VALUE)
+            .addGap(0, 10, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -150,7 +157,7 @@ public class JBossIntegrationPanelUI extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(platformSelector, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                .addComponent(platformSelector, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

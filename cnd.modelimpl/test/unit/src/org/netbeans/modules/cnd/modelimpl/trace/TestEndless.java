@@ -83,6 +83,7 @@ public class TestEndless extends CndBaseTestSuite {
             super.setUp();
         }
 
+        @Override
         protected void postSetUp() {
             // init flags needed for file model tests
             getTraceModel().setDumpModel(true);

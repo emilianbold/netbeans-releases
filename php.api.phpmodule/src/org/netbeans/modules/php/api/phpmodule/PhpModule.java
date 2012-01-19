@@ -234,5 +234,10 @@ public abstract class PhpModule {
          * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender
          */
         IGNORED_FILES_CHANGE,
+        /**
+         * Framework has been added or removed.
+         * @since 1.60
+         */
+        FRAMEWORK_CHANGE,
     }
 }

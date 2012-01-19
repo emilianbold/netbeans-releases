@@ -376,12 +376,12 @@ public final class MultiViewFactory {
         private <T> T get(String attr, Class<T> type) {
             Object obj = map.get(attr); // NOI18N
             if (obj == null) {
-                throw new NullPointerException(attr + " attribute not specified");
+                throw new NullPointerException(attr + " attribute not specified for " + map.get("class"));
             }
             if (type.isInstance(obj)) {
                 return type.cast(obj);
             }
-            throw new IllegalArgumentException(attr + " not of type " + type + " but " + obj);
+            throw new IllegalArgumentException(attr + " not of type " + type + " but " + obj + " for " + map.get("class"));
         }
         
 
@@ -397,6 +397,9 @@ public final class MultiViewFactory {
 
         @Override
         public Image getIcon() {
+            if (!map.containsKey("iconBase")) {
+                return null; // #206525
+            }
             String base = get("iconBase", String.class); // NOI18N
             return ImageUtilities.loadImage(base, true);
         }

@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -92,6 +94,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private CsmObject parserContainer;
         private AST ast;
         private ConstructionKind kind;
+        
+        private Map<Integer, CsmObject> objects = null;
+        
         Antlr2CppParser(FileImpl file) {
             this.file = file;
             int aFlags = CPPParserEx.CPP_CPLUSPLUS;
@@ -107,7 +112,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
             assert object != null;
             assert ts != null;
             parserContainer = object;
-            parser = CPPParserEx.getInstance(file.getName().toString(), ts, flags);
+            if(TraceFlags.CPP_PARSER_ACTION) {
+                objects = new HashMap<Integer, CsmObject>();
+            }
+            parser = CPPParserEx.getInstance(file, ts, flags, objects);
         }
 
         @Override
@@ -115,6 +123,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
             try {
                 this.kind = kind;
                 switch (kind) {
+                    case TRANSLATION_UNIT_WITH_COMPOUND:
+                        parser.setLazyCompound(false);
+                        parser.translation_unit();
+                        break;
                     case TRANSLATION_UNIT:
                         parser.translation_unit();
                         break;
@@ -149,11 +161,12 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case COMPOUND_STATEMENT:
                     @SuppressWarnings("unchecked")
                     List<CsmStatement> list = (List<CsmStatement>) context[0];
-                    ((LazyStatementImpl)parserContainer).renderStatements(ast, list);
+                    ((LazyStatementImpl)parserContainer).renderStatements(ast, list, objects);
                     break;
+                case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     if (ast != null) {
-                        new AstRenderer(file).render(ast);
+                        new AstRenderer(file, objects).render(ast);
                         file.incParseCount();
                     }            
                     break;
@@ -162,7 +175,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
-                        new AstRenderer(nsBodyFile).render(ast, (NamespaceImpl) ns, nsDef);
+                        new AstRenderer(nsBodyFile, objects).render(ast, (NamespaceImpl) ns, nsDef);
                     }                    
                     break;
                 case CLASS_BODY:
@@ -223,6 +236,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             try {
                 this.kind = kind;
                 switch (kind) {
+                    case TRANSLATION_UNIT_WITH_COMPOUND:
                     case TRANSLATION_UNIT:
                             ret = parser.program();
                         break;
@@ -238,6 +252,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         @Override
         public void render(Object... context) {
             switch (kind) {
+                case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     new DataRenderer(file).render(parser.parsedObjects);
                     file.incParseCount();

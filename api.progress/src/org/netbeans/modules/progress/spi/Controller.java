@@ -48,12 +48,7 @@ package org.netbeans.modules.progress.spi;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -89,7 +84,7 @@ public /* final - because of tests */ class Controller {
     public Controller(ProgressUIWorker comp) {
         component = comp;
         model = new TaskModel();
-        eventQueue = new ArrayList<ProgressEvent>();
+        eventQueue = new LinkedList<ProgressEvent>();
         dispatchRunning = false;
         timer = new Timer(TIMER_QUANTUM, new ActionListener() {
             @Override

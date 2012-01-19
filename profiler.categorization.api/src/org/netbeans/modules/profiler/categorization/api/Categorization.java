@@ -40,10 +40,6 @@ package org.netbeans.modules.profiler.categorization.api;
 import java.util.*;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.marker.Marker;
-import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
-import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
-import org.netbeans.modules.profiler.utilities.Visitable;
-import org.netbeans.modules.profiler.utilities.Visitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,10 +85,11 @@ abstract public class Categorization implements Marker {
 
         return inheritedMarkMap;
     }
-        
+
+    @NbBundle.Messages("ROOT_CATEGORY_NAME=Project")
     final public synchronized Category getRoot() {
         if (root == null) {
-            root = new CategoryContainer("ROOT", NbBundle.getMessage(CategoryBuilder.class, "ROOT_CATEGORY_NAME"), Mark.DEFAULT); // NOI18N
+            root = new CategoryContainer("ROOT", Bundle.ROOT_CATEGORY_NAME(), Mark.DEFAULT); // NOI18N
             buildCategories(root);
         }
         return root;

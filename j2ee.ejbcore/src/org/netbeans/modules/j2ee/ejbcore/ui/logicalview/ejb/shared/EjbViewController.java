@@ -419,7 +419,7 @@ public final class EjbViewController {
             }
 
         } catch (IOException ioe) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(ioe));
+            Exceptions.printStackTrace(ioe);
         }
     }
 

@@ -44,11 +44,15 @@ package org.netbeans.modules.mercurial.ui.log;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -60,10 +64,12 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 public class HgLogMessage {
     public static char HgModStatus = 'M';
     public static char HgAddStatus = 'A';
-    public static char HgDelStatus = 'R';
+    public static char HgDelStatus = 'D';
     public static char HgCopyStatus = 'C';
+    public static char HgRenameStatus = 'R';
 
-    private List<HgLogMessageChangedPath> paths;
+    private final List<HgLogMessageChangedPath> paths;
+    private final List<HgLogMessageChangedPath> dummyPaths;
     private HgRevision rev;
     private String author;
     private String username;
@@ -110,13 +116,28 @@ public class HgLogMessage {
         List<String> cpathsStrings = new ArrayList<String>();
 
         // Mercurial Bug: Currently not seeing any file_copies coming back from Mercurial
+        if (fd != null && !fd.equals("")) {
+            for (String s : fd.split("\t")) {
+                updatePaths(dpathsStrings, s, HgDelStatus);
+            }
+        }
         if (fc != null && !fc.equals("")) {
             String[] copyPaths = fc.split("\t");
             for (int i = 0; i < copyPaths.length / 2; ++i) {
                 String path = copyPaths[i * 2];
                 String original = copyPaths[i * 2 + 1];
                 cpathsStrings.add(path);
-                paths.add(new HgLogMessageChangedPath(path, original, HgCopyStatus));
+                if (dpathsStrings.contains(original)) {
+                    for (ListIterator<HgLogMessageChangedPath> it = paths.listIterator(); it.hasNext(); ) {
+                        HgLogMessageChangedPath msg = it.next();
+                        if (original.equals(msg.getPath())) {
+                            it.remove();
+                        }
+                    }
+                    paths.add(new HgLogMessageChangedPath(path, original, HgRenameStatus));
+                } else {
+                    paths.add(new HgLogMessageChangedPath(path, original, HgCopyStatus));
+                }
             }
         }
         if (fa != null && !fa.equals("")) {
@@ -124,11 +145,6 @@ public class HgLogMessage {
                 if(!cpathsStrings.contains(s)){
                     updatePaths(apathsStrings, s, HgAddStatus);
                 }
-            }
-        }
-        if (fd != null && !fd.equals("")) {
-            for (String s : fd.split("\t")) {
-                updatePaths(dpathsStrings, s, HgDelStatus);
             }
         }
         if (fm != null && !fm.equals("")) {
@@ -139,10 +155,9 @@ public class HgLogMessage {
                 }
             }
         }
-        if(fa == null && fc == null && fd == null && fm == null) {
-            for (String fileSP : filesShortPaths) {
-                paths.add(new HgLogMessageChangedPath(fileSP, null, ' '));
-            }
+        this.dummyPaths = new ArrayList<HgLogMessageChangedPath>(filesShortPaths.size());
+        for (String fileSP : filesShortPaths) {
+            dummyPaths.add(new HgLogMessageChangedPath(fileSP, null, ' '));
         }
         if (branches.isEmpty()) {
             this.branches = new String[0];
@@ -158,6 +173,10 @@ public class HgLogMessage {
 
     HgLogMessageChangedPath [] getChangedPaths(){
         return paths.toArray(new HgLogMessageChangedPath[paths.size()]);
+    }
+
+    HgLogMessageChangedPath [] getDummyChangedPaths () {
+        return dummyPaths.toArray(new HgLogMessageChangedPath[dummyPaths.size()]);
     }
 
     /**
@@ -202,6 +221,10 @@ public class HgLogMessage {
     public String getCSetShortID() {
         return rev.getChangesetId();
     }
+    
+    public boolean isMerge () {
+        return bMerged;
+    }
 
     public HgRevision getAncestor (File file) {
         HgRevision ancestor = getAncestorFromMap(file);
@@ -215,8 +238,6 @@ public class HgLogMessage {
                 Mercurial.LOG.log(ex instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, ex);
                 return HgRevision.EMPTY;
             }
-        } else if (parentOneRev != null) {
-            ancestor = parentOneRev;
         } else {
             try{
                 ancestor = HgCommand.getParent(new File(rootURL), file, rev.getRevisionNumber());
@@ -282,6 +303,19 @@ public class HgLogMessage {
         return sb.toString();
     }
 
+    public File getOriginalFile (File root, File file) {
+        for (HgLogMessageChangedPath path : paths) {
+            if (file.equals(new File(root, path.getPath()))) {
+                if (path.getCopySrcPath() == null) {
+                    return file;
+                } else {
+                    return new File(root, path.getCopySrcPath());
+                }
+            }
+        }
+        return null;
+    }
+
     private void addAncestorToMap (File file, HgRevision ancestor) {
         ancestors.put(file, ancestor);
     }
@@ -295,6 +329,28 @@ public class HgLogMessage {
         String revisionNumber = ps1 != null && ps1.length >= 1 ? ps1[0] : null;
         String changesetId = ps1 != null && ps1.length >= 2 ? ps1[1] : revisionNumber;
         return revisionNumber == null ? null : new HgRevision(changesetId, revisionNumber);
+    }
+
+    void refreshChangedPaths (HgProgressSupport supp, boolean incoming) {
+        HgLogMessage[] messages;
+        if (incoming) {
+            messages = HgCommand.getIncomingMessages(new File(rootURL), getCSetShortID(), true, true, false, 1, supp.getLogger());
+        } else {
+            messages = HgCommand.getLogMessages(new File(rootURL), 
+                    null, 
+                    getCSetShortID(),
+                    getCSetShortID(),
+                    true,
+                    true,
+                    false,
+                    1,
+                    Collections.<String>emptyList(),
+                    supp.getLogger(),
+                    true);
+        }
+        paths.clear();
+        dummyPaths.clear();
+        paths.addAll(Arrays.asList(messages.length == 1 ? messages[0].getChangedPaths() : new HgLogMessageChangedPath[0]));
     }
     
     public static class HgRevision {

@@ -48,6 +48,7 @@ import java.awt.Button;
 import java.util.Date;
 import java.io.*;
 import javax.swing.Action;
+import org.openide.awt.Actions;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -72,8 +73,7 @@ public class InstanceDataObjectCopyTest extends org.netbeans.junit.NbTestCase {
         clearWorkDir ();
         Lookup.getDefault().lookup(ModuleInfo.class);
         
-        FileObject a = FileUtil.getConfigFile("Actions/System/org-openide-actions-OpenAction.instance");
-        openAction = (Action) a.getAttribute("instanceCreate");
+        openAction = Actions.forID("System", "org.openide.actions.OpenAction");
     }
 
     public void testSettingsFileOnNonSFSAfterCopyShouldHaveEditor () throws Exception {

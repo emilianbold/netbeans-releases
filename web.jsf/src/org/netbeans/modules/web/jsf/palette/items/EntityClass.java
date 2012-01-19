@@ -200,31 +200,6 @@ public abstract class EntityClass {
         }
     }
 
-    /**
-     * Check whether the entered class name exists under the Java Source.
-     */
-    protected boolean classExists(FileObject referenceFO, final String className) throws IOException {
-        if (referenceFO == null) {
-            return false;
-        }
-
-        ClasspathInfo cpi = ClasspathInfo.create(referenceFO);
-        JavaSource javaSource = JavaSource.create(cpi, Collections.EMPTY_LIST);
-        if (javaSource == null) {
-            return false;
-        }
-
-        final boolean[] result = new boolean[] { false };
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = controller.getElements().getTypeElement(className);
-                result[0] = typeElement != null;
-            }
-        }, true);
-        return result[0];
-    }
-
     public void addManagedBean(FileObject referenceFO, String beanName, String className) {
         try {
             WebModule webModule = WebModule.getWebModule(referenceFO);

@@ -79,6 +79,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         return super.isEnabled();
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (!CsmRefactoringUtils.REFACTORING_EXTRA) {
             return;
@@ -158,6 +159,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         return true;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         updateEnabled();
     }

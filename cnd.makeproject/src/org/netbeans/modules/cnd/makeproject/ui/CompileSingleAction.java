@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import org.netbeans.api.project.Project;
@@ -54,46 +53,54 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.lookup.Lookups;
 
 public class CompileSingleAction extends NodeAction {
-    protected boolean enable(Node[] activatedNodes)  {
-	boolean enabled = true;
-	for (int i = 0; i < activatedNodes.length; i++) {
-	    Node n = activatedNodes[i];
-	    Project project = (Project)n.getValue("Project"); // NOI18N
-	    Item item = (Item)n.getValue("Item"); // NOI18N
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        boolean enabled = true;
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node n = activatedNodes[i];
+            Project project = (Project) n.getValue("Project"); // NOI18N
+            Item item = (Item) n.getValue("Item"); // NOI18N
             if (project == null) {
                 enabled = false;
                 break;
             }
-	    ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-	    if (ap != null)
-		enabled = ap.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.fixed(new Object[] {project, n}));
-	    if (!enabled)
-		break;
-	}
-	return enabled;
+            ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+            if (ap != null) {
+                enabled = ap.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.fixed(new Object[]{project, n}));
+            }
+            if (!enabled) {
+                break;
+            }
+        }
+        return enabled;
     }
 
+    @Override
     public String getName() {
-	return NbBundle.getBundle(getClass()).getString("CTL_CompileSingleAction"); // NOI18N
+        return NbBundle.getMessage(getClass(), "CTL_CompileSingleAction"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
-	for (int i = 0; i < activatedNodes.length; i++) {
-	    Node n = activatedNodes[i];
-	    Project project = (Project)n.getValue("Project"); // NOI18N
-	    Item item = (Item)n.getValue("Item"); // NOI18N
-	    ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-	    if (ap != null) 
-		ap.invokeAction(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.fixed(new Object[] {project, n}));
-	}
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node n = activatedNodes[i];
+            Project project = (Project) n.getValue("Project"); // NOI18N
+            Item item = (Item) n.getValue("Item"); // NOI18N
+            ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+            if (ap != null) {
+                ap.invokeAction(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.fixed(new Object[]{project, n}));
+            }
+        }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
-	return null;
+        return null;
     }
 
     @Override
     protected boolean asynchronous() {
-	return false;
+        return false;
     }
 }

@@ -63,8 +63,9 @@ abstract public class MethodsNode extends ContainerNode {
     }
 
     /** Creates a new instance of MethodsNode */
+    @NbBundle.Messages("Methods_DisplayName=Methods")
     public MethodsNode(final ClassNode parent) {
-        super(NbBundle.getMessage(MethodsNode.class, "Methods_DisplayName"), Icons.getIcon(LanguageIcons.METHODS), parent); // NOI18N
+        super(Bundle.Methods_DisplayName(), Icons.getIcon(LanguageIcons.METHODS), parent); // NOI18N
     }
 
     protected SelectorChildren getChildren() {

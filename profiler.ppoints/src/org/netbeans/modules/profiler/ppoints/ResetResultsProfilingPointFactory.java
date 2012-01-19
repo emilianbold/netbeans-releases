@@ -52,7 +52,7 @@ import java.text.MessageFormat;
 import java.util.Properties;
 import javax.swing.Icon;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsIcons;
 import org.openide.util.Lookup;
 
 
@@ -60,26 +60,18 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ResetResultsProfilingPointFactory_PpType=Reset Results",
+    "ResetResultsProfilingPointFactory_PpDescr=Resets currently collected profiling results similarly to Reset Results action in Profiler UI. You may use this Profiling Point for collecting results deltas when combined with Take Snapshot Profiling Point.",
+//# Reset Results at Anagrams.java:32
+    "ResetResultsProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ppoints.ProfilingPointFactory.class)
 public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory {
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String PP_TYPE = NbBundle.getMessage(ResetResultsProfilingPointFactory.class,
-                                                              "ResetResultsProfilingPointFactory_PpType"); // NOI18N
-    private static final String PP_DESCR = NbBundle.getMessage(ResetResultsProfilingPointFactory.class,
-                                                               "ResetResultsProfilingPointFactory_PpDescr"); // NOI18N
-    private static final String PP_DEFAULT_NAME = NbBundle.getMessage(ResetResultsProfilingPointFactory.class,
-                                                                      "ResetResultsProfilingPointFactory_PpDefaultName"); // NOI18N
-                                                                                                                          // -----
-    public static final String RESET_RESULTS_PP_TYPE = PP_TYPE;
-    public static final String RESET_RESULTS_PP_DESCR = PP_DESCR;
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getDescription() {
-        return RESET_RESULTS_PP_DESCR;
+        return Bundle.ResetResultsProfilingPointFactory_PpDescr();
     }
 
     public Icon getIcon() {
@@ -95,7 +87,7 @@ public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory
     }
 
     public String getType() {
-        return RESET_RESULTS_PP_TYPE;
+        return Bundle.ResetResultsProfilingPointFactory_PpType();
     }
 
     public ResetResultsProfilingPoint create(Lookup.Provider project) {
@@ -114,8 +106,8 @@ public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory
             File file = FileUtil.normalizeFile(new File(location.getFile()));
             String filename = FileUtil.toFileObject(file).getName();
             String name = Utils.getUniqueName(getType(),
-                                              MessageFormat.format(PP_DEFAULT_NAME,
-                                                                   new Object[] { "", filename, location.getLine() }), project); // NOI18N
+                                              Bundle.ResetResultsProfilingPointFactory_PpDefaultName("", filename, location.getLine()),  // NOI18N
+                                              project);
 
             return new ResetResultsProfilingPoint(name, location, project, this);
         }

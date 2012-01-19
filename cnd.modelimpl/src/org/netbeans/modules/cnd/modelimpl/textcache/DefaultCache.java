@@ -54,6 +54,7 @@ public class DefaultCache extends APTStringManager {
     private DefaultCache() {
     }
 
+    @Override
     public CharSequence getString(CharSequence text) {
         if (text == null){
             return text;
@@ -61,6 +62,7 @@ public class DefaultCache extends APTStringManager {
         return CharSequences.create(text);
     }
 
+    @Override
     public void dispose() {
     }
 

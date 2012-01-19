@@ -58,6 +58,7 @@ public final class ContextProvider implements CodeGeneratorContextProvider {
     public ContextProvider() {
     }
 
+    @Override
     public void runTaskWithinContext(final Lookup context, final Task task) {
         CsmContext editorContext = CsmContext.create(context);
         if (editorContext != null) {

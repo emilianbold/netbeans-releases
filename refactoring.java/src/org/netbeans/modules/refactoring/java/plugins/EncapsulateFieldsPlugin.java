@@ -45,25 +45,16 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
-import javax.lang.model.element.TypeElement;
+import java.util.*;
+import javax.lang.model.element.*;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -72,6 +63,7 @@ import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.Javadoc;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -88,14 +80,17 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
     private final EncapsulateFieldsRefactoring refactoring;
     
     private ProgressListener listener = new ProgressListener() {
+        @Override
         public void start(ProgressEvent event) {
             fireProgressListenerStart(event.getOperationType(),event.getCount());
         }
 
+        @Override
         public void step(ProgressEvent event) {
             fireProgressListenerStep();
         }
 
+        @Override
        public void stop(ProgressEvent event) {
             fireProgressListenerStop();
         }
@@ -122,7 +117,9 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         initRefactorings(fields,
                 refactoring.getMethodModifiers(),
                 refactoring.getFieldModifiers(),
-                refactoring.isAlwaysUseAccessors());
+                refactoring.isAlwaysUseAccessors(),
+                refactoring.isGeneratePropertyChangeSupport(),
+                refactoring.isGenerateVetoableSupport());
         try {
             return validation(1, null);
         } catch (IOException ex) {
@@ -163,7 +160,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             return null;
         }
 
-        TreePath clazz = RetoucheUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
+        TreePath clazz = JavaRefactoringUtils.findEnclosingClass(javac, selectedField, true, false, true, false, false);
         TypeElement clazzElm = (TypeElement) javac.getTrees().getElement(clazz);
         preCheckProblem = JavaPluginUtils.isSourceElement(clazzElm, javac);
         if (preCheckProblem != null) {
@@ -186,6 +183,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "ERR_EncapsulateNoFields", clazzElm.getQualifiedName()));
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag elements) {
         Problem problem = null;
         Set<FileObject> references = new HashSet<FileObject>();
@@ -218,7 +216,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         return prob != null ? prob : problem;
     }
     
-    private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors) {
+    private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors, boolean pcs, boolean vcs) {
         refactorings = new ArrayList<EncapsulateFieldRefactoringPlugin>(refactorFields.size());
         for (EncapsulateFieldInfo info: refactorFields) {
             EncapsulateFieldRefactoring ref = new EncapsulateFieldRefactoring(info.getField());
@@ -227,6 +225,8 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             ref.setMethodModifiers(methodModifier);
             ref.setFieldModifiers(fieldModifier);
             ref.setAlwaysUseAccessors(alwaysUseAccessors);
+            ref.setGeneratePropertyChangeSupport(pcs);
+            ref.setGenerateVetoableSupport(vcs);
             refactorings.add(new EncapsulateFieldRefactoringPlugin(ref));
         }
     }

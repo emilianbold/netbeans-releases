@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.ws.qaf.rest;
 
-import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 

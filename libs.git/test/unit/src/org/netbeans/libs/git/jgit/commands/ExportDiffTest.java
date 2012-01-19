@@ -84,7 +84,7 @@ public class ExportDiffTest extends AbstractGitTestCase {
         File[] files = new File[] { file };
         
         file.createNewFile();
-        getClient(workDir).ignore(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).ignore(files, NULL_PROGRESS_MONITOR);
         add(new File(workDir, Constants.GITIGNORE_FILENAME));
         commit(new File(workDir, Constants.GITIGNORE_FILENAME));
         
@@ -168,12 +168,12 @@ public class ExportDiffTest extends AbstractGitTestCase {
         exportDiff(files, patchFile, GitClient.DiffMode.INDEX_VS_WORKINGTREE);
         assertFile(patchFile, getGoldenFile("diffChanges-index-wt-delete.patch"));
         // head vs index
-        getClient(workDir).reset(files, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).reset(files, "HEAD", true, NULL_PROGRESS_MONITOR);
         remove(true, files);
         exportDiff(files, patchFile, GitClient.DiffMode.HEAD_VS_INDEX);
         assertFile(patchFile, getGoldenFile("diffChanges-index-wt-delete.patch"));
         // head vs wt
-        getClient(workDir).reset(files, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).reset(files, "HEAD", true, NULL_PROGRESS_MONITOR);
         file.delete();
         exportDiff(files, patchFile, GitClient.DiffMode.HEAD_VS_WORKINGTREE);
         assertFile(patchFile, getGoldenFile("diffChanges-head-wt-delete.patch"));
@@ -189,7 +189,7 @@ public class ExportDiffTest extends AbstractGitTestCase {
         add(file);
         commit(file);
         
-        getClient(workDir).rename(file, renamed, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).rename(file, renamed, false, NULL_PROGRESS_MONITOR);
         exportDiff(files, patchFile, GitClient.DiffMode.HEAD_VS_WORKINGTREE);
         assertFile(patchFile, getGoldenFile("diffRename.patch"));
         exportDiff(new File[] { file, renamed }, patchFile, GitClient.DiffMode.HEAD_VS_WORKINGTREE);
@@ -236,7 +236,7 @@ public class ExportDiffTest extends AbstractGitTestCase {
 
     private void exportDiff (File[] files, File patchFile, DiffMode diffMode) throws Exception {
         OutputStream out = new BufferedOutputStream(new FileOutputStream(patchFile));
-        getClient(workDir).exportDiff(files, diffMode, out, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).exportDiff(files, diffMode, out, NULL_PROGRESS_MONITOR);
         out.close();
     }
 

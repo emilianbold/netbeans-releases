@@ -571,7 +571,7 @@ abstract class AbstractFolder extends FileObject {
         super.fireFileChangedEvent(listeners(), fileevent);
 
         if (fileevent.getFile().equals(this) && (parent != null)) {
-            FileEvent ev = new FileEvent(parent, fileevent.getFile(), fileevent.isExpected());
+            FileEvent ev = new FileEvent(parent, fileevent.getFile(), fileevent.isExpected(), fileevent.getTime());
             try {
                 ev.inheritPostNotify(fileevent);
                 parent.fileChanged0(ev);
@@ -956,7 +956,7 @@ abstract class AbstractFolder extends FileObject {
      */
     protected void outputStreamClosed(boolean fireFileChanged) {
         if (fireFileChanged) {
-            fileChanged0(new FileEvent(AbstractFolder.this));
+            fileChanged0(new FileEvent(AbstractFolder.this, AbstractFolder.this, lastModified().getTime()));
         }
     }
 

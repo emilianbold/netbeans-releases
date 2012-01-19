@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.java.j2seplatform;
 
-import java.util.concurrent.Callable;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
@@ -92,12 +92,9 @@ public class J2SEPlatformModule extends ModuleInstall {
                 }
                 if (!valid) {
                     Logger.getLogger("global").log(Level.WARNING,"default_platform.xml is broken, regenerating.");
-                    Object attr = defaultPlatform.getAttribute("removeWritables");      //NOI18N
-                    if (attr instanceof Callable) {
-                        ((Callable)attr).call ();
-                    }
+                    defaultPlatform.revert();
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
         }

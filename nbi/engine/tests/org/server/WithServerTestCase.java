@@ -64,7 +64,7 @@ public class WithServerTestCase extends MyTestCase {
   
   protected void tearDown() throws Exception {
     server.stop();
-    //dataGenerator.deleteTestData();
+    dataGenerator.deleteTestData();
     //this method is depricated because test data rather big
     //and it's not good idea to delete and generate it after every test.
     super.tearDown();

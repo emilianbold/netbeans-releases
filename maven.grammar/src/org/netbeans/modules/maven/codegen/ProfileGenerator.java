@@ -50,7 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.maven.grammar.POMDataObject;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationFile;
 import org.netbeans.modules.maven.model.pom.ActivationOS;
@@ -77,7 +77,7 @@ import org.openide.util.Utilities;
  */
 public class ProfileGenerator implements CodeGenerator {
 
-    @MimeRegistration(mimeType=POMDataObject.MIME_TYPE, service=CodeGenerator.Factory.class, position=300)
+    @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=300)
     public static class Factory implements CodeGenerator.Factory {
         
         public List<? extends CodeGenerator> create(Lookup context) {

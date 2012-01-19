@@ -95,6 +95,7 @@ public class Mercurial {
     public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
+    static final String PROP_HEAD_CHANGED = "headChanged";
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
     public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.mercurial.status"); //NOI18N
@@ -392,6 +393,13 @@ public class Mercurial {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
     }
 
+    public void refreshOpenedFiles (File repository) {
+        Set<File> openFiles = HgUtils.getOpenedFiles(repository);
+        if (!openFiles.isEmpty()) {
+            support.firePropertyChange(PROP_HEAD_CHANGED, null, openFiles);
+        }
+    }
+    
     public void changesetChanged(File repository) {
         support.firePropertyChange(PROP_CHANGESET_CHANGED, repository, null);
     }
@@ -407,7 +415,16 @@ public class Mercurial {
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
         LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
-        if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
+        // original file only for diffable status
+        if ((info.getStatus() & STATUS_DIFFABLE) == 0) {
+            if ((info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0 && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) {
+                // for copied files cat the original file
+                workingCopy = info.getStatus(null).getOriginalFile();
+            } else {
+                // for others noop
+                return;
+            }
+        }
 
         // We can get status returned as UptoDate instead of LocallyNew
         // because refreshing of status after creation has been scheduled
@@ -495,7 +512,7 @@ public class Mercurial {
             hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
         }
         if (hpResult == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<VCSHyperlinkProvider>emptyList();
         }
         Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
         List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
@@ -542,7 +559,7 @@ public class Mercurial {
                 Mercurial.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (VersioningSupport.isExcluded(file)) break;
             if (HgUtils.hgExistsFor(file)){
                 Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
@@ -572,7 +589,7 @@ public class Mercurial {
         File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
         File knownParent = null;
         for (File r : roots) {
-            if(!Utils.isScanForbidden(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+            if(!VersioningSupport.isExcluded(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
                 knownParent = r;
             }
         }

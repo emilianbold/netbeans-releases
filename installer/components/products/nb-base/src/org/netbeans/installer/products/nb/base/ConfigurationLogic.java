@@ -428,6 +428,60 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } finally {
             progress.setDetail(StringUtils.EMPTY_STRING); // NOI18N
         }
+
+        try {
+            progress.setDetail(getString("CL.install.javafxsdk.integration")); // NOI18N
+
+            final List<Product> javafxsdks =
+                    Registry.getInstance().queryProducts(
+                        new ProductFilter("javafxsdk", Registry.getInstance().getTargetPlatform()));
+
+                  Product productToIntegrate = null;
+            for (Product javafxsdk : javafxsdks) {
+                final Product bundledProduct = bundledRegistry.getProduct(
+                        javafxsdk.getUid(), javafxsdk.getVersion());
+                if (javafxsdk.getStatus() == Status.INSTALLED && bundledProduct != null) {
+                    final File fxsdkLocation = javafxsdk.getInstallationLocation();
+                    final File fxrtLocation =
+                            new File(SystemUtils.resolveString(javafxsdk.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY)));
+                    if (fxsdkLocation != null && fxrtLocation != null &&
+                            FileUtils.exists(fxsdkLocation) && !FileUtils.isEmpty(fxsdkLocation) &&
+                                FileUtils.exists(fxrtLocation) && !FileUtils.isEmpty(fxrtLocation)) {
+                        productToIntegrate = javafxsdk;
+                        break;
+                    }
+                }
+            }
+            if (productToIntegrate == null) {
+                for (Product javafxsdk : javafxsdks) {
+                    if (javafxsdk.getStatus() == Status.INSTALLED) {
+                        final File fxsdkLocation = javafxsdk.getInstallationLocation();
+                        final File fxrtLocation =
+                                new File(SystemUtils.resolveString(javafxsdk.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY)));
+                        if (fxsdkLocation != null && fxrtLocation != null &&
+                                FileUtils.exists(fxsdkLocation) && !FileUtils.isEmpty(fxsdkLocation) &&
+                                FileUtils.exists(fxrtLocation) && !FileUtils.isEmpty(fxrtLocation)) {
+                            productToIntegrate = javafxsdk;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (productToIntegrate != null) {
+                final File fxsdkLocation = productToIntegrate.getInstallationLocation();
+                final File fxrtLocation =
+                       new File(SystemUtils.resolveString(productToIntegrate.getProperty(JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY)));
+                LogManager.log("... integrate " + getSystemDisplayName() + " with " + productToIntegrate.getDisplayName() + 
+                        " installed at " + fxsdkLocation + " and " + fxrtLocation);
+                registerJavaFX(installLocation, fxsdkLocation, fxrtLocation);
+            }
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.javafxsdk.integration"), // NOI18N
+                    e);
+        }  finally {
+            progress.setDetail(StringUtils.EMPTY_STRING); // NOI18N
+        }
         
         /////////////////////////////////////////////////////////////////////////////
         try {
@@ -474,6 +528,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             filesList.add(new File (nbCluster, "config/JavaDB/registration_instance"));
             filesList.add(new File (nbCluster, "config/JavaDB/.nbattrs"));
             filesList.add(new File (nbCluster, "config/JavaDB"));
+
+            //JavaFX integration files
+            filesList.add(new File (nbCluster, "config/JavaFX/Instances/javafx_sdk_autoregistered_instance"));
+            filesList.add(new File (nbCluster, "config/JavaFX/Instances/.nbattrs"));
         } catch (IOException e) {
             LogManager.log(e);
         }
@@ -544,6 +602,37 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commands.add(new File(nbLocation, "nb").getAbsolutePath());
         commands.add(new File(gfLocation, "glassfish").getAbsolutePath());
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String [] {})).getErrorCode() == 0;
+    }
+
+    private boolean registerJavaFX(File nbLocation, File sdkLocation, File reLocation) throws IOException {
+        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
+        String [] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "javafx/modules/org-netbeans-modules-javafx2-platform.jar"
+        };
+        for(String c : cp) {
+            File f = new File(nbLocation, c);
+            if(!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for JavaFX integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.javafx2.platform.registration.AutomaticRegistration";
+        List <String> commands = new ArrayList <String> ();
+        File nbCluster = new File(nbLocation, "nb");
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);
+        commands.add(nbCluster.getAbsolutePath());
+        commands.add(sdkLocation.getAbsolutePath());
+        commands.add(reLocation.getAbsolutePath());
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
     }
     
 
@@ -837,4 +926,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     private static final String CURRENT_USER_PROPERTY_VALUE =
             "current.user"; // NOI18N
+
+    public static final String JAVAFX_RUNTIME_INSTALLATION_LOCATION_PROPERTY =
+            "javafx.runtime.installation.location"; // NOI18N
 }

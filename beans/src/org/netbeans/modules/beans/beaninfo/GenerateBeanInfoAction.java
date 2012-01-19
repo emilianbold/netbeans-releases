@@ -54,6 +54,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.beans.PatternAnalyser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -71,6 +74,9 @@ import org.openide.util.actions.NodeAction;
 *
 * @author   Petr Hrebejk
 */
+@ActionID(id="org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction", category="Tools")
+@ActionRegistration(lazy=false, displayName="#CTL_GENBI_MenuItem")
+@ActionReference(path="Loaders/text/x-java/Actions", position=2120, separatorAfter=2140)
 public final class GenerateBeanInfoAction extends NodeAction implements java.awt.event.ActionListener {
     private Dialog biDialog;
 

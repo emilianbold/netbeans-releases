@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,28 +26,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.api.java.source;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
-
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
-import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
+import static org.netbeans.modules.java.source.save.PositionEstimator.NOPOS;
 
 /**
  * Attaches comments to trees.
@@ -59,7 +63,6 @@ class AssignComments extends TreeScanner<Void, Void> {
     private final CompilationInfo info;
     private final CompilationUnitTree unit;
     private final Tree commentMapTarget;
-    private final boolean resolveImports;
     private final TokenSequence<JavaTokenId> seq;
     private final CommentHandlerService commentService;
     private final SourcePositions positions;
@@ -69,30 +72,20 @@ class AssignComments extends TreeScanner<Void, Void> {
 
     public AssignComments(final CompilationInfo info,
             final Tree commentMapTarget,
-            final boolean resolveImports,
-            final TokenSequence<JavaTokenId> seq) {
-        this(info, commentMapTarget, resolveImports, seq, info.getCompilationUnit());
-    }
-
-    public AssignComments(final CompilationInfo info,
-            final Tree commentMapTarget,
-            final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq,
             final CompilationUnitTree cut) {
-        this(info, commentMapTarget, resolveImports, seq, cut, info.getTrees().getSourcePositions());
+        this(info, commentMapTarget, seq, cut, info.getTrees().getSourcePositions());
     }
 
     public AssignComments(final CompilationInfo info,
             final Tree commentMapTarget,
-            final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq,
             final SourcePositions positions) {
-        this(info, commentMapTarget, resolveImports, seq, info.getCompilationUnit(), positions);
+        this(info, commentMapTarget, seq, info.getCompilationUnit(), positions);
     }
 
     private AssignComments(final CompilationInfo info,
             final Tree commentMapTarget,
-            final boolean resolveImports,
             final TokenSequence<JavaTokenId> seq,
             final CompilationUnitTree cut,
             final SourcePositions positions) {
@@ -100,7 +93,6 @@ class AssignComments extends TreeScanner<Void, Void> {
         this.unit = cut;
         this.seq = seq;
         this.commentMapTarget = commentMapTarget;
-        this.resolveImports = resolveImports;
         this.commentService = CommentHandlerService.instance(info.impl.getJavacTask().getContext());
         this.positions = positions;
     }
@@ -122,6 +114,9 @@ class AssignComments extends TreeScanner<Void, Void> {
                 super.scan(tree, p);
                 if (commentMapTarget != null) {
                     mapComments2(tree, false);
+                    if (mapComments) {
+                        ((CommentSetImpl) createCommentSet(commentService, tree)).commentsMapped();
+                    }
                 }
                 return null;
             } finally {
@@ -346,109 +341,6 @@ class AssignComments extends TreeScanner<Void, Void> {
         return seq.offset() + (tokenIndexAlreadyAdded >= seq.index() ? seq.token().length() : 0);
     }
 
-    private void consumeWS(TokenSequence<JavaTokenId> seq, boolean forward) {
-        while (forward ? seq.moveNext() : seq.movePrevious()) {
-            switch (seq.token().id()) {
-                case WHITESPACE:
-                    continue;
-                default: return;
-            }
-        }
-    }
-
-    @SuppressWarnings({"MethodWithMultipleLoops"})
-    private int adjustByComments(int pos, CommentSetImpl comments) {
-        List<Comment> cl = comments.getComments(CommentSet.RelativePosition.INLINE);
-        if (!cl.isEmpty()) {
-            for (Comment comment : cl) {
-                pos = Math.max(pos, comment.endPos());
-            }
-        }
-        cl = comments.getComments(CommentSet.RelativePosition.TRAILING);
-        if (!cl.isEmpty()) {
-            for (Comment comment : cl) {
-                pos = Math.max(pos, comment.endPos());
-            }
-        }
-        return pos;
-    }
-
-    private void skipEvil(TokenSequence<JavaTokenId> ts) {
-        do {
-            JavaTokenId id = ts.token().id();
-            switch (id) {
-                case PUBLIC:
-                case PRIVATE:
-                case PROTECTED:
-                case ABSTRACT:
-                case FINAL:
-                case STATIC:
-                case VOID:
-                case VOLATILE:
-                case NATIVE:
-                case STRICTFP:
-                case WHITESPACE:
-                case INT:
-                case BOOLEAN:
-                case DOUBLE:
-                case FLOAT:
-                case BYTE:
-                case CHAR:
-                case SHORT:
-                case CONST:
-                case LONG:
-                    continue;
-                default:
-                    return;
-            }
-        } while (ts.moveNext());
-    }
-
-    private double belongsTo(int startPos, int endPos, TokenSequence<JavaTokenId> ts) {
-        int index = ts.index();
-        double result = getForwardWeight(endPos, ts) - getBackwardWeight(startPos, ts);
-        ts.moveIndex(index);
-        ts.moveNext();
-        return result;
-    }
-
-    private double getForwardWeight(int endPos, TokenSequence<JavaTokenId> ts) {
-        double result = 0;
-        ts.move(endPos);
-        while (ts.moveNext()) {
-            if (ts.token().id() == JavaTokenId.WHITESPACE) {
-                int nls = numberOfNL(ts.token());
-                result = nls == 0 ? 1 : (1 / nls);
-            } else if (isComment(ts.token().id())) {
-                if (ts.token().id() == JavaTokenId.LINE_COMMENT) {
-                    return 1;
-                }
-                result = 0;
-                break;
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private double getBackwardWeight(int startPos, TokenSequence<JavaTokenId> ts) {
-        double result = 0;
-        ts.move(startPos);
-        while (ts.movePrevious()) {
-            if (ts.token().id() == JavaTokenId.WHITESPACE) {
-                int nls = numberOfNL(ts.token());
-                result = nls == 0 ? 0 : (1 / nls);
-            } else if (isComment(ts.token().id())) {
-                result = 0;
-                break;
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
     private void attachComments(Iterable<? extends Token<JavaTokenId>> foundComments, Tree tree, CommentHandler ch, CommentSet.RelativePosition positioning) {
         if (foundComments == null || !foundComments.iterator().hasNext() || !mapComments) return;
         CommentSet set = createCommentSet(ch, tree);
@@ -482,23 +374,6 @@ class AssignComments extends TreeScanner<Void, Void> {
             default:
                 return Comment.Style.WHITESPACE;
         }
-    }
-
-    private int[] getBounds(JCTree tree) {
-        return new int[]{(int) positions.getStartPosition(unit, tree), (int) positions.getEndPosition(unit, tree)};
-    }
-
-
-    private Tree getTree(TreeUtilities tu, TokenSequence<JavaTokenId> ts) {
-        int start = ts.offset();
-        if (ts.token().length() > 0) {
-            start++; //going into token. This is required because token offset is not considered as start of tree :(
-        }
-        TreePath path = tu.pathFor(start);
-        if (path != null) {
-            return path.getLeaf();
-        }
-        return null;
     }
 
     private int numberOfNL(Token<JavaTokenId> t) {

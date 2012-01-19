@@ -40,6 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javacard.source;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
@@ -129,8 +130,22 @@ public final class JavaCardErrorProcessor extends AbstractProcessor {
 
     private static final class ScannerImpl extends TreePathScanner<Void, Boolean> {
         private final ProcessingEnvironment env;
+        
+        private boolean insideAnnotation;
+        
         ScannerImpl (ProcessingEnvironment env) {
             this.env = env;
+        }
+
+        @Override
+        public Void visitAnnotation(AnnotationTree node, Boolean p) {
+            boolean oldInsideAnnotation = insideAnnotation;
+            insideAnnotation = true;
+            try {
+                return super.visitAnnotation(node, p);
+            } finally {
+                insideAnnotation = oldInsideAnnotation;
+            }
         }
 
         @Override
@@ -150,7 +165,7 @@ public final class JavaCardErrorProcessor extends AbstractProcessor {
         public Void visitLiteral(LiteralTree node, Boolean classic) {
             Tree.Kind kind = node.getKind();
             Set<Tree.Kind> unsupported = classic ? UNSUPPORTED_LITERALS_CLASSIC_PROJECTS : UNSUPPORTED_LITERALS_EXTENDED_PROJECTS;
-            if (unsupported.contains(node.getKind())) {
+            if (unsupported.contains(node.getKind()) && !insideAnnotation) {
                 String kindName = NbBundle.getMessage(JavaCardErrorProcessor.class, kind.name());
                 Trees.instance(env).printMessage(Kind.ERROR, NbBundle.getMessage(
                         JavaCardErrorProcessor.class, classic ? "LIT_ERR_CLASSIC" : "LIT_ERR_EXT", //NOI18N

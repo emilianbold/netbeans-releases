@@ -96,6 +96,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -142,6 +143,8 @@ public final class SingleModuleProperties extends ModuleProperties {
     public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; // NOI18N
     static final String[] SOURCE_LEVELS = {"1.4", "1.5", "1.6", "1.7"}; // NOI18N
     private final static Map<String, String> DEFAULTS;
+
+    private static final Logger LOG = Logger.getLogger(SingleModuleProperties.class.getName());
     private boolean majorReleaseVersionChanged;
     private boolean specificationVersionChanged;
     private boolean implementationVersionChange;
@@ -246,7 +249,6 @@ public final class SingleModuleProperties extends ModuleProperties {
         implementationVersion = manifestManager.getImplementationVersion();
         provTokensString = manifestManager.getProvidedTokensString();
         autoUpdateShowInClient = manifestManager.getAutoUpdateShowInClient();
-        Logger LOG = Logger.getLogger(SingleModuleProperties.class.getName());
 
         String nbDestDirS = getEvaluator().getProperty(ModuleList.NETBEANS_DEST_DIR);
         LOG.log(Level.FINE, "Setting NBPlatform for module. '" + getCodeNameBase() + "' in dir '" + nbDestDirS + "'");
@@ -476,9 +478,18 @@ public final class SingleModuleProperties extends ModuleProperties {
 
     ReferenceHelper getRefHelper() {
         if (refHelper == null) {
+            Project p = getProject();
+            AuxiliaryConfiguration aux = p != null ? ProjectUtils.getAuxiliaryConfiguration(p) : new AuxiliaryConfiguration() {
+                @Override public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
+                    return null;
+                }
+                @Override public void putConfigurationFragment(Element fragment, boolean shared) throws IllegalArgumentException {}
+                @Override public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws IllegalArgumentException {
+                    return false;
+                }
+            };
             refHelper = new ReferenceHelper(
-                    getHelper(),
-                    ProjectUtils.getAuxiliaryConfiguration(getProject()),
+                    getHelper(), aux,
                     getEvaluator());
         }
         return refHelper;
@@ -1158,7 +1169,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 return ModuleList.getModuleList(getProjectDirectoryFile(), getActivePlatform().getDestDir());
             } catch (IOException x) {
                 // #69029: maybe invalidated platform? Try the default platform instead.
-                Logger.getLogger(SingleModuleProperties.class.getName()).log(Level.FINE, null, x);
+                LOG.log(Level.FINE, null, x);
                 NbPlatform p = NbPlatform.getDefaultPlatform();
                 return ModuleList.getModuleList(getProjectDirectoryFile(), p != null ? p.getDestDir() : null);
             }
@@ -1176,14 +1187,13 @@ public final class SingleModuleProperties extends ModuleProperties {
         return evaluated == null ? null : getHelper().resolveFile(evaluated);
     }
 
-    Project getProject() {
-        Project p = null;
+    @CheckForNull Project getProject() {
         try {
-            p = ProjectManager.getDefault().findProject(getHelper().getProjectDirectory());
+            return ProjectManager.getDefault().findProject(getHelper().getProjectDirectory());
         } catch (IOException e) {
-            assert false : e;
+            LOG.log(Level.INFO, null, e);
+            return null;
         }
-        return p;
     }
 
     /**

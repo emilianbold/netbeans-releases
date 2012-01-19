@@ -42,46 +42,41 @@
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import org.eclipse.persistence.jpa.jpql.spi.IEmbeddable;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
-import org.eclipse.persistence.jpa.jpql.spi.IMapping;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 
 /**
  *
  * @author sp153251
  */
-public class Embeddable implements IEmbeddable{
+public class Embeddable extends ManagedType implements IEmbeddable{
 
+    public Embeddable(org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable element, IManagedTypeProvider provider){
+        super((PersistentObject)element, provider);     
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void accept(IManagedTypeVisitor imtv) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void accept(IManagedTypeVisitor visitor) {
+            visitor.visit(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+            return getType().getName();
     }
 
     @Override
-    public IMapping getMappingNamed(String string) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    Attributes getAttributes() {
+        org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable em = (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable) getPersistentObject();
+        return null;//TODO embeddable attributes?
     }
 
-    @Override
-    public IManagedTypeProvider getProvider() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IType getType() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Iterable<IMapping> mappings() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int compareTo(IManagedType o) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }

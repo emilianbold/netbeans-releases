@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @ActionID(id = "org.netbeans.modules.projectimport.eclipse.core.UpdateProjectAction", category = "Project")
-@ActionRegistration(displayName = "#UpdateProjectAction.Name")
+@ActionRegistration(displayName = "#UpdateProjectAction.Name", lazy=false)
 @ActionReference(position = 234, path = "Projects/Actions")
 public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction {
     

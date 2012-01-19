@@ -98,7 +98,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
                 return "fnc".equals(abbrev) || "fcom".equals(abbrev); //NOI18N
             }
             return accept;
-            
+
         } catch (TimeoutException ex) {
         } catch (InterruptedException ex) {
         } catch (ExecutionException ee) {

@@ -50,16 +50,8 @@ import com.sun.source.util.TreePath;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
+import java.util.*;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.JPanel;
@@ -70,12 +62,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
@@ -113,18 +100,22 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
         nameText.setSelectionStart(0);
         nameText.setSelectionEnd(defaultName.length());
         nameText.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent event) {
                 parent.stateChanged(null);
             }
+            @Override
             public void insertUpdate(DocumentEvent event) {
                 parent.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent event) {
                 parent.stateChanged(null);
             }
         });
     }
     
+    @Override
     public void requestFocus() {
         super.requestFocus();
         nameText.requestFocus();
@@ -133,10 +124,12 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
 
     /** Initialization of the panel (called by the parent window).
      */
+    @Override
     public void initialize() {
         // *** initialize table
         // set renderer for the second column ("Member") to display name of the feature
         membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new DefaultTableCellRenderer() {
+            @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, extractText(value), isSelected, hasFocus, row, column);
                 if (value instanceof ExtractInterfaceInfo) {
@@ -262,30 +255,37 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
             initialize();
         }
         
+        @Override
         public int getColumnCount() {
             return COLUMN_NAMES.length;
         }
 
+        @Override
         public String getColumnName(int column) {
             return UIUtilities.getColumnName(NbBundle.getMessage(ExtractInterfacePanel.class, COLUMN_NAMES[column]));
         }
 
+        @Override
         public Class getColumnClass(int columnIndex) {
             return COLUMN_CLASSES[columnIndex];
         }
 
+        @Override
         public int getRowCount() {
             return members.length;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return members[rowIndex][columnIndex];
         }
 
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             members[rowIndex][columnIndex] = value;
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             // column 0 is always editable, column 1 is never editable
             return columnIndex == 0;
@@ -300,9 +300,11 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
             JavaSource js = JavaSource.forFileObject(fo);
             try {
                 js.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                         public void cancel() {
                         }
 
+                    @Override
                         public void run(CompilationController javac) throws Exception {
                             javac.toPhase(JavaSource.Phase.RESOLVED);
                             initializeInTransaction(javac, sourceType);
@@ -374,6 +376,7 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
             // the members are collected
             // now, create a tree map (to sort them) and create the table data
             Collections.sort(result, new Comparator() {
+                @Override
                 public int compare(Object o1, Object o2) {
                     ExtractInterfaceInfo i1 = (ExtractInterfaceInfo) o1;
                     ExtractInterfaceInfo i2 = (ExtractInterfaceInfo) o2;
@@ -396,6 +399,7 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
         }
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }

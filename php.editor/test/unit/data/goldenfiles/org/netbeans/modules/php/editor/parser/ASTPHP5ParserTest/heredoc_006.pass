@@ -235,9 +235,11 @@
                                 <Scalar start='160' end='162' type='STRING' value=', '/>
                                 <ReflectionVariable start='162' end='171'>
                                     <ArrayAccess start='163' end='170' type='VARIABLE_ARRAY' isDollared='false'>
-                                        <Index>
-                                            <Scalar start='166' end='169' type='STRING' value='&apos;c&apos;'/>
-                                        </Index>
+                                        <ArrayDimension start='165' end='170'>
+                                            <Index>
+                                                <Scalar start='166' end='169' type='STRING' value='&apos;c&apos;'/>
+                                            </Index>
+                                        </ArrayDimension>
                                         <Name>
                                             <Variable start='163' end='165' isDollared='true'>
                                                 <Identifier start='164' end='165' name='c'/>
@@ -284,9 +286,11 @@
                             <Scalar start='257' end='259' type='STRING' value=', '/>
                             <ReflectionVariable start='259' end='268'>
                                 <ArrayAccess start='260' end='267' type='VARIABLE_ARRAY' isDollared='false'>
-                                    <Index>
-                                        <Scalar start='263' end='266' type='STRING' value='&apos;c&apos;'/>
-                                    </Index>
+                                    <ArrayDimension start='262' end='267'>
+                                        <Index>
+                                            <Scalar start='263' end='266' type='STRING' value='&apos;c&apos;'/>
+                                        </Index>
+                                    </ArrayDimension>
                                     <Name>
                                         <Variable start='260' end='262' isDollared='true'>
                                             <Identifier start='261' end='262' name='c'/>

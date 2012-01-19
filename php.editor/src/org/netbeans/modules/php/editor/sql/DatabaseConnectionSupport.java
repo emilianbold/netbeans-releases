@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
 /**
  * This class provides useful functionality around working with database connections,
  * such as selecting a connection to use for the project.
- * 
+ *
  * @author David Van Couvering
  */
 public class DatabaseConnectionSupport {
@@ -122,12 +122,12 @@ public class DatabaseConnectionSupport {
         }
         return null;
     }
-    
+
     private static void setDatabaseConnection(Project project, DatabaseConnection dbconn) {
         if (project == null) {
             return;
         }
-        
+
         Preferences prefs = getProjectPreferences(project);
         if (dbconn != null) {
             prefs.put(PROP_DBCONN, dbconn.getName());

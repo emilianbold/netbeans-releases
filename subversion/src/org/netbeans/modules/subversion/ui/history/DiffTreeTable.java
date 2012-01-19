@@ -71,7 +71,7 @@ import org.openide.explorer.view.OutlineView;
 class DiffTreeTable extends OutlineView {
     
     private RevisionsRootNode rootNode;
-    private List results;
+    private List<RepositoryRevision> results;
     private final SearchHistoryPanel master;
 
     public DiffTreeTable(SearchHistoryPanel master) {
@@ -164,11 +164,13 @@ class DiffTreeTable extends OutlineView {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public T getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         ExplorerManager em = ExplorerManager.find(this);
@@ -176,13 +178,18 @@ class DiffTreeTable extends OutlineView {
         setDefaultColumnSizes();
     }
 
-    public void setResults(List results) {
+    public void setResults(List<RepositoryRevision> results) {
         this.results = results;
         rootNode = new RevisionsRootNode();
         ExplorerManager em = ExplorerManager.find(this);
         if (em != null) {
             em.setRootContext(rootNode);
         }
+    }
+
+    public void refreshResults (List<RepositoryRevision> results) {
+        this.results = results;
+        ((RevisionsRootNodeChildren) rootNode.getChildren()).refreshKeys();
     }
     
     private class RevisionsRootNode extends AbstractNode {
@@ -191,10 +198,12 @@ class DiffTreeTable extends OutlineView {
             super(new RevisionsRootNodeChildren(), Lookups.singleton(results));
         }
 
+        @Override
         public String getName() {
             return "revision"; // NOI18N
         }
 
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name"); // NOI18N
         }
@@ -209,18 +218,22 @@ class DiffTreeTable extends OutlineView {
         public RevisionsRootNodeChildren() {
         }
 
+        @Override
         protected void addNotify() {
             refreshKeys();
         }
 
+        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
         }
     
         private void refreshKeys() {
             setKeys(results);
+            repaint();
         }
     
+        @Override
         protected Node[] createNodes(Object key) {
             RevisionNode node;
             if (key instanceof RepositoryRevision) {
@@ -238,26 +251,32 @@ class DiffTreeTable extends OutlineView {
             this.delegate = delegate;
         }
 
+        @Override
         public String getDisplayName(Object o) {
             return delegate.getDisplayName(o);
         }
 
+        @Override
         public boolean isHtmlDisplayName(Object o) {
             return delegate.isHtmlDisplayName(o);
         }
 
+        @Override
         public Color getBackground(Object o) {
             return delegate.getBackground(o);
         }
 
+        @Override
         public Color getForeground(Object o) {
             return delegate.getForeground(o);
         }
 
+        @Override
         public String getTooltipText(Object o) {
             return delegate.getTooltipText(o);
         }
 
+        @Override
         public Icon getIcon(Object o) {
             if( getOutline().getOutlineModel().isLeaf(o) )
                 return NO_ICON;
@@ -268,14 +287,17 @@ class DiffTreeTable extends OutlineView {
     private static final Icon NO_ICON = new NoIcon();
     private static class NoIcon implements Icon {
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
 
         }
 
+        @Override
         public int getIconWidth() {
             return 0;
         }
 
+        @Override
         public int getIconHeight() {
             return 0;
         }

@@ -105,7 +105,7 @@ public class PropertyRefFinder {
             }
 
             // resolve bean's class
-            String className = new BeanClassFinder(bean, docAccess.getFileObject()).findImplementationClass();
+            String className = new BeanClassFinder(bean, docAccess.getFileObject()).findImplementationClass(false);
             if (className == null) {
                 continue;
             }

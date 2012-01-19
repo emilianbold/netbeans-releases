@@ -68,6 +68,7 @@ public class HierarchyAction extends CallableSystemAction {
         return HierarchyTopComponent.ICON_PATH;
     }
 
+    @Override
     public void performAction() {
         HierarchyTopComponent win = HierarchyTopComponent.findInstance();
         //Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
@@ -75,10 +76,12 @@ public class HierarchyAction extends CallableSystemAction {
         win.requestActive();
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(HierarchyAction.class, "CTL_HierarchyAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
     }

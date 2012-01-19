@@ -70,6 +70,11 @@ public final class UiUtils {
      * @since 1.38
      */
     public static final String CUSTOMIZER_PATH = "org-netbeans-modules-php-project"; // NOI18N
+    /**
+     * The General Options category ID.
+     * @since 1.60
+     */
+    public static final String GENERAL_OPTIONS_SUBCATEGORY = "General"; // NOI18N
 
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
     private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
@@ -151,10 +156,10 @@ public final class UiUtils {
      */
     public static void showOptions(String optionsSubcategory) {
         String path = OPTIONS_PATH;
-        if (StringUtils.hasText(optionsSubcategory)) {
-            path += "/" + optionsSubcategory; // NOI18N
+        if (!StringUtils.hasText(optionsSubcategory)) {
+            optionsSubcategory = GENERAL_OPTIONS_SUBCATEGORY;
         }
-        OptionsDisplayer.getDefault().open(path);
+        OptionsDisplayer.getDefault().open(path + "/" + optionsSubcategory); // NOI18N
     }
 
     /**

@@ -68,7 +68,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel.Message;
@@ -95,15 +95,15 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private boolean enabled = true;
 
     private enum Scheme {
-        FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
-        HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),             // NOI18N
-        HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),           // NOI18N
-//        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
-//        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
-        SSH("ssh", "ssh://host.xz[:port]/path/to/repo.git/"),                   // NOI18N    
-        SFTP("sftp", "sftp://host.xz[:port]/path/to/repo.git/"),              // NOI18N
-//        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/"),                    // NOI18N
-        GIT("git", "git://host.xz[:port]/path/to/repo.git/");                   // NOI18N
+        FILE("file", NbBundle.getMessage(RemoteRepository.class, "Scheme.FILE")), //NOI18N
+        HTTP("http", NbBundle.getMessage(RemoteRepository.class, "Scheme.HTTP")), //NOI18N
+        HTTPS("https", NbBundle.getMessage(RemoteRepository.class, "Scheme.HTTPS")), //NOI18N
+//        FTP("ftp", NbBundle.getMessage(RemoteRepository.class, "Scheme.FTP")), //NOI18N
+//        FTPS("ftps", NbBundle.getMessage(RemoteRepository.class, "Scheme.FTPS")), //NOI18N
+        SSH("ssh", NbBundle.getMessage(RemoteRepository.class, "Scheme.SSH")), //NOI18N
+        SFTP("sftp", NbBundle.getMessage(RemoteRepository.class, "Scheme.SFTP")), //NOI18N
+//        RSYNC("rsync", NbBundle.getMessage(RemoteRepository.class, "Scheme.RSYNC")), //NOI18N
+        GIT("git", NbBundle.getMessage(RemoteRepository.class, "Scheme.GIT")); //NOI18N
         
         private final String name;
         private final String tip;
@@ -627,7 +627,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             settingsPanel.savePasswordCheckBox.setSelected(settings.isSaveCredentials());
             settingsPanel.savePassphrase.setSelected(settings.isSaveCredentials());
             settingsPanel.rbPrivateKey.setSelected(settings.isPrivateKeyAuth());
-            settingsPanel.rbPrivateKey.setSelected(!settings.isPrivateKeyAuth());
+            settingsPanel.rbUsernamePassword.setSelected(!settings.isPrivateKeyAuth());
             settingsPanel.txtIdentityFile.setText(settings.getIdentityFile());
             updateAuthSelection();
         }
@@ -716,6 +716,8 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 authViaPassword = true;
                 settingsPanel.rbUsernamePassword.setSelected(true);
             }
+            authViaPassword &= settingsPanel.rbUsernamePassword.isEnabled();
+            authViaPrivateKey &= settingsPanel.rbPrivateKey.isEnabled();
             for (JComponent c : authKeyFields) {
                 c.setEnabled(authViaPrivateKey);
             }

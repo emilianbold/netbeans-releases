@@ -61,24 +61,29 @@ public class RSMEditorAction extends SystemAction implements Menu, Popup {
     // create delegate (RefactoringSubMenuAction)
     private final RefactoringSubMenuAction action = new RefactoringSubMenuAction(false);
     
+    @Override
     public void actionPerformed(ActionEvent ev) {
         // do nothing -- should never be called
     }
     
+    @Override
     public String getName() {
         return (String) action.getValue(Action.NAME);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
         // If you will provide context help then use:
         // return new HelpCtx(RSMEditorActionAction.class);
     }
     
+    @Override
     public JMenuItem getMenuPresenter() {
         return action.getMenuPresenter();
     }
     
+    @Override
     public JMenuItem getPopupPresenter() {
         return action.getPopupPresenter();
     }

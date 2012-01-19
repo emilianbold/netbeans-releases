@@ -51,12 +51,12 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.git.client.GitClientInvocationHandler;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
-import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -88,7 +88,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         modifiedFile = new File(folder, "file");
         VersioningManager.getInstance();
         write(modifiedFile, "");
-        getClient(repositoryLocation).add(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).add(new File[] { modifiedFile }, GitUtils.NULL_PROGRESS_MONITOR);
         modifiedFO = FileUtil.toFileObject(modifiedFile);
         Git.STATUS_LOG.setLevel(Level.ALL);
     }
@@ -98,7 +98,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, GitUtils.NULL_PROGRESS_MONITOR);
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         waitForRefresh();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_INDEX_WORKING_TREE));
@@ -111,7 +111,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         System.setProperty("versioning.git.handleExternalEvents", "false");
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, GitUtils.NULL_PROGRESS_MONITOR);
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
@@ -125,7 +125,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, GitUtils.NULL_PROGRESS_MONITOR);
         Git.getInstance().refreshWorkingCopyTimestamp(repositoryLocation);
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         failIfRefreshed();
@@ -139,7 +139,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
+        Logger logger = Logger.getLogger(GitClient.class.getName());
         logger.setLevel(Level.ALL);
         final boolean[] refreshed = new boolean[1];
         logger.addHandler(new Handler() {
@@ -154,7 +154,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
             @Override
             public void close() throws SecurityException {}
         });
-        Git.getInstance().getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Git.getInstance().getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, GitUtils.NULL_PROGRESS_MONITOR);
         assertTrue(refreshed[0]);
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
@@ -166,8 +166,8 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         assertEquals(GitBranch.NO_BRANCH, info.getActiveBranch().getName());
-        assertEquals("", info.getActiveBranch().getId());
-        String newHead = Git.getInstance().getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        assertEquals(AbstractGitTestCase.NULL_OBJECT_ID, info.getActiveBranch().getId());
+        String newHead = Git.getInstance().getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", null, null, GitUtils.NULL_PROGRESS_MONITOR).getRevision();
         for (int i = 0; i < 100; ++i) {
             Thread.sleep(100);
             if (!info.getActiveBranch().getId().isEmpty()) {
@@ -184,8 +184,8 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
         assertEquals(GitBranch.NO_BRANCH, info.getActiveBranch().getName());
-        assertEquals("", info.getActiveBranch().getId());
-        String newHead = getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        assertEquals(AbstractGitTestCase.NULL_OBJECT_ID, info.getActiveBranch().getId());
+        String newHead = getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", null, null, GitUtils.NULL_PROGRESS_MONITOR).getRevision();
         waitForRefresh();
         for (int i = 0; i < 100; ++i) {
             Thread.sleep(100);
@@ -202,7 +202,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
+        Logger logger = Logger.getLogger(GitClient.class.getName());
         logger.setLevel(Level.ALL);
         final boolean[] refreshed = new boolean[1];
         logger.addHandler(new Handler() {
@@ -217,7 +217,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
             @Override
             public void close() throws SecurityException {}
         });
-        Git.getInstance().getClient(repositoryLocation).getStatus(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Git.getInstance().getClient(repositoryLocation).getStatus(new File[] { modifiedFile }, GitUtils.NULL_PROGRESS_MONITOR);
         assertFalse(refreshed[0]);
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
@@ -226,9 +226,9 @@ public class ExternalChangesTest extends AbstractGitTestCase {
     public void testExternalCommit () throws Exception {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
-        getClient(repositoryLocation).commit(new File[] { modifiedFile }, "initial add", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).commit(new File[] { modifiedFile }, "initial add", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         write(modifiedFile, "modification");
-        getClient(repositoryLocation).add(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).add(new File[] { modifiedFile }, GitUtils.NULL_PROGRESS_MONITOR);
         // must run an external status since it somehow either modifies the index or sorts it or whatever
         runExternally(repositoryLocation, Arrays.asList(new String[] { "git", "status" } ));
         Thread.sleep(1000);

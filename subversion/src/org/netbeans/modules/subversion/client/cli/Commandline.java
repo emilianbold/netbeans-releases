@@ -141,8 +141,10 @@ class Commandline {
             }
             
             while (!canceled && (line = ctError.readLine()) != null) {                                    
-                Subversion.LOG.log(Level.INFO, "cli: ERROR \"{0}\"", line);     // NOI18N
-                command.errorText(line);
+                if (!line.isEmpty()) {
+                    Subversion.LOG.log(Level.INFO, "cli: ERROR \"{0}\"", line); //NOI18N
+                    command.errorText(line);
+                }
             }     
             if(canceled) return;
             cli.waitFor();

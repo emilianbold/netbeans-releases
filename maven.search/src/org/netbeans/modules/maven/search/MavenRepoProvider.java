@@ -42,24 +42,25 @@
 package org.netbeans.modules.maven.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.TreeMap;
 import org.apache.lucene.search.BooleanQuery;
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactNodeSelector;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 public class MavenRepoProvider implements SearchProvider {
@@ -76,6 +77,10 @@ public class MavenRepoProvider implements SearchProvider {
      */
     @Override
     public void evaluate(final SearchRequest request, final SearchResponse response) {
+        final ArtifactNodeSelector s = Lookup.getDefault().lookup(ArtifactNodeSelector.class);
+        if (s == null) {
+            return;
+        }
         
         List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
         if (loadedRepos.isEmpty()) {
@@ -95,7 +100,8 @@ public class MavenRepoProvider implements SearchProvider {
                 }
             }
         };
-        final QueryRequest queryRequest = new QueryRequest(getQuery(request), loadedRepos, observer);
+        String q = request.getText();
+        final QueryRequest queryRequest = new QueryRequest(getQuery(q), loadedRepos, observer);
         final RequestProcessor.Task searchTask = RP.post(new Runnable() {
             @Override
             public void run() {
@@ -133,29 +139,35 @@ public class MavenRepoProvider implements SearchProvider {
         }
         searchTask.cancel();
 
-        Map<String, List<NBVersionInfo>> map = new TreeMap<String, List<NBVersionInfo>>(new Comp(request.getText()));
-        for (NBVersionInfo nbvi : infos) {
-            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18N
-            List<NBVersionInfo> get = map.get(key);
-            if (get == null) {
-                get = new ArrayList<NBVersionInfo>();
-                map.put(key, get);
+        Collections.sort(infos);
+        Set<String> artifacts = new HashSet<String>();
+        String ql = q.toLowerCase(Locale.ENGLISH);
+        for (final NBVersionInfo art : infos) {
+            String label = art.getGroupId() + " : " + art.getArtifactId();
+            if (!artifacts.add(label)) {
+                continue; // ignore older versions
             }
-            get.add(nbvi);
-        }
-        Set<Entry<String, List<NBVersionInfo>>> entrySet = map.entrySet();
-        for (Entry<String, List<NBVersionInfo>> entry : entrySet) {
-            NBArtifactInfo nbai = new NBArtifactInfo(entry.getKey());
-            nbai.addAllVersionInfos(entry.getValue());
-            if (!response.addResult(new OpenArtifactInfo(nbai), nbai.getName())) {
+            if (!label.toLowerCase(Locale.ENGLISH).contains(ql)) {
+                String projectName = art.getProjectName();
+                String projectDescription = art.getProjectDescription();
+                if (projectName != null && projectName.toLowerCase(Locale.ENGLISH).contains(ql)) {
+                    label += " (" + projectName + ")";
+                } else if (projectDescription != null && projectDescription.toLowerCase(Locale.ENGLISH).contains(ql)) {
+                    label += " \"" + projectDescription + "\"";
+                }
+            }
+            if (!response.addResult(new Runnable() {
+                @Override public void run() {
+                    s.select(art);
+                }
+            }, label)) {
                 return;
             }
         }
     }
 
-    List<QueryField> getQuery(SearchRequest request) {
+    List<QueryField> getQuery(String q) {
         List<QueryField> fq = new ArrayList<QueryField>();
-        String q = request.getText();
         String[] splits = q.split(" "); //NOI18N
         List<String> fields = new ArrayList<String>();
         fields.add(QueryField.FIELD_GROUPID);

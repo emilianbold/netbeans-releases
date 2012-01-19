@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -55,8 +56,8 @@ public class ListRemoteTagsCommand extends ListRemoteObjectsCommand {
     private HashMap<String, String> remoteTags;
     private final String remoteUrl;
 
-    public ListRemoteTagsCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, remoteRepositoryUrl, monitor);
+    public ListRemoteTagsCommand (Repository repository, GitClassFactory gitFactory, String remoteRepositoryUrl, ProgressMonitor monitor) {
+        super(repository, gitFactory, remoteRepositoryUrl, monitor);
         this.remoteUrl = remoteRepositoryUrl;
     }
 

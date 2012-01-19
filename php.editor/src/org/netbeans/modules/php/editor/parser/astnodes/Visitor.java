@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -197,7 +197,7 @@ public interface Visitor {
     public void visit(PHPDocTag phpDocTag);
 
     public void visit(PHPDocNode phpDocNode);
-    
+
     public void visit(PHPDocTypeNode phpDocTypeNode);
 
     public void visit(PHPDocStaticAccessType node);
@@ -207,7 +207,7 @@ public interface Visitor {
     public void visit(PHPDocVarTypeTag node);
 
     public void visit(PHPVarComment node);
-    
+
     public void visit(PHPDocMethodTag node);
 
     //public void endVisit(ParenthesisExpression parenthesisExpression);
@@ -258,11 +258,21 @@ public interface Visitor {
     //public void endVisit(SwitchStatement switchStatement);
     public void visit(ThrowStatement throwStatement);
 
+    public void visit(TraitDeclaration traitDeclaration);
+
+    public void visit(TraitMethodAliasDeclaration traitsAliasStatement);
+
+    public void visit(TraitConflictResolutionDeclaration traitsInsteadofStatement);
+
     //public void endVisit(ThrowStatement throwStatement);
     public void visit(TryStatement tryStatement);
 
     //public void endVisit(TryStatement tryStatement);
     public void visit(UnaryOperation unaryOperation);
+
+    public void visit(UseTraitStatement useTraitStatement);
+
+    public void visit(UseTraitStatementPart useTraitStatementPart);
 
     //public void endVisit(UnaryOperation unaryOperation);
     public void visit(Variable variable);
@@ -273,4 +283,10 @@ public interface Visitor {
     ////public void endVisit(WhileStatement whileStatement);
     public void visit(ASTNode node);
     ////public void endVisit(ASTNode node);
+
+    public void visit(AnonymousObjectVariable node);
+
+    public void visit(DereferencedArrayAccess node);
+
+    public void visit(ArrayDimension node);
 }

@@ -65,7 +65,7 @@ final class NetigsoModule extends Module {
 
     private final File jar;
     private final Manifest manifest;
-    private int startLevel;
+    private int startLevel = -1;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
@@ -146,8 +146,13 @@ final class NetigsoModule extends Module {
 
     final void start() throws IOException {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
-        Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
-        pcl.addCoveredPackages(pkgs);
+        try {
+            Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
+            pcl.addCoveredPackages(pkgs);
+        } catch (IOException ex) {
+            classloader = null;
+            throw ex;
+        }
     }
 
     @Override
@@ -183,6 +188,11 @@ final class NetigsoModule extends Module {
             throw new IllegalArgumentException("No classloader for " + getCodeNameBase()); // NOI18N
         }
         return classloader;
+    }
+
+    @Override
+    public Enumeration<URL> findResources(String resources) {
+        return NetigsoFramework.getDefault().findResources(this, resources);
     }
 
     @Override

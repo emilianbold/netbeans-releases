@@ -61,6 +61,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
@@ -98,13 +99,29 @@ public final class CommandUtils {
     }
 
     /**
-     * Get a {@link PhpUnit} instance (path from IDE options used).
-     * @param showCustomizer if <code>true</code>, IDE options dialog is shown if the path of PHP Unit is not valid.
-     * @return a {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid.
+     * Get valid {@link PhpUnit} instance (path from IDE options used) or {@code null}.
+     * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PHPUnit is not valid
+     * @return valid {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid
      */
     public static PhpUnit getPhpUnit(boolean showCustomizer) {
         try {
             return PhpUnit.getDefault();
+        } catch (InvalidPhpProgramException ex) {
+            if (showCustomizer) {
+                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnit.OPTIONS_SUB_PATH);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get valid {@link PhpUnitSkelGen} instance (path from IDE options used) or {@code null}.
+     * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PhpUnitSkelGen is not valid
+     * @return valid {@link PhpUnitSkelGen} instance or <code>null</code> if the path of PhpUnitSkelGen is not valid
+     */
+    public static PhpUnitSkelGen getPhpUnitSkelGen(boolean showCustomizer) {
+        try {
+            return PhpUnitSkelGen.getDefault();
         } catch (InvalidPhpProgramException ex) {
             if (showCustomizer) {
                 UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpUnit.OPTIONS_SUB_PATH);

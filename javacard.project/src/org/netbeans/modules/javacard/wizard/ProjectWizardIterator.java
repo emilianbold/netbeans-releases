@@ -44,28 +44,26 @@
 package org.netbeans.modules.javacard.wizard;
 
 import com.sun.javacard.AID;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
-import org.netbeans.modules.javacard.constants.ProjectTemplateWizardKeys;
-import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.constants.ProjectTemplateWizardKeys;
+import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.projecttemplates.ProjectCreator;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 /**
@@ -91,9 +89,9 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         kind = ProjectKind.kindForTemplate(template);
     }
 
+    @Override
     public Set instantiate(ProgressHandle h) throws IOException {
         Set<Object> results = new HashSet<Object>();
-        FileObject dest = Templates.getTargetFolder(wiz);
         String name = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_PROJECT_NAME);
         String pkg = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_BASE_PACKAGE_NAME);
         String mainClassName = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_MAIN_CLASS_NAME);
@@ -101,14 +99,13 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         String webContextPath = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_WEB_CONTEXT_PATH);
         String activePlatform = (String) wiz.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         String activeDevice = (String) wiz.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE);
+        String usePreprocessor = (String) wiz.getProperty(ProjectPropertyNames.PROJECT_PROP_USE_PREPROCESSOR);
 
         String nameSpaces = unbicapitalize(name);
 
         //XXX fix in ProjectDefinitionPanel
-        File file = (File) wiz.getProperty("projdir");
-
-        dest = FileUtil.toFileObject(FileUtil.normalizeFile(file.getParentFile()));
-
+        File file = (File) wiz.getProperty("projdir"); //NOI18N
+        FileObject dest = FileUtil.toFileObject(FileUtil.normalizeFile(file.getParentFile()));
         ProjectCreator gen = new ProjectCreator(dest);
         gen.add (new ProjectXmlCreator(name, ProjectKind.kindForTemplate(template)));
 
@@ -139,10 +136,11 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_KIND, kind.name());
         templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_ACTIVE_DEVICE, activeDevice);
         templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_PROP_ACTIVE_PLATFORM, activePlatform);
+        templateProperties.put(ProjectTemplateWizardKeys.PROJECT_TEMPLATE_USE_PREPROCESSOR, usePreprocessor);
 
         if (kind == ProjectKind.CLASSIC_APPLET || kind == ProjectKind.CLASSIC_LIBRARY) {
             String specifiedPkgAid = (String) wiz.getProperty(ProjectWizardKeys.WIZARD_PROP_CLASSIC_PACKAGE_AID);
-            AID packageAid = null;
+            AID packageAid;
             if (specifiedPkgAid != null) {
                 packageAid = AID.parse(specifiedPkgAid);
             } else if (pkg != null) {
@@ -187,7 +185,7 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
             char c = chars[i];
             boolean isUpperCase = i == 0 || Character.isUpperCase(c);
             if (isUpperCase != lastWasUpperCase && isUpperCase) {
-                sb.append(' ');
+                sb.append(' '); //NOI18N
             }
             sb.append(c);
             lastWasUpperCase = isUpperCase;
@@ -195,10 +193,12 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         return sb.toString();
     }
 
+    @Override
     public Set instantiate() throws IOException {
         throw new UnsupportedOperationException("Not supported."); //NOI18N
     }
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         wiz.setHelpCtx(new HelpCtx("org.netbeans.modules.javacard.CreateProject")); //NOI18N
@@ -211,6 +211,7 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         secondPanel.readSettings(wiz);
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         secondPanel.storeSettings(wiz);
         firstPanel.removeChangeListener(this);
@@ -218,6 +219,7 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         thirdPanel.removeChangeListener(this);
     }
 
+    @Override
     public Panel<WizardDescriptor> current() {
         if (!firstPanel.isValid()){
             return firstPanel;
@@ -229,40 +231,48 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
         }
     }
 
+    @Override
     public String name() {
         return kind.getDisplayName();
     }
 
     boolean onSecondPanel = true;
     
+    @Override
     public boolean hasNext() {
         return kind.isClassic() ? onSecondPanel : false;
     }
 
+    @Override
     public boolean hasPrevious() {
         return kind.isClassic() ? !onSecondPanel : false;
     }
 
+    @Override
     public void nextPanel() {
         if (kind.isClassic()) {
             onSecondPanel = !onSecondPanel;
         }
     }
 
+    @Override
     public void previousPanel() {
         if (kind.isClassic()) {
             onSecondPanel = !onSecondPanel;
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener c) {
         supp.addChangeListener(c);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener c) {
         supp.removeChangeListener(c);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         supp.fireChange();
     }

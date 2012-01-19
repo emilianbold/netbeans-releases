@@ -43,13 +43,12 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import org.netbeans.modules.versioning.VersioningManager;
-import org.netbeans.modules.versioning.FlatFolder;
-import org.openide.util.NbPreferences;
-
 import java.io.File;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.versioning.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.DelegatingVCS;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import org.netbeans.modules.versioning.core.util.Utils;
 
 /**
  * Collection of utility methods for Versioning systems implementors. 
@@ -75,7 +74,7 @@ public final class VersioningSupport {
      * @see #PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE
      */
     public static Preferences getPreferences() {
-        return NbPreferences.forModule(VersioningSupport.class);
+        return org.netbeans.modules.versioning.core.api.VersioningSupport.getPreferences();
     }
         
     /**
@@ -85,7 +84,15 @@ public final class VersioningSupport {
      * @return VersioningSystem a system that owns (manages) the file or null if the file is not versioned
      */
     public static VersioningSystem getOwner(File file) {
-        return VersioningManager.getInstance().getOwner(file);
+        VCSSystemProvider.VersioningSystem owner = Utils.getOwner(VCSFileProxy.createFileProxy(file));
+        if(owner != null) {
+            if(owner.getDelegate() instanceof DelegatingVCS) {
+                return ((DelegatingVCS)owner.getDelegate()).getDelegate();
+            } else {
+                return (VersioningSystem) owner.getDelegate();
+            }
+        } 
+        return null;
     }
 
     /**
@@ -96,7 +103,7 @@ public final class VersioningSupport {
      * @return true if the File represents a flat folder (eg a java package), false otherwise
      */
     public static boolean isFlat(File file) {
-        return file instanceof FlatFolder;
+        return Utils.isFlat(file);
     }
 
     /**
@@ -107,16 +114,17 @@ public final class VersioningSupport {
      * @return File a flat file representing given abstract path
      */
     public static File getFlat(String path) {
-        return new FlatFolder(path);
+        return Utils.getFlat(path);
     }
     
     /**
      * Helper method to signal that a versioning system started to manage some previously unversioned files 
      * (those files were imported into repository).
-     * see
+     * 
+     * @see VersioningSystem#fireVersionedFilesChanged() 
      */
     public static void versionedRootsChanged() {
-        VersioningManager.getInstance().versionedRootsChanged();
+        Utils.versionedRootsChanged();
     }
 
     /**
@@ -135,15 +143,7 @@ public final class VersioningSupport {
      * @return true if the given folder is excluded from version control, false otherwise
      */
     public static boolean isExcluded (File folder) {
-        // forbid scanning for UNC paths \\ or \\computerName
-        if (folder.getPath().startsWith("\\\\")) { //NOI18N
-            return folder.getParent() == null || folder.getParent().equals("\\\\"); //NOI18N
-        }
-        for (File unversionedFolder : Utils.getUnversionedFolders()) {
-            if (Utils.isAncestorOrEqual(unversionedFolder, folder)) {
-                return true;
-            }
-        }
-        return false;
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(folder);
+        return proxy != null ? org.netbeans.modules.versioning.core.api.VersioningSupport.isExcluded(proxy) : null;
     }
 }

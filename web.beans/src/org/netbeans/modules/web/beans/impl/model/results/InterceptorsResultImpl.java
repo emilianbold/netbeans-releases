@@ -208,8 +208,9 @@ public class InterceptorsResultImpl implements InterceptorsResult {
         for (AnnotationMirror annotationMirror : annotationMirrors) {
             TypeElement annotationElement = (TypeElement)annotationMirror.
                 getAnnotationType().asElement();
-            if ( WebBeansModelProviderImpl.isStereotype( annotationElement, 
-                    checker ) )
+            if ( annotationElement!= null && 
+                    WebBeansModelProviderImpl.isStereotype( annotationElement, 
+                            checker ) )
             {
                 result.add( annotationMirror );
             }

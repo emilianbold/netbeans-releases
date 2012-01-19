@@ -205,6 +205,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         if (RepositoryInfo.PROPERTY_BRANCHES.equals(evt.getPropertyName())) {
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
+                @SuppressWarnings("unchecked")
                 public void run () {
                     branches.clear();
                     branches.putAll((Map<String, GitBranch>) evt.getNewValue());

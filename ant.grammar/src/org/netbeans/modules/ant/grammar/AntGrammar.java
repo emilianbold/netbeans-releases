@@ -45,6 +45,7 @@
 package org.netbeans.modules.ant.grammar;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.netbeans.modules.xml.spi.dom.AbstractNode;
+import org.netbeans.modules.xml.api.model.DescriptionSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
@@ -395,24 +397,22 @@ class AntGrammar implements GrammarQuery {
                 case PROJECT:
                 case TARGET:
                     list.add(new MyElement(element) {
-                        @Override public String getDescription() {
+                        private URL manpage;
+
+                        {
                             ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-                            URL manpage = cl.getResource("org/apache/tools/ant/module/docs/ant-docs/Tasks/" + element + ".html");
+                            manpage = cl.getResource("org/apache/tools/ant/module/docs/ant-docs/Tasks/" + element + ".html");
                             if (manpage == null) {
                                 manpage = cl.getResource("org/apache/tools/ant/module/docs/ant-docs/Types/" + element + ".html");
                             }
-                            if (manpage != null) {
-                                FileObject f = URLMapper.findFileObject(manpage);
-                                if (f != null) {
-                                    try {
-                                        return new String(f.asBytes(), FileEncodingQuery.getEncoding(f));
-                                    } catch (IOException x) {
-                                        LOG.log(Level.INFO, "Could not load " + manpage, x);
-                                    }
-                                }
-                            }
-                            return null;
                         }
+
+                        @Override
+                        public URL getContentURL() {
+                            return manpage;
+                        }
+                        
+                        
                     });
                     break;
                 default:
@@ -827,7 +827,7 @@ class AntGrammar implements GrammarQuery {
 
     }
 
-    private static class MyElement extends AbstractResultNode implements Element {
+    private static class MyElement extends AbstractResultNode implements Element, DescriptionSource {
 
         private String name;
 
@@ -850,7 +850,21 @@ class AntGrammar implements GrammarQuery {
         public @Override String toString() {
             return name;
         }
+        
+        @Override
+        public DescriptionSource resolveLink(String link) {
+            return null;
+        }
+        
+        @Override
+        public boolean isExternal() {
+            return false;
+        }
 
+        @Override
+        public URL getContentURL() {
+            return null;
+        }
     }
 
     private static class MyAttr extends AbstractResultNode implements Attr {

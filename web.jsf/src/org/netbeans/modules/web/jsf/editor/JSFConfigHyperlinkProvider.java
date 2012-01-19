@@ -43,34 +43,32 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
+import java.awt.Toolkit;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
-//import org.netbeans.modules.editor.java.JMIUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
-//import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -215,49 +213,76 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
         return (c == ' ' || c == '\n' || c == '\t' || c == '\r');
     }
 
-    private void findJavaClass(final String fqn, javax.swing.text.Document doc){
+    @NbBundle.Messages("title.go.to.class.action=Searching Managed Bean")
+    private void findJavaClass(final String fqn, javax.swing.text.Document doc) {
         FileObject fo = NbEditorUtilities.getFileObject(doc);
-        if (fo != null){
+        if (fo != null) {
             WebModule wm = WebModule.getWebModule(fo);
-            if (wm != null){
-                try {
-                    final ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
-                    JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
-
-                    js.runUserActionTask(new Task<CompilationController>() {
-
-                        public void run(CompilationController cc) throws Exception {
-                            Elements elements = cc.getElements();
-                            TypeElement element = elements.getTypeElement(fqn.trim());
-                            if (element != null) {
-                                ElementHandle el = ElementHandle.create(element);
-                                FileObject fo = SourceUtils.getFile(el, cpi);
-
-                                // Not a regular Java data object (may be a multi-view data object), open it first
-                                DataObject od = DataObject.find(fo);
-                                if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { // NOI18N
-                                    OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
-                                    oc.open();
-                                }
-
-                                if (!ElementOpen.open(fo, el)) {
-                                    String key = "goto_source_not_found"; // NOI18N
-                                    String msg = NbBundle.getBundle(JSFConfigHyperlinkProvider.class).getString(key);
-                                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object [] { fqn } ));
-
-                                }
-                            }
-                        }
-                    }, false);
-                } catch (IOException ex) {
-                    java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                            ex.getMessage(), ex);
-                };
+            if (wm != null) {
+                ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
+                ClassSeekerTask classSeekerTask = new ClassSeekerTask(cpi, fqn);
+                ScanDialog.runWhenScanFinished(classSeekerTask, Bundle.title_go_to_class_action());
             }
         }
     }
 
+    private class ClassSeekerTask implements Runnable, CancellableTask<CompilationController> {
 
+        private final ClasspathInfo cpi;
+        private final String fqn;
+
+        public ClassSeekerTask(ClasspathInfo cpi, String fqn) {
+            this.cpi = cpi;
+            this.fqn = fqn;
+        }
+
+        @Override
+        public void run() {
+            JavaSource js = JavaSource.create(cpi);
+            if (js != null) {
+                try {
+                    js.runUserActionTask(this, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @NbBundle.Messages({
+            "lbl.goto.source.not.found=Source file for {0} not found.",
+            "lbl.managed.bean.not.found=Managed bean {0} not found."
+        })
+        @Override
+        public void run(CompilationController cc) throws Exception {
+            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            Elements elements = cc.getElements();
+            TypeElement element = elements.getTypeElement(fqn.trim());
+            if (element != null) {
+                ElementHandle el = ElementHandle.create(element);
+                FileObject fo = SourceUtils.getFile(el, cpi);
+
+                // Not a regular Java data object (may be a multi-view data object), open it first
+                DataObject od = DataObject.find(fo);
+                if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { //NOI18N
+                    OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
+                    oc.open();
+                }
+
+                if (!ElementOpen.open(fo, el)) {
+                    StatusDisplayer.getDefault().setStatusText(Bundle.lbl_goto_source_not_found(fqn));
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            } else {
+                StatusDisplayer.getDefault().setStatusText(Bundle.lbl_managed_bean_not_found(fqn));
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+
+    }
 
     private void findResourcePath(String path, BaseDocument doc){
         //normalize path

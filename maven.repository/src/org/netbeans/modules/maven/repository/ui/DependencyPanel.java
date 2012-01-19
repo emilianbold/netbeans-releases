@@ -56,7 +56,6 @@ import java.util.Stack;
 import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -68,6 +67,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -85,14 +85,11 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
-    private Lookup.Result<DependencyNode> result;
-    private final static Icon dirIcon;
-    private final static Icon trIcon;
 
-    static {
-        dirIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ui/DependencyIcon.png", true));
-        trIcon = ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ui/TransitiveDependencyIcon.png", true));
-    }
+    private static final @StaticResource String DEPENDENCY = "org/netbeans/modules/maven/repository/ui/DependencyIcon.png";
+    private static final @StaticResource String TRANSITIVE_DEPENDENCY = "org/netbeans/modules/maven/repository/ui/TransitiveDependencyIcon.png";
+
+    private Lookup.Result<DependencyNode> result;
     private JToolBar toolbar;
 
     DependencyPanel(Lookup lookup) {
@@ -353,9 +350,9 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
                 @SuppressWarnings("unchecked")
                 List<DependencyNode> dirs = (List<DependencyNode>)list.getClientProperty("directs");
                 if (dirs.contains(d)) {
-                    lbl.setIcon(dirIcon);
+                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(DEPENDENCY, true)));
                 } else {
-                    lbl.setIcon(trIcon);
+                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(TRANSITIVE_DEPENDENCY, true)));
                 }
             }
             return cmp;

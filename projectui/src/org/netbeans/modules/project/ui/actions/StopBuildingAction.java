@@ -69,7 +69,7 @@ import org.openide.util.actions.SystemAction;
  * @see "issue #43143"
  */
 @ActionID(id = "org.netbeans.modules.project.ui.actions.StopBuildingAction", category = "Project")
-@ActionRegistration(displayName = "#LBL_stop_building")
+@ActionRegistration(displayName = "#LBL_stop_building", lazy=false)
 @ActionReference(path = "Menu/BuildProject", position = 1100)
 public final class StopBuildingAction extends CallableSystemAction implements ChangeListener {
     

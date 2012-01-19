@@ -110,8 +110,7 @@ public class StripAction extends ContextAction {
                     try {
                         revStr = HgCommand.getParent(root, null, null).getChangesetId();
                     } catch (HgException ex) {
-                        NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                        DialogDisplayer.getDefault().notifyLater(e);
+                        HgUtils.notifyException(ex);
                         return;
                     }
                 }
@@ -170,8 +169,7 @@ public class StripAction extends ContextAction {
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
+                    HgUtils.notifyException(ex);
                 } finally {
                     logger.outputInRed(
                                 NbBundle.getMessage(StripAction.class,

@@ -60,7 +60,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -77,8 +77,8 @@ public class ExportCommitCommand extends GitCommand {
     
     private static final char NL = '\n';
 
-    public ExportCommitCommand (Repository repository, String revisionStr, OutputStream out, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public ExportCommitCommand (Repository repository, GitClassFactory gitFactory, String revisionStr, OutputStream out, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.monitor = monitor;
         this.listener = listener;
         this.out = out;
@@ -134,7 +134,7 @@ public class ExportCommitCommand extends GitCommand {
     }
 
     private String formatCommitInfo (RevCommit commit) {
-        GitRevisionInfo info = new JGitRevisionInfo(commit, getRepository());
+        GitRevisionInfo info = getClassFactory().createRevisionInfo(commit, getRepository());
         StringBuilder sb = new StringBuilder();
         sb.append("From ").append(info.getRevision()).append(" ").append("Mon Sep 17 00:00:00 2001").append(NL);
         if (info.getAuthor() != null) {

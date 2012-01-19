@@ -60,7 +60,8 @@ import org.netbeans.modules.sendopts.OptionImpl;
 import org.openide.util.Lookup;
 
 /** Represents possible option that can appear on {@link org.netbeans.api.sendopts.CommandLine}
- * and contains factory methods to create them.
+ * and contains factory methods to create them. Consider using {@link Arg} 
+ * annotation instead.
  * <p>
  * An option can have letter short version, long name. It can
  * accept arguments, one argument or an array of additional arguments. 
@@ -396,6 +397,9 @@ public final class Option {
             private String key(String bundle, String key, Locale l) {
                 if (key == null) {
                     return null;
+                }
+                if (bundle == OptionImpl.NO_BUNDLE) {
+                    return key;
                 }
                 ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                 if (loader == null) {

@@ -101,7 +101,7 @@ public class PropertyCompletor extends Completor {
                 }
                 String className = new BeanClassFinder(
                         SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
-                        context.getFileObject()).findImplementationClass();
+                        context.getFileObject()).findImplementationClass(true);
                 if (className == null) {
                     return;
                 }

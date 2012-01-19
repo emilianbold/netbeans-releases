@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import org.junit.Test;
@@ -108,6 +110,25 @@ public class PsProviderTest {
     }
     
     @Test
+    public void testSolarisArgs() { // CR 7116814
+        PsProvider.PsData data = prepareSolarisData();
+        data.addProcess("    abcd 12345   994   1   Oct 05 pts/1     273:08 ./firefox1");
+        data.addProcess("    abcd 18719   994   1   Oct 05 pts/1     273:08 ./firefox2");
+        ArrayList<String> pargs = new ArrayList<String>();
+        pargs.add("");
+        pargs.add("pargs: cannot examine 12345: no such process or core file");
+        pargs.add("pargs: Couldn't determine locale of target process.");
+        pargs.add("pargs: Some strings may not be displayed properly.");
+        pargs.add("firefox2 a b c");
+        PsProvider.updatePargsData(data, new String[]{"","12345","18719"}, pargs);
+        Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
+        assertEquals("./firefox1", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("12345", res.get(0).get(1));
+        assertEquals("firefox2 a b c", res.get(1).get(data.commandColumnIdx()));
+        assertEquals("18719", res.get(1).get(1));
+    }
+    
+    @Test
     public void testSolarisPsLong() {
         PsProvider.PsData data = prepareSolarisData();
         data.addProcess("longusername 18719   994   1   Oct 05 pts/1     273:08 ./firefox");
@@ -141,16 +162,19 @@ public class PsProviderTest {
         assertEquals("29270", res.get(0).get(1));
     }
     
-    private PsProvider.PsData prepareMacData() {
+    private static String MAC_HEADER     = "  UID   PID  PPID   C     STIME TTY           TIME CMD";
+    private static String MAC_107_HEADER = "  UID   PID  PPID   C STIME   TTY           TIME CMD";
+    
+    private PsProvider.PsData prepareMacData(String header) {
         PsProvider provider = new PsProvider.MacOSPsProvider(Host.getLocal());
         PsProvider.PsData data = provider.new PsData();
-        data.setHeader(provider.parseHeader("  UID   PID  PPID   C     STIME TTY           TIME CMD"));
+        data.setHeader(provider.parseHeader(header));
         return data;
     }
     
     @Test
     public void testMacPs() {
-        PsProvider.PsData data = prepareMacData();
+        PsProvider.PsData data = prepareMacData(MAC_HEADER);
         data.addProcess("    0   625   615   0   0:00.00 ttys000    0:00.00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
@@ -159,10 +183,28 @@ public class PsProviderTest {
     
     @Test
     public void testMacPsLong() {
-        PsProvider.PsData data = prepareMacData();
+        PsProvider.PsData data = prepareMacData(MAC_HEADER);
         data.addProcess("longusername   625   615   0   0:00.00 ttys000    0:00.00 ps -ef");
         Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
         assertEquals("ps -ef", res.get(0).get(data.commandColumnIdx()));
         assertEquals("625", res.get(0).get(1));
+    }
+    
+    @Test // IZ 206862
+    public void test107MacPs() {
+        PsProvider.PsData data = prepareMacData(MAC_107_HEADER);
+        data.addProcess("  502   632   631   0  7Nov11 ttys000    0:00.19 -bash");
+        Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
+        assertEquals("-bash", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("632", res.get(0).get(1));
+    }
+    
+    @Test // IZ 206862
+    public void test107MacPsLong() {
+        PsProvider.PsData data = prepareMacData(MAC_107_HEADER);
+        data.addProcess("longusername   632   631   0  7Nov11 ttys000    0:00.19 -bash");
+        Vector<Vector<String>> res = data.processes(Pattern.compile(".*"));
+        assertEquals("-bash", res.get(0).get(data.commandColumnIdx()));
+        assertEquals("632", res.get(0).get(1));
     }
 }

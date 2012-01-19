@@ -43,6 +43,8 @@
 
 package org.netbeans.modules.profiler.j2ee;
 
+import org.openide.util.NbBundle;
+
 
 /**
  * Copied & modified from package org.netbeans.modules.web.project.ui
@@ -81,6 +83,10 @@ public class ServletUriPanel extends javax.swing.JPanel {
         return servletUri;
     }
 
+    @NbBundle.Messages({
+        "LBL_setServletURI=<html>If required, provide some request parameters for the servlet:<br>e.g. /flowerServlet<b>?flower\\=rose&amp;color\\=red</b></html>",
+        "ACC_setServletURI=Provide parameters that will be passed to the servlet."
+    })
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -90,7 +96,7 @@ public class ServletUriPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ServletUriPanel.class, "LBL_setServletURI")); // NOI18N
+        jLabel1.setText(Bundle.LBL_setServletURI());
         jLabel1.setLabelFor(textField1);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -109,7 +115,7 @@ public class ServletUriPanel extends javax.swing.JPanel {
         add(jLabel2, gridBagConstraints);
 
         textField1.getAccessibleContext()
-                  .setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServletUriPanel.class, "ACC_setServletURI")); // NOI18N
+                  .setAccessibleDescription(Bundle.ACC_setServletURI());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

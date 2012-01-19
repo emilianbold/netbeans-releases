@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.AbstractModelFactory;
@@ -74,7 +76,9 @@ public class POMModelFactory extends AbstractModelFactory<POMModel> {
     public POMModel getModel(ModelSource source) {
         if (source == null) return null;
         Lookup lookup = source.getLookup();
-        assert lookup.lookup(Document.class) != null;
+        if (lookup.lookup(Document.class) == null) {
+            Logger.getLogger(POMModelFactory.class.getName()).log(Level.WARNING, "no Document instance found in {0}", lookup);
+        }
         return super.getModel(source);
     }
     

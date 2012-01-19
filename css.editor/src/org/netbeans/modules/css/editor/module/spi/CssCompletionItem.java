@@ -64,6 +64,7 @@ import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
 import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
+import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
 
@@ -85,11 +86,21 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
             GrammarElement value,
+            String origin,
             int anchorOffset,
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ValueCompletionItem(element, value.toString(), value.getResolvedOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ValueCompletionItem(element, value.toString(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
+    }
+    
+    public static CssCompletionItem createValueCompletionItem(CssValueElement element,
+            GrammarElement value,
+            int anchorOffset,
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
+
+        return new ValueCompletionItem(element, value.toString(), value.getVisibleOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
 
     public static CssCompletionItem createColorValueCompletionItem(CssValueElement element,
@@ -98,7 +109,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ColorCompletionItem(element, value.toString(), value.getResolvedOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ColorCompletionItem(element, value.toString(), value.getVisibleOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
 
     }
 
@@ -152,6 +163,11 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
+    
+    public static CompletionProposal createUnitCompletionItem(ValueGrammarElement element) {
+        return new UnitItem(element);
+    }
+    
     protected static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
     protected static final int SORT_PRIORITY = 300;
 
@@ -319,7 +335,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.FIELD;
+            return ElementKind.GLOBAL;
         }
 
         @Override
@@ -334,7 +350,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            return "<font color=999999>" + origin + "</font>"; //NOI18N
+            return "<font color=999999>" + (origin == null ? "" : origin) + "</font>"; //NOI18N
         }
     }
     private static final byte COLOR_ICON_SIZE = 16; //px
@@ -416,8 +432,8 @@ public abstract class CssCompletionItem implements CompletionProposal {
             return hash;
         }
     }
-
-    static class ColorChooserItem extends DefaultCompletionProposal {
+    
+      static class ColorChooserItem extends DefaultCompletionProposal {
 
         private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
         private Color color;
@@ -493,6 +509,50 @@ public abstract class CssCompletionItem implements CompletionProposal {
         @Override
         public boolean isSmart() {
             return true;
+        }
+    }
+
+    static class UnitItem extends DefaultCompletionProposal {
+
+        private ValueGrammarElement element;
+
+        private UnitItem(ValueGrammarElement element) {
+            this.element = element;
+        }
+
+        @Override
+        public boolean beforeDefaultAction() {
+            return true; //do not do anything
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return new CssElement(null);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public String getName() {
+            return element.value();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            return "<font color=#aaaaaa>" + element.value() + "</font>"; //NOI18N
+        }
+
+         @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return "<font color=999999>" + element.getVisibleOrigin() + "</font>"; //NOI18N
+        }
+        
+        @Override
+        public boolean isSmart() {
+            return false;
         }
     }
 

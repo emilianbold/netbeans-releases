@@ -667,7 +667,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     ISVNProperty propertyGet(PropertyGetCommand cmd, final String name, final SVNUrl url, final File file) throws SVNClientException {
         exec(cmd);
         final byte[] bytes = cmd.getOutput();
-        if(bytes == null || bytes.length == 0) {
+        if(bytes == null) {
             return null;
         }
         return new ISVNProperty() {
@@ -763,7 +763,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
         for (String name : names) {
-            props.add(propertyGet(file, name));
+            ISVNProperty prop = propertyGet(file, name);
+            if (prop != null) {
+                props.add(prop);
+            }
         }
         return props.toArray(new ISVNProperty[props.size()]);
     }
@@ -856,7 +859,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                     false,
                     null);
         } catch (SVNClientException ex) {
-            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) || SvnClientExceptionHandler.isNodeNotFound(ex.getMessage())) {
                 return new SVNStatusUnversioned(file);
             } else {
                 throw ex;

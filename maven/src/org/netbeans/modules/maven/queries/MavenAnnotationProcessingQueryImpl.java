@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.queries;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,25 +54,28 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+@ProjectServiceProvider(service=AnnotationProcessingQueryImplementation.class, projectType="org-netbeans-modules-maven")
 public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplementation {
 
-    private final NbMavenProjectImpl prj;
+    private final Project prj;
 
-    public MavenAnnotationProcessingQueryImpl(NbMavenProjectImpl prj) {
+    public MavenAnnotationProcessingQueryImpl(Project prj) {
         this.prj = prj;
     }
 
     public @Override Result getAnnotationProcessingOptions(FileObject file) {
         return new Result() {
             public @Override Set<? extends Trigger> annotationProcessingEnabled() {
-                String version = PluginPropertyUtils.getPluginVersion(prj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+                String version = PluginPropertyUtils.getPluginVersion(prj.getLookup().lookup(NbMavenProject.class).getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("2.2")) < 0) {
                     return EnumSet.noneOf(Trigger.class);
                 }
@@ -82,7 +86,8 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                 return EnumSet.allOf(Trigger.class);
             }
             public @Override Iterable<? extends String> annotationProcessorsToRun() {
-                return null;
+                String[] procs = PluginPropertyUtils.getPluginPropertyList(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "annotationProcessors", "annotationProcessor", null);
+                return procs != null ? Arrays.asList(procs) : null;
             }
             public @Override URL sourceOutputDirectory() {
                 String generatedSourcesDirectory = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "generatedSourcesDirectory", null);
@@ -90,7 +95,7 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                     generatedSourcesDirectory = "${project.build.directory}/generated-sources/annotations";
                 }
                 try {
-                    return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj.getOriginalMavenProject()).evaluate(generatedSourcesDirectory)));
+                    return FileUtil.urlForArchiveOrDir(new File((String) PluginPropertyUtils.createEvaluator(prj.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate(generatedSourcesDirectory)));
                 } catch (ExpressionEvaluationException ex) {
                     return null;
                 }

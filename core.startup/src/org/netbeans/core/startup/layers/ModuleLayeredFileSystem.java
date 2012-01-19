@@ -80,7 +80,7 @@ implements LookupListener {
 
     /** lookup result we listen on */
     private static Lookup.Result<FileSystem> result = Lookup.getDefault().lookupResult(FileSystem.class);
-    
+
     /** current list of URLs - r/o; or null if not yet set */
     private List<URL> urls;
     /** cache manager */
@@ -148,30 +148,10 @@ implements LookupListener {
         l.addAll(Arrays.asList(fs2s));
         l.add(fs3);
         if (addClasspathLayers) { // #129583
-            List<URL> layerUrls = new ArrayList<URL>();
             // Basic impl copied from ExternalUtil.MainFS:
-            ClassLoader loader = ModuleInfo.class.getClassLoader();
+            List<URL> layerUrls = null;
             try {
-                for (URL manifest : NbCollections.iterable(loader.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
-                    InputStream is = manifest.openStream();
-                    try {
-                        Manifest mani = new Manifest(is);
-                        String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-                        if (layerLoc != null) {
-                            URL layer = loader.getResource(layerLoc);
-                            if (layer != null) {
-                                layerUrls.add(layer);
-                            } else {
-                                err.log(Level.WARNING, "No such layer: {0}", layerLoc);
-                            }
-                        }
-                    } finally {
-                        is.close();
-                    }
-                }
-                for (URL generatedLayer : NbCollections.iterable(loader.getResources("META-INF/generated-layer.xml"))) { // NOI18N
-                    layerUrls.add(generatedLayer);
-                }
+                layerUrls = collectLayers(ModuleInfo.class.getClassLoader());
                 if (!layerUrls.isEmpty()) {
                     XMLFileSystem xmlfs = new XMLFileSystem();
                     xmlfs.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
@@ -305,5 +285,29 @@ implements LookupListener {
     @Override public void resultChanged(LookupEvent ev) {
         setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
     }
-
+    
+    public static List<URL> collectLayers(ClassLoader loader) throws IOException {
+        List<URL> layerUrls = new ArrayList<URL>();
+        for (URL manifest : NbCollections.iterable(loader.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
+            InputStream is = manifest.openStream();
+            try {
+                Manifest mani = new Manifest(is);
+                String layerLoc = mani.getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
+                if (layerLoc != null) {
+                    URL layer = loader.getResource(layerLoc);
+                    if (layer != null) {
+                        layerUrls.add(layer);
+                    } else {
+                        err.log(Level.WARNING, "No such layer: {0}", layerLoc);
+                    }
+                }
+            } finally {
+                is.close();
+            }
+        }
+        for (URL generatedLayer : NbCollections.iterable(loader.getResources("META-INF/generated-layer.xml"))) { // NOI18N
+            layerUrls.add(generatedLayer);
+        }
+        return layerUrls;
+    }
 }

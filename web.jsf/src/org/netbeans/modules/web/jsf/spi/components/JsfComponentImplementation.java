@@ -55,20 +55,20 @@ import org.openide.filesystems.FileObject;
  * module is already extended by a JSF component library, or to retrieve a JSF suite's
  * specific configuration thru the {@link JsfComponentCustomizer}.
  *
- * <p>Instances of this class are registered in the {@value 
+ * <p>Instances of this class are registered in the {@value
  * org.netbeans.modules.web.jsfapi.spi.components.JsfComponentProvider#COMPONENTS_PATH}
  * in the module layer, see {@link Registration}.</p>
- * 
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  * @since 1.27
  */
 public interface JsfComponentImplementation {
-    
+
     /**
      * Returns the name of this JSF component library.
      *
      * @return the name; never {@code null}.
-     */    
+     */
     @NonNull
     public String getName();
 
@@ -81,28 +81,27 @@ public interface JsfComponentImplementation {
     public String getDescription();
 
     /**
-     * Called to extend the given web module and JSF framework with the JSF 
+     * Called to extend the given web module and JSF framework with the JSF
      * component library corresponding to this implementation.
      *
      * @param  webModule the web module to be extended; never null.
-     * @param  jsfComponentCustomizer customizer with JSF component library 
+     * @param  jsfComponentCustomizer customizer with JSF component library
      * settings for given project (web module)
      * @return the set of newly created files in the web module which should be opened.
      */
     @NonNull
     public Set<FileObject> extend(@NonNull WebModule webModule, @NullAllowed JsfComponentCustomizer jsfComponentCustomizer);
-    
+
     /**
-     * Returns for which version is the JSF component library designated. 
+     * Returns for which versions is the JSF component library designed.
      * <p>
-     * By creating new project and choosing JSF framework are JSF suites filtered 
-     * out according to their {@link JSFVersion}.
-     * 
-     * @return {@link JSFVersion} suitable for this JSF component library.
+     * By creating new project and choosing JSF framework are JSF suites filtered
+     * out according to their {@link JSFVersion}s.
+     *
+     * @return set of {@link JSFVersion} suitable for this JSF component library
      */
     @NonNull
-    public JSFVersion getJsfVersion();
-    
+    public Set<JSFVersion> getJsfVersion();
 
     /**
      * Finds out if a given web module has already been extended with this JSF component library.
@@ -110,7 +109,7 @@ public interface JsfComponentImplementation {
      * <b>This method should be as fast as possible.</b>
      *
      * @param webmodule the web module; never {@code null}.
-     * @return {@code true} if the web module has already been extended with this JSF suite, 
+     * @return {@code true} if the web module has already been extended with this JSF suite,
      * {@code false} otherwise.
      */
     public boolean isInWebModule(@NonNull WebModule webModule);
@@ -119,12 +118,12 @@ public interface JsfComponentImplementation {
      * Returns a new {@link JsfComponentCustomizer} for this JSF component
      * library.
      * <p>
-     * For new project is called with {@code null} parameter. In project customizer is called for 
+     * For new project is called with {@code null} parameter. In project customizer is called for
      * given {@link WebModule}.
-     * 
-     * @param webmodule the web module for which should be customizer adapted; null if the 
+     *
+     * @param webmodule the web module for which should be customizer adapted; null if the
      * project doesn't exist yet
-     * @return a new customizer; can be {@code null} if the JSF suite doesn't 
+     * @return a new customizer; can be {@code null} if the JSF suite doesn't
      * support that and no extending panel should be offered.
      */
     public JsfComponentCustomizer createJsfComponentCustomizer(@NullAllowed WebModule webModule);
@@ -135,5 +134,5 @@ public interface JsfComponentImplementation {
      * @param webModule the web module from which should be JSF component library removed; never null.
      */
     public void remove(@NonNull WebModule webModule);
-    
+
 }

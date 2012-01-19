@@ -1555,10 +1555,11 @@ public class BaseKit extends DefaultEditorKit {
                                             if (lineStartOffset != newSelectionStartOffset)
                                             target.select(lineStartOffset, target.getSelectionEnd());
                                         }
-                                    } catch (GuardedException e) {
+                                    } catch (GuardedException ge) {
+                                        LOG.log(Level.FINE, null, ge);
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
-                                        e.printStackTrace();
+                                        LOG.log(Level.WARNING, null, e);
                                     }
                                 } else { // no selected text
                                     int dotPos = caret.getDot();
@@ -2618,6 +2619,8 @@ public class BaseKit extends DefaultEditorKit {
                             dot = textStartPos;
                         }
                     }
+                    // For partial view hierarchy check bounds
+                    dot = Math.max(dot, target.getUI().getRootView(target).getStartOffset());
                     String actionName = (String) getValue(Action.NAME);
                     boolean select = selectionBeginLineAction.equals(actionName)
                             || selectionLineFirstColumnAction.equals(actionName);
@@ -2651,6 +2654,8 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int dot = Utilities.getRowEnd(target, caret.getDot());
+                    // For partial view hierarchy check bounds
+                    dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
                     boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
                     if (select) {
                         caret.moveDot(dot);
@@ -3306,6 +3311,9 @@ public class BaseKit extends DefaultEditorKit {
 
     /** Increase/decrease indentation of the block of the code. Document
     * is atomically locked during the operation.
+    * <br/>
+    * If indent is in between multiplies of shiftwidth it jumps to multiplies of shiftwidth.
+    * 
     * @param doc document to operate on
     * @param startPos starting line position
     * @param endPos ending line position
@@ -3329,20 +3337,25 @@ public class BaseKit extends DefaultEditorKit {
         doc.runAtomic (new Runnable () {
             public void run () {
                 try {
-                    int indentDelta = shiftCnt * doc.getShiftWidth();
+                    int shiftWidth = doc.getShiftWidth();
+                    if (shiftWidth <= 0) {
+                        return;
+                    }
+                    int indentDelta = shiftCnt * shiftWidth;
                     int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
                         endPos - 1 : endPos;
 
-                    int pos = Utilities.getRowStart(doc, startPos );
-                    for (int lineCnt = Utilities.getRowCount(doc, startPos, end);
-                            lineCnt > 0; lineCnt--
-                        ) {
-                        int indent = Utilities.getRowIndent(doc, pos);
-                        if (Utilities.isRowWhite(doc, pos)) {
-                            indent = -indentDelta; // zero indentation for white line
-                        }
-                        changeRowIndent(doc, pos, Math.max(indent + indentDelta, 0));
-                        pos = Utilities.getRowStart(doc, pos, +1);
+                    int lineStartOffset = Utilities.getRowStart(doc, startPos );
+                    int lineCount = Utilities.getRowCount(doc, startPos, end);
+                    for (int i = lineCount - 1; i >= 0; i--) {
+                        int indent = Utilities.getRowIndent(doc, lineStartOffset);
+                        int newIndent = (indent == -1) ? 0 : // Zero indent if row is white
+                                ((indent + indentDelta +
+                                    ((shiftCnt < 0) ? shiftWidth - 1 : 0))
+                                    / shiftWidth * shiftWidth);
+                                
+                        changeRowIndent(doc, lineStartOffset, Math.max(newIndent, 0));
+                        lineStartOffset = Utilities.getRowStart(doc, lineStartOffset, +1);
                     }
                 } catch (BadLocationException ex) {
                     badLocationExceptions [0] = ex;
@@ -3367,5 +3380,50 @@ public class BaseKit extends DefaultEditorKit {
         }
         ind = Math.max(ind, 0);
         changeRowIndent(doc, dotPos, ind);
+    }
+    
+    /** Shift block either left or right */
+    static void shiftBlock (final BaseDocument doc, final int startPos, final int endPos,
+                                  final boolean right) throws BadLocationException {
+        GuardedDocument gdoc = (doc instanceof GuardedDocument)
+                               ? (GuardedDocument)doc : null;
+        if (gdoc != null){
+            for (int i = startPos; i<endPos; i++){
+                if (gdoc.isPosGuarded(i)){
+                    java.awt.Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
+            }
+        }
+
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    int shiftWidth = doc.getShiftWidth();
+                    if (shiftWidth <= 0) {
+                        return;
+                    }
+                    int indentDelta = right ? shiftWidth : -shiftWidth;
+                    int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
+                        endPos - 1 : endPos;
+
+                    int lineStartOffset = Utilities.getRowStart(doc, startPos );
+                    int lineCount = Utilities.getRowCount(doc, startPos, end);
+                    for (int i = lineCount - 1; i >= 0; i--) {
+                        int indent = Utilities.getRowIndent(doc, lineStartOffset);
+                        int newIndent = (indent == -1) ? 0 : // Zero indent if row is white
+                                indent + indentDelta;
+                                
+                        changeRowIndent(doc, lineStartOffset, Math.max(newIndent, 0));
+                        lineStartOffset = Utilities.getRowStart(doc, lineStartOffset, +1);
+                    }
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
+                }
+            }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
     }
 }

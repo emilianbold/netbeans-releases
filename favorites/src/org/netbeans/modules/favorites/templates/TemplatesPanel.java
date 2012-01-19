@@ -81,11 +81,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -99,7 +95,6 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -107,7 +102,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
@@ -1210,49 +1204,13 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     /** Test if the file physically exists on disk and thus was created by user and can be renamed. */
     private static boolean isUserFile(FileObject fo) {
-        String path = fo.getPath();
-        // Find if this path is on non-local filesystems
-        FileSystem fs;
-        try {
-            fs = fo.getFileSystem();
-        } catch (FileStateInvalidException ex) {
-            return false;
-        }
-        return !isOnNonLocalFS(fs, path);
-    }
-
-    private static boolean isOnNonLocalFS(FileSystem fs, String path) {
-        if (fs instanceof MultiFileSystem) {
-            MultiFileSystem mfs = (MultiFileSystem) fs;
-            try {
-                java.lang.reflect.Method getDelegatesMethod;
-                getDelegatesMethod = MultiFileSystem.class.getDeclaredMethod("getDelegates"); // NOI18N
-                getDelegatesMethod.setAccessible(true);
-                FileSystem[] delegates = (FileSystem[]) getDelegatesMethod.invoke(mfs);
-                for (FileSystem fsd : delegates) {
-                    if (isOnNonLocalFS(fsd, path)) {
-                        return true;
-                    }
-                }
-            } catch (NoSuchMethodException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (SecurityException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return false;
-        } else {
-            if (fs instanceof LocalFileSystem) {
-                return false; // is local FS
-            } else {
-                return fs.findResource(path) != null;
+        // A layer-defined folder with a user-added file (or subfolder) should not be renamable:
+        for (FileObject child : fo.getChildren()) {
+            if (!isUserFile(child)) {
+                return false;
             }
         }
+        return fo.canRevert();
     }
     
     // action

@@ -3598,8 +3598,7 @@ public class FormatingTest extends NbTestCase {
                 + "\n"
                 + "/**\n"
                 + " * The link in javadoc test shows the {@link #read(ByteBuffer,long,TimeUnit,Object,CompletionHandler) read}\n"
-                + " * and\n"
-                + " * {@link #write(ByteBuffer,long,TimeUnit,Object,CompletionHandler) write}\n"
+                + " * and {@link #write(ByteBuffer,long,TimeUnit,Object,CompletionHandler) write}\n"
                 + " * methods.\n"
                 + " */\n"
                 + "public class Test {\n"
@@ -3845,6 +3844,36 @@ public class FormatingTest extends NbTestCase {
                 + "     * @return\n"
                 + "     */\n"
                 + "    public Object get(Object o) {\n"
+                + "        return o;\n"
+                + "    }\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * @param o\n"
+                + "     * @param str\n"
+                + "     */\n"
+                + "    public Object get(Object o, String str) {\n"
+                + "        return o;\n"
+                + "    }\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     *\n"
+                + "     * @param o\n"
+                + "     * @param str\n"
+                + "     */\n"
+                + "    public Object get(Object o, String str) {\n"
                 + "        return o;\n"
                 + "    }\n"
                 + "}\n";        

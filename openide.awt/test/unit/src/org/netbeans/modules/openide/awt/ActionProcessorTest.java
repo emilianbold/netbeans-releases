@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.openide.awt;
 
-import java.net.URL;
-import javax.tools.ToolProvider;
 import java.awt.Component;
 import java.awt.GraphicsEnvironment;
 import javax.swing.JComponent;
@@ -55,7 +53,6 @@ import org.openide.awt.ActionID;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
-import java.net.URLClassLoader;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -132,15 +129,9 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testAlwaysEnabledAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/my-test-Always.instance"
-        );
-        assertNotNull("File found", fo);
         assertEquals("Not created yet", 0, Always.created);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is an action", obj instanceof Action);
-        Action a = (Action)obj;
+        Action a = Actions.forID("Tools", "my.test.Always");
+        assertNotNull("action found", a);
         assertEquals("Still not created", 0, Always.created);
 
         assertEquals("I am always on!", a.getValue(Action.NAME));
@@ -155,7 +146,7 @@ public class ActionProcessorTest extends NbTestCase {
         );
         assertNotNull("Shadow created", shad);
         assertEquals("Right position", 333, shad.getAttribute("position"));
-        assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+        assertEquals("Proper link", "Actions/Tools/my-test-Always.instance", shad.getAttribute("originalFile"));
     }
     
     public void testVerifyReferencesInstalledViaPackageInfo() {
@@ -188,13 +179,9 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testAlwaysEnabledActionByMethod() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/Tools/my-test-AlwaysByMethod.instance");
-        assertNotNull("File found", fo);
         assertEquals("Not created yet", 0, AlwaysByMethod.created);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is an action", obj instanceof Action);
-        Action a = (Action)obj;
+        Action a = Actions.forID("Tools", "my.test.AlwaysByMethod");
+        assertNotNull(a);
         assertEquals("Still not created", 0, AlwaysByMethod.created);
         assertEquals("I am always on!", a.getValue(Action.NAME));
         assertEquals("Not even now created", 0, AlwaysByMethod.created);
@@ -208,7 +195,7 @@ public class ActionProcessorTest extends NbTestCase {
             );
             assertNotNull("Shadow created", shad);
             assertEquals("Right position", 1, shad.getAttribute("position"));
-            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+            assertEquals("Proper link", "Actions/Tools/my-test-AlwaysByMethod.instance", shad.getAttribute("originalFile"));
             FileObject sep = FileUtil.getConfigFile(
                 "Kuk/buk/my-test-AlwaysByMethod-separatorAfter.instance"
             );
@@ -223,7 +210,7 @@ public class ActionProcessorTest extends NbTestCase {
             );
             assertNotNull("Shadow created", shad);
             assertEquals("Right position", 11, shad.getAttribute("position"));
-            assertEquals("Proper link", fo.getPath(), shad.getAttribute("originalFile"));
+            assertEquals("Proper link", "Actions/Tools/my-test-AlwaysByMethod.instance", shad.getAttribute("originalFile"));
             FileObject sep = FileUtil.getConfigFile(
                 "Muk/luk/my-test-AlwaysByMethod-separatorBefore.instance"
             );
@@ -253,15 +240,7 @@ public class ActionProcessorTest extends NbTestCase {
 
     public void testCallbackAction() throws Exception {
         Callback.cnt = 0;
-        
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/my-action.instance"
-        );
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction a = (ContextAwareAction)obj;
+        ContextAwareAction a = (ContextAwareAction) Actions.forID("Tools", "my.action");
 
         class MyAction extends AbstractAction {
             int cnt;
@@ -309,7 +288,7 @@ public class ActionProcessorTest extends NbTestCase {
         );
         assertNotNull("File found", fo);
         Object icon = fo.getAttribute("iconBase");
-        assertTrue("Icon found", icon instanceof String);
+        assertEquals("Icon found", "org/openide/awt/TestIcon.png", icon);
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Attribute present", obj);
         assertTrue("It is context aware action", obj instanceof ContextAwareAction);
@@ -342,13 +321,20 @@ public class ActionProcessorTest extends NbTestCase {
         assertEquals("Global Action not called, there is no fallback", 0, Callback.cnt);
     }
 
+    public static final class NumberLike {
+        final int x;
+        NumberLike(int x) {
+            this.x = x;
+        }
+    }
+
     @ActionID(category = "Tools", id = "on.int")
     @ActionRegistration(displayName = "#OnInt")
     public static final class Context implements ActionListener {
         private final int context;
         
-        public Context(Integer context) {
-            this.context = context;
+        public Context(NumberLike context) {
+            this.context = context.x;
         }
 
         static int cnt;
@@ -361,25 +347,20 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testContextAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/on-int.instance"
-        );
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction a = (ContextAwareAction)obj;
+        Action a = Actions.forID("Tools", "on.int");
+        assertTrue("It is context aware action", a instanceof ContextAwareAction);
 
         InstanceContent ic = new InstanceContent();
         AbstractLookup lkp = new AbstractLookup(ic);
-        Action clone = a.createContextAwareInstance(lkp);
-        ic.add(10);
+        Action clone = ((ContextAwareAction) a).createContextAwareInstance(lkp);
+        NumberLike ten = new NumberLike(10);
+        ic.add(ten);
 
         assertEquals("Number lover!", clone.getValue(Action.NAME));
         clone.actionPerformed(new ActionEvent(this, 300, ""));
         assertEquals("Global Action not called", 10, Context.cnt);
 
-        ic.remove(10);
+        ic.remove(ten);
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("Global Action stays same", 10, Context.cnt);
     }
@@ -392,9 +373,9 @@ public class ActionProcessorTest extends NbTestCase {
         id="on.numbers"
     )
     public static final class MultiContext implements ActionListener {
-        private final List<Number> context;
+        private final List<NumberLike> context;
 
-        public MultiContext(List<Number> context) {
+        public MultiContext(List<NumberLike> context) {
             this.context = context;
         }
 
@@ -402,38 +383,33 @@ public class ActionProcessorTest extends NbTestCase {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            for (Number n : context) {
-                cnt += n.intValue();
+            for (NumberLike n : context) {
+                cnt += n.x;
             }
         }
 
     }
 
     public void testMultiContextAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile(
-            "Actions/Tools/on-numbers.instance"
-        );
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction a = (ContextAwareAction)obj;
+        ContextAwareAction a = (ContextAwareAction) Actions.forID("Tools", "on.numbers");
 
         InstanceContent ic = new InstanceContent();
         AbstractLookup lkp = new AbstractLookup(ic);
         Action clone = a.createContextAwareInstance(lkp);
-        ic.add(10);
-        ic.add(3L);
+        NumberLike ten = new NumberLike(10);
+        NumberLike three = new NumberLike(3);
+        ic.add(ten);
+        ic.add(three);
 
         assertEquals("Number lover!", clone.getValue(Action.NAME));
         clone.actionPerformed(new ActionEvent(this, 300, ""));
         assertEquals("Global Action not called", 13, MultiContext.cnt);
 
-        ic.remove(10);
+        ic.remove(ten);
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("Adds 3", 16, MultiContext.cnt);
 
-        ic.remove(3L);
+        ic.remove(three);
         assertFalse("It is disabled", clone.isEnabled());
         clone.actionPerformed(new ActionEvent(this, 200, ""));
         assertEquals("No change", 16, MultiContext.cnt);
@@ -467,13 +443,7 @@ public class ActionProcessorTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         AbstractLookup al = new AbstractLookup(ic);
         
-        FileObject fo = FileUtil.getConfigFile(
-                "Actions/Windows/my-survival-action.instance");
-        assertNotNull("File found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction temp = (ContextAwareAction) obj;
+        ContextAwareAction temp = (ContextAwareAction) Actions.forID("Windows", "my.survival.action");
         Action a = temp.createContextAwareInstance(al);
         
         enable.put(SURVIVE_KEY, myAction);
@@ -618,6 +588,19 @@ public class ActionProcessorTest extends NbTestCase {
             return null;
         }
     }
+    @ActionID(category="eager", id="direct.seven")
+    @ActionRegistration(displayName="Direct Action", lazy=false)
+    public static class Direct7 extends AbstractAction {
+        @Override public void actionPerformed(ActionEvent e) {}
+    }
+    @ActionID(category="eager", id="direct.eight")
+    @ActionRegistration(displayName="Direct Action", lazy=true)
+    public static class Direct8 extends AbstractAction implements ContextAwareAction {
+        @Override public void actionPerformed(ActionEvent e) {}
+        @Override public Action createContextAwareInstance(Lookup actionContext) {
+            return this;
+        }
+    }
     
     @ActionID(category="menutext", id="namedaction")
     @ActionRegistration(displayName="This is an Action", menuText="This is a Menu Action", popupText="This is a Popup Action")
@@ -628,12 +611,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
 
     public void testPopupAndMenuText() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/menutext/namedaction.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        
-        Action a = (Action) obj;
+        Action a = Actions.forID("menutext", "namedaction");
         assertEquals("This is an Action", a.getValue(Action.NAME));
         JMenuItem item = new JMenuItem();
         Actions.connect(item, a, false);
@@ -644,46 +622,28 @@ public class ActionProcessorTest extends NbTestCase {
     }
     
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct.class, obj.getClass());
+        assertEquals("Direct class is created", Direct.class, Actions.forID("eager", "direct.one").getClass());
     }
     public void testDirectInstanceIfImplementsToolbarPresenter() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-two.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct2.class, obj.getClass());
+        assertEquals("Direct class is created", Direct2.class, Actions.forID("eager", "direct.two").getClass());
     }
     public void testDirectInstanceIfImplementsPopupPresenter() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-three.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct3.class, obj.getClass());
+        assertEquals("Direct class is created", Direct3.class, Actions.forID("eager", "direct.three").getClass());
     }
     public void testDirectInstanceIfImplementsContextAwareAction() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-four.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct4.class, obj.getClass());
+        assertEquals("Direct class is created", Direct4.class, Actions.forID("eager", "direct.four").getClass());
     }
     public void testDirectInstanceIfImplementsContextAwareActionByMethod() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-five.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct5.class, obj.getClass());
+        assertEquals("Direct class is created", Direct5.class, Actions.forID("eager", "direct.five").getClass());
     }
     public void testDirectInstanceIfImplementsDynamicMenuContent() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-six.instance");
-        assertNotNull("Instance found", fo);
-        Object obj = fo.getAttribute("instanceCreate");
-        assertNotNull("Action created", obj);
-        assertEquals("Direct class is created", Direct6.class, obj.getClass());
+        assertEquals("Direct class is created", Direct6.class, Actions.forID("eager", "direct.six").getClass());
+    }
+    public void testDirectInstanceIfRequested() throws Exception {
+        assertEquals("Direct class is created", Direct7.class, Actions.forID("eager", "direct.seven").getClass());
+    }
+    public void testIndirectInstanceIfRequested() throws Exception {
+        assertNotSame("Direct class is not created", Direct8.class, Actions.forID("eager", "direct.eight").getClass());
     }
     
     public void testNoKeyForDirects() throws IOException {
@@ -897,11 +857,7 @@ public class ActionProcessorTest extends NbTestCase {
 
     public void testWrongPointerToIcon() throws IOException {
         clearWorkDir();
-        // Cannot just check for e.g. SourceVersion.RELEASE_7 because we might be running JDK 6 javac w/ JDK 7 boot CP, and that is in JRE.
-        // (Anyway libs.javacapi/external/javac-api-nb-7.0-b07.jar, in the test's normal boot CP, has this!)
-        // Filter.class added in 7ae4016c5938, not long after f3323b1c65ee which we rely on for this to work.
-        // Also cannot just check Class.forName(...) since tools.jar not in CP but ToolProvider loads it specially.
-        if (new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null) {
+        if (AnnotationProcessorTestUtils.searchClasspathBroken()) {
             System.err.println("#196933: testWrongPointerToIcon will only pass when using JDK 7 javac, skipping");
             return;
         }

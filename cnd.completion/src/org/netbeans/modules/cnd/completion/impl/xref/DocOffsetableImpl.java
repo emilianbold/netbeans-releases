@@ -68,26 +68,32 @@ public class DocOffsetableImpl implements CsmOffsetable {
         return pos.getDocument();
     }
     
+    @Override
     public CsmFile getContainingFile() {
         return this.uidFile.getObject();
     }
 
+    @Override
     public int getStartOffset() {
         return pos.getOffset();
     }
 
+    @Override
     public int getEndOffset() {
         return this.getStartOffset() + getText().length();
     }
 
+    @Override
     public CsmOffsetable.Position getStartPosition() {
         return pos;
     }
 
+    @Override
     public CsmOffsetable.Position getEndPosition() {
         return new DocOffsPositionImpl(getDocument(),  getEndOffset());
     }
 
+    @Override
     public CharSequence getText() {
         return "";
     }

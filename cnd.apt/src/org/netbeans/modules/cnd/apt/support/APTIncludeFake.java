@@ -57,66 +57,79 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 public final class APTIncludeFake implements APTInclude {
     private final String filePath;
     private final APTToken token;
-    public APTIncludeFake(String filePath) {
+    public APTIncludeFake(String filePath, int line) {
         this.filePath = filePath;
         this.token = APTUtils.createAPTToken(APTTokenTypes.INCLUDE);
         this.token.setColumn(0);
-        this.token.setLine(0);
-        this.token.setOffset(-1);
+        this.token.setLine(line);
+        this.token.setOffset(line);
         this.token.setEndColumn(0);
-        this.token.setEndLine(0);
-        this.token.setEndOffset(-1);
+        this.token.setEndLine(line);
+        this.token.setEndOffset(line);
         this.token.setText("-include"); // NOI18N
     }
 
+    @Override
     public TokenStream getInclude() {
         return new ListBasedTokenStream(Arrays.asList(token, token));
     }
 
+    @Override
     public String getFileName(APTMacroCallback callback) {
         return filePath;
     }
 
+    @Override
     public boolean isSystem(APTMacroCallback callback) {
         return false;
     }
 
+    @Override
     public boolean accept(APTFile curFile, APTToken token) {
         throw new UnsupportedOperationException("Not supposed to be used."); // NOI18N
     }
 
+    @Override
     public APTToken getToken() {
         return this.token;
     }
 
+    @Override
     public APT getFirstChild() {
         return null;
     }
 
+    @Override
     public APT getNextSibling() {
         return null;
     }
 
+    @Override
     public String getText() {
         return filePath;
     }
 
+    @Override
     public int getType() {
         return APT.Type.INCLUDE;
     }
 
+    @Override
     public int getOffset() {
         return this.token.getOffset();
     }
 
+    @Override
     public int getEndOffset() {
         return this.token.getEndOffset();
     }
 
+    @Override
     public void setFirstChild(APT child) {
         throw new UnsupportedOperationException("Not supposed to be used."); // NOI18N
     }
 
+    @Override
     public void setNextSibling(APT next) {
         throw new UnsupportedOperationException("Not supposed to be used."); // NOI18N
     }

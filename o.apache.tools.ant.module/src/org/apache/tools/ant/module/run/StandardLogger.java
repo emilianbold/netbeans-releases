@@ -52,6 +52,9 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -64,6 +67,7 @@ import org.apache.tools.ant.module.spi.AntSession;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
@@ -212,9 +216,46 @@ public final class StandardLogger extends AntLogger {
         if (event.isConsumed()) {
             return;
         }
-        getSessionData(event.getSession()).startTime = System.currentTimeMillis();
-        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_running_ant", event.getSession().getDisplayName()));
-        // no messages printed for now
+        AntSession session = event.getSession();
+        getSessionData(session).startTime = System.currentTimeMillis();
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_running_ant", session.getDisplayName()));
+        if (!session.getOriginatingScript().getParentFile().getName().equals("executor-snippets")) { // internal detail of JavaRunner
+            List<String> cmd = new ArrayList<String>();
+            cmd.add("ant");
+            switch (session.getVerbosity()) {
+            case AntEvent.LOG_DEBUG:
+                cmd.add("-d");
+                break;
+            case AntEvent.LOG_VERBOSE:
+                cmd.add("-v");
+                break;
+            case AntEvent.LOG_WARN:
+                cmd.add("-q");
+                break;
+            }
+            cmd.add("-f");
+            cmd.add(session.getOriginatingScript().getAbsolutePath());
+            for (Map.Entry<String,String> prop : session.getProperties().entrySet()) {
+                if (prop.getKey().equals("build.compiler.emacs")) {
+                    continue; // uninteresting
+                }
+                cmd.add("-D" + prop);
+            }
+            for (String target : session.getOriginatingTargets()) {
+                cmd.add(target);
+            }
+            String msg = Utilities.escapeParameters(cmd.toArray(new String[cmd.size()]));
+            InputOutput io = session.getIO();
+            if (IOColorLines.isSupported(io)) {
+                try {
+                    IOColorLines.println(io, msg, Color.GRAY);
+                } catch (IOException x) {
+                    ERR.log(Level.INFO, null, x);
+                }
+            } else {
+                session.println(msg.toString(), false, null);
+            }
+        }
         event.consume();
     }
     

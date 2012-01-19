@@ -220,6 +220,9 @@ public final class MimeTypesTracker {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener listener;
 
+    //for tests only:
+    static boolean synchronous = false;
+    
     /* package */ static final RequestProcessor RP = new RequestProcessor(MimeTypesTracker.class.getName()); //NOI18N
     private final RequestProcessor.Task task = RP.create(new Runnable() {
         public void run() {
@@ -381,7 +384,8 @@ public final class MimeTypesTracker {
         private void notifyRebuild(FileObject f) {
             String path = f.getPath();
             if (path.startsWith(basePath)) {
-                task.schedule(100);
+                if (synchronous) rebuild();
+                else task.schedule(1000);
             }
         }
     } // End of Listener class

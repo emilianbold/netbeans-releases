@@ -62,11 +62,11 @@ import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
-import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.openide.util.Exceptions;
@@ -103,12 +103,14 @@ public class DwarfSource implements SourceFileProperties{
     private String compilerName;
     private CompileLineStorage storage;
     private int handler = -1;
+    private final CompilerSettings compilerSettings;
     
     DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
         language = lang;
         this.grepBase = grepBase;
         this.standard = standard;
         this.storage = storage;
+        this.compilerSettings = compilerSettings;
         initCompilerSettings(compilerSettings, lang);
         initSourceSettings(cu, lang);
     }
@@ -430,65 +432,16 @@ public class DwarfSource implements SourceFileProperties{
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
         if (FULL_TRACE) {System.out.println("Process command line "+line);} // NOI18N
         Iterator<String> st = DiscoveryUtils.scanCommandLine(line).iterator();
-        while(st.hasNext()){
-            String option = st.next();
-            if (option.startsWith("-D")){ // NOI18N
-                String macro = option.substring(2);
-                int i = macro.indexOf('=');
-                if (i>0){
-                    String value = macro.substring(i+1).trim();
-                    if (value.length() >= 2 &&
-                       (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
-                        value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
-                        value = value.substring(1,value.length()-1);
-                    }
-                    userMacros.put(PathCache.getString(macro.substring(0,i)), PathCache.getString(value));
-                } else {
-                    userMacros.put(PathCache.getString(macro), null);
-                }
-            } else if (option.startsWith("-I")){ // NOI18N
-                String path = option.substring(2);
-                if (path.length()==0 && st.hasNext()){
-                    path = st.next();
-                }
-                String include = PathCache.getString(path);
-                addUserIncludePath(include);
-            } else if (option.startsWith("-Y")){ // NOI18N
-                String defaultSearchPath = option.substring(2);
-                if (defaultSearchPath.length()==0 && st.hasNext()){
-                    defaultSearchPath = st.next();
-                }
-                if (defaultSearchPath.startsWith("I,")){ // NOI18N
-                    defaultSearchPath = defaultSearchPath.substring(2);
-                    String include = PathCache.getString(defaultSearchPath);
-                    addUserIncludePath(include);
-                }
-            } else if (option.startsWith("-isystem")){ // NOI18N
-                String path = option.substring(8);
-                if (path.length()==0 && st.hasNext()){
-                    path = st.next();
-                }
-                String include = PathCache.getString(path);
-                addUserIncludePath(include);
-            } else if (option.startsWith("-include")){ // NOI18N
-                String path = option.substring(8);
-                if (path.length()==0 && st.hasNext()){
-                    path = st.next();
-                }
-                String include = PathCache.getString(path);
-                addUserIncludePath(include);
-            } else if (option.startsWith("-imacros")){ // NOI18N
-                String path = option.substring(8);
-                if (path.length()==0 && st.hasNext()){
-                    path = st.next();
-                }
-                String include = PathCache.getString(path);
-                addUserIncludePath(include);
-            } else if (option.equals("-fopenmp")){ // NOI18N
-                userMacros.put("_OPENMP", "200505"); // NOI18N
-            } else if (option.equals("-xopenmp") || option.equals("-xopenmp=parallel") || option.equals("-xopenmp=noopt")){ // NOI18N
-                userMacros.put("_OPENMP", null); // NOI18N
-            }
+        List<String> aUserIncludes = new ArrayList<String>();
+        Map<String, String> aUserMacros = new HashMap<String, String>();
+        List<String> languageArtifacts = new ArrayList<String>();
+        DiscoveryUtils.gatherCompilerLine(line, false, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
+        for(String s : aUserIncludes) {
+            String include = PathCache.getString(s);
+            addUserIncludePath(include);
+        }
+        for(Map.Entry<String, String> entry : aUserMacros.entrySet()) {
+            userMacros.put(PathCache.getString(entry.getKey()), entry.getValue());
         }
     }
     

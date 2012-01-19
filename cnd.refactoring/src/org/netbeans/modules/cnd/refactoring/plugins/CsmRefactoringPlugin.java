@@ -43,29 +43,22 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmProject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
 import org.netbeans.modules.cnd.refactoring.support.RefactoringCommit;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
@@ -77,21 +70,26 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
+    static final Logger LOG = Logger.getLogger(CsmWhereUsedQueryPlugin.class.getName());
 
     protected volatile boolean cancelRequest = false;
 
+    @Override
     public Problem preCheck() {
         return null;
     }
 
+    @Override
     public Problem checkParameters() {
         return fastCheckParameters();
     }
 
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
 
+    @Override
     public final void cancelRequest() {
         cancelRequest = true;
     }
@@ -121,18 +119,33 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         Iterable<? extends List<CsmFile>> fileGroups = groupByRoot(files);
         AtomicReference<Problem> outProblem = new AtomicReference<Problem>(null);
         final Collection<ModificationResult> results = processFiles(fileGroups, outProblem);
+        final Map<FileObject, Set<Difference>> antiDuplicates = new HashMap<FileObject, Set<Difference>>(1000);
         elements.registerTransaction(new RefactoringCommit(results));
         for (ModificationResult result : results) {
             for (FileObject fo : result.getModifiedFileObjects()) {
-                for (Difference dif : result.getDifferences(fo)) {
-                    elements.add(refactoring, DiffElement.create(dif, fo, result));
+                Set<Difference> added = antiDuplicates.get(fo);
+                if (added == null) {
+                    added = new HashSet<Difference>();
+                    antiDuplicates.put(fo, added);
+                }
+                final Iterator<? extends Difference> differences = result.getDifferences(fo).iterator();
+                while (differences.hasNext()) {
+                    Difference dif = differences.next();
+                    if (!added.contains(dif)) {
+                        added.add(dif);
+                        elements.add(refactoring, DiffElement.create(dif, fo, result));
+                    } else {
+                        // # 205913 - IllegalArgumentException: len=-23 < 0
+                        LOG.log(Level.INFO, "remove duplicated {0} for {1}", new Object[] {dif, fo});
+                        differences.remove();
+                    }
                 }
             }
         }
         return outProblem.get();
     }
 
-    protected static final Problem createProblem(Problem prevProblem, boolean isFatal, String message) {
+    public static Problem createProblem(Problem prevProblem, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
         if (prevProblem == null) {
             return problem;
@@ -255,5 +268,34 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             // element is still available
             return null;
         }
+    }
+
+    protected final Collection<? extends CsmObject> getEqualObjects(CsmObject csmObject) {
+        if (CsmKindUtilities.isOffsetableDeclaration(csmObject)) {
+            CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
+//            CharSequence uniqueName = decl.getUniqueName();
+            CsmFile file = decl.getContainingFile();
+            if (file != null) {
+                FileObject fo = file.getFileObject();
+                FSPath fsPath = FSPath.toFSPath(fo);
+                CsmFile[] findFiles = CsmModelAccessor.getModel().findFiles(fsPath, false, false);
+                Collection<CsmObject> out = new HashSet<CsmObject>(findFiles.length);
+                out.add(csmObject);
+                CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(decl.getStartOffset()+1);
+                for (CsmFile csmFile : findFiles) {
+                    if (!file.equals(csmFile)) {
+                        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(csmFile, filter);
+                        while (declarations.hasNext()) {
+                            CsmOffsetableDeclaration other = declarations.next();
+                            if (CsmReferenceSupport.sameDeclaration(other, decl)) {
+                                out.add(other);
+                            }
+                        }
+                    }
+                }
+                return out;
+            }
+        }
+        return Collections.singleton(csmObject);
     }
 }

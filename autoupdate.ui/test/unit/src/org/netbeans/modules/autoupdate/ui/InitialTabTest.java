@@ -45,7 +45,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.Actions;
 
 /**
  *
@@ -62,9 +62,7 @@ public class InitialTabTest extends NbTestCase {
         return true;
     }
     public void testInitialTab() throws Exception {
-        Action action = (Action) FileUtil.getConfigFile(
-            "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"
-        ).getAttribute("instanceCreate");
+        Action action = Actions.forID("System", "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
         assertNotNull("Action found", action);
         action.actionPerformed(new ActionEvent(this, 100, "local"));
         

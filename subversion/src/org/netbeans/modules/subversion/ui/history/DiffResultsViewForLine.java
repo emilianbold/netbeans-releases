@@ -92,16 +92,15 @@ final class DiffResultsViewForLine extends DiffResultsView {
     @Override
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
         if (rev.getFile() == null) return;
-        long revision2 = rev.getLogInfoHeader().getLog().getRevision().getNumber();
-        showDiff(rev, null, Long.toString(revision2), showLastDifference);
+        showDiff(rev.getLogInfoHeader().getRepositoryRootUrl(), null, rev, showLastDifference);
     }
 
     @Override
-    protected SvnProgressSupport createShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected SvnProgressSupport createShowDiffTask (RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
         if (revision1 == null) {
-            return new ShowDiffTask(header, revision1, revision2, showLastDifference);
+            return new ShowDiffTask(revision2, revision2.getLogInfoHeader().getLog().getRevision().toString(), showLastDifference);
         } else {
-            return super.createShowDiffTask(header, revision1, revision2, showLastDifference);
+            return super.createShowDiffTask(revision1, revision2, showLastDifference);
         }
     }
 
@@ -130,7 +129,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
         private final RepositoryRevision.Event header;
         private final String revision2;
 
-        public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+        public ShowDiffTask(RepositoryRevision.Event header, String revision2, boolean showLastDifference) {
             this.header = header;
             this.revision2 = revision2;
         }

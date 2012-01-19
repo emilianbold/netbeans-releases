@@ -63,6 +63,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -85,13 +87,14 @@ import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author ondra
  */
-class VersioningPanelController implements ActionListener, PropertyChangeListener {
+class VersioningPanelController implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
 
     private final VersioningPanel panel;
     private VCSContext context;
@@ -106,6 +109,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private Mode mode;
     private GitProgressSupport refreshStatusSupport;
     private final ModeKeeper modeKeeper;
+    private PreferenceChangeListener list;
 
     VersioningPanelController () {
         this.panel = new VersioningPanel();
@@ -165,6 +169,8 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         panel.btnDiff.addActionListener(this);
         panel.btnRefresh.addActionListener(this);
         Git.getInstance().getFileStatusCache().addPropertyChangeListener(this);
+        GitModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(
+                list = WeakListeners.create(PreferenceChangeListener.class, this, GitModuleConfig.getDefault().getPreferences()));
     }
 
     private void onPrevInnerView() {
@@ -258,7 +264,13 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
                 applyChange(changedEvent);
             }
-            return;
+        }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(GitModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            panel.repaint();
         }
     }
 

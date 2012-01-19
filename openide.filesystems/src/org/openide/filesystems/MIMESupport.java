@@ -56,9 +56,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -271,7 +269,6 @@ final class MIMESupport extends Object {
             }
         };
         private static final FileChangeListener weakDeclarativeFolderListener = FileUtil.weakFileChangeListener(declarativeFolderListener, null);
-        private static final Map<FileObject,MIMEResolver> declarativeResolverCache = new WeakHashMap<FileObject,MIMEResolver>();
         // holds reference to not loose FileChangeListener
         private static FileObject declarativeFolder = null;
 
@@ -284,12 +281,7 @@ final class MIMESupport extends Object {
                 for (FileObject f : Ordering.getOrder(Arrays.asList(declarativeFolder.getChildren()), true)) {
                     if (f.hasExt("xml")) { // NOI18N
                         // For now, just assume it has the right DTD. Could check this if desired.
-                        MIMEResolver r = declarativeResolverCache.get(f);
-                        if (r == null) {
-                            r = MIMEResolverImpl.forDescriptor(f);
-                            declarativeResolverCache.put(f, r);
-                        }
-                        declmimes.add(r);
+                        declmimes.add(MIMEResolverImpl.forDescriptor(f));
                     }
                 }
                 declarativeFolder.removeFileChangeListener(weakDeclarativeFolderListener);

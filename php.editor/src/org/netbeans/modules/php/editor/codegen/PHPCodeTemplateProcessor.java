@@ -284,7 +284,10 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    PHPCodeTemplateProcessor.this.info = (PHPParseResult)resultIterator.getParserResult();
+                    PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
+                    if (parserResult != null) {
+                        PHPCodeTemplateProcessor.this.info = parserResult;
+                    }
                 }
             });
         } catch (ParseException ex) {
@@ -292,7 +295,9 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
             info = null;
             return false;
         }
-
+        if (info == null) {
+            return false;
+        }
         return true;
     }
 

@@ -58,6 +58,7 @@ import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.TransportProtocol;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -68,8 +69,8 @@ abstract class TransportCommand extends GitCommand {
     private CredentialsProvider credentialsProvider;
     private final String remote;
 
-    public TransportCommand (Repository repository, String remote, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public TransportCommand (Repository repository, GitClassFactory gitFactory, String remote, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.remote = remote;
     }
 

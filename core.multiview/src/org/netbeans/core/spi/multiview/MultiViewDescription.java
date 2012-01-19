@@ -45,6 +45,7 @@
 package org.netbeans.core.spi.multiview;
 
 import java.awt.Image;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.util.HelpCtx;
 
@@ -78,9 +79,9 @@ public interface MultiViewDescription {
     /** 
      * Icon for the MultiViewDescription's multiview component. Will be shown as TopComponent's icon
      * when this element is selected.
-     * @return the icon of multi view element 
+     * @return the icon of multi view element, or null
      */
-    public Image getIcon ();
+    public @CheckForNull Image getIcon();
 
     /** Get the help context of multi view element.
     */

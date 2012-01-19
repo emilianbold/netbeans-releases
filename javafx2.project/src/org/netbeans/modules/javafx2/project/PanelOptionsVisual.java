@@ -47,11 +47,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -67,18 +69,15 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
+import org.openide.util.*;
 
     
 /**
  * @author  phrebejk, Anton Chechel
  */
 public class PanelOptionsVisual extends SettingsPanel implements TaskListener, PropertyChangeListener, DocumentListener {
+
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     public static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
@@ -621,19 +620,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     // TODO show popup window with detection message ?
     private void checkPlatforms() {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        boolean fxPlatformExists = false;
-        for (JavaPlatform javaPlatform : platforms) {
-            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
-                fxPlatformExists = true;
-                break;
-            }
-        }
-        
-        if (!fxPlatformExists) {
-            if (task != null) {
-                task.removeTaskListener(this);
-            }
+        if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
             task = RequestProcessor.getDefault().create(detectPlatformTask);
             task.addTaskListener(this);
             task.schedule(0);
@@ -658,6 +645,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                 }
             }
         });
+        this.task.removeTaskListener(this);
         this.task = null;
     }
     
@@ -677,7 +665,11 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
         @Override
         public void run() {
-            platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+            try {
+                platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
+            }
         }
     }
 

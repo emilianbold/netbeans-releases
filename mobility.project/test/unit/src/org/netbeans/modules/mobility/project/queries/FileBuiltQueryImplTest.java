@@ -120,7 +120,6 @@ public class FileBuiltQueryImplTest extends NbTestCase {
         TestUtil.setLookup( new Object[] {
             TestUtil.testProjectFactory(),
             TestUtil.testFileLocator(),
-            TestUtil.testProjectChooserFactory(),
             TestUtil.testLogger("J2MEActionProvider.COMMAND_COMPILE_SINGLE"),
             new MyProvider()
         }, FileBuiltQueryImplTest.class.getClassLoader());

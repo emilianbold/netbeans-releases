@@ -70,12 +70,12 @@ public final class PHPDocCommentLexer implements Lexer<PHPDocCommentTokenId> {
 
     private final TokenFactory<PHPDocCommentTokenId> tokenFactory;
     private final DocumentorColoringScanner scanner;
-    
+
     public PHPDocCommentLexer(LexerRestartInfo<PHPDocCommentTokenId> info) {
         this.tokenFactory = info.tokenFactory();
         assert (info.state() == null); // passed argument always null
         scanner = new DocumentorColoringScanner(info);
-        
+
     }
 
     public Object state() {
@@ -91,10 +91,10 @@ public final class PHPDocCommentLexer implements Lexer<PHPDocCommentTokenId> {
         return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
                                    : tokenFactory.createToken(id, length);
     }
-    
+
     public Token<PHPDocCommentTokenId> nextToken() {
          try {
-            PHPDocCommentTokenId tokenId = scanner.nextToken(); 
+            PHPDocCommentTokenId tokenId = scanner.nextToken();
             Token<PHPDocCommentTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);

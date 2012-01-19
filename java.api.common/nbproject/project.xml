@@ -287,6 +287,7 @@
                 <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javame.bdj.bdjo.project</friend>
                 <friend>org.netbeans.modules.maven</friend>
+                <friend>org.netbeans.modules.maven.groovy</friend>
                 <friend>org.netbeans.modules.projectimport</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.j2se</friend>

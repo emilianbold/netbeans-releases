@@ -30,6 +30,10 @@ class TestDomain {
     }
 
     def test7() {
+        TestDomain.findR
+    }
+
+    def test8() {
         TestDomain.find
     }
 }

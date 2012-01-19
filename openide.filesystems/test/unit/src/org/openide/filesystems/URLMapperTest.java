@@ -44,8 +44,10 @@
 
 package org.openide.filesystems;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
@@ -64,6 +66,23 @@ public class URLMapperTest extends NbTestCase {
 
     public URLMapperTest(String name) {
         super(name);
+    }
+    
+    public void testPlusInName() throws IOException, PropertyVetoException {
+        clearWorkDir();
+        File plus = new File(getWorkDir(), "plus+plus");
+        plus.createNewFile();
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        Repository.getDefault().addFileSystem(lfs);
+        
+        URL uPlus = plus.toURI().toURL();
+        FileObject fo = URLMapper.findFileObject(uPlus);
+        assertNotNull("File object found", fo);
+        assertEquals("plus+plus", fo.getNameExt());
+        
+        URL back = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        assertTrue("plus+plus is there", back.getPath().endsWith("plus+plus"));
     }
 
     /**

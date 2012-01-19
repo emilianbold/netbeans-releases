@@ -80,9 +80,6 @@ public class LogHandler extends Handler {
     @Override
     public void publish(LogRecord record) {
         if(!done) {
-            
-
-            
             String message = record.getMessage();
             if(message == null) {
                 return;
@@ -98,7 +95,6 @@ public class LogHandler extends Handler {
                     throw new IllegalStateException("wrong value " + compare);
             }
             if(done) {
-                
                 while(block) {
                     try {
                         Thread.sleep(200);
@@ -106,7 +102,6 @@ public class LogHandler extends Handler {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            
                 interceptedMessage = message;
             }
         }

@@ -47,14 +47,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
@@ -76,7 +74,6 @@ import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
 import org.netbeans.modules.php.project.phpunit.PhpUnitTestGroupsFetcher;
 import org.netbeans.modules.php.project.phpunit.PhpUnitTestRunInfo;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -166,8 +163,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private boolean isPhpUnitValid() {
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
-        return Utils.validatePhpUnitForProject(phpUnit, project);
+        return CommandUtils.getPhpUnit(true) != null;
     }
 
     void run(PhpUnitTestRunInfo info) {
@@ -264,33 +260,26 @@ class ConfigActionTest extends ConfigAction {
 
         @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
-            boolean phpUnitValid = PhpUnit.hasValidVersion(phpUnit);
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
-                    .optionsPath(UiUtils.OPTIONS_PATH + "/" + PhpUnit.OPTIONS_SUB_PATH) // NOI18N
-                    .frontWindow(!phpUnitValid)
+                    .optionsPath(PhpUnit.OPTIONS_PATH)
+                    .frontWindow(false)
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
-                    .inputVisible(false);
-            if (phpUnitValid) {
-                executionDescriptor = executionDescriptor
-                        .preExecution(new Runnable() {
-                            @Override
-                            public void run() {
-                                rerunUnitTestHandler.disable();
-                                testRunner.start();
-                            }
-                        })
-                        .postExecution(new Runnable() {
-                            @Override
-                            public void run() {
-                                testRunner.showResults();
-                                rerunUnitTestHandler.enable();
-                                handleCodeCoverage();
-                            }
-                        });
-            } else {
-                executionDescriptor = executionDescriptor
-                        .outProcessorFactory(new OutputProcessorFactory(phpUnit));
-            }
+                    .inputVisible(false)
+                    .preExecution(new Runnable() {
+                        @Override
+                        public void run() {
+                            rerunUnitTestHandler.disable();
+                            testRunner.start();
+                        }
+                    })
+                    .postExecution(new Runnable() {
+                        @Override
+                        public void run() {
+                            testRunner.showResults();
+                            rerunUnitTestHandler.enable();
+                            handleCodeCoverage();
+                        }
+                    });
             return executionDescriptor;
         }
 
@@ -301,7 +290,7 @@ class ConfigActionTest extends ConfigAction {
 
             ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
                     .workingDirectory(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())))
-                    .addArgument(phpUnit.getXmlLogParam())
+                    .addArgument(PhpUnit.PARAM_JUNIT_LOG)
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
             if (configFiles.bootstrap != null) {
@@ -527,42 +516,6 @@ class ConfigActionTest extends ConfigAction {
         @Override
         protected void rerunInternal() {
             ConfigActionTest.this.debug(info);
-        }
-    }
-
-    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
-        private final PhpUnit phpUnit;
-
-        public OutputProcessorFactory(PhpUnit phpUnit) {
-            this.phpUnit = phpUnit;
-        }
-
-        @Override
-        public InputProcessor newInputProcessor(final InputProcessor defaultProcessor) {
-            return new InputProcessor() {
-                @Override
-                public void processInput(char[] chars) throws IOException {
-                    defaultProcessor.processInput(chars);
-                }
-                @Override
-                public void reset() throws IOException {
-                    defaultProcessor.reset();
-                }
-                @Override
-                public void close() throws IOException {
-                    String msg = NbBundle.getMessage(ConfigActionTest.class, "MSG_OldPhpUnit", PhpUnit.getVersions(phpUnit));
-                    char[] separator = new char[msg.length()];
-                    Arrays.fill(separator, '='); // NOI18N
-                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
-                    defaultProcessor.processInput(separator);
-                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
-                    defaultProcessor.processInput(msg.toCharArray());
-                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
-                    defaultProcessor.processInput(separator);
-                    defaultProcessor.processInput("\n".toCharArray()); // NOI18N
-                    defaultProcessor.close();
-                }
-            };
         }
     }
 

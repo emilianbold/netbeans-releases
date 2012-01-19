@@ -62,10 +62,10 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -103,6 +103,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     /**
      * Initialization method. Creates appropriate labels in the panel.
      */
+    @Override
     public void initialize() {
         //This is needed since the checkBox is gets disabled on a
         //repeated invocation of SafeDelete follwing removal of references
@@ -134,9 +135,11 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
           final String[] name = new String[1];
           try {
               s.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                   public void cancel() {
                   }
                   
+                    @Override
                   public void run(CompilationController parameter) throws Exception {
                       parameter.toPhase(Phase.RESOLVED);
                       Element resolvedElement = handles.iterator().next().resolveElement(parameter);
@@ -155,7 +158,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                   }
               }, true);
           } catch (IOException ioe) {
-              throw (RuntimeException) new RuntimeException().initCause(ioe);
+              throw new RuntimeException(ioe);
           }
           if (regulardelete) {
               labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_RegularDeleteElement",name[0]);
@@ -175,6 +178,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         }
         
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (regulardelete) {
                     safeDelete = new JCheckBox();
@@ -185,6 +189,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                     safeDelete.setMargin(new java.awt.Insets(2, 14, 2, 2));
                     searchInComments.setEnabled(false);
                     safeDelete.addItemListener(new ItemListener() {
+                        @Override
                         public void itemStateChanged(ItemEvent evt) {
                             searchInComments.setEnabled(safeDelete.isSelected());
                             parent.stateChanged(null);
@@ -279,6 +284,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         return searchInComments.isSelected();
     }
     
+    @Override
     public Component getComponent() {
         return this;
     }

@@ -45,6 +45,7 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -127,7 +128,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
      * - check index.xhtml is opened
      */
     public void testNewJSFWebProject() throws IOException {
-        final String serverNodeName = getServerNode(Server.GLASSFISH).getText();
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
         String category = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -142,7 +142,6 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer(serverNodeName);
         serverStep.selectJavaEEVersion(getEEVersion());
         serverStep.next();
 
@@ -208,12 +207,14 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         newFileWizard.selectFileType("JSF Faces Configuration");
         newFileWizard.next();
         newFileWizard.finish();
-        getFacesConfig();
+        getFacesConfig().close();
     }
 
     /** Test adding JSF Managed Bean from faces-config.xml. */
     public void testAddManagedBean() {
         EditorOperator editor = getFacesConfig();
+        // sometimes Insert menu item is not available so we need to wait a bit
+        new EventTool().waitNoEvent(500);
         Action addBeanAction = new ActionNoBlock(null, "Insert|Managed Bean...");
         addBeanAction.perform(editor);
         AddManagedBeanOperator addBeanOper = new AddManagedBeanOperator();
@@ -334,9 +335,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
 
-        String serverNodeName = getServerNode(Server.GLASSFISH).getText();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer(serverNodeName);
         serverStep.selectJavaEEVersion(getEEVersion());
         serverStep.finish();
 

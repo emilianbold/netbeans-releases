@@ -369,6 +369,12 @@ public class ElementJavadoc {
             this.content = prepareContent(content, doc,localized, page, cancel, true, context);
         } catch (RemoteJavadocException re) {
             final FileObject fo = compilationInfo.getFileObject();
+            if (JavaSource.forFileObject(fo) == null) {
+                final StringBuilder sb = new StringBuilder(content);
+                sb.append(noJavadocFound()); //NOI18N
+                this.content = new Now (sb.toString());
+                return;
+            }
             final StringBuilder contentFin = content;
             final boolean localizedFin = localized;
             this.content = new FutureTask<String>(new Callable<String>(){
@@ -726,38 +732,40 @@ public class ElementJavadoc {
     }
 
     private String noJavadocFound() {
-        final List<ClassPath> cps = new ArrayList<ClassPath>(2);
-        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-        if (cp != null) {
-            cps.add(cp);
-        }
-        cp = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-        if (cp != null) {
-            cps.add(cp);
-        }
-        cp = ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[cps.size()]));
-        String toSearch = SourceUtils.getJVMSignature(handle)[0].replace('.', '/');
-        if (handle.getKind() != ElementKind.PACKAGE) {
-            toSearch = toSearch + ".class"; //NOI18N
-        }
-        final FileObject resource = cp.findResource(toSearch);
-        if (resource != null) {
-            final FileObject root = cp.findOwnerRoot(resource);
-            try {
-                final URL rootURL = root.getURL();
-                if (JavadocForBinaryQuery.findJavadoc(rootURL).getRoots().length == 0) {
-                    FileObject userRoot = FileUtil.getArchiveFile(root);
-                    if (userRoot == null) {
-                        userRoot = root;
+        if (handle != null) {
+            final List<ClassPath> cps = new ArrayList<ClassPath>(2);
+            ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+            if (cp != null) {
+                cps.add(cp);
+            }
+            cp = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+            if (cp != null) {
+                cps.add(cp);
+            }
+            cp = ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[cps.size()]));
+            String toSearch = SourceUtils.getJVMSignature(handle)[0].replace('.', '/');
+            if (handle.getKind() != ElementKind.PACKAGE) {
+                toSearch = toSearch + ".class"; //NOI18N
+            }
+            final FileObject resource = cp.findResource(toSearch);
+            if (resource != null) {
+                final FileObject root = cp.findOwnerRoot(resource);
+                try {
+                    final URL rootURL = root.getURL();
+                    if (JavadocForBinaryQuery.findJavadoc(rootURL).getRoots().length == 0) {
+                        FileObject userRoot = FileUtil.getArchiveFile(root);
+                        if (userRoot == null) {
+                            userRoot = root;
+                        }
+                        return NbBundle.getMessage(
+                                ElementJavadoc.class,
+                                "javadoc_content_not_found_attach",
+                                rootURL.toExternalForm(),
+                                FileUtil.getFileDisplayName(userRoot));
                     }
-                    return NbBundle.getMessage(
-                            ElementJavadoc.class,
-                            "javadoc_content_not_found_attach",
-                            rootURL.toExternalForm(),
-                            FileUtil.getFileDisplayName(userRoot));
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
         return NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found");

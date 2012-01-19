@@ -37,14 +37,8 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.io.IOException;
@@ -53,13 +47,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.ProgressEvent;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
@@ -175,35 +169,40 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
 
+                @Override
                 public void cancel() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
 
+                @Override
                 public void run(CompilationController info) throws Exception {
                     final ClassIndex idx = info.getClasspathInfo().getClassIndex();
                     info.toPhase(JavaSource.Phase.RESOLVED);
                     final ElementUtilities elmUtils = info.getElementUtilities();
 
                     //add all references of overriding methods
-                    Element el = getMethodElement(treePathHandle, info);
+                    ExecutableElement el = (ExecutableElement)getMethodElement(treePathHandle, info);
+                    ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(el);
                     ElementHandle<TypeElement> enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                     allMethods = new HashSet<ElementHandle<ExecutableElement>>();
-                    allMethods.add(ElementHandle.create((ExecutableElement) el));
-                    for (ExecutableElement e : RetoucheUtils.getOverridingMethods((ExecutableElement) el, info)) {
-                        set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                    allMethods.add(methodHandle);
+                    for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(el, info)) {
+                        ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+                        set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
                         ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
                         set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                         allMethods.add(ElementHandle.create(e));
                     }
                     //add all references of overriden methods
-                    for (ExecutableElement e : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
-                        set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+                    for (ExecutableElement e : JavaRefactoringUtils.getOverriddenMethods(el, info)) {
+                        ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+                        set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
                         ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
                         set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                         allMethods.add(ElementHandle.create(e));
                     }
                     set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                    set.add(SourceUtils.getFile(el, info.getClasspathInfo()));
+                    set.add(SourceUtils.getFile(methodHandle, info.getClasspathInfo()));
                 }
             }, true);
         } catch (IOException ioe) {
@@ -333,6 +332,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         return ret;
     }
 
+    @Override
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
         switch (p) {
             case CHECKPARAMETERS:
@@ -379,8 +379,9 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
             return preCheckProblem;
         }
 
-        for (ExecutableElement e : RetoucheUtils.getOverridenMethods((ExecutableElement) el, info)) {
-            if (RetoucheUtils.isFromLibrary(e, info.getClasspathInfo())) {
+        for (ExecutableElement e : JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) el, info)) {
+            ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+            if (RefactoringUtils.isFromLibrary(handle, info.getClasspathInfo())) {
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_CannnotRefactorLibrary", el)); //NOI18N
             }
         }
@@ -446,10 +447,12 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
 
+                    @Override
                     public void run(org.netbeans.api.java.source.CompilationController info) {
                         p[0] = initDelegate(info);
                     }
 
+                    @Override
                     public void cancel() {
                     }
                 }, true);

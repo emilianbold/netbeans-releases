@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -80,8 +81,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
@@ -118,9 +117,7 @@ public class AddUseImportHint extends AbstractRule {
         if (phpParseResult.getProgram() == null) {
             return;
         }
-        Properties props = PhpLanguageOptions.getDefault().getProperties(phpParseResult.getSnapshot().getSource().getFileObject());
-
-        if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_5) {
+        if (CodeUtils.isPhp_52(phpParseResult.getSnapshot().getSource().getFileObject())) {
             return;
         }
 
