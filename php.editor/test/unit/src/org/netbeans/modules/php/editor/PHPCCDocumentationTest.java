@@ -64,6 +64,10 @@ public class PHPCCDocumentationTest extends PHPTestBase {
         checkCompletionDocumentation("testfiles/completion/documentation/issue197696.php", "$this->te^", false, "");
     }
 
+    public void testArrayReturnType() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/arrayReturnType.php", "functionNam^e();", false, "");
+    }
+
     @Override
     protected String alterDocumentationForTest(String documentation) {
         int start = documentation.indexOf("file:");
