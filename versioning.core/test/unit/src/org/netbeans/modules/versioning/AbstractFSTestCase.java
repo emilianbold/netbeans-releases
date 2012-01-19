@@ -70,6 +70,8 @@ public class AbstractFSTestCase extends NbTestCase {
             if(md == null || !md.isValid()) {
                 createFolder(versionedPath + "/" + TestVCS.TEST_VCS_METADATA);
             }
+            // cleanup the owner cache, this folder just became versioned 
+            VersioningManager.getInstance().flushNullOwners(); 
         }
         return versionedFolder;
     }
