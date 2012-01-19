@@ -103,8 +103,6 @@ import org.netbeans.modules.mercurial.ui.tag.HgTag;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
@@ -691,6 +689,10 @@ public class HgCommand {
         command.add(HG_UPDATE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+            command.add(HG_CONFIG_OPTION_CMD);
+            command.add(HG_MERGE_SIMPLE_TOOL);
+        }
 
         List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
@@ -732,6 +734,10 @@ public class HgCommand {
         command.repository = repository;
         command.additionalOptions.add(HG_VERBOSE_CMD);
         command.additionalOptions.add(HG_UPDATE_CMD);
+        if (HgModuleConfig.getDefault().isInternalMergeToolEnabled()) {
+            command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
+            command.additionalOptions.add(HG_MERGE_SIMPLE_TOOL);
+        }
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PULL_VALUE, HgConfigFiles.HG_DEFAULT_PULL};
         List<String> retval = command.invoke();
 
@@ -991,7 +997,7 @@ public class HgCommand {
         command.remoteUrl = from;
         command.repository = repository;
         command.additionalOptions.add(HG_VERBOSE_CMD);
-        if (enableFetchExtension) {
+        if (enableFetchExtension && !"false".equals(System.getProperty("versioning.mercurial.enableFetchExtension"))) { //NOI18N
             command.additionalOptions.add(HG_CONFIG_OPTION_CMD);
             command.additionalOptions.add(HG_FETCH_EXT_CMD);
         }

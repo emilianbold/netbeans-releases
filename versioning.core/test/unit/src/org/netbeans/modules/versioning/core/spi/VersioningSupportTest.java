@@ -92,13 +92,13 @@ public class VersioningSupportTest extends NbTestCase {
         assertNull(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(aRoot)));
         aRoot = new File(dataRootDir, "workdir");
         assertNull(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(aRoot)));
-        aRoot = new File(dataRootDir, "workdir/root-test-versioned/a.txt");
+        aRoot = createVersioned("workdir/root-test-versioned/a.txt");
         assertTrue(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(aRoot)) instanceof TestVCS);
-        aRoot = new File(dataRootDir, "workdir/root-test-versioned");
+        aRoot = createVersioned("workdir/root-test-versioned");
         assertTrue(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(aRoot)) instanceof TestVCS);
-        aRoot = new File(dataRootDir, "workdir/root-test-versioned/b-test-versioned");
+        aRoot = createVersioned("workdir/root-test-versioned/b-test-versioned");
         assertTrue(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(aRoot)) instanceof TestVCS);
-        aRoot = new File(dataRootDir, "workdir/root-test-versioned/nonexistent-file");
+        aRoot = createVersioned("workdir/root-test-versioned/nonexistent-file");
         assertTrue(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(aRoot)) instanceof TestVCS);
     }
 
@@ -108,5 +108,11 @@ public class VersioningSupportTest extends NbTestCase {
         assertFalse(APIAccessor.IMPL.isFlat(proxy));
         proxy = Utils.createFlatFileProxy(FileUtil.toFileObject(f));
         assertTrue(APIAccessor.IMPL.isFlat(proxy));
+    }
+    
+    private File createVersioned(String path) {
+        File f = new File(dataRootDir, "workdir/root-test-versioned/a.txt");
+        new File(f.getParentFile(), TestVCS.TEST_VCS_METADATA).mkdirs();
+        return f;
     }
 }
