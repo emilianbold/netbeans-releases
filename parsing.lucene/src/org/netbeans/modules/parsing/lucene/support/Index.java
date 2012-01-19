@@ -176,6 +176,7 @@ public interface Index {
      * <p/>
      * A transaction is started implicitly  by a call to {@link #txStore}, and committed
      * or rolled back by {@link #commit} or {@link #rollback} methods.
+     * @since 2.7
      */
     public interface Transactional extends Index {
         /**

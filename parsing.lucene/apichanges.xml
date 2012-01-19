@@ -142,6 +142,23 @@ is the proper place.
     </description>
     <class package="org.netbeans.modules.parsing.lucene.spi" name="ScanSuspendImplementation"/>
   </change>
+  <change id="TransactionalIndex">
+    <api name="LuceneSupport"/>
+    <summary>Added transaction support into the Index</summary>
+    <version major="2" minor="7"/>
+    <date day="3" month="1" year="2012"/>
+    <author login="sdedic"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added the <code>Index.Transactional</code> interface. The <code>Index.Transactional</code>
+            is a specialization of <code>Index</code> which allows transactional operations on index.
+            The commit operation makes changes visible to <code>IndexReader</code>s,
+            the rollback operation throws away the changes done to <code>IndexWriter</code>
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="Index"/>
+  </change>
   <change id="IndexManager-getOpenIndexes">
       <api name="LuceneSupport"/>
       <summary>Added method to get opened indexes</summary>

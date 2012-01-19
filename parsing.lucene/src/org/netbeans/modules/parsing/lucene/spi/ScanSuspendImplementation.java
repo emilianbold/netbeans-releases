@@ -41,11 +41,21 @@
  */
 package org.netbeans.modules.parsing.lucene.spi;
 
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+
 /**
- *
+ * SPI interface called by the {@link IndexManager} to suspend scan
+ * or other background IO intensive operations.
  * @author Tomas Zezula
  */
 public interface ScanSuspendImplementation {
+    /**
+     * Called by {@link IndexManager} to stop the scan.
+     */
     void suspend();
+    
+    /**
+     * Called by {@link IndexManager} to resume the scan.
+     */
     void resume();
 }
