@@ -46,7 +46,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.profiler.categorization.api.CategoryBuilder;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -60,12 +59,13 @@ import org.openide.util.Lookup;
 })
 public class MavenCategoryBuilder extends CategoryBuilder {
 
-    public MavenCategoryBuilder(Project proj, Lookup lkp) {
-        super(proj, findProjectId(lkp));
+    public MavenCategoryBuilder(Project proj) {
+        super(proj);
     }
 
-    private static String findProjectId(Lookup lkp) {
-        NbMavenProject mp = lkp.lookup(NbMavenProject.class);
+    @Override
+    protected String getProjectTypeId() {
+        NbMavenProject mp = getProject().getLookup().lookup(NbMavenProject.class);
         String mpType = mp.getPackagingType();
         if (mpType.equals(NbMavenProject.TYPE_JAR)) {
             return "org-netbeans-modules-java-j2seproject";
