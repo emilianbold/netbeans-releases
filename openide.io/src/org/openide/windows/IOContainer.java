@@ -400,11 +400,14 @@ public final class IOContainer {
         }
 
         public void requestActive() {
+            if (frame == null) {
+                open();
+            }
             frame.requestFocus();
         }
 
         public void requestVisible() {
-            frame.setVisible(true);
+            open();
         }
 
         public boolean isActivated() {
