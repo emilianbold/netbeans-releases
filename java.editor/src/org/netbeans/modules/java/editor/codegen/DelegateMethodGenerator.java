@@ -84,6 +84,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressUtils;
@@ -200,7 +201,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
 
                     public void run() {
                         try {
-                        js.runUserActionTask(new Task<CompilationController>() {
+                            SourceUtils.waitUserActionTask(js, new Task<CompilationController>() {
 
                             public void run(CompilationController controller) throws IOException {
                                 if (controller.getPhase().compareTo(JavaSource.Phase.RESOLVED) < 0) {
@@ -223,6 +224,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                         }
                     }
                 }, NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_Get_Available_Methods"), cancel, false);
+                cancel.set(true);
                 return description[0];
             }
         }
@@ -262,7 +264,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         
     static ElementNode.Description getAvailableMethods(CompilationInfo controller, int caretOffset, final ElementHandle<? extends TypeElement> typeElementHandle, final ElementHandle<? extends VariableElement> fieldHandle) {
         TypeElement origin = typeElementHandle.resolve(controller);
-        VariableElement field = fieldHandle.resolve(controller);
+        VariableElement field = SourceUtils.resolveElement(controller.getJavaSource(), controller, fieldHandle);
         assert origin != null && field != null;
         if (field.asType().getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) field.asType();
