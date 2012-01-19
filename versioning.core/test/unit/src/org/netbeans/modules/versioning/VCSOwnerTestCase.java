@@ -47,203 +47,118 @@ import org.netbeans.modules.versioning.core.Utils;
 import java.io.IOException;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.security.Permission;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.test.MockLookup;
 
-public class VCSOwnerTestCase extends NbTestCase {
+public class VCSOwnerTestCase extends AbstractFSTestCase {
     
-    protected File dataRootDir;
-    private StatFiles accessMonitor;
-    private SecurityManager defaultSecurityManager;
-    protected File versionedFolder;
-    protected File unversionedFolder;
-
     public VCSOwnerTestCase(String testName) {
         super(testName);
-        accessMonitor = new StatFiles();
-    }
-
-    protected File getVersionedFolder() {
-        if (versionedFolder == null) {
-            versionedFolder = new File(dataRootDir, "workdir/root-" + TestAnnotatedVCS.VERSIONED_FOLDER_SUFFIX);
-                versionedFolder.mkdirs();
-                new File(versionedFolder, TestAnnotatedVCS.TEST_VCS_METADATA).mkdirs();
-            }
-        return versionedFolder;
-    }
-    
-    protected File getUnversionedFolder() {
-        if (unversionedFolder == null) {
-            unversionedFolder = new File(dataRootDir, "workdir/unversioned/");
-            unversionedFolder.mkdirs();
-        }
-        return unversionedFolder;
     }
 
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setLayersAndInstances();
-        dataRootDir = getWorkDir();
-        File userdir = new File(dataRootDir, "userdir");
-        userdir.mkdirs();
-        System.setProperty("netbeans.user", userdir.getAbsolutePath());
-        if(!dataRootDir.exists()) dataRootDir.mkdirs();
-        if(accessMonitor != null) {
-            if(defaultSecurityManager == null) {
-                defaultSecurityManager = System.getSecurityManager();
-            }
-            System.setSecurityManager(accessMonitor);
-        }
-        File f = new File(dataRootDir, "workdir");
-        deleteRecursively(f);
-        f.mkdirs();
-        getVersionedFolder();
-        getUnversionedFolder();
     }
     
-    private void deleteRecursively(File f) {
-        if(f.isFile()) {
-            f.delete();
-        } else {
-            File[] files = f.listFiles();
-            if(files != null) {
-                for (File file : files) {
-                    deleteRecursively(file);
-                    file.delete();
-                }
-            }
-        }
-    }
-
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        if(accessMonitor != null) {
-            System.setSecurityManager(defaultSecurityManager);
-        }
     }
      
     public void testVCSSystemDoesntAwakeOnUnrelatedGetOwner() throws IOException {
+        TestVCS.resetInstance();
+        assertNull(TestVCS.getInstance());
         
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        FileObject f = getNotVersionedFolder().createData("sleepingfile", null);
         
-        File f = new File(getUnversionedFolder(), "sleepingfile");
-        f.createNewFile();
-        
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
         VersioningSystem owner = VersioningManager.getInstance().getOwner(toVCSFileProxy(f));
         assertNull(owner);
         
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
     }  
 
-    public void testGetOwnerKnowFileType() throws IOException {
+    public void testGetOwnerKnownFileType() throws IOException {
         assertTrue(VersioningSupport.getOwner(toVCSFileProxy(getVersionedFolder())).getClass() == getVCS());
 
-        File f = new File(getVersionedFolder(), "file");
-        f.createNewFile();
+        FileObject f = getVersionedFolder().createData("file", null);
         testGetOwnerKnownFileType(toVCSFileProxy(f), true);
         
-        f = new File(getVersionedFolder(), "folder");
-        f.mkdirs();
+        f = getVersionedFolder().createFolder("folder");
         testGetOwnerKnownFileType(toVCSFileProxy(f), false);                         
     }
 
     private void testGetOwnerKnownFileType(VCSFileProxy proxy, boolean isFile) throws IOException {    
-        accessMonitor.files.clear();
         VersioningSystem vs = VersioningManager.getInstance().getOwner(proxy, isFile); // true => its a file, no io.file.isFile() call needed
         assertNotNull(vs);
         
-        // file wasn't accessed even on first shot
-        assertFalse(accessMonitor.files.contains(proxy.getPath()));
-        
-        accessMonitor.files.clear();
         vs = VersioningManager.getInstance().getOwner(proxy, isFile);
         assertNotNull(vs);
-        
-        // file wasn't accessed
-        assertFalse(accessMonitor.files.contains(proxy.getPath()));               
     }
     
     public void testGetOwnerVersioned() throws IOException {
         assertTrue(VersioningSupport.getOwner(toVCSFileProxy(getVersionedFolder())).getClass() == getVCS());
-        File aRoot = new File(getVersionedFolder(), "a.txt");
-        aRoot.createNewFile();
+        FileObject aRoot = getVersionedFolder().createData("a", "txt");
         VCSFileProxy rootProxy = toVCSFileProxy(aRoot);
         assertTrue(VersioningSupport.getOwner(rootProxy).getClass() ==  getVCS());
         
-        aRoot = new File(getVersionedFolder(), "b-folder");
-        aRoot.mkdirs();
+        aRoot = getVersionedFolder().createFolder("b-folder");
+        rootProxy = toVCSFileProxy(aRoot);
         assertTrue(VersioningSupport.getOwner(rootProxy).getClass() ==  getVCS());
-        aRoot = new File(aRoot, "deep-file");
-        aRoot.createNewFile();
+        rootProxy = toVCSFileProxy(aRoot.createData("deep-file"));
         assertTrue(VersioningSupport.getOwner(rootProxy).getClass() ==  getVCS());
         
-        aRoot = new File(getVersionedFolder(), "nonexistent-file");
-        assertTrue(VersioningSupport.getOwner(rootProxy).getClass() ==  getVCS());
+        if(isMasterFS()) {
+            // works only in case of io.File filesystem
+            File vf = FileUtil.toFile(getVersionedFolder());
+            File f = new File(vf, "nonexistent-file");
+            assertTrue(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(f)).getClass() ==  getVCS());
+        }
     }
     
     public void testGetOwnerUnversioned() throws IOException {
 //        File aRoot = File.listRoots()[0];
 //        VCSFileProxy rootProxy = toVCSFileProxy(aRoot);
 //        assertNull(VersioningSupport.getOwner(rootProxy));
-        File aRoot = dataRootDir;
-        assertNull(VersioningSupport.getOwner(toVCSFileProxy(aRoot)));
-        aRoot = new File(dataRootDir, "workdir");
-        assertNull(VersioningSupport.getOwner(toVCSFileProxy(aRoot)));               
-        
-        assertNull(VersioningSupport.getOwner(toVCSFileProxy(getUnversionedFolder())));        
+        assertNull(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(getWorkDir())));
+        assertNull(VersioningSupport.getOwner(toVCSFileProxy(getNotVersionedFolder())));     
+        assertNull(VersioningSupport.getOwner(toVCSFileProxy(getNotVersionedFolder().getParent())));     
 
-        File f = new File(getUnversionedFolder(), "a.txt");
-        f.createNewFile();
-        assertNull(VersioningSupport.getOwner(toVCSFileProxy(f)));
+        FileObject fo = getNotVersionedFolder().createData("a", "txt");
+        assertNull(VersioningSupport.getOwner(toVCSFileProxy(fo)));
         
-        f = new File(getUnversionedFolder(), "notexistent.txt");
-        f.createNewFile();
-        VCSFileProxy proxy = toVCSFileProxy(f);
-        f.delete();
-        assertNull(VersioningSupport.getOwner(proxy));        
-    }
-    
-    public void testFileOwnerCache() throws IOException {
-        testFileOwnerCache(true /* versioned */ , false /* file */);
-        testFileOwnerCache(false/* versioned */ , false /* file */);
-    }
-        
-    public void testFolderOwnerCache() throws IOException {
-        testFileOwnerCache(true /* unversioned */ , true /* folder */);
-        testFileOwnerCache(false/* unversioned */ , true /* folder */);
+        if(isMasterFS()) {
+            File uf = FileUtil.toFile(getNotVersionedFolder()); 
+            File f = new File(uf, "notexistent.txt");
+            assertNull(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(f)));        
+        }
     }
 
     public void testExcludedFolders () throws Exception {
         Field f = Utils.class.getDeclaredField("unversionedFolders");
         f.setAccessible(true);
-        f.set(Utils.class, (File[]) null);
 
-        File a = new File(getWorkDir(), "a"); a.createNewFile();
-        File b = new File(getWorkDir(), "b"); b.createNewFile();
-        System.setProperty("versioning.unversionedFolders", a.getAbsolutePath() + ";" + b.getAbsolutePath() + ";");
-        File c = new File(dataRootDir, "c"); c.createNewFile();
-        VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
-        File userdir = new File(getWorkDir(), "userdir");
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(a)));
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(b)));
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(c)));
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(userdir)));
+        VCSFileProxy a = toVCSFileProxy(getNotVersionedFolder().createData("a"));
+        VCSFileProxy b = toVCSFileProxy(getNotVersionedFolder().createData("b"));
+        System.setProperty("versioning.unversionedFolders", a.getPath() + ";" + b.getPath() + ";");
+        VCSFileProxy c = toVCSFileProxy(getNotVersionedFolder().createData("c")); 
+        VersioningSupport.getPreferences().put("unversionedFolders", c.getPath()); //NOI18N
+        File userdir = new File(getWorkDir(), "userdir"); userdir.mkdirs();
+        
+        f.set(Utils.class, (File[]) null);
+        
+        assertTrue(VersioningSupport.isExcluded(a));
+        assertTrue(VersioningSupport.isExcluded(b));
+        assertTrue(VersioningSupport.isExcluded(c));
+        assertTrue(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userdir)));
         File userDirFile = new File(userdir, "ffff"); userDirFile.createNewFile();
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(userDirFile)));
-        assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userdir.getParentFile())));
+        assertTrue(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userDirFile)));
+        assertFalse(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userdir.getParentFile())));
 
         assertEquals(4, ((VCSFileProxy[]) f.get(Utils.class)).length);
 
@@ -252,85 +167,13 @@ public class VCSOwnerTestCase extends NbTestCase {
         
         f.set(Utils.class, (VCSFileProxy[]) null);
         
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(a)));
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(b)));
-        assertTrue(VersioningSupport.isExcluded(toVCSFileProxy(c)));
-        assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userdir)));
-        assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userDirFile)));
-        assertFalse(VersioningSupport.isExcluded(toVCSFileProxy(userdir.getParentFile())));
+        assertTrue(VersioningSupport.isExcluded(a));
+        assertTrue(VersioningSupport.isExcluded(b));
+        assertTrue(VersioningSupport.isExcluded(c));
+        assertFalse(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userdir)));
+        assertFalse(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userDirFile)));
+        assertFalse(VersioningSupport.isExcluded(VCSFileProxy.createFileProxy(userdir.getParentFile())));
 
         assertEquals(3, ((VCSFileProxy[]) f.get(Utils.class)).length);
     }
-
-    private void testFileOwnerCache(boolean isVersioned, boolean isFolder) throws IOException {
-        File folder = isVersioned ? getVersionedFolder() : getUnversionedFolder();
-        File child = new File(folder, "file");
-        File child2 = new File(folder, "file2");
-        if(isFolder) {
-            child.mkdirs();
-            child2.mkdirs();
-        } else {
-            child.createNewFile();
-            child2.createNewFile();
-        }
-        
-        assertFileAccess(child, isVersioned, true /* access */);
-        
-        // try again - shouldn't be accessed anymore
-        assertFileAccess(child, isVersioned, false /* no access */);        
-        
-        // try few more times some other file no file access expected
-        assertFileAccess(child2, isVersioned, true /* access */);
-        for (int i = 0; i < 100; i++) {
-            // try some other file
-            assertFileAccess(child2, isVersioned, false /* no access */);
-        }        
-        
-        // try the first file again
-        assertFileAccess(child, isVersioned, false /* no access */);        
-    }
-    
-    private void assertFileAccess(File f, boolean versioned, boolean access) throws IOException {
-        VCSFileProxy proxy = toVCSFileProxy(f);
-        accessMonitor.files.clear();
-        org.netbeans.modules.versioning.core.spi.VersioningSystem vs = VersioningSupport.getOwner(proxy);
-        if(versioned && vs == null) {
-            fail("no VersioningSystem returned for versioned file " + f);
-        } else if(!versioned && vs != null) {
-            fail("VersioningSystem returned for unversioned file " + f);
-        }
-        // file was accessed
-        boolean accessed = accessMonitor.files.contains(f.getAbsolutePath());
-//        if(access && !accessed) {
-//            fail(f + " was not but should be accessed");
-//        } else 
-        if (!access && accessed) {
-            fail(f + " was accessed but shouldn't");
-        }
-    }    
-
-    private class StatFiles extends SecurityManager {
-        private List<String> files = new LinkedList<String>();        
-        @Override
-        public void checkRead(String file) {
-            files.add(file);
-        }       
-        @Override
-        public void checkPermission(Permission perm) {
-        }
-    }    
-
-    protected VCSFileProxy toVCSFileProxy(File file) throws IOException {
-        refreshWorkdir();        
-        FileObject fo = VCSFilesystemTestFactory.getInstance(this).createFileObject(file.getAbsolutePath());
-        return VCSFileProxy.createFileProxy(fo);
-    }
-
-    private void refreshWorkdir() throws IOException {
-        VCSFilesystemTestFactory.getInstance(this).createFileObject(new File(dataRootDir, "workdir").getAbsolutePath()).refresh();
-    }
-
-    private Class getVCS() {
-        return TestAnnotatedVCS.class;
-    }    
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.api;
+package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
-import java.io.File;
-import org.netbeans.modules.versioning.core.APIAccessor;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author tomas
- */
-class APIAccessorImpl extends APIAccessor {
+public abstract class ConfigurationRequirementProvider {
 
-    @Override
-    public VCSFileProxy createFlatFileProxy(FileObject fo) {
-        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
-        proxy.setFlat(true);
-        return proxy;
-    }
+    public abstract boolean canHaveConfiguration(Item item);
 
-    @Override
-    public boolean isFlat(VCSFileProxy file) {
-        return file.isFlat();
-    }
-    
-    @Override
-    public VCSFileProxy createFileProxy(File file, boolean isDirectory) {
-        return VCSFileProxy.createFileProxy(file, isDirectory);
-    }
-
-    @Override
-    public VCSFileProxy createFileProxy(VCSFileProxy parent, String name, boolean isDirectory) {
-        return VCSFileProxy.createFileProxy(parent, name, isDirectory);
+    public static boolean askAllProviders(Item item) {
+        Lookup.Result<ConfigurationRequirementProvider> crpLookupResult = Lookup.getDefault().lookupResult(ConfigurationRequirementProvider.class);
+        for (ConfigurationRequirementProvider crp : crpLookupResult.allInstances()) {
+            if (crp.canHaveConfiguration(item)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

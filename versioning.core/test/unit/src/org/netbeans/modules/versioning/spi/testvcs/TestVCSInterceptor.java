@@ -48,13 +48,21 @@ import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 
 import java.util.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  * @author Maros Sandor
  */
 public class TestVCSInterceptor extends VCSInterceptor {
-
+    private final TestVCSInterceptor instance;
+    
+    public DeleteHandler deleteHandler;
+    
+    public static interface DeleteHandler {
+        void delete(VCSFileProxy proxy) throws IOException;
+    }
+    
     private final List<VCSFileProxy>    beforeCreateFiles = new ArrayList<VCSFileProxy>();
     private final List<VCSFileProxy>    doCreateFiles = new ArrayList<VCSFileProxy>();
     private final List<VCSFileProxy>    createdFiles = new ArrayList<VCSFileProxy>();
@@ -73,6 +81,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     private final List<VCSFileProxy>    refreshRecursivelyFiles = new ArrayList<VCSFileProxy>();
 
     public TestVCSInterceptor() {
+        instance = this;
     }
 
     public boolean isMutable(VCSFileProxy file) {
@@ -127,7 +136,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doDelete(VCSFileProxy file) throws IOException {
         doDeleteFiles.add(file);
         if (file.getName().endsWith("do-not-delete")) return;
-        deleteRecursively(file.toFile());
+        deleteRecursively(file);
     }
 
     public void afterDelete(VCSFileProxy file) {
@@ -260,14 +269,25 @@ public class TestVCSInterceptor extends VCSInterceptor {
         isMutableFiles.clear();
     }
 
-    private void deleteRecursively(File file) {
-        if(file.isFile()) file.delete();
-        File[] files = file.listFiles();
+    private void deleteRecursively(VCSFileProxy proxy) throws IOException {
+        if(deleteHandler != null) {
+            deleteHandler.delete(proxy);
+        }
+        if(proxy.isFile()) delete(proxy);
+        VCSFileProxy[] files = proxy.listFiles();
         if(files != null) {
-            for (File f : files) {
+            for (VCSFileProxy f : files) {
                 deleteRecursively(f);
             }
         } 
-        file.delete();
+        delete(proxy);
+    }
+    
+    private void delete(VCSFileProxy proxy) throws IOException {
+        if(deleteHandler != null) {
+            deleteHandler.delete(proxy);
+        } else {
+            proxy.toFile().delete();
+        }
     }
 }

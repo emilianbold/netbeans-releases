@@ -54,10 +54,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.modules.versioning.VCSAnnotationProviderTestCase;
 import org.netbeans.modules.versioning.VCSFilesystemTestFactory;
-import org.netbeans.modules.versioning.VCSInterceptorTestCase;
-import org.netbeans.modules.versioning.VCSOwnerTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
@@ -76,15 +73,44 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     }
 
     @Override
-    protected FileObject createFileObject(String path) throws IOException {
+    protected String getRootPath() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void delete(String path) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
+    protected FileObject createFile(String path) throws IOException {
+        return createFileObject(path, false);
+    }
+
+    @Override
+    protected FileObject createFolder(String path) throws IOException {
+        return createFileObject(path, true);
+    }
+
+    protected FileObject createFileObject(String path, boolean isDirectory) throws IOException {
         FileObject fo = FileSystemProvider.getFileObject(execEnv, path);
         if (fo != null && fo.isValid()) {
+            assertEquals(isDirectory, fo.isFolder());
             return fo;
         }
         String dir = PathUtilities.getDirName(path);
         FileObject dirFO = FileSystemProvider.getFileObject(execEnv, dir);
-        fo = dirFO.createData(PathUtilities.getBaseName(path));
+        if(isDirectory) {
+            fo = dirFO.createFolder(PathUtilities.getBaseName(path));
+        } else {
+            fo = dirFO.createData(PathUtilities.getBaseName(path));
+        }
         return fo;
+    }
+
+    @Override
+    protected void setReadOnly(String path) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public static void main(String args[]) {
@@ -93,9 +119,9 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTestSuite(VCSOwnerTestCase.class);
-        //suite.addTestSuite(VCSInterceptorTestCase.class);
-        //suite.addTestSuite(VCSAnnotationProviderTestCase.class);
+//        suite.addTestSuite(VCSOwnerTestCase.class);
+//        suite.addTestSuite(VCSInterceptorTestCase.class);
+//        suite.addTestSuite(VCSAnnotationProviderTestCase.class);
         return new RemoteVCSTCKTest(suite);
     }
     
@@ -152,10 +178,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
         assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
         return res.output;
-    }    
-
-    @Override
-    protected void tearDown() throws Exception {     
     }
 
 }
