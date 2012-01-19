@@ -42,11 +42,19 @@
 package org.netbeans.modules.parsing.spi;
 
 /**
- *
+ * Determines how to {@link ParserResultTask} behaves
+ * during scan.
  * @author Tomas Zezula
  * @since 1.51
  */
 public enum TaskIndexingMode {
-    ALLOWED_DURING_SCAN, 
+    /**
+     * The {@link ParserResultTask} is executed during the scan.
+     */
+    ALLOWED_DURING_SCAN,
+    /**
+     * The {@link ParserResultTask} is not executed during the scan,
+     * it's deferred when the scan finished.
+     */
     DISALLOWED_DURING_SCAN
 }
