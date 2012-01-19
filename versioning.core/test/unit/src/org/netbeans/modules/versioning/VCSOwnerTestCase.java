@@ -74,7 +74,7 @@ public class VCSOwnerTestCase extends AbstractFSTestCase {
         TestVCS.resetInstance();
         assertNull(TestVCS.getInstance());
         
-        FileObject f = getUnversionedFolder().createData("sleepingfile", null);
+        FileObject f = getNotVersionedFolder().createData("sleepingfile", null);
         
         assertNull(TestVCS.getInstance());
         VersioningSystem owner = VersioningManager.getInstance().getOwner(toVCSFileProxy(f));
@@ -126,14 +126,14 @@ public class VCSOwnerTestCase extends AbstractFSTestCase {
 //        VCSFileProxy rootProxy = toVCSFileProxy(aRoot);
 //        assertNull(VersioningSupport.getOwner(rootProxy));
         assertNull(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(getWorkDir())));
-        assertNull(VersioningSupport.getOwner(toVCSFileProxy(getUnversionedFolder())));     
-        assertNull(VersioningSupport.getOwner(toVCSFileProxy(getUnversionedFolder().getParent())));     
+        assertNull(VersioningSupport.getOwner(toVCSFileProxy(getNotVersionedFolder())));     
+        assertNull(VersioningSupport.getOwner(toVCSFileProxy(getNotVersionedFolder().getParent())));     
 
-        FileObject fo = getUnversionedFolder().createData("a", "txt");
+        FileObject fo = getNotVersionedFolder().createData("a", "txt");
         assertNull(VersioningSupport.getOwner(toVCSFileProxy(fo)));
         
         if(isMasterFS()) {
-            File uf = FileUtil.toFile(getUnversionedFolder()); 
+            File uf = FileUtil.toFile(getNotVersionedFolder()); 
             File f = new File(uf, "notexistent.txt");
             assertNull(VersioningSupport.getOwner(VCSFileProxy.createFileProxy(f)));        
         }
@@ -143,10 +143,10 @@ public class VCSOwnerTestCase extends AbstractFSTestCase {
         Field f = Utils.class.getDeclaredField("unversionedFolders");
         f.setAccessible(true);
 
-        VCSFileProxy a = toVCSFileProxy(getUnversionedFolder().createData("a"));
-        VCSFileProxy b = toVCSFileProxy(getUnversionedFolder().createData("b"));
+        VCSFileProxy a = toVCSFileProxy(getNotVersionedFolder().createData("a"));
+        VCSFileProxy b = toVCSFileProxy(getNotVersionedFolder().createData("b"));
         System.setProperty("versioning.unversionedFolders", a.getPath() + ";" + b.getPath() + ";");
-        VCSFileProxy c = toVCSFileProxy(getUnversionedFolder().createData("c")); 
+        VCSFileProxy c = toVCSFileProxy(getNotVersionedFolder().createData("c")); 
         VersioningSupport.getPreferences().put("unversionedFolders", c.getPath()); //NOI18N
         File userdir = new File(getWorkDir(), "userdir"); userdir.mkdirs();
         

@@ -63,6 +63,11 @@ public class FileVCSTest extends VCSFilesystemTestFactory {
     }
 
     @Override
+    protected String getRootPath() throws IOException {
+        return workDirPath;
+    }
+    
+    @Override
     protected FileObject createFolder(String path) throws IOException {
         FileObject fo;
         File f = new File(workDirPath, path);
@@ -91,10 +96,16 @@ public class FileVCSTest extends VCSFilesystemTestFactory {
     }
 
     @Override
-    protected void setReadOnly(FileObject fo) throws IOException {
-        File f = FileUtil.toFile(fo);
+    protected void setReadOnly(String path) throws IOException {
+        File f = new File(workDirPath, path);
         assertNotNull(f);
         f.setReadOnly();
+    }
+
+    @Override
+    public void delete(String path) throws IOException {
+        File f = new File(workDirPath, path);
+        f.delete();
     }
 
     public static void main(String args[]) {

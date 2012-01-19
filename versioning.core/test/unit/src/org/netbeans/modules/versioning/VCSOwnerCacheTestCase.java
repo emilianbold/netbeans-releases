@@ -113,7 +113,7 @@ public class VCSOwnerCacheTestCase extends AbstractFSTestCase {
     }
 
     private void testFileOwnerCache(boolean isVersioned, boolean isFolder) throws IOException {
-        FileObject folder = isVersioned ? getVersionedFolder() : getUnversionedFolder();
+        FileObject folder = isVersioned ? getVersionedFolder() : getNotVersionedFolder();
         FileObject child;
         FileObject child2;
         if(isFolder) {

@@ -73,6 +73,16 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     }
 
     @Override
+    protected String getRootPath() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void delete(String path) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
     protected FileObject createFile(String path) throws IOException {
         return createFileObject(path, false);
     }
@@ -99,8 +109,8 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     }
 
     @Override
-    protected void setReadOnly(FileObject fo) throws IOException {
-        fail("setReadOnly not available yet");
+    protected void setReadOnly(String path) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public static void main(String args[]) {
@@ -168,6 +178,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
         assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
         return res.output;
-    }    
+    }
 
 }

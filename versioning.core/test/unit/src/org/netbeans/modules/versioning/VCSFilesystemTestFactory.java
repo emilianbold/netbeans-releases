@@ -64,11 +64,49 @@ public abstract class VCSFilesystemTestFactory extends NbTestSetup {
         registerMap (test);
     }
 
+    /**
+     * Determines the root folder under which the factory creates files.
+     * 
+     * @return 
+     * @throws IOException 
+     */
+    protected abstract String getRootPath() throws IOException;
+    
+    /**
+     * Creates a file with a full path determined by the factories common root
+     * and the given relative path.
+     * 
+     * @param path
+     * @return
+     * @throws IOException 
+     */
     protected abstract FileObject createFile(String path) throws IOException;
     
+    /**
+     * Creates a folder with a full path determined by the factories common root.
+     * and the given relative path, 
+     * 
+     * @param path 
+     * @return
+     * @throws IOException 
+     */
     protected abstract FileObject createFolder(String path) throws IOException;
     
-    protected abstract void setReadOnly(FileObject fo) throws IOException;
+    /**
+     * Set the file with the given relative path as read-only.
+     * 
+     * @param path
+     * @throws IOException 
+     */
+    protected abstract void setReadOnly(String path) throws IOException;
+
+    /**
+     * Deletes the file with the given relative path. 
+     * 
+     * @param path
+     * @throws IOException 
+     */
+    public abstract void delete(String path) throws IOException;
     
     public static VCSFilesystemTestFactory getInstance (Test test) {
         VCSFilesystemTestFactory factory = getFromMap (test);

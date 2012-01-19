@@ -72,7 +72,7 @@ public class AbstractFSTestCase extends NbTestCase {
         return versionedFolder;
     }
     
-    protected FileObject getUnversionedFolder() throws IOException {
+    protected FileObject getNotVersionedFolder() throws IOException {
         if (unversionedFolder == null) {
             unversionedFolder = createFolder(workDirPath + "/unversioned/");
         }
