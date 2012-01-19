@@ -55,6 +55,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
 
 /**
  *
@@ -66,6 +67,10 @@ public abstract class JPACompletionItem implements CompletionItem {
     protected int substituteOffset = -1;
 
     public abstract String getItemText();
+    
+    public String getSubstitutionText(){
+        return getItemText();
+    }
 
     public int getSubstituteOffset() {
         return substituteOffset;
@@ -80,7 +85,7 @@ public abstract class JPACompletionItem implements CompletionItem {
     
     public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
         BaseDocument doc = (BaseDocument)c.getDocument();
-        String text = getItemText();
+        String text = getSubstitutionText();
 
         if (text != null) {
             if (toAdd != null && !toAdd.equals("\n")) // NOI18N
@@ -115,6 +120,10 @@ public abstract class JPACompletionItem implements CompletionItem {
         } else {
             return false;
         }
+    }
+    
+    public boolean canFilter(){
+        return true;
     }
     
     public Component getPaintComponent(javax.swing.JList list, boolean isSelected, boolean cellHasFocus) {
@@ -354,15 +363,41 @@ public abstract class JPACompletionItem implements CompletionItem {
     public static final class JPQLElementItem extends DBElementItem {
         
         protected static CCPaintComponent.EntityPropertyElementPaintComponent paintComponent = null;
+        private final String initialvalue;
+        private final ContentAssistProposals caProposal;
+        private final int internalOffset;
 
-        public JPQLElementItem(String name, boolean quote, int substituteOffset) {
+
+        public JPQLElementItem(String name, boolean quote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
             super(name, quote, substituteOffset);
+            this.initialvalue = valueInitial;
+            this.caProposal = buildContentAssistProposals;
+            this.internalOffset = internalOffset;
         }
         
         @Override
         public String getTypeName() {
             return "JPQL";
         }
+        
+        @Override
+        public boolean canFilter(){
+            return false;//all verification is internal to external library for entire jpq query
+        }
+
+        @Override
+        public String getSubstitutionText() {
+            String newQ = caProposal.buildEscapedQuery(initialvalue, getName(), internalOffset, true).getQuery();
+            return newQ;
+        }
+
+        @Override
+        public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
+            len = initialvalue.length() + (getQuoted() ? 2 : 0);//we replace entire query with new one
+            return super.substituteText(c, offset, len, shift);
+        }
+        
+       
         
         @Override
         public int getSortPriority() {
