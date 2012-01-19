@@ -266,13 +266,13 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void deleteSuccess(VCSFileProxy file) {
-        LOG.log(Level.FINE, "fileDeleted {0}", file);
+        LOG.log(Level.FINE, "deleteSuccess {0}", file);
         removeFromDeletedFiles(file);
         getInterceptor(file, "afterDelete").afterDelete(); // NOI18N
     }
 
     public static void deletedExternally(VCSFileProxy file) {
-        LOG.log(Level.FINE, "fileDeleted {0}", file);
+        LOG.log(Level.FINE, "deletedExternally {0}", file);
         removeFromDeletedFiles(file);
         getInterceptor(file, "afterDelete").afterDelete(); // NOI18N
     }
@@ -297,6 +297,7 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void createSuccess(VCSFileProxy file) {
+        LOG.log(Level.FINE, "createSuccess {0}", new Object[] {file});
         FileEx fileEx = new FileEx(file.getParentFile(), file.getName(), file.isDirectory());
         DelegatingInterceptor interceptor = filesBeingCreated.remove(fileEx);
         if (interceptor != null) {
@@ -314,6 +315,7 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void createdExternally(VCSFileProxy file) {
+        LOG.log(Level.FINE, "createdExternally {0}", new Object[] {file});
         createSuccess(file);
     }
 
@@ -369,7 +371,7 @@ public final class VCSFilesystemInterceptor {
      * @param fo a VCSFileProxy
      */
     public static void fileLocked(VCSFileProxy fo) {
-        LOG.log(Level.FINE, "fileLocked {0}", fo);
+        LOG.log(Level.FINE, "fileLocked {0}", fo.toString());
         getInterceptor(fo, "beforeEdit").beforeEdit();           // NOI18N
     }
 
@@ -734,6 +736,7 @@ public final class VCSFilesystemInterceptor {
          */
         @Override
         public void handle() throws IOException {
+            LOG.log(Level.FINE, "delete handle {0}", new Object[]{file});
             lhInterceptor.doDelete(file);
             interceptor.doDelete(file);
             synchronized (deletedFiles) {
