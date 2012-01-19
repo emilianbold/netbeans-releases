@@ -102,11 +102,11 @@ public class BrowserReload {
     }
     
     public boolean canReload( FileObject fileObject ){
-        String tabId = file2Id.get( fileObject );
-        if ( tabId == null ){
+        Pair pair = communicationMap.get( fileObject );
+        if ( pair == null || pair.getId() == null ){
             return false;
         }
-        SelectionKey selectionKey = file2Socket.get( fileObject );
+        SelectionKey selectionKey = pair.getSelectionKey();
         if ( selectionKey == null ){
             return false;
         }
