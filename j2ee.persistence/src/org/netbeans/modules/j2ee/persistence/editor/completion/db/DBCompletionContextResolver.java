@@ -762,17 +762,17 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
 
             if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
-                for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
                 for (String var : buildContentAssistProposals.identificationVariables()) {
                     results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
                 }
-                for (String ids : buildContentAssistProposals.identifiers()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(ids, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
                 for (IMapping mapping : buildContentAssistProposals.mappings()) {
                     results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
+                }
+                for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
+                }
+                for (String ids : buildContentAssistProposals.identifiers()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(ids, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
                 }
             }
         }

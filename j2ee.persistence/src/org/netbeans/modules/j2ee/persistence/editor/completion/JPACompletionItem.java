@@ -56,6 +56,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
+import org.eclipse.persistence.jpa.jpql.ResultQuery;
 
 /**
  *
@@ -387,7 +388,9 @@ public abstract class JPACompletionItem implements CompletionItem {
 
         @Override
         public String getSubstitutionText() {
-            String newQ = caProposal.buildEscapedQuery(initialvalue, getName(), internalOffset, true).getQuery();
+            ResultQuery buildEscapedQuery = caProposal.buildEscapedQuery(initialvalue, getName(), internalOffset, true);
+            String newQ = buildEscapedQuery.getQuery();
+            int newPos = buildEscapedQuery.getPosition();//TODO proper caret position
             return newQ;
         }
 
