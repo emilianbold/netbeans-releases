@@ -116,42 +116,4 @@ public class DocRendererTest extends TestBase {
         assertEquals(expected, result);
     }
 
-    public void testArrayReturnType() throws Exception {
-        String tested = "<?php\n/**\n *\n * @return Bbb[] foo\n */ \nfunction function^Name() {}\n?>";
-        String expected = "<b>functionName</b><br/><br/>\n<br />\n<h3>Returns:</h3>\n<table>\n<tr><td>&nbsp;</td><td><b>Type:</b></td><td>Bbb[]</td></tr><tr><td>&nbsp;</td><td valign=\"top\"><b>Description:</b></td><td>foo</td></tr></table>";
-        checkDocRendererOutput(tested, expected);
-    }
-
-    private void checkDocRendererOutput(String codeToTest, String expectedCode) throws Exception {
-        int caretOffset = codeToTest.indexOf("^");
-        String tested = codeToTest.substring(0, caretOffset) + codeToTest.substring(caretOffset + 1);
-        PHPParseResult parserResult = getParserResult(tested);
-        Model model = parserResult.getModel();
-        assertNotNull(model);
-        List<? extends ModelElement> elements = ModelUtils.getElements(model.getFileScope(), true);
-        ModelElement elementToTest = null;
-        for (ModelElement modelElement : elements) {
-            if (modelElement.getOffsetRange(parserResult).containsInclusive(caretOffset)) {
-                elementToTest = modelElement;
-                break;
-            }
-        }
-        assertNotNull(elementToTest);
-        String result = DocRenderer.document(parserResult, elementToTest);
-        assertEquals(expectedCode, result);
-    }
-
-    private PHPParseResult getParserResult(String code) throws Exception {
-        final PHPParseResult[] result = new PHPParseResult[1];
-        super.performTest(new String[] {code}, new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                result[0] = (PHPParseResult) resultIterator.getParserResult();
-            }
-        }, false);
-        assertNotNull(result[0]);
-        return result[0];
-    }
-
-
 }

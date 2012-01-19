@@ -43,7 +43,8 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -64,6 +65,38 @@ public class PHPCCDocumentationTest extends PHPTestBase {
         checkCompletionDocumentation("testfiles/completion/documentation/issue197696.php", "$this->te^", false, "");
     }
 
+    public void testArrayReturnType() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/arrayReturnType.php", "functionNam^e();", false, "");
+    }
+
+    public void testFieldWithDesc() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->fieldWithDes^c;", false, "");
+    }
+
+    public void testFieldWithoutDesc() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->fieldWithoutDes^c;", false, "");
+    }
+
+    public void testFieldWithDescAndArray() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->fieldWithDescAndArra^y;", false, "");
+    }
+
+    public void testFieldWithoutDescAndArray() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->fieldWithoutDescAndArra^y;", false, "");
+    }
+
+    public void testPropertyWithArray() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/propertyWithArray.php", "$this->te^", false, "");
+    }
+
+    public void testFunctionWithArrayParamWithoutDesc() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/functionWithArrayParamWithoutDesc.php", "aFunctionNam^e(null);", false, "");
+    }
+
+    public void testFunctionWithArrayReturnWithoutDesc() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/functionWithArrayReturnWithoutDesc.php", "bFunctionNam^e(null);", false, "");
+    }
+
     @Override
     protected String alterDocumentationForTest(String documentation) {
         int start = documentation.indexOf("file:");
@@ -79,8 +112,7 @@ public class PHPCCDocumentationTest extends PHPTestBase {
         return documentation;
     }
 
-
-
+    @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,
