@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.clientside.project;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.netbeans.modules.web.common.reload.BrowserReload;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -64,10 +67,33 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         FileObject fo = getFile(context);
+        if (fo == null) {
+            return;
+        }
+        browseFile(fo);
+    }
+    
+    public static void browseFile(FileObject fo) {
+        URL url;
+        String urlString;
         try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(fo.getURL());
+            url = fo.getURL();
+            urlString = url.toURI().toString();
+            // XXXXX:
+            urlString = urlString.replaceAll("file:/", "file:///");
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
+            return;
+        }        
+        BrowserReload br = BrowserReload.getInstance();
+        br.register(fo, urlString);
+        if (br.canReload(fo)) {
+            br.reload(fo);
+        } else {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         }
     }
 
