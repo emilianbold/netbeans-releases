@@ -427,11 +427,19 @@ public class AutoUpdate extends Task {
                     return conn.getInputStream();
                 } catch (IOException ex) {
                     log("Cannot connect to " + url, Project.MSG_WARN);
-                    log("Details", ex, Project.MSG_VERBOSE);
+                    try {
+                        logThrowable(ex);
+                    } catch (LinkageError err) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         }
         throw new IOException("Cannot resolve external references");
+    }
+
+    private void logThrowable(IOException ex) {
+        log("Details", ex, Project.MSG_VERBOSE);
     }
 
     
