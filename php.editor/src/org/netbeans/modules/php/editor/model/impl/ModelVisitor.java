@@ -1057,7 +1057,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(node, currentScope);
         for (Iterator<? extends PhpDocTypeTagInfo> it = tagInfos.iterator(); it.hasNext();) {
             PhpDocTypeTagInfo phpDocTypeTagInfo = it.next();
-            if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD)) {
+            if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD) && !phpDocTypeTagInfo.getName().isEmpty()) {
                 String typeName = phpDocTypeTagInfo.getTypeName();
                 if (typeName != null) {
                     if (sb.length() > 0) {
