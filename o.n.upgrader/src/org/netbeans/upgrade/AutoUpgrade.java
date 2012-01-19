@@ -76,7 +76,12 @@ public final class AutoUpgrade {
 
     public static void main (String[] args) throws Exception {
         String[] version = new String[1];
-        File sourceFolder = checkPrevious (version, VERSION_TO_CHECK);
+        // try new place
+        File sourceFolder = checkPreviousOnOsSpecificPlace (NEWER_VERSION_TO_CHECK);
+        if (sourceFolder == null) {
+            // try former place
+            sourceFolder = checkPrevious (version, VERSION_TO_CHECK);
+        }
         if (sourceFolder != null) {
             if (!showUpgradeDialog (sourceFolder)) {
                 throw new org.openide.util.UserCancelException ();
@@ -117,8 +122,27 @@ public final class AutoUpgrade {
     // the first one will be choosen for import
     final static private List<String> VERSION_TO_CHECK = 
             Arrays.asList (new String[] { ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9" });//NOI18N
+    
+    // userdir on OS specific root of userdir (see issue 196075)
+    static final List<String> NEWER_VERSION_TO_CHECK =
+            Arrays.asList (/*"7.2, ..."*/); //NOI18N
 
             
+    private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
+        String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root"); // NOI18N
+        File sourceFolder = null;
+        if (defaultUserdirRoot != null) {
+            File userHomeFile = new File (defaultUserdirRoot);
+            for (String ver : versionsToCheck) {
+                sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
+                if (sourceFolder.exists () && sourceFolder.isDirectory ()) {
+                    return sourceFolder;
+                }
+            }
+        }
+        return null;
+    }
+
     static private File checkPrevious (String[] version, final List<String> versionsToCheck) {        
         String userHome = System.getProperty ("user.home"); // NOI18N
         File sourceFolder = null;
