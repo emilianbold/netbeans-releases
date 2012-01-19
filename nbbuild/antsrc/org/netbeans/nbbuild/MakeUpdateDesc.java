@@ -646,6 +646,7 @@ public class MakeUpdateDesc extends MatchingTask {
         module.setAttribute("codenamebase", cnb);
         module.setAttribute("distribution", ""); // seems to be ignored anyway
         module.setAttribute("downloadsize", "0"); // recalculated anyway
+        module.setAttribute("targetcluster", whereFrom.getParentFile().getName()); // #207075 comment #3
         Element manifest = doc.createElement("manifest");
         module.appendChild(manifest);
         manifest.setAttribute("AutoUpdate-Show-In-Client", "false");
