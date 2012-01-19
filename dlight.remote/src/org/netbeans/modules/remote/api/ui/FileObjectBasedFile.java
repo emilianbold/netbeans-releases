@@ -253,6 +253,22 @@ public class FileObjectBasedFile extends File {
     public boolean createNewFile() throws IOException {
         return super.createNewFile();
     }
+
+    @Override
+    public boolean delete() {
+        if (fo == null) {
+            fo = FileSystemProvider.getFileObject(env, path);
+        }
+        if (fo != null) {
+            try {
+                fo.delete();
+                return true;
+            } catch (IOException ex) {
+                return false;
+            }
+        }
+        return false;
+    }
     
     @Override
     public String getParent() {
