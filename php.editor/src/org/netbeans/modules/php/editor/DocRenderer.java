@@ -329,6 +329,11 @@ class DocRenderer {
                         PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
                         returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
                         break;
+                    case VAR:
+                        PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
+                        String type = composeType(typeTag.getTypes());
+                        others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
+                        break;
                     default:
                         String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
                                 processPhpDoc(tag.getKind().toString()), processPhpDoc(tag.getValue().trim()));
@@ -500,7 +505,13 @@ class DocRenderer {
                         if (node instanceof PHPDocMethodTag) {
                             extractPHPDoc((PHPDocMethodTag)node);
                         } else {
-                            phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                            if (node instanceof PHPDocVarTypeTag) {
+                                PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
+                                String type = composeType(varTypeTag.getTypes());
+                                phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>", varTypeTag.getDocumentation(), type))); //NOI18N
+                            } else {
+                                phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                            }
                         }
                     } else {
                         Comment comment = Utils.getCommentForNode(program, node);

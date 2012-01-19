@@ -85,23 +85,25 @@ public class PHPDocTypeTag extends PHPDocTag {
                     isLastNodeArray = node.isArray();
                 }
             }
-            int startIndex = 0;
             int indexAfterTypeWithoutArrayPostfix = getValue().indexOf(lastType.getValue()) + lastType.getValue().length();
             if (isLastNodeArray) {
                 String documentationWithArrayPrefix = getValue().substring(indexAfterTypeWithoutArrayPostfix).trim();
                 int firstSpace = documentationWithArrayPrefix.indexOf(" "); //NOI18N
                 int firstTab = documentationWithArrayPrefix.indexOf("\t"); //NOI18N
-                int min = 0;
+                int min = -1;
                 if (firstSpace > 0 && (firstSpace < firstTab || firstTab == -1)) {
                     min = firstSpace;
                 } else if (firstTab > 0 && (firstTab < firstSpace || firstSpace == -1)) {
                     min = firstTab;
                 }
-                startIndex = indexAfterTypeWithoutArrayPostfix + min;
+                if (min == -1) {
+                    documentation = ""; //NOI18N
+                } else {
+                    documentation = getValue().substring(indexAfterTypeWithoutArrayPostfix + min).trim();
+                }
             } else {
-                startIndex = indexAfterTypeWithoutArrayPostfix;
+                documentation = getValue().substring(indexAfterTypeWithoutArrayPostfix).trim();
             }
-            documentation = getValue().substring(startIndex).trim();
         }
         return documentation;
     }
