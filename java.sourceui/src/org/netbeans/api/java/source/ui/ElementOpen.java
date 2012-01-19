@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -158,6 +159,11 @@ public final class ElementOpen {
 
     @SuppressWarnings("deprecation")
     private static boolean doOpen(FileObject fo, int offset) {
+        if (offset == -1) {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(ElementOpen.class, "WARN_ElementNotFound"), 
+                    StatusDisplayer.IMPORTANCE_ANNOTATION);
+        }
         return UiUtils.open(fo, offset);
     }
 
@@ -182,7 +188,9 @@ public final class ElementOpen {
                     }
                     Element el = handle.resolve(info);
                     if (el == null) {
-                        log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        if (!SourceUtils.isScanInProgress()) {
+                            log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        }
                         return;
                     }
                     

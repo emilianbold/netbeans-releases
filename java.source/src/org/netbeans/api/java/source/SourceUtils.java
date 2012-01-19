@@ -80,14 +80,21 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.util.ElementScanner6;
+import javax.lang.model.util.Elements;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -1247,5 +1254,458 @@ public class SourceUtils {
         } else {
             return s.toLowerCase();
         }
+    }
+    
+    /**
+     * Guards usage of the abortAndRetry methods; since they throw an exception, which is 
+     * only caught on specific places
+     */
+    private static final ThreadLocal<Boolean> retryGuard = new ThreadLocal<Boolean>() {
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
+    
+    /**
+     * Runs the user task through {@link JavaSource#runUserActionTask}. The Task may indicate
+     * that it does not have enough data when scan is in progress, through e.g. {@link #checkElement}.
+     * If so, processing of the Task will abort, and will be restarted when the scan finishes.
+     * <p/>
+     * The task <b>may run asynchronously</b>, pay attention to synchronization of task's output
+     * data. The first attempt to run the task MAY execute synchronously. Do not call the method from
+     * Swing EDT, if the task typically takes non-trivial time to complete (see {@link JavaSource#runUserActionTask} 
+     * for discussion).
+     * <p/>
+     * Unline {@link #waitUserActionTask}, this method does not publish exceptional results from the action task, when
+     * it is scheduled after parsing. It's the responsibility of the caller to communicate exceptions from the task.
+     * Note that if the task is run synchronously
+     * 
+     * @param src JavaSource to process
+     * @param uat action task that will be executed
+     * @param shared if true, shared Javac will be used (faster). Flag is passed to {@link JavaSource} methods.
+     * 
+     * @return Future that allows to synchronize with task's completion.
+     * 
+     * @see JavaSource#runUserActionTask
+     */
+    public static Future<Void> postUserActionTask(
+            final @NonNull JavaSource src,
+            final @NonNull Task<CompilationController> uat, 
+            final boolean shared
+           ) throws IOException {
+        assert src != null;
+        assert uat != null;
+
+        return postUserActionTask(src, uat, shared, new AtomicReference(null), true);
+    }
+    
+    /**
+     * Executes the user task on most up-to-date state. If scan is running, the task will
+     * be immediately scheduled using {@link JavaSource#runWhenScanFinished}. If no scan is running,
+     * the method attempts to execute the task immediately.
+     * <p/>
+     * The Future may be used to cancel the task, if results are no longer expected.
+     * 
+     * @param src JavaSource to operate on
+     * @param uat the task to execute
+     * @param shared if true, use shared javac - passed to {@link JavaSource} methods.
+     */
+    public static Future<Void> postUserRefreshTask(JavaSource src, Task<CompilationController> uat, boolean shared) throws IOException {
+        return postUserActionTask(src, uat, shared, new AtomicReference<Throwable>(null), false);
+    }
+        
+    private static Future<Void> postUserActionTask(
+            final @NonNull JavaSource src,
+            final @NonNull Task<CompilationController> uat, 
+            final boolean shared,
+            final AtomicReference<Throwable> status,
+            boolean shouldRetry
+           ) throws IOException {
+        boolean retry = SourceUtils.isScanInProgress();
+
+        if (shouldRetry && retry) {
+            try {
+                retryGuard.set(Boolean.TRUE);
+                src.runUserActionTask(uat, shared);
+                // the action passed ;)
+                retry = false;
+            } catch (RetryWhenScanFinished e) {
+                // expected, will retry in runWhenParseFinished
+                retry = true;
+            } finally {
+                retryGuard.set(Boolean.FALSE);
+            }
+            if (!retry) {
+                return new FinishedFuture();
+            }
+        }
+        
+        final TaskWrapper wrapper = new TaskWrapper(uat, status);
+        Future<Void> handle = src.runWhenScanFinished(wrapper, shared);
+        return handle;
+    }
+    
+    private final static class FinishedFuture implements Future<Void> {
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public Void get() throws InterruptedException, ExecutionException {
+            return null;
+        }
+
+        @Override
+        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return null;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "FinishedFuture";
+        }
+        
+        
+    }
+    
+    private static class TaskWrapper implements Task<CompilationController> {
+        private Task<CompilationController> userTask;
+        private AtomicReference<Throwable>  status;
+
+        public TaskWrapper(Task<CompilationController> userTask, AtomicReference<Throwable> status) {
+            this.userTask = userTask;
+            this.status = status;
+        }
+
+        @Override
+        public void run(CompilationController parameter) throws Exception {
+            try {
+                retryGuard.set(Boolean.TRUE);
+                userTask.run(parameter);
+            } catch (RetryWhenScanFinished ex) {
+                // swallow Error, but signal error
+                status.set(ex);
+            } catch (Exception ex) {
+                status.set(ex);
+                throw ex;
+            } finally {
+                retryGuard.set(Boolean.FALSE);
+            }
+        }
+    }
+
+    /**
+     * Runs user action over source 'src' using {@link JavaSource#runUserActionTask}.
+     * The action task may indicate it wants to be restarted after the scan finishes. In that case
+     * the task will abort, and will be re-executed after the scan finishes.
+     * <p/>
+     * Calling this method from Swing ED thread is prohibited.
+     * 
+     * @param src java source to process
+     * @param uat task to execute
+     * @param shared if true, shared Javac will be used to process the source
+     * 
+     * @throws IOException in the case of a failure, or 
+     * 
+     * @see JavaSource#runUserActionTask
+     */
+    public static void waitUserActionTask(
+            final @NonNull JavaSource src,
+            final @NonNull Task<CompilationController> uat, 
+            final boolean shared) throws IOException {
+        assert src != null;
+        assert uat != null;
+        
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Illegal to call within EDT");
+        }
+        AtomicReference<Throwable> status = new AtomicReference(null);
+        Future<Void> f = postUserActionTask(src, uat, shared, status, true);
+        if (f.isDone()) {
+            return;
+        }
+        try {
+            Future<Void> handle = src.runWhenScanFinished(uat, shared);
+            // wait for completion
+            handle.get();
+        } catch (InterruptedException ex) {
+            IOException ioex = new IOException("Interrupted", ex);
+            throw ioex;
+        } catch (ExecutionException ex) {
+            IOException ioex = new IOException("Interrupted", ex);
+            throw ioex;
+        } catch (RuntimeException ex) {
+            throw ex;
+        }
+        // propagate the 'retry' instruction as an exception - was not thrown in an appropriate context.
+        Throwable t = status.get();
+        if (t != null) {
+            if (t instanceof IOException) {
+                throw (IOException)t;
+            }
+            IOException ioex = new IOException("Exception during processing", t);
+            throw ioex;
+        }
+    }
+    
+    private static void checkRetryContext() throws IllegalStateException {
+        if (!retryGuard.get()) {
+            throw new IllegalStateException("The method may be only called within SourceUtils.waitUserActionTask");
+        }
+    }
+
+    private static void signalIncompleteData(JavaSource s, Element el) {
+        assert el != null;
+        checkRetryContext();
+        throw new RetryWhenScanFinished(s, ElementHandle.create(el));
+    }
+    
+    /**
+     * Aborts the user task and calls it again when parsing finishes, if a typename is not available.
+     * 
+     * @param el the Element which causes the trouble
+     * @param s source of the Element
+     * 
+     */
+    public static void signalIncompleteData(@NonNull JavaSource s, @NonNull ElementHandle handle) {
+        assert handle != null;
+        assert s != null;
+        checkRetryContext();
+        throw new RetryWhenScanFinished(s, handle);
+    }
+
+    private static void signalIncompleteData(JavaSource s, String name) {
+        checkRetryContext();
+        throw new RetryWhenScanFinished(s, name);
+    }
+
+    private static void signalIncompleteData(JavaSource s, TreePath path) {
+        checkRetryContext();
+        throw new RetryWhenScanFinished(s, path);
+    }
+
+    /**
+     * An Exception which indicates that the operation should be aborted, and
+     * retried when parsing is finished. The exception derives from the {@link Error}
+     * class to bypass ill-written code, which caught {@link RuntimeException} or
+     * even {@link Exception}.
+     * <p/>
+     * The exception is interpreted by the Java Source infrastructure and is not
+     * meant to be ever thrown or caught by regular application code. It's deliberately
+     * package-private so users are not tempted to throw or catch it.
+     */
+    static class RetryWhenScanFinished extends Error {
+        private Element         element;
+        private ElementHandle   elHandle;
+        private TreePathHandle  treeHandle;
+        private String          typeName;
+        private TreePath        elementPath;
+        private JavaSource      jsrc;
+
+        public RetryWhenScanFinished(JavaSource jsrc, String typeName) {
+            this.jsrc = jsrc;
+            this.typeName = typeName;
+        }
+
+        public RetryWhenScanFinished(JavaSource jsrc, TreePath elementPath) {
+            this.jsrc = jsrc;
+            this.elementPath = elementPath;
+        }
+        
+        public RetryWhenScanFinished(JavaSource jsrc, Element e) {
+            this.jsrc = jsrc;
+            this.element = e;
+        }
+
+        public RetryWhenScanFinished(JavaSource jsrc, ElementHandle elHandle) {
+            this.jsrc = jsrc;
+            this.elHandle = elHandle;
+        }
+
+        public RetryWhenScanFinished(JavaSource jsrc, TreePathHandle treeHandle) {
+            this.jsrc = jsrc;
+            this.treeHandle = treeHandle;
+        }
+
+        @Override
+        public String toString() {
+            return "RetryWhenScanFinished{" + "element=" + element + ", elHandle=" + elHandle + ", treeHandle=" + treeHandle + ", typeName=" + typeName + ", elementPath=" + elementPath + '}';
+        }
+
+    }
+    
+    private static boolean isErrorKind(TypeMirror type) {
+        return type != null && 
+               (type.getKind() == TypeKind.ERROR || type.getKind() == TypeKind.OTHER);
+    }
+    
+    /**
+     * Checks that the Element is valid, is not erroneous. If the Element is {@code null} or erroneous and 
+     * scanning is running, the method throws a {@link RetryWhenScanFinished} exception to
+     * indicate that the action should be retried. The method should be only used in code, which 
+     * is directly or indirectly executed by {@link #waitUserActionTask}, otherwise {@link IllegalStateException}
+     * will be thrown.
+     * <p/>
+     * If scan is not running, the method always returns the value of 'e' parameter.
+     * <p/>
+     * The intended usage is as follows:
+     * <code>
+     * TreePath tp = ...;
+     * Element e = checkElement(cu.getTrees().getElement(tp));
+     * </code>
+     * <p/>
+     * <b>Note:</b> the method may be only called from within {@link #waitUserActionTask}, it aborts
+     * the current processing under assumption the user task will be restarted. It is illegal to call the
+     * method if not running as user task - IllegalStateException will be thrown.
+     * 
+     * @param e the Element to check
+     * @param s the source of the Element
+     * 
+     * @throws IllegalStateException if not called from within user task
+     * 
+     */
+    public static @CheckForNull <T extends Element> T checkElement(@NonNull JavaSource s, @NonNull T e) {
+        assert e != null;
+        checkRetryContext();
+        TypeMirror tm = e.asType();
+        if (!isErrorKind(tm)) {
+            return e;
+        }
+        if (isScanInProgress()) {
+            signalIncompleteData(s, e);
+        }
+        return e;
+    }
+    
+    /**
+     * Attempts to resolve Element, retries action task if Element might not be available because of running scan.
+     * The method attempts to resolve the Handle to an Element. If it fails, or the Element is not
+     * completed (e.g. its type was not scanned yet), the method will abort the user task and reschedules 
+     * it after parser finish. 
+     * <p/>
+     * The method can be only used from {@link #waitUserActionTask}, {@link #postUserActionTask} as it throws an exception to interrupt
+     * the process, which is processed by the mentioned methods. If the method is called in other context, {@link IllegalStateException}
+     * will be thrown.
+     * <p/>
+     * Use this method if you want to not to fail computation if a referenced type might not be yet scanned. 
+     * Note that it is not guaranteed, even after task retry, that the Element will be resolved, or will be fully attributed. If the
+     * handle points to Element which does not exist, or uses unknown type etc, the Element may be broken even after parsing finishes.
+     * Always check the element for its kind and other properties.
+     * 
+     * @see #waituserActionTask
+     * @see #postUserActionTask
+     * @see #isElementUsable
+     */
+    public static @CheckForNull <T extends Element> T resolveElement(@NonNull JavaSource s, @NonNull CompilationInfo info, 
+            @NonNull ElementHandle handle) {
+        assert s != null;
+        assert info != null;
+        assert handle != null;
+        assert info.getJavaSource() == null : info.getJavaSource() == s;
+        
+        checkRetryContext();
+        T e = (T)handle.resolve(info);
+        if (e != null) {
+            TypeMirror tm = e.asType();
+            if (!isErrorKind(tm)) {
+                return e;
+            }
+        }
+        if (isScanInProgress()) {
+            signalIncompleteData(s, handle);
+        }
+        return e;
+    }
+    
+    /**
+     * Attempts to find an Element at the TreePath, retries  action task if Element might not be available because of running scan.
+     * If the element does not exist, or is 'not complete' (e.g. type was not yet scanned etc), the task is aborted, and
+     * restarted when the parsing finishes.
+     * <p/>
+     * The method can be only used from {@link #waitUserActionTask}, {@link #postUserActionTask} as it throws an exception to interrupt
+     * the process, which is processed by the mentioned methods. If the method is called in other context, {@link IllegalStateException}
+     * will be thrown.
+     * <p/>
+     * Use this method if you want to not to fail computation if a referenced type might not be yet scanned. 
+     * Note that it is not guaranteed, even after task retry, that the Element will be resolved, or will be fully attributed. If the
+     * handle points to Element which does not exist, or uses unknown type etc, the Element may be broken even after parsing finishes.
+     * Always check the element for its kind and other properties.
+     * 
+     * @see #waituserActionTask
+     * @see #postUserActionTask
+     * @see #isElementUsable
+     */
+    public static @CheckForNull <T extends Element> T findElement(@NonNull JavaSource s, @NonNull Trees trees, @NonNull TreePath path) {
+        checkRetryContext();
+        T e = (T)trees.getElement(path);
+        if (e != null) {
+            TypeMirror tm = e.asType();
+            if (!isErrorKind(tm)) {
+                return e;
+            }
+        }
+        if (isScanInProgress()) {
+            signalIncompleteData(s, path);
+        }
+        return e;
+    }
+    
+    /**
+     * Attempts to locate a named {@link TypeElement} , retries action task if Element might not be available because of running scan.
+     * If the element does not exist, or is 'not complete' (e.g. type was not yet scanned etc), the task is aborted, and
+     * restarted when the parsing finishes.
+     * <p/>
+     * The method can be only used from {@link #waitUserActionTask}, {@link #postUserActionTask} as it throws an exception to interrupt
+     * the process, which is processed by the mentioned methods. If the method is called in other context, {@link IllegalStateException}
+     * will be thrown.
+     * <p/>
+     * Use this method if you want to not to fail computation if a referenced type might not be yet scanned. 
+     * Note that it is not guaranteed, even after task retry, that the Element will be resolved, or will be fully attributed. If the
+     * handle points to Element which does not exist, or uses unknown type etc, the Element may be broken even after parsing finishes.
+     * Always check the element for its kind and other properties.
+     * 
+     * @see #waituserActionTask
+     * @see #postUserActionTask
+     * @see #isElementUsable
+     */
+    public static @CheckForNull TypeElement findTypeElement(@NonNull JavaSource s, @NonNull Elements elService, @NonNull String type) {
+        checkRetryContext();
+        TypeElement e = elService.getTypeElement(type);
+        if (e != null) {
+            TypeMirror tm = e.asType();
+            if (!isErrorKind(tm)) {
+                return e;
+            }
+        }
+        if (isScanInProgress()) {
+            signalIncompleteData(s, type);
+        }
+        return e;
+    }
+    
+    /**
+     * Returns true, if the Element is attributed and usable for processing. An element may be unresolved,
+     * or unattributed and should not be generally used without caution.
+     * 
+     * @param e Element to check
+     * @retrun true, if the element can be used.
+     */
+    public static boolean isElementUsable(@NullAllowed Element e) {
+        if (e == null) {
+            return false;
+        }
+        final TypeMirror type = e.asType();
+        return !isErrorKind(type);
     }
 }
