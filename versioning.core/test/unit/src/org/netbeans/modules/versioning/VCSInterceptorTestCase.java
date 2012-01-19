@@ -450,13 +450,20 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     }
     
     private String getRelativePath(VCSFileProxy proxy) throws IOException {
-        VCSFilesystemTestFactory factory = VCSFilesystemTestFactory.getInstance(VCSInterceptorTestCase.this);
         String path = proxy.getPath();
-        path = path.substring(factory.getRootPath().length());
+        String rootPath = getRoot(path);
+        path = path.substring(rootPath.length());
         if(path.startsWith("/")) {
             path = path.substring(1, path.length());
         }
         return path;
+//        VCSFilesystemTestFactory factory = VCSFilesystemTestFactory.getInstance(VCSInterceptorTestCase.this);
+//        String path = proxy.getPath();
+//        path = path.substring(factory.getRootPath().length());
+//        if(path.startsWith("/")) {
+//            path = path.substring(1, path.length());
+//        }
+//        return path;
     }
     
     private TestVCSInterceptor.DeleteHandler deleteHandler = new TestVCSInterceptor.DeleteHandler() {

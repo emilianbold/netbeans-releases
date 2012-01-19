@@ -57,6 +57,7 @@ public class AbstractFSTestCase extends NbTestCase {
     protected String workDirPath;
     protected FileObject versionedFolder;
     protected FileObject unversionedFolder;
+    private String versionedPath;
 
     public AbstractFSTestCase(String testName) {
         super(testName);
@@ -64,7 +65,7 @@ public class AbstractFSTestCase extends NbTestCase {
 
     protected FileObject getVersionedFolder() throws IOException {
         if (versionedFolder == null) {
-            String versionedPath = workDirPath + "/root" + TestVCS.VERSIONED_FOLDER_SUFFIX;
+            versionedPath = workDirPath + "/root" + TestVCS.VERSIONED_FOLDER_SUFFIX;
             versionedFolder = createFolder(versionedPath);
             FileObject md = versionedFolder.getFileObject(TestVCS.TEST_VCS_METADATA);
             if(md == null || !md.isValid()) {
@@ -83,6 +84,10 @@ public class AbstractFSTestCase extends NbTestCase {
         return unversionedFolder;
     }
 
+    protected String getRoot(String path) {
+        return path.substring(0, path.indexOf(versionedPath));
+    } 
+    
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setLayersAndInstances();
