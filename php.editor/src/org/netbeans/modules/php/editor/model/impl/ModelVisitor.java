@@ -1028,7 +1028,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        Expression className = node.getClassName();
+        if (className instanceof Variable) {
+            scan(className);
+        } else {
+            occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        }
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
