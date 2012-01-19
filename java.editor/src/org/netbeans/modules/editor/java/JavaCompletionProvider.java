@@ -292,7 +292,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ParserManager.parse(Collections.singletonList(source), getTask());
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null) {
-                                if (results.isEmpty() && SourceUtils.isScanInProgress()) {
+                                if (results.isEmpty() && SourceUtils.isScanInProgress() && (hasAdditionalItems == 0 || queryType == COMPLETION_ALL_QUERY_TYPE)) {
                                     Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
                                     if (!f.isDone()) {
                                         component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
