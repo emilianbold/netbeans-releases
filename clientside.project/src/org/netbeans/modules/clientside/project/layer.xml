@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+
+    <folder name="Templates">
+        <folder name="Project">
+
+            <folder name="ClientSide">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.clientside.project.Bundle"/>
+                <attr name="position" intvalue="450"/>
+            </folder>
+        </folder>
+        
+        <folder name="ClientSide">
+            <attr name="position" intvalue="610"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.clientside.project.Bundle"/>
+            
+            <file name="new.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="clientside-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.clientside.project.Bundle"/>
+            </file>
+            <file name="new.js" url="nbresloc:/org/netbeans/modules/javascript/editing/jstemplate.js">
+                <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="clientside-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/javascript.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.clientside.project.Bundle"/>
+            </file>
+            <file name="new.css" url="nbresloc:/org/netbeans/modules/css/resources/CascadeStyleSheet.css.template">
+                <attr name="position" intvalue="300"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="clientside-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.clientside.project.Bundle"/>
+            </file>
+            <file name="new.json" url="nbresloc:/org/netbeans/modules/javascript/editing/jsontemplate.json">
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="clientside-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/json.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.clientside.project.Bundle"/>
+            </file>
+            
+        </folder>
+    </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+            
+            <folder name="html">
+                <folder name="Actions">
+                  <file name="webHtml-project-separator-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="RunFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                      <attr name="position" intvalue="500"/>
+                    </file>
+                  <file name="webHtml-project-separator-2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="700"/>
+                    </file>
+                  </folder>
+            </folder>
+            
+        </folder>
+    </folder>   
+    
+</filesystem>
+
