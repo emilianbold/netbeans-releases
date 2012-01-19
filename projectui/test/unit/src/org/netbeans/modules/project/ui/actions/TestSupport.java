@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -64,11 +66,50 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import static junit.framework.TestCase.*;
+
 /**
  * Help set up org.netbeans.api.project.*Test.
  * @author Jesse Glick
  */
 public final class TestSupport {
+    public static interface ActionCreator {
+        public LookupSensitiveAction create(Lookup l);
+    }
+    
+    public static void doTestAcceleratorsPropagated(ActionCreator creator, boolean testMenus) {
+        Lookup l1 = Lookups.fixed(new Object[] {"1"});
+        Lookup l2 = Lookups.fixed(new Object[] {"2"});
+        
+        Action a1 = creator.create(l1);
+        
+        KeyStroke k1 = KeyStroke.getKeyStroke("shift pressed A");
+        KeyStroke k2 = KeyStroke.getKeyStroke("shift pressed A");
+        
+        assertNotNull(k1);
+        assertNotNull(k2);
+        
+        a1.putValue(Action.ACCELERATOR_KEY, k1);
+        
+        LookupSensitiveAction a2 = creator.create(l2);
+        
+        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
+        
+        a2.putValue(Action.ACCELERATOR_KEY, k2);
+        
+        assertEquals(k2, a1.getValue(Action.ACCELERATOR_KEY));
+        
+        if (testMenus) {
+            assertEquals(k2, a2.getMenuPresenter().getAccelerator());
+        }
+
+        a1.putValue(Action.ACCELERATOR_KEY, k1);
+        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
+        
+        if (testMenus) {
+            assertEquals(k1, a2.getMenuPresenter().getAccelerator());
+        }
+    }
     
     public static FileObject createTestProject( FileObject workDir, String name ) throws IOException {
         FileObject p = workDir.createFolder( name );

@@ -43,79 +43,75 @@
  */
 package org.netbeans.modules.versioning;
 
-import org.netbeans.modules.versioning.core.VersioningManager;
-import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
+import org.openide.filesystems.FileObject;
 import org.openide.util.test.MockLookup;
 
-public class GetAnnotatedOwnerTest extends GetOwnerTest {
+public class AbstractFSTestCase extends NbTestCase {
     
-    public GetAnnotatedOwnerTest(String testName) {
+    protected String workDirPath;
+    protected FileObject versionedFolder;
+    protected FileObject unversionedFolder;
+
+    public AbstractFSTestCase(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        MockLookup.setLayersAndInstances();
-    }
-    
-    protected File getVersionedFolder() {
+    protected FileObject getVersionedFolder() throws IOException {
         if (versionedFolder == null) {
-            versionedFolder = new File(dataRootDir, "workdir/root-" + TestAnnotatedVCS.VERSIONED_FOLDER_SUFFIX);
-            versionedFolder.mkdirs();
-            new File(versionedFolder, TestAnnotatedVCS.TEST_VCS_METADATA).mkdirs();
+            versionedFolder = createFolder(workDirPath + "/root" + TestVCS.VERSIONED_FOLDER_SUFFIX);
+            FileObject md = versionedFolder.getFileObject(TestVCS.TEST_VCS_METADATA);
+            if(md == null || !md.isValid()) {
+                createFolder(TestVCS.TEST_VCS_METADATA);
+            }
         }
         return versionedFolder;
     }
     
-    @Override
-    protected Class getVCS() {
-        return TestAnnotatedVCS.class;
+    protected FileObject getNotVersionedFolder() throws IOException {
+        if (unversionedFolder == null) {
+            unversionedFolder = createFolder(workDirPath + "/unversioned/");
+        }
+        return unversionedFolder;
     }
 
-    public void testVCSSystemDoesntAwakeOnUnrelatedGetOwner() throws IOException {
-        
-        assertNull(TestAnnotatedVCS.INSTANCE);
-        
-        File f = new File(getUnversionedFolder(), "sleepingfile");
-        f.createNewFile();
-        
-        assertNull(TestAnnotatedVCS.INSTANCE);
-        VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(f));
-        assertNull(owner);
-        
-        assertNull(TestAnnotatedVCS.INSTANCE);
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setLayersAndInstances();
+        File workDir = getWorkDir();
+        workDirPath = workDir.getParentFile().getName() + "/" + workDir.getName();
+        File userdir = new File(workDir, "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
+
+        createFolder(workDirPath).delete();
     }
     
-    public void testNoOwnerIfManagedByOtherSPI() throws IOException {
-        File f = new File(dataRootDir, OtherSPIVCS.MANAGED_FOLDER_PREFIX);
-        f.mkdirs();
-        f = new File(f, "file.txt");
-        assertNull(VersioningSupport.getOwner(f));
-        
-        f = new File(getVersionedFolder(), "file.txt");
-        assertNull(org.netbeans.modules.versioning.core.api.VersioningSupport.getOwner(VCSFileProxy.createFileProxy(f)));
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        createFolder(workDirPath).delete();
+    }
+     
+    
+    protected boolean isMasterFS() throws IOException {
+        File f = VCSFileProxy.createFileProxy(getVersionedFolder()).toFile(); // reurns null if not masterfs
+        return f != null;
+    }
+
+    protected FileObject createFolder (String path) throws IOException {
+        return VCSFilesystemTestFactory.getInstance(this).createFolder(path);
     }
     
-    @org.netbeans.modules.versioning.core.spi.VersioningSystem.Registration(
-            actionsCategory="fileproxyvcs",
-            displayName="fileproxyvcs",
-            menuLabel="fileproxyvcs",
-            metadataFolderNames="")
-    public static class OtherSPIVCS extends org.netbeans.modules.versioning.core.spi.VersioningSystem {
-        static String MANAGED_FOLDER_PREFIX = "fileproxyspi";
-        @Override
-        public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
-            if(file.getParentFile() != null && file.getParentFile().getName().startsWith(MANAGED_FOLDER_PREFIX)) {
-                return file.getParentFile();
-            }
-            return null;
-        }
+    protected VCSFileProxy toVCSFileProxy(FileObject fo) throws IOException {
+        return VCSFileProxy.createFileProxy(fo);
     }
-    
+
+    protected Class getVCS() {
+        return TestVCS.class;
+    }    
 }

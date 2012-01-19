@@ -86,7 +86,15 @@ public final class VersioningSupport {
      */
     public static VersioningSystem getOwner(VCSFileProxy file) {
         VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(file);
-        return owner != null ? ((DelegatingVCS)owner).getDelegate() : null;
+        if(owner != null) {
+            Object delegate = owner.getDelegate();
+            if(delegate instanceof DelegatingVCS) {
+                return ((DelegatingVCS) delegate).getDelegate();
+            } else if(delegate instanceof VersioningSystem) {
+                return (VersioningSystem) delegate;
+            }
+        }
+        return null;
     }
 
     /**

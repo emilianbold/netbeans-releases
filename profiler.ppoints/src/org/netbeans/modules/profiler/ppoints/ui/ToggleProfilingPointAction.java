@@ -68,7 +68,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.text.MessageFormat;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -82,8 +81,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import org.netbeans.modules.profiler.api.EditorSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -267,10 +265,9 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
     public void actionPerformed(final ActionEvent e) {
         acceleratorKeyStroke = Utilities.stringToKey(e.getActionCommand());
         if (acceleratorKeyStroke == null || acceleratorKeyStroke.getModifiers() == 0) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.ToggleProfilingPointAction_InvalidShortcutMsg(
-                                        Bundle.ToggleProfilingPointAction_ActionName()),
-                                    NotifyDescriptor.ERROR_MESSAGE));
+            ProfilerDialogs.displayError(
+                    Bundle.ToggleProfilingPointAction_InvalidShortcutMsg(
+                    Bundle.ToggleProfilingPointAction_ActionName()));
             return;
         }
         
@@ -280,9 +277,8 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
 
         if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
             warningDialogOpened = true;
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.ToggleProfilingPointAction_ProfilingProgressMsg(),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ToggleProfilingPointAction_ProfilingProgressMsg());
             warningDialogOpened = false;
 
             return;
@@ -290,9 +286,8 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
 
         if (Utils.getCurrentLocation(0).equals(CodeProfilingPoint.Location.EMPTY)) {
             warningDialogOpened = true;
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.ToggleProfilingPointAction_BadSourceMsg(),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ToggleProfilingPointAction_BadSourceMsg());
             warningDialogOpened = false;
 
             return;
