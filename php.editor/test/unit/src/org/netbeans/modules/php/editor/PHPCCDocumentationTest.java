@@ -59,7 +59,7 @@ public class PHPCCDocumentationTest extends PHPTestBase {
     public PHPCCDocumentationTest(String testName) {
         super(testName);
     }
-    
+
     public void test197696() throws Exception {
         checkCompletionDocumentation("testfiles/completion/documentation/issue197696.php", "$this->te^", false, "");
     }
@@ -71,16 +71,16 @@ public class PHPCCDocumentationTest extends PHPTestBase {
             int end = documentation.indexOf(".php", start);
             if (end > 0) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(documentation.substring(0, start - 1));
+                sb.append(documentation.substring(0, start));
                 sb.append(documentation.substring(end + 4));
                 return sb.toString();
             }
         }
         return documentation;
     }
-    
-    
-    
+
+
+
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,

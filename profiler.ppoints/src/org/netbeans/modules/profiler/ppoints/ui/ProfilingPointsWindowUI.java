@@ -95,10 +95,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 
 
@@ -246,9 +245,8 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
             CodeProfilingPoint.Location location = selectedProfilingPoint.getStartLocation();
 
             if (location == null) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.ProfilingPointsWindowUI_NoStartDefinedMsg(),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+                ProfilerDialogs.displayWarning(
+                        Bundle.ProfilingPointsWindowUI_NoStartDefinedMsg());
             } else {
                 Utils.openLocation(location);
             }
@@ -258,9 +256,8 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
             CodeProfilingPoint.Location location = selectedProfilingPoint.getEndLocation();
 
             if (location == null) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.ProfilingPointsWindowUI_NoEndDefinedMsg(),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+                ProfilerDialogs.displayWarning(
+                        Bundle.ProfilingPointsWindowUI_NoEndDefinedMsg());
             } else {
                 Utils.openLocation(location);
             }
