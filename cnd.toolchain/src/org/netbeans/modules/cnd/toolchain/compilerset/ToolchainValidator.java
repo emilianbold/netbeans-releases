@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +50,8 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -55,8 +59,6 @@ import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.compilers.SPICompilerAccesor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -83,18 +85,17 @@ public final class ToolchainValidator {
                 validateImpl(env, csm);
             }
         };
-        boolean postpone = env.isRemote() && !ConnectionManager.getInstance().isConnectedTo(env);
+        boolean postpone = env.isRemote() && ! ServerList.get(env).isOnline();
         if (postpone) {
-            ConnectionManager.getInstance().addConnectionListener(new ConnectionListener() {
+            ServerList.get(env).addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
-                public void connected(ExecutionEnvironment e) {
-                    if (e.equals(env)) {
-                        RP.post(runnable);
-                        ConnectionManager.getInstance().removeConnectionListener(this);
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ServerRecord.PROP_STATE_CHANGED.equals(evt.getPropertyName())) {
+                        if (ServerList.get(env).isOnline()) {
+                            RP.post(runnable);
+                            ServerList.get(env).removePropertyChangeListener(this);
+                        }
                     }
-                }
-                @Override
-                public void disconnected(ExecutionEnvironment env) {
                 }
             });
         } else {
