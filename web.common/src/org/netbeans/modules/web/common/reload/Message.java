@@ -127,7 +127,7 @@ class Message {
     
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder('{');
+        StringBuilder builder = new StringBuilder("{");     // NOI18N
         builder.append( DEFAULT_PRESENTER.getPresentation(MESSAGE));
         builder.append(':');
         builder.append( DEFAULT_PRESENTER.getPresentation( type.toString()));
@@ -177,7 +177,7 @@ class Message {
          */
         @Override
         public String getPresentation( String value ) {
-            StringBuilder builder = new StringBuilder('"');
+            StringBuilder builder = new StringBuilder("\"");        // NOI18N
             builder.append( value );
             builder.append('"');
             return builder.toString();

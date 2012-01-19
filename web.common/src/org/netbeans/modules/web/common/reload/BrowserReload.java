@@ -85,9 +85,8 @@ public class BrowserReload {
             };
             Runtime.getRuntime().addShutdownHook( shutdown);
             
-            file2Id = new ConcurrentHashMap<FileObject, String>();
+            communicationMap = new ConcurrentHashMap<FileObject, Pair>();
             url2File = new ConcurrentHashMap<String, FileObject>();
-            file2Socket = new ConcurrentHashMap<FileObject, SelectionKey>();
         }
         catch (IOException e) {
             LOG.log( Level.WARNING , null , e);
@@ -103,16 +102,23 @@ public class BrowserReload {
     }
     
     public void reload( FileObject fileObject ){
-        String tabId = file2Id.get( fileObject );
-        if ( tabId == null ){
+        Pair pair = communicationMap.get( fileObject );
+        if ( pair == null || pair.getId() == null ){
             return;
         }
-        SelectionKey selectionKey = file2Socket.get( fileObject );
+        SelectionKey selectionKey = pair.getSelectionKey();
         if ( selectionKey == null ){
             return;
         }
             
-        server.sendMessage(selectionKey, createReloadMessage(tabId) );
+        server.sendMessage(selectionKey, createReloadMessage(pair.getId()) );
+    }
+    
+    public void clear( FileObject fileObject ){
+        if ( fileObject == null ){
+            return;
+        }
+        communicationMap.remove( fileObject );
     }
     
     public static BrowserReload getInstance(){
@@ -171,8 +177,7 @@ public class BrowserReload {
                 server.sendMessage(key, msg.toString());
             }
             else  {
-                file2Socket.put( localFile , key );
-                file2Id.put( localFile , tabId );
+                communicationMap.put( localFile , new Pair(key , tabId) );
                 Map<String,String> map = new HashMap<String, String>();
                 map.put( Message.TAB_ID, tabId );
                 map.put("status","accepted");       // NOI18N
@@ -186,34 +191,46 @@ public class BrowserReload {
             if ( tabId == null ){
                 return;
             }
-            FileObject fileObject = null;
-            for (Iterator<Entry<FileObject,String>> iterator = file2Id.entrySet().iterator(); 
+            for (Iterator<Entry<FileObject,Pair>> iterator = communicationMap.entrySet().iterator(); 
                 iterator.hasNext() ; ) 
             {
-                Entry<FileObject, String> entry = iterator.next();
-                String id = entry.getValue();
+                Entry<FileObject, Pair> entry = iterator.next();
+                String id = entry.getValue().getId();
                 if ( tabId.equals( id )){
-                    fileObject = entry.getKey();
+                    try {
+                        server.close(entry.getValue().getSelectionKey());
+                    }
+                    catch(IOException e){
+                        LOG.log( Level.INFO, null , e );
+                    }
                     iterator.remove();
                     break;
-                }
-            }
-            if ( fileObject != null ){
-                file2Socket.remove( fileObject );
-                try {
-                    server.close(key);
-                }
-                catch(IOException e){
-                    LOG.log( Level.INFO, null , e );
                 }
             }
         }
         
     }
+    
+    public static class Pair {
+        Pair( SelectionKey key , String tabId){
+            this.key = key;
+            this.tabId = tabId;
+        }
+        
+        public SelectionKey getSelectionKey(){
+            return key;
+        }
+        
+        public String getId(){
+            return tabId;
+        }
+        
+        private SelectionKey key;
+        private String tabId;
+    }
 
     private WebSocketServer server;
     private static final BrowserReload INSTANCE = new BrowserReload();
     private Map<String, FileObject> url2File;
-    private Map<FileObject,String> file2Id;
-    private Map<FileObject,SelectionKey> file2Socket;
+    private Map<FileObject,Pair> communicationMap;
 }

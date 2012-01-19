@@ -1623,6 +1623,7 @@ public final class WebProject implements Project {
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
+            reload(fe.getFile());
         }
 
         @Override
@@ -1639,6 +1640,7 @@ public final class WebProject implements Project {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
+                BrowserReload.getInstance().clear(fe.getFile());
                 if (handleResource(fe)) {
                     return;
                 }
@@ -1703,6 +1705,7 @@ public final class WebProject implements Project {
         @Override
         public void fileDeleted(FileEvent fe) {
             try {
+                BrowserReload.getInstance().clear(fe.getFile());
                 if (handleResource(fe)) {
                     return;
                 }
@@ -1745,6 +1748,19 @@ public final class WebProject implements Project {
             }
         }
 
+        private void reload( FileObject fileObject ) {
+            if ( fileObject == null ){  
+                return;
+            }   
+            FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
+            FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
+            if ( FileUtil.isParentOf(webInf, fileObject) || 
+                    FileUtil.isParentOf(docBase, fileObject))
+            {
+                BrowserReload.getInstance().reload(fileObject);
+            }
+        }
+        
         private boolean isSynchronizationAppropriate(String filePath) {
             if (filePath.startsWith("WEB-INF/classes") && !filePath.startsWith("WEB-INF/classes/META-INF")) { // NOI18N
                 return false;
@@ -1767,11 +1783,6 @@ public final class WebProject implements Project {
                 if ( file == null ){
                     continue;
                 }
-                FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
-                if ( fileObject == null ){
-                    continue;
-                }
-                BrowserReload.getInstance().reload(fileObject);
             }
         }
 
