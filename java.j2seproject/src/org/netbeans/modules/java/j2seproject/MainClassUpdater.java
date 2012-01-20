@@ -58,12 +58,7 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -277,7 +272,7 @@ public final class MainClassUpdater extends FileChangeAdapter implements Propert
                     final JavaSource js = JavaSource.create(cpInfo);
                     
                     // execute immediately, or delay if cannot find main class
-                    SourceUtils.postUserActionTask(js, new Task<CompilationController>() {
+                    ScanUtils.postUserActionTask(js, new Task<CompilationController>() {
                         @Override
                         public void run(CompilationController c) throws Exception {
                             TypeElement te = SourceUtils.findTypeElement(js, c.getElements(), mainClassName);
@@ -289,7 +284,7 @@ public final class MainClassUpdater extends FileChangeAdapter implements Propert
                                         foListener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, currentFo);
                                         currentFo.addFileChangeListener(foListener);                                        
                                         currentDo = DataObject.find(currentFo);
-                                        doListener = WeakListeners.propertyChange(MainClassUpdater.this, currentDo);
+                                        doListener = org.openide.util.WeakListeners.propertyChange(MainClassUpdater.this, currentDo);
                                         currentDo.addPropertyChangeListener(doListener);
                                     }                                    
                                 }

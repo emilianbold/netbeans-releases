@@ -241,6 +241,7 @@ public class MainClassChooser extends JPanel {
                 // scanning done, info updated & up-to-date
                 return;
             }
+            task.cancel(true);
             dummyJs.runUserActionTask(new SearchTask(sourcesRoots, mainClass, flag, true) {
                 @Override
                 public void run(CompilationController parameter) throws Exception {
