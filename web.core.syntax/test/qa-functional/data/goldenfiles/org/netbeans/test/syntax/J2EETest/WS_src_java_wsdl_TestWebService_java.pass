@@ -2,11 +2,14 @@
 WebMethod
 WebParam
 WebService
+wsdl
 End cursor position = 460
 [@S|, SOAPBinding, @SOAPBinding, 487]
 SOAPBinding
 Stateless
 SuppressWarnings
+sun
+sunw
 End cursor position = 500
 [@HandlerChain(|), String file, @HandlerChain(file=), 560]
 String file
@@ -38,7 +41,7 @@ Compiler
 Deprecated
 Double
 Enum <E>
-EnumConstantNotPresentException
+EnumConstantNotPresentExceptio
 Error
 Exception
 ExceptionInInitializerError
@@ -93,7 +96,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
 SuppressWarnings
 System
 TestWebService
@@ -113,8 +116,11 @@ Void
 WebMethod
 WebParam
 WebService
+ch
 com
 java
+javanet
+javassist
 javax
 jp
 org
@@ -122,7 +128,7 @@ sun
 sunw
 wsdl
 End cursor position = 649
-[@WebParam(mode=|), Mode Mode.OUT, @WebParam(mode=WebParam.Mode.OUT), 713]
+[@WebParam(mode=|), Mode Mode.OUT, @WebParam(mode= WebParam.Mode.OUT), 714]
 Mode Mode.IN
 Mode Mode.INOUT
 Mode Mode.OUT
@@ -151,7 +157,7 @@ Compiler
 Deprecated
 Double
 Enum <E>
-EnumConstantNotPresentException
+EnumConstantNotPresentExceptio
 Error
 Exception
 ExceptionInInitializerError
@@ -206,7 +212,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
 SuppressWarnings
 System
 TestWebService
@@ -226,12 +232,15 @@ Void
 WebMethod
 WebParam
 WebService
+ch
 com
 java
+javanet
+javassist
 javax
 jp
 org
 sun
 sunw
 wsdl
-End cursor position = 746
+End cursor position = 748
