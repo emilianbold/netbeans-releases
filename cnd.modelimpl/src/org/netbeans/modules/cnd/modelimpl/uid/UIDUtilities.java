@@ -307,7 +307,7 @@ public class UIDUtilities {
                 Object object = uid.getObject();
                 if (CsmKindUtilities.isOffsetable(object)) {
                     out = ((CsmOffsetable) object).getEndOffset();
-                    KeyUtilities.setKeyEndOffset(key, out);
+                    KeyUtilities.cacheKeyEndOffset(key, out);
                 }
             }
             return out;

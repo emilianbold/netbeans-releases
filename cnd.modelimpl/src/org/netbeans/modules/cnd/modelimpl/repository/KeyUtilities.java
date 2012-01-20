@@ -213,9 +213,9 @@ public class KeyUtilities {
         return -1;
     }
     
-    public static void setKeyEndOffset(Key key, int endOffset) {
+    public static void cacheKeyEndOffset(Key key, int endOffset) {
         if (key instanceof OffsetableKey) {
-            ((OffsetableKey) key).setEndOffset(endOffset);
+            ((OffsetableKey) key).cacheEndOffset(endOffset);
         }
     }
     // have to be public or UID factory does not work
