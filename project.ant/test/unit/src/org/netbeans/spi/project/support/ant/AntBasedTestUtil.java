@@ -189,7 +189,7 @@ public class AntBasedTestUtil {
                 genFilesHelper,
                 aux,
                 helper.createCacheDirectoryProvider(),
-                helper.createSharabilityQuery(helper.getStandardPropertyEvaluator(), new String[0], new String[0]),
+                helper.createSharabilityQuery2(helper.getStandardPropertyEvaluator(), new String[0], new String[0]),
                 refHelper.createSubprojectProvider(),
                 new TestAntArtifactProvider(),
                 new ProjectXmlSavedHook() {

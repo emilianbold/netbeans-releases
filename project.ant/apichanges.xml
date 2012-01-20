@@ -108,6 +108,27 @@ is the proper place.
 
     <changes>
 
+        <change id="createSharabilityQuery2">
+            <api name="general"/>
+            <summary>Added <code>AntProjectHelper.createSharabilityQuery2</code></summary>
+            <version major="1" minor="47"/>
+            <date year="2012" month="1" day="20"/>
+            <author login="jglick"/>
+            <compatibility addition="yes" deprecation="yes">
+                <p>
+                    Project types using <code>AntProjectHelper.createSharabilityQuery</code> should switch to the new method.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                   <code>AntProjectHelper.createSharabilityQuery2</code> was introduced
+                   to avoid the deprecated <code>SharabilityQueryImplementation</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
+            <issue number="207288"/>
+        </change>
+
         <change id="ReferenceHelper-getLibraryChooserImportHandler-url">
             <api name="general"/>
             <summary>Added <code>getLibraryChooserImportHandler</code> method into <code>ReferenceHelper</code> accepting <code>URL</code></summary>
