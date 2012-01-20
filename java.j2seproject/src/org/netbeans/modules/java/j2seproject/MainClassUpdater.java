@@ -275,7 +275,7 @@ public final class MainClassUpdater extends FileChangeAdapter implements Propert
                     ScanUtils.postUserActionTask(js, new Task<CompilationController>() {
                         @Override
                         public void run(CompilationController c) throws Exception {
-                            TypeElement te = SourceUtils.findTypeElement(js, c.getElements(), mainClassName);
+                            TypeElement te = ScanUtils.findTypeElement(js, c.getElements(), mainClassName);
                              if (te != null) {
                                 final FileObject fo = SourceUtils.getFile(te, cpInfo);
                                 synchronized (MainClassUpdater.this) {
