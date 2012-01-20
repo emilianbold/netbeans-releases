@@ -45,6 +45,7 @@ package org.netbeans.modules.web.common.websocket;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -103,14 +104,20 @@ public class SocketServer implements Runnable {
                         continue;
                     }
 
-                    if (key.isAcceptable()) {
-                        acceptConnection(key);
+                    try {
+                        if (key.isAcceptable()) {
+                            acceptConnection(key);
+                        }
+                        else if (key.isReadable()) {
+                            readData(key);
+                        }
+                        else if (key.isWritable()) {
+                            writeData(key);
+                        }
                     }
-                    else if (key.isReadable()) {
-                        readData(key);
-                    }
-                    else if (key.isWritable()) {
-                        writeData(key);
+                    catch( ClosedChannelException e ){
+                        chanelClosed( key );
+                        close(key);
                     }
                 }
             }
@@ -121,6 +128,9 @@ public class SocketServer implements Runnable {
         }
     }
     
+    protected void chanelClosed( SelectionKey key ) {
+    }
+
     public void stop(){
         stop = true;
         getSelector().wakeup();
@@ -130,6 +140,11 @@ public class SocketServer implements Runnable {
         getWriteQueue(key).add(ByteBuffer.wrap(data));
         keys.add(key);
         getSelector().wakeup();
+    }
+    
+    public void close( SelectionKey key ) throws IOException {
+        key.channel().close();
+        key.cancel();
     }
     
     protected Queue<ByteBuffer> getWriteQueue( SelectionKey key ){

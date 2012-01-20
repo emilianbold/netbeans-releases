@@ -124,55 +124,49 @@ class WebSocketHandler75 implements WebSocketChanelHandler {
      * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
      */
     @Override
-    public void read( ByteBuffer byteBuffer ) {
+    public void read( ByteBuffer byteBuffer ) throws IOException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        try {
-            byte[] bytes = new byte[ WebSocketServer.BYTES ];
-            List<List<Byte>> messages = new LinkedList<List<Byte>>();
-            List<Byte> message = new LinkedList<Byte>();
-            boolean newMessage = false;
-            while (true) {
-                byteBuffer.clear();
-                if ( socketChannel.read(byteBuffer) ==-1){
-                    close( key );
+        byte[] bytes = new byte[WebSocketServer.BYTES];
+        List<List<Byte>> messages = new LinkedList<List<Byte>>();
+        List<Byte> message = new LinkedList<Byte>();
+        boolean newMessage = false;
+        while (true) {
+            byteBuffer.clear();
+            if (socketChannel.read(byteBuffer) == -1) {
+                close(key);
+            }
+            byteBuffer.flip();
+            byteBuffer.get(bytes);
+            if (bytes[0] == 0 && !newMessage) {
+                newMessage = true;
+                if (!message.isEmpty()) {
+                    messages.add(new ArrayList<Byte>(message));
                 }
-                byteBuffer.flip();
-                byteBuffer.get(bytes);
-                if ( bytes[0] == 0 && !newMessage ){
-                    newMessage = true;
-                    if ( !message.isEmpty() ){
-                        messages.add( new ArrayList<Byte>( message) );
-                    }
+                message.clear();
+            }
+            int i;
+            for (i = 1; i < byteBuffer.limit(); i++) {
+                if (bytes[i] == (byte) 255) {
+                    messages.add(new ArrayList<Byte>(message));
                     message.clear();
+                    newMessage = false;
                 }
-                int i;
-                for (i = 1; i < byteBuffer.limit(); i++) {
-                    if (bytes[i] == (byte)255 ) {
-                        messages.add(new ArrayList<Byte>(message));
-                        message.clear();
-                        newMessage = false;
-                    }
-                    else {
-                        message.add(bytes[i]);
-                    }
-                }
-                if ( message.isEmpty()){
-                    break;
+                else {
+                    message.add(bytes[i]);
                 }
             }
-            for( List<Byte> list : messages ){
-                bytes = new byte[ list.size() ];
-                int i=0;
-                for( Byte byt: list ){
-                    bytes[i]=byt;
-                    i++;
-                }
-                getServer().getWebSocketReadHandler().read(key, bytes, null);
+            if (message.isEmpty()) {
+                break;
             }
         }
-        catch (IOException e) {
-            WebSocketServer.LOG.log( Level.WARNING , null , e);
-            close( key );
+        for (List<Byte> list : messages) {
+            bytes = new byte[list.size()];
+            int i = 0;
+            for (Byte byt : list) {
+                bytes[i] = byt;
+                i++;
+            }
+            getServer().getWebSocketReadHandler().read(key, bytes, null);
         }
     }
     

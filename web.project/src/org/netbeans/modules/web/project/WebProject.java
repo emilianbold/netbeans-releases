@@ -1778,12 +1778,6 @@ public final class WebProject implements Project {
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(artifacts);
             }
-            for (Artifact artifact : artifacts) {
-                File file = artifact.getFile();
-                if ( file == null ){
-                    continue;
-                }
-            }
         }
 
         private boolean handleResource(FileEvent fe) {
