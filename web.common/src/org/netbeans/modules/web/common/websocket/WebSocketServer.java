@@ -98,11 +98,6 @@ public class WebSocketServer extends SocketServer {
         send(bytes , key); 
     }
     
-    public void close( SelectionKey key ) throws IOException {
-        key.channel().close();
-        key.cancel();
-    }
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.common.websocket.SocketServer#getWriteQueue(java.nio.channels.SelectionKey)
      */

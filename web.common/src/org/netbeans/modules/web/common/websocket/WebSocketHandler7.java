@@ -125,47 +125,42 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
      * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
      */
     @Override
-    public void read( ByteBuffer byteBuffer ) {
+    public void read( ByteBuffer byteBuffer ) throws IOException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        try {
-            byteBuffer.clear();
-            byteBuffer.limit(1);
-            while (true) {
-                int size = socketChannel.read(byteBuffer);
-                if (  size==-1 ){
-                    close(key);
-                    return;
-                }
-                else if ( size ==0 ){
-                    return;
-                }
-                byteBuffer.flip();
-                byte leadingByte = byteBuffer.get();
-                if ( leadingByte == CLOSE_CONNECTION_BYTE ){
-                    // connection close
-                    close( key );
-                    return;
-                }
-                else if ( leadingByte == FIRST_BYTE_MESSAGE || 
-                        leadingByte == FIRST_BYTE_BINARY  )
+        byteBuffer.clear();
+        byteBuffer.limit(1);
+        while (true) {
+            int size = socketChannel.read(byteBuffer);
+            if (size == -1) {
+                close(key);
+                return;
+            }
+            else if (size == 0) {
+                return;
+            }
+            byteBuffer.flip();
+            byte leadingByte = byteBuffer.get();
+            if (leadingByte == CLOSE_CONNECTION_BYTE) {
+                // connection close
+                close(key);
+                return;
+            }
+            else if (leadingByte == FIRST_BYTE_MESSAGE
+                    || leadingByte == FIRST_BYTE_BINARY)
+            {
+                if (!readFinalFrame(key, byteBuffer, socketChannel, leadingByte))
                 {
-                    if ( !readFinalFrame(key, byteBuffer, socketChannel, leadingByte) ){
-                        return;
-                    }
-                    else {
-                        continue;
-                    }
+                    return;
                 }
                 else {
-                    // TODO : handle frame sequence, ping frame
+                    continue;
                 }
-                
             }
+            else {
+                // TODO : handle frame sequence, ping frame
+            }
+
         }
-        catch (IOException e) {
-            WebSocketServer.LOG.log( Level.WARNING , null , e);
-            close( key );
-        }        
     }
 
     @Override

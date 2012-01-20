@@ -73,7 +73,12 @@ public class BrowserReload {
     
     private BrowserReload(){
         try {
-            server = new WebSocketServer(new InetSocketAddress(PORT));
+            server = new WebSocketServer(new InetSocketAddress(PORT)){
+              
+                protected void chanelClosed(SelectionKey key) {
+                    removeKey( key );
+                }
+            };
             server.setWebSocketReadHandler( new BrowserPluginHandler() );
             new Thread( server ).start();
             
@@ -129,6 +134,18 @@ public class BrowserReload {
         Message msg = new Message( MessageType.RELOAD, 
                 Collections.singletonMap( Message.TAB_ID, tabId ));
         return msg.toString();
+    }
+    
+    private void removeKey( SelectionKey key ) {
+        for( Iterator<Entry<FileObject,Pair>> iterator = communicationMap.entrySet().iterator(); 
+            iterator.hasNext() ; )
+        {
+            Entry<FileObject, Pair> pair = iterator.next();
+            if ( key.equals( pair.getValue().getSelectionKey() )){
+                iterator.remove();
+            }
+        }
+        
     }
     
     public class BrowserPluginHandler implements WebSocketReadHandler {

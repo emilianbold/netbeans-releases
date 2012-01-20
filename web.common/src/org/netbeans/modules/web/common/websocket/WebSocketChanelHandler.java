@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.common.websocket;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
@@ -63,7 +64,7 @@ interface WebSocketChanelHandler {
 
     void sendHandshake( );
 
-    void read( ByteBuffer byteBuffer );
+    void read( ByteBuffer byteBuffer ) throws IOException ;
 
     byte[] createTextFrame( String message );
 }
