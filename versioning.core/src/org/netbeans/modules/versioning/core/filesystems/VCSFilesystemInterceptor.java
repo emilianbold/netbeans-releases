@@ -343,6 +343,7 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void afterMove(VCSFileProxy from, VCSFileProxy to) {
+        LOG.log(Level.FINE, "afterMove {0}, {1}", new Object[] {from, to});
         removeFromDeletedFiles(from);
         getInterceptor(from, to, "afterMove").afterMove();
     }
@@ -358,9 +359,11 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void beforeCopy(VCSFileProxy from, VCSFileProxy to) {
+        // XXX and what is getCopyHandler good for?
     }
     
     public static void copySuccess(VCSFileProxy from, VCSFileProxy to) {
+        LOG.log(Level.FINE, "copySuccess {0}, {1}", new Object[] {from, to});
         getInterceptor(from, to, "afterCopy").afterCopy();
     }
 
@@ -380,10 +383,10 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static long listFiles(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
-        LOG.log(Level.FINE, "refreshRecursively {0}, {1}", new Object[]{dir, lastTimeStamp});
+        LOG.log(Level.FINE, "listFiles {0}, {1}", new Object[]{dir, lastTimeStamp});
         if(LOG.isLoggable(Level.FINER)) {
             for (Object f : children) {
-                LOG.log(Level.FINE, "  refreshRecursively child {1}", f);
+                LOG.log(Level.FINE, "  listFiles child {1}", f);
             }
         }
         DelegatingInterceptor interceptor = getRefreshInterceptor(dir);
@@ -698,6 +701,7 @@ public final class VCSFilesystemInterceptor {
 
                     @Override
                     public void handle() throws IOException {
+                        LOG.log(Level.FINE, "move handle {0}", new Object[]{file, to});
                         doMove();
                     }
                 };
@@ -711,6 +715,7 @@ public final class VCSFilesystemInterceptor {
 
                     @Override
                     public void handle() throws IOException {
+                        LOG.log(Level.FINE, "copy handle {0}", new Object[]{file, to});
                         doCopy();
                     }
                 };
