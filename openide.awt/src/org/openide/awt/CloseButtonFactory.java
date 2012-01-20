@@ -69,10 +69,10 @@ public final class CloseButtonFactory{
 
     private CloseButtonFactory() {
     }
-    
+
     /**
      * Creates a small 'close' JButton with close icon, rollover icon and pressed icon according to Look and Feel
-     * 
+     *
      * @return JButton with close icons.
      */
     public static JButton createCloseButton() {
@@ -89,10 +89,10 @@ public final class CloseButtonFactory{
         closeButton.setPressedIcon(ImageUtilities.image2Icon(getCloseTabPressedImage()));
         return closeButton;
     }
-    
+
     /**
      * Creates a big 'close' JButton with close icon, rollover icon and pressed icon according to Look and Feel
-     * 
+     *
      * @return JButton with close icons.
      */
     public static JButton createBigCloseButton() {
@@ -111,9 +111,19 @@ public final class CloseButtonFactory{
     }
 
     private static boolean isWindowsVistaLaF() {
-        String osName = System.getProperty("os.name");
+        return isWindowsLaF() && (isWindowsVista() || isWindows7()) && isWindowsXPLaF();
+    }
+
+    private static boolean isWindowsVista() {
+        String osName = System.getProperty ("os.name");
         return osName.indexOf("Vista") >= 0
-                || (osName.equals("Windows NT (unknown)") && "6.0".equals(System.getProperty("os.version")));
+            || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
+    }
+
+    private static boolean isWindows7() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 7") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.1".equals( System.getProperty("os.version") ));
     }
 
     private static boolean isWindowsXPLaF() {
@@ -130,7 +140,7 @@ public final class CloseButtonFactory{
     private static boolean isAquaLaF() {
         return "Aqua".equals(UIManager.getLookAndFeel().getID());
     }
-    
+
     private static boolean isGTKLaF () {
         return "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
@@ -153,7 +163,7 @@ public final class CloseButtonFactory{
         }
         return closeTabImage;
     }
-    
+
     private static Image getCloseTabPressedImage() {
         if( null == closeTabPressedImage ) {
             if( isWindowsVistaLaF() ) {
@@ -172,7 +182,7 @@ public final class CloseButtonFactory{
         }
         return closeTabPressedImage;
     }
-    
+
     private static Image getCloseTabRolloverImage() {
         if( null == closeTabMouseOverImage ) {
             if( isWindowsVistaLaF() ) {
@@ -191,8 +201,8 @@ public final class CloseButtonFactory{
         }
         return closeTabMouseOverImage;
     }
-    
-    
+
+
     private static Image getBigCloseTabImage() {
         if( null == bigCloseTabImage ) {
             if( isWindowsVistaLaF() ) {
@@ -211,7 +221,7 @@ public final class CloseButtonFactory{
         }
         return bigCloseTabImage;
     }
-    
+
     private static  Image getBigCloseTabPressedImage() {
         if( null == bigCloseTabPressedImage ) {
             if( isWindowsVistaLaF() ) {
@@ -230,7 +240,7 @@ public final class CloseButtonFactory{
         }
         return bigCloseTabPressedImage;
     }
-    
+
     private static Image getBigCloseTabRolloverImage() {
         if( null == bigCloseTabMouseOverImage ) {
             if( isWindowsVistaLaF() ) {
