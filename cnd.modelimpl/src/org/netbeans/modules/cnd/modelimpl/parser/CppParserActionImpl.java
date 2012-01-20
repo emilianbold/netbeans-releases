@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -51,9 +53,11 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
 import org.openide.util.CharSequences;
@@ -62,6 +66,7 @@ import org.openide.util.CharSequences;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CppParserActionImpl implements CppParserAction {
+
     private enum CppAttributes implements SymTabEntryKey {
         SYM_TAB, DEFINITION, TYPE
     }
@@ -71,50 +76,53 @@ public class CppParserActionImpl implements CppParserAction {
     Map<Integer, CsmObject> objects;
     FileImpl file;
 
-    EnumBuilder enumBuilder;
-    
+    CppParserBuilderContext builderContext;
     
     public CppParserActionImpl(CsmFile file, Map<Integer, CsmObject> objects) {
+        assert objects != null;
+        assert file != null;
+        
         this.globalSymTab = createGlobal();
         this.objects = objects;
         this.file = (FileImpl) file;
+        this.builderContext = new CppParserBuilderContext();
     }
     
     @Override
     public void enum_declaration(Token token) {        
         //System.out.println("enum_declaration " + ((APTToken)token).getOffset());
         
-        enumBuilder = new EnumBuilder();
+        EnumBuilder enumBuilder = new EnumBuilder();
         enumBuilder.setFile(file);
         if(token instanceof APTToken) {
             enumBuilder.setStartOffset(((APTToken)token).getOffset());
         }
+        builderContext.push(enumBuilder);
     }
 
     @Override
     public void end_enum_declaration(Token token) {
-        //System.out.println("end_enum_declaration " + ((APTToken)token).getOffset());
-
-        if(enumBuilder != null && objects != null) {
-            EnumImpl e = enumBuilder.create(true);
-            if(e != null) {
-                objects.put(e.getStartOffset(), e);
-                SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
-                enumEntry.setAttribute(CppAttributes.DEFINITION, e);
-                for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
-                    SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
-                    assert enumeratorEntry != null;
-                    enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
-                }
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
+        EnumImpl e = enumBuilder.create(true);
+        if(e != null) {
+            objects.put(e.getStartOffset(), e);
+            SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
+            enumEntry.setAttribute(CppAttributes.DEFINITION, e);
+            for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
+                SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
+                assert enumeratorEntry != null;
+                enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
             }
-
-            enumBuilder = null;
         }
+
+        builderContext.pop();
     }
 
     @Override
     public void enum_name(Token token) {
-        //System.out.println("enum_name " + ((APTToken)token).getOffset());      
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
         APTToken aToken = (APTToken) token;
         final CharSequence name = aToken.getTextID();
         SymTabEntry enumEntry = globalSymTab.lookupLocal(name);
@@ -124,10 +132,7 @@ public class CppParserActionImpl implements CppParserAction {
         } else {
             // error
         }
-        // add to index
-        if(enumBuilder != null) {
-            enumBuilder.setName(name);
-        }
+        enumBuilder.setName(name);
     }
 
     @Override
@@ -137,6 +142,8 @@ public class CppParserActionImpl implements CppParserAction {
     
     @Override
     public void enumerator(Token token) {
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
         APTToken aToken = (APTToken) token;
         final CharSequence name = aToken.getTextID();
         SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(name);
@@ -147,22 +154,22 @@ public class CppParserActionImpl implements CppParserAction {
             // ERROR redifinition
         }
         if(enumBuilder != null) {
-            EnumeratorBuilder builder = new EnumeratorBuilder();
-            builder.setName(name);
-            builder.setFile(file);
-            builder.setStartOffset(aToken.getOffset());
-            builder.setEndOffset(aToken.getEndOffset());
-            enumBuilder.addEnumerator(builder);
+            EnumeratorBuilder builder2 = new EnumeratorBuilder();
+            builder2.setName(name);
+            builder2.setFile(file);
+            builder2.setStartOffset(aToken.getOffset());
+            builder2.setEndOffset(aToken.getEndOffset());
+            enumBuilder.addEnumerator(builder2);
         }
     }
     
     @Override
     public void end_enum_body(Token token) {
-        if(enumBuilder != null) {
-            if(token instanceof APTToken) {
-                enumBuilder.setEndOffset(((APTToken)token).getEndOffset());
-            }
-        }    
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
+        if(token instanceof APTToken) {
+            enumBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        }
         SymTab enumerators = globalSymTab.pop();
         globalSymTab.importToLocal(enumerators);
     }
@@ -191,6 +198,32 @@ public class CppParserActionImpl implements CppParserAction {
     }
 
     @Override
+    public void namespace_declaration(Token token) {
+        NamespaceBuilder nsBuilder = new NamespaceBuilder();
+        nsBuilder.setFile(file);
+        if(token instanceof APTToken) {
+            nsBuilder.setStartOffset(((APTToken)token).getOffset());
+        }
+        builderContext.push(nsBuilder);
+    }
+
+    @Override
+    public void namespace_name(Token token) {
+        NamespaceBuilder nsBuilder = builderContext.getNamespaceBuilder();
+        
+        APTToken aToken = (APTToken) token;
+        final CharSequence name = aToken.getTextID();
+        SymTabEntry enumEntry = globalSymTab.lookupLocal(name);
+        if (enumEntry == null) {
+            enumEntry = globalSymTab.enterLocal(name);
+            enumEntry.setAttribute(CppAttributes.TYPE, true);
+        } else {
+            // error
+        }
+        nsBuilder.setName(name);
+    }
+    
+    @Override
     public void namespace_body(Token token) {
         globalSymTab.push();
     }
@@ -200,6 +233,21 @@ public class CppParserActionImpl implements CppParserAction {
         globalSymTab.pop();
     }
 
+    @Override
+    public void end_namespace_declaration(Token token) {
+        NamespaceBuilder nsBuilder = builderContext.getNamespaceBuilder();
+        if(token instanceof APTToken) {
+            nsBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        }
+        builderContext.pop();
+        if(builderContext.top() == null) {
+            nsBuilder.create();
+        } else {
+            NamespaceBuilder nsBuilder2 = builderContext.getNamespaceBuilder();
+            nsBuilder2.addNamespace(nsBuilder);
+        }
+    }
+    
     @Override
     public void compound_statement(Token token) {
         globalSymTab.push();

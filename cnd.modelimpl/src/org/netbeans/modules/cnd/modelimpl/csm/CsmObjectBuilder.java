@@ -39,86 +39,10 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser;
-
-import org.netbeans.modules.cnd.antlr.Token;
+package org.netbeans.modules.cnd.modelimpl.csm;
 
 /**
- * @author nick
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class CppParserEmptyActionImpl implements CppParserAction {
-
-    @Override
-    public void enum_declaration(Token token) {
-    }
-
-    @Override
-    public void enum_name(Token token) {
-    }
-
-    @Override
-    public void enum_body(Token token) {
-    }
-
-    @Override
-    public void enumerator(Token token) {
-    }
-
-    @Override
-    public void end_enum_body(Token token) {
-    }
-
-    @Override
-    public void end_enum_declaration(Token token) {
-    }
-
-    @Override
-    public void class_name(Token token) {
-    }
-
-    @Override
-    public void class_body(Token token) {
-    }
-
-    @Override
-    public void end_class_body(Token token) {
-    }
-
-    @Override
-    public void namespace_body(Token token) {
-    }
-
-    @Override
-    public void end_namespace_body(Token token) {
-    }
-
-    @Override
-    public void compound_statement(Token token) {
-    }
-
-    @Override
-    public void end_compound_statement(Token token) {
-    }
-
-    @Override
-    public void id(Token token) {
-    }
-
-    @Override
-    public boolean isType(String name) {
-        return false;
-    }
-
-    @Override
-    public void namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void end_namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void namespace_name(Token token) {
-    }
-    
+public interface CsmObjectBuilder {
 }

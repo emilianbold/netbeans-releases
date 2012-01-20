@@ -41,84 +41,47 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import org.netbeans.modules.cnd.antlr.Token;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 
 /**
- * @author nick
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class CppParserEmptyActionImpl implements CppParserAction {
-
-    @Override
-    public void enum_declaration(Token token) {
+public class CppParserBuilderContext {
+    
+    List<CsmObjectBuilder> builders = new ArrayList<CsmObjectBuilder>();
+ 
+    public void push(CsmObjectBuilder builder) {
+        builders.add(builder);
     }
 
-    @Override
-    public void enum_name(Token token) {
+    public void pop() {
+        builders.remove(builders.size() - 1);
     }
 
-    @Override
-    public void enum_body(Token token) {
+    public CsmObjectBuilder top() {
+        if(!builders.isEmpty()) {
+            return builders.get(builders.size() - 1);
+        } else {
+            return null;
+        }
     }
 
-    @Override
-    public void enumerator(Token token) {
+    public EnumBuilder getEnumBuilder() {
+        CsmObjectBuilder builder = top();
+        assert builder instanceof EnumBuilder;
+        EnumBuilder enumBuilder = (EnumBuilder)builder;        
+        return enumBuilder;
     }
 
-    @Override
-    public void end_enum_body(Token token) {
-    }
-
-    @Override
-    public void end_enum_declaration(Token token) {
-    }
-
-    @Override
-    public void class_name(Token token) {
-    }
-
-    @Override
-    public void class_body(Token token) {
-    }
-
-    @Override
-    public void end_class_body(Token token) {
-    }
-
-    @Override
-    public void namespace_body(Token token) {
-    }
-
-    @Override
-    public void end_namespace_body(Token token) {
-    }
-
-    @Override
-    public void compound_statement(Token token) {
-    }
-
-    @Override
-    public void end_compound_statement(Token token) {
-    }
-
-    @Override
-    public void id(Token token) {
-    }
-
-    @Override
-    public boolean isType(String name) {
-        return false;
-    }
-
-    @Override
-    public void namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void end_namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void namespace_name(Token token) {
+    public NamespaceBuilder getNamespaceBuilder() {
+        CsmObjectBuilder builder = top();
+        assert builder instanceof NamespaceBuilder;
+        NamespaceBuilder nsBuilder = (NamespaceBuilder)builder;        
+        return nsBuilder;
     }
     
 }
