@@ -51,9 +51,10 @@ import org.netbeans.api.extexecution.startup.StartupArguments;
 import org.openide.util.Lookup;
 
 /**
- * Provides the additional arguments to server VM. Typically the server plugin
+ * Provides additional JVM arguments to be used when starting a server or user program.
+ * Typically the server plugin
  * implementor or project will query the arguments via API counterpart
- * {@link StartupArguments}. Of course it is not mandatary to use such
+ * {@link StartupArguments}. Of course it is not mandatory to use such
  * arguments and there is no way to force it.
  *
  * @author Petr Hejl
