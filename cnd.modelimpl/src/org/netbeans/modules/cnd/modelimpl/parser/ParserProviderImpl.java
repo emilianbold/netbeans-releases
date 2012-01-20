@@ -149,6 +149,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+                ex.printStackTrace(System.err);
             }
             ast = parser.getAST();
             return this;

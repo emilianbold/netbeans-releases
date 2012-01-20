@@ -122,5 +122,10 @@ public class FortranFileModelTest extends TraceModelTestBase {
         // Bug 205526 - Fortran parser fails on some do and if statements
         performTest("bug205526.f"); // NOI18N
     }
+
+    public void testBug207573() throws Exception {
+        // Bug 207573 - *Fortran* navigator doesn't show subroutines in some cases
+        performTest("bug207573.f"); // NOI18N
+    }
     
 }

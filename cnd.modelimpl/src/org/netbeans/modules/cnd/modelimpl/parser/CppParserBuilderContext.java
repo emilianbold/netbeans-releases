@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,54 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.modelimpl.parser;
 
-package org.netbeans.modules.cnd.navigation.switchfiles;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 
 /**
- *
- * @author Sergey Grinev
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class CppSwitchTest extends TraceModelTestBase {
-
-    public CppSwitchTest(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+public class CppParserBuilderContext {
     
-    public void testTwoNamesakes() throws Exception {
-        String source = "welcome.cc"; // NOI18N
-        performTest("", source + ".dat", source + ".err"); // NOI18N
+    List<CsmObjectBuilder> builders = new ArrayList<CsmObjectBuilder>();
+ 
+    public void push(CsmObjectBuilder builder) {
+        builders.add(builder);
     }
 
-    protected @Override void postTest(String[] args, Object... params) {
-        CsmProject project = getCsmProject();
-        Collection<CsmFile> files = project.getAllFiles();
-        assert files.size() > 0;
-        for (CsmFile csmFile : files) {
-            if (csmFile.getAbsolutePath().toString().indexOf("welcome.cc")!=-1) { //NOI18N
-                CsmFile f = CppSwitchAction.findHeader(csmFile);
-                assertNotNull("Correspondent header not found", f);
-                assertNotSame("Wrong header was found", f.getAbsolutePath().toString().indexOf("dir1" + File.separator +"welcome.h"), -1);
-            } else if (csmFile.getAbsolutePath().toString().indexOf("welcome.h")!=-1) { //NOI18N
-                CsmFile f = CppSwitchAction.findSource(csmFile);
-                assert f!=null && f.getAbsolutePath().toString().indexOf("welcome.cc")!=-1; //NOI18N
-            } else {
-                assert(false);
-            }
+    public void pop() {
+        builders.remove(builders.size() - 1);
+    }
+
+    public CsmObjectBuilder top() {
+        if(!builders.isEmpty()) {
+            return builders.get(builders.size() - 1);
+        } else {
+            return null;
         }
+    }
+
+    public EnumBuilder getEnumBuilder() {
+        CsmObjectBuilder builder = top();
+        assert builder instanceof EnumBuilder;
+        EnumBuilder enumBuilder = (EnumBuilder)builder;        
+        return enumBuilder;
+    }
+
+    public NamespaceBuilder getNamespaceBuilder() {
+        CsmObjectBuilder builder = top();
+        assert builder instanceof NamespaceBuilder;
+        NamespaceBuilder nsBuilder = (NamespaceBuilder)builder;        
+        return nsBuilder;
     }
     
 }
