@@ -65,6 +65,7 @@ import org.openide.util.Parameters;
  * Utility class for platform properties manipulation
  * 
  * @author Anton Chechel
+ * @author Petr Somol
  */
 public final class Utils {
     /**
@@ -84,8 +85,25 @@ public final class Utils {
     private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
 
 //    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
-
+    
     private Utils() {
+    }
+
+    /**
+     * Indicates whether running inside a test.
+     * Used to bypass J2SE platform creation
+     * which causes problems in test environment.
+     */
+    private static boolean isTest = false;
+    
+    /** isTest getter */
+    public static boolean isTest() {
+        return isTest;
+    }
+
+    /** isTest setter */
+    public static void setIsTest(boolean test) {
+        isTest = test;
     }
     
     /**
@@ -184,13 +202,15 @@ public final class Utils {
         Parameters.notNull("runtimePath", runtimePath); // NOI18N
         
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        // 32b vs 64b check
-        if (!isArchitechtureCorrect(runtimePath)) {
-            return null;
+        JavaPlatform platform = defaultPlatform;
+        if(!isTest) {
+            // 32b vs 64b check
+            if (!isArchitechtureCorrect(runtimePath)) {
+                return null;
+            }
+            FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
+            platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
         }
-        
-        FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
-        JavaPlatform platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
 
         if (platform != null) {
             Map<String, String> map = new HashMap<String, String>(2);

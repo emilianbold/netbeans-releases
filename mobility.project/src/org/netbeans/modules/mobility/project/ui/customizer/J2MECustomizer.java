@@ -484,6 +484,11 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
             customizerPanel.removeAll();
             
             DataFolder df = (DataFolder)node.getCookie(DataFolder.class);
+            //#207513
+            if (df == null) { // no cookie
+                return;
+            }
+            
             JComponent c = (JComponent)df.getPrimaryFile().getAttribute("customizerPanelClass");//NOI18N
             if (c != null) {
                 updateHelpCtx(new HelpCtx(c.getClass()));
