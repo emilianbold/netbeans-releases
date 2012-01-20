@@ -76,6 +76,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_REMOTE_CONFIGURATION;
+import org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.WizardType;
 
 /**
  * @author Tomas Mysik
@@ -387,7 +388,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
         // index file is just warning
         String warning = RunAsValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile, null);
-        if (wizardType == wizardType.EXISTING
+        if (wizardType == WizardType.EXISTING
                 && warning != null) {
             descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
         } else {

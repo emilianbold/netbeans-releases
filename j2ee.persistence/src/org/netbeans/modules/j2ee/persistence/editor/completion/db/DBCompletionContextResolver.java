@@ -181,7 +181,7 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             
             //test if the initialization of DB and DBMetadataProvider has succeeded
             if(this.provider != null) {
-                //and retrieve the CC items under MDR transaction
+                //and retrieve the CC items under MDR transs
                 //JMIUtils utils = JMIUtils.get(ctx.getBaseDocument());
                 //utils.beginTrans(false);
                 //TODO, should it be done in source modification task?
@@ -749,34 +749,30 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    private List completeJPQLContext(final JPACodeCompletionProvider.Context ctx, CCParser.CC nn, final CCParser.NNAttr nnattr, List<JPACompletionItem> results) {
+    private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) {
         String completedMember = nnattr.getName();
 
         if ("query".equals(completedMember)) { // NOI18N
-            final String completedValue = nnattr.getValue().toString() == null ? "" : nnattr.getValue().toString();
-            Map<String,Object> members = nn.getAttributes();nnattr.isValueQuoted();
-            final JPQLQueryHelper helper = new JPQLQueryHelper();
-            ClasspathInfo classpathInfo = ClasspathInfo.create(ctx.getFileObject());
-            JavaSource javaSource = JavaSource.create(classpathInfo);
-            final ContentAssistProposals[] buildContentAssistProposals = new ContentAssistProposals[1];
+            String completedValue = nnattr.getValue().toString() == null ? "" : nnattr.getValue().toString();
+            JPQLQueryHelper helper = new JPQLQueryHelper();
 
-                        Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
-                        helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
-                        int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
-                        buildContentAssistProposals[0] = helper.buildContentAssistProposals(offset);
+            Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
+            helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
+            int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
+            ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
 
-            if(buildContentAssistProposals[0]!=null && buildContentAssistProposals[0].hasProposals()){
-                for (IEntity entity : buildContentAssistProposals[0].abstractSchemaTypes()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset()));
+            if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
+                for (String var : buildContentAssistProposals.identificationVariables()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
                 }
-                for (String var : buildContentAssistProposals[0].identificationVariables()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset()));
+                for (IMapping mapping : buildContentAssistProposals.mappings()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
                 }
-                for (String ids : buildContentAssistProposals[0].identifiers()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(ids, nnattr.isValueQuoted(), nnattr.getValueOffset()));
+                for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
                 }
-                for (IMapping mapping : buildContentAssistProposals[0].mappings()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset()));
+                for (String ids : buildContentAssistProposals.identifiers()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(ids, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
                 }
             }
         }
@@ -799,7 +795,7 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             //check if the pretext corresponds to the result item text
             try {
                 String preText = ctx.getBaseDocument().getText(ri.getSubstituteOffset(), ctx.getCompletionOffset() - ri.getSubstituteOffset());
-                if(ri.getItemText().startsWith(preText)) {
+                if(!ri.canFilter() || ri.getItemText().startsWith(preText)) {
                     return super.add(ri);
                 }
             }catch(BadLocationException ble) {

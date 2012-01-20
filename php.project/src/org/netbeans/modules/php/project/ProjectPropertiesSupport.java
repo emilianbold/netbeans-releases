@@ -161,6 +161,10 @@ public final class ProjectPropertiesSupport {
         return seleniumDirectory;
     }
 
+    public static String getWebRoot(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
+    }
+
     public static FileObject getWebRootDirectory(PhpProject project) {
         return project.getWebRootDirectory();
     }

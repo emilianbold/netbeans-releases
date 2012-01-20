@@ -47,6 +47,7 @@ import com.sun.jdi.AbsentInformationException;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.beancontext.BeanContextChild;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -162,6 +163,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         updateCurrentThread(currentDebugger != null ? currentDebugger.getCurrentThread() : null);
     }
 
+    @SuppressWarnings(value={"LocalVariableHidesMemberVariable"})
     private synchronized void updateCurrentThread (JPDAThread newCurrentThread) {
         AllThreadsAnnotator allThreadsAnnotator;
         JPDAThread oldCurrent = null;
@@ -240,6 +242,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             rProcessor = this.rp;
         }
         rProcessor.post(new Runnable() {
+            @Override
             public void run() {
                 annotate(debugger, thread, sourcePath);
             }
@@ -296,7 +299,19 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         }
         final int lineNumber = currentThread.getLineNumber (language);
         final String url = getTheURL(sourcePath, currentThread, language);
-        SwingUtilities.invokeLater (new Runnable () {
+        annotateCurrentPosition(currentThread, sourcePath, csf, language, url, lineNumber);
+        annotateCallStack (currentThread, stack, sourcePath);
+    }
+    
+    private static final String PROP_OPERATIONS_UPDATE = "operationsUpdate"; // NOI18N
+    private static final String PROP_OPERATIONS_SET = "operationsSet"; // NOI18N
+    
+    private void annotateCurrentPosition(final JPDAThread currentThread,
+                                         final SourcePath sourcePath,
+                                         final CallStackFrame csf, final String language,
+                                         final String url, final int lineNumber) {
+        final Runnable updateCurrentAnnotation = new Runnable () {
+            @Override
             public void run () {
                 // show current line
                 synchronized (currentPCLock) {
@@ -308,8 +323,23 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     }
                 }
             }
-        });
-        annotateCallStack (currentThread, stack, sourcePath);
+        };
+        PropertyChangeListener operationsUpdateListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String name = evt.getPropertyName();
+                if (PROP_OPERATIONS_UPDATE.equals(name)) {
+                    SwingUtilities.invokeLater (updateCurrentAnnotation);
+                }
+                if (PROP_OPERATIONS_SET.equals(name)) {
+                    ((BeanContextChild) currentThread).removePropertyChangeListener(PROP_OPERATIONS_UPDATE, this);
+                    ((BeanContextChild) currentThread).removePropertyChangeListener(PROP_OPERATIONS_SET, this);
+                }
+            }
+        };
+        ((BeanContextChild) currentThread).addPropertyChangeListener(PROP_OPERATIONS_UPDATE, operationsUpdateListener);
+        ((BeanContextChild) currentThread).addPropertyChangeListener(PROP_OPERATIONS_SET, operationsUpdateListener);
+        SwingUtilities.invokeLater (updateCurrentAnnotation);
     }
 
     private String getTheURL(SourcePath sourcePath, JPDAThread currentThread, String language) {
@@ -399,6 +429,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     }
     
     private class RemoveAnnotationsTask implements Runnable {
+        @Override
         public void run () {
             synchronized (currentPCLock) {
                 if (currentPCSet) {
@@ -417,6 +448,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     }
     
     private class AnnotateCallStackTask implements Runnable {
+        @Override
         public void run () {
             CallStackFrame[] stack;
             SourcePath sourcePath;
@@ -491,6 +523,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         private final Set<Object> annotationsToRemove = new HashSet<Object>();
         private final RequestProcessor.Task task;
         
+        @SuppressWarnings(value="LeakingThisInConstructor")
         public AllThreadsAnnotator(JPDADebugger debugger) {
             this.debugger = debugger;
             RequestProcessor rp;
@@ -513,13 +546,13 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             }
         }
         
-        public void add(JPDAThread t) {
+        private void add(JPDAThread t) {
             ((Customizer) t).addPropertyChangeListener(this);
             //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").add("+t+")");
             annotate(t);
         }
         
-        public void remove(JPDAThread t) {
+        private void remove(JPDAThread t) {
             ((Customizer) t).removePropertyChangeListener(this);
             //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").remove("+t+")");
             synchronized (this) {
@@ -532,7 +565,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             }
         }
         
-        public synchronized void cancel() {
+        private synchronized void cancel() {
             active = false;
             //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").CANCEL");
             for (JPDAThread t : new HashSet<JPDAThread>(threadAnnotations.keySet())) {
@@ -540,6 +573,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (this) {
                 if (!active) {
@@ -579,6 +613,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             }
         }
         
+        @Override
+        @SuppressWarnings(value={"LocalVariableHidesMemberVariable"})
         public void run() {
             Set<Object> annotationsToRemove;
             Set<JPDAThread> threadsToAnnotate;

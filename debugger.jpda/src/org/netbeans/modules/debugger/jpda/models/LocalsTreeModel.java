@@ -57,6 +57,7 @@ import java.beans.Customizer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.beancontext.BeanContextChild;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -500,6 +501,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
 
     // private methods .........................................................
     
+    private static final String PROP_OPERATIONS_UPDATE = "operationsUpdate"; // NOI18N
+    private static final String PROP_OPERATIONS_SET = "operationsSet"; // NOI18N
+    
     private Object[] getLocalVariables (
         int from, 
         int to
@@ -508,7 +512,23 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             getCurrentCallStackFrame ();
         if (callStackFrame == null)
             return new String [] {"No current thread"};
-        ((JPDAThreadImpl) callStackFrame.getThread()).accessLock.readLock().lock();
+        final JPDAThreadImpl thread = (JPDAThreadImpl) callStackFrame.getThread();
+        thread.accessLock.readLock().lock();
+        PropertyChangeListener operationsUpdateListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String name = evt.getPropertyName();
+                if (PROP_OPERATIONS_UPDATE.equals(name)) {
+                    fireTreeChanged();
+                }
+                if (PROP_OPERATIONS_SET.equals(name)) {
+                    ((BeanContextChild) thread).removePropertyChangeListener(PROP_OPERATIONS_UPDATE, this);
+                    ((BeanContextChild) thread).removePropertyChangeListener(PROP_OPERATIONS_SET, this);
+                }
+            }
+        };
+        ((BeanContextChild) thread).addPropertyChangeListener(PROP_OPERATIONS_UPDATE, operationsUpdateListener);
+        ((BeanContextChild) thread).addPropertyChangeListener(PROP_OPERATIONS_SET, operationsUpdateListener);
         try {
             StackFrame stackFrame = null;
             try {
@@ -518,19 +538,19 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             if (stackFrame == null)
                 return new String [] {"No current thread"};
             ObjectReference thisR = StackFrameWrapper.thisObject (stackFrame);
-            List<Operation> operations = callStackFrame.getThread().getLastOperations();
+            List<Operation> operations = thread.getLastOperations();
             ReturnVariableImpl returnVariable;
             boolean haveLastOperations;
             if (operations != null && operations.size() > 0 && operations.get(0).getReturnValue() != null) {
                 haveLastOperations = true;
                 returnVariable = null;
             } else {
-                returnVariable = ((JPDAThreadImpl) callStackFrame.getThread()).getReturnVariable();
+                returnVariable = thread.getReturnVariable();
                 haveLastOperations = false;
             }
             //int retValShift = (haveLastOperations || returnVariable != null) ? 1 : 0;
             int retValShift = (returnVariable != null) ? 1 : 0;
-            Operation currentOperation = callStackFrame.getThread().getCurrentOperation();
+            Operation currentOperation = thread.getCurrentOperation();
             //int currArgShift = (currentOperation != null && CallStackFrameImpl.IS_JDK_160_02) ? 1 : 0;
             int currArgShift = (currentOperation != null) ? 1 : 0;
             int shift = retValShift + currArgShift;
@@ -590,7 +610,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         } catch (InvalidStackFrameExceptionWrapper isfex) {
             return new String [] {"No current thread"};
         } finally {
-            ((JPDAThreadImpl) callStackFrame.getThread()).accessLock.readLock().unlock();
+            thread.accessLock.readLock().unlock();
         }
     }
     

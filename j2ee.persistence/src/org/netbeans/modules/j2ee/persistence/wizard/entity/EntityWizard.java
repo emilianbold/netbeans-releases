@@ -271,14 +271,14 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             final String primaryKeyClassName, final boolean isAccessProperty) throws IOException {
         
         FileObject entityFo = GenerationUtils.createClass(targetFolder, targetName, null);
+        ClassPath boot = ClassPath.getClassPath(targetFolder, ClassPath.BOOT);
         ClassPath compile = ClassPath.getClassPath(targetFolder, ClassPath.COMPILE);
-        Set<ClassPath> compileClassPaths = new HashSet<ClassPath>();
-        compileClassPaths.add(compile);
+        ClassPath source = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE);
         
         JPAClassPathHelper cpHelper = new JPAClassPathHelper(
-                Collections.<ClassPath>singleton(ClassPath.getClassPath(targetFolder, ClassPath.BOOT)), 
-                Collections.<ClassPath>singleton(ClassPath.getClassPath(targetFolder, ClassPath.COMPILE)), 
-                Collections.<ClassPath>singleton(ClassPath.getClassPath(targetFolder, ClassPath.SOURCE))
+                Collections.<ClassPath>singleton(boot), 
+                Collections.<ClassPath>singleton(compile), 
+                Collections.<ClassPath>singleton(source)
                 );
         
 
@@ -339,6 +339,11 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 workingCopy.rewrite(clazz, modifiedClazz);
             }
         };
+        
+        if(targetSource == null) {
+            //need some logging to investigate possible npes
+            Logger.getLogger(EntityWizard.class.getName()).log(Level.WARNING, "Classpaths compile, boot, source: "+compile +"," + boot + ","+ source + "; target folder is valid, entity fo is valid: "+targetFolder.isValid() + "," +entityFo.isValid());
+        }
         
         targetSource.runModificationTask(task).commit();
         

@@ -1586,6 +1586,9 @@ public class EditorContextImpl extends EditorContext {
                 return null;
             }
         }
+        //t2 = System.nanoTime();
+        //System.err.println("PARSE TIME: "+(t2-t1)/1000000000+" s "+((t2-t1) % 1000000000)+" ns.");
+        //System.err.printf("PARSE TIME: %d.%09d s.\n", (t2-t1)/1000000000, ((t2-t1) % 1000000000));
         return (Operation[])result[0];
     }
 

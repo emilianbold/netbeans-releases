@@ -141,7 +141,7 @@ public class ApplicationManagerImpl implements ApplicationManager {
     }
 
     private static Application convertApplication(oracle.cloud.paas.model.Application j) {
-        return new Application(j.getGroupName(), j.getApplicationName(), j.getInstanceName(), 
+        return new Application(j.getGroupName(), j.getInstanceName(), j.getApplicationName(), 
                 convertApplicationType(j.getType()), convertApplicationState(j.getState()), j.getApplicationUrls());
     }
     
