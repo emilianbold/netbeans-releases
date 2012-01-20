@@ -50,7 +50,10 @@ import org.netbeans.modules.extexecution.startup.ProxyStartupArgumentsProvider;
  */
 final class StartupArguments {
 
-    static StartupArgumentsProvider createProxy(Map map) {
+    static StartupArgumentsProvider createProxy(Map<String,?> map) {
         return new ProxyStartupArgumentsProvider(map);
     }
+
+    private StartupArguments() {}
+
 }
