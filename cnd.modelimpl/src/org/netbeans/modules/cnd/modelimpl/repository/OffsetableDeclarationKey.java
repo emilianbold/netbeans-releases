@@ -74,6 +74,10 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 	// we use index for unnamed objects
     }
 
+     OffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
+         super(containingFile, startOffset, kind, name);
+     }
+     
      OffsetableDeclarationKey(KeyDataPresentation presentation) {
         super(presentation);
     }

@@ -67,6 +67,10 @@ import org.openide.util.CharSequences;
         this((FileImpl) obj.getContainingFile(), obj.getStartOffset(), obj.getEndOffset(), kind, name);
     }
 
+    protected OffsetableKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
+        this(containingFile, startOffset, KeyUtilities.NON_INITIALIZED, kind, name);
+    }
+    
     protected OffsetableKey(FileImpl containingFile, int startOffset, int endOffset, String kind, CharSequence name) {
         super(containingFile);
         this.startOffset = startOffset;
@@ -121,7 +125,7 @@ import org.openide.util.CharSequences;
         return endOffset;
     }
 
-    /*package-local*/ final void setEndOffset(int endOffset) {
+    /*package-local*/ final void cacheEndOffset(int endOffset) {
         assert (this.endOffset == KeyUtilities.NON_INITIALIZED || this.endOffset == endOffset) : "end offset is set already to " + this.endOffset;
         this.endOffset = endOffset;
     }
