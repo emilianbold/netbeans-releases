@@ -111,7 +111,7 @@ public final class CloseButtonFactory{
     }
 
     private static boolean isWindowsVistaLaF() {
-        return isWindowsLaF() && (isWindowsVista() || isWindows7());
+        return isWindowsLaF() && (isWindowsVista() || isWindows7()) && isWindowsXPLaF();
     }
 
     private static boolean isWindowsVista() {
