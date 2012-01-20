@@ -69,9 +69,7 @@ import org.netbeans.Stamps;
 import org.netbeans.core.startup.Main;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
-import org.openide.util.Enumerations;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.Bundle;
@@ -361,27 +359,55 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     // take care about the registered bundles
     //
     private final Map<String,String[]> registered = new HashMap<String,String[]>();
-    
+
+    private static final RequestProcessor RP = new RequestProcessor("Netigso Events"); // NOI18N
     final void notifyBundleChange(final String symbolicName, final Version version, final int action) {
-        Main.getModuleSystem().getManager().mutex().postReadRequest(new Runnable() {
+        final Exception stack = Netigso.LOG.isLoggable(Level.FINER) ? new Exception("StackTrace") : null;
+        final Mutex mutex = Main.getModuleSystem().getManager().mutex();
+        final Runnable doLog = new Runnable() {
             @Override
             public void run() {
                 if (activator.isUnderOurControl(symbolicName)) {
                     return;
                 }
-                String type = "" + action;
-                switch (action) {
-                    case BundleEvent.INSTALLED: return; // no message for installed
-                    case BundleEvent.RESOLVED: type = "resolved"; break;
-                    case BundleEvent.STARTED: type = "started"; break;
-                    case BundleEvent.STOPPED: type = "stopped"; break;
-                    case BundleEvent.UNINSTALLED: return; // nothing for uninstalled
+                if (!mutex.isReadAccess()) {
+                    mutex.postReadRequest(this);
+                    return;
                 }
-                Netigso.LOG.log(Level.INFO, "bundle {0}@{2} {1}", new Object[]{
-                    symbolicName, type, version
-                });
+                String type = "" + action;
+                Level notify = Level.INFO;
+                switch (action) {
+                    case BundleEvent.INSTALLED:
+                        return; // no message for installed
+                    case BundleEvent.RESOLVED:
+                        type = "resolved";
+                        break;
+                    case BundleEvent.STARTED:
+                        type = "started";
+                        break;
+                    case BundleEvent.STOPPED:
+                        type = "stopped";
+                        break;
+                    case BundleEvent.UNINSTALLED:
+                        return; // nothing for uninstalled
+                    case BundleEvent.LAZY_ACTIVATION:
+                        type = "lazy";
+                        notify = Level.FINEST;
+                        break;
+                    case BundleEvent.STARTING:
+                        type = "starting";
+                        notify = Level.FINEST;
+                        break;
+                }
+                Netigso.LOG.log(notify, "bundle {0}@{2} {1}", new Object[]{
+                            symbolicName, type, version
+                        });
+                if (stack != null) {
+                    Netigso.LOG.log(Level.FINER, null, stack);
+                }
             }
-        });
+        };
+        RP.post(doLog);
     }
 
     private File getNetigsoCache() throws IllegalStateException {
@@ -475,7 +501,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         if (sr != null) {
             level = (StartLevel) bc.getService(sr);
             if (level != null) {
-                level.setBundleStartLevel(b, startLevel);
+    //            level.setBundleStartLevel(b, startLevel);
                 return;
             }
         }
