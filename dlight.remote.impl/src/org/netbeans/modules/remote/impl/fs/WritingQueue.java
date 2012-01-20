@@ -104,6 +104,7 @@ public class WritingQueue {
     }
 
     public void add(RemotePlainFile fo) {
+        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         String dstFileName = fo.getPath();
         LOGGER.log(Level.FINEST, "WritingQueue: adding file {0}", dstFileName); //NOI18N
         synchronized (lock) {
@@ -144,12 +145,14 @@ public class WritingQueue {
     }
 
     public boolean isBusy() {
+        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         synchronized (lock) {
             return ! entries.isEmpty();
         }
     }
 
     public boolean waitFinished(Collection<String> failedFiles) throws InterruptedException {
+        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         if (failedFiles == null) {
             failedFiles = new ArrayList<String>();
         }
@@ -167,6 +170,7 @@ public class WritingQueue {
     }
 
     public boolean waitFinished(Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
+        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         if (failedFiles == null) {
             failedFiles = new ArrayList<String>();
         }

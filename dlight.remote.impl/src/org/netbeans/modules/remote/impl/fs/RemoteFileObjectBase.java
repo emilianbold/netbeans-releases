@@ -85,6 +85,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private final FileLock lock = new FileLock();
     static final long serialVersionUID = 1931650016889811086L;
     public static final boolean USE_VCS;
+    public static final boolean DEFER_WRITES = Boolean.getBoolean("cnd.remote.defer.writes"); //NOI18Ns
     static {
         if ("false".equals(System.getProperty("remote.vcs.suport"))) { //NOI18N
             USE_VCS = false;

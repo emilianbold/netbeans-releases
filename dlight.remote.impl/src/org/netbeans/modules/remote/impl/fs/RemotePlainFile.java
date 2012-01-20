@@ -52,18 +52,20 @@ import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.util.Collections;
-import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -226,7 +228,9 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     @Override
     public void refresh(boolean expected) {        
         try {
-            WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this), null);
+            if (RemoteFileObjectBase.DEFER_WRITES) {
+                WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this), null);
+            }
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex, this);
         }
@@ -262,9 +266,47 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
         public void close() throws IOException {
             delegate.close();
             FileEvent ev = new FileEvent(RemotePlainFile.this, RemotePlainFile.this, true);
-            fireFileChangedEvent(getListenersWithParent(), ev);
             RemotePlainFile.this.setPendingRemoteDelivery(true);
-            WritingQueue.getInstance(getExecutionEnvironment()).add(RemotePlainFile.this);
+            if (RemoteFileObjectBase.DEFER_WRITES) {
+                fireFileChangedEvent(getListenersWithParent(), ev);
+                WritingQueue.getInstance(getExecutionEnvironment()).add(RemotePlainFile.this);
+            } else {
+                CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
+                        getCache(), getExecutionEnvironment(), getPath(), -1, false, null);
+                Future<UploadStatus> task = CommonTasksSupport.uploadFile(params);
+                try {
+                    UploadStatus uploadStatus = task.get();
+                    if (uploadStatus.isOK()) {
+                        RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
+                        getParent().updateStat(RemotePlainFile.this, uploadStatus.getStatInfo());
+                        // setPendingRemoteDelivery(false) is called by updateStat
+                    } else {
+                        RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
+                        setPendingRemoteDelivery(false);
+                    }
+                } catch (InterruptedException ex) {
+                    throw newIOException(ex);
+                } catch (ExecutionException ex) {
+                    //Exceptions.printStackTrace(ex); // should never be the case - the task is done
+                    if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                        getFileSystem().addPendingFile(RemotePlainFile.this);
+                        throw new ConnectException(ex.getMessage());
+                    } else {
+                        if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                            throw new FileNotFoundException(getPath());
+                        } else if (ex.getCause() instanceof IOException) {
+                            throw (IOException) ex.getCause();
+                        } else {
+                            throw newIOException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        
+        private IOException newIOException(Exception cause) {
+            return new IOException("Error uploading " + getPath() + " to " + getExecutionEnvironment() + ':' + //NOI18N
+                                    cause.getMessage(), cause);
         }
 
         @Override
