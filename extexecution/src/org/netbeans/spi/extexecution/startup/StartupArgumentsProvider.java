@@ -68,7 +68,7 @@ public interface StartupArgumentsProvider {
      * start mode.
      *
      * @param context the lookup providing the contract between client
-     *             and provider
+     *             and provider (see {@link StartupArguments#getStartupArguments} for details)
      * @param mode the VM mode the client is going to use
      * @return the list of arguments to pass to the server VM
      */

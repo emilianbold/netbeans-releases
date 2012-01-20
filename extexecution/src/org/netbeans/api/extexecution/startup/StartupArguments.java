@@ -73,7 +73,12 @@ public final class StartupArguments {
     /**
      * Returns the groups of arguments provided by all registered
      * {@link StartupArgumentsProvider} for the given start mode.
-     *
+     * <p>The contents of the {@code context} parameter will depend on the kind of execution.
+     * For a simple Java SE program being run in the Java launcher,
+     * a {@code org.netbeans.api.project.Project} can be expected.
+     * For a Java EE program being run in an application server, the context may correspond to
+     * {@code org.netbeans.api.server.ServerInstance.getLookup()}.
+     * Other kinds of API objects may be present according to contracts not specified here.
      * @param context the lookup providing the contract between client
      *             and provider
      * @param mode the VM mode the client is going to use
