@@ -46,12 +46,9 @@ package org.netbeans.api.queries;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -232,13 +229,6 @@ public final class SharabilityQuery {
      * @since 1.27
      */
     public static Sharability getSharability(FileObject fo) {
-        try {
-            return getSharability(fo.getURL().toURI());
-        } catch (URISyntaxException ex) {
-            LOG.log(Level.FINE, null, ex);
-        } catch (FileStateInvalidException ex) {
-            LOG.log(Level.FINE, null, ex);
-        }
-        return Sharability.UNKNOWN;
+        return getSharability(fo.toURI());
     }
 }

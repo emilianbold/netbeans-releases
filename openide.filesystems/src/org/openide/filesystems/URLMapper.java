@@ -130,7 +130,7 @@ public abstract class URLMapper {
      * <li>inside this machine
      * <li>from networked machines
      * </ul>
-     * @return a suitable URL, or null
+     * @return a suitable URL, or (only if not {@link #INTERNAL}) null
      */
     public static URL findURL(FileObject fo, int type) {
 
@@ -146,11 +146,7 @@ public abstract class URLMapper {
         // if not resolved yet then internal URL with nbfs protocol is returned
         // XXX this would be better handled by making DefaultURLMapper just return nbfs for INTERNAL when necessary!
         if (type == INTERNAL) {
-            try {
-                return FileURL.encodeFileObject(fo);
-            } catch (FileStateInvalidException iex) {
-                // ignore
-            }
+            return FileURL.encodeFileObject(fo);
         }
 
         return null;

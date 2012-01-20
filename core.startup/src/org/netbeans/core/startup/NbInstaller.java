@@ -48,7 +48,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -78,12 +77,10 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
-import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
@@ -92,7 +89,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
 
@@ -734,11 +730,7 @@ final class NbInstaller extends ModuleInstaller {
                 List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
                 for (FileObject kid : kids) {
                     if (kid.hasExt("xml")) { // NOI18N
-                        try {
-                            urls.add(kid.getURL());
-                        } catch (FileStateInvalidException e) {
-                            Util.err.log(Level.WARNING, null, e);
-                        }
+                        urls.add(kid.toURL());
                     }
                 }
                 try {

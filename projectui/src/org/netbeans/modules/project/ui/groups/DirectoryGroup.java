@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui.groups;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,8 +57,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -76,8 +73,8 @@ public class DirectoryGroup extends Group {
     /**
      * Create a new group derived from a directory.
      */
-    public static DirectoryGroup create(String name, FileObject dir) throws FileStateInvalidException {
-        String path = dir.getURL().toExternalForm();
+    public static DirectoryGroup create(String name, FileObject dir) {
+        String path = dir.toURL().toExternalForm();
         String id = sanitizeNameAndUniquifyForId(name);
         LOG.log(Level.FINE, "Creating: {0}", id);
         Preferences p = NODE.node(id);

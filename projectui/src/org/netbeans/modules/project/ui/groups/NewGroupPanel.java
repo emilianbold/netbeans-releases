@@ -60,7 +60,6 @@ import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -171,11 +170,7 @@ public class NewGroupPanel extends JPanel {
         } else {
             assert directoryKindRadio.isSelected();
             FileObject f = FileUtil.toFileObject(FileUtil.normalizeFile(new File(directoryField.getText().trim())));
-            try {
-                return DirectoryGroup.create(nameField.getText().trim(), f);
-            } catch (FileStateInvalidException x) {
-                throw new AssertionError(x);
-            }
+            return DirectoryGroup.create(nameField.getText().trim(), f);
         }
     }
 

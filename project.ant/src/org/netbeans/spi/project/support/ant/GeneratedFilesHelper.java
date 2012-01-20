@@ -691,7 +691,7 @@ public final class GeneratedFilesHelper {
     
     /** Find (maybe cached) CRC for a file, using a preexisting input stream (not closed by this method). */
     private static String getCrc32(InputStream is, FileObject fo) throws IOException {
-        URL u = fo.getURL();
+        URL u = fo.toURL();
         fo.refresh(); // in case was written on disk and we did not notice yet...
         long footprint = fo.lastModified().getTime() ^ fo.getSize();
         String crc = findCachedCrc32(u, footprint);
@@ -730,7 +730,7 @@ public final class GeneratedFilesHelper {
     
     /** Find (maybe cached) CRC for a file. Will open its own input stream. */
     private static String getCrc32(FileObject fo) throws IOException {
-        URL u = fo.getURL();
+        URL u = fo.toURL();
         fo.refresh();
         long footprint = fo.lastModified().getTime() ^ fo.getSize();
         String crc = findCachedCrc32(u, footprint);

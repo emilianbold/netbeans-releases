@@ -1022,7 +1022,7 @@ abstract class AbstractFolder extends FileObject {
         throws IOException {
             fsname = f.getFileSystem().getSystemName();
             path = f.getPath();
-            url = f.getURL();
+            url = f.toURL();
             assert url != null : "No URL for " + path;
             oos.defaultWriteObject();
         }

@@ -122,7 +122,7 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         assertEquals(result, u);
         
         //Test the case when the tests folder does not exist
-        result = tests.getURL();
+        result = tests.toURL();
         tests.delete();
         u = UnitTestForSourceQuery.findUnitTest (sources);
         assertEquals (result, u);
@@ -133,8 +133,8 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         URL[] urls = UnitTestForSourceQuery.findSources(tests);
         assertNotNull(urls);
         assertEquals(2,urls.length);
-        assertEquals(sources.getURL(), urls[0]);
-        assertEquals(newRoot.getURL(), urls[1]);
+        assertEquals(sources.toURL(), urls[0]);
+        assertEquals(newRoot.toURL(), urls[1]);
     }
 
 }

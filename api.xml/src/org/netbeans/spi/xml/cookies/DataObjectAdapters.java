@@ -45,9 +45,6 @@
 package org.netbeans.spi.xml.cookies;
 
 import java.io.Reader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -57,8 +54,6 @@ import javax.xml.transform.sax.SAXSource;
 import org.netbeans.api.xml.parsers.DocumentInputSource;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -179,24 +174,7 @@ public final class DataObjectAdapters {
      * @return system Id of <code>dataObject</code>
      */
     private static String getSystemId (DataObject dataObject) {
-        String systemId = null;
-        try {
-            FileObject fileObject = dataObject.getPrimaryFile();
-            URL url = fileObject.getURL();
-            try {
-                systemId = new URI(url.toString()).toASCIIString();
-            } catch (URISyntaxException ex) {
-                // if cannot be converted to URI, return at least external form
-                // instead of returning null
-                systemId = url.toExternalForm();
-                Util.THIS.debug(ex);
-            }
-        } catch (FileStateInvalidException exc) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
-
-            // nothing to do -> return null; //???
-        }
-        return systemId;
+        return dataObject.getPrimaryFile().toURI().toASCIIString();
     }
 
     private static synchronized SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
