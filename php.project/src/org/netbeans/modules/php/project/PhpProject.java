@@ -749,7 +749,7 @@ public final class PhpProject implements Project {
                 getHelper(),
                 getEvaluator(),
                 PhpSearchInfo.create(this),
-                new InternalWebServer(this),
+                InternalWebServer.createForProject(this),
                 new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });

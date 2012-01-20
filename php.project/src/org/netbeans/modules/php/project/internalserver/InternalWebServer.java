@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * Manager of internal web server (available in PHP 5.4+)
  * for the given {@link PhpProject}.
  */
-public final class InternalWebServer {
+public final class InternalWebServer implements PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(InternalWebServer.class.getName());
 
@@ -76,16 +76,14 @@ public final class InternalWebServer {
     private Future<Integer> process = null;
 
 
-    public InternalWebServer(PhpProject project) {
+    private InternalWebServer(PhpProject project) {
         this.project = project;
-        ProjectPropertiesSupport.addPropertyChangeListener(project, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (isRunning()) {
-                    restart();
-                }
-            }
-        });
+    }
+
+    public static InternalWebServer createForProject(PhpProject project) {
+        InternalWebServer server = new InternalWebServer(project);
+        ProjectPropertiesSupport.getPropertyEvaluator(project).addPropertyChangeListener(server);
+        return server;
     }
 
     public synchronized boolean isRunning() {
@@ -155,6 +153,13 @@ public final class InternalWebServer {
                 .frontWindowOnError(true)
                 .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY); // NOI18N
         return PhpInterpreter.executeLater(externalProcessBuilder, executionDescriptor, Bundle.InternalWebServer_output_title(project.getName()));
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (isRunning()) {
+            restart();
+        }
     }
 
 }
