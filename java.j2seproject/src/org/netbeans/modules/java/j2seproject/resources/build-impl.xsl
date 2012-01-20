@@ -306,6 +306,7 @@ is divided into following sections:
                     </and>
                 </condition>
                 <property name="run.jvmargs" value=""/>
+                <property name="run.jvmargs.ide" value=""/>
                 <property name="javac.compilerargs" value=""/>
                 <property name="work.dir" value="${{basedir}}"/>
                 <condition property="no.deps">
@@ -712,6 +713,7 @@ is divided into following sections:
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
                             <jvmarg line="${{run.jvmargs}}"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
                         </junit>
                     </sequential>
                 </macrodef>
@@ -886,6 +888,7 @@ is divided into following sections:
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -925,6 +928,7 @@ is divided into following sections:
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
