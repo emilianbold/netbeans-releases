@@ -46,6 +46,7 @@ package org.netbeans.modules.versioning;
 import java.io.IOException;
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.openide.filesystems.FileObject;
@@ -56,6 +57,7 @@ public class AbstractFSTestCase extends NbTestCase {
     protected String workDirPath;
     protected FileObject versionedFolder;
     protected FileObject unversionedFolder;
+    private String versionedPath;
 
     public AbstractFSTestCase(String testName) {
         super(testName);
@@ -63,11 +65,14 @@ public class AbstractFSTestCase extends NbTestCase {
 
     protected FileObject getVersionedFolder() throws IOException {
         if (versionedFolder == null) {
-            versionedFolder = createFolder(workDirPath + "/root" + TestVCS.VERSIONED_FOLDER_SUFFIX);
+            versionedPath = workDirPath + "/root" + TestVCS.VERSIONED_FOLDER_SUFFIX;
+            versionedFolder = createFolder(versionedPath);
             FileObject md = versionedFolder.getFileObject(TestVCS.TEST_VCS_METADATA);
             if(md == null || !md.isValid()) {
-                createFolder(TestVCS.TEST_VCS_METADATA);
+                createFolder(versionedPath + "/" + TestVCS.TEST_VCS_METADATA);
             }
+            // cleanup the owner cache, this folder just became versioned 
+            VersioningManager.getInstance().flushNullOwners(); 
         }
         return versionedFolder;
     }
@@ -79,6 +84,10 @@ public class AbstractFSTestCase extends NbTestCase {
         return unversionedFolder;
     }
 
+    protected String getRoot(String path) {
+        return path.substring(0, path.indexOf(versionedPath));
+    } 
+    
     protected void setUp() throws Exception {
         super.setUp();
         MockLookup.setLayersAndInstances();
