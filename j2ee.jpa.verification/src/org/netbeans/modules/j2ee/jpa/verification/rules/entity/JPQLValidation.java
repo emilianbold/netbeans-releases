@@ -106,8 +106,12 @@ public class JPQLValidation extends JPAClassRule {
                         if(val instanceof AnnotationMirror){
                             AnnotationMirror am = (AnnotationMirror) val;
                             if(JPAAnnotations.NAMED_QUERY.equals(am.getAnnotationType().toString())){
-                                values.add(Utilities.getAnnotationAttrValue(am, "query").getValue().toString());
-                                names.add(Utilities.getAnnotationAttrValue(am, "name").getValue().toString());
+                                AnnotationValue qAttrValue = Utilities.getAnnotationAttrValue(am, "query");
+                                AnnotationValue nmAttrValue = Utilities.getAnnotationAttrValue(am, "name");
+                                if(qAttrValue != null){
+                                    values.add(qAttrValue.getValue().toString());
+                                    names.add(nmAttrValue == null ? "" : nmAttrValue.getValue().toString());
+                                }
                             }
                         }
                     }
@@ -116,8 +120,12 @@ public class JPQLValidation extends JPAClassRule {
         }
         else {
             for(AnnotationMirror mr:first){
-                values.add(Utilities.getAnnotationAttrValue(mr, "query").getValue().toString());
-                names.add(Utilities.getAnnotationAttrValue(mr, "name").getValue().toString());
+                AnnotationValue qAttrValue = Utilities.getAnnotationAttrValue(mr, "query");
+                AnnotationValue nmAttrValue = Utilities.getAnnotationAttrValue(mr, "name");
+                if(qAttrValue != null){
+                    values.add(qAttrValue.getValue().toString());
+                    names.add(nmAttrValue == null ? "" : nmAttrValue.getValue().toString());
+                }
             }
         }
         JPQLQueryHelper helper = new JPQLQueryHelper();
