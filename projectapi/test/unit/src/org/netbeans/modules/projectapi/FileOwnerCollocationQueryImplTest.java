@@ -74,7 +74,7 @@ public class FileOwnerCollocationQueryImplTest extends NbTestCase {
         
         //root/prj1/foo
         FileOwnerCollocationQueryImpl instance = new FileOwnerCollocationQueryImpl();
-        assertEquals(projdir.getURL().toURI(), instance.findRoot(projdir.createData("foo").getURL().toURI()));
+        assertEquals(projdir.toURI(), instance.findRoot(projdir.createData("foo").toURI()));
         
         //root/prj2/foo/prj3/bar
         projdir = root.createFolder("prj2");
@@ -82,10 +82,10 @@ public class FileOwnerCollocationQueryImplTest extends NbTestCase {
         projdir.createFolder("testproject");
         projdir = projdir.createFolder("foo").createFolder("prj3");
         projdir.createFolder("testproject");
-        assertEquals(expected.getURL().toURI(), instance.findRoot(projdir.createData("bar").getURL().toURI()));
+        assertEquals(expected.toURI(), instance.findRoot(projdir.createData("bar").toURI()));
         
         //root
-        assertEquals(null, instance.findRoot(root.getURL().toURI()));
+        assertEquals(null, instance.findRoot(root.toURI()));
     }
 
     /**
@@ -101,14 +101,14 @@ public class FileOwnerCollocationQueryImplTest extends NbTestCase {
         FileObject file1 = lib.createData("pron");
         FileObject file2 = projdir.createData("xxx");
         FileOwnerCollocationQueryImpl instance = new FileOwnerCollocationQueryImpl();
-        assertFalse(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
+        assertFalse(instance.areCollocated(file1.toURI(), file2.toURI()));
         file1 = projdir.createData("pron");
-        assertTrue(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
+        assertTrue(instance.areCollocated(file1.toURI(), file2.toURI()));
         
         
         file1 = projdir;
         file2 = lib;
-        assertFalse(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
+        assertFalse(instance.areCollocated(file1.toURI(), file2.toURI()));
         
         projdir = root.createFolder("noproj").createFolder("proj1");
         projdir.createFolder("testproject");
@@ -118,7 +118,7 @@ public class FileOwnerCollocationQueryImplTest extends NbTestCase {
         file2 = projdir2.createData("bar");
 //        System.out.println("root1=" + instance.findRoot(file1.getURL().toURI()));
 //        System.out.println("root2=" + instance.findRoot(file2.getURL().toURI()));
-        assertFalse(instance.areCollocated(file1.getURL().toURI(), file2.getURL().toURI()));
+        assertFalse(instance.areCollocated(file1.toURI(), file2.toURI()));
         
     }
 

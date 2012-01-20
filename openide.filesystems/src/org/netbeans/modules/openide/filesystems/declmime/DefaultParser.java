@@ -133,7 +133,7 @@ abstract class DefaultParser  extends DefaultHandler {
             InputSource in = new InputSource();                
             is = fo.getInputStream();
             in.setByteStream(is);
-            in.setSystemId(fo.getURL().toExternalForm());
+            in.setSystemId(fo.toURL().toExternalForm());
             customizeInputSource(in);
             
             parser.parse(in);

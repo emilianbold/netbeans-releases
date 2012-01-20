@@ -50,13 +50,11 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.openide.ErrorManager;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -204,19 +202,14 @@ class ActionFilterNode extends FilterNode {
         }
         
         public boolean hasJavadoc() {
-            try {
-                boolean rNotNull = resource != null;
-                int jLength = JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots().length;
-                return  rNotNull && jLength > 0;
-            } catch (FileStateInvalidException fsi) {
-                return false;
-            }
+            boolean rNotNull = resource != null;
+            int jLength = JavadocForBinaryQuery.findJavadoc(cpRoot.toURL()).getRoots().length;
+            return  rNotNull && jLength > 0;
         }
         
         public void showJavadoc() {
-            try {
                 String relativeName = FileUtil.getRelativePath(cpRoot, resource);
-                URL[] urls = JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots();
+                URL[] urls = JavadocForBinaryQuery.findJavadoc(cpRoot.toURL()).getRoots();
                 URL pageURL;
                 if (relativeName.length() == 0) {
                     pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls); //NOI18N
@@ -231,9 +224,6 @@ class ActionFilterNode extends FilterNode {
                     pageURL = ShowJavadocAction.findJavadoc(javadocFileName, urls);
                 }
                 ShowJavadocAction.showJavaDoc(pageURL,relativeName.replace('/','.'));  //NOI18N
-            } catch (FileStateInvalidException fsi) {
-                ErrorManager.getDefault().notify(fsi);
-            }
         }
         
     }

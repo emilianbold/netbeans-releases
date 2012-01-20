@@ -151,7 +151,7 @@ public class SubprojectProviderImplTest extends TestBase {
         }
         SortedSet<String> actual = new TreeSet<String>();
         for (Project sp : spp.getSubprojects()) {
-            actual.add(sp.getProjectDirectory().getURL().toExternalForm());
+            actual.add(sp.getProjectDirectory().toURL().toExternalForm());
         }
         assertEquals("correct subprojects for " + project, expected.toString(), actual.toString());
     }
