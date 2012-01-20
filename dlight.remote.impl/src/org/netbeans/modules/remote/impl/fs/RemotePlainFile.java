@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.util.Collections;
+import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -108,7 +109,23 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
 
     @Override
     public RemoteFileObjectBase getFileObject(String relativePath) {
-        return null;
+        // taken from FileObject.getFileObject(String relativePath)
+        if (relativePath.startsWith("/")) { //NOI18N
+            relativePath = relativePath.substring(1);
+        }
+        RemoteFileObjectBase res = this;
+        StringTokenizer st = new StringTokenizer(relativePath, "/"); //NOI18N
+        while ((res != null) && st.hasMoreTokens()) {
+            String nameExt = st.nextToken();
+            if (nameExt.equals("..")) { // NOI18N
+                res = res.getParent();
+            } else {
+                if (!nameExt.equals(".")) { //NOI18N
+                    res = res.getFileObject(nameExt, null);
+                }
+            }
+        }
+        return res;
     }
 
     @Override
@@ -279,7 +296,7 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
                     if (uploadStatus.isOK()) {
                         RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
                         getParent().updateStat(RemotePlainFile.this, uploadStatus.getStatInfo());
-                        // setPendingRemoteDelivery(false) is called by updateStat
+                        fireFileChangedEvent(getListenersWithParent(), ev);
                     } else {
                         RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
                         setPendingRemoteDelivery(false);

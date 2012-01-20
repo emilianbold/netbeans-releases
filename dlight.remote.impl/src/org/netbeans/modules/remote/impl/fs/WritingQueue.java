@@ -63,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadSt
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -248,13 +249,13 @@ public class WritingQueue {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} succeeded", fo);
                         failed.remove(fo.getPath()); // paranoia                        
                         fo.getParent().updateStat(fo, uploadStatus.getStatInfo());
+                        fo.getParent().fireFileChangedEvent(fo.getListenersWithParent(), new FileEvent(fo, fo, true));
                         done = true;
                     } else {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} failed", fo);
                         failed.add(fo.getPath());
                         fo.setPendingRemoteDelivery(false);
                     }
-                    fo.getParent();                                        
                 } catch (InterruptedException ex) {
                     // don't report InterruptedException
                 } catch (ExecutionException ex) {

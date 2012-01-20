@@ -840,7 +840,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     storageRef = new SoftReference<DirectoryStorage>(newStorage);
                 }
                 fo.setPendingRemoteDelivery(false);
-                fireFileChangedEvent(getListeners(), new FileEvent(fo, fo, true));
             }
         } finally {
             writeLock.unlock();
