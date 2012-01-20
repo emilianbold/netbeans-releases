@@ -111,9 +111,19 @@ public final class CloseButtonFactory{
     }
 
     private static boolean isWindowsVistaLaF() {
-        String osName = System.getProperty("os.name");
+        return isWindowsLaF() && (isWindowsVista() || isWindows7());
+    }
+
+    private static boolean isWindowsVista() {
+        String osName = System.getProperty ("os.name");
         return osName.indexOf("Vista") >= 0
-                || (osName.equals("Windows NT (unknown)") && "6.0".equals(System.getProperty("os.version")));
+            || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
+    }
+
+    private static boolean isWindows7() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 7") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.1".equals( System.getProperty("os.version") ));
     }
 
     private static boolean isWindowsXPLaF() {
