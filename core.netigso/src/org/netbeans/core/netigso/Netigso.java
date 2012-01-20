@@ -501,7 +501,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         if (sr != null) {
             level = (StartLevel) bc.getService(sr);
             if (level != null) {
-    //            level.setBundleStartLevel(b, startLevel);
+                level.setBundleStartLevel(b, startLevel);
                 return;
             }
         }
