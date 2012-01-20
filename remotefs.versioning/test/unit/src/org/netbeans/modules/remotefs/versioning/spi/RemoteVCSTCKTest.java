@@ -62,6 +62,7 @@ import org.netbeans.modules.versioning.VCSOwnerTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -131,6 +132,7 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         System.setProperty("nativeexecution.mode.unittest", "true");
         
         String userdir = System.getProperty("netbeans.user");
