@@ -145,14 +145,12 @@ public class WritingQueue {
     }
 
     public boolean isBusy() {
-        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         synchronized (lock) {
             return ! entries.isEmpty();
         }
     }
 
     public boolean waitFinished(Collection<String> failedFiles) throws InterruptedException {
-        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         if (failedFiles == null) {
             failedFiles = new ArrayList<String>();
         }
@@ -170,7 +168,6 @@ public class WritingQueue {
     }
 
     public boolean waitFinished(Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
-        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         if (failedFiles == null) {
             failedFiles = new ArrayList<String>();
         }
