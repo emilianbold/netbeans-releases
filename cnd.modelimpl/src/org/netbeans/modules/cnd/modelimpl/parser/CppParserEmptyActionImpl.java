@@ -108,5 +108,17 @@ public class CppParserEmptyActionImpl implements CppParserAction {
     public boolean isType(String name) {
         return false;
     }
+
+    @Override
+    public void namespace_declaration(Token token) {
+    }
+
+    @Override
+    public void end_namespace_declaration(Token token) {
+    }
+
+    @Override
+    public void namespace_name(Token token) {
+    }
     
 }

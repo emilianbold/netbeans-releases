@@ -175,7 +175,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         RepositoryUtils.remove(enumerators);
     }
     
-    public static class EnumBuilder {
+    public static class EnumBuilder implements CsmObjectBuilder {
         
         private CharSequence name;
         private String qName;

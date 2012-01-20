@@ -481,6 +481,10 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "functionName()[0]->fo^o();", true);
     }
 
+    public void testVariableAsAClassName() throws Exception {
+        checkOccurrences(getTestPath(), "$static_clas^sname::$static_property;", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

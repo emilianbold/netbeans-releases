@@ -11,9 +11,11 @@ RequestForEnhancement
 SuppressWarnings
 Temporal
 TestAdvancedAnnotation
+ch
 com
 java
 javanet
+javassist
 javax
 jp
 org
@@ -23,11 +25,11 @@ End cursor position = 575
 [@FieldResult(|, String name, @FieldResult(name=, 689]
 String column
 String name
-End cursor position = 708
+End cursor position = 704
 [@Temporal(|, TemporalType value, @Temporal(value=, 976]
 TemporalType TemporalType.DATE
 TemporalType TemporalType.TIME
-TemporalType TemporalType.TIMESTAMP
+TemporalType TemporalType.TIME
 TemporalType value
 false
 true
@@ -56,7 +58,7 @@ Compiler
 Deprecated
 Double
 Enum <E>
-EnumConstantNotPresentException
+EnumConstantNotPresentExceptio
 Enumerated
 Error
 Exception
@@ -112,7 +114,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
 SuppressWarnings
 System
 Temporal
@@ -131,9 +133,11 @@ UnsupportedOperationException
 VerifyError
 VirtualMachineError
 Void
+ch
 com
 java
 javanet
+javassist
 javax
 jp
 org
@@ -145,7 +149,7 @@ Calendar
 Collection <E>
 Collections
 Comparator <T>
-ConcurrentModificationException
+ConcurrentModificationExceptio
 Currency
 End cursor position = 1195
 [@Column(unique=|, false, @Column(unique=false, 1236]

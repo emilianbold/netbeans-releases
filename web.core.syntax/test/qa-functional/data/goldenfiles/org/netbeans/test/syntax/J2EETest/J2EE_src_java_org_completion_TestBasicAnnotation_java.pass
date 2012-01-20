@@ -2,6 +2,11 @@
 JoinColumn
 JoinColumns
 JoinTable
+java
+javanet
+javassist
+javax
+jp
 End cursor position = 146
 [@Ta|, TableGenerator, @TableGenerator, 231]
 Table
@@ -9,19 +14,18 @@ TableGenerator
 End cursor position = 247
 [@ManyToOne(|, boolean optional = true, @ManyToOne(optional=, 351]
 CascadeType[] cascade = {}
-FetchType fetch = javax.persistence.FetchType.EAGER
+FetchType fetch = javax.persis
 boolean optional = true
-Class targetEntity = void.class
+Class targetEntity = void.clas
 End cursor position = 372
-[@Inheritance(|, InheritanceType strategy = javax.persistence.Inheri , @Inheritance(strategy=, 508]
-InheritanceType strategy = javax.persistence.Inheri 
-End cursor position = 531
-[@Basic(fetch=|, FetchType FetchType.LAZY, @Basic(fetch=FetchType.LAZY, 634]
+[@Basic(fetch=|, FetchType FetchType.LAZY, @Basic(fetch= FetchType.LAZY, 478]
 FetchType FetchType.EAGER
 FetchType FetchType.LAZY
 false
 true
 AbstractMethodError
+Access
+AccessType
 Appendable
 ArithmeticException
 ArrayIndexOutOfBoundsException
@@ -34,6 +38,10 @@ AttributeOverrides
 Basic
 Boolean
 Byte
+Cache
+CacheRetrieveMode
+CacheStoreMode
+Cacheable
 CascadeType
 CharSequence
 Character
@@ -45,6 +53,7 @@ ClassLoader
 ClassNotFoundException
 CloneNotSupportedException
 Cloneable
+CollectionTable
 Column
 ColumnResult
 Comparable <T>
@@ -54,6 +63,7 @@ DiscriminatorColumn
 DiscriminatorType
 DiscriminatorValue
 Double
+ElementCollection
 Embeddable
 Embedded
 EmbeddedId
@@ -66,7 +76,7 @@ EntityNotFoundException
 EntityResult
 EntityTransaction
 Enum <E>
-EnumConstantNotPresentException
+EnumConstantNotPresentExceptio
 EnumType
 Enumerated
 Error
@@ -105,11 +115,19 @@ JoinTable
 LinkageError
 Lob
 LockModeType
+LockTimeoutException
 Long
 ManyToMany
 ManyToOne
 MapKey
+MapKeyClass
+MapKeyColumn
+MapKeyEnumerated
+MapKeyJoinColumn
+MapKeyJoinColumns
+MapKeyTemporal
 MappedSuperclass
+MapsId
 Math
 NamedNativeQueries
 NamedNativeQuery
@@ -131,9 +149,11 @@ OneToMany
 OneToOne
 OptimisticLockException
 OrderBy
+OrderColumn
 OutOfMemoryError
 Override
 Package
+Parameter <T>
 Persistence
 PersistenceContext
 PersistenceContextType
@@ -141,7 +161,11 @@ PersistenceContexts
 PersistenceException
 PersistenceProperty
 PersistenceUnit
+PersistenceUnitUtil
 PersistenceUnits
+PersistenceUtil
+PessimisticLockException
+PessimisticLockScope
 PostLoad
 PostPersist
 PostRemove
@@ -155,6 +179,7 @@ Process
 ProcessBuilder
 Query
 QueryHint
+QueryTimeoutException
 Readable
 RollbackException
 Runnable
@@ -166,6 +191,7 @@ SecondaryTables
 SecurityException
 SecurityManager
 SequenceGenerator
+SharedCacheMode
 Short
 SqlResultSetMapping
 SqlResultSetMappings
@@ -175,7 +201,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
 SuppressWarnings
 System
 Table
@@ -191,33 +217,43 @@ ThreadLocal <T>
 Throwable
 TransactionRequiredException
 Transient
+Tuple
+TupleElement <X>
 TypeNotPresentException
+TypedQuery <X>
 UniqueConstraint
 UnknownError
 UnsatisfiedLinkError
 UnsupportedClassVersionError
 UnsupportedOperationException
+ValidationMode
 VerifyError
 Version
 VirtualMachineError
 Void
+ch
 com
 java
+javanet
+javassist
 javax
 jp
 org
 sun
 sunw
-End cursor position = 662
-[@ManyToOne(cascade=|, CascadeType CascadeType.REMOVE, @ManyToOne(cascade=CascadeType.REMOVE, 786]
+End cursor position = 507
+[@ManyToOne(cascade=|, CascadeType CascadeType.REMOVE, @ManyToOne(cascade= CascadeType.REMOVE, 631]
 CascadeType CascadeType.ALL
+CascadeType CascadeType.DETACH
 CascadeType CascadeType.MERGE
-CascadeType CascadeType.PERSIST
-CascadeType CascadeType.REFRESH
+CascadeType CascadeType.PERSIS
+CascadeType CascadeType.REFRES
 CascadeType CascadeType.REMOVE
 false
 true
 AbstractMethodError
+Access
+AccessType
 Appendable
 ArithmeticException
 ArrayIndexOutOfBoundsException
@@ -230,6 +266,10 @@ AttributeOverrides
 Basic
 Boolean
 Byte
+Cache
+CacheRetrieveMode
+CacheStoreMode
+Cacheable
 CascadeType
 CharSequence
 Character
@@ -241,6 +281,7 @@ ClassLoader
 ClassNotFoundException
 CloneNotSupportedException
 Cloneable
+CollectionTable
 Column
 ColumnResult
 Comparable <T>
@@ -250,6 +291,7 @@ DiscriminatorColumn
 DiscriminatorType
 DiscriminatorValue
 Double
+ElementCollection
 Embeddable
 Embedded
 EmbeddedId
@@ -262,7 +304,7 @@ EntityNotFoundException
 EntityResult
 EntityTransaction
 Enum <E>
-EnumConstantNotPresentException
+EnumConstantNotPresentExceptio
 EnumType
 Enumerated
 Error
@@ -301,11 +343,19 @@ JoinTable
 LinkageError
 Lob
 LockModeType
+LockTimeoutException
 Long
 ManyToMany
 ManyToOne
 MapKey
+MapKeyClass
+MapKeyColumn
+MapKeyEnumerated
+MapKeyJoinColumn
+MapKeyJoinColumns
+MapKeyTemporal
 MappedSuperclass
+MapsId
 Math
 NamedNativeQueries
 NamedNativeQuery
@@ -327,9 +377,11 @@ OneToMany
 OneToOne
 OptimisticLockException
 OrderBy
+OrderColumn
 OutOfMemoryError
 Override
 Package
+Parameter <T>
 Persistence
 PersistenceContext
 PersistenceContextType
@@ -337,7 +389,11 @@ PersistenceContexts
 PersistenceException
 PersistenceProperty
 PersistenceUnit
+PersistenceUnitUtil
 PersistenceUnits
+PersistenceUtil
+PessimisticLockException
+PessimisticLockScope
 PostLoad
 PostPersist
 PostRemove
@@ -351,6 +407,7 @@ Process
 ProcessBuilder
 Query
 QueryHint
+QueryTimeoutException
 Readable
 RollbackException
 Runnable
@@ -362,6 +419,7 @@ SecondaryTables
 SecurityException
 SecurityManager
 SequenceGenerator
+SharedCacheMode
 Short
 SqlResultSetMapping
 SqlResultSetMappings
@@ -371,7 +429,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
 SuppressWarnings
 System
 Table
@@ -387,21 +445,28 @@ ThreadLocal <T>
 Throwable
 TransactionRequiredException
 Transient
+Tuple
+TupleElement <X>
 TypeNotPresentException
+TypedQuery <X>
 UniqueConstraint
 UnknownError
 UnsatisfiedLinkError
 UnsupportedClassVersionError
 UnsupportedOperationException
+ValidationMode
 VerifyError
 Version
 VirtualMachineError
 Void
+ch
 com
 java
+javanet
+javassist
 javax
 jp
 org
 sun
 sunw
-End cursor position = 824
+End cursor position = 670

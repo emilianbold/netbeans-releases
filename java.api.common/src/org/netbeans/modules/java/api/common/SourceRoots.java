@@ -558,7 +558,9 @@ public final class SourceRoots extends Roots {
 
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
-            resetCache(true, null);
+            if (AntProjectHelper.PROJECT_XML_PATH.equals(ev.getPath())) {
+                resetCache(true, null);
+            }
         }
 
         @Override

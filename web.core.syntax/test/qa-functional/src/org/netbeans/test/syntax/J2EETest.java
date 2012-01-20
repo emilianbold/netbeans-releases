@@ -62,7 +62,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class J2EETest extends CompletionTest {
 
-    /** Creates a new instance of CompletionTesJ2EE */
+        /** Creates a new instance of CompletionTesJ2EE */
     public J2EETest(String name, FileObject testFileObj) {
         super(name, testFileObj);
     }
@@ -136,7 +136,7 @@ public class J2EETest extends CompletionTest {
         } else if (XML_EXTS.contains(ext)) {
             test(testFileObj, "<!--CC", "-->", false);
         } else if (JS_EXTS.contains(ext) || ext.equals("java")) {
-            test(testFileObj, "/**CC", "*/");
+            test(testFileObj, "/**CC", "*/", false);
         } else {
             throw new JemmyException("File extension of: " + testFileObj.getNameExt() + " is unsupported.");
         }

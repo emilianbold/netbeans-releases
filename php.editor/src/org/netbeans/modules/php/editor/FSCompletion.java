@@ -214,7 +214,8 @@ public class FSCompletion implements CompletionProvider {
                     File toFile = FileUtil.toFile(f);
                     if (toFile != null) {
                         URI resolve = toFile.toURI().resolve(pathPrefix).normalize();
-                        f = FileUtil.toFileObject(new File(resolve));
+                        File normalizedFile = FileUtil.normalizeFile(new File(resolve));
+                        f = FileUtil.toFileObject(normalizedFile);
                     } else {
                         f = f.getFileObject(pathPrefix);
                     }

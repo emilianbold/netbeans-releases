@@ -805,7 +805,7 @@ public class CustomScopePanel extends javax.swing.JPanel implements ExplorerMana
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        outlineView1 = new OutlineView("Custom Scope");
+        outlineView1 = new OutlineView(NbBundle.getMessage(CustomScopePanel.class, "DLG_CustomScope"));
 
         outlineView1.setDefaultActionAllowed(false);
         outlineView1.setDoubleBuffered(true);

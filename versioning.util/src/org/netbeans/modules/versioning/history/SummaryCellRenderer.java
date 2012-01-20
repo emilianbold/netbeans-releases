@@ -330,15 +330,14 @@ class SummaryCellRenderer implements ListCellRenderer {
                     foregroundColor = selectionForeground;
                     backgroundColor = selectionBackground;
                     style = selectedStyle;
-                    textPane.setOpaque(false);
                 } else {
                     foregroundColor = UIManager.getColor("List.foreground"); //NOI18N
                     backgroundColor = UIManager.getColor("List.background"); //NOI18N
                     backgroundColor = entry.isLessInteresting() ? darkerUninteresting(backgroundColor) : darker(backgroundColor);
                     style = normalStyle;
-                    textPane.setOpaque(true);
                 }
-                textPane.setBackground(backgroundColor);
+                textPane.setOpaque(false);
+                textPane.setBackground(new Color(0, 0, 0, 0));
                 setBackground(backgroundColor);
                 if (item.revisionExpanded) {
                     expandButton.setIcon(ICON_EXPANDED);

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.NewProjectWizard;
@@ -149,9 +149,6 @@ public class NewProject extends AbstractAction {
                     //#69618: the non-project cache may contain a project folder listed in newObjects:
                     ProjectManager.getDefault().clearNonProjectCache();
         
-        SwingUtilities.invokeLater( new Runnable() {
-            
-            public void run() {
                     ProjectUtilities.WaitCursor.show();
                     
                     if ( newObjects != null && !newObjects.isEmpty() ) {
@@ -208,8 +205,12 @@ public class NewProject extends AbstractAction {
                         
                         OpenProjectList.getDefault().open(projectsToOpen.toArray(new Project[0]), false, true, mainProject);
                         
+        EventQueue.invokeLater( new Runnable() {
+            @Override public void run() {
                         // Show the project tab to show the user we did something
                         ProjectUtilities.makeProjectTabVisible();
+            }
+        });
 
                         ProjectTab.RP.post(new Runnable() {
                             public @Override void run() {
@@ -226,12 +227,6 @@ public class NewProject extends AbstractAction {
                         
                     }
                     ProjectUtilities.WaitCursor.hide();
-            }
-            
-        } );
-        
-        
-        
     }
     
 }

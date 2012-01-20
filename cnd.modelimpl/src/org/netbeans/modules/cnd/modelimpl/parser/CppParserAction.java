@@ -60,8 +60,11 @@ public interface CppParserAction {
     void class_body(Token token);
     void end_class_body(Token token);
     
-    void namespace_body(Token token);
+    void namespace_declaration(Token token);
+    void namespace_name(Token token);
+    void namespace_body(Token token);    
     void end_namespace_body(Token token);
+    void end_namespace_declaration(Token token);
 
     void compound_statement(Token token);
     void end_compound_statement(Token token);

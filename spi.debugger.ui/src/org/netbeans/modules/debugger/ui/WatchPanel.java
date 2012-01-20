@@ -201,8 +201,9 @@ public class WatchPanel {
                     }
                     slash = true;
                 }
-                if (c == 'c' && line.length() > (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
+                if (c == 'c' && line.length() >= (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
                     // class declaration
+                    classDecl = true;
                     if (line.indexOf('{', i+5) > 0) {
                         return l + 1;
                     }
