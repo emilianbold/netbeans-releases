@@ -43,7 +43,6 @@ package org.netbeans.modules.extexecution.startup;
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,25 +56,22 @@ import org.openide.util.Lookup;
  */
 public class ProxyStartupArgumentsProvider implements StartupArgumentsProvider {
 
-    private final Map attributes;
+    private final Map<String,?> attributes;
 
     private final Set<StartMode> startMode;
 
     private StartupArgumentsProvider delegate;
 
-    public ProxyStartupArgumentsProvider(Map attributes) {
+    public ProxyStartupArgumentsProvider(Map<String,?> attributes) {
         this.attributes = attributes;
 
         String startModeValue = (String) attributes.get(
                 StartupArgumentsRegistrationProcessor.START_MODE_ATTRIBUTE);
-        if (startModeValue == null) {
-            startMode = EnumSet.noneOf(StartMode.class);
-        } else {
-            Set<StartMode> result = new HashSet<StartMode>();
+        startMode = EnumSet.noneOf(StartMode.class);
+        if (startModeValue != null) {
             for (String value : startModeValue.split(",")) {
-                result.add(StartMode.valueOf(value));
+                startMode.add(StartMode.valueOf(value));
             }
-            startMode = EnumSet.copyOf(result);
         }
     }
 
