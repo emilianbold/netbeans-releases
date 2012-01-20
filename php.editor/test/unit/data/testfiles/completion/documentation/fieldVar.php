@@ -7,6 +7,21 @@ class ClassName {
      * @var int
      */
     public $fieldWithDesc;
+    
+    /**
+     * Nejaky popis.
+     *
+     * @var int[]
+     */
+    public $arrayFieldWithDesc;
+
+}
+
+$c = new ClassName();
+$c->fieldWithDesc;
+$c->arrayFieldWithDesc;
+
+class ClassName1 {
 
     /**
      * @var int
@@ -14,22 +29,15 @@ class ClassName {
     public $fieldWithoutDesc;
 
     /**
-     * Nejaky popis.
-     *
      * @var int[]
      */
-    public $fieldWithDescAndArray;
+    public $arrayFieldWithoutDesc;
 
-    /**
-     * @var int[]
-     */
-    public $fieldWithoutDescAndArray;
 }
 
-$c = new ClassName();
-$c->fieldWithDesc;
-$c->fieldWithoutDesc;
-$c->fieldWithDescAndArray;
-$c->fieldWithoutDescAndArray;
+
+$c1 = new ClassName1();
+$c1->fieldWithoutDesc;
+$c1->arrayFieldWithoutDesc;
 
 ?>

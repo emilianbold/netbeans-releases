@@ -74,15 +74,15 @@ public class PHPCCDocumentationTest extends PHPTestBase {
     }
 
     public void testFieldWithoutDesc() throws Exception {
-        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->fieldWithoutDes^c;", false, "");
+        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c1->fieldWithoutDes^c;", false, "");
     }
 
     public void testFieldWithDescAndArray() throws Exception {
-        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->fieldWithDescAndArra^y;", false, "");
+        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->arrayFieldWithDes^c;", false, "");
     }
 
     public void testFieldWithoutDescAndArray() throws Exception {
-        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c->fieldWithoutDescAndArra^y;", false, "");
+        checkCompletionDocumentation("testfiles/completion/documentation/fieldVar.php", "$c1->arrayFieldWithoutDes^c;", false, "");
     }
 
     public void testPropertyWithArray() throws Exception {
