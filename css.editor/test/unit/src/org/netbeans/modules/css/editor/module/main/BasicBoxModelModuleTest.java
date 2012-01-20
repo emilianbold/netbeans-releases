@@ -43,7 +43,6 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.List;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.model.api.Margin;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.css.editor.properties.parser.ResolvedToken;
