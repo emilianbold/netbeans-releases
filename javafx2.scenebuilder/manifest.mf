@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module: org.netbeans.modules.javafx2.scenebuilder
+OpenIDE-Module-Install: org/netbeans/modules/javafx2/scenebuilder/Installer.class
+OpenIDE-Module-Layer: org/netbeans/modules/javafx2/scenebuilder/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javafx2/scenebuilder/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.1
