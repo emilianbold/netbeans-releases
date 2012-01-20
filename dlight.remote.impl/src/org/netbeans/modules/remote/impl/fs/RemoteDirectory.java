@@ -65,7 +65,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -537,7 +536,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             statInfo = FileInfoProvider.stat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
         } catch (ExecutionException e) {
-            if (isFileNotFoundException(e)) {
+            if (RemoteFileSystemUtils.isFileNotFoundException(e)) {
                 statInfo = null;
             } else {
                 throw e;
@@ -637,7 +636,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     getFileSystem().addPendingFile(this);
                     throw new ConnectException(problem.getMessage());
                 } else {
-                    boolean fileNotFoundException = isFileNotFoundException(problem);
+                    boolean fileNotFoundException = RemoteFileSystemUtils.isFileNotFoundException(problem);
                     if (fileNotFoundException) {
                         this.invalidate();
                         synchronized (refLock) {
@@ -964,7 +963,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
                 } else {
-                    boolean fileNotFoundException = isFileNotFoundException(problem);
+                    boolean fileNotFoundException = RemoteFileSystemUtils.isFileNotFoundException(problem);
                     if (fileNotFoundException) {
                         synchronized (refLock) {
                             storageRef = new SoftReference<DirectoryStorage>(DirectoryStorage.EMPTY);
@@ -1141,21 +1140,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             writeLock.unlock();
         }
         return storage;
-    }
-    
-    private boolean isFileNotFoundException(Throwable ex) {
-        while (ex != null) {
-            if (ex instanceof FileNotFoundException) {
-                return true;
-            }
-            if (ex instanceof SftpIOException) {
-                if (((SftpIOException)ex).getId() == SftpIOException.SSH_FX_NO_SUCH_FILE) {
-                    return true;
-                }
-            }
-            ex = ex.getCause();
-        }
-        return false;
     }
     
     InputStream _getInputStream(RemotePlainFile child) throws
