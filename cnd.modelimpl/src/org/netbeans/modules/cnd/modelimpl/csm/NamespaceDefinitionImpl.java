@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -78,10 +79,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private final CsmUID<CsmNamespace> namespaceUID;
     
     private NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
-        super(file, getStartOffset(ast), getEndOffset(ast));
+        this(NameCache.getManager().getString(AstUtil.getText(ast)), parent, file, getStartOffset(ast), getEndOffset(ast));
+    }
+
+    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = NameCache.getManager().getString(AstUtil.getText(ast));
+        this.name = name;
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -91,7 +95,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         nsImpl.addNamespaceDefinition(NamespaceDefinitionImpl.this);
     }
-
+    
     public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
@@ -101,6 +105,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
             return (NamespaceDefinitionImpl) candidate;
         } else {
+            assert !TraceFlags.CPP_PARSER_ACTION;
             NamespaceDefinitionImpl ns = new NamespaceDefinitionImpl(ast, containerfile, parentNamespace);
             container.addDeclaration(ns);
             return ns;
@@ -255,6 +260,71 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         return impl;
     }
     
+    
+    public static class NamespaceBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;
+        private String qName;
+        private CsmFile file;
+        private int startOffset;
+        private int endOffset;
+        private NamespaceDefinitionImpl parentNamespace;
+        
+        List<NamespaceBuilder> inner = new ArrayList<NamespaceBuilder>();
+
+        public void setName(CharSequence name) {
+            this.name = name;
+            // for now without scope
+            qName = name.toString();
+        }
+
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setParentNamespace(NamespaceDefinitionImpl ns) {
+            this.parentNamespace = ns;
+        }
+        
+        public void addNamespace(NamespaceBuilder nb) {
+            inner.add(nb);
+        }
+        
+        public NamespaceDefinitionImpl create() {
+            MutableDeclarationsContainer container;
+            NamespaceImpl pns;
+            if(parentNamespace == null) {
+                container = (FileImpl)file;
+                pns = (NamespaceImpl)file.getProject().getGlobalNamespace();
+            } else {
+                container = parentNamespace;
+                pns = (NamespaceImpl)parentNamespace.getNamespace();
+            }
+            NamespaceDefinitionImpl ns;
+            CsmOffsetableDeclaration candidate = container.findExistingDeclaration(startOffset, endOffset, name);
+            if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
+                ns = (NamespaceDefinitionImpl) candidate;
+            } else {
+                ns = new NamespaceDefinitionImpl(name, pns, file, startOffset, endOffset);
+                container.addDeclaration(ns);
+            }
+            for (NamespaceBuilder nb : inner) {
+                nb.setParentNamespace(ns);
+                nb.create();
+            }
+            return ns;
+        }
+    
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

@@ -102,7 +102,7 @@ public abstract class KeyBasedUID<T> implements CsmUID<T>, KeyHolder, SelfPersis
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
-        KeyBasedUID other = (KeyBasedUID) obj;
+        KeyBasedUID<?> other = (KeyBasedUID<?>) obj;
         return this.key.equals(other.key);
     }
 

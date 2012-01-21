@@ -150,9 +150,9 @@ public class CPPParserEx extends CPPParser {
 
     protected final void init2(CsmFile file, Map<Integer, CsmObject> objects) {
         if(objects == null || file == null) {
-            action = new CppParserActionImpl(file, objects);        
-        } else {
             action = new CppParserEmptyActionImpl();
+        } else {
+            action = new CppParserActionImpl(file, objects);        
         }
     }
 

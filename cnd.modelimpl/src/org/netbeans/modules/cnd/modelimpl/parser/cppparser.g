@@ -1152,9 +1152,11 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 decl_namespace
 	{String qid; String name = "";}
 	:	
-		LITERAL_namespace 
+		token:LITERAL_namespace
 		(
-			(ns:ID{_td = true; name=ns.getText(); declaratorID(name,qiType);})?
+                        {action.namespace_declaration(token);}
+			(ns:ID{_td = true; name=ns.getText(); declaratorID(name,qiType);} {action.namespace_name(ns);})?
+
 			// The following statement can be invoked to trigger selective
 			// antlr trace. Also see below
 			//{
@@ -1169,7 +1171,7 @@ decl_namespace
 			((external_declaration)*)
 			{/*exitLocalScope();*/{ #decl_namespace = #(#[CSM_NAMESPACE_DECLARATION, name], #decl_namespace); }}
                         {action.end_namespace_body(LT(1));}
-			RCURLY
+			token2:RCURLY {action.end_namespace_declaration(token2);}
 			// The following should be implemented to match the optional
 			// statement above
 			//{antlrTrace(false);}
@@ -1177,7 +1179,7 @@ decl_namespace
 			ns2:ID{_td = true;name=ns2.getText();declaratorID((name),qiType);}
 			ASSIGNEQUAL qid = qualified_id SEMICOLON! 
 			{/*end_of_stmt();*/#decl_namespace = #(#[CSM_NAMESPACE_ALIAS, name], #decl_namespace);} 
-		)
+		)                
 	;
 
 namespace_alias_definition

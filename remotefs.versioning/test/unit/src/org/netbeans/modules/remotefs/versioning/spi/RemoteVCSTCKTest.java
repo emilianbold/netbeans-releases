@@ -48,15 +48,21 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.versioning.VCSAnnotationProviderTestCase;
 import org.netbeans.modules.versioning.VCSFilesystemTestFactory;
+import org.netbeans.modules.versioning.VCSInterceptorTestCase;
+import org.netbeans.modules.versioning.VCSOwnerTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -66,20 +72,20 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
+    private FileObject root;
 
     public RemoteVCSTCKTest(Test test) {
         super(test);
-        //VCSFileProxy.createFileProxy(new File("")); // init APIAccessor
     }
 
     @Override
     protected String getRootPath() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return tmpDir;
     }
 
     @Override
     public void delete(String path) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        CommonTasksSupport.rmFile(execEnv, getRootPath()+"/"+path, null);
     }
     
     @Override
@@ -93,24 +99,22 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     }
 
     protected FileObject createFileObject(String path, boolean isDirectory) throws IOException {
-        FileObject fo = FileSystemProvider.getFileObject(execEnv, path);
+        FileObject fo = FileSystemProvider.getFileObject(execEnv, getRootPath()+"/"+path);
         if (fo != null && fo.isValid()) {
             assertEquals(isDirectory, fo.isFolder());
             return fo;
         }
-        String dir = PathUtilities.getDirName(path);
-        FileObject dirFO = FileSystemProvider.getFileObject(execEnv, dir);
         if(isDirectory) {
-            fo = dirFO.createFolder(PathUtilities.getBaseName(path));
+            fo = FileUtil.createFolder(root, path);
         } else {
-            fo = dirFO.createData(PathUtilities.getBaseName(path));
+            fo = FileUtil.createData(root, path);
         }
         return fo;
     }
 
     @Override
     protected void setReadOnly(String path) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        CommonTasksSupport.chmod(execEnv, getRootPath()+"/"+path, 0444, null);
     }
 
     public static void main(String args[]) {
@@ -119,15 +123,16 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(VCSOwnerTestCase.class);
-//        suite.addTestSuite(VCSInterceptorTestCase.class);
-//        suite.addTestSuite(VCSAnnotationProviderTestCase.class);
+        suite.addTestSuite(VCSOwnerTestCase.class);
+        suite.addTestSuite(VCSInterceptorTestCase.class);
+        suite.addTestSuite(VCSAnnotationProviderTestCase.class);
         return new RemoteVCSTCKTest(suite);
     }
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockLookup.setLayersAndInstances();
         System.setProperty("nativeexecution.mode.unittest", "true");
         
         String userdir = System.getProperty("netbeans.user");
@@ -161,11 +166,11 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
             throw new IOException("Null file object for " + tmpDirParent);
         }
         tmpDirParentFO.refresh();
-        FileObject fileObject = FileSystemProvider.getFileObject(execEnv, tmpDir);
-        if (tmpDirParentFO == null) {
+        root = FileSystemProvider.getFileObject(execEnv, tmpDir);
+        if (root == null) {
             throw new IOException("Null file object for " + tmpDir);
         }
-        VCSFileProxy.createFileProxy(fileObject); // init APIAccessor
+        VCSFileProxy.createFileProxy(root); // init APIAccessor
     }
     
     private String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        

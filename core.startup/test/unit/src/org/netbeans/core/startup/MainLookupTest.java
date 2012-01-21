@@ -39,86 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser;
+package org.netbeans.core.startup;
 
-import org.netbeans.modules.cnd.antlr.Token;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
-/**
- * @author nick
- */
-public class CppParserEmptyActionImpl implements CppParserAction {
-
-    @Override
-    public void enum_declaration(Token token) {
+public class MainLookupTest extends NbTestCase {
+    public MainLookupTest(String s) {
+        super(s);
     }
 
-    @Override
-    public void enum_name(Token token) {
+    public void testInstanceInServicesFolderIsVisible() throws IOException {
+        FileObject inst = FileUtil.createData(FileUtil.getConfigRoot(), "Services/Test/X.instance");
+        inst.setAttribute("instanceCreate", Integer.valueOf(33));
+        assertTrue("Is main lookup", MainLookup.getDefault() instanceof MainLookup);
+        Lookup.getDefault().lookup(ModuleInfo.class);
+        assertEquals("33 found", Integer.valueOf(33), Lookup.getDefault().lookup(Integer.class));
     }
-
-    @Override
-    public void enum_body(Token token) {
-    }
-
-    @Override
-    public void enumerator(Token token) {
-    }
-
-    @Override
-    public void end_enum_body(Token token) {
-    }
-
-    @Override
-    public void end_enum_declaration(Token token) {
-    }
-
-    @Override
-    public void class_name(Token token) {
-    }
-
-    @Override
-    public void class_body(Token token) {
-    }
-
-    @Override
-    public void end_class_body(Token token) {
-    }
-
-    @Override
-    public void namespace_body(Token token) {
-    }
-
-    @Override
-    public void end_namespace_body(Token token) {
-    }
-
-    @Override
-    public void compound_statement(Token token) {
-    }
-
-    @Override
-    public void end_compound_statement(Token token) {
-    }
-
-    @Override
-    public void id(Token token) {
-    }
-
-    @Override
-    public boolean isType(String name) {
-        return false;
-    }
-
-    @Override
-    public void namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void end_namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void namespace_name(Token token) {
-    }
-    
 }

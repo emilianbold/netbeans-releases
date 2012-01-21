@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.openide.util.CharSequences;

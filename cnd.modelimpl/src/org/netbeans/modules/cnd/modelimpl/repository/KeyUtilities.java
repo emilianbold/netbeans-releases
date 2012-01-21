@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * @author Vladimir Voskresensky
  */
 public class KeyUtilities {
+    public static int NON_INITIALIZED = Integer.MIN_VALUE + 1;
 
     /** Creates a new instance of KeyUtils */
     private KeyUtilities() {
@@ -210,6 +211,12 @@ public class KeyUtilities {
             return ((OffsetableKey) key).getEndOffset();
         }
         return -1;
+    }
+    
+    public static void cacheKeyEndOffset(Key key, int endOffset) {
+        if (key instanceof OffsetableKey) {
+            ((OffsetableKey) key).cacheEndOffset(endOffset);
+        }
     }
     // have to be public or UID factory does not work
 }

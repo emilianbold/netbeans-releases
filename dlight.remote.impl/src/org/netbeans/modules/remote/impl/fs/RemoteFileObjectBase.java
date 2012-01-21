@@ -53,13 +53,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
@@ -85,6 +87,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private final FileLock lock = new FileLock();
     static final long serialVersionUID = 1931650016889811086L;
     public static final boolean USE_VCS;
+    public static final boolean DEFER_WRITES = Boolean.getBoolean("cnd.remote.defer.writes"); //NOI18Ns
     static {
         if ("false".equals(System.getProperty("remote.vcs.suport"))) { //NOI18N
             USE_VCS = false;
@@ -479,7 +482,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                 throw new IOException("No connection: Can not rename in " + p.getPath()); //NOI18N
             }
             try {
+                Map<String, Object> map = getAttributesMap();
                 p.renameChild(lock, this, newNameExt);
+                setAttributeMap(map, this);
             } catch (ConnectException ex) {
                 throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
             } catch (InterruptedException ex) {
@@ -538,6 +543,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                 try {
                     final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
                     if (moveHandler != null) {
+                        Map<String,Object> attr = getAttributesMap();
                         moveHandler.handle();
                         refresh(true);
                         //perfromance bottleneck to call refresh on folder
@@ -545,7 +551,10 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                         target.refresh(true);
                         result = target.getFileObject(name, ext); // XXX ?
                         assert result != null : "Cannot find " + target + " with " + name + "." + ext;
-                        FileUtil.copyAttributes(this, result);
+                        //FileUtil.copyAttributes(this, result);
+                        if (result instanceof RemoteFileObjectBase) {
+                            setAttributeMap(attr, (RemoteFileObjectBase)result);
+                        }
                     } else {
                         result = super.move(lock, target, name, ext);
                     }
@@ -557,6 +566,22 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             }
         }
         return super.move(lock, target, name, ext);
+    }
+    
+    private Map<String,Object> getAttributesMap() throws IOException {
+        Map<String,Object> map = new HashMap<String,Object>();
+        Enumeration<String> attributes = getAttributes();
+        while(attributes.hasMoreElements()) {
+            String attr = attributes.nextElement();
+            map.put(attr, getAttribute(attr));
+        }
+        return map;
+    }
+    
+    private void setAttributeMap(Map<String,Object> map, RemoteFileObjectBase to) throws IOException {
+        for(Map.Entry<String,Object> entry : map.entrySet()) {
+            to.setAttribute(entry.getKey(), entry.getValue());
+        }
     }
     
     @Override
