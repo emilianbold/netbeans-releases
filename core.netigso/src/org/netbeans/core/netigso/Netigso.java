@@ -363,13 +363,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     private static final RequestProcessor RP = new RequestProcessor("Netigso Events"); // NOI18N
     final void notifyBundleChange(final String symbolicName, final Version version, final int action) {
         final Exception stack = Netigso.LOG.isLoggable(Level.FINER) ? new Exception("StackTrace") : null;
-        final Mutex mutex = Main.getModuleSystem().getManager().mutex();
         final Runnable doLog = new Runnable() {
             @Override
             public void run() {
                 if (activator.isUnderOurControl(symbolicName)) {
                     return;
                 }
+                final Mutex mutex = Main.getModuleSystem().getManager().mutex();
                 if (!mutex.isReadAccess()) {
                     mutex.postReadRequest(this);
                     return;
