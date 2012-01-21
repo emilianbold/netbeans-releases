@@ -105,15 +105,15 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
     public void testBinaryForSourceQuery() throws Exception {
         this.prepareProject();
         FileObject folder = scratch.createFolder("SomeFolder");
-        BinaryForSourceQuery.Result result = BinaryForSourceQuery.findBinaryRoots(folder.getURL());
+        BinaryForSourceQuery.Result result = BinaryForSourceQuery.findBinaryRoots(folder.toURL());
         assertEquals("Non-project folder does not have any source folder", 0, result.getRoots().length);
         folder = projdir.createFolder("SomeFolderInProject");
-        result = BinaryForSourceQuery.findBinaryRoots(folder.getURL());
+        result = BinaryForSourceQuery.findBinaryRoots(folder.toURL());
         assertEquals("Project non build folder does not have any source folder", 0, result.getRoots().length);
-        result = BinaryForSourceQuery.findBinaryRoots(sources.getURL());        
+        result = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
         assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
-        assertEquals("Project build folder must have source folder",buildClasses.getURL(),result.getRoots()[0]);        
-        BinaryForSourceQuery.Result result2 = BinaryForSourceQuery.findBinaryRoots(sources.getURL());
+        assertEquals("Project build folder must have source folder",buildClasses.toURL(),result.getRoots()[0]);
+        BinaryForSourceQuery.Result result2 = BinaryForSourceQuery.findBinaryRoots(sources.toURL());
         assertTrue (result == result2);
     }               
                     

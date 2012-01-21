@@ -69,6 +69,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
@@ -78,7 +79,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
@@ -1019,11 +1019,7 @@ public final class SourcesHelper {
             // Remember what we computed here so we know whether to fire changes later.
             List<URL> rootURLs = new ArrayList<URL>(groups.size());
             for (SourceGroup g : groups) {
-                try {
-                    rootURLs.add(g.getRootFolder().getURL());
-                } catch (FileStateInvalidException e) {
-                    assert false : e; // should be a valid file object!
-                }
+                rootURLs.add(g.getRootFolder().toURL());
             }
             lastComputedRoots.put(type, rootURLs);
             return groups.toArray(new SourceGroup[groups.size()]);

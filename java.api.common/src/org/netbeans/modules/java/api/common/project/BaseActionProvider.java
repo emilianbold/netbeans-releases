@@ -1668,8 +1668,6 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
             String activePlatformName = evaluator.getProperty("platform.active"); //NOI18N
             url = AppletSupport.generateHtmlFileURL(file, buildDir, classesDir, activePlatformName);
-        } catch (FileStateInvalidException fe) {
-            //ingore
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
             return null;
@@ -1707,8 +1705,6 @@ public abstract class BaseActionProvider implements ActionProvider {
                 String activePlatformName = evaluator.getProperty("platform.active"); //NOI18N
                 url = AppletSupport.getHTMLPageURL(targetHtml, activePlatformName);
             }
-        } catch (FileStateInvalidException fe) {
-            //ingore
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
             return null;

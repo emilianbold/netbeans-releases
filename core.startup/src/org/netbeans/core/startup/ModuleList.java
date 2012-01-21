@@ -1275,7 +1275,7 @@ final class ModuleList implements Stamps.Updater {
                         InputStream is = xmlfile.getInputStream();
                         try {
                             InputSource src = new InputSource(is);
-                            src.setSystemId(xmlfile.getURL().toString());
+                            src.setSystemId(xmlfile.toURL().toString());
                             try {
                                 dirtyprops.put(cnb, readStatus(src, null));
                             } catch (SAXException saxe) {
@@ -1619,7 +1619,7 @@ final class ModuleList implements Stamps.Updater {
                                 is = f.getInputStream();
                                 InputSource src = new InputSource(is);
                                 // Make sure any includes etc. are handled properly:
-                                src.setSystemId(f.getURL().toExternalForm());
+                                src.setSystemId(f.toURL().toExternalForm());
                                 if (reader == null) {
                                     try {
                                         reader = XMLUtil.createXMLReader();

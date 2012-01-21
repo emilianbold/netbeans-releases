@@ -125,7 +125,7 @@ public class SourceRootsTest extends NbTestCase {
         URL[] srcURLs = srcs.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 1",1,srcURLs.length);
-        assertEquals("Root URLs should be "+this.sources.getURL(),this.sources.getURL(),srcURLs[0]);
+        assertEquals("Root URLs should be "+this.sources.toURL(),this.sources.toURL(),srcURLs[0]);
         SourceRoots tsts = pp.getTestSourceRoots();
         srcProps = tsts.getRootProperties();
         assertNotNull ("Source properties can not be null",srcProps);
@@ -138,7 +138,7 @@ public class SourceRootsTest extends NbTestCase {
         srcURLs = tsts.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 1",1,srcURLs.length);
-        assertEquals("Root URLs should be "+this.tests.getURL(),this.tests.getURL(),srcURLs[0]);
+        assertEquals("Root URLs should be "+this.tests.toURL(),this.tests.toURL(),srcURLs[0]);
         //Now add new source root
         TestListener tl = new TestListener();
         srcs.addPropertyChangeListener (tl);
@@ -156,8 +156,8 @@ public class SourceRootsTest extends NbTestCase {
         srcURLs = srcs.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 2",2,srcURLs.length);
-        assertEquals("The first root URLs should be "+this.sources.getURL(),this.sources.getURL(),srcURLs[0]);
-        assertEquals("The second root URLs should be "+newRoot.getURL(),newRoot.getURL(),srcURLs[1]);
+        assertEquals("The first root URLs should be "+this.sources.toURL(),this.sources.toURL(),srcURLs[0]);
+        assertEquals("The second root URLs should be "+newRoot.toURL(),newRoot.toURL(),srcURLs[1]);
         Set events = tl.getEvents();
         assertTrue ("PROP_ROOT_PROPERTIES has to be fired",events.contains(SourceRoots.PROP_ROOT_PROPERTIES));
         assertTrue ("PROP_ROOTS has to be fired",events.contains(SourceRoots.PROP_ROOTS));
@@ -176,8 +176,8 @@ public class SourceRootsTest extends NbTestCase {
         srcURLs = srcs.getRootURLs();
         assertNotNull ("Root URLs can not be null",srcURLs);
         assertEquals ("Root URLs length must be 2",2,srcURLs.length);
-        assertEquals("The first root URLs should be "+this.sources.getURL(),this.sources.getURL(),srcURLs[0]);
-        assertEquals("The second root URLs should be "+newRoot.getURL(),newRoot.getURL(),srcURLs[1]);
+        assertEquals("The first root URLs should be "+this.sources.toURL(),this.sources.toURL(),srcURLs[0]);
+        assertEquals("The second root URLs should be "+newRoot.toURL(),newRoot.toURL(),srcURLs[1]);
         events = tl.getEvents();
         assertEquals(Collections.singleton(SourceRoots.PROP_ROOTS), events);
         srcs.removePropertyChangeListener(tl);

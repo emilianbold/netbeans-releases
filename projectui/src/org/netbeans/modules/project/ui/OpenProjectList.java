@@ -103,7 +103,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -399,15 +398,10 @@ public final class OpenProjectList {
                 for (Project p : toOpenProjects) {
                     INSTANCE.addModuleInfo(p);
                     // Set main project
-                    try {
                         if ( mainProjectURL != null && 
-                             mainProjectURL.equals( p.getProjectDirectory().getURL() ) ) {
+                             mainProjectURL.equals( p.getProjectDirectory().toURL() ) ) {
                             lazyMainProject = p;
                         }
-                    }
-                    catch( FileStateInvalidException e ) {
-                        // Not a main project
-                    }
                 }
                 return toOpenProjects.size();
                 }
@@ -1115,15 +1109,10 @@ public final class OpenProjectList {
     private static List<URL> projects2URLs( Collection<Project> projects ) {
         ArrayList<URL> URLs = new ArrayList<URL>( projects.size() );
         for(Project p: projects) {
-            try {
-                URL root = p.getProjectDirectory().getURL();
+                URL root = p.getProjectDirectory().toURL();
                 if ( root != null ) {
                     URLs.add( root );
                 }
-            }
-            catch( FileStateInvalidException e ) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
         }        
         
         return URLs;
@@ -1263,13 +1252,8 @@ public final class OpenProjectList {
     }
     
     private static void saveMainProject( Project mainProject ) {        
-        try {
-            URL mainRoot = mainProject == null ? null : mainProject.getProjectDirectory().getURL(); 
+            URL mainRoot = mainProject == null ? null : mainProject.getProjectDirectory().toURL();
             OpenProjectListSettings.getInstance().setMainProjectURL( mainRoot );
-        }
-        catch ( FileStateInvalidException e ) {
-            OpenProjectListSettings.getInstance().setMainProjectURL((String) null);
-        }
     }
         
     private ArrayList<FileObject> getTemplateNamesLRU( final Project project, PrivilegedTemplates priv ) {
@@ -1391,15 +1375,11 @@ public final class OpenProjectList {
         
         public void add(final Project p) {
             final UnloadedProjectInformation projectInfo;
-            try { // #183681: call outside of lock
+            // #183681: call outside of lock
                 projectInfo = ProjectInfoAccessor.DEFAULT.getProjectInfo(
                         ProjectUtils.getInformation(p).getDisplayName(),
                         ProjectUtils.getInformation(p).getIcon(),
-                        p.getProjectDirectory().getURL());
-            } catch(FileStateInvalidException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                return;
-            }
+                        p.getProjectDirectory().toURL());
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
                 int index = getIndex(p);
@@ -1576,17 +1556,10 @@ public final class OpenProjectList {
         }
         
         private int getIndex( Project p ) {
-            
-            URL pURL;
-            try {
-                if ( p == null || p.getProjectDirectory() == null ) {
-                    return -1;
-                }
-                pURL = p.getProjectDirectory().getURL();                
-            }
-            catch( FileStateInvalidException e ) {
+            if (p == null || p.getProjectDirectory() == null) {
                 return -1;
             }
+            URL pURL = p.getProjectDirectory().toURL();
             
             int i = 0;
             
@@ -1623,14 +1596,7 @@ public final class OpenProjectList {
             
             public ProjectReference( Project p ) {
                 this.projectReference = new WeakReference<Project>( p );
-                try {
-                    projectURL = p.getProjectDirectory().getURL();                
-                }
-                catch( FileStateInvalidException e ) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        log(Level.FINE, "FSIE getting URL for project: " + p.getProjectDirectory());
-                    }
-                }
+                projectURL = p.getProjectDirectory().toURL();
             }
             
             public Project getProject() {

@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -1128,18 +1130,43 @@ public abstract class FileObject extends Object implements Serializable {
         refresh(false);
     }
 
+    /**
+     * @throws FileStateInvalidException never
+     * @deprecated Use {@link #toURL} instead.
+     */
+    @Deprecated
+    public final URL getURL() throws FileStateInvalidException {
+        return toURL();
+    }
+
     /** Get URL that can be used to access this file.
      * If the file object does not correspond to a disk file or JAR entry,
      * the URL will only be usable within NetBeans as it uses a special protocol handler.
      * Otherwise an attempt is made to produce an external URL.
     * @return URL of this file object
-    * @exception FileStateInvalidException if the file is not valid
      * @see URLMapper#findURL
      * @see URLMapper#INTERNAL
+     * @since 7.57
     */
-    public final URL getURL() throws FileStateInvalidException {
-        // XXX why does this still throw FSIE? need not
+    public final URL toURL() {
         return URLMapper.findURL(this, URLMapper.INTERNAL);
+    }
+
+    /**
+     * Gets a URI for this file.
+     * Similar to {@link #toURL}.
+     * @return an absolute URI representing this file location
+     * @since 7.57
+     */
+    public final URI toURI() {
+        try {
+            URI uri = toURL().toURI();
+            assert uri.isAbsolute() : uri;
+            assert uri.equals(uri.normalize()) : uri;
+            return uri;
+        } catch (URISyntaxException x) {
+            throw new IllegalStateException(x);
+        }
     }
 
     /**

@@ -45,11 +45,12 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
+import java.net.URI;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
@@ -67,7 +68,7 @@ public class SharabilityQueryImplTest extends NbTestCase {
     /** Location of top of testing dir (contains projdir and external). */
     private File scratchF;
     /** Tested impl. */
-    private SharabilityQueryImplementation sqi;
+    private SharabilityQueryImplementation2 sqi;
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -88,65 +89,65 @@ public class SharabilityQueryImplTest extends NbTestCase {
         props.setProperty("build3.dir", new File(externalF, "build").getAbsolutePath());
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(projdir));
-        sqi = h.createSharabilityQuery(h.getStandardPropertyEvaluator(), new String[] {"${src.dir}", "${src2.dir}"},
+        sqi = h.createSharabilityQuery2(h.getStandardPropertyEvaluator(), new String[] {"${src.dir}", "${src2.dir}"},
                                        new String[] {"${build.dir}", "${build2.dir}", "${build3.dir}", "${dist.dir}"});
     }
     
-    private File file(String path) {
-        return new File(scratchF, path.replace('/', File.separatorChar));
+    private URI file(String path) {
+        return new File(scratchF, path.replace('/', File.separatorChar)).toURI();
     }
     
     public void testBasicIncludesExcludes() throws Exception {
-        assertEquals("project directory is mixed", SharabilityQuery.MIXED, sqi.getSharability(file("projdir")));
-        assertEquals("build.xml is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/build.xml")));
-        assertEquals("src/ is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/src")));
-        assertEquals("src/org/foo/ is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/src/org/foo")));
-        assertEquals("src/org/foo/Foo.java is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/src/org/foo/Foo.java")));
-        assertEquals("nbproject/ is mixed", SharabilityQuery.MIXED, sqi.getSharability(file("projdir/nbproject")));
-        assertEquals("nbproject/project.xml is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/nbproject/project.xml")));
-        assertEquals("nbproject/private/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/nbproject/private")));
-        assertEquals("nbproject/private/private.properties is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/nbproject/private/private.properties")));
-        assertEquals("build/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/build")));
-        assertEquals("build/classes/org/foo/Foo.class is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/build/classes/org/foo/Foo.class")));
-        assertEquals("dist/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/dist")));
+        assertEquals("project directory is mixed", SharabilityQuery.Sharability.MIXED, sqi.getSharability(file("projdir")));
+        assertEquals("build.xml is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/build.xml")));
+        assertEquals("src/ is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/src")));
+        assertEquals("src/org/foo/ is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/src/org/foo")));
+        assertEquals("src/org/foo/Foo.java is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/src/org/foo/Foo.java")));
+        assertEquals("nbproject/ is mixed", SharabilityQuery.Sharability.MIXED, sqi.getSharability(file("projdir/nbproject")));
+        assertEquals("nbproject/project.xml is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/nbproject/project.xml")));
+        assertEquals("nbproject/private/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/nbproject/private")));
+        assertEquals("nbproject/private/private.properties is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/nbproject/private/private.properties")));
+        assertEquals("build/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/build")));
+        assertEquals("build/classes/org/foo/Foo.class is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/build/classes/org/foo/Foo.class")));
+        assertEquals("dist/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/dist")));
     }
     
     public void testOverlaps() throws Exception {
-        assertEquals("build/2/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/build/2")));
-        assertEquals("build/2/whatever is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/build/2/whatever")));
+        assertEquals("build/2/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/build/2")));
+        assertEquals("build/2/whatever is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/build/2/whatever")));
         // overlaps in includePaths tested in basicIncludesExcludes: src is inside projdir
     }
     
     public void testExternalFiles() throws Exception {
-        assertEquals("external/src is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("external/src")));
-        assertEquals("external/src/org/foo/Foo.java is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("external/src/org/foo/Foo.java")));
-        assertEquals("external/build is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("external/build")));
-        assertEquals("external/build/classes/org/foo/Foo.class is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("external/build/classes/org/foo/Foo.class")));
+        assertEquals("external/src is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("external/src")));
+        assertEquals("external/src/org/foo/Foo.java is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("external/src/org/foo/Foo.java")));
+        assertEquals("external/build is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("external/build")));
+        assertEquals("external/build/classes/org/foo/Foo.class is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("external/build/classes/org/foo/Foo.class")));
     }
     
     public void testUnknownFiles() throws Exception {
-        assertEquals("some other dir is unknown", SharabilityQuery.UNKNOWN, sqi.getSharability(file("something")));
-        assertEquals("some other file is unknown", SharabilityQuery.UNKNOWN, sqi.getSharability(file("something/else")));
-        assertEquals("external itself is unknown", SharabilityQuery.UNKNOWN, sqi.getSharability(file("external")));
+        assertEquals("some other dir is unknown", SharabilityQuery.Sharability.UNKNOWN, sqi.getSharability(file("something")));
+        assertEquals("some other file is unknown", SharabilityQuery.Sharability.UNKNOWN, sqi.getSharability(file("something/else")));
+        assertEquals("external itself is unknown", SharabilityQuery.Sharability.UNKNOWN, sqi.getSharability(file("external")));
     }
     
     public void testDirNamesEndingInSlash() throws Exception {
-        assertEquals("project directory is mixed", SharabilityQuery.MIXED, sqi.getSharability(file("projdir/")));
-        assertEquals("src/ is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/src/")));
-        assertEquals("src/org/foo/ is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/src/org/foo/")));
-        assertEquals("nbproject/ is mixed", SharabilityQuery.MIXED, sqi.getSharability(file("projdir/nbproject/")));
-        assertEquals("nbproject/private/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/nbproject/private/")));
-        assertEquals("build/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/build/")));
-        assertEquals("dist/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/dist/")));
-        assertEquals("build/2/ is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("projdir/build/2/")));
-        assertEquals("some other dir is unknown", SharabilityQuery.UNKNOWN, sqi.getSharability(file("something/")));
-        assertEquals("external itself is unknown", SharabilityQuery.UNKNOWN, sqi.getSharability(file("external/")));
-        assertEquals("external/src is sharable", SharabilityQuery.SHARABLE, sqi.getSharability(file("external/src/")));
-        assertEquals("external/build is not sharable", SharabilityQuery.NOT_SHARABLE, sqi.getSharability(file("external/build/")));
+        assertEquals("project directory is mixed", SharabilityQuery.Sharability.MIXED, sqi.getSharability(file("projdir/")));
+        assertEquals("src/ is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/src/")));
+        assertEquals("src/org/foo/ is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/src/org/foo/")));
+        assertEquals("nbproject/ is mixed", SharabilityQuery.Sharability.MIXED, sqi.getSharability(file("projdir/nbproject/")));
+        assertEquals("nbproject/private/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/nbproject/private/")));
+        assertEquals("build/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/build/")));
+        assertEquals("dist/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/dist/")));
+        assertEquals("build/2/ is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("projdir/build/2/")));
+        assertEquals("some other dir is unknown", SharabilityQuery.Sharability.UNKNOWN, sqi.getSharability(file("something/")));
+        assertEquals("external itself is unknown", SharabilityQuery.Sharability.UNKNOWN, sqi.getSharability(file("external/")));
+        assertEquals("external/src is sharable", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("external/src/")));
+        assertEquals("external/build is not sharable", SharabilityQuery.Sharability.NOT_SHARABLE, sqi.getSharability(file("external/build/")));
     }
     
     public void testSubprojectFiles() throws Exception {
-        assertEquals("nbproject/private from a subproject is sharable as far as this impl is concerned", SharabilityQuery.SHARABLE, sqi.getSharability(file("projdir/subproj/nbproject/private")));
+        assertEquals("nbproject/private from a subproject is sharable as far as this impl is concerned", SharabilityQuery.Sharability.SHARABLE, sqi.getSharability(file("projdir/subproj/nbproject/private")));
     }
     
     // XXX testChangedProperties

@@ -153,7 +153,7 @@ public final class TestEntry {
                         if (nbm != null && nbm.getCodeNameBase().equals(getCodeNameBase())) {
                             FileObject file = nbm.getTestSourceDirectory(testType);
                             if (file != null) {
-                                return file.getURL();
+                                return file.toURL();
                             }
                         }
                     }

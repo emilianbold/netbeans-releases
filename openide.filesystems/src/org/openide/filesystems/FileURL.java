@@ -99,9 +99,8 @@ class FileURL extends URLConnection {
     /** Provides a URL to access a file object.
     * @param fo the file object
     * @return a URL using the correct syntax and {@link #PROTOCOL protocol}
-    * @exception FileStateInvalidException if the file object is not valid (typically, if its filesystem is inconsistent or no longer present)
     */
-    public static URL encodeFileObject(FileObject fo) throws FileStateInvalidException {
+    public static URL encodeFileObject(FileObject fo) {
         return NbfsUtil.getURL(fo);
     }
 
