@@ -49,11 +49,9 @@ import java.lang.IndexOutOfBoundsException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -105,8 +103,7 @@ public class BreakpointsReader implements Properties.Reader {
         AntBreakpoint b = (AntBreakpoint) object;
         FileObject fo = (FileObject) b.getLine ().getLookup ().
             lookup (FileObject.class);
-        try {
-            properties.setString ("url", fo.getURL ().toString ());
+            properties.setString("url", fo.toURL().toString());
             properties.setInt (
                 "lineNumber", 
                 b.getLine ().getLineNumber ()
@@ -119,9 +116,6 @@ public class BreakpointsReader implements Properties.Reader {
             properties.setInt(Breakpoint.PROP_HIT_COUNT_FILTER, b.getHitCountFilter());
             Breakpoint.HIT_COUNT_FILTERING_STYLE style = b.getHitCountFilteringStyle();
             properties.setInt(Breakpoint.PROP_HIT_COUNT_FILTER+"_style", style != null ? style.ordinal() : 0); // NOI18N
-        } catch (FileStateInvalidException ex) {
-            ex.printStackTrace ();
-        }
     }
     
 

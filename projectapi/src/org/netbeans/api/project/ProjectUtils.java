@@ -67,7 +67,6 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -235,11 +234,7 @@ public class ProjectUtils {
         }
         
         public String getName() {
-            try {
-                return p.getProjectDirectory().getURL().toExternalForm();
-            } catch (FileStateInvalidException e) {
-                return e.toString();
-            }
+            return p.getProjectDirectory().toURL().toExternalForm();
         }
         
         public String getDisplayName() {

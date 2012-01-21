@@ -116,12 +116,12 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     public void testSourceForBinaryQuery() throws Exception {
         this.prepareProject();
         FileObject folder = scratch.createFolder("SomeFolder");
-        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(folder.getURL());
+        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(folder.toURL());
         assertEquals("Non-project folder does not have any source folder", 0, result.getRoots().length);
         folder = projdir.createFolder("SomeFolderInProject");
-        result = SourceForBinaryQuery.findSourceRoots(folder.getURL());
+        result = SourceForBinaryQuery.findSourceRoots(folder.toURL());
         assertEquals("Project non build folder does not have any source folder", 0, result.getRoots().length);
-        result = SourceForBinaryQuery.findSourceRoots(buildClasses.getURL());
+        result = SourceForBinaryQuery.findSourceRoots(buildClasses.toURL());
         assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
         assertEquals("Project build folder must have source folder",sources,result.getRoots()[0]);
     }               
@@ -129,7 +129,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     
     public void testSourceForBinaryQueryListening () throws Exception {
         this.prepareProject();
-        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(buildClasses.getURL());
+        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(buildClasses.toURL());
         assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
         assertEquals("Project build folder must have source folder",sources,result.getRoots()[0]);
         TestListener tl = new TestListener ();
@@ -145,7 +145,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
 
     public void testSourceForBinaryQueryMultipleSourceRoots () throws Exception {
         this.prepareProject();
-        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(buildClasses.getURL());
+        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(buildClasses.toURL());
         assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
         assertEquals("Project build folder must have source folder",sources,result.getRoots()[0]);
         TestListener tl = new TestListener ();

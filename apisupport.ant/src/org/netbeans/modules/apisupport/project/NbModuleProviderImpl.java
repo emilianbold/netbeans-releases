@@ -194,7 +194,7 @@ class NbModuleProviderImpl implements NbModuleProvider {
                     if (src != null) {
                         FileObject layerXml = src.getFileObject(layer);
                         if (layerXml != null) {
-                            otherLayerURLs.add(layerXml.getURL());
+                            otherLayerURLs.add(layerXml.toURL());
                         }
                     }
                 }

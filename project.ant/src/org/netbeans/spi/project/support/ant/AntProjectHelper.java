@@ -74,6 +74,7 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileAttributeEvent;
@@ -1153,9 +1154,9 @@ public final class AntProjectHelper {
      * Typical usage would be:
      * </p>
      * <pre>
-     * helper.createSharabilityQuery(helper.getStandardPropertyEvaluator(),
-     *                               new String[] {"${src.dir}", "${test.src.dir}"},
-     *                               new String[] {"${build.dir}", "${dist.dir}"})
+     * helper.createSharabilityQuery2(helper.getStandardPropertyEvaluator(),
+     *                                new String[] {"${src.dir}", "${test.src.dir}"},
+     *                                new String[] {"${build.dir}", "${dist.dir}"})
      * </pre>
      * <p>
      * A quick rule of thumb is that the include list should contain any
@@ -1180,8 +1181,9 @@ public final class AntProjectHelper {
      * @param buildDirectories a list of paths to treat as not sharable
      * @return a sharability query implementation suitable for the project lookup
      * @see Project#getLookup
+     * @since 1.47
      */
-    public SharabilityQueryImplementation createSharabilityQuery(PropertyEvaluator eval, String[] sourceRoots, String[] buildDirectories) {
+    public SharabilityQueryImplementation2 createSharabilityQuery2(PropertyEvaluator eval, String[] sourceRoots, String[] buildDirectories) {
         String[] includes = new String[sourceRoots.length + 1];
         System.arraycopy(sourceRoots, 0, includes, 0, sourceRoots.length);
         includes[sourceRoots.length] = ""; // NOI18N
@@ -1189,6 +1191,18 @@ public final class AntProjectHelper {
         System.arraycopy(buildDirectories, 0, excludes, 0, buildDirectories.length);
         excludes[buildDirectories.length] = "nbproject/private"; // NOI18N
         return new SharabilityQueryImpl(this, eval, includes, excludes);
+    }
+    /**
+     * @deprecated since 1.47 use {@link #createSharabilityQuery2} instead
+     */
+    @Deprecated
+    public SharabilityQueryImplementation createSharabilityQuery(PropertyEvaluator eval, String[] sourceRoots, String[] buildDirectories) {
+        final SharabilityQueryImplementation2 sq2 = createSharabilityQuery2(eval, sourceRoots, buildDirectories);
+        return new SharabilityQueryImplementation() {
+            @Override public int getSharability(File file) {
+                return sq2.getSharability(file.toURI()).ordinal();
+            }
+        };
     }
     
     /**

@@ -46,7 +46,6 @@ package org.netbeans.modules.java.api.common.classpath;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,13 +89,7 @@ public final class ClassPathExtender implements org.netbeans.spi.java.project.cl
         }
         URI[] archiveFileURIs = new URI[archiveFiles.length];
         for (int i = 0; i < archiveFiles.length; i++) {
-            try {
-                archiveFileURIs[i] = archiveFiles[i].getURL().toURI();
-            } catch (URISyntaxException ex) {
-                IOException ioe = new IOException();
-                ioe.initCause(ex);
-                throw ioe;
-            }
+            archiveFileURIs[i] = archiveFiles[i].toURI();
         }        
         return this.delegate.handleRoots(archiveFileURIs, classPathId, projectXMLElementName, ClassPathModifier.ADD);
     }

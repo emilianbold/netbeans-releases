@@ -245,7 +245,7 @@ public class ClassPathTest extends NbTestCase {
         assertTrue (cp.getRoots().length==1);
         impl.assertEvents(ClassPath.PROP_ROOTS);
         FileObject archiveFile = FileUtil.toFileObject(root_3);
-        impl.addResource(FileUtil.getArchiveRoot(archiveFile.getURL()));
+        impl.addResource(FileUtil.getArchiveRoot(archiveFile.toURL()));
         assertEquals (cp.getRoots().length,2);
         impl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         root_3.delete();
@@ -365,8 +365,8 @@ public class ClassPathTest extends NbTestCase {
         FileObject bd = FileUtil.toFileObject(getBaseDir());
         FileObject u1fo = bd.createFolder("u1");
         FileObject u2fo = bd.createFolder("u2");
-        final URL u1 = u1fo.getURL();
-        final URL u2 = u2fo.getURL();
+        final URL u1 = u1fo.toURL();
+        final URL u2 = u2fo.toURL();
         class FPRI implements FilteringPathResourceImplementation {
             private int modulus = 2;
             public void changeIncludes(int modulus) {
@@ -482,15 +482,15 @@ public class ClassPathTest extends NbTestCase {
             e1.includes(xx2);
             fail();
         } catch (IllegalArgumentException iae) {}
-        assertTrue(e1.includes(xx1.getURL()));
-        assertTrue(e1.includes(x_1.getURL()));
-        assertFalse(e1.includes(xxx1.getURL()));
-        assertFalse(e1.includes(cau1.getURL()));
-        assertFalse(e1.includes(xy1.getURL()));
-        assertFalse(e1.includes(folder.getURL()));
-        assertTrue(e1.includes(foldr.getURL()));
+        assertTrue(e1.includes(xx1.toURL()));
+        assertTrue(e1.includes(x_1.toURL()));
+        assertFalse(e1.includes(xxx1.toURL()));
+        assertFalse(e1.includes(cau1.toURL()));
+        assertFalse(e1.includes(xy1.toURL()));
+        assertFalse(e1.includes(folder.toURL()));
+        assertTrue(e1.includes(foldr.toURL()));
         try {
-            e1.includes(xx2.getURL());
+            e1.includes(xx2.toURL());
             fail();
         } catch (IllegalArgumentException iae) {}
         cp.addPropertyChangeListener(impl);
@@ -522,11 +522,11 @@ public class ClassPathTest extends NbTestCase {
         assertTrue(e1.includes(xxx1));
         assertTrue(e1.includes(cau1));
         assertTrue(e1.includes(xy1));
-        assertFalse(e1.includes(xx1.getURL()));
-        assertFalse(e1.includes(x_1.getURL()));
-        assertTrue(e1.includes(xxx1.getURL()));
-        assertTrue(e1.includes(cau1.getURL()));
-        assertTrue(e1.includes(xy1.getURL()));
+        assertFalse(e1.includes(xx1.toURL()));
+        assertFalse(e1.includes(x_1.toURL()));
+        assertTrue(e1.includes(xxx1.toURL()));
+        assertTrue(e1.includes(cau1.toURL()));
+        assertTrue(e1.includes(xy1.toURL()));
     }
 
     public void testFpriChangeFiring() throws Exception {

@@ -49,6 +49,32 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.toURI">
+            <api name="filesystems"/>
+            <summary>Introduced <code>FileObject.toURI</code></summary>
+            <version major="7" minor="57"/>
+            <date year="2012" month="1" day="20"/>
+            <author login="jglick"/>
+            <compatibility addition="yes" deprecation="yes">
+                <p>
+                    <code>FileObject.getURL</code> should be replaced with <code>toURL</code> (or <code>toURI</code>),
+                    which also throw no checked exceptions.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added <code>FileObject.toURI</code> for convenience.
+                </p>
+                <p>
+                    Also deprecated <code>FileObject.getURL</code> in favor of <code>toURL</code>
+                    which is the same but does not throw <code>FileStateInvalidException</code>,
+                    and clarified that <code>URLMapper.findURL(fo, INTERNAL)</code>
+                    will never return null.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="207294"/>
+        </change>
          <change id="default-line-separator">
             <api name="filesystems"/>
             <summary>Provides default line separator</summary>

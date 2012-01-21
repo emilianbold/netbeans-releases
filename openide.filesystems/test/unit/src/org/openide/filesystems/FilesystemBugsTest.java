@@ -205,7 +205,7 @@ public class FilesystemBugsTest extends NbTestCase {
      */
     public void testURLContract() throws Exception {
         FileObject fo = getWriteFolder();
-        URL u = fo.getURL();
+        URL u = fo.toURL();
         assertEquals(u, new URL(u.toExternalForm()));
     }
 
@@ -260,7 +260,7 @@ public class FilesystemBugsTest extends NbTestCase {
     is now always searched in parent folder.
      */
     public void testFolderSlashUrl() throws Exception {
-        URL u = getWriteFolder().getURL();
+        URL u = getWriteFolder().toURL();
         assertTrue("invalid url of directory", u.getPath().endsWith("/"));
     }
 

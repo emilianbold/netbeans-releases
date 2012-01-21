@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.openide.filesystems.FileStateInvalidException;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
@@ -238,11 +237,6 @@ class SharedXMLSupport {
 
             // same as one catched by ErrorHandler
             // because we do not have content handler
-
-        } catch (FileStateInvalidException ex) {
-
-            // bad luck report as fatal error
-            handler.fatalError(new SAXParseException(ex.getLocalizedMessage(), locator, ex));
 
         } catch (IOException ex) {
 

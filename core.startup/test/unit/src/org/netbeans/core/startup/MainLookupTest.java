@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,18 +34,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.core.startup;
 
-package org.netbeans.modules.apisupport.refactoring;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
-import java.io.File;
-
-public class TestUtility {
-
-    public static File getFile(File dataDir,String projectName, String fileName) {
-        String result = dataDir.getAbsolutePath() +"/" + projectName + "/" + fileName;
-        System.out.println("looking for file: " + result);
-        return new File(result);
+public class MainLookupTest extends NbTestCase {
+    public MainLookupTest(String s) {
+        super(s);
     }
 
+    public void testInstanceInServicesFolderIsVisible() throws IOException {
+        FileObject inst = FileUtil.createData(FileUtil.getConfigRoot(), "Services/Test/X.instance");
+        inst.setAttribute("instanceCreate", Integer.valueOf(33));
+        assertTrue("Is main lookup", MainLookup.getDefault() instanceof MainLookup);
+        Lookup.getDefault().lookup(ModuleInfo.class);
+        assertEquals("33 found", Integer.valueOf(33), Lookup.getDefault().lookup(Integer.class));
+    }
 }
