@@ -43,6 +43,8 @@
  */
 package org.openide.filesystems;
 
+import java.util.logging.Level;
+
 /** Represents an acquired lock on a <code>FileObject</code>.
 * Typical usage includes locking the file in the editor on first
 * modification, and then using this object to ensure exclusive access when
@@ -124,9 +126,12 @@ public class FileLock extends Object {
     public void finalize() {
         if(isValid()) {
             releaseLock();
-            assert false : new Exception("Not released lock for file: " +
-                    toString() +
-                    " (traped in finalizer)", lockedBy);//NOI18N;
+            boolean assertOn = false;
+            assert assertOn = true;
+            if (assertOn) {
+                StreamPool.LOG.log(Level.SEVERE, 
+                    "Not released lock for file: " + toString() + " (traped in finalizer)", lockedBy);//NOI18N;
+            }
         }
     }
 }

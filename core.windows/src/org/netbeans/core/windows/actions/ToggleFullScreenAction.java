@@ -61,6 +61,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 
@@ -149,7 +150,8 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
 
     @Override
     public boolean isEnabled() {
-        return WindowManager.getDefault().getMainWindow() == MainWindow.getInstance().getFrame();
+        return WindowManager.getDefault().getMainWindow() == MainWindow.getInstance().getFrame()
+                && !Utilities.isMac();
     }
 }
 
