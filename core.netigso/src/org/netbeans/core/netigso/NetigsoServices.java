@@ -47,11 +47,11 @@ import org.netbeans.core.startup.MainLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.launch.Framework;
 
 /**
@@ -59,7 +59,7 @@ import org.osgi.framework.launch.Framework;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class NetigsoServices
-implements BundleListener, ServiceListener, InstanceContent.Convertor<ServiceReference, Object> {
+implements SynchronousBundleListener, ServiceListener, InstanceContent.Convertor<ServiceReference, Object> {
     private final Netigso netigso;
     
     NetigsoServices(Netigso netigso, Framework f) {
