@@ -231,8 +231,9 @@ Other names may be trademarks of their respective owners.
 <!--CSH for css text editor-->
 <mapID target="text.x-css" url="xml/css/csh/about_source_editor.html" />
 
-<!-- CSH for HTML text editor -->
+<!-- CSH for HTML and JSP text editor -->
 <mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
+<mapID target="org.netbeans.modules.web.core.syntax.JSPKit" url="html/csh/about_source_editor.html"/>
 
 <!-- CSH for Local History tab -->
 <mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="local-history/csh/about_hist_editor.html" />
