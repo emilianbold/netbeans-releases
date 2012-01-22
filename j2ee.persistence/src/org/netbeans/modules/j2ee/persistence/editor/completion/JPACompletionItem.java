@@ -53,6 +53,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
@@ -125,6 +127,14 @@ public abstract class JPACompletionItem implements CompletionItem {
     
     public boolean canFilter(){
         return true;
+    }
+    
+    public boolean cutomPosition() {
+        return false;
+    }
+    
+    public int getCutomPosition() {
+        return -1;
     }
     
     public Component getPaintComponent(javax.swing.JList list, boolean isSelected, boolean cellHasFocus) {
@@ -367,6 +377,7 @@ public abstract class JPACompletionItem implements CompletionItem {
         private final String initialvalue;
         private final ContentAssistProposals caProposal;
         private final int internalOffset;
+        private int customOffset = 0;
 
 
         public JPQLElementItem(String name, boolean quote, int substituteOffset, int internalOffset, String valueInitial, ContentAssistProposals buildContentAssistProposals) {
@@ -385,19 +396,64 @@ public abstract class JPACompletionItem implements CompletionItem {
         public boolean canFilter(){
             return false;//all verification is internal to external library for entire jpq query
         }
+        
+        @Override
+        public boolean cutomPosition() {
+            return true;
+        }
 
         @Override
+        public int getCutomPosition() {
+            return customOffset+1;
+        }
+       
+        @Override
         public String getSubstitutionText() {
-            ResultQuery buildEscapedQuery = caProposal.buildEscapedQuery(initialvalue, getName(), internalOffset, true);
+            ResultQuery buildEscapedQuery = caProposal.buildEscapedQuery(initialvalue, getName(), internalOffset, false);
             String newQ = buildEscapedQuery.getQuery();
-            int newPos = buildEscapedQuery.getPosition();//TODO proper caret position
+            customOffset = buildEscapedQuery.getPosition();//TODO proper caret position
             return newQ;
         }
 
         @Override
         public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
-            len = initialvalue.length() + (getQuoted() ? 2 : 0);//we replace entire query with new one
-            return super.substituteText(c, offset, len, shift);
+            len = initialvalue.length() + (getQuoted() ? 2 : 0);//we replace entire query with new 
+            BaseDocument doc = (BaseDocument)c.getDocument();
+            String text = getSubstitutionText();
+
+            if (text != null) {
+                if (toAdd != null && !toAdd.equals("\n")) // NOI18N
+                    text += toAdd;
+                // Update the text
+                doc.atomicLock();
+                try {
+                    String textToReplace = doc.getText(offset, len);
+                    if (text.equals(textToReplace)) return false;
+
+                    //dirty hack for @Table(name=CUS|
+                    if(!text.startsWith("\"")) {
+                        text = quoteText(text);
+                    }
+
+                    //check if there is already an end quote
+                    char ch = doc.getText(offset + len, 1).charAt(0);
+                    if(ch == '"') {
+                        //remove also this end quote since the inserted value is always quoted
+                        len++;
+                    }
+
+                    doc.remove(offset, getCutomPosition() - ((text.length()-2) - initialvalue.length()));
+                    doc.insertString(offset, text.substring(0, getCutomPosition()), null);
+                } catch (BadLocationException e) {
+                    // Can't update
+                } finally {
+                    doc.atomicUnlock();
+                }
+                return true;
+
+            } else {
+                return false;
+            }
         }
         
        
