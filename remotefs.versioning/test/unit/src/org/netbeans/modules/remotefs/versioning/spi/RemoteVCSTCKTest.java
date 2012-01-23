@@ -70,6 +70,7 @@ import org.openide.util.test.MockLookup;
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
+    private static final boolean ALLOW_TCK = false;
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
     private FileObject root;
@@ -123,9 +124,11 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(VCSOwnerTestCase.class);
-        suite.addTestSuite(VCSInterceptorTestCase.class);
-        suite.addTestSuite(VCSAnnotationProviderTestCase.class);
+        if (ALLOW_TCK) {
+            suite.addTestSuite(VCSOwnerTestCase.class);
+            suite.addTestSuite(VCSInterceptorTestCase.class);
+            suite.addTestSuite(VCSAnnotationProviderTestCase.class);
+        }
         return new RemoteVCSTCKTest(suite);
     }
     
