@@ -48,7 +48,6 @@ import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 
 import java.util.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -70,6 +69,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
     private final List<VCSFileProxy>    doDeleteFiles = new ArrayList<VCSFileProxy>();
     private final List<VCSFileProxy>    deletedFiles = new ArrayList<VCSFileProxy>();
     private final List<VCSFileProxy>    beforeMoveFiles = new ArrayList<VCSFileProxy>();
+    private final List<VCSFileProxy>    doMoveFiles = new ArrayList<VCSFileProxy>();
     private final List<VCSFileProxy>    afterMoveFiles = new ArrayList<VCSFileProxy>();
     private final List<VCSFileProxy>    beforeCopyFiles = new ArrayList<VCSFileProxy>();
     private final List<VCSFileProxy>    afterCopyFiles = new ArrayList<VCSFileProxy>();
@@ -145,15 +145,19 @@ public class TestVCSInterceptor extends VCSInterceptor {
 
     public boolean beforeMove(VCSFileProxy from, VCSFileProxy to) {
         beforeMoveFiles.add(from);
+        beforeMoveFiles.add(to);
         return true;
     }
 
     public void doMove(VCSFileProxy from, VCSFileProxy to) throws IOException {
+        doMoveFiles.add(from);
+        doMoveFiles.add(to);
         from.toFile().renameTo(to.toFile());
     }
 
     public void afterMove(VCSFileProxy from, VCSFileProxy to) {
         afterMoveFiles.add(from);
+        afterMoveFiles.add(to);
     }
 
     public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to) {
@@ -165,11 +169,20 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doCopy(VCSFileProxy from, VCSFileProxy to) throws IOException {
         doCopyFiles.add(from);
         doCopyFiles.add(to);
-        InputStream is = new FileInputStream (from.toFile());
-        OutputStream os = new FileOutputStream(to.toFile());
-        FileUtil.copy(is, os);
-        is.close();
-        os.close();
+        if(from.isFile()) {
+            InputStream is = new FileInputStream (from.toFile());
+            OutputStream os = new FileOutputStream(to.toFile());
+            FileUtil.copy(is, os);
+            is.close();
+            os.close();
+        } else {
+            to.toFile().mkdirs();
+            for(File f : from.toFile().listFiles()) {
+                InputStream is = new FileInputStream (f);
+                OutputStream os = new FileOutputStream(new File(to.toFile(), f.getName()));
+                FileUtil.copy(is, os);
+            }
+        }
     }
 
     public void afterCopy(VCSFileProxy from, VCSFileProxy to) {
@@ -223,6 +236,10 @@ public class TestVCSInterceptor extends VCSInterceptor {
 
     public List<VCSFileProxy> getDoCopyFiles() {
         return doCopyFiles;
+    }
+    
+    public List<VCSFileProxy> getDoMoveFiles() {
+        return doMoveFiles;
     }
 
     public List<VCSFileProxy> getAfterCopyFiles() {

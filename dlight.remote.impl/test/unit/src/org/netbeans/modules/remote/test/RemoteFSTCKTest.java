@@ -55,18 +55,21 @@ import org.openide.filesystems.URLMapperTestHidden;
  * @author vv159170
  */
 public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
+    private static final boolean ALLOW_TCK = false;
     
     public RemoteFSTCKTest(Test test) {
         super(test);
     }
-
+    
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(FileSystemTestHid.class);
-        suite.addTestSuite(FileObjectTestHid.class);
-        suite.addTestSuite(AttributesTestHidden.class);
-        suite.addTestSuite(URLMapperTestHidden.class);
-        suite.addTestSuite(FileUtilTestHidden.class);
+        if (ALLOW_TCK) {
+            suite.addTestSuite(FileSystemTestHid.class);
+            suite.addTestSuite(FileObjectTestHid.class);
+            suite.addTestSuite(AttributesTestHidden.class);
+            suite.addTestSuite(URLMapperTestHidden.class);
+            suite.addTestSuite(FileUtilTestHidden.class);
+        }
         return new RemoteFSTCKTest(suite);
     }
 
