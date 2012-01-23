@@ -65,6 +65,22 @@ public final class RunConfigRemoteValidator {
         return validate(config, true);
     }
 
+    public static String validateCopyOnSave(RunConfigRemote config) {
+        String error;
+        error = validateRemoteConfiguration(config.getRemoteConfiguration());
+        if (error != null) {
+            return error;
+        }
+        String uploadDirectory = config.getUploadDirectory();
+        if (StringUtils.hasText(uploadDirectory)) {
+            error = validateUploadDirectory(uploadDirectory);
+            if (error != null) {
+                return error;
+            }
+        }
+        return null;
+    }
+
     public static String validateConfigAction(RunConfigRemote config) {
         return validate(config, true);
     }

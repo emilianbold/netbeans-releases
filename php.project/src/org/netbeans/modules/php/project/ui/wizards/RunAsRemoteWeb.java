@@ -64,6 +64,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -73,7 +74,6 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteConnectionRenderer;
 import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteUploadRenderer;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -550,7 +550,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         protected String getPropValue() {
             String value = super.getPropValue();
             if (getPropName().equals(RunConfigurationPanel.REMOTE_DIRECTORY)) {
-                value = RunAsValidator.sanitizeUploadDirectory(value, true);
+                value = RemoteUtils.sanitizeUploadDirectory(value, true);
             }
             return value;
         }

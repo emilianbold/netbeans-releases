@@ -65,6 +65,7 @@ import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigValidator;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -72,7 +73,6 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -393,7 +393,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return false;
         }
         // index file is just warning
-        String warning = RunAsValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile, null);
+        String warning = RunConfigValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile);
         if (wizardType == WizardType.EXISTING
                 && warning != null) {
             descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);

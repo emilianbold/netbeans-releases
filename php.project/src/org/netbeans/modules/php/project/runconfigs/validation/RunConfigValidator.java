@@ -51,12 +51,12 @@ import org.openide.util.Utilities;
 /**
  * Validator for {@link org.netbeans.modules.php.project.runconfigs.RunConfig}.
  */
-final class RunConfigValidator {
+public final class RunConfigValidator {
 
     private RunConfigValidator() {
     }
 
-    static String validateIndexFile(File rootDirectory, String indexFile) {
+    public static String validateIndexFile(File rootDirectory, String indexFile) {
         assert rootDirectory != null;
         if (!StringUtils.hasText(indexFile)) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");

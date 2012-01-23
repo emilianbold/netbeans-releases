@@ -74,6 +74,15 @@ public final class RunConfigScriptValidator {
         return validate(config, indexFileMandatory);
     }
 
+    public static String validateRunFileWithoutProject(RunConfigScript config) {
+        String error;
+        error = validateWorkDir(config.getWorkDir(), false);
+        if (error != null) {
+            return error;
+        }
+        return null;
+    }
+
     private static String validate(RunConfigScript config, boolean indexFileMandatory) {
         String error;
         error = validateInterpreter(config.getUseDefaultInterpreter(), config.getInterpreter());

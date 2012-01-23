@@ -74,13 +74,13 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -269,7 +269,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         category.setValid(true);
     }
 
-    private RunConfigRemote createRunConfig() {
+    RunConfigRemote createRunConfig() {
         return RunConfigRemote.create()
                 .setUrl(urlTextField.getText())
                 .setIndexParentDir(FileUtil.toFile(getWebRoot()))
@@ -663,7 +663,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         protected String getPropValue() {
             String value = super.getPropValue();
             if (getPropName().equals(PhpProjectProperties.REMOTE_DIRECTORY)) {
-                value = RunAsValidator.sanitizeUploadDirectory(value, true);
+                value = RemoteUtils.sanitizeUploadDirectory(value, true);
             }
             return value;
         }
@@ -676,14 +676,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            String hint = ""; // NOI18N
-            try {
-                hint = RunAsValidator.composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText());
-            } catch (InvalidUrlException ex) {
-                category.setErrorMessage(ex.getMessage());
-                category.setValid(false);
-            }
-            urlHintLabel.setText(hint);
+            urlHintLabel.setText(createRunConfig().getUrlHint());
         }
     }
 
