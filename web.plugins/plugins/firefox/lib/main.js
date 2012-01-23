@@ -137,7 +137,14 @@ tabs.on('close', function (tab) {
 
 // 'open' event is not delivered for the first tab;
 // As a workaround, we go through all existing tabs and consider them as new
+// We also consider known urls of existing tabs because it is not clear
+// if we always get 'ready' event for the first tab(s).
 for each (var tab in tabs) {
     assignIdIfNeeded(tab);
     sendOpenMessage(tab[tabIdKey]);
+    var url = tab.url;
+    if (url !== undefined && url !== null && url.length !== 0) {
+        // URL of the tab is known already
+        sendReadyMessage(tab[tabIdKey], url);
+    }
 }

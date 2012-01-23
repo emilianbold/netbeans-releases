@@ -60,13 +60,20 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 });
 
 // onCreated event is not delivered for the first tab;
-// As a workaround, we go through all existing tabs and consider them as new
+// As a workaround, we go through all existing tabs and consider them as new.
+// onUpdated event is not delivered sometimes as well for the first tab;
+// Hence, we consider also tab urls that are known already.
 chrome.windows.getAll({populate: true}, function(windows) {
     for (var i=0; i<windows.length; i++) {
         var window = windows[i];
         for (var j=0; j<window.tabs.length; j++) {
             var tab = window.tabs[j];
             NetBeans.tabCreated(tab.id);
+            var url = tab.url;
+            if (url !== undefined && url !== null && url.length !== 0) {
+                // URL of the tab is known already
+                NetBeans.tabUpdated(tab);
+            }
         }
     }    
 });
