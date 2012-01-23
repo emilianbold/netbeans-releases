@@ -85,8 +85,16 @@ class ConfigActionLocal extends ConfigAction {
     }
 
     @Override
-    public boolean isValid(boolean indexFileNeeded) {
-        boolean valid = RunConfigLocalValidator.validateConfigAction(RunConfigLocal.forProject(project)) == null;
+    public boolean isProjectValid() {
+        return isValid(RunConfigLocalValidator.validateConfigAction(RunConfigLocal.forProject(project), true) == null);
+    }
+
+    @Override
+    public boolean isFileValid() {
+        return isValid(RunConfigLocalValidator.validateConfigAction(RunConfigLocal.forProject(project), false) == null);
+    }
+
+    private boolean isValid(boolean valid) {
         if (!valid) {
             showCustomizer();
         }

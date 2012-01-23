@@ -104,7 +104,12 @@ class ConfigActionTest extends ConfigAction {
     }
 
     @Override
-    public boolean isValid(boolean indexFileNeeded) {
+    public boolean isProjectValid() {
+        throw new IllegalStateException("Validation is not needed for tests");
+    }
+
+    @Override
+    public boolean isFileValid() {
         throw new IllegalStateException("Validation is not needed for tests");
     }
 

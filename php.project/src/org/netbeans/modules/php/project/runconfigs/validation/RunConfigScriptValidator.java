@@ -69,8 +69,8 @@ public final class RunConfigScriptValidator {
         return validate(config, true);
     }
 
-    public static String validateConfigAction(RunConfigScript config, boolean indexFileMandatory) {
-        return validate(config, indexFileMandatory);
+    public static String validateConfigAction(RunConfigScript config, boolean validateIndex) {
+        return validate(config, validateIndex);
     }
 
     public static String validateRunFileWithoutProject(RunConfigScript config) {
@@ -82,7 +82,7 @@ public final class RunConfigScriptValidator {
         return null;
     }
 
-    private static String validate(RunConfigScript config, boolean indexFileMandatory) {
+    private static String validate(RunConfigScript config, boolean validateIndex) {
         String error;
         error = validateInterpreter(config.getUseDefaultInterpreter(), config.getInterpreter());
         if (error != null) {
@@ -92,11 +92,13 @@ public final class RunConfigScriptValidator {
         if (error != null) {
             return error;
         }
-        String indexRelativePath = config.getIndexRelativePath();
-        if (indexFileMandatory || StringUtils.hasText(indexRelativePath)) {
-            error = RunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
-            if (error != null) {
-                return error;
+        if (validateIndex) {
+            String indexRelativePath = config.getIndexRelativePath();
+            if (StringUtils.hasText(indexRelativePath)) {
+                error = RunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
+                if (error != null) {
+                    return error;
+                }
             }
         }
         return null;

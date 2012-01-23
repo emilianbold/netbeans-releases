@@ -62,24 +62,26 @@ public final class RunConfigLocalValidator {
     }
 
     public static String validateCustomizer(RunConfigLocal config) {
-        return validate(config);
+        return validate(config, true);
     }
 
-    public static String validateConfigAction(RunConfigLocal config) {
-        return validate(config);
+    public static String validateConfigAction(RunConfigLocal config, boolean validateIndex) {
+        return validate(config, validateIndex);
     }
 
-    private static String validate(RunConfigLocal config) {
+    private static String validate(RunConfigLocal config, boolean validateIndex) {
         String error;
         error = RunConfigWebValidator.validateUrl(config.getUrl());
         if (error != null) {
             return error;
         }
-        String indexRelativePath = config.getIndexRelativePath();
-        if (StringUtils.hasText(indexRelativePath)) {
-            error = RunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
-            if (error != null) {
-                return error;
+        if (validateIndex) {
+            String indexRelativePath = config.getIndexRelativePath();
+            if (StringUtils.hasText(indexRelativePath)) {
+                error = RunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
+                if (error != null) {
+                    return error;
+                }
             }
         }
         return null;

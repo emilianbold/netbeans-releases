@@ -124,7 +124,8 @@ public abstract class ConfigAction {
         return XDebugStarterFactory.getInstance() != null;
     }
 
-    public abstract boolean isValid(boolean indexFileNeeded);
+    public abstract boolean isProjectValid();
+    public abstract boolean isFileValid();
 
     public abstract boolean isRunFileEnabled(Lookup context);
     public abstract boolean isDebugFileEnabled(Lookup context);

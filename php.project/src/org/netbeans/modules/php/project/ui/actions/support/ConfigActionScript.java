@@ -77,8 +77,16 @@ class ConfigActionScript extends ConfigAction {
     }
 
     @Override
-    public boolean isValid(boolean indexFileNeeded) {
-        boolean valid = RunConfigScriptValidator.validateConfigAction(RunConfigScript.forProject(project), indexFileNeeded) == null;
+    public boolean isProjectValid() {
+        return isValid(RunConfigScriptValidator.validateConfigAction(RunConfigScript.forProject(project), true) == null);
+    }
+
+    @Override
+    public boolean isFileValid() {
+        return isValid(RunConfigScriptValidator.validateConfigAction(RunConfigScript.forProject(project), false) == null);
+    }
+
+    private boolean isValid(boolean valid) {
         if (!valid) {
             showCustomizer();
         }

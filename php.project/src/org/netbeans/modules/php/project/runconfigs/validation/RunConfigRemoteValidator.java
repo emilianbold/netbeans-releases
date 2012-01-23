@@ -81,8 +81,8 @@ public final class RunConfigRemoteValidator {
         return null;
     }
 
-    public static String validateConfigAction(RunConfigRemote config) {
-        return validate(config, true);
+    public static String validateConfigAction(RunConfigRemote config, boolean validateIndex) {
+        return validate(config, validateIndex);
     }
 
     private static String validate(RunConfigRemote config, boolean validateIndex) {

@@ -63,8 +63,16 @@ class ConfigActionRemote extends ConfigActionLocal {
     }
 
     @Override
-    public boolean isValid(boolean indexFileNeeded) {
-        boolean valid = RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project)) == null;
+    public boolean isProjectValid() {
+        return isValid(RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project), true) == null);
+    }
+
+    @Override
+    public boolean isFileValid() {
+        return isValid(RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project), false) == null);
+    }
+
+    private boolean isValid(boolean valid) {
         if (!valid) {
             showCustomizer();
         }
