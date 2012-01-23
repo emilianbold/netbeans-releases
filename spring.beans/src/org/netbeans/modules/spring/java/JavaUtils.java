@@ -86,6 +86,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.spring.beans.utils.ElementSeekerTask;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
@@ -229,10 +230,15 @@ public final class JavaUtils {
         JavaSource js = JavaUtils.getJavaSource(fileObject);
         if (js != null) {
             MethodFinder methodFinder = new MethodFinder(js, classBinName, methodName, argCount, publicFlag, staticFlag);
-            if (!ScanDialog.runWhenScanFinished(methodFinder, Bundle.title_searching_method())) {
-                return methodFinder.getMethodHandle();
+            methodFinder.runAsUserTask();
+            if (methodFinder.getMethodHandle() == null && SourceUtils.isScanInProgress()) {
+                if (!ScanDialog.runWhenScanFinished(methodFinder, Bundle.title_searching_method())) {
+                    return methodFinder.getMethodHandle();
+                } else {
+                    return null;
+                }
             } else {
-                return null;
+                return methodFinder.getMethodHandle();
             }
         }
 
@@ -388,7 +394,7 @@ public final class JavaUtils {
         }
     }
     
-    private static final class MethodFinder implements Runnable, CancellableTask<CompilationController> {
+    private static final class MethodFinder extends ElementSeekerTask {
 
         private String classBinName;
         private String methodName;
@@ -396,15 +402,14 @@ public final class JavaUtils {
         private Public publicFlag;
         private Static staticFlag;
         private ElementHandle<ExecutableElement> methodHandle;
-        private JavaSource javaSource;
 
         public MethodFinder(JavaSource javaSource, String classBinName, String methodName, int argCount, Public publicFlag, Static staticFlag) {
+            super(javaSource);
             this.classBinName = classBinName;
             this.methodName = methodName;
             this.argCount = argCount;
             this.publicFlag = publicFlag;
             this.staticFlag = staticFlag;
-            this.javaSource = javaSource;
         }
 
         @Override
@@ -464,19 +469,6 @@ public final class JavaUtils {
 
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
-        }
-
-        @Override
-        public void run() {
-            try {
-                javaSource.runUserActionTask(this, true);
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex); //NOI18N
-            }
-        }
-
-        @Override
-        public void cancel() {
         }
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,54 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.spring.beans.hyperlink;
+package org.netbeans.modules.spring.beans.utils;
 
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import java.security.Policy;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
+ * Abstract class which eases and generalize writing of {@link Runnable}, {@link CancellableTask} classes.
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ResourceHyperlinkProcessor extends HyperlinkProcessor {
+public abstract class ElementSeekerTask implements Runnable, CancellableTask<CompilationController> {
 
-    public ResourceHyperlinkProcessor() {
+    protected final AtomicBoolean elementFound = new AtomicBoolean(false);
+    protected final JavaSource javaSource;
+
+    public ElementSeekerTask(JavaSource javaSource) {
+        Parameters.notNull("javaSource", javaSource);
+        this.javaSource = javaSource;
     }
 
     @Override
-    public void process(HyperlinkEnv env) {
-        FileObject fo = env.getFileObject();
-        if (fo == null) {
-            return;
-        }
-        FileObject parent = fo.getParent();
-
-        if (!openFile(parent.getFileObject(env.getValueString()))) {
-            String message = NbBundle.getMessage(ResourceHyperlinkProcessor.class, "LBL_ResourceNotFound", env.getValueString());
-            StatusDisplayer.getDefault().setStatusText(message);
-        }
+    public void run() {
+        runAsUserTask();
     }
 
-    private boolean openFile(FileObject file) {
-        if (file == null) {
-            return false;
-        }
-        DataObject dObj;
+    @Override
+    public void cancel() {
+    }
+
+    public boolean wasElementFound() {
+        return elementFound.get();
+    }
+
+    public void runAsUserTask() {
         try {
-            dObj = DataObject.find(file);
-        } catch (DataObjectNotFoundException ex) {
-            return false;
+            javaSource.runUserActionTask(this, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        EditorCookie editorCookie = dObj.getCookie(EditorCookie.class);
-        if (editorCookie == null) {
-            return false;
-        }
-        editorCookie.open();
-        return true;
     }
 }
