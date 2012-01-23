@@ -116,8 +116,17 @@ public final class SystemUtils {
     }
     
     // system info //////////////////////////////////////////////////////////////////
+    @Deprecated
     public static File getUserHomeDirectory() {
         return new File(USER_HOME);
+    }
+    
+    public static File getDefaultUserdirRoot() {
+        String root = System.getProperty("netbeans.default_userdir_root", null);
+        if (root != null && root.isEmpty()) {
+            return new File(root);
+        }
+        return null;
     }
     
     public static String getUserName() {

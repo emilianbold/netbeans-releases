@@ -542,7 +542,13 @@ public class NetBeansUtils {
      */
     public static File getNetBeansUserDirFile(File nbLocation) throws IOException {
         String dir = getNetBeansUserDir(nbLocation);
-        dir = dir.replace(USER_HOME_TOKEN, System.getProperty("user.home"));
+        LogManager.log(ErrorLevel.DEBUG, "System.getProperty(netbeans.default_userdir_root): " + System.getProperty("netbeans.default_userdir_root"));
+        if (dir.contains(DEFAULT_USERDIR_ROOT) && System.getProperty("netbeans.default_userdir_root", null) != null) {
+            dir = dir.replace(DEFAULT_USERDIR_ROOT, System.getProperty("netbeans.default_userdir_root"));
+        }
+        if (dir.contains(USER_HOME_TOKEN)) {
+            dir = dir.replace(USER_HOME_TOKEN, System.getProperty("user.home"));
+        }
         return new File(dir);
     }
     
@@ -551,12 +557,49 @@ public class NetBeansUtils {
      * @param nbLocation NetBeans home directory
      * @throws IOException if can`t get netbeans default userdir
      */
-    public static String getNetBeansUserDir(File nbLocation) throws IOException {
+    private static String getNetBeansUserDir(File nbLocation) throws IOException {
         File netbeansconf = new File(nbLocation, NETBEANS_CONF);
         String contents = FileUtils.readFile(netbeansconf);
         Matcher matcher = Pattern.compile(
                 NEW_LINE_PATTERN + SPACES_PATTERN +
                 NETBEANS_USERDIR +
+                "\"(.*?)\"").matcher(contents);
+        if(matcher.find() && matcher.groupCount() == 1) {
+            return matcher.group(1);
+        } else {
+            throw new IOException(StringUtils.format(
+                    ERROR_CANNOT_GET_USERDIR_STRING,netbeansconf));
+        }
+    }
+    
+    /**
+     * Get resolved netbeans cache directory
+     * @param nbLocation NetBeans home directory
+     * @throws IOException if can`t get netbeans default cachedir
+     */
+    public static File getNetBeansCacheDirFile(File nbLocation) throws IOException {
+        String dir = getNetBeansCacheDir(nbLocation);
+        LogManager.log(ErrorLevel.DEBUG, "System.getProperty(netbeans.default_cachedir_root): " + System.getProperty("netbeans.default_cachedir_root"));
+        if (dir.contains(DEFAULT_CACHEDIR_ROOT) && System.getProperty("netbeans.default_cachedir_root", null) != null) {
+            dir = dir.replace(DEFAULT_CACHEDIR_ROOT, System.getProperty("netbeans.default_cachedir_root"));
+        }
+        if (dir.contains(USER_HOME_TOKEN)) {
+            dir = dir.replace(USER_HOME_TOKEN, System.getProperty("user.home"));
+        }
+        return new File(dir);
+    }
+    
+    /**
+     * Get netbeans user directory as it is written in netbeans.conf
+     * @param nbLocation NetBeans home directory
+     * @throws IOException if can`t get netbeans default userdir
+     */
+    private static String getNetBeansCacheDir(File nbLocation) throws IOException {
+        File netbeansconf = new File(nbLocation, NETBEANS_CONF);
+        String contents = FileUtils.readFile(netbeansconf);
+        Matcher matcher = Pattern.compile(
+                NEW_LINE_PATTERN + SPACES_PATTERN +
+                NETBEANS_CACHEDIR +
                 "\"(.*?)\"").matcher(contents);
         if(matcher.find() && matcher.groupCount() == 1) {
             return matcher.group(1);
@@ -860,6 +903,8 @@ public class NetBeansUtils {
     
     public static final String NETBEANS_USERDIR =
             "netbeans_default_userdir="; // NOI18N
+    public static final String NETBEANS_CACHEDIR =
+            "netbeans_default_cachedir="; // NOI18N
     public static final String NETBEANS_JDKHOME =
             "netbeans_jdkhome="; // NOI18N
     public static final String NETBEANS_OPTIONS =
@@ -884,6 +929,10 @@ public class NetBeansUtils {
             "-Xss"; // NOI18N
     public static final String USER_HOME_TOKEN =
             "${HOME}"; // NOI18N
+    public static final String DEFAULT_USERDIR_ROOT =
+            "${DEFAULT_USERDIR_ROOT}"; // NOI18N
+    public static final String DEFAULT_CACHEDIR_ROOT =
+            "${DEFAULT_CACHEDIR_ROOT}"; // NOI18N
     public static final String NETBEANS_HOME_TOKEN =
             "${NETBEANS_HOME}"; // NOI18N
     public static final String UPDATER_FRAMENAME = 

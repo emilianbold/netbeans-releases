@@ -80,7 +80,7 @@ public class NbShowUninstallationSurveyAction extends WizardAction {
                                 product.getVersion().getMinor();
 
                         LogManager.log("... version : " + version);
-                        final File superId = new File(SystemUtils.getUserHomeDirectory(), ".netbeans" + File.separator + ".superId");
+                        final File superId = getSuperId();
                         String id = "";
                         if (FileUtils.exists(superId)) {
                             id =  FileUtils.readStringList(superId).get(0);
@@ -101,6 +101,16 @@ public class NbShowUninstallationSurveyAction extends WizardAction {
         } finally {
             LogManager.logExit("... finished show uninstallation survey action");
         }
+    }
+    
+    private File getSuperId() {
+        // 1. check new OS specific place
+        File superId = new File(SystemUtils.getDefaultUserdirRoot() + File.separator + ".superId");
+        // 2. if doesn't exist => use former place
+        if (! superId.exists()) {
+            superId = new File(SystemUtils.getUserHomeDirectory(), ".netbeans" + File.separator + ".superId");
+        }
+        return superId;
     }
 
     @Override

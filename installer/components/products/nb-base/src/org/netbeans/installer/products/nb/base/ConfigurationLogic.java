@@ -711,6 +711,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             } finally {
                 LogManager.unindent();
             }
+            try {
+                progress.setDetail(getString("CL.uninstall.remove.cachedir")); // NOI18N
+                LogManager.logIndent("Removing NetBeans cachedir... ");
+                File cacheDir = NetBeansUtils.getNetBeansCacheDirFile(installLocation);
+                LogManager.log("... NetBeans cachedir location : " + cacheDir);
+                if (FileUtils.exists(cacheDir) && FileUtils.canWrite(cacheDir)) {
+                    FileUtils.deleteFile(cacheDir, true);
+                }
+                LogManager.log("... NetBeans cachedir totally removed");
+            } catch (IOException e) {
+                LogManager.log("Can`t remove NetBeans cachedir", e);
+            } finally {
+                LogManager.unindent();
+            }
         }
 
         /////////////////////////////////////////////////////////////////////////////

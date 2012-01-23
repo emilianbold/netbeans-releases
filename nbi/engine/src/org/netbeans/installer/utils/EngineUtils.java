@@ -154,12 +154,12 @@ public final class EngineUtils {
         if (is == null) {
             if (exclamationMarkInURL) {
                 String message;
-                if (System.getProperty("user.home").contains("!")) {
+                if (SystemUtils.getDefaultUserdirRoot().toString().contains("!")) {
                     //Issue #156011
                     //Note: don`t use ResourceUtils for getting string here.
                     message =
                             "Looks like the name of current user profile directory contains an exclamation mark (!):\n" +
-                            SystemUtils.getUserHomeDirectory() + "\n\n" +
+                            SystemUtils.getDefaultUserdirRoot() + "\n\n" +
                             "It is not recommended to use such profile names due to JDK bugs:\n" +
                             "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4730642" + "\n" +
                             "http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4523159" + "\n" + "\n" +
