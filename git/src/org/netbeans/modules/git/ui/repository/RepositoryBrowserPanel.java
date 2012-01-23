@@ -856,66 +856,70 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
-            actions.add(new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Utils.postParallel(new Runnable () {
-                        @Override
-                        public void run() {
-                            CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
-                            action.checkoutRevision(currRepository, branchName);
-                        }
-                    }, 0);
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Utils.postParallel(new Runnable () {
-                        @Override
-                        public void run() {
-                            CreateBranchAction action = SystemAction.get(CreateBranchAction.class);
-                            action.createBranch(currRepository, branchName);
-                        }
-                    }, 0);
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    CreateTagAction action = SystemAction.get(CreateTagAction.class);
-                    action.createTag(currRepository, branchName);
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Utils.postParallel(new Runnable () {
-                        @Override
-                        public void run() {
-                            MergeRevisionAction action = SystemAction.get(MergeRevisionAction.class);
-                            action.mergeRevision(currRepository, branchName);
-                        }
-                    }, 0);
-                }
+            if (currRepository != null && branchName != null) {
+                final File repo = currRepository;
+                final String branch = branchName;
+                actions.add(new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                                action.checkoutRevision(repo, branch);
+                            }
+                        }, 0);
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                CreateBranchAction action = SystemAction.get(CreateBranchAction.class);
+                                action.createBranch(repo, branch);
+                            }
+                        }, 0);
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        CreateTagAction action = SystemAction.get(CreateTagAction.class);
+                        action.createTag(repo, branch);
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                MergeRevisionAction action = SystemAction.get(MergeRevisionAction.class);
+                                action.mergeRevision(repo, branch);
+                            }
+                        }, 0);
+                    }
 
-                @Override
-                public boolean isEnabled() {
-                    return !active;
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    DeleteBranchAction action = SystemAction.get(DeleteBranchAction.class);
-                    action.deleteBranch(currRepository, branchName);
-                }
+                    @Override
+                    public boolean isEnabled() {
+                        return !active;
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        DeleteBranchAction action = SystemAction.get(DeleteBranchAction.class);
+                        action.deleteBranch(currRepository, branchName);
+                    }
 
-                @Override
-                public boolean isEnabled() {
-                    return !active;
-                }
-            });
+                    @Override
+                    public boolean isEnabled() {
+                        return !active;
+                    }
+                });
+            }
             return actions.toArray(new Action[actions.size()]);
         }
         
@@ -1115,59 +1119,63 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
-            actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserAction.class, "LBL_RepositoryBrowser.tagNode.showDetails")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Utils.postParallel(new Runnable () {
-                        @Override
-                        public void run() {
-                            ManageTagsAction action = SystemAction.get(ManageTagsAction.class);
-                            action.showTagManager(currRepository, tagName);
-                        }
-                    }, 0);
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Utils.postParallel(new Runnable () {
-                        @Override
-                        public void run() {
-                            CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
-                            action.checkoutRevision(currRepository, tagName);
-                        }
-                    }, 0);
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Utils.postParallel(new Runnable () {
-                        @Override
-                        public void run() {
-                            CreateBranchAction action = SystemAction.get(CreateBranchAction.class);
-                            action.createBranch(currRepository, tagName);
-                        }
-                    }, 0);
-                }
-            });
-            actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Utils.postParallel(new Runnable () {
-                        @Override
-                        public void run() {
-                            MergeRevisionAction action = SystemAction.get(MergeRevisionAction.class);
-                            action.mergeRevision(currRepository, tagName);
-                        }
-                    }, 0);
-                }
+            if (currRepository != null && tagName != null) {
+                final File repo = currRepository;
+                final String tag = tagName;
+                actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserAction.class, "LBL_RepositoryBrowser.tagNode.showDetails")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                ManageTagsAction action = SystemAction.get(ManageTagsAction.class);
+                                action.showTagManager(repo, tag);
+                            }
+                        }, 0);
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                                action.checkoutRevision(repo, tag);
+                            }
+                        }, 0);
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(CreateBranchAction.class, "LBL_CreateBranchAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                CreateBranchAction action = SystemAction.get(CreateBranchAction.class);
+                                action.createBranch(repo, tag);
+                            }
+                        }, 0);
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                MergeRevisionAction action = SystemAction.get(MergeRevisionAction.class);
+                                action.mergeRevision(repo, tag);
+                            }
+                        }, 0);
+                    }
 
-                @Override
-                public boolean isEnabled() {
-                    return !active;
-                }
-            });
+                    @Override
+                    public boolean isEnabled() {
+                        return !active;
+                    }
+                });
+            }
             return actions.toArray(new Action[actions.size()]);
         }
         
