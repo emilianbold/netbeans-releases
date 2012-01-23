@@ -57,6 +57,7 @@ public class RemoteValidatorTest extends NbTestCase {
         assertNotNull(RemoteValidator.validateHost(null));
         assertNotNull(RemoteValidator.validateHost(""));
         assertNotNull(RemoteValidator.validateHost(" "));
+        assertNotNull(RemoteValidator.validateHost("a b"));
     }
 
     public void testValidateUser() {
