@@ -123,7 +123,8 @@ public final class RemoteUtils {
         } else if (!allowEmpty) {
             uploadDirectory = TransferFile.REMOTE_PATH_SEPARATOR;
         }
-        if (allowEmpty && TransferFile.REMOTE_PATH_SEPARATOR.equals(uploadDirectory)) {
+        if (allowEmpty
+                && (uploadDirectory == null || TransferFile.REMOTE_PATH_SEPARATOR.equals(uploadDirectory))) {
             uploadDirectory = ""; // NOI18N
         }
         return uploadDirectory;
