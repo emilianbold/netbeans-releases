@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -56,8 +58,15 @@ public class CompletionContextFinder {
     
     public static enum CompletionContext {
         NONE,       // There shouldn't be any code completion
+        EXPRESSION, // usually, we will offer everything what we know in the context
+        OBJECT_PROPERTY,
         GLOBAL
     } 
+    
+    private static final List<Object[]> OBJECT_PROPERTY_TOKENCHAINS = Arrays.asList(
+        new Object[]{JsTokenId.OPERATOR_DOT},
+        new Object[]{JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
+    );
     
     @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
@@ -79,9 +88,50 @@ public class CompletionContextFinder {
         JsTokenId tokenId =token.id();
         int tokenOffset = ts.offset();
         
-        if(tokenId == JsTokenId.EOL) {
-            return CompletionContext.GLOBAL;
+        if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, true)) {
+            return CompletionContext.OBJECT_PROPERTY;
         }
-        return CompletionContext.NONE;
+        return CompletionContext.EXPRESSION;
+    }
+    
+    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<Object[]> tokenIdChains, boolean movePrevious) {
+        for (Object[] tokenIDChain : tokenIdChains){
+            if (acceptTokenChain(tokenSequence, tokenIDChain, movePrevious)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    private static boolean acceptTokenChain(TokenSequence tokenSequence, Object[] tokenIdChain, boolean movePrevious) {
+        int orgTokenSequencePos = tokenSequence.offset();
+        boolean accept = true;
+        boolean moreTokens = movePrevious ? tokenSequence.movePrevious() : true;
+
+        for (int i = tokenIdChain.length - 1; i >= 0; i --){
+            Object tokenID = tokenIdChain[i];
+
+            if (!moreTokens){
+                accept = false;
+                break;
+            }
+
+           if (tokenID instanceof JsTokenId) {
+                if (tokenSequence.token().id() == tokenID){
+                    moreTokens = tokenSequence.movePrevious();
+                } else {
+                    // NO MATCH
+                    accept = false;
+                    break;
+                }
+            } else {
+                assert false : "Unsupported token type: " + tokenID.getClass().getName();
+            }
+        }
+
+        tokenSequence.move(orgTokenSequencePos);
+        tokenSequence.moveNext();
+       return accept;
     }
 }
