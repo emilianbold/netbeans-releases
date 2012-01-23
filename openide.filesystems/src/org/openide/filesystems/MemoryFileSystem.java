@@ -433,7 +433,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
                 FileSystem fs = fo.getFileSystem();
                 if (fs instanceof MemoryFileSystem) {
                     String path = fo.getPath();
-                    if (fo.isFolder()) {
+                    if (fo.isFolder() && !fo.isRoot()) {
                         path += '/';
                     }
                     return url((MemoryFileSystem) fs, path);
