@@ -60,6 +60,8 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
@@ -339,8 +341,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
-        settings.putProperty(URL, runAsLocalWeb.getUrl());
-        settings.putProperty(INDEX_FILE, runAsLocalWeb.getIndexFile());
+        RunConfigLocal config = runAsLocalWeb.createRunConfig();
+        settings.putProperty(URL, config.getUrl());
+        settings.putProperty(INDEX_FILE, config.getIndexFile());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
@@ -352,7 +355,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void storeRunAsScript(WizardDescriptor settings) {
-        settings.putProperty(INDEX_FILE, runAsScript.getRunConfig().getIndexRelativePath());
+        settings.putProperty(INDEX_FILE, runAsScript.createRunConfig().getIndexRelativePath());
     }
 
     @Override
@@ -368,7 +371,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                     return false;
                 }
                 error = validateRunAsLocalWeb();
-                indexFile = runAsLocalWeb.getIndexFile();
+                indexFile = runAsLocalWeb.createRunConfig().getIndexRelativePath();
                 break;
             case REMOTE:
                 error = validateRunAsRemoteWeb();
@@ -376,7 +379,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
             case SCRIPT:
                 error = validateRunAsScript();
-                indexFile = runAsScript.getRunConfig().getIndexRelativePath();
+                indexFile = runAsScript.createRunConfig().getIndexRelativePath();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
@@ -453,7 +456,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsLocalWeb() {
-        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), null, null);
+        String error = RunConfigLocalValidator.validateNewProject(runAsLocalWeb.createRunConfig());
         if (error != null) {
             return error;
         }
@@ -485,7 +488,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsScript() {
-        return RunConfigScriptValidator.validateNewProject(runAsScript.getRunConfig());
+        return RunConfigScriptValidator.validateNewProject(runAsScript.createRunConfig());
     }
 
     private String validateServerLocation() {
@@ -510,7 +513,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return err;
         }
         // warn about visibility of source folder
-        String url = runAsLocalWeb.getUrl();
+        String url = runAsLocalWeb.createRunConfig().getUrl();
         String warning = NbBundle.getMessage(RunConfigurationPanel.class, "MSG_TargetFolderVisible", url);
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
         return null;
@@ -532,8 +535,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
-                url = runAsLocalWeb.getUrl();
-                indexFile = runAsLocalWeb.getIndexFile();
+                RunConfigLocal config = runAsLocalWeb.createRunConfig();
+                url = config.getUrl();
+                indexFile = config.getIndexRelativePath();
                 break;
             case REMOTE:
                 url = runAsRemoteWeb.getUrl();
@@ -560,7 +564,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustUrl() {
-        String currentUrl = runAsLocalWeb.getUrl();
+        String currentUrl = runAsLocalWeb.createRunConfig().getUrl();
         if (defaultLocalUrl == null) {
             defaultLocalUrl = currentUrl;
         }

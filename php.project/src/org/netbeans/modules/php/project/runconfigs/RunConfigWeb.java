@@ -39,25 +39,68 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.runconfigs.validation;
+package org.netbeans.modules.php.project.runconfigs;
 
-public class RunConfigScriptValidatorTest extends TestBase {
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.netbeans.modules.php.api.util.StringUtils;
 
-    public RunConfigScriptValidatorTest(String name) {
-        super(name);
+/**
+ * Base class for all run configs.
+ */
+public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends RunConfig<T> {
+
+    protected String url;
+
+
+    //~ Methods
+
+    // use this for url validation as well?
+    public URL getFullUrl() throws MalformedURLException, URISyntaxException {
+        URL retval = null;
+        if (StringUtils.hasText(url)) {
+            retval = new URL(url);
+        }
+        if (retval != null && StringUtils.hasText(indexRelativePath)) {
+            retval = new URL(retval, indexRelativePath);
+        }
+        if (retval != null && StringUtils.hasText(arguments)) {
+            retval = new URI(retval.getProtocol(), retval.getUserInfo(), retval.getHost(), retval.getPort(),
+                    retval.getPath(), arguments, retval.getRef()).toURL();
+        }
+        if (retval != null) {
+            return retval;
+        }
+        return null;
+
     }
 
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
-        // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
+    public String getHint() {
+        try {
+            URL fullUrl = getFullUrl();
+            if (fullUrl != null) {
+                return fullUrl.toExternalForm();
+            }
+        } catch (MalformedURLException ex) {
+            // ignored
+        } catch (URISyntaxException ex) {
+            // ignored
+        }
+        return null;
+    }
+
+    //~ Getters & Setters
+
+    public String getUrl() {
+        return url;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setUrl(String url) {
+        this.url = url;
+        return (T) this;
     }
 
 }

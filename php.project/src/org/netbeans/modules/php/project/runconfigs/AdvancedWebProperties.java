@@ -39,25 +39,11 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.runconfigs.validation;
+package org.netbeans.modules.php.project.runconfigs;
 
-public class RunConfigScriptValidatorTest extends TestBase {
-
-    public RunConfigScriptValidatorTest(String name) {
-        super(name);
-    }
-
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
-        // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
-    }
+/**
+ * Advanced LOCAL / REMOTE WEB properties.
+ */
+public final class AdvancedWebProperties {
 
 }

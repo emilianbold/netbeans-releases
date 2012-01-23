@@ -41,23 +41,48 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-public class RunConfigScriptValidatorTest extends TestBase {
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 
-    public RunConfigScriptValidatorTest(String name) {
-        super(name);
+/**
+ * Validator for {@link RunConfigLocal}.
+ */
+public final class RunConfigLocalValidator {
+
+    private RunConfigLocalValidator() {
     }
 
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
-        // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
+    public static String validateNewProject(RunConfigLocal config) {
+        String error;
+        error = RunConfigWebValidator.validateUrl(config.getUrl());
+        if (error != null) {
+            return error;
+        }
+        return null;
+    }
+
+    public static String validateCustomizer(RunConfigLocal config) {
+        return validate(config);
+    }
+
+    public static String validateConfigAction(RunConfigLocal config) {
+        return validate(config);
+    }
+
+    private static String validate(RunConfigLocal config) {
+        String error;
+        error = RunConfigWebValidator.validateUrl(config.getUrl());
+        if (error != null) {
+            return error;
+        }
+        String indexRelativePath = config.getIndexRelativePath();
+        if (StringUtils.hasText(indexRelativePath)) {
+            error = RunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
+            if (error != null) {
+                return error;
+            }
+        }
+        return null;
     }
 
 }

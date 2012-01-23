@@ -122,7 +122,7 @@ class ConfigActionScript extends ConfigAction {
     private File getStartFile(Lookup context) {
         FileObject file;
         if (context == null) {
-            file = CommandUtils.fileForProject(project, sourceRoot);
+            file = FileUtil.toFileObject(RunConfigScript.forProject(project).getIndexFile());
         } else {
             file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
         }

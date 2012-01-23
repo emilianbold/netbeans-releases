@@ -41,23 +41,23 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-public class RunConfigScriptValidatorTest extends TestBase {
+import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
+import org.openide.util.NbBundle;
 
-    public RunConfigScriptValidatorTest(String name) {
-        super(name);
+/**
+ * Validator for {@link org.netbeans.modules.php.project.runconfigs.RunConfigWeb}.
+ */
+final class RunConfigWebValidator {
+
+    private RunConfigWebValidator() {
     }
 
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
-        // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
+    static String validateUrl(String url) {
+        if (!Utils.isValidUrl(url)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl");
+        }
+        return null;
     }
 
 }

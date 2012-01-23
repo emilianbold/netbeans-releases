@@ -47,9 +47,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Validator for {@link RunConfigScript}.
@@ -76,7 +74,7 @@ public final class RunConfigScriptValidator {
         return validate(config, indexFileMandatory);
     }
 
-    static String validate(RunConfigScript config, boolean indexFileMandatory) {
+    private static String validate(RunConfigScript config, boolean indexFileMandatory) {
         String error;
         error = validateInterpreter(config.getUseDefaultInterpreter(), config.getInterpreter());
         if (error != null) {
@@ -88,15 +86,13 @@ public final class RunConfigScriptValidator {
         }
         String indexRelativePath = config.getIndexRelativePath();
         if (indexFileMandatory || StringUtils.hasText(indexRelativePath)) {
-            error = validateIndexFile(config.getIndexParentDir(), indexRelativePath);
+            error = RunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
             if (error != null) {
                 return error;
             }
         }
         return null;
     }
-
-    //~ Helper Methods
 
     static String validateInterpreter(boolean useDefaultInterpreter, String interpreter) {
         if (useDefaultInterpreter) {
@@ -124,30 +120,6 @@ public final class RunConfigScriptValidator {
         }
         if (!workDirFile.isDirectory()) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_WorkDirDirectory");
-        }
-        return null;
-    }
-
-    static String validateIndexFile(File rootDirectory, String indexFile) {
-        assert rootDirectory != null;
-        if (!StringUtils.hasText(indexFile)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
-        }
-        boolean error = false;
-        if (indexFile.startsWith("/") // NOI18N
-                || indexFile.startsWith("\\")) { // NOI18N
-            error = true;
-        } else if (Utilities.isWindows() && indexFile.contains(File.separator)) {
-            error = true;
-        } else {
-            File index = new File(rootDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
-            if (!index.isFile()
-                    || !index.equals(FileUtil.normalizeFile(index))) {
-                error = true;
-            }
-        }
-        if (error) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_IndexFileInvalid");
         }
         return null;
     }

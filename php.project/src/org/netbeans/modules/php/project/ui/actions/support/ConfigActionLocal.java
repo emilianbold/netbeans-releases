@@ -50,12 +50,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
@@ -63,16 +62,12 @@ import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -91,16 +86,7 @@ class ConfigActionLocal extends ConfigAction {
 
     @Override
     public boolean isValid(boolean indexFileNeeded) {
-        boolean valid = true;
-        if (indexFileNeeded && !isIndexFileValid(webRoot)) {
-            valid = false;
-        } else if (RunAsValidator.validateWebFields(
-                ProjectPropertiesSupport.getUrl(project),
-                FileUtil.toFile(webRoot),
-                null,
-                ProjectPropertiesSupport.getArguments(project)) != null) {
-            valid = false;
-        }
+        boolean valid = RunConfigLocalValidator.validateConfigAction(RunConfigLocal.forProject(project)) == null;
         if (!valid) {
             showCustomizer();
         }
@@ -195,16 +181,7 @@ class ConfigActionLocal extends ConfigAction {
                         debugProject();
                     }
                 } else {
-                    final FileObject fileForProject = CommandUtils.fileForProject(project, webRoot);
-                    if (fileForProject != null) {
-                        startDebugger(dbgStarter, runnable, cancellable, fileForProject);
-                    } else {
-                        String idxFileName = ProjectPropertiesSupport.getIndexFile(project);
-                        String err = NbBundle.getMessage(ConfigActionLocal.class, "ERR_Missing_IndexFile", idxFileName);
-                        final Message messageDecriptor = new NotifyDescriptor.Message(err, NotifyDescriptor.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(messageDecriptor);
-                        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
-                    }
+                    startDebugger(dbgStarter, runnable, cancellable, FileUtil.toFileObject(RunConfigLocal.forProject(project).getIndexFile()));
                 }
             }
         } else {

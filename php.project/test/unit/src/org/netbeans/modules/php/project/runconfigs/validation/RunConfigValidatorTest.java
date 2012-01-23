@@ -41,23 +41,21 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-public class RunConfigScriptValidatorTest extends TestBase {
+public class RunConfigValidatorTest extends TestBase {
 
-    public RunConfigScriptValidatorTest(String name) {
+    public RunConfigValidatorTest(String name) {
         super(name);
     }
 
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
+    public void testValidateIndexFile() throws Exception {
+        assertNull(RunConfigValidator.validateIndexFile(getWorkDir(), INDEX_NAME));
         // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
+        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), null));
+        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "abc.php"));
+        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "/abc.php"));
+        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "\\abc.php"));
+        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "../" + getWorkDir().getName() + "/" + INDEX_NAME));
+        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "a/../" + INDEX_NAME));
     }
 
 }

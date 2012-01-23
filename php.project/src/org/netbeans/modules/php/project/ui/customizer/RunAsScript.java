@@ -217,12 +217,12 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
 
     @Override
     protected void validateFields() {
-        category.setErrorMessage(RunConfigScriptValidator.validateCustomizer(createConfig()));
+        category.setErrorMessage(RunConfigScriptValidator.validateCustomizer(createRunConfig()));
         // #148957 always allow to save customizer
         category.setValid(true);
     }
 
-    private RunConfigScript createConfig() {
+    private RunConfigScript createRunConfig() {
         return RunConfigScript.create()
                 .setUseDefaultInterpreter(defaultInterpreterCheckBox.isSelected())
                 .setInterpreter(interpreterTextField.getText().trim())
@@ -234,7 +234,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     void composeHint() {
-        hintLabel.setText(createConfig().getHint());
+        hintLabel.setText(createRunConfig().getHint());
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -468,7 +468,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         chooser.setDialogTitle(NbBundle.getMessage(RunAsScript.class, "LBL_SelectWorkingDirectory"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         File curDir = null;
-        String workDir = createConfig().getWorkDir();
+        String workDir = createRunConfig().getWorkDir();
         if (StringUtils.hasText(workDir)) {
             curDir = new File(workDir);
         } else {

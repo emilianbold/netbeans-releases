@@ -39,25 +39,36 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.runconfigs.validation;
+package org.netbeans.modules.php.project.runconfigs;
 
-public class RunConfigScriptValidatorTest extends TestBase {
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 
-    public RunConfigScriptValidatorTest(String name) {
-        super(name);
+/**
+ * Run configuration for LOCAL WEB.
+ */
+public final class RunConfigLocal extends RunConfigWeb<RunConfigLocal> {
+
+    //~ Factories
+
+    public static RunConfigLocal create() {
+        return new RunConfigLocal();
     }
 
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
-        // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
+    public static RunConfigLocal forProject(final PhpProject project) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<RunConfigLocal>() {
+            @Override
+            public RunConfigLocal run() {
+                return new RunConfigLocal()
+                        .setUrl(ProjectPropertiesSupport.getUrl(project))
+                        .setIndexParentDir(FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)))
+                        .setIndexRelativePath(ProjectPropertiesSupport.getIndexFile(project))
+                        .setArguments(ProjectPropertiesSupport.getArguments(project));
+            }
+        });
     }
 
 }

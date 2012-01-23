@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.project.runconfigs;
 
-import java.io.File;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -52,14 +51,11 @@ import org.openide.util.Mutex;
 /**
  * Run configuration for SCRIPT.
  */
-public final class RunConfigScript implements RunConfig {
+public final class RunConfigScript extends RunConfig<RunConfigScript> {
 
     private boolean useDefaultInterpreter;
     private String interpreter;
     private String options;
-    private File indexParentDir;
-    private String indexRelativePath;
-    private String arguments;
     private String workDir;
 
 
@@ -90,16 +86,6 @@ public final class RunConfigScript implements RunConfig {
 
     //~ Methods
 
-    public File getIndexFile() {
-        if (indexParentDir == null) {
-            throw new NullPointerException("Property 'indexParentDir' must be set");
-        }
-        if (StringUtils.hasText(indexRelativePath)) {
-            return new File(indexParentDir, indexRelativePath.replace('/', File.separatorChar)); // NOI18N
-        }
-        return indexParentDir;
-    }
-
     public String getHint() {
         StringBuilder sb = new StringBuilder(100);
         sb.append(interpreter);
@@ -119,33 +105,6 @@ public final class RunConfigScript implements RunConfig {
     }
 
     //~ Getters & Setters
-
-    public String getArguments() {
-        return arguments;
-    }
-
-    public RunConfigScript setArguments(String arguments) {
-        this.arguments = arguments;
-        return this;
-    }
-
-    public File getIndexParentDir() {
-        return indexParentDir;
-    }
-
-    public RunConfigScript setIndexParentDir(File indexParentDir) {
-        this.indexParentDir = indexParentDir;
-        return this;
-    }
-
-    public String getIndexRelativePath() {
-        return indexRelativePath;
-    }
-
-    public RunConfigScript setIndexRelativePath(String indexRelativePath) {
-        this.indexRelativePath = indexRelativePath;
-        return this;
-    }
 
     public String getInterpreter() {
         return interpreter;

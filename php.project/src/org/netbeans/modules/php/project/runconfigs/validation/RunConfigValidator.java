@@ -41,23 +41,43 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-public class RunConfigScriptValidatorTest extends TestBase {
+import java.io.File;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-    public RunConfigScriptValidatorTest(String name) {
-        super(name);
+/**
+ * Validator for {@link org.netbeans.modules.php.project.runconfigs.RunConfig}.
+ */
+final class RunConfigValidator {
+
+    private RunConfigValidator() {
     }
 
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
-        // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
+    static String validateIndexFile(File rootDirectory, String indexFile) {
+        assert rootDirectory != null;
+        if (!StringUtils.hasText(indexFile)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
+        }
+        boolean error = false;
+        if (indexFile.startsWith("/") // NOI18N
+                || indexFile.startsWith("\\")) { // NOI18N
+            error = true;
+        } else if (Utilities.isWindows() && indexFile.contains(File.separator)) {
+            error = true;
+        } else {
+            File index = new File(rootDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
+            if (!index.isFile()
+                    || !index.equals(FileUtil.normalizeFile(index))) {
+                error = true;
+            }
+        }
+        if (error) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_IndexFileInvalid");
+        }
+        return null;
     }
 
 }

@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.GroupLayout;
@@ -55,27 +52,29 @@ import javax.swing.UIManager;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -53489817846332331L;
+
+    private static final long serialVersionUID = 7891231321100L;
+
     private final PhpProjectProperties properties;
     private final PhpProject project;
     private final JLabel[] labels;
@@ -83,6 +82,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private final String[] propertyNames;
     private final String displayName;
     final Category category;
+
 
     public RunAsLocalWeb(PhpProjectProperties properties, ConfigManager manager, Category category) {
         super(manager);
@@ -148,18 +148,17 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected void validateFields() {
-        String url = urlTextField.getText();
-        String indexFile = indexFileTextField.getText();
-        String args = argsTextField.getText();
-
-        // #150179 - index file not mandatory
-        if (!StringUtils.hasText(indexFile)) {
-            indexFile = null;
-        }
-        String err = RunAsValidator.validateWebFields(url, getWebRoot(), indexFile, args);
-        category.setErrorMessage(err);
+        category.setErrorMessage(RunConfigLocalValidator.validateCustomizer(createRunConfig()));
         // #148957 always allow to save customizer
         category.setValid(true);
+    }
+
+    private RunConfigLocal createRunConfig() {
+        return RunConfigLocal.create()
+                .setUrl(urlTextField.getText())
+                .setIndexParentDir(FileUtil.toFile(getWebRoot()))
+                .setIndexRelativePath(indexFileTextField.getText())
+                .setArguments(argsTextField.getText());
     }
 
     private FileObject getWebRoot() {
@@ -180,14 +179,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            String hint = ""; // NOI18N
-            try {
-                hint = RunAsValidator.composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText());
-            } catch (InvalidUrlException ex) {
-                category.setErrorMessage(ex.getMessage());
-                category.setValid(false);
-            }
-            hintLabel.setText(hint);
+            hintLabel.setText(createRunConfig().getHint());
         }
     }
 

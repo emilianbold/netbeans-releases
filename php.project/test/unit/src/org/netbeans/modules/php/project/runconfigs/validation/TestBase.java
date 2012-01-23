@@ -41,23 +41,31 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-public class RunConfigScriptValidatorTest extends TestBase {
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
 
-    public RunConfigScriptValidatorTest(String name) {
+abstract class TestBase extends NbTestCase {
+
+    protected static final String INDEX_NAME = "index.php";
+
+    protected File indexFile;
+
+
+    protected TestBase(String name) {
         super(name);
     }
 
-    public void testValidateWorkDir() {
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), false));
-        assertNull(RunConfigScriptValidator.validateWorkDir(getWorkDirPath(), true));
-        assertNull(RunConfigScriptValidator.validateWorkDir(null, true));
-        assertNull(RunConfigScriptValidator.validateWorkDir("", true));
-        // errors
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(null, false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir("/non-existing-dir/", false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getAbsolutePath(), false));
-        assertNotNull(RunConfigScriptValidator.validateWorkDir(indexFile.getName(), false));
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        indexFile = new File(getWorkDir(), INDEX_NAME);
+        assertTrue("Test file should be created", indexFile.createNewFile());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        clearWorkDir();
     }
 
 }

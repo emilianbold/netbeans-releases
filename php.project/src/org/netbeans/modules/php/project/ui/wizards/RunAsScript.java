@@ -193,7 +193,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         }
     }
 
-    public RunConfigScript getRunConfig() {
+    public RunConfigScript createRunConfig() {
         return RunConfigScript.create()
                 .setUseDefaultInterpreter(false)
                 .setInterpreter(interpreterTextField.getText().trim())

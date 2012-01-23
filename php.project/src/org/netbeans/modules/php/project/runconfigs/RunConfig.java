@@ -41,8 +41,65 @@
  */
 package org.netbeans.modules.php.project.runconfigs;
 
+import java.io.File;
+import org.netbeans.modules.php.api.util.StringUtils;
+
 /**
- * Represents a run configuration.
+ * Base class for all run configs.
  */
-public interface RunConfig {
+public abstract class RunConfig<T extends RunConfig<?>> {
+
+    protected File indexParentDir;
+    protected String indexRelativePath;
+    protected String arguments;
+
+
+    RunConfig() {
+    }
+
+    //~ Methods
+
+    public File getIndexFile() {
+        if (indexParentDir == null) {
+            throw new NullPointerException("Property 'indexParentDir' must be set");
+        }
+        if (StringUtils.hasText(indexRelativePath)) {
+            return new File(indexParentDir, indexRelativePath.replace('/', File.separatorChar)); // NOI18N
+        }
+        return indexParentDir;
+    }
+
+    //~ Getters & setters
+
+    public String getArguments() {
+        return arguments;
+    }
+
+    // XXX is there a better way?
+    @SuppressWarnings("unchecked")
+    public T setArguments(String arguments) {
+        this.arguments = arguments;
+        return (T) this;
+    }
+
+    public File getIndexParentDir() {
+        return indexParentDir;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setIndexParentDir(File indexParentDir) {
+        this.indexParentDir = indexParentDir;
+        return (T) this;
+    }
+
+    public String getIndexRelativePath() {
+        return indexRelativePath;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setIndexRelativePath(String indexRelativePath) {
+        this.indexRelativePath = indexRelativePath;
+        return (T) this;
+    }
+
 }
