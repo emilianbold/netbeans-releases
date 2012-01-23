@@ -123,6 +123,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             case EXPRESSION:
                 completeExpression(request, resultList);
                 break;
+            case OBJECT_PROPERTY:
+                completeObjectProperty(request, resultList);
+                break;
             default:
                 result = CodeCompletionResult.NONE;
         }
@@ -183,6 +186,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             prefix = token.text().toString();
             prefix = prefix.substring(0, caretOffset - ts.offset());
         }
+        LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
         return prefix;
     }
 
@@ -213,6 +217,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             && startsWith(object.getName(), request.prefix))
                         resultList.add(new JsCompletionItem(object, request));
                 }
+    }
+    
+    private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
+        TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
+
+
+        if (ts == null){
+            return;
+        }
+
+        ts.move(request.anchor);
+        if (ts.movePrevious()) {
+        
+        }
     }
     
     private boolean startsWith(String theString, String prefix) {
