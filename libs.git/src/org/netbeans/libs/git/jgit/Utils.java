@@ -53,6 +53,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -138,6 +140,10 @@ public final class Utils {
     }
 
     public static String getRelativePath (File repo, final File file) {
+        return getRelativePath(repo, file, false);
+    }
+
+    private static String getRelativePath (File repo, final File file, boolean canonicalized) {
         StringBuilder relativePath = new StringBuilder("");
         File parent = file;
         if (!parent.equals(repo)) {
@@ -146,7 +152,14 @@ public final class Utils {
                 parent = parent.getParentFile();
             }
             if (parent == null) {
-                throw new IllegalArgumentException(file.getAbsolutePath() + " is not under " + repo.getAbsolutePath());
+                if (!canonicalized) {
+                    try {
+                        return getRelativePath(repo.getCanonicalFile(), file.getCanonicalFile(), true);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Utils.class.getName()).log(Level.FINE, null, ex);
+                    }
+                }
+                throw new IllegalArgumentException(file.getPath() + " is not under " + repo.getPath());
             }
             relativePath.deleteCharAt(relativePath.length() - 1);
         }
